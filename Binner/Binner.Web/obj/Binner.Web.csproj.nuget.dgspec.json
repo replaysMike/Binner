@@ -1,0 +1,63 @@
+{
+  "format": 1,
+  "restore": {
+    "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Web\\Binner.Web.csproj": {}
+  },
+  "projects": {
+    "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Web\\Binner.Web.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Web\\Binner.Web.csproj",
+        "projectName": "Binner.Web",
+        "projectPath": "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Web\\Binner.Web.csproj",
+        "packagesPath": "C:\\Users\\Mike\\.nuget\\packages\\",
+        "outputPath": "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Web\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Mike\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://www.myget.org/F/azureadwebstacknightly/": {},
+          "http://www.myget.org/f/aspnetwebstacknightly/": {},
+          "http://www.myget.org/f/aspnetwebstacknightlyrelease/": {},
+          "https://www.myget.org/F/automapperdev": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netcoreapp2.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.1": {
+          "dependencies": {
+            "Microsoft.NETCore.App": {
+              "target": "Package",
+              "version": "[2.1.0, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    }
+  }
+}

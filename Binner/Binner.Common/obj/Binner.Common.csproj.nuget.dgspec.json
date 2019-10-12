@@ -1,0 +1,64 @@
+{
+  "format": 1,
+  "restore": {
+    "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Common\\Binner.Common.csproj": {}
+  },
+  "projects": {
+    "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Common\\Binner.Common.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Common\\Binner.Common.csproj",
+        "projectName": "Binner.Common",
+        "projectPath": "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Common\\Binner.Common.csproj",
+        "packagesPath": "C:\\Users\\Mike\\.nuget\\packages\\",
+        "outputPath": "B:\\gitrepo\\personalcode\\Binner\\Binner\\Binner.Common\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Mike\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://www.myget.org/F/azureadwebstacknightly/": {},
+          "http://www.myget.org/f/aspnetwebstacknightly/": {},
+          "http://www.myget.org/f/aspnetwebstacknightlyrelease/": {},
+          "https://www.myget.org/F/automapperdev": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netstandard2.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.0": {
+          "dependencies": {
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    }
+  }
+}
