@@ -13,6 +13,7 @@ namespace Binner.Common.StorageProviders
 {
     public class BinnerFileStorageProvider : IStorageProvider
     {
+        public const string ProviderName = "Binner";
         private const byte DbVersion = 1;
         private SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
         private bool _isDisposed = false;
@@ -25,9 +26,9 @@ namespace Binner.Common.StorageProviders
         private ManualResetEvent _quitEvent = new ManualResetEvent(false);
         private Thread _ioThread;
 
-        public BinnerFileStorageProvider(BinnerFileStorageConfiguration config)
+        public BinnerFileStorageProvider(IDictionary<string, string> config)
         {
-            _config = config;
+            _config = new BinnerFileStorageConfiguration(config);
             Task.Run(async () =>
             {
                 await LoadDatabaseAsync();

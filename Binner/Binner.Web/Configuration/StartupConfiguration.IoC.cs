@@ -22,9 +22,12 @@ namespace Binner.Web.Configuration
 
             // register services
             container.Register<IPartService, PartService>(new PerContainerLifetime());
-            container.RegisterSingleton<IStorageProvider>((factory) =>
+            container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
+            container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
             {
-                return factory.Create<BinnerFileStorageProvider>();
+                var providerFactory = serviceFactory.Create<IStorageProviderFactory>();
+                var storageProviderConfig = serviceFactory.GetInstance<StorageProviderConfiguration>();
+                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
             });
 
             // the main server app

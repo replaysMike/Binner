@@ -44,12 +44,22 @@ namespace Binner.Common.Models
         public string DatasheetUrl { get; set; }
 
         /// <summary>
-        /// Bin number
+        /// Project associated with the part
+        /// </summary>
+        public string Project { get; set; }
+
+        /// <summary>
+        /// Location of part (i.e. warehouse, room)
+        /// </summary>
+        public string Location { get; set; }
+
+        /// <summary>
+        /// Bin number (i.e. Shelf)
         /// </summary>
         public string BinNumber { get; set; }
 
         /// <summary>
-        /// Secondary Bin number
+        /// Secondary Bin number (i.e. Bin)
         /// </summary>
         public string BinNumber2 { get; set; }
 
