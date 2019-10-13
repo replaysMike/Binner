@@ -1,0 +1,8 @@
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\bin\Debug\netstandard2.1\Binner.Common.deps.json
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\bin\Debug\netstandard2.1\Binner.Common.dll
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\bin\Debug\netstandard2.1\Binner.Common.pdb
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\obj\Debug\netstandard2.1\Binner.Common.csprojAssemblyReference.cache
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\obj\Debug\netstandard2.1\Binner.Common.AssemblyInfoInputs.cache
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\obj\Debug\netstandard2.1\Binner.Common.AssemblyInfo.cs
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\obj\Debug\netstandard2.1\Binner.Common.dll
+B:\gitrepo\personalcode\Binner\Binner\Binner.Common\obj\Debug\netstandard2.1\Binner.Common.pdb
