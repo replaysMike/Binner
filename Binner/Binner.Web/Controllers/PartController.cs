@@ -94,5 +94,19 @@ namespace Binner.Web.Controllers
                 return NotFound();
             return Ok(parts.OrderBy(x => x.Rank).Select(x => x.Result));
         }
+
+        /// <summary>
+        /// Delete an existing part
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("metadata")]
+        public async Task<IActionResult> GetMetadataAsync([FromQuery]string partNumber)
+        {
+            var metadata = await _partService.GetPartMetadataAsync(partNumber);
+            if (metadata == null)
+                return NotFound();
+            return Ok(metadata);
+        }
     }
 }

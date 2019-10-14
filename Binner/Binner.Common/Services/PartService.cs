@@ -49,5 +49,17 @@ namespace Binner.Common.Services
         {
             return await _storageProvider.GetOrCreatePartTypeAsync(partType);
         }
+
+        public async Task<PartMetadata> GetPartMetadataAsync(string partNumber)
+        {
+            var dataSheets = await _octopartApi.GetDatasheetsAsync(partNumber);
+            return new PartMetadata
+            {
+                PartNumber = partNumber,
+                DatasheetUrl = dataSheets.FirstOrDefault(),
+                Description = "",
+                Cost = 0
+            };
+        }
     }
 }
