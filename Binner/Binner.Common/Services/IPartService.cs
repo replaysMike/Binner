@@ -14,6 +14,13 @@ namespace Binner.Common.Services
         Task<Part> AddPartAsync(Part part);
 
         /// <summary>
+        /// Update an existing part
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        Task<Part> UpdatePartAsync(Part part);
+
+        /// <summary>
         /// Delete an existing part
         /// </summary>
         /// <param name="part"></param>
@@ -33,5 +40,12 @@ namespace Binner.Common.Services
         /// <param name="partNumber"></param>
         /// <returns></returns>
         Task<Part> GetPartAsync(string partNumber);
+
+        /// <summary>
+        /// Get a partType object, or create it if it doesn't exist
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        Task<PartType> GetOrCreatePartTypeAsync(string partType);
     }
 }

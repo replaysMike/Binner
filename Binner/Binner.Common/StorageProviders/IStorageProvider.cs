@@ -18,6 +18,13 @@ namespace Binner.Common.StorageProviders
         Task<Part> AddPartAsync(Part part);
 
         /// <summary>
+        /// Update an existing part
+        /// </summary>
+        /// <param name="part"></param>
+        /// <returns></returns>
+        Task<Part> UpdatePartAsync(Part part);
+
+        /// <summary>
         /// Get a part by its internal id
         /// </summary>
         /// <param name="partId"></param>
@@ -44,5 +51,12 @@ namespace Binner.Common.StorageProviders
         /// <param name="part"></param>
         /// <returns></returns>
         Task<bool> DeletePartAsync(Part part);
+
+        /// <summary>
+        /// Get a partType object, or create it if it doesn't exist
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        Task<PartType> GetOrCreatePartTypeAsync(string partType);
     }
 }

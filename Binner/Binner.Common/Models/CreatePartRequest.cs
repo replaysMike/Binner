@@ -22,7 +22,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Type of part
         /// </summary>
-        public PartType PartType { get; set; }
+        public string PartType { get; set; }
 
         /// <summary>
         /// Additional keywords

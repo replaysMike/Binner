@@ -43,5 +43,10 @@ namespace Binner.Web.Configuration
         /// The origin to allow for Cors
         /// </summary>
         public string CorsAllowOrigin { get; set; }
+
+        /// <summary>
+        /// Octopart Api Key
+        /// </summary>
+        public string OctopartApiKey { get; set; }
     }
 }

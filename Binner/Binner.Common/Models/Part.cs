@@ -9,9 +9,19 @@ namespace Binner.Common.Models
     public class Part
     {
         /// <summary>
-        /// Internal reference Id
+        /// Primary key
         /// </summary>
         public long PartId { get; set; }
+
+        /// <summary>
+        /// The number of items in stock
+        /// </summary>
+        public long Count { get; set; }
+
+        /// <summary>
+        /// The part should be reordered when it gets below this value|
+        /// </summary>
+        public int LowStockThreshold { get; set; } = SystemDefaults.LowStockThreshold;
 
         /// <summary>
         /// The main part number
@@ -31,7 +41,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Type of part
         /// </summary>
-        public PartType PartType { get; set; }
+        public long PartTypeId { get; set; }
 
         /// <summary>
         /// Additional keywords

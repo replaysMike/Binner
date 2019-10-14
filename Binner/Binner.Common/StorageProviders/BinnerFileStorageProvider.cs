@@ -6,20 +6,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TypeSupport;
+using TypeSupport.Extensions;
 
 namespace Binner.Common.StorageProviders
 {
     public class BinnerFileStorageProvider : IStorageProvider
     {
         public const string ProviderName = "Binner";
-        private const byte DbVersion = 1;
+
         private SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
         private bool _isDisposed = false;
         private readonly BinnerFileStorageConfiguration _config;
-        private BinnerDb _db;
-        private long _nextPartId;
+        private IBinnerDb _db;
+        private PrimaryKeyTracker _primaryKeyTracker;
         private SerializerOptions _serializationOptions = SerializerOptions.EmbedTypes;
         private SerializerProvider _serializer = new SerializerProvider();
         private bool _isDirty;
@@ -46,8 +49,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                part.PartId = _nextPartId;
-                _nextPartId++;
+                part.PartId = _primaryKeyTracker.GetNextKey<Part>();
                 _db.Parts.Add(part);
                 _isDirty = true;
             }
@@ -56,6 +58,62 @@ namespace Binner.Common.StorageProviders
                 _dataLock.Release();
             }
             return part;
+        }
+
+
+
+        public async Task<Part> UpdatePartAsync(Part part)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                var existingPart = await GetPartAsync(part.PartId);
+                existingPart.BinNumber = part.BinNumber;
+                existingPart.BinNumber2 = part.BinNumber2;
+                existingPart.Count = part.Count;
+                existingPart.DatasheetUrl = part.DatasheetUrl;
+                existingPart.Description = part.Description;
+                existingPart.DigiKeyPartNumber = part.DigiKeyPartNumber;
+                existingPart.Keywords = part.Keywords;
+                existingPart.Location = part.Location;
+                existingPart.LowStockThreshold = part.LowStockThreshold;
+                existingPart.PartNumber = part.PartNumber;
+                existingPart.PartTypeId = part.PartTypeId;
+                existingPart.Project = part.Project;
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return part;
+        }
+
+        public async Task<PartType> GetOrCreatePartTypeAsync(string partType)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                var existingPartType = _db.PartTypes
+                    .Where(x => x.Name.Equals(partType, StringComparison.InvariantCultureIgnoreCase))
+                    .FirstOrDefault();
+                if (existingPartType == null)
+                {
+                    existingPartType = new PartType
+                    {
+                        Name = partType,
+                        ParentPartTypeId = null,
+                        PartTypeId = _primaryKeyTracker.GetNextKey<PartType>()
+                    };
+                    _db.PartTypes.Add(existingPartType);
+                    _isDirty = true;
+                }
+                return existingPartType;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
         }
 
         /// <summary>
@@ -71,9 +129,10 @@ namespace Binner.Common.StorageProviders
                 var itemRemoved = _db.Parts.Remove(part);
                 if (itemRemoved)
                 {
-                    _nextPartId = _db.Parts.OrderByDescending(x => x.PartId)
+                    var nextPartId = _db.Parts.OrderByDescending(x => x.PartId)
                         .Select(x => x.PartId)
                         .FirstOrDefault() + 1;
+                    _primaryKeyTracker.SetNextKey<Part>(nextPartId);
                     _isDirty = true;
                 }
                 return itemRemoved;
@@ -243,11 +302,24 @@ namespace Binner.Common.StorageProviders
                 {
                     using (var stream = File.OpenRead(_config.Filename))
                     {
-                        _db = _serializer.Deserialize<BinnerDb>(stream, _serializationOptions);
+                        var dbVersion = ReadDbVersion(stream);
+
+                        // copy the rest of the bytes
+                        var bytes = new byte[stream.Length - stream.Position];
+                        stream.Read(bytes, 0, bytes.Length);
+
+                        _db = LoadDatabaseByVersion(dbVersion, bytes);
+                        bytes = null;
+
                         // could make this non-fatal
                         if (!ValidateChecksum(_db))
                             throw new Exception("The database did not pass validation! It is either corrupt or has been modified outside of the application.");
-                        _nextPartId = _db.LastPartId + 1;
+                        _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>
+                        {
+                            // there is no guaranteed order so we must sort first
+                            { typeof(Part).Name, _db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() },
+                            { typeof(PartType).Name, _db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() },
+                        });
                     }
                 }
                 catch (Exception ex)
@@ -276,6 +348,18 @@ namespace Binner.Common.StorageProviders
             }
         }
 
+        private IBinnerDb LoadDatabaseByVersion(BinnerDbVersion version, byte[] bytes)
+        {
+            // Support database loading by version number
+            var db = version.Version switch
+            {
+                // Version 1
+                BinnerDbV1.VersionNumber => _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions),
+                _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
+            };
+            return db;
+        }
+
         /// <summary>
         /// Save the database to disk
         /// </summary>
@@ -283,24 +367,29 @@ namespace Binner.Common.StorageProviders
         /// <returns></returns>
         private async Task SaveDatabaseAsync(bool requireLock = true)
         {
-            byte[] bytes;
             if (requireLock)
                 await _dataLock.WaitAsync();
             try
             {
-                _db.FirstPartId = _db.Parts
+                var db = _db as BinnerDbV1;
+                db.FirstPartId = db.Parts
                     .OrderBy(x => x.PartId)
                     .Select(x => x.PartId)
                     .FirstOrDefault();
-                _db.LastPartId = _db.Parts
+                db.LastPartId = db.Parts
                     .OrderByDescending(x => x.PartId)
                     .Select(x => x.PartId)
                     .FirstOrDefault();
-                _db.Count = _db.Parts.Count;
-                _db.Checksum = BuildChecksum(_db);
-                bytes = _serializer.Serialize(_db, _serializationOptions);
-                Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
-                File.WriteAllBytes(_config.Filename, bytes);
+                db.Count = db.Parts.Count;
+                db.Checksum = BuildChecksum(db);
+                using (var stream = new MemoryStream())
+                {
+                    WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV1.VersionNumber, BinnerDbV1.VersionCreated));
+                    var serializedBytes = _serializer.Serialize(db, _serializationOptions);
+                    stream.Write(serializedBytes, 0, serializedBytes.Length);
+                    Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
+                    File.WriteAllBytes(_config.Filename, stream.ToArray());
+                }
             }
             catch (Exception ex)
             {
@@ -313,22 +402,56 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        private BinnerDb NewDatabase()
+        private BinnerDbVersion ReadDbVersion(Stream stream)
         {
-            _nextPartId = 1;
-            return new BinnerDb
+            BinnerDbVersion version = null;
+            using (var reader = new BinaryReader(stream, Encoding.UTF8, true))
+            {
+                var versionByte = reader.ReadByte();
+                var versionCreated = reader.ReadInt64();
+                version = new BinnerDbVersion(versionByte, DateTime.FromBinary(versionCreated));
+            }
+            return version;
+        }
+
+        private void WriteDbVersion(Stream stream, BinnerDbVersion version)
+        {
+            using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
+            {
+                writer.Write(version.Version);
+                writer.Write(version.Created.ToBinary());
+            }
+        }
+
+        private IBinnerDb NewDatabase()
+        {
+            _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>
+            {
+                { typeof(Part).Name, 1 },
+                { typeof(PartType).Name, 1 },
+            });
+
+            var defaultPartTypesTs = typeof(SystemDefaults.DefaultPartTypes).GetExtendedType();
+            var initialPartTypes = defaultPartTypesTs.EnumValues.Select(x => new PartType
+            {
+                PartTypeId = (int)x.Key,
+                Name = x.Value
+            }).ToList();
+
+            var created = DateTime.UtcNow;
+            return new BinnerDbV1
             {
                 Count = 0,
-                DateCreatedUtc = DateTime.UtcNow,
-                DateModifiedUtc = DateTime.UtcNow,
                 FirstPartId = 0,
                 LastPartId = 0,
+                DateCreatedUtc = created,
+                DateModifiedUtc = created,
+                PartTypes = initialPartTypes,
                 Parts = new List<Part>(),
-                Version = DbVersion
             };
         }
 
-        private string BuildChecksum(BinnerDb db)
+        private string BuildChecksum(IBinnerDb db)
         {
             string hash;
             byte[] bytes = _serializer.Serialize(db, "Checksum");
@@ -339,7 +462,7 @@ namespace Binner.Common.StorageProviders
             return hash;
         }
 
-        private bool ValidateChecksum(BinnerDb db)
+        private bool ValidateChecksum(IBinnerDb db)
         {
             var calculatedChecksum = BuildChecksum(db);
             if (db.Checksum.Equals(calculatedChecksum))
@@ -416,7 +539,5 @@ namespace Binner.Common.StorageProviders
             }
             _isDisposed = true;
         }
-
-
     }
 }

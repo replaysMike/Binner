@@ -1,50 +1,50 @@
 ﻿using Binner.Common.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Binner.Common.StorageProviders
 {
-    public class BinnerDb
+    public interface IBinnerDb
     {
-        /// <summary>
-        /// Database version
-        /// </summary>
-        public byte Version { get; internal set; }
-
         /// <summary>
         /// Number of parts in database
         /// </summary>
-        public long Count { get; internal set; }
+        long Count { get; }
 
         /// <summary>
         /// The first part Id
         /// </summary>
-        public long FirstPartId { get; internal set; }
+        long FirstPartId { get; }
 
         /// <summary>
         /// The last part Id
         /// </summary>
-        public long LastPartId { get; internal set; }
+        long LastPartId { get; }
 
         /// <summary>
         /// Date the database was created
         /// </summary>
-        public DateTime DateCreatedUtc { get; internal set; }
+        DateTime DateCreatedUtc { get; }
 
         /// <summary>
         /// Date the database was last modified
         /// </summary>
-        public DateTime DateModifiedUtc { get; internal set; }
+        DateTime DateModifiedUtc { get; }
+
+        /// <summary>
+        /// Defined part types
+        /// </summary>
+        ICollection<PartType> PartTypes { get; }
 
         /// <summary>
         /// Parts database
         /// </summary>
-        public ICollection<Part> Parts { get; internal set; } = new List<Part>();
+        ICollection<Part> Parts { get; }
 
         /// <summary>
         /// A checksum for validating the database contents
         /// </summary>
-        public string Checksum { get; internal set; }
+        string Checksum { get; }
+
     }
 }

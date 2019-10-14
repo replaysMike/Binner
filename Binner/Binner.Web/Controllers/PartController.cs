@@ -51,6 +51,7 @@ namespace Binner.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePartAsync(CreatePartRequest request)
         {
+            var partType = await _partService.GetOrCreatePartTypeAsync(request.PartType);
             var part = await _partService.AddPartAsync(new Part
             {
                 PartNumber = request.PartNumber,
@@ -60,7 +61,7 @@ namespace Binner.Web.Controllers
                 Description = request.Description,
                 DigiKeyPartNumber = request.DigiKeyPartNumber,
                 Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries),
-                PartType = request.PartType
+                PartTypeId = partType.PartTypeId
             });
             return Ok(part);
         }

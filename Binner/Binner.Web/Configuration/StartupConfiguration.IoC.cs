@@ -1,4 +1,5 @@
-﻿using Binner.Common.Services;
+﻿using Binner.Common.Api;
+using Binner.Common.Services;
 using Binner.Common.StorageProviders;
 using Binner.Web.ServiceHost;
 using Binner.Web.WebHost;
@@ -21,6 +22,11 @@ namespace Binner.Web.Configuration
             container.RegisterInstance(container);
 
             // register services
+            container.Register<OctopartApi>((serviceFactory) =>
+            {
+                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
+                return new OctopartApi(config.OctopartApiKey);
+            }, new PerContainerLifetime());
             container.Register<IPartService, PartService>(new PerContainerLifetime());
             container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
             container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
