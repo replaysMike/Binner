@@ -11,18 +11,17 @@
 // 
 //-----------------------------------------------------------------------
 
+using ApiClient.Constants;
+using ApiClient.Exception;
+using ApiClient.Models;
+using ApiClient.OAuth2;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using ApiClient.Constants;
-using ApiClient.Exception;
-using ApiClient.Models;
-using ApiClient.OAuth2;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace ApiClient
 {

@@ -17,6 +17,7 @@ namespace Binner.Common.Integrations
 {
     public class DigikeyApi
     {
+        public static readonly TimeSpan MaxAuthorizationWaitTime = TimeSpan.FromSeconds(30);
         public const string Path = "https://sandbox-api.digikey.com/Search/v3/Products";
         private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
@@ -36,13 +37,110 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
-        public async Task<DigikeyAuthorization> AuthorizeAsync()
+        public async Task<ICollection<Product>> GetProductInformationAsync(string partNumber)
         {
-            // todo: validate if the token is still valid or needs to be refreshed
+            var authResponse = await AuthorizeAsync();
+            if (authResponse == null || !authResponse.IsAuthorized) throw new UnauthorizedAccessException("Unable to authenticate with DigiKey");
+
+            return await WrapApiRequestAsync<ICollection<Product>>(async () =>
+            {
+                try
+                {
+                    // set what fields we want from the API
+                    var includes = new List<string> { "DigiKeyPartNumber", "QuantityAvailable", "Manufacturer", "ManufacturerPartNumber", "PrimaryDatasheet", "ProductDescription", "DetailedDescription", "MinimumOrderQuantity", "NonStock", "UnitPrice", "ProductStatus", "ProductUrl", "Parameters" };
+                    var values = new Dictionary<string, string>
+                    {
+                        { "Includes", $"Products({string.Join(",", includes)})" },
+                    };
+                    var uri = new Uri($"{Path}/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
+                    var requestMessage = CreateRequest(authResponse, HttpMethod.Post, uri);
+                    var request = new KeywordSearchRequest
+                    {
+                        Keywords = partNumber
+                    };
+                    var json = JsonConvert.SerializeObject(request, _serializerSettings);
+                    requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    // perform a keywords API search
+                    var response = await _client.SendAsync(requestMessage);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        throw new UnauthorizedException(authResponse);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var resultString = response.Content.ReadAsStringAsync().Result;
+                        var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings);
+                        return results.Products;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                return new List<Product>();
+            });
+
+        }
+
+        /// <summary>
+        /// Wraps an API request - if the request is unauthorized it will refresh the Auth token and re-issue the request
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        private async Task<T> WrapApiRequestAsync<T>(Func<Task<T>> func)
+        {
+            try
+            {
+                return await func();
+            }
+            catch (UnauthorizedException ex)
+            {
+                // get refresh token, retry
+                _oAuth2Service.ClientSettings.RefreshToken = ex.Authorization.RefreshToken;
+                var token = await _oAuth2Service.RefreshTokenAsync();
+                var authRequest = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId)
+                {
+                    AccessToken = token.AccessToken,
+                    RefreshToken = token.RefreshToken,
+                    CreatedUtc = DateTime.UtcNow,
+                    AuthorizationReceived = true,
+                };
+                ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
+                if (authRequest.IsAuthorized)
+                {
+                    // save the credential
+                    await _credentialService.SaveOAuthCredentialAsync(new Common.Models.OAuthCredential
+                    {
+                        Provider = nameof(DigikeyApi),
+                        AccessToken = authRequest.AccessToken,
+                        RefreshToken = authRequest.RefreshToken,
+                        DateCreatedUtc = authRequest.CreatedUtc,
+                        DateExpiresUtc = authRequest.ExpiresUtc,
+                    });
+                    // call the API again
+                    return await func();
+                }
+                // refresh token failed, restart access token retrieval process
+                await ForgetAuthenticationTokens();
+                await AuthorizeAsync();
+                // call the API again
+                return await func();
+            }
+        }
+
+        private async Task ForgetAuthenticationTokens()
+        {
+            ServerContext.Remove<DigikeyAuthorization>(nameof(DigikeyAuthorization));
+            await _credentialService.RemoveOAuthCredentialAsync(nameof(DigikeyApi));
+        }
+
+        private async Task<DigikeyAuthorization> AuthorizeAsync()
+        {
+            // check if we have an in-memory auth credential
             var getAuth = ServerContext.Get<DigikeyAuthorization>(nameof(DigikeyAuthorization));
             if (getAuth != null && getAuth.IsAuthorized)
                 return getAuth;
 
+            // check if we have a saved to disk auth credential
             var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
             if (credential == null)
             {
@@ -53,7 +151,7 @@ namespace Binner.Common.Integrations
                 var authRequest = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId);
                 ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
 
-                // wait for authorization or timeout
+                // wait for oAuth callback authorization from Digikey or timeout
                 var startTime = DateTime.Now;
                 while (!_manualResetEvent.WaitOne(100))
                 {
@@ -69,77 +167,53 @@ namespace Binner.Common.Integrations
                                 Provider = nameof(DigikeyApi),
                                 AccessToken = getAuth.AccessToken,
                                 RefreshToken = getAuth.RefreshToken,
-                                DateCreatedUtc = getAuth.Created
+                                DateCreatedUtc = getAuth.CreatedUtc,
+                                DateExpiresUtc = getAuth.ExpiresUtc,
                             });
                         }
                         return getAuth;
                     }
                     else
                     {
-                        if (DateTime.Now.Subtract(startTime).TotalSeconds >= 10)
+                        if (DateTime.Now.Subtract(startTime) >= MaxAuthorizationWaitTime)
                         {
                             // timeout
                             return null;
                         }
                     }
                 }
-            } else
+            }
+            else
             {
                 // reuse a saved oAuth credential
-                return new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId)
+                var authRequest = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId)
                 {
                     AccessToken = credential.AccessToken,
                     RefreshToken = credential.RefreshToken,
-                    Created = credential.DateCreatedUtc,
+                    CreatedUtc = credential.DateCreatedUtc,
+                    ExpiresUtc = credential.DateExpiresUtc,
                     AuthorizationReceived = true,
                 };
+                // also store it in memory
+                ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
+                return authRequest;
             }
 
             return null;
         }
 
-        public async Task<ICollection<Product>> GetProductInformationAsync(string partNumber)
+        private HttpRequestMessage CreateRequest(DigikeyAuthorization authResponse, HttpMethod method, Uri uri)
         {
-            var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized) throw new UnauthorizedAccessException("Unable to authenticate with DigiKey");
-
-            try
-            {
-                var includes = new List<string> { "DigiKeyPartNumber", "QuantityAvailable", "Manufacturer", "ManufacturerPartNumber", "PrimaryDatasheet", "ProductDescription", "DetailedDescription", "MinimumOrderQuantity", "NonStock", "UnitPrice", "ProductStatus", "ProductUrl", "Parameters" };
-                var values = new Dictionary<string, string>
-                {
-                    { "Includes", $"Products({string.Join(",", includes)})" },
-                };
-                var uri = new Uri($"{Path}/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
-                var k = uri.ToString();
-                var req = new HttpRequestMessage(HttpMethod.Post, uri);
-                req.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
-                req.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
-                req.Headers.Add("X-DIGIKEY-Locale-Site", "CA");
-                req.Headers.Add("X-DIGIKEY-Locale-Language", "en");
-                req.Headers.Add("X-DIGIKEY-Locale-Currency", "CAD");
-                var request = new KeywordSearchRequest()
-                {
-                    Keywords = partNumber
-                };
-                var json = JsonConvert.SerializeObject(request, _serializerSettings);
-                req.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _client.SendAsync(req);
-                if (response.IsSuccessStatusCode)
-                {
-                    var resultString = response.Content.ReadAsStringAsync().Result;
-                    var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings);
-                    return results.Products;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            return new List<Product>();
+            var message = new HttpRequestMessage(method, uri);
+            message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
+            message.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
+            message.Headers.Add("X-DIGIKEY-Locale-Site", "CA");
+            message.Headers.Add("X-DIGIKEY-Locale-Language", "en");
+            message.Headers.Add("X-DIGIKEY-Locale-Currency", "CAD");
+            return message;
         }
 
-        public void OpenBrowser(string url)
+        private void OpenBrowser(string url)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -157,5 +231,14 @@ namespace Binner.Common.Integrations
                 throw new InvalidOperationException("Failed to launch default web browser - I don't know how to do this on your platform!");
         }
 
+    }
+
+    public class UnauthorizedException : Exception
+    {
+        public DigikeyAuthorization Authorization { get; }
+        public UnauthorizedException(DigikeyAuthorization authorization)
+        {
+            Authorization = authorization;
+        }
     }
 }

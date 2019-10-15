@@ -15,14 +15,45 @@ namespace Binner.Common.Integrations.Models.Digikey
         /// </summary>
         public Guid Id { get; } = Guid.NewGuid();
 
+        /// <summary>
+        /// True if an oAuth callback was received from Digikey
+        /// </summary>
         public bool AuthorizationReceived { get; set; }
+
+        /// <summary>
+        /// Error definition
+        /// </summary>
         public string Error { get; set; }
+
+        /// <summary>
+        /// Error description
+        /// </summary>
         public string ErrorDescription { get; set; }
+        
+        /// <summary>
+        /// Digikey ClientId
+        /// </summary>
         public string ClientId { get; }
+
+        /// <summary>
+        /// oAuth Access Token
+        /// </summary>
         public string AccessToken { get; set; }
+
+        /// <summary>
+        /// oAuth Refresh Token
+        /// </summary>
         public string RefreshToken { get; set; }
-        public DateTime Created { get; set; }
-        public TimeSpan ExpiresIn { get; set; }
+
+        /// <summary>
+        /// Date the AccessToken was created
+        /// </summary>
+        public DateTime CreatedUtc { get; set; }
+
+        /// <summary>
+        /// Time in which the current token expires
+        /// </summary>
+        public DateTime ExpiresUtc { get; set; }
 
         public DigikeyAuthorization(string clientId)
         {

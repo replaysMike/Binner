@@ -50,6 +50,16 @@ namespace Binner.Common
         }
 
         /// <summary>
+        /// Remove context data
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key">Unique key to identify the data</param>
+        public static void Remove<T>(string key)
+        {
+            ServerContext.Instance.RemoveData<T>(key);
+        }
+
+        /// <summary>
         /// Set context data
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -61,7 +71,7 @@ namespace Binner.Common
             try
             {
                 var wrappedKey = WrapKey<T>(key);
-                if (_contextData.ContainsKey(wrappedKey) && _contextData[wrappedKey].GetType() == typeof(T))
+                if (_contextData.ContainsKey(wrappedKey))
                 {
                     _contextData[wrappedKey] = data;
                 }
@@ -88,12 +98,32 @@ namespace Binner.Common
             try
             {
                 var wrappedKey = WrapKey<T>(key);
-                if (_contextData.ContainsKey(wrappedKey) && _contextData[wrappedKey].GetType() == typeof(T))
+                if (_contextData.ContainsKey(wrappedKey))
                 {
                     return (T)_contextData[wrappedKey];
                 }
 
                 return default(T);
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Remove a context data by key
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key">Unique key to identify the data</param>
+        public void RemoveData<T>(string key)
+        {
+            _lock.Wait();
+            try
+            {
+                var wrappedKey = WrapKey<T>(key);
+                if(_contextData.ContainsKey(wrappedKey))
+                    _contextData.Remove(wrappedKey);
             }
             finally
             {

@@ -53,8 +53,8 @@ namespace Binner.Web.Controllers
                 {
                     authRequest.AccessToken = authResult.AccessToken;
                     authRequest.RefreshToken = authResult.RefreshToken;
-                    authRequest.Created = DateTime.Now;
-                    authRequest.ExpiresIn = TimeSpan.FromSeconds(authResult.ExpiresIn);
+                    authRequest.CreatedUtc = DateTime.UtcNow;
+                    authRequest.ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(authResult.ExpiresIn));
                 }
 
                 ServerContext.Set(nameof(DigikeyAuthorization), authRequest);

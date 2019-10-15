@@ -5,8 +5,6 @@ namespace Binner.Common.Services
 {
     public interface ICredentialService
     {
-
-
         /// <summary>
         /// Save an oAuth Credential
         /// </summary>
@@ -20,5 +18,12 @@ namespace Binner.Common.Services
         /// <param name="credential"></param>
         /// <returns></returns>
         Task<OAuthCredential> GetOAuthCredentialAsync(string providerName);
+
+        /// <summary>
+        /// Remove a saved a oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        Task RemoveOAuthCredentialAsync(string providerName);
     }
 }

@@ -85,6 +85,29 @@ namespace Binner.Common.StorageProviders
         }
 
         /// <summary>
+        /// Remove an oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        public async Task RemoveOAuthCredentialAsync(string providerName)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == providerName).FirstOrDefault();
+                if (existingCredential != null)
+                {
+                    _db.OAuthCredentials.Remove(existingCredential);
+                    _isDirty = true;
+                }
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        /// <summary>
         /// Add a new part
         /// </summary>
         /// <param name="part"></param>

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Common.Services
 {
-    public class CredentialService :ICredentialService
+    public class CredentialService : ICredentialService
     {
         private IStorageProvider _storageProvider;
 
@@ -31,6 +31,16 @@ namespace Binner.Common.Services
         public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName)
         {
             return await _storageProvider.GetOAuthCredentialAsync(providerName);
+        }
+
+        /// <summary>
+        /// Remove a saved a oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        public async Task RemoveOAuthCredentialAsync(string providerName)
+        {
+            await _storageProvider.RemoveOAuthCredentialAsync(providerName);
         }
     }
 }

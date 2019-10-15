@@ -25,6 +25,13 @@ namespace Binner.Common.StorageProviders
         Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential);
 
         /// <summary>
+        /// Remove an oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        Task RemoveOAuthCredentialAsync(string providerName);
+
+        /// <summary>
         /// Add a new part
         /// </summary>
         /// <param name="part"></param>

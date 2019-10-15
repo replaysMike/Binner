@@ -20,8 +20,13 @@ namespace Binner.Common.Models
         public string RefreshToken { get; set; }
 
         /// <summary>
-        /// The date the token was created
+        /// The date the Access token was created
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
+
+        /// <summary>
+        /// The date the Access token will expire
+        /// </summary>
+        public DateTime DateExpiresUtc { get; set; }
     }
 }
