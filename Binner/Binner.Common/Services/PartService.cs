@@ -58,24 +58,28 @@ namespace Binner.Common.Services
         {
             var dataSheets = await _octopartApi.GetDatasheetsAsync(partNumber);
             var productDetails = await _digikeyApi.GetProductInformationAsync(partNumber);
-            var productDetail = productDetails.FirstOrDefault();
-            return new PartMetadata
+            if (productDetails.Any())
             {
-                PartNumber = partNumber,
-                DatasheetUrl = productDetail.PrimaryDatasheet,
-                AdditionalDatasheets = dataSheets ?? new List<string>(),
-                Description = productDetail.ProductDescription,
-                ManufacturerPartNumber = productDetail.ManufacturerPartNumber,
-                DetailedDescription = productDetail.DetailedDescription,
-                Cost = productDetail.UnitPrice,
-                Package = productDetail.Parameters
-                    ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
-                    .Select(x => x.Value)
-                    .FirstOrDefault(),
-                Manufacturer = productDetail.Manufacturer?.Value,
-                ProductStatus = productDetail.ProductStatus,
-                ProductUrl = productDetail.ProductUrl
-            };
+                var productDetail = productDetails.First();
+                return new PartMetadata
+                {
+                    PartNumber = partNumber,
+                    DatasheetUrl = productDetail.PrimaryDatasheet,
+                    AdditionalDatasheets = dataSheets ?? new List<string>(),
+                    Description = productDetail.ProductDescription,
+                    ManufacturerPartNumber = productDetail.ManufacturerPartNumber,
+                    DetailedDescription = productDetail.DetailedDescription,
+                    Cost = productDetail.UnitPrice,
+                    Package = productDetail.Parameters
+                        ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
+                        .Select(x => x.Value)
+                        .FirstOrDefault(),
+                    Manufacturer = productDetail.Manufacturer?.Value,
+                    ProductStatus = productDetail.ProductStatus,
+                    ProductUrl = productDetail.ProductUrl
+                };
+            }
+            return null;
         }
     }
 }
