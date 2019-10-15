@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="AnySerializer" Version="1.1.31" />
+    <PackageReference Include="ExcelLibrary" Version="1.2011.7.31" />
     <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.0" />

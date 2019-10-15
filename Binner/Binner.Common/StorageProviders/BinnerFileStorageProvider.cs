@@ -141,7 +141,7 @@ namespace Binner.Common.StorageProviders
                 var existingPart = await GetPartAsync(part.PartId);
                 existingPart.BinNumber = part.BinNumber;
                 existingPart.BinNumber2 = part.BinNumber2;
-                existingPart.Count = part.Count;
+                existingPart.Quantity = part.Quantity;
                 existingPart.DatasheetUrl = part.DatasheetUrl;
                 existingPart.Description = part.Description;
                 existingPart.DigiKeyPartNumber = part.DigiKeyPartNumber;

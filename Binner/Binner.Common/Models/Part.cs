@@ -16,7 +16,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// The number of items in stock
         /// </summary>
-        public long Count { get; set; }
+        public long Quantity { get; set; }
 
         /// <summary>
         /// The part should be reordered when it gets below this value|
