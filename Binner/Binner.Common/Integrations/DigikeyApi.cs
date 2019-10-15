@@ -40,9 +40,9 @@ namespace Binner.Common.Integrations
         public async Task<ICollection<Product>> GetProductInformationAsync(string partNumber)
         {
             var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized) throw new UnauthorizedAccessException("Unable to authenticate with DigiKey");
+            if (authResponse == null || !authResponse.IsAuthorized) throw new UnauthorizedAccessException("Unable to authenticate with DigiKey!");
 
-            return await WrapApiRequestAsync<ICollection<Product>>(async () =>
+            return await WrapApiRequestAsync<ICollection<Product>>(authResponse, async(authenticationResponse) =>
             {
                 try
                 {
@@ -53,7 +53,7 @@ namespace Binner.Common.Integrations
                         { "Includes", $"Products({string.Join(",", includes)})" },
                     };
                     var uri = new Uri($"{Path}/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
-                    var requestMessage = CreateRequest(authResponse, HttpMethod.Post, uri);
+                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
                     var request = new KeywordSearchRequest
                     {
                         Keywords = partNumber
@@ -63,7 +63,7 @@ namespace Binner.Common.Integrations
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        throw new UnauthorizedException(authResponse);
+                        throw new UnauthorizedException(authenticationResponse);
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
@@ -86,44 +86,52 @@ namespace Binner.Common.Integrations
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
         /// <returns></returns>
-        private async Task<T> WrapApiRequestAsync<T>(Func<Task<T>> func)
+        private async Task<T> WrapApiRequestAsync<T>(DigikeyAuthorization authResponse, Func<DigikeyAuthorization, Task<T>> func)
         {
             try
             {
-                return await func();
+                return await func(authResponse);
             }
             catch (UnauthorizedException ex)
             {
                 // get refresh token, retry
                 _oAuth2Service.ClientSettings.RefreshToken = ex.Authorization.RefreshToken;
                 var token = await _oAuth2Service.RefreshTokenAsync();
-                var authRequest = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId)
+                var refreshTokenResponse = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId)
                 {
                     AccessToken = token.AccessToken,
                     RefreshToken = token.RefreshToken,
                     CreatedUtc = DateTime.UtcNow,
+                    ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(token.ExpiresIn)),
                     AuthorizationReceived = true,
                 };
-                ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
-                if (authRequest.IsAuthorized)
+                ServerContext.Set(nameof(DigikeyAuthorization), refreshTokenResponse);
+                if (refreshTokenResponse.IsAuthorized)
                 {
                     // save the credential
                     await _credentialService.SaveOAuthCredentialAsync(new Common.Models.OAuthCredential
                     {
                         Provider = nameof(DigikeyApi),
-                        AccessToken = authRequest.AccessToken,
-                        RefreshToken = authRequest.RefreshToken,
-                        DateCreatedUtc = authRequest.CreatedUtc,
-                        DateExpiresUtc = authRequest.ExpiresUtc,
+                        AccessToken = refreshTokenResponse.AccessToken,
+                        RefreshToken = refreshTokenResponse.RefreshToken,
+                        DateCreatedUtc = refreshTokenResponse.CreatedUtc,
+                        DateExpiresUtc = refreshTokenResponse.ExpiresUtc,
                     });
-                    // call the API again
-                    return await func();
+                    try
+                    {
+                        // call the API again
+                        return await func(refreshTokenResponse);
+                    }
+                    catch (UnauthorizedException)
+                    {
+                        // refresh token failed, restart access token retrieval process
+                        await ForgetAuthenticationTokens();
+                        var freshResponse = await AuthorizeAsync();
+                        // call the API again
+                        return await func(freshResponse);
+                    }
                 }
-                // refresh token failed, restart access token retrieval process
-                await ForgetAuthenticationTokens();
-                await AuthorizeAsync();
-                // call the API again
-                return await func();
+                throw new UnauthorizedAccessException("Unable to authenticate with Digikey!");
             }
         }
 
