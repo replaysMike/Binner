@@ -37,7 +37,12 @@ namespace Binner.Common.StorageProviders
         /// <summary>
         /// Defined part types
         /// </summary>
-        public ICollection<PartType> PartTypes { get; internal set; }
+        public ICollection<OAuthCredential> OAuthCredentials { get; internal set; } = new List<OAuthCredential>();
+
+        /// <summary>
+        /// Defined part types
+        /// </summary>
+        public ICollection<PartType> PartTypes { get; internal set; } = new List<PartType>();
 
         /// <summary>
         /// Parts database

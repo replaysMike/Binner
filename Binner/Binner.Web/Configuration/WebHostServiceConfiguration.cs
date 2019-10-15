@@ -20,6 +20,12 @@ namespace Binner.Web.Configuration
         public string IP { get; set; }
 
         /// <summary>
+        /// The public facing Url accessible from the internet
+        /// This is required if Digikey API features are used.
+        /// </summary>
+        public string PublicUrl { get; set; }
+
+        /// <summary>
         /// The port number to host
         /// </summary>
         public int Port { get; set; } = 4433;
@@ -48,5 +54,10 @@ namespace Binner.Web.Configuration
         /// Octopart Api Key
         /// </summary>
         public string OctopartApiKey { get; set; }
+
+        /// <summary>
+        /// Digikey configuration
+        /// </summary>
+        public DigikeyConfiguration DigikeyConfiguration { get; set; }
     }
 }

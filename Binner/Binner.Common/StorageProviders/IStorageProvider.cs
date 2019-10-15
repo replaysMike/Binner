@@ -11,6 +11,20 @@ namespace Binner.Common.StorageProviders
     public interface IStorageProvider : IDisposable
     {
         /// <summary>
+        /// Get an oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        Task<OAuthCredential> GetOAuthCredentialAsync(string providerName);
+
+        /// <summary>
+        /// Save an oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential);
+
+        /// <summary>
         /// Add a new part
         /// </summary>
         /// <param name="part"></param>

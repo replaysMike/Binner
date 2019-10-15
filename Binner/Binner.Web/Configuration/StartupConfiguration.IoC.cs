@@ -1,4 +1,5 @@
-﻿using Binner.Common.Api;
+﻿using ApiClient.OAuth2;
+using Binner.Common.Integrations;
 using Binner.Common.Services;
 using Binner.Common.StorageProviders;
 using Binner.Web.ServiceHost;
@@ -22,12 +23,24 @@ namespace Binner.Web.Configuration
             container.RegisterInstance(container);
 
             // register services
+            container.Register<OAuth2Service>((serviceFactory) =>
+            {
+                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
+                return new OAuth2Service(new ApiClient.Models.ApiClientSettings
+                {
+                    ClientId = config.DigikeyConfiguration.ClientId,
+                    ClientSecret = config.DigikeyConfiguration.ClientSecret,
+                    RedirectUri = $"{config.PublicUrl}:{config.Port}/Authorization/Authorize"
+                });
+            }, new PerContainerLifetime());
             container.Register<OctopartApi>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
                 return new OctopartApi(config.OctopartApiKey);
             }, new PerContainerLifetime());
             container.Register<IPartService, PartService>(new PerContainerLifetime());
+            container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
+            container.Register<DigikeyApi>(new PerContainerLifetime());
             container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
             container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
             {

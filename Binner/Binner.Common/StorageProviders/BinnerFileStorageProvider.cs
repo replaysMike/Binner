@@ -40,6 +40,51 @@ namespace Binner.Common.StorageProviders
         }
 
         /// <summary>
+        /// Get an oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.OAuthCredentials.Where(x => x.Provider == providerName).FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Save an oAuth Credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        public async Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == credential.Provider).FirstOrDefault();
+                if (existingCredential != null)
+                {
+                    existingCredential.AccessToken = credential.AccessToken;
+                    existingCredential.RefreshToken = credential.RefreshToken;
+                }
+                else
+                    _db.OAuthCredentials.Add(credential);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return credential;
+        }
+
+        /// <summary>
         /// Add a new part
         /// </summary>
         /// <param name="part"></param>
@@ -60,8 +105,11 @@ namespace Binner.Common.StorageProviders
             return part;
         }
 
-
-
+        /// <summary>
+        /// Update an existing part
+        /// </summary>
+        /// <param name="part"></param>
+        /// <returns></returns>
         public async Task<Part> UpdatePartAsync(Part part)
         {
             await _dataLock.WaitAsync();
@@ -89,6 +137,11 @@ namespace Binner.Common.StorageProviders
             return part;
         }
 
+        /// <summary>
+        /// Get an existing part type or create a new one
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
         public async Task<PartType> GetOrCreatePartTypeAsync(string partType)
         {
             await _dataLock.WaitAsync();
@@ -448,6 +501,7 @@ namespace Binner.Common.StorageProviders
                 DateModifiedUtc = created,
                 PartTypes = initialPartTypes,
                 Parts = new List<Part>(),
+                OAuthCredentials = new List<OAuthCredential>()
             };
         }
 

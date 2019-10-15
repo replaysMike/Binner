@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Binner.Common.Api
+namespace Binner.Common.Integrations
 {
     public class OctopartApi
     {

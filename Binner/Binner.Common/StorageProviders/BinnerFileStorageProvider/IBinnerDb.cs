@@ -32,6 +32,11 @@ namespace Binner.Common.StorageProviders
         DateTime DateModifiedUtc { get; }
 
         /// <summary>
+        /// OAuth stored credentials
+        /// </summary>
+        ICollection<OAuthCredential> OAuthCredentials { get; }
+
+        /// <summary>
         /// Defined part types
         /// </summary>
         ICollection<PartType> PartTypes { get; }
