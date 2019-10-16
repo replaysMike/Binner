@@ -73,7 +73,7 @@ VALUES(@Name, @Description, @DateCreatedUtc, @UserId);
 
         public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType)
         {
-            var query = $"SELECT PartTypeId FROM PartTypes WHERE Namae = @Name AND UserId = @UserId;";
+            var query = $"SELECT PartTypeId FROM PartTypes WHERE Name = @Name AND UserId = @UserId;";
             var result = await SqlQueryAsync<PartType>(query, partType);
             if (result.Any())
             {
