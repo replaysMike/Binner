@@ -37,6 +37,8 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync(GetPartRequest request)
         {
+            if (request == null)
+                return Ok(await _partService.GetPartsAsync());
             var part = await _partService.GetPartAsync(request.PartNumber);
             if (part == null) return NotFound();
 
@@ -51,7 +53,10 @@ namespace Binner.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePartAsync(CreatePartRequest request)
         {
-            var partType = await _partService.GetOrCreatePartTypeAsync(request.PartType);
+            var partType = await _partService.GetOrCreatePartTypeAsync(new PartType
+            {
+                Name = request.PartType
+            });
             var part = await _partService.AddPartAsync(new Part
             {
                 PartNumber = request.PartNumber,

@@ -40,6 +40,11 @@ namespace Binner.Common.StorageProviders
         public ICollection<OAuthCredential> OAuthCredentials { get; internal set; } = new List<OAuthCredential>();
 
         /// <summary>
+        /// User defined Projects
+        /// </summary>
+        public ICollection<Project> Projects { get; internal set; } = new List<Project>();
+
+        /// <summary>
         /// Defined part types
         /// </summary>
         public ICollection<PartType> PartTypes { get; internal set; } = new List<PartType>();

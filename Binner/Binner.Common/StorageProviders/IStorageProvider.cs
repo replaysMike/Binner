@@ -60,6 +60,13 @@ namespace Binner.Common.StorageProviders
         Task<Part> GetPartAsync(string partNumber);
 
         /// <summary>
+        /// Get all parts
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetPartsAsync();
+
+        /// <summary>
         /// Find a part that matches any keyword
         /// </summary>
         /// <param name="keywords">Space seperated keywords</param>
@@ -78,6 +85,48 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="partType"></param>
         /// <returns></returns>
-        Task<PartType> GetOrCreatePartTypeAsync(string partType);
+        Task<PartType> GetOrCreatePartTypeAsync(PartType partType);
+
+        /// <summary>
+        /// Create a new user defined project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        Task<Project> AddProjectAsync(Project project);
+
+        /// <summary>
+        /// Get an existing user defined project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        Task<Project> GetProjectAsync(long projectId);
+
+        /// <summary>
+        /// Get an existing user defined project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        Task<Project> GetProjectAsync(string projectName);
+
+        /// <summary>
+        /// Get an existing user defined project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        Task<ICollection<Project>> GetProjectsAsync();
+
+        /// <summary>
+        /// Update an existing user defined project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        Task<Project> UpdateProjectAsync(Project project);
+
+        /// <summary>
+        /// Update an existing user defined project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        Task<bool> DeleteProjectAsync(Project project);
     }
 }

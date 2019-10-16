@@ -44,6 +44,11 @@ namespace Binner.Common.Models
         public long PartTypeId { get; set; }
 
         /// <summary>
+        /// Optional Project Id
+        /// </summary>
+        public long? ProjectId { get; set; }
+
+        /// <summary>
         /// Additional keywords
         /// </summary>
         public ICollection<string> Keywords { get; set; }
@@ -73,6 +78,11 @@ namespace Binner.Common.Models
         /// </summary>
         public string BinNumber2 { get; set; }
 
+        /// <summary>
+        /// Optional user id to associate
+        /// </summary>
+        public int? UserId { get; set; }
+
         public override bool Equals(object obj)
         {
             return Equals(obj as Part);
@@ -85,7 +95,11 @@ namespace Binner.Common.Models
 
         public override int GetHashCode()
         {
+#if (NET462 || NET471)
+            return PartId.GetHashCode();
+#else
             return HashCode.Combine(PartId);
+#endif
         }
 
         public override string ToString()

@@ -31,6 +31,11 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartAsync(partNumber);
         }
 
+        public async Task<ICollection<Part>> GetPartsAsync()
+        {
+            return await _storageProvider.GetPartsAsync();
+        }
+
         public async Task<Part> AddPartAsync(Part part)
         {
             // this should really be part of the API that creates parts, the UI can handle it so it can be seen/edited before creating
@@ -49,7 +54,7 @@ namespace Binner.Common.Services
             return await _storageProvider.DeletePartAsync(part);
         }
 
-        public async Task<PartType> GetOrCreatePartTypeAsync(string partType)
+        public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType)
         {
             return await _storageProvider.GetOrCreatePartTypeAsync(partType);
         }

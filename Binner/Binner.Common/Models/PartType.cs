@@ -22,6 +22,11 @@ namespace Binner.Common.Models
         /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Optional user id to associate
+        /// </summary>
+        public int? UserId { get; set; }
+
         public override bool Equals(object obj)
         {
             return Equals(obj as PartType);
@@ -34,7 +39,12 @@ namespace Binner.Common.Models
 
         public override int GetHashCode()
         {
+#if (NET462 || NET471)
+            return PartTypeId.GetHashCode();
+#else
             return HashCode.Combine(PartTypeId);
+#endif
+
         }
 
         public override string ToString()

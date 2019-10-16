@@ -37,6 +37,11 @@ namespace Binner.Common.StorageProviders
         ICollection<OAuthCredential> OAuthCredentials { get; }
 
         /// <summary>
+        /// User defined Projects
+        /// </summary>
+        ICollection<Project> Projects { get; }
+
+        /// <summary>
         /// Defined part types
         /// </summary>
         ICollection<PartType> PartTypes { get; }

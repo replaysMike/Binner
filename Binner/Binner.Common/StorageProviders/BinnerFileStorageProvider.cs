@@ -9,7 +9,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TypeSupport;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.StorageProviders
@@ -135,6 +134,7 @@ namespace Binner.Common.StorageProviders
         /// <returns></returns>
         public async Task<Part> UpdatePartAsync(Part part)
         {
+            if (part == null) throw new ArgumentNullException(nameof(part));
             await _dataLock.WaitAsync();
             try
             {
@@ -151,6 +151,7 @@ namespace Binner.Common.StorageProviders
                 existingPart.PartNumber = part.PartNumber;
                 existingPart.PartTypeId = part.PartTypeId;
                 existingPart.Project = part.Project;
+                existingPart.UserId = part.UserId;
                 _isDirty = true;
             }
             finally
@@ -165,21 +166,22 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="partType"></param>
         /// <returns></returns>
-        public async Task<PartType> GetOrCreatePartTypeAsync(string partType)
+        public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType)
         {
             await _dataLock.WaitAsync();
             try
             {
                 var existingPartType = _db.PartTypes
-                    .Where(x => x.Name.Equals(partType, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(x => x.Name.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase))
                     .FirstOrDefault();
                 if (existingPartType == null)
                 {
                     existingPartType = new PartType
                     {
-                        Name = partType,
+                        Name = partType.Name,
                         ParentPartTypeId = null,
-                        PartTypeId = _primaryKeyTracker.GetNextKey<PartType>()
+                        PartTypeId = _primaryKeyTracker.GetNextKey<PartType>(),
+                        UserId = partType.UserId,
                     };
                     _db.PartTypes.Add(existingPartType);
                     _isDirty = true;
@@ -243,6 +245,155 @@ namespace Binner.Common.StorageProviders
                     .OrderBy(x => x.Rank)
                     .DistinctBy(x => x.Result)
                     .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Get a part by its internal id
+        /// </summary>
+        /// <param name="partId"></param>
+        /// <returns></returns>
+        public async Task<Part> GetPartAsync(long partId)
+        {
+            if (partId <= 0) throw new ArgumentException(nameof(partId));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts.Where(x => x.PartId == partId).FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Get a part by part number
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        public async Task<Part> GetPartAsync(string partNumber)
+        {
+            if (string.IsNullOrEmpty(partNumber)) throw new ArgumentNullException(nameof(partNumber));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts.Where(x => x.PartNumber.Equals(partNumber, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Part>> GetPartsAsync()
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts.ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<Project> GetProjectAsync(long projectId)
+        {
+            if (projectId <= 0) throw new ArgumentException(nameof(projectId));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Projects.Where(x => x.ProjectId.Equals(projectId)).FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<Project> GetProjectAsync(string projectName)
+        {
+            if (string.IsNullOrEmpty(projectName)) throw new ArgumentNullException(nameof(projectName));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Projects.Where(x => x.Name.Equals(projectName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Project>> GetProjectsAsync()
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Projects.ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<Project> AddProjectAsync(Project project)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                project.ProjectId = _primaryKeyTracker.GetNextKey<Project>();
+                _db.Projects.Add(project);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return project;
+        }
+
+        public async Task<Project> UpdateProjectAsync(Project project)
+        {
+            if (project == null) throw new ArgumentNullException(nameof(project));
+            await _dataLock.WaitAsync();
+            try
+            {
+                var existingPart = await GetProjectAsync(project.ProjectId);
+                existingPart.Name = project.Name;
+                existingPart.Description = project.Description;
+                existingPart.UserId = project.UserId;
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return project;
+        }
+
+        public async Task<bool> DeleteProjectAsync(Project project)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                var itemRemoved = _db.Projects.Remove(project);
+                if (itemRemoved)
+                {
+                    var nextProjectId = _db.Projects.OrderByDescending(x => x.ProjectId)
+                        .Select(x => x.ProjectId)
+                        .FirstOrDefault() + 1;
+                    _primaryKeyTracker.SetNextKey<Project>(nextProjectId);
+                    _isDirty = true;
+                }
+                return itemRemoved;
             }
             finally
             {
@@ -327,43 +478,6 @@ namespace Binner.Common.StorageProviders
         }
 
         /// <summary>
-        /// Get a part by its internal id
-        /// </summary>
-        /// <param name="partId"></param>
-        /// <returns></returns>
-        public async Task<Part> GetPartAsync(long partId)
-        {
-            await _dataLock.WaitAsync();
-            try
-            {
-                return _db.Parts.Where(x => x.PartId == partId).FirstOrDefault();
-            }
-            finally
-            {
-                _dataLock.Release();
-            }
-        }
-
-        /// <summary>
-        /// Get a part by part number
-        /// </summary>
-        /// <param name="partNumber"></param>
-        /// <returns></returns>
-        public async Task<Part> GetPartAsync(string partNumber)
-        {
-            if (string.IsNullOrEmpty(partNumber)) throw new ArgumentNullException(nameof(partNumber));
-            await _dataLock.WaitAsync();
-            try
-            {
-                return _db.Parts.Where(x => x.PartNumber.Equals(partNumber, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-            }
-            finally
-            {
-                _dataLock.Release();
-            }
-        }
-
-        /// <summary>
         /// Load the database from disk
         /// </summary>
         /// <param name="requireLock">True if a lock needs to be acquired before saving</param>
@@ -426,13 +540,26 @@ namespace Binner.Common.StorageProviders
 
         private IBinnerDb LoadDatabaseByVersion(BinnerDbVersion version, byte[] bytes)
         {
+            IBinnerDb db;
             // Support database loading by version number
-            var db = version.Version switch
+#if (NET462 || NET471)
+            switch (version.Version)
+            {
+                case BinnerDbV1.VersionNumber:
+                    // Version 1
+                    db = _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unsupported database version: {version}");
+            }
+#else
+            db = version.Version switch
             {
                 // Version 1
                 BinnerDbV1.VersionNumber => _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions),
                 _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
             };
+#endif
             return db;
         }
 

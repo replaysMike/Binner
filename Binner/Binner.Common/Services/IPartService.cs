@@ -42,11 +42,17 @@ namespace Binner.Common.Services
         Task<Part> GetPartAsync(string partNumber);
 
         /// <summary>
+        /// Get all parts
+        /// </summary>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetPartsAsync();
+
+        /// <summary>
         /// Get a partType object, or create it if it doesn't exist
         /// </summary>
         /// <param name="partType"></param>
         /// <returns></returns>
-        Task<PartType> GetOrCreatePartTypeAsync(string partType);
+        Task<PartType> GetOrCreatePartTypeAsync(PartType partType);
 
         /// <summary>
         /// Get metadata about a part number

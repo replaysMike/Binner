@@ -10,6 +10,7 @@ namespace Binner.Common.StorageProviders
         public StorageProviderFactory()
         {
             Providers.Add(BinnerFileStorageProvider.ProviderName, typeof(BinnerFileStorageProvider));
+            Providers.Add(SqlServerStorageProvider.ProviderName, typeof(SqlServerStorageProvider));
         }
 
         public IStorageProvider Create(string providerName, IDictionary<string, string> config)
