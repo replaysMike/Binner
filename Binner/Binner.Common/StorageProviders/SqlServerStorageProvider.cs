@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Binner.Common.Models;
 using Microsoft.Data.SqlClient;
+using TypeSupport;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.StorageProviders
@@ -23,6 +26,7 @@ namespace Binner.Common.StorageProviders
         public SqlServerStorageProvider(IDictionary<string, string> config)
         {
             _config = new SqlServerStorageConfiguration(config);
+            Task.Run(async () => await GenerateDatabaseIfNotExistsAsync<IBinnerDb>()).GetAwaiter().GetResult();
         }
 
         public async Task<Part> AddPartAsync(Part part)
@@ -259,6 +263,44 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
             }
             return parameters.ToArray();
         }
+
+        private async Task<bool> GenerateDatabaseIfNotExistsAsync<T>()
+        {
+            var schemaGenerator = new SqlServerSchemaGenerator<T>("Binner");
+            var modified = 0;
+            var query = schemaGenerator.CreateDatabaseIfNotExists();
+
+            try
+            {
+                using (var connection = new SqlConnection(_config.ConnectionString))
+                {
+                    connection.Open();
+                    using (var sqlCmd = new SqlCommand(query, connection))
+                    {
+                        modified = await sqlCmd.ExecuteNonQueryAsync();
+                    }
+                    connection.Close();
+                }
+                query = schemaGenerator.CreateTableSchemaIfNotExists();
+                using (var connection = new SqlConnection(_config.ConnectionString))
+                {
+                    connection.Open();
+                    using (var sqlCmd = new SqlCommand(query, connection))
+                    {
+                        modified = await sqlCmd.ExecuteNonQueryAsync();
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return modified > 0;
+        }
+
+
 
         public void Dispose()
         {

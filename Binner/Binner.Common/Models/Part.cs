@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Common.Models
 {
@@ -11,6 +12,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Primary key
         /// </summary>
+        [Key]
         public long PartId { get; set; }
 
         /// <summary>
@@ -26,6 +28,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// The main part number
         /// </summary>
+        [MaxLength(64)]
         public string PartNumber { get; set; }
 
         /// <summary>

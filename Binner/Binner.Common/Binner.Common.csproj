@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <Folder Include="Integrations\DigikeyClient\Core\" />
-    <Folder Include="StorageProviders\SqlServerStorageProvider\" />
   </ItemGroup>
 
 </Project>

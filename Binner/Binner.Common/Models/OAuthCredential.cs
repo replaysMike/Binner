@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Common.Models
 {
@@ -7,6 +8,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// The provider credential
         /// </summary>
+        [Key, MaxLength(32)]
         public string Provider { get; set; }
 
         /// <summary>

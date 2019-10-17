@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Common.Models
 {
@@ -10,6 +11,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Primary key
         /// </summary>
+        [Key]
         public long ProjectId { get; set; }
 
         /// <summary>
