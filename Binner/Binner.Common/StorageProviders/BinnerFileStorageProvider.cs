@@ -139,18 +139,20 @@ namespace Binner.Common.StorageProviders
             try
             {
                 var existingPart = await GetPartAsync(part.PartId);
+                // todo: automate this assignment or use a mapper
                 existingPart.BinNumber = part.BinNumber;
                 existingPart.BinNumber2 = part.BinNumber2;
-                existingPart.Quantity = part.Quantity;
                 existingPart.DatasheetUrl = part.DatasheetUrl;
                 existingPart.Description = part.Description;
                 existingPart.DigiKeyPartNumber = part.DigiKeyPartNumber;
                 existingPart.Keywords = part.Keywords;
                 existingPart.Location = part.Location;
                 existingPart.LowStockThreshold = part.LowStockThreshold;
+                existingPart.MouserPartNumber = part.MouserPartNumber;
                 existingPart.PartNumber = part.PartNumber;
                 existingPart.PartTypeId = part.PartTypeId;
-                existingPart.Project = part.Project;
+                existingPart.ProjectId = part.ProjectId;
+                existingPart.Quantity = part.Quantity;
                 existingPart.UserId = part.UserId;
                 _isDirty = true;
             }

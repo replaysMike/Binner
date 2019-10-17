@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Binner.Common.Extensions;
 using Binner.Common.Models;
 using Microsoft.Data.SqlClient;
 using TypeSupport;
@@ -32,9 +34,9 @@ namespace Binner.Common.StorageProviders
         public async Task<Part> AddPartAsync(Part part)
         {
             var query =
-$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, DigiKeyPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Project, Location, BinNumber, BinNumber2, UserId) 
+$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId) 
 output INSERTED.PartId 
-VALUES(@Quantity, @LowStockThreshold, @PartNumber, @DigiKeyPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Project, @Location, @BinNumber, @BinNumber2, @UserId);
+VALUES(@Quantity, @LowStockThreshold, @PartNumber, @DigiKeyPartNumber, @MouserPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Location, @BinNumber, @BinNumber2, @UserId);
 ";
             return await InsertAsync<Part, long>(query, part, (x, key) => { x.PartId = key; });
         }
@@ -77,7 +79,7 @@ VALUES(@Name, @Description, @DateCreatedUtc, @UserId);
 
         public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType)
         {
-            var query = $"SELECT PartTypeId FROM PartTypes WHERE Name = @Name AND UserId = @UserId;";
+            var query = $"SELECT PartTypeId FROM PartTypes WHERE Name = @Name;";
             var result = await SqlQueryAsync<PartType>(query, partType);
             if (result.Any())
             {
@@ -87,7 +89,8 @@ VALUES(@Name, @Description, @DateCreatedUtc, @UserId);
             {
                 query =
 $@"INSERT INTO PartTypes (ParentPartTypeId, Name, UserId) 
-VALUES (@ParentPartTypeId, Name, UserId);";
+output INSERTED.PartTypeId 
+VALUES (@ParentPartTypeId, @Name, @UserId);";
                 partType = await InsertAsync<PartType, long>(query, partType, (x, key) => { x.PartTypeId = key; });
             }
             return partType;
@@ -166,7 +169,7 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
             var result = await SqlQueryAsync<Part>(query, part);
             if (result.Any())
             {
-                query = $"UPDATE Parts SET Quantity = @Quantity, LowStockThreshold = @LowStockThreshold, PartNumber = @PartNumber, DigiKeyPartNumber = @DigiKeyPartNumber, Description = @Description, PartTypeId = @PartTypeId, ProjectId = @ProjectId, Keywords = @Keywords, DatasheetUrl = @DatasheetUrl, Project = @Project, Location = @Location, BinNumber = @BinNumber, BinNumber2 = @BinNumber2 WHERE PartId = @PartId AND UserId = @UserId;";
+                query = $"UPDATE Parts SET Quantity = @Quantity, LowStockThreshold = @LowStockThreshold, PartNumber = @PartNumber, DigiKeyPartNumber = @DigiKeyPartNumber, MouserPartNumber = @MouserPartNumber, Description = @Description, PartTypeId = @PartTypeId, ProjectId = @ProjectId, Keywords = @Keywords, DatasheetUrl = @DatasheetUrl, Location = @Location, BinNumber = @BinNumber, BinNumber2 = @BinNumber2 WHERE PartId = @PartId AND UserId = @UserId;";
                 await ExecuteAsync<Part>(query, part);
             }
             else
@@ -197,12 +200,13 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
             using (var connection = new SqlConnection(_config.ConnectionString))
             {
                 connection.Open();
-                using (var sqlCmd = new SqlCommand(query))
+                using (var sqlCmd = new SqlCommand(query, connection))
                 {
                     sqlCmd.Parameters.AddRange(CreateParameters<T>(parameters));
                     sqlCmd.CommandType = CommandType.Text;
-                    var result = (TKey)await sqlCmd.ExecuteScalarAsync();
-                    keySetter.Invoke(parameters, result);
+                    var result = await sqlCmd.ExecuteScalarAsync();
+                    if (result != null)
+                        keySetter.Invoke(parameters, (TKey)result);
                 }
                 connection.Close();
             }
@@ -216,7 +220,7 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
             using (var connection = new SqlConnection(_config.ConnectionString))
             {
                 connection.Open();
-                using (var sqlCmd = new SqlCommand(query))
+                using (var sqlCmd = new SqlCommand(query, connection))
                 {
                     if (parameters != null)
                         sqlCmd.Parameters.AddRange(CreateParameters(parameters));
@@ -227,8 +231,10 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
                         var newObj = Activator.CreateInstance<T>();
                         foreach (var prop in type.Properties)
                         {
-                            newObj.SetPropertyValue(prop.PropertyInfo, reader[prop.Name]);
+                            if (reader.HasColumn(prop.Name))
+                                newObj.SetPropertyValue(prop.PropertyInfo, reader[prop.Name]);
                         }
+                        results.Add(newObj);
                     }
                 }
                 connection.Close();
@@ -242,7 +248,7 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
             using (var connection = new SqlConnection(_config.ConnectionString))
             {
                 connection.Open();
-                using (var sqlCmd = new SqlCommand(query))
+                using (var sqlCmd = new SqlCommand(query, connection))
                 {
                     sqlCmd.Parameters.AddRange(CreateParameters<T>(record));
                     sqlCmd.CommandType = CommandType.Text;
@@ -256,23 +262,40 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
         private SqlParameter[] CreateParameters<T>(T record)
         {
             var parameters = new List<SqlParameter>();
-            var typeSupport = typeof(T).GetExtendedType();
-            foreach (var prop in typeSupport.Properties)
+            var properties = record.GetProperties(PropertyOptions.HasGetter);
+            foreach (var property in properties)
             {
-                parameters.Add(new SqlParameter(prop.Name, record.GetPropertyValue(prop)));
+                var propertyValue = record.GetPropertyValue(property);
+                var propertyMapped = MapPropertyValue(propertyValue);
+                parameters.Add(new SqlParameter(property.Name, propertyMapped));
             }
             return parameters.ToArray();
+        }
+
+        private object MapPropertyValue(object obj)
+        {
+            if (obj == null) return DBNull.Value;
+
+            var objType = obj.GetExtendedType();
+            switch (objType)
+            {
+                case var p when p.IsCollection:
+                case var a when a.IsArray:
+                    return string.Join(",", ((ICollection<object>)obj).Select(x => x.ToString()).ToArray());
+                default:
+                    return obj;
+            }
         }
 
         private async Task<bool> GenerateDatabaseIfNotExistsAsync<T>()
         {
             var schemaGenerator = new SqlServerSchemaGenerator<T>("Binner");
             var modified = 0;
-            var query = schemaGenerator.CreateDatabaseIfNotExists();
-
             try
             {
-                using (var connection = new SqlConnection(_config.ConnectionString))
+                // Ensure database exists
+                var query = schemaGenerator.CreateDatabaseIfNotExists();
+                using (var connection = new SqlConnection(GetMasterDbConnectionString(_config.ConnectionString)))
                 {
                     connection.Open();
                     using (var sqlCmd = new SqlCommand(query, connection))
@@ -281,6 +304,7 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
                     }
                     connection.Close();
                 }
+                // Ensure table schema exists
                 query = schemaGenerator.CreateTableSchemaIfNotExists();
                 using (var connection = new SqlConnection(_config.ConnectionString))
                 {
@@ -300,7 +324,12 @@ VALUES (Provider, AccessToken, RefreshToken, DateCreatedUtc, DateExpiresUtc);";
             return modified > 0;
         }
 
-
+        private string GetMasterDbConnectionString(string connectionString)
+        {
+            var builder = new SqlConnectionStringBuilder(connectionString);
+            builder.InitialCatalog = "master";
+            return builder.ToString();
+        }
 
         public void Dispose()
         {

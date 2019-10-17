@@ -25,6 +25,11 @@ namespace Binner.Common.Models
         public string Description { get; set; }
 
         /// <summary>
+        /// Project location
+        /// </summary>
+        public string Location { get; set; }
+
+        /// <summary>
         /// Project creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

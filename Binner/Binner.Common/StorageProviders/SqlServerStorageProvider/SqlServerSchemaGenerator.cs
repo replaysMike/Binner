@@ -60,10 +60,11 @@ END
         {
             var columnSchema = "";
             var propExtendedType = prop.Type.GetExtendedType();
+            var maxLength = GetMaxLength(prop);
             if (propExtendedType.IsCollection)
             {
                 // store as string, data will be comma delimited
-                columnSchema = $"{prop.Name} nvarchar";
+                columnSchema = $"{prop.Name} nvarchar({maxLength})";
             }
             else
             {
@@ -82,12 +83,6 @@ END
                         columnSchema = $"{prop.Name} bigint";
                         break;
                     case var p when p.NullableBaseType == typeof(string):
-                        var maxLengthAttr = prop.CustomAttributes.ToList().FirstOrDefault(x => x.AttributeType == typeof(MaxLengthAttribute));
-                        var maxLength = "max";
-                        if (maxLengthAttr != null)
-                        {
-                            maxLength = maxLengthAttr.ConstructorArguments.First().Value.ToString();
-                        }
                         columnSchema = $"{prop.Name} nvarchar({maxLength})";
                         break;
                     case var p when p.NullableBaseType == typeof(DateTime):
@@ -97,17 +92,32 @@ END
                         columnSchema = $"{prop.Name} time";
                         break;
                     case var p when p.NullableBaseType == typeof(byte[]):
-                        columnSchema = $"{prop.Name} varbinary";
+                        columnSchema = $"{prop.Name} varbinary({maxLength})";
                         break;
                     default:
                         throw new InvalidOperationException($"Unsupported data type: {prop.Type}");
                 }
             }
             if (prop.CustomAttributes.ToList().Any(x => x.AttributeType == typeof(KeyAttribute)))
+            {
+                if (propExtendedType.NullableBaseType != typeof(string) && propExtendedType.NullableBaseType.IsValueType)
+                    columnSchema = columnSchema + " IDENTITY";
                 columnSchema = columnSchema + " PRIMARY KEY NOT NULL";
+            }
             else if (propExtendedType.Type != typeof(string) && !propExtendedType.IsNullable && !propExtendedType.IsCollection)
                 columnSchema = columnSchema + " NOT NULL";
             return columnSchema;
+        }
+
+        private string GetMaxLength(ExtendedProperty prop)
+        {
+            var maxLengthAttr = prop.CustomAttributes.ToList().FirstOrDefault(x => x.AttributeType == typeof(MaxLengthAttribute));
+            var maxLength = "max";
+            if (maxLengthAttr != null)
+            {
+                maxLength = maxLengthAttr.ConstructorArguments.First().Value.ToString();
+            }
+            return maxLength;
         }
 
         private string CreateTableIfNotExists(string tableName, string tableSchema)

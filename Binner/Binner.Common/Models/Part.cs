@@ -21,7 +21,7 @@ namespace Binner.Common.Models
         public long Quantity { get; set; }
 
         /// <summary>
-        /// The part should be reordered when it gets below this value|
+        /// The part should be reordered when it gets below this value
         /// </summary>
         public int LowStockThreshold { get; set; } = SystemDefaults.LowStockThreshold;
 
@@ -37,6 +37,11 @@ namespace Binner.Common.Models
         public string DigiKeyPartNumber { get; set; }
 
         /// <summary>
+        /// The Mouser part number
+        /// </summary>
+        public string MouserPartNumber { get; set; }
+
+        /// <summary>
         /// Description of part
         /// </summary>
         public string Description { get; set; }
@@ -47,7 +52,7 @@ namespace Binner.Common.Models
         public long PartTypeId { get; set; }
 
         /// <summary>
-        /// Optional Project Id
+        /// Project associated with the part
         /// </summary>
         public long? ProjectId { get; set; }
 
@@ -60,11 +65,6 @@ namespace Binner.Common.Models
         /// Datasheet URL
         /// </summary>
         public string DatasheetUrl { get; set; }
-
-        /// <summary>
-        /// Project associated with the part
-        /// </summary>
-        public string Project { get; set; }
 
         /// <summary>
         /// Location of part (i.e. warehouse, room)

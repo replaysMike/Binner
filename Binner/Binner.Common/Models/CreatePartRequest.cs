@@ -10,9 +10,29 @@ namespace Binner.Common.Models
         public string PartNumber { get; set; }
 
         /// <summary>
-        /// The Digikey part number
+        /// Quantity on hand
+        /// </summary>
+        public long Quantity { get; set; }
+
+        /// <summary>
+        /// The part should be reordered when it gets below this value
+        /// </summary>
+        public int LowStockThreshold { get; set; }
+
+        /// <summary>
+        /// Project Id
+        /// </summary>
+        public int? ProjectId { get; set; }
+
+        /// <summary>
+        /// The optional Digikey part number
         /// </summary>
         public string DigiKeyPartNumber { get; set; }
+
+        /// <summary>
+        /// The optional Mouser part number
+        /// </summary>
+        public string MouserPartNumber { get; set; }
 
         /// <summary>
         /// Description of part
@@ -33,6 +53,11 @@ namespace Binner.Common.Models
         /// Datasheet URL
         /// </summary>
         public string DatasheetUrl { get; set; }
+
+        /// <summary>
+        /// Location of part (i.e. warehouse, room)
+        /// </summary>
+        public string Location { get; set; }
 
         /// <summary>
         /// Bin number

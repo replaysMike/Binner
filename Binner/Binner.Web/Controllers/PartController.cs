@@ -57,14 +57,20 @@ namespace Binner.Web.Controllers
             {
                 Name = request.PartType
             });
+            // todo: automate this assignment or use a mapper
             var part = await _partService.AddPartAsync(new Part
             {
                 PartNumber = request.PartNumber,
+                Quantity = request.Quantity,
+                LowStockThreshold = request.LowStockThreshold,
+                ProjectId = request.ProjectId,
+                Location = request.Location,
                 BinNumber = request.BinNumber,
                 BinNumber2 = request.BinNumber2,
                 DatasheetUrl = request.DatasheetUrl,
                 Description = request.Description,
                 DigiKeyPartNumber = request.DigiKeyPartNumber,
+                MouserPartNumber = request.MouserPartNumber,
                 Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries),
                 PartTypeId = partType.PartTypeId
             });
