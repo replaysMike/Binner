@@ -11,16 +11,15 @@
 // 
 //-----------------------------------------------------------------------
 
-using System;
+using ApiClient.Constants;
+using ApiClient.Models;
+using ApiClient.OAuth2.Models;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using ApiClient.Constants;
-using ApiClient.Models;
-using ApiClient.OAuth2.Models;
-using Newtonsoft.Json;
 
 namespace ApiClient.OAuth2
 {
@@ -30,13 +29,7 @@ namespace ApiClient.OAuth2
     /// </summary>
     public class OAuth2Service
     {
-        private ApiClientSettings _clientSettings;
-
-        public ApiClientSettings ClientSettings
-        {
-            get { return _clientSettings; }
-            set { _clientSettings = value; }
-        }
+        public ApiClientSettings ClientSettings { get; set; } = new ApiClientSettings();
 
         public OAuth2Service(ApiClientSettings clientSettings)
         {

@@ -13,6 +13,16 @@ namespace Binner.Common.Models
         public string PartNumber { get; set; }
 
         /// <summary>
+        /// Digikey's part number for this item
+        /// </summary>
+        public string DigikeyPartNumber { get; set; }
+
+        /// <summary>
+        /// Mouser's part number for this item
+        /// </summary>
+        public string MouserPartNumber { get; set; }
+
+        /// <summary>
         /// Datasheet Url
         /// </summary>
         public string DatasheetUrl { get; set; }
@@ -28,6 +38,11 @@ namespace Binner.Common.Models
         public string ProductUrl { get; set; }
 
         /// <summary>
+        /// Image url
+        /// </summary>
+        public string ImageUrl { get; set; }
+
+        /// <summary>
         /// The part description
         /// </summary>
         public string Description { get; set; }
@@ -40,7 +55,22 @@ namespace Binner.Common.Models
         /// <summary>
         /// The part's cost
         /// </summary>
-        public decimal Cost { get; set; }
+        public decimal? Cost { get; set; }
+
+        /// <summary>
+        /// The part's cost currency
+        /// </summary>
+        public string Currency { get; set; }
+
+        /// <summary>
+        /// The supplier that provides the lowest cost
+        /// </summary>
+        public string LowestCostSupplier { get; set; }
+
+        /// <summary>
+        /// The product page Url for the lowest cost supplier
+        /// </summary>
+        public string LowestCostSupplierUrl { get; set; }
 
         /// <summary>
         /// Package type
@@ -61,5 +91,17 @@ namespace Binner.Common.Models
         /// Product status
         /// </summary>
         public string ProductStatus { get; set; }
+
+        /// <summary>
+        /// Api Specific product data
+        /// </summary>
+        public Integrations Integrations { get; set; }
+    }
+
+    public class Integrations
+    {
+        public Common.Integrations.Models.Digikey.Product Digikey { get; set; }
+        public Common.Integrations.Models.Mouser.MouserPart Mouser { get; set; }
+        public object AliExpress { get; set; }
     }
 }

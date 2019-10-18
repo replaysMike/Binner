@@ -35,6 +35,7 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> AuthorizeAsync([FromQuery]string code, [FromQuery]string scope, [FromQuery]string state)
         {
+            // todo: generalize this so its not Api specific
             var authRequest = ServerContext.Get<DigikeyAuthorization>(nameof(DigikeyAuthorization));
             if (authRequest != null)
             {
@@ -59,7 +60,7 @@ namespace Binner.Web.Controllers
 
                 ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
 
-                return Ok("Digikey authorization success!");
+                return Ok("Authorization successful! You can now proceed to use integrations.");
             }
             return BadRequest("No authorization request found, invalid callback.");
         }

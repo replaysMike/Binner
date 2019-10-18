@@ -5,19 +5,21 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Binner.Common.Integrations
 {
-    public class OctopartApi
+    public class OctopartApi : IIntegrationApi
     {
-        public const string Path = "https://octopart.com/api/v3/parts";
+        public const string Path = "/api/v3/parts";
         private readonly string _apiKey;
+        private readonly string _apiUrl;
         private readonly HttpClient _client;
+        public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public OctopartApi(string apiKey)
+        public OctopartApi(string apiKey, string apiUrl)
         {
             _apiKey = apiKey;
+            _apiUrl = apiUrl;
             _client = new HttpClient();
         }
 

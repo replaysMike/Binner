@@ -15,10 +15,12 @@ using System.Threading.Tasks;
 
 namespace Binner.Common.Integrations
 {
-    public class DigikeyApi
+    public class DigikeyApi : IIntegrationApi
     {
         public static readonly TimeSpan MaxAuthorizationWaitTime = TimeSpan.FromSeconds(30);
-        public const string Path = "https://sandbox-api.digikey.com/Search/v3/Products";
+        public const string Path = "/Search/v3/Products";
+        // the full url to the Api
+        private readonly string _apiUrl;
         private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
         private readonly HttpClient _client;
@@ -30,19 +32,23 @@ namespace Binner.Common.Integrations
             Converters = new List<JsonConverter> { new StringEnumConverter() }
         };
 
-        public DigikeyApi(OAuth2Service oAuth2Service, ICredentialService credentialService)
+        public bool IsConfigured => !string.IsNullOrEmpty(_oAuth2Service.ClientSettings.ClientId) 
+            && !string.IsNullOrEmpty(_oAuth2Service.ClientSettings.ClientSecret) && !string.IsNullOrEmpty(_apiUrl);
+
+        public DigikeyApi(OAuth2Service oAuth2Service, string apiUrl, ICredentialService credentialService)
         {
             _oAuth2Service = oAuth2Service;
+            _apiUrl = apiUrl;
             _credentialService = credentialService;
             _client = new HttpClient();
         }
 
-        public async Task<ICollection<Product>> GetProductInformationAsync(string partNumber)
+        public async Task<KeywordSearchResponse> GetPartsAsync(string partNumber)
         {
             var authResponse = await AuthorizeAsync();
             if (authResponse == null || !authResponse.IsAuthorized) throw new UnauthorizedAccessException("Unable to authenticate with DigiKey!");
 
-            return await WrapApiRequestAsync<ICollection<Product>>(authResponse, async(authenticationResponse) =>
+            return await WrapApiRequestAsync<KeywordSearchResponse>(authResponse, async(authenticationResponse) =>
             {
                 try
                 {
@@ -52,7 +58,7 @@ namespace Binner.Common.Integrations
                     {
                         { "Includes", $"Products({string.Join(",", includes)})" },
                     };
-                    var uri = new Uri($"{Path}/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
+                    var uri = new Uri($"{_apiUrl}{Path}/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
                     var request = new KeywordSearchRequest
                     {
@@ -63,19 +69,19 @@ namespace Binner.Common.Integrations
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        throw new UnauthorizedException(authenticationResponse);
+                        throw new DigikeyUnauthorizedException(authenticationResponse);
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
                         var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings);
-                        return results.Products;
+                        return results;
                     }
                 }
                 catch (Exception ex)
                 {
                     throw ex;
                 }
-                return new List<Product>();
+                return new KeywordSearchResponse();
             });
 
         }
@@ -102,7 +108,7 @@ namespace Binner.Common.Integrations
             {
                 return await func(authResponse);
             }
-            catch (UnauthorizedException ex)
+            catch (DigikeyUnauthorizedException ex)
             {
                 // get refresh token, retry
                 _oAuth2Service.ClientSettings.RefreshToken = ex.Authorization.RefreshToken;
@@ -132,7 +138,7 @@ namespace Binner.Common.Integrations
                         // call the API again
                         return await func(refreshTokenResponse);
                     }
-                    catch (UnauthorizedException)
+                    catch (DigikeyUnauthorizedException)
                     {
                         // refresh token failed, restart access token retrieval process
                         await ForgetAuthenticationTokens();
@@ -251,10 +257,10 @@ namespace Binner.Common.Integrations
 
     }
 
-    public class UnauthorizedException : Exception
+    public class DigikeyUnauthorizedException : Exception
     {
         public DigikeyAuthorization Authorization { get; }
-        public UnauthorizedException(DigikeyAuthorization authorization)
+        public DigikeyUnauthorizedException(DigikeyAuthorization authorization)
         {
             Authorization = authorization;
         }

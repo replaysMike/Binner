@@ -4,14 +4,14 @@ namespace Binner.Common.Integrations.Models.Digikey
 {
     public class KeywordSearchResponse
     {
-        public ICollection<Product> Products { get; set; }
+        public ICollection<Product> Products { get; set; } = new List<Product>();
         public int ProductsCount { get; set; }
-        public ICollection<Product> ExactManufacturerProducts { get; set; }
+        public ICollection<Product> ExactManufacturerProducts { get; set; } = new List<Product>();
         public int ExactManufacturerProductsCount { get; set; }
-        public ICollection<Product> ExactDigiKeyProduct { get; set; }
-        public LimitedTaxonomy LimitedTaxonomy { get; set; }
-        public ICollection<LimitedParameter> FilterOptions { get; set; }
-        public IsoSearchLocale SearchLocaleUsed { get; set; }
+        public ICollection<Product> ExactDigiKeyProduct { get; set; } = new List<Product>();
+        public LimitedTaxonomy LimitedTaxonomy { get; set; } = new LimitedTaxonomy();
+        public ICollection<LimitedParameter> FilterOptions { get; set; } = new List<LimitedParameter>();
+        public IsoSearchLocale SearchLocaleUsed { get; set; } = new IsoSearchLocale();
     }
 
     public class Product
@@ -19,7 +19,7 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string DigiKeyPartNumber { get; set; }
         public int QuantityAvailable { get; set; }
         public string ManufacturerPartNumber { get; set; }
-        public Manufacturer Manufacturer { get; set; }
+        public Manufacturer Manufacturer { get; set; } = new Manufacturer();
         public string ProductDescription { get; set; }
         public string DetailedDescription { get; set; }
         public int MinimumOrderQuantity { get; set; }
@@ -34,8 +34,8 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string RoHSStatus { get; set; }
         public string LeadStatus { get; set; }
         public string TariffDescription { get; set; }
-        public Series Series { get; set; }
-        public ICollection<ParameterObject> Parameters { get; set; }
+        public Series Series { get; set; } = new Series();
+        public ICollection<ParameterObject> Parameters { get; set; } = new List<ParameterObject>();
         // todo: AlternatePackaging
 
     }

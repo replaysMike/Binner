@@ -23,7 +23,40 @@ namespace Binner.Web.Configuration
             services.AddTransient<IWebHostFactory, WebHostFactory>();
             container.RegisterInstance(container);
 
+            // register Api integrations
+            RegisterApiIntegrations(container);
+
             // register services
+            RegisterServices(container);
+
+            // register storage provider
+            container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
+            container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
+            {
+                var providerFactory = serviceFactory.Create<IStorageProviderFactory>();
+                var storageProviderConfig = serviceFactory.GetInstance<StorageProviderConfiguration>();
+                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
+            });
+
+            // request context
+            container.Register<RequestContextAccessor>(new PerContainerLifetime());
+
+            // the main server app
+            container.Register<BinnerWebHostService>(new PerContainerLifetime());
+
+            // register the CertificateProvider for providing access to the server certificate
+            var config = container.GetInstance<WebHostServiceConfiguration>();
+        }
+
+        private static void RegisterServices(IServiceContainer container)
+        {
+            container.Register<IPartService, PartService>(new PerContainerLifetime());
+            container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
+            container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
+        }
+
+        private static void RegisterApiIntegrations(IServiceContainer container)
+        {
             container.Register<OAuth2Service>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
@@ -37,26 +70,25 @@ namespace Binner.Web.Configuration
             container.Register<OctopartApi>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                return new OctopartApi(config.Integrations.Octopart.ApiKey);
+                return new OctopartApi(config.Integrations.Octopart.ApiKey, config.Integrations.Octopart.ApiUrl);
             }, new PerContainerLifetime());
-            container.Register<IPartService, PartService>(new PerContainerLifetime());
-            container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
-            container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
-            container.Register<DigikeyApi>(new PerContainerLifetime());
-            container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
-            container.Register<RequestContextAccessor>(new PerContainerLifetime());
-            container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
+            container.Register<DigikeyApi>((serviceFactory) =>
             {
-                var providerFactory = serviceFactory.Create<IStorageProviderFactory>();
-                var storageProviderConfig = serviceFactory.GetInstance<StorageProviderConfiguration>();
-                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
-            });
-
-            // the main server app
-            container.Register<BinnerWebHostService>(new PerContainerLifetime());
-
-            // register the CertificateProvider for providing access to the server certificate
-            var config = container.GetInstance<WebHostServiceConfiguration>();
+                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
+                var oAuth2Service = serviceFactory.GetInstance<OAuth2Service>();
+                var credentialService = serviceFactory.GetInstance<ICredentialService>();
+                return new DigikeyApi(oAuth2Service, config.Integrations.Digikey.ApiUrl, credentialService);
+            }, new PerContainerLifetime());
+            container.Register<MouserApi>((serviceFactory) =>
+            {
+                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
+                return new MouserApi(config.Integrations.Mouser.ApiKey, config.Integrations.Mouser.ApiUrl);
+            }, new PerContainerLifetime());
+            container.Register<AliExpressApi>((serviceFactory) =>
+            {
+                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
+                return new AliExpressApi(config.Integrations.AliExpress.ApiKey, config.Integrations.AliExpress.ApiUrl);
+            }, new PerContainerLifetime());
         }
     }
 }
