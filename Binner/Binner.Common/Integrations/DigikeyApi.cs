@@ -80,6 +80,16 @@ namespace Binner.Common.Integrations
 
         }
 
+        public async Task<ICollection<object>> CreateOrderAsync()
+        {
+            return null;
+        }
+
+        public async Task<ICollection<object>> GetOrderAsync()
+        {
+            return null;
+        }
+
         /// <summary>
         /// Wraps an API request - if the request is unauthorized it will refresh the Auth token and re-issue the request
         /// </summary>
