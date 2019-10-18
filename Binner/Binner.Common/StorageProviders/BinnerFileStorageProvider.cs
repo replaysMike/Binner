@@ -20,6 +20,7 @@ namespace Binner.Common.StorageProviders
         private SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
         private bool _isDisposed = false;
         private readonly BinnerFileStorageConfiguration _config;
+        private readonly RequestContextAccessor _requestContext;
         private IBinnerDb _db;
         private PrimaryKeyTracker _primaryKeyTracker;
         private SerializerOptions _serializationOptions = SerializerOptions.EmbedTypes;
@@ -28,9 +29,10 @@ namespace Binner.Common.StorageProviders
         private ManualResetEvent _quitEvent = new ManualResetEvent(false);
         private Thread _ioThread;
 
-        public BinnerFileStorageProvider(IDictionary<string, string> config)
+        public BinnerFileStorageProvider(IDictionary<string, string> config, RequestContextAccessor requestContext)
         {
             _config = new BinnerFileStorageConfiguration(config);
+            _requestContext = requestContext;
             Task.Run(async () =>
             {
                 await LoadDatabaseAsync();
@@ -48,7 +50,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.OAuthCredentials.Where(x => x.Provider == providerName).FirstOrDefault();
+                return _db.OAuthCredentials.Where(x => x.Provider == providerName && x.UserId == GetUserContext(y => y.UserId)).FirstOrDefault();
             }
             finally
             {
@@ -66,7 +68,8 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == credential.Provider).FirstOrDefault();
+                credential.UserId = GetUserContext(y => y.UserId);
+                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == credential.Provider && x.UserId == credential.UserId).FirstOrDefault();
                 if (existingCredential != null)
                 {
                     existingCredential.AccessToken = credential.AccessToken;
@@ -93,7 +96,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == providerName).FirstOrDefault();
+                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == providerName && x.UserId == GetUserContext(y => y.UserId)).FirstOrDefault();
                 if (existingCredential != null)
                 {
                     _db.OAuthCredentials.Remove(existingCredential);
@@ -116,6 +119,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
+                part.UserId = GetUserContext(y => y.UserId);
                 part.PartId = _primaryKeyTracker.GetNextKey<Part>();
                 _db.Parts.Add(part);
                 _isDirty = true;
@@ -138,6 +142,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
+                part.UserId = GetUserContext(y => y.UserId);
                 var existingPart = await GetPartAsync(part.PartId);
                 // todo: automate this assignment or use a mapper
                 existingPart.BinNumber = part.BinNumber;
@@ -173,8 +178,9 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
+                partType.UserId = GetUserContext(y => y.UserId);
                 var existingPartType = _db.PartTypes
-                    .Where(x => x.Name.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(x => x.Name.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase) && x.UserId == partType.UserId)
                     .FirstOrDefault();
                 if (existingPartType == null)
                 {
@@ -206,6 +212,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
+                part.UserId = GetUserContext(y => y.UserId);
                 var itemRemoved = _db.Parts.Remove(part);
                 if (itemRemoved)
                 {
@@ -265,7 +272,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Parts.Where(x => x.PartId == partId).FirstOrDefault();
+                return _db.Parts.Where(x => x.PartId == partId && x.UserId == GetUserContext(y => y.UserId)).FirstOrDefault();
             }
             finally
             {
@@ -284,7 +291,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Parts.Where(x => x.PartNumber.Equals(partNumber, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                return _db.Parts.Where(x => x.PartNumber.Equals(partNumber, StringComparison.InvariantCultureIgnoreCase) && x.UserId == GetUserContext(y => y.UserId)).FirstOrDefault();
             }
             finally
             {
@@ -297,7 +304,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Parts.ToList();
+                return _db.Parts.Where(x => x.UserId == GetUserContext(y => y.UserId)).ToList();
             }
             finally
             {
@@ -311,7 +318,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Projects.Where(x => x.ProjectId.Equals(projectId)).FirstOrDefault();
+                return _db.Projects.Where(x => x.ProjectId.Equals(projectId) && x.UserId == GetUserContext(y => y.UserId)).FirstOrDefault();
             }
             finally
             {
@@ -325,7 +332,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Projects.Where(x => x.Name.Equals(projectName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                return _db.Projects.Where(x => x.Name.Equals(projectName, StringComparison.InvariantCultureIgnoreCase) && x.UserId == GetUserContext(y => y.UserId)).FirstOrDefault();
             }
             finally
             {
@@ -338,7 +345,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Projects.ToList();
+                return _db.Projects.Where(x => x.UserId == GetUserContext(y => y.UserId)).ToList();
             }
             finally
             {
@@ -351,6 +358,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
+                project.UserId = GetUserContext(y => y.UserId);
                 project.ProjectId = _primaryKeyTracker.GetNextKey<Project>();
                 _db.Projects.Add(project);
                 _isDirty = true;
@@ -368,9 +376,11 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
+                project.UserId = GetUserContext(y => y.UserId);
                 var existingPart = await GetProjectAsync(project.ProjectId);
                 existingPart.Name = project.Name;
                 existingPart.Description = project.Description;
+                existingPart.Location = project.Location;
                 existingPart.UserId = project.UserId;
                 _isDirty = true;
             }
@@ -386,6 +396,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
+                project.UserId = GetUserContext(y => y.UserId);
                 var itemRemoved = _db.Projects.Remove(project);
                 if (itemRemoved)
                 {
@@ -403,37 +414,55 @@ namespace Binner.Common.StorageProviders
             }
         }
 
+        private Nullable<T> GetUserContext<T>(Func<UserContext, T> userSelector)
+            where T : struct
+        {
+            var userContext = _requestContext.GetUserContext();
+            if (userContext != null)
+                return userSelector.Invoke(userContext);
+            return new Nullable<T>(default(T));
+        }
+
+        private T GetUserContext<T>(Func<UserContext, T> userSelector, T defaultValue)
+            where T : class
+        {
+            var userContext = _requestContext.GetUserContext();
+            if (userContext != null)
+                return userSelector.Invoke(userContext);
+            return default(T) ?? defaultValue;
+        }
+
         private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType)
         {
             var matches = new List<SearchResult<Part>>();
 
             // by part number
-            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber.Equals(y, comparisonType)))
+            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber.Equals(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 10))
                 .ToList();
             matches.AddRange(partNumberMatches);
 
             // by keyword
             var keywordMatches = _db.Parts
-                .Where(x => words.Any(y => x.Keywords.Contains(y, StringComparer.OrdinalIgnoreCase)))
+                .Where(x => words.Any(y => x.Keywords.Contains(y, StringComparer.OrdinalIgnoreCase)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 20))
                 .ToList();
             matches.AddRange(keywordMatches);
 
             // by description
-            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description.Equals(y, comparisonType)))
+            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description.Equals(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 30))
                 .ToList();
             matches.AddRange(descriptionMatches);
 
             // by digikey id
-            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber.Equals(y, comparisonType)))
+            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber.Equals(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 40))
                 .ToList();
             matches.AddRange(digikeyMatches);
 
             // by bin number
-            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber.Equals(y, comparisonType) || x.BinNumber2.Equals(y, comparisonType)))
+            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber.Equals(y, comparisonType) || x.BinNumber2.Equals(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 50))
                 .ToList();
             matches.AddRange(binNumberMatches);
@@ -446,32 +475,32 @@ namespace Binner.Common.StorageProviders
             var matches = new List<SearchResult<Part>>();
 
             // by part number
-            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber.Contains(y, comparisonType)))
+            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber.Contains(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 100))
                 .ToList();
             matches.AddRange(partNumberMatches);
 
             // by keyword
             var keywordMatches = _db.Parts
-                .Where(x => words.Any(y => x.Keywords.Contains(y, StringComparer.OrdinalIgnoreCase)))
+                .Where(x => words.Any(y => x.Keywords.Contains(y, StringComparer.OrdinalIgnoreCase)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 200))
                 .ToList();
             matches.AddRange(keywordMatches);
 
             // by description
-            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description.Contains(y, comparisonType)))
+            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description.Contains(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 300))
                 .ToList();
             matches.AddRange(descriptionMatches);
 
             // by digikey id
-            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber.Contains(y, comparisonType)))
+            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber.Contains(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 400))
                 .ToList();
             matches.AddRange(digikeyMatches);
 
             // by bin number
-            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber.Contains(y, comparisonType) || x.BinNumber2.Contains(y, comparisonType)))
+            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber.Contains(y, comparisonType) || x.BinNumber2.Contains(y, comparisonType)) && x.UserId == GetUserContext(y => y.UserId))
                 .Select(x => new SearchResult<Part>(x, 500))
                 .ToList();
             matches.AddRange(binNumberMatches);

@@ -10,7 +10,8 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="providerName">The registered provider name</param>
         /// <param name="config">Configuration to pass to the storage provider</param>
+        /// <param name="requestContextAccessor">Request context accessor</param>
         /// <returns></returns>
-        IStorageProvider Create(string providerName, IDictionary<string, string> config);
+        IStorageProvider Create(string providerName, IDictionary<string, string> config, RequestContextAccessor requestContextAccessor);
     }
 }

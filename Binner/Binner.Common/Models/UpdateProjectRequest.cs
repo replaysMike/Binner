@@ -1,7 +1,12 @@
 ﻿namespace Binner.Common.Models
 {
-    public class CreateProjectRequest
+    public class UpdateProjectRequest
     {
+        /// <summary>
+        /// Project id
+        /// </summary>
+        public long ProjectId { get; set; }
+
         /// <summary>
         /// Name of project
         /// </summary>

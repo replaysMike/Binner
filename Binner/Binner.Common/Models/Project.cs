@@ -46,15 +46,15 @@ namespace Binner.Common.Models
 
         public bool Equals(Project other)
         {
-            return other != null && ProjectId == other.ProjectId;
+            return other != null && ProjectId == other.ProjectId && UserId == other.UserId;
         }
 
         public override int GetHashCode()
         {
 #if (NET462 || NET471)
-            return ProjectId.GetHashCode();
+            return ProjectId.GetHashCode() ^ (UserId?.GetHashCode() ?? 0);
 #else
-            return HashCode.Combine(ProjectId);
+            return HashCode.Combine(ProjectId, UserId);
 #endif
 
         }

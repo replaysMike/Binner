@@ -56,7 +56,26 @@ namespace Binner.Web.Controllers
             {
                 Name = request.Name,
                 Description = request.Description,
+                Location = request.Location,
                 DateCreatedUtc = DateTime.UtcNow
+            });
+            return Ok(project);
+        }
+
+        /// <summary>
+        /// Update an existing project
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> UpdateProjectAsync(UpdateProjectRequest request)
+        {
+            var project = await _projectService.UpdateProjectAsync(new Project
+            {
+                ProjectId = request.ProjectId,
+                Name = request.Name,
+                Description = request.Description,
+                Location = request.Location
             });
             return Ok(project);
         }

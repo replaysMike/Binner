@@ -78,6 +78,39 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Update an existing part
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> UpdatePartAsync(UpdatePartRequest request)
+        {
+            var partType = await _partService.GetOrCreatePartTypeAsync(new PartType
+            {
+                Name = request.PartType
+            });
+            // todo: automate this assignment or use a mapper
+            var part = await _partService.UpdatePartAsync(new Part
+            {
+                PartId = request.PartId,
+                PartNumber = request.PartNumber,
+                Quantity = request.Quantity,
+                LowStockThreshold = request.LowStockThreshold,
+                ProjectId = request.ProjectId,
+                Location = request.Location,
+                BinNumber = request.BinNumber,
+                BinNumber2 = request.BinNumber2,
+                DatasheetUrl = request.DatasheetUrl,
+                Description = request.Description,
+                DigiKeyPartNumber = request.DigiKeyPartNumber,
+                MouserPartNumber = request.MouserPartNumber,
+                Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries),
+                PartTypeId = partType.PartTypeId
+            });
+            return Ok(part);
+        }
+
+        /// <summary>
         /// Delete an existing part
         /// </summary>
         /// <param name="request"></param>
@@ -87,7 +120,7 @@ namespace Binner.Web.Controllers
         {
             var isDeleted = await _partService.DeletePartAsync(new Part
             {
-                PartNumber = request.PartNumber
+                PartId = request.PartId
             });
             return Ok(isDeleted);
         }

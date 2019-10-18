@@ -30,5 +30,35 @@ namespace Binner.Common.Models
         /// The date the Access token will expire
         /// </summary>
         public DateTime DateExpiresUtc { get; set; }
+
+        /// <summary>
+        /// Optional user id to associate
+        /// </summary>
+        public int? UserId { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as OAuthCredential);
+        }
+
+        public bool Equals(OAuthCredential other)
+        {
+            return other != null && Provider == other.Provider && UserId == other.UserId;
+        }
+
+        public override int GetHashCode()
+        {
+#if (NET462 || NET471)
+            return Provider.GetHashCode() ^ (UserId?.GetHashCode() ?? 0);
+#else
+            return HashCode.Combine(Provider, UserId);
+#endif
+
+        }
+
+        public override string ToString()
+        {
+            return $"{Provider}";
+        }
     }
 }

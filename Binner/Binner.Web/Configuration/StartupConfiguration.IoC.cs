@@ -1,4 +1,5 @@
 ﻿using ApiClient.OAuth2;
+using Binner.Common;
 using Binner.Common.Integrations;
 using Binner.Common.Services;
 using Binner.Common.StorageProviders;
@@ -39,14 +40,17 @@ namespace Binner.Web.Configuration
                 return new OctopartApi(config.OctopartApiKey);
             }, new PerContainerLifetime());
             container.Register<IPartService, PartService>(new PerContainerLifetime());
+            container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
             container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
             container.Register<DigikeyApi>(new PerContainerLifetime());
             container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
+            container.Register<RequestContextAccessor>(new PerContainerLifetime());
             container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
             {
                 var providerFactory = serviceFactory.Create<IStorageProviderFactory>();
                 var storageProviderConfig = serviceFactory.GetInstance<StorageProviderConfiguration>();
-                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
+                var requestContextAccessor = serviceFactory.GetInstance<RequestContextAccessor>();
+                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration, requestContextAccessor);
             });
 
             // the main server app

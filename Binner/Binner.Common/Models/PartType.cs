@@ -36,15 +36,15 @@ namespace Binner.Common.Models
 
         public bool Equals(PartType other)
         {
-            return other != null && PartTypeId == other.PartTypeId;
+            return other != null && PartTypeId == other.PartTypeId && UserId == other.UserId;
         }
 
         public override int GetHashCode()
         {
 #if (NET462 || NET471)
-            return PartTypeId.GetHashCode();
+            return PartTypeId.GetHashCode() ^ (UserId?.GetHashCode() ?? 0);
 #else
-            return HashCode.Combine(PartTypeId);
+            return HashCode.Combine(PartTypeId, UserId);
 #endif
 
         }

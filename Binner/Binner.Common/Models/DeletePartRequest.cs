@@ -3,8 +3,8 @@
     public class DeletePartRequest
     {
         /// <summary>
-        /// The main part number
+        /// The part id
         /// </summary>
-        public string PartNumber { get; set; }
+        public long PartId { get; set; }
     }
 }
