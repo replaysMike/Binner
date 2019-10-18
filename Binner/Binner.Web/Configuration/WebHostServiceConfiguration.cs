@@ -51,13 +51,8 @@ namespace Binner.Web.Configuration
         public string CorsAllowOrigin { get; set; }
 
         /// <summary>
-        /// Octopart Api Key
-        /// </summary>
-        public string OctopartApiKey { get; set; }
-
-        /// <summary>
         /// Digikey configuration
         /// </summary>
-        public DigikeyConfiguration DigikeyConfiguration { get; set; }
+        public IntegrationConfiguration Integrations { get; set; } = new IntegrationConfiguration();
     }
 }

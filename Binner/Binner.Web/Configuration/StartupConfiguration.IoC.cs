@@ -29,15 +29,15 @@ namespace Binner.Web.Configuration
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
                 return new OAuth2Service(new ApiClient.Models.ApiClientSettings
                 {
-                    ClientId = config.DigikeyConfiguration.ClientId,
-                    ClientSecret = config.DigikeyConfiguration.ClientSecret,
+                    ClientId = config.Integrations.Digikey.ClientId,
+                    ClientSecret = config.Integrations.Digikey.ClientSecret,
                     RedirectUri = $"{config.PublicUrl}:{config.Port}/Authorization/Authorize"
                 });
             }, new PerContainerLifetime());
             container.Register<OctopartApi>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                return new OctopartApi(config.OctopartApiKey);
+                return new OctopartApi(config.Integrations.Octopart.ApiKey);
             }, new PerContainerLifetime());
             container.Register<IPartService, PartService>(new PerContainerLifetime());
             container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
