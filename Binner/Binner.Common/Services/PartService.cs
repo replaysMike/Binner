@@ -13,50 +13,49 @@ namespace Binner.Common.Services
         private IStorageProvider _storageProvider;
         private OctopartApi _octopartApi;
         private DigikeyApi _digikeyApi;
+        private RequestContextAccessor _requestContext;
 
-        public PartService(IStorageProvider storageProvider, OctopartApi octopartApi, DigikeyApi digikeyApi)
+        public PartService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor, OctopartApi octopartApi, DigikeyApi digikeyApi)
         {
             _storageProvider = storageProvider;
+            _requestContext = requestContextAccessor;
             _octopartApi = octopartApi;
             _digikeyApi = digikeyApi;
         }
 
         public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords)
         {
-            return await _storageProvider.FindPartsAsync(keywords);
+            return await _storageProvider.FindPartsAsync(keywords, _requestContext.GetUserContext());
         }
 
         public async Task<Part> GetPartAsync(string partNumber)
         {
-            return await _storageProvider.GetPartAsync(partNumber);
+            return await _storageProvider.GetPartAsync(partNumber, _requestContext.GetUserContext());
         }
 
         public async Task<ICollection<Part>> GetPartsAsync()
         {
-            return await _storageProvider.GetPartsAsync();
+            return await _storageProvider.GetPartsAsync(_requestContext.GetUserContext());
         }
 
         public async Task<Part> AddPartAsync(Part part)
         {
-            // this should really be part of the API that creates parts, the UI can handle it so it can be seen/edited before creating
-            // var dataSheets = await _octopartApi.GetDatasheetsAsync(part.PartNumber);
-            // part.DatasheetUrl = dataSheets.FirstOrDefault();
-            return await _storageProvider.AddPartAsync(part);
+            return await _storageProvider.AddPartAsync(part, _requestContext.GetUserContext());
         }
 
         public async Task<Part> UpdatePartAsync(Part part)
         {
-            return await _storageProvider.UpdatePartAsync(part);
+            return await _storageProvider.UpdatePartAsync(part, _requestContext.GetUserContext());
         }
 
         public async Task<bool> DeletePartAsync(Part part)
         {
-            return await _storageProvider.DeletePartAsync(part);
+            return await _storageProvider.DeletePartAsync(part, _requestContext.GetUserContext());
         }
 
         public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType)
         {
-            return await _storageProvider.GetOrCreatePartTypeAsync(partType);
+            return await _storageProvider.GetOrCreatePartTypeAsync(partType, _requestContext.GetUserContext());
         }
 
         public async Task<PartMetadata> GetPartMetadataAsync(string partNumber)

@@ -49,8 +49,7 @@ namespace Binner.Web.Configuration
             {
                 var providerFactory = serviceFactory.Create<IStorageProviderFactory>();
                 var storageProviderConfig = serviceFactory.GetInstance<StorageProviderConfiguration>();
-                var requestContextAccessor = serviceFactory.GetInstance<RequestContextAccessor>();
-                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration, requestContextAccessor);
+                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
             });
 
             // the main server app

@@ -19,19 +19,17 @@ namespace Binner.Common.StorageProviders
         public const string ProviderName = "SqlServer";
 
         private readonly SqlServerStorageConfiguration _config;
-        private readonly RequestContextAccessor _requestContext;
         private bool _isDisposed;
 
-        public SqlServerStorageProvider(IDictionary<string, string> config, RequestContextAccessor requestContext)
+        public SqlServerStorageProvider(IDictionary<string, string> config)
         {
             _config = new SqlServerStorageConfiguration(config);
-            _requestContext = requestContext;
             Task.Run(async () => await GenerateDatabaseIfNotExistsAsync<IBinnerDb>()).GetAwaiter().GetResult();
         }
 
-        public async Task<Part> AddPartAsync(Part part)
+        public async Task<Part> AddPartAsync(Part part, IUserContext userContext)
         {
-            part.UserId = GetUserContext(u => u.UserId);
+            part.UserId = userContext?.UserId;
             var query =
 $@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId) 
 output INSERTED.PartId 
@@ -40,9 +38,9 @@ VALUES(@Quantity, @LowStockThreshold, @PartNumber, @DigiKeyPartNumber, @MouserPa
             return await InsertAsync<Part, long>(query, part, (x, key) => { x.PartId = key; });
         }
 
-        public async Task<Project> AddProjectAsync(Project project)
+        public async Task<Project> AddProjectAsync(Project project, IUserContext userContext)
         {
-            project.UserId = GetUserContext(u => u.UserId);
+            project.UserId = userContext?.UserId;
             var query =
             $@"INSERT INTO Projects (Name, Description, Location, DateCreatedUtc, UserId) 
 output INSERTED.ProjectId 
@@ -51,37 +49,37 @@ VALUES(@Name, @Description, @Location, @DateCreatedUtc, @UserId);
             return await InsertAsync<Project, long>(query, project, (x, key) => { x.ProjectId = key; });
         }
 
-        public async Task<bool> DeletePartAsync(Part part)
+        public async Task<bool> DeletePartAsync(Part part, IUserContext userContext)
         {
-            part.UserId = GetUserContext(u => u.UserId);
+            part.UserId = userContext?.UserId;
             var query = $"DELETE FROM Parts WHERE PartId = @PartId AND (@UserId IS NULL OR UserId = @UserId);";
             return await ExecuteAsync<Part>(query, part) > 0;
         }
 
-        public async Task<bool> DeleteProjectAsync(Project project)
+        public async Task<bool> DeleteProjectAsync(Project project, IUserContext userContext)
         {
-            project.UserId = GetUserContext(u => u.UserId);
+            project.UserId = userContext?.UserId;
             var query = $"DELETE FROM Projects WHERE ProjectId = @ProjectId AND (@UserId IS NULL OR UserId = @UserId);";
             return await ExecuteAsync<Project>(query, project) > 0;
         }
 
-        public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords)
+        public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext userContext)
         {
             var query = $"SELECT * FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId) AND PartNumber LIKE @Keywords OR DigiKeyPartNumber LIKE @Keywords OR Description LIKE @Keywords OR Keywords LIKE @Keywords OR Location LIKE @Keywords OR BinNumber LIKE @Keywords OR BinNumber2 LIKE @Keywords;";
-            var result = await SqlQueryAsync<Part>(query, new { Keywords = keywords, UserId = GetUserContext(u => u.UserId) });
+            var result = await SqlQueryAsync<Part>(query, new { Keywords = keywords, UserId = userContext?.UserId });
             return result.Select(x => new SearchResult<Part>(x, 100)).ToList();
         }
 
-        public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName)
+        public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName, IUserContext userContext)
         {
             var query = $"SELECT * FROM OAuthCredentials WHERE Provider = @ProviderName AND (@UserId IS NULL OR UserId = @UserId);";
-            var result = await SqlQueryAsync<OAuthCredential>(query, new { ProviderName = providerName, UserId = GetUserContext(u => u.UserId) });
+            var result = await SqlQueryAsync<OAuthCredential>(query, new { ProviderName = providerName, UserId = userContext?.UserId });
             return result.FirstOrDefault();
         }
 
-        public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType)
+        public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext)
         {
-            partType.UserId = GetUserContext(u => u.UserId);
+            partType.UserId = userContext?.UserId;
             var query = $"SELECT PartTypeId FROM PartTypes WHERE Name = @Name AND (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<PartType>(query, partType);
             if (result.Any())
@@ -99,57 +97,57 @@ VALUES (@ParentPartTypeId, @Name, @UserId);";
             return partType;
         }
 
-        public async Task<Part> GetPartAsync(long partId)
+        public async Task<Part> GetPartAsync(long partId, IUserContext userContext)
         {
             var query = $"SELECT * FROM Parts WHERE PartId = @PartId AND (@UserId IS NULL OR UserId = @UserId);";
-            var result = await SqlQueryAsync<Part>(query, new { PartId = partId, UserId = GetUserContext(u => u.UserId) });
+            var result = await SqlQueryAsync<Part>(query, new { PartId = partId, UserId = userContext?.UserId });
             return result.FirstOrDefault();
         }
 
-        public async Task<Part> GetPartAsync(string partNumber)
+        public async Task<Part> GetPartAsync(string partNumber, IUserContext userContext)
         {
             var query = $"SELECT * FROM Parts WHERE PartNumber = @PartNumber AND (@UserId IS NULL OR UserId = @UserId);";
-            var result = await SqlQueryAsync<Part>(query, new { PartNumber = partNumber, UserId = GetUserContext(u => u.UserId) });
+            var result = await SqlQueryAsync<Part>(query, new { PartNumber = partNumber, UserId = userContext?.UserId });
             return result.FirstOrDefault();
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync()
+        public async Task<ICollection<Part>> GetPartsAsync(IUserContext userContext)
         {
             var query = $"SELECT * FROM Parts;";
             var result = await SqlQueryAsync<Part>(query);
             return result.ToList();
         }
 
-        public async Task<Project> GetProjectAsync(long projectId)
+        public async Task<Project> GetProjectAsync(long projectId, IUserContext userContext)
         {
             var query = $"SELECT * FROM Projects WHERE ProjectId = @ProjectId AND (@UserId IS NULL OR UserId = @UserId);";
-            var result = await SqlQueryAsync<Project>(query, new { ProjectId = projectId, UserId = GetUserContext(u => u.UserId) });
+            var result = await SqlQueryAsync<Project>(query, new { ProjectId = projectId, UserId = userContext?.UserId });
             return result.FirstOrDefault();
         }
 
-        public async Task<Project> GetProjectAsync(string projectName)
+        public async Task<Project> GetProjectAsync(string projectName, IUserContext userContext)
         {
             var query = $"SELECT * FROM Projects WHERE Name = @Name AND (@UserId IS NULL OR UserId = @UserId);";
-            var result = await SqlQueryAsync<Project>(query, new { Name = projectName, UserId = GetUserContext(u => u.UserId) });
+            var result = await SqlQueryAsync<Project>(query, new { Name = projectName, UserId = userContext?.UserId });
             return result.FirstOrDefault();
         }
 
-        public async Task<ICollection<Project>> GetProjectsAsync()
+        public async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
         {
             var query = $"SELECT * FROM Projects WHERE (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<Project>(query);
             return result.ToList();
         }
 
-        public async Task RemoveOAuthCredentialAsync(string providerName)
+        public async Task RemoveOAuthCredentialAsync(string providerName, IUserContext userContext)
         {
             var query = $"DELETE FROM OAuthCredentials WHERE Provider = @Provider AND (@UserId IS NULL OR UserId = @UserId);";
-            await ExecuteAsync<object>(query, new { Provider = providerName, UserId = GetUserContext(u => u.UserId) });
+            await ExecuteAsync<object>(query, new { Provider = providerName, UserId = userContext?.UserId });
         }
 
-        public async Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential)
+        public async Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext userContext)
         {
-            credential.UserId = GetUserContext(u => u.UserId);
+            credential.UserId = userContext?.UserId;
             var query = @"SELECT Provider FROM OAuthCredentials WHERE Provider = @Provider AND (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<OAuthCredential>(query, credential);
             if (result.Any())
@@ -167,9 +165,9 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
             return credential;
         }
 
-        public async Task<Part> UpdatePartAsync(Part part)
+        public async Task<Part> UpdatePartAsync(Part part, IUserContext userContext)
         {
-            part.UserId = GetUserContext(u => u.UserId);
+            part.UserId = userContext?.UserId;
             var query = $"SELECT PartId FROM Parts WHERE PartId = @PartId AND (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<Part>(query, part);
             if (result.Any())
@@ -184,9 +182,9 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
             return part;
         }
 
-        public async Task<Project> UpdateProjectAsync(Project project)
+        public async Task<Project> UpdateProjectAsync(Project project, IUserContext userContext)
         {
-            project.UserId = GetUserContext(u => u.UserId);
+            project.UserId = userContext?.UserId;
             var query = $"SELECT ProjectId FROM Projects WHERE ProjectId = @ProjectId AND (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<Project>(query, project);
             if (result.Any())
@@ -199,24 +197,6 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
                 throw new ArgumentException($"Record not found for {nameof(Project)} = {project.ProjectId}");
             }
             return project;
-        }
-
-        private Nullable<T> GetUserContext<T>(Func<UserContext, T> userSelector)
-            where T : struct
-        {
-            var userContext = _requestContext.GetUserContext();
-            if (userContext != null)
-                return userSelector.Invoke(userContext);
-            return new Nullable<T>(default(T));
-        }
-
-        private T GetUserContext<T>(Func<UserContext, T> userSelector, T defaultValue)
-            where T : class
-        {
-            var userContext = _requestContext.GetUserContext();
-            if (userContext != null)
-                return userSelector.Invoke(userContext);
-            return default(T) ?? defaultValue;
         }
 
         private async Task<T> InsertAsync<T, TKey>(string query, T parameters, Action<T, TKey> keySetter)

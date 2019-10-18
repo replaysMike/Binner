@@ -3,7 +3,7 @@
     /// <summary>
     /// A user context
     /// </summary>
-    public class UserContext
+    public class UserContext : IUserContext
     {
         /// <summary>
         /// User Id

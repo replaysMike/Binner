@@ -13,11 +13,11 @@ namespace Binner.Common.StorageProviders
             Providers.Add(SqlServerStorageProvider.ProviderName, typeof(SqlServerStorageProvider));
         }
 
-        public IStorageProvider Create(string providerName, IDictionary<string, string> config, RequestContextAccessor requestContextAccessor)
+        public IStorageProvider Create(string providerName, IDictionary<string, string> config)
         {
             if (Providers.ContainsKey(providerName))
             {
-                return Activator.CreateInstance(Providers[providerName], config, requestContextAccessor) as IStorageProvider;
+                return Activator.CreateInstance(Providers[providerName], config) as IStorageProvider;
             }
             else
                 throw new Exception($"StorageProvider not registered: {providerName}");
