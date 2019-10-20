@@ -64,7 +64,7 @@ namespace Binner.Web.Configuration
                 {
                     ClientId = config.Integrations.Digikey.ClientId,
                     ClientSecret = config.Integrations.Digikey.ClientSecret,
-                    RedirectUri = $"{config.PublicUrl}:{config.Port}/Authorization/Authorize"
+                    RedirectUri = config.Integrations.Digikey.oAuthPostbackUrl
                 });
             }, new PerContainerLifetime());
             container.Register<OctopartApi>((serviceFactory) =>

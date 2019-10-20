@@ -47,6 +47,6 @@ namespace Binner.Common.Services
         /// Get all projects
         /// </summary>
         /// <returns></returns>
-        Task<ICollection<Project>> GetProjectsAsync();
+        Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request);
     }
 }

@@ -25,19 +25,24 @@ namespace Binner.Common.StorageProviders
         public string CreateDatabaseIfNotExists()
         {
             return $@"
+DECLARE @dbCreated INT = 0;
 IF (db_id(N'{_dbName}') IS NULL)
 BEGIN
     CREATE DATABASE {_dbName};
+    SET @dbCreated = 1;
 END
+SELECT @dbCreated;
 ";
         }
 
         public string CreateTableSchemaIfNotExists()
         {
             return $@"
-    USE {_dbName};
-    -- create tables
-    {string.Join("\r\n", GetTableSchemas())}
+USE {_dbName};
+-- create tables
+DECLARE @tablesCreated INT = 0;
+{string.Join("\r\n", GetTableSchemas())}
+SELECT @tablesCreated;
 ";
         }
 
@@ -81,6 +86,12 @@ END
                         break;
                     case var p when p.NullableBaseType == typeof(long):
                         columnSchema = $"{prop.Name} bigint";
+                        break;
+                    case var p when p.NullableBaseType == typeof(double):
+                        columnSchema = $"{prop.Name} float";
+                        break;
+                    case var p when p.NullableBaseType == typeof(decimal):
+                        columnSchema = $"{prop.Name} decimal(18, 3)";
                         break;
                     case var p when p.NullableBaseType == typeof(string):
                         columnSchema = $"{prop.Name} nvarchar({maxLength})";
@@ -127,6 +138,7 @@ BEGIN
     CREATE TABLE {tableName} (
         {tableSchema}
     );
+   SET @tablesCreated = @tablesCreated + 1;
 END";
         }
     }

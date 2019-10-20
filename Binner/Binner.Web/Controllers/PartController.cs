@@ -1,4 +1,5 @@
-﻿using Binner.Common.Models;
+﻿using AnyMapper;
+using Binner.Common.Models;
 using Binner.Common.Services;
 using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;
@@ -37,12 +38,21 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync(GetPartRequest request)
         {
-            if (request == null)
-                return Ok(await _partService.GetPartsAsync());
             var part = await _partService.GetPartAsync(request.PartNumber);
             if (part == null) return NotFound();
 
             return Ok(part);
+        }
+
+        /// <summary>
+        /// Get an existing part
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("list")]
+        public async Task<IActionResult> GetPartsAsync([FromQuery] PaginatedRequest request)
+        {
+            return Ok(await _partService.GetPartsAsync(request));
         }
 
         /// <summary>
@@ -57,23 +67,10 @@ namespace Binner.Web.Controllers
             {
                 Name = request.PartType
             });
-            // todo: automate this assignment or use a mapper
-            var part = await _partService.AddPartAsync(new Part
-            {
-                PartNumber = request.PartNumber,
-                Quantity = request.Quantity,
-                LowStockThreshold = request.LowStockThreshold,
-                ProjectId = request.ProjectId,
-                Location = request.Location,
-                BinNumber = request.BinNumber,
-                BinNumber2 = request.BinNumber2,
-                DatasheetUrl = request.DatasheetUrl,
-                Description = request.Description,
-                DigiKeyPartNumber = request.DigiKeyPartNumber,
-                MouserPartNumber = request.MouserPartNumber,
-                Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries),
-                PartTypeId = partType.PartTypeId
-            });
+            var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
+            mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            mappedPart.PartTypeId = partType.PartTypeId;
+            var part = await _partService.AddPartAsync(mappedPart);
             return Ok(part);
         }
 
@@ -89,24 +86,10 @@ namespace Binner.Web.Controllers
             {
                 Name = request.PartType
             });
-            // todo: automate this assignment or use a mapper
-            var part = await _partService.UpdatePartAsync(new Part
-            {
-                PartId = request.PartId,
-                PartNumber = request.PartNumber,
-                Quantity = request.Quantity,
-                LowStockThreshold = request.LowStockThreshold,
-                ProjectId = request.ProjectId,
-                Location = request.Location,
-                BinNumber = request.BinNumber,
-                BinNumber2 = request.BinNumber2,
-                DatasheetUrl = request.DatasheetUrl,
-                Description = request.Description,
-                DigiKeyPartNumber = request.DigiKeyPartNumber,
-                MouserPartNumber = request.MouserPartNumber,
-                Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries),
-                PartTypeId = partType.PartTypeId
-            });
+            var mappedPart = Mapper.Map<UpdatePartRequest, Part>(request);
+            mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            mappedPart.PartTypeId = partType.PartTypeId;
+            var part = await _partService.UpdatePartAsync(mappedPart);
             return Ok(part);
         }
 

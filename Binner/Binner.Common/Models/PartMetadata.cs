@@ -13,6 +13,16 @@ namespace Binner.Common.Models
         public string PartNumber { get; set; }
 
         /// <summary>
+        /// Part type
+        /// </summary>
+        public string PartType { get; set; }
+
+        /// <summary>
+        /// Part keywords
+        /// </summary>
+        public ICollection<string> Keywords { get; set; } = new List<string>();
+
+        /// <summary>
         /// Digikey's part number for this item
         /// </summary>
         public string DigikeyPartNumber { get; set; }

@@ -1,4 +1,4 @@
-﻿using Binner.Web.Configuration;
+using Binner.Web.Configuration;
 using Binner.Web.ServiceHost;
 using LightInject;
 using LightInject.Microsoft.DependencyInjection;
@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Binner.Web
 {
-    class Program
+    public class Program
     {
         private const string LogManagerConfigFile = "nlog.config"; // TODO: Inject from appsettings
         private static string _logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);

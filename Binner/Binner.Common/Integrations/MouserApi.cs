@@ -1,4 +1,5 @@
-﻿using Binner.Common.Integrations.Models.Mouser;
+﻿using Binner.Common.Extensions;
+using Binner.Common.Integrations.Models.Mouser;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -13,7 +14,7 @@ namespace Binner.Common.Integrations
 {
     public class MouserApi : IIntegrationApi
     {
-        public const string Path = "/api/v1";
+        private const string BasePath = "/api/v1";
         private readonly string _apiKey;
         private readonly string _apiUrl;
         private readonly HttpClient _client;
@@ -36,7 +37,7 @@ namespace Binner.Common.Integrations
 
         public async Task<ICollection<MouserPart>> GetPartsAsync(string partNumber)
         {
-            var uri = new Uri($"{Path}/search/partnumber?apiKey={_apiKey}");
+            var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new {
                 SearchByPartRequest = new SearchByPartRequest
@@ -63,7 +64,7 @@ namespace Binner.Common.Integrations
         }
         public async Task<ICollection<MouserPart>> SearchAsync(string keyword)
         {
-            var uri = new Uri($"{Path}/search/keyword?apiKey={_apiKey}");
+            var uri = Url.Combine(_apiUrl, BasePath, $"/search/keyword?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new
             {

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Common.Models
 {
-    public class OAuthCredential
+    public class OAuthCredential : IEntity
     {
         /// <summary>
         /// The provider credential
@@ -24,7 +24,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// The date the Access token was created
         /// </summary>
-        public DateTime DateCreatedUtc { get; set; }
+        public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// The date the Access token will expire

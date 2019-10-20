@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace Binner.Common.Integrations
 {
     public class AliExpressApi : IIntegrationApi
     {
-        public const string Path = "/api/v3/parts";
+        private const string BasePath = "/api/v3/parts";
         private readonly string _apiKey;
         private readonly string _apiUrl;
         private readonly HttpClient _client;

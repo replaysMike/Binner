@@ -45,7 +45,7 @@ namespace Binner.Common.Services
         /// Get all parts
         /// </summary>
         /// <returns></returns>
-        Task<ICollection<Part>> GetPartsAsync();
+        Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request);
 
         /// <summary>
         /// Get a partType object, or create it if it doesn't exist

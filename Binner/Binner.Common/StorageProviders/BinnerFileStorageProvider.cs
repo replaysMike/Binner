@@ -201,6 +201,26 @@ namespace Binner.Common.StorageProviders
         }
 
         /// <summary>
+        /// Get list of part types
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.PartTypes
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        /// <summary>
         /// Delete an existing part
         /// </summary>
         /// <param name="part"></param>
@@ -297,12 +317,18 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync(IUserContext userContext)
+        public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return _db.Parts.Where(x => x.UserId == userContext?.UserId).ToList();
+                return _db.Parts
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .OrderBy(request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToList();
             }
             finally
             {
@@ -338,12 +364,18 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
+        public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return _db.Projects.Where(x => x.UserId == userContext?.UserId).ToList();
+                return _db.Projects
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .OrderBy(request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToList();
             }
             finally
             {

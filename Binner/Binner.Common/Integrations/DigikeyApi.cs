@@ -1,4 +1,5 @@
 ﻿using ApiClient.OAuth2;
+using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Services;
 using Newtonsoft.Json;
@@ -18,7 +19,7 @@ namespace Binner.Common.Integrations
     public class DigikeyApi : IIntegrationApi
     {
         public static readonly TimeSpan MaxAuthorizationWaitTime = TimeSpan.FromSeconds(30);
-        public const string Path = "/Search/v3/Products";
+        private const string BasePath = "/Search/v3/Products";
         // the full url to the Api
         private readonly string _apiUrl;
         private readonly OAuth2Service _oAuth2Service;
@@ -58,7 +59,7 @@ namespace Binner.Common.Integrations
                     {
                         { "Includes", $"Products({string.Join(",", includes)})" },
                     };
-                    var uri = new Uri($"{_apiUrl}{Path}/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
+                    var uri = Url.Combine(_apiUrl, BasePath, $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
                     var request = new KeywordSearchRequest
                     {

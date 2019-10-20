@@ -35,9 +35,9 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartAsync(partNumber, _requestContext.GetUserContext());
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync()
+        public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request)
         {
-            return await _storageProvider.GetPartsAsync(_requestContext.GetUserContext());
+            return await _storageProvider.GetPartsAsync(request, _requestContext.GetUserContext());
         }
 
         public async Task<Part> AddPartAsync(Part part)
@@ -97,7 +97,8 @@ namespace Binner.Common.Services
                 lowestCost = digikeyPrice;
                 lowestCostCurrency = digikeyResponse?.SearchLocaleUsed?.Currency;
                 lowestCostProductUrl = digikeyPart?.ProductUrl;
-            } else
+            }
+            else
             {
                 lowestCostSupplier = "Mouser";
                 lowestCost = mouserPrice;
@@ -115,7 +116,7 @@ namespace Binner.Common.Services
 
             // todo: cache datasheets and images when downloaded on datasheets.binner.io
 
-            var metaData = new PartMetadata()
+            var metadata = new PartMetadata()
             {
                 PartNumber = partNumber,
                 DigikeyPartNumber = digikeyPart?.DigiKeyPartNumber,
@@ -144,8 +145,83 @@ namespace Binner.Common.Services
                     AliExpress = null
                 }
             };
+            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+            metadata.PartType = DeterminePartType(metadata, partTypes);
+            metadata.Keywords = DetermineKeywords(metadata, partTypes);
+            return metadata;
+        }
 
-            return metaData;
+        private ICollection<string> DetermineKeywords(PartMetadata metadata, ICollection<PartType> partTypes)
+        {
+            // part type
+            // important parts from description
+            // alternate series numbers etc
+            var keywords = new List<string>();
+            var possiblePartTypes = GetMatchingPartTypes(metadata, partTypes);
+            foreach (var possiblePartType in possiblePartTypes)
+                if (!keywords.Contains(possiblePartType.Key.Name, StringComparer.InvariantCultureIgnoreCase))
+                    keywords.Add(possiblePartType.Key.Name);
+
+            if (!keywords.Contains(metadata.ManufacturerPartNumber, StringComparer.InvariantCultureIgnoreCase))
+                keywords.Add(metadata.ManufacturerPartNumber.ToLower());
+            var desc = metadata.Description.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            // add the first 4 words of desc
+            var wordCount = 0;
+            var ignoredWords = new string[] { "and", "the", "in", "or", "in", "a", };
+            foreach (var word in desc)
+            {
+                if (!ignoredWords.Contains(word, StringComparer.InvariantCultureIgnoreCase) && !keywords.Contains(word, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    keywords.Add(word);
+                    wordCount++;
+                }
+                if (wordCount >= 4)
+                    break;
+            }
+            var basePart = metadata.Integrations?.Digikey?.Parameters.Where(x => x.Parameter.Equals("Base Part Number")).Select(x => x.Value).FirstOrDefault();
+            if (basePart != null && !keywords.Contains(basePart, StringComparer.InvariantCultureIgnoreCase))
+                keywords.Add(basePart);
+            var mountingType = metadata.Integrations?.Digikey?.Parameters.Where(x => x.Parameter.Equals("Mounting Type")).Select(x => x.Value).FirstOrDefault();
+            if (mountingType != null && !keywords.Contains(mountingType, StringComparer.InvariantCultureIgnoreCase))
+                keywords.Add(mountingType);
+
+            return keywords.Distinct().ToList();
+        }
+
+        private IDictionary<PartType, int> GetMatchingPartTypes(PartMetadata metadata, ICollection<PartType> partTypes)
+        {
+            // load all part types
+            var possiblePartTypes = new Dictionary<PartType, int>();
+            foreach (var partType in partTypes)
+            {
+                var addPart = false;
+                if (metadata.Description?.IndexOf(partType.Name, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    addPart = true;
+                if (metadata.DetailedDescription?.IndexOf(partType.Name, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    addPart = true;
+                if (metadata.PartNumber?.IndexOf(partType.Name, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    addPart = true;
+                if (metadata.DatasheetUrl?.IndexOf(partType.Name, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    addPart = true;
+                if (addPart)
+                {
+                    if (possiblePartTypes.ContainsKey(partType))
+                        possiblePartTypes[partType]++;
+                    else
+                        possiblePartTypes.Add(partType, 1);
+                }
+
+            }
+            return possiblePartTypes;
+        }
+
+        private string DeterminePartType(PartMetadata metadata, ICollection<PartType> partTypes)
+        {
+            var possiblePartTypes = GetMatchingPartTypes(metadata, partTypes);
+            return possiblePartTypes
+                .OrderByDescending(x => x.Value)
+                .Select(x => x.Key?.Name)
+                .FirstOrDefault();
         }
     }
 }

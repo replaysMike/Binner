@@ -31,9 +31,9 @@ namespace Binner.Common.StorageProviders
         {
             part.UserId = userContext?.UserId;
             var query =
-$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId) 
+$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId, Cost, Manufacturer, ManufacturerPartNumber, LowestCostSupplier, LowestCostSupplierUrl, ProductUrl, ImageUrl, DateCreatedUtc) 
 output INSERTED.PartId 
-VALUES(@Quantity, @LowStockThreshold, @PartNumber, @DigiKeyPartNumber, @MouserPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Location, @BinNumber, @BinNumber2, @UserId);
+VALUES(@Quantity, @LowStockThreshold, @PartNumber, @DigiKeyPartNumber, @MouserPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Location, @BinNumber, @BinNumber2, @UserId, @Cost, @Manufacturer, @ManufacturerPartNumber, @LowestCostSupplier, @LowestCostSupplierUrl, @ProductUrl, @ImageUrl, @DateCreatedUtc);
 ";
             return await InsertAsync<Part, long>(query, part, (x, key) => { x.PartId = key; });
         }
@@ -42,9 +42,9 @@ VALUES(@Quantity, @LowStockThreshold, @PartNumber, @DigiKeyPartNumber, @MouserPa
         {
             project.UserId = userContext?.UserId;
             var query =
-            $@"INSERT INTO Projects (Name, Description, Location, DateCreatedUtc, UserId) 
+            $@"INSERT INTO Projects (Name, Description, Location, DateCreatedUtc, UserId, DateCreatedUtc) 
 output INSERTED.ProjectId 
-VALUES(@Name, @Description, @Location, @DateCreatedUtc, @UserId);
+VALUES(@Name, @Description, @Location, @DateCreatedUtc, @UserId, @DateCreatedUtc);
 ";
             return await InsertAsync<Project, long>(query, project, (x, key) => { x.ProjectId = key; });
         }
@@ -89,12 +89,19 @@ VALUES(@Name, @Description, @Location, @DateCreatedUtc, @UserId);
             else
             {
                 query =
-$@"INSERT INTO PartTypes (ParentPartTypeId, Name, UserId) 
+$@"INSERT INTO PartTypes (ParentPartTypeId, Name, UserId, DateCreatedUtc) 
 output INSERTED.PartTypeId 
-VALUES (@ParentPartTypeId, @Name, @UserId);";
+VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
                 partType = await InsertAsync<PartType, long>(query, partType, (x, key) => { x.PartTypeId = key; });
             }
             return partType;
+        }
+
+        public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext)
+        {
+            var query = $"SELECT * FROM PartTypes WHERE (@UserId IS NULL OR UserId = @UserId);";
+            var result = await SqlQueryAsync<PartType>(query, new { UserId = userContext?.UserId });
+            return result.ToList();
         }
 
         public async Task<Part> GetPartAsync(long partId, IUserContext userContext)
@@ -111,10 +118,29 @@ VALUES (@ParentPartTypeId, @Name, @UserId);";
             return result.FirstOrDefault();
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync(IUserContext userContext)
+        public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
         {
-            var query = $"SELECT * FROM Parts;";
-            var result = await SqlQueryAsync<Part>(query);
+            var offsetRecords = (request.Page - 1) * request.Results;
+            var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
+            var query = $@"SELECT * FROM Parts 
+ORDER BY 
+CASE WHEN @OrderBy IS NULL THEN PartId ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'PartNumber' THEN PartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'DigikeyPartNumber' THEN DigikeyPartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'MouserPartNumber' THEN MouserPartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Cost' THEN Cost ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Quantity' THEN Quantity ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'LowStockThreshold' THEN LowStockThreshold ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'PartTypeId' THEN PartTypeId ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'ProjectId' THEN ProjectId ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Location' THEN Location ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'BinNumber' THEN BinNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'BinNumber2' THEN BinNumber2 ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Manufacturer' THEN Manufacturer ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'ManufacturerPartNumber' THEN ManufacturerPartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'DateCreatedUtc' THEN DateCreatedUtc ELSE NULL END {sortDirection} 
+OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
+            var result = await SqlQueryAsync<Part>(query, request);
             return result.ToList();
         }
 
@@ -132,9 +158,18 @@ VALUES (@ParentPartTypeId, @Name, @UserId);";
             return result.FirstOrDefault();
         }
 
-        public async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
+        public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext userContext)
         {
-            var query = $"SELECT * FROM Projects WHERE (@UserId IS NULL OR UserId = @UserId);";
+            var offsetRecords = (request.Page - 1) * request.Results;
+            var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
+            var query = $@"SELECT * FROM Projects WHERE (@UserId IS NULL OR UserId = @UserId)
+ORDER BY 
+CASE WHEN @OrderBy IS NULL THEN ProjectId ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Name' THEN Name ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Description' THEN Description ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Location' THEN Location ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'DateCreatedUtc' THEN DateCreatedUtc ELSE NULL END {sortDirection} 
+OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
             var result = await SqlQueryAsync<Project>(query);
             return result.ToList();
         }
@@ -326,7 +361,7 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
                     connection.Open();
                     using (var sqlCmd = new SqlCommand(query, connection))
                     {
-                        modified = await sqlCmd.ExecuteNonQueryAsync();
+                        modified = (int)await sqlCmd.ExecuteScalarAsync();
                     }
                     connection.Close();
                 }
@@ -337,16 +372,39 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
                     connection.Open();
                     using (var sqlCmd = new SqlCommand(query, connection))
                     {
-                        modified = await sqlCmd.ExecuteNonQueryAsync();
+                        modified = (int)await sqlCmd.ExecuteScalarAsync();
                     }
                     connection.Close();
                 }
+                if (modified > 0) await SeedInitialDataAsync();
             }
             catch (Exception ex)
             {
                 throw ex;
             }
 
+            return modified > 0;
+        }
+
+        private async Task<bool> SeedInitialDataAsync()
+        {
+            //DefaultPartTypes
+            var defaultPartTypes = typeof(SystemDefaults.DefaultPartTypes).GetExtendedType();
+            var query = "";
+            var modified = 0;
+            foreach (var partType in defaultPartTypes.EnumValues)
+            {
+                query += $"INSERT INTO PartTypes (Name, DateCreatedUtc) VALUES('{partType.Value}', GETUTCDATE());\r\n";
+            }
+            using (var connection = new SqlConnection(_config.ConnectionString))
+            {
+                connection.Open();
+                using (var sqlCmd = new SqlCommand(query, connection))
+                {
+                    modified = await sqlCmd.ExecuteNonQueryAsync();
+                }
+                connection.Close();
+            }
             return modified > 0;
         }
 

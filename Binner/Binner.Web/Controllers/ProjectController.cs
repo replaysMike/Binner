@@ -1,4 +1,5 @@
-﻿using Binner.Common.Models;
+﻿using AnyMapper;
+using Binner.Common.Models;
 using Binner.Common.Services;
 using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;
@@ -36,12 +37,21 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync(GetProjectRequest request)
         {
-            if (request == null)
-                return Ok(await _projectService.GetProjectsAsync());
             var project = await _projectService.GetProjectAsync(request.ProjectId);
             if (project == null) return NotFound();
 
             return Ok(project);
+        }
+
+        /// <summary>
+        /// Get an existing project
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("list")]
+        public async Task<IActionResult> GetProjectsAsync([FromQuery]PaginatedRequest request)
+        {
+            return Ok(await _projectService.GetProjectsAsync(request));
         }
 
         /// <summary>
@@ -52,13 +62,9 @@ namespace Binner.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProjectAsync(CreateProjectRequest request)
         {
-            var project = await _projectService.AddProjectAsync(new Project
-            {
-                Name = request.Name,
-                Description = request.Description,
-                Location = request.Location,
-                DateCreatedUtc = DateTime.UtcNow
-            });
+            var mappedProject = Mapper.Map<CreateProjectRequest, Project>(request);
+            mappedProject.DateCreatedUtc = DateTime.UtcNow;
+            var project = await _projectService.AddProjectAsync(mappedProject);
             return Ok(project);
         }
 
@@ -70,13 +76,8 @@ namespace Binner.Web.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateProjectAsync(UpdateProjectRequest request)
         {
-            var project = await _projectService.UpdateProjectAsync(new Project
-            {
-                ProjectId = request.ProjectId,
-                Name = request.Name,
-                Description = request.Description,
-                Location = request.Location
-            });
+            var mappedProject = Mapper.Map<UpdateProjectRequest, Project>(request);
+            var project = await _projectService.UpdateProjectAsync(mappedProject);
             return Ok(project);
         }
 

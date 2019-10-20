@@ -64,7 +64,7 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="partNumber"></param>
         /// <returns></returns>
-        Task<ICollection<Part>> GetPartsAsync(IUserContext userContext);
+        Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext);
 
         /// <summary>
         /// Find a part that matches any keyword
@@ -86,6 +86,13 @@ namespace Binner.Common.StorageProviders
         /// <param name="partType"></param>
         /// <returns></returns>
         Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext);
+
+        /// <summary>
+        /// Get all of the part types
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext);
 
         /// <summary>
         /// Create a new user defined project
@@ -113,7 +120,7 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext);
+        Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext userContext);
 
         /// <summary>
         /// Update an existing user defined project
