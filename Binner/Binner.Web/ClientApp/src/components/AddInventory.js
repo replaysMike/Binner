@@ -146,7 +146,7 @@ export class AddInventory extends Component {
     return (
       <div>
         <Form onSubmit={this.onSubmit}>
-          <h1 id="tabelLabel" >Add Inventory</h1>
+          <h1>Add Inventory</h1>
           <Grid>
             <Grid.Row>
               <Grid.Column width={4}>
@@ -237,9 +237,13 @@ export class AddInventory extends Component {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {recentParts.map(p => 
+            {recentParts.map((p, index) => 
               <Table.Row>
-                <Table.Cell>{p.partNumber}</Table.Cell>
+                <Table.Cell>
+                  {index === 0 ?
+                    <Label ribbon>{p.partNumber}</Label>
+                    : p.partNumber }
+                </Table.Cell>
                 <Table.Cell>{p.quantity}</Table.Cell>
                 <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
                 <Table.Cell>{p.location}</Table.Cell>

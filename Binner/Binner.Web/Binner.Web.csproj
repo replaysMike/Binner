@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AnyMapper" Version="1.0.9" />
+    <PackageReference Include="AnyMapper" Version="1.0.18" />
     <PackageReference Include="LightInject" Version="6.2.0" />
     <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.0.0" />

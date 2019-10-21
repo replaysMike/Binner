@@ -63,3 +63,15 @@ code {
     margin-left: 0px !important;
     margin-right: 0px !important;
 }
+
+.borderless input {
+    border: 1px solid #fff !important;
+}
+
+.borderless input:focus {
+    border: 1px solid #85b7d9 !important;
+}
+
+.fixed100 {
+    width: 100px;
+}

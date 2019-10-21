@@ -60,5 +60,11 @@ namespace Binner.Common.Services
         /// <param name="partNumber"></param>
         /// <returns></returns>
         Task<PartMetadata> GetPartMetadataAsync(string partNumber);
+
+        /// <summary>
+        /// Get all part types
+        /// </summary>
+        /// <returns></returns>
+        Task<ICollection<PartType>> GetPartTypesAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using ApiClient.OAuth2;
+﻿using AnyMapper;
+using ApiClient.OAuth2;
 using Binner.Common;
 using Binner.Common.Integrations;
 using Binner.Common.Services;
@@ -29,6 +30,9 @@ namespace Binner.Web.Configuration
             // register services
             RegisterServices(container);
 
+            // configure mapping
+            RegisterMappingProfiles(container);
+
             // register storage provider
             container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
             container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
@@ -46,6 +50,15 @@ namespace Binner.Web.Configuration
 
             // register the CertificateProvider for providing access to the server certificate
             var config = container.GetInstance<WebHostServiceConfiguration>();
+        }
+
+        private static void RegisterMappingProfiles(IServiceContainer container)
+        {
+            var profile = new BinnerMappingProfile();
+            Mapper.Configure(config =>
+            {
+                config.AddProfile(profile);
+            });
         }
 
         private static void RegisterServices(IServiceContainer container)

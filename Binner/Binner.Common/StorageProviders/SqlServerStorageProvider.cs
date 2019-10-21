@@ -65,9 +65,62 @@ VALUES(@Name, @Description, @Location, @DateCreatedUtc, @UserId, @DateCreatedUtc
 
         public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext userContext)
         {
-            var query = $"SELECT * FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId) AND PartNumber LIKE @Keywords OR DigiKeyPartNumber LIKE @Keywords OR Description LIKE @Keywords OR Keywords LIKE @Keywords OR Location LIKE @Keywords OR BinNumber LIKE @Keywords OR BinNumber2 LIKE @Keywords;";
-            var result = await SqlQueryAsync<Part>(query, new { Keywords = keywords, UserId = userContext?.UserId });
-            return result.Select(x => new SearchResult<Part>(x, 100)).ToList();
+            // basic ranked search by Michael Brown :)
+            var query = $@"
+WITH PartsExactMatch (PartId, Rank) AS
+(
+SELECT PartId, 10 as Rank FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId) AND 
+PartNumber = @Keywords 
+OR DigiKeyPartNumber = @Keywords 
+OR MouserPartNumber = @Keywords
+OR ManufacturerPartNumber = @Keywords
+OR Description = @Keywords 
+OR Keywords = @Keywords 
+OR Location = @Keywords 
+OR BinNumber = @Keywords 
+OR BinNumber2 = @Keywords
+),
+PartsBeginsWith (PartId, Rank) AS
+(
+SELECT PartId, 100 as Rank FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId) AND 
+PartNumber LIKE @Keywords + '%'
+OR DigiKeyPartNumber LIKE @Keywords + '%'
+OR MouserPartNumber LIKE @Keywords + '%'
+OR ManufacturerPartNumber LIKE @Keywords + '%'
+OR Description LIKE @Keywords + '%'
+OR Keywords LIKE @Keywords + '%'
+OR Location LIKE @Keywords + '%'
+OR BinNumber LIKE @Keywords + '%'
+OR BinNumber2 LIKE @Keywords+ '%'
+),
+PartsAny (PartId, Rank) AS
+(
+SELECT PartId, 200 as Rank FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId) AND 
+PartNumber LIKE '%' + @Keywords + '%'
+OR DigiKeyPartNumber LIKE '%' + @Keywords + '%'
+OR MouserPartNumber LIKE '%' + @Keywords + '%'
+OR ManufacturerPartNumber LIKE '%' + @Keywords + '%'
+OR Description LIKE '%' + @Keywords + '%'
+OR Keywords LIKE '%' + @Keywords + '%'
+OR Location LIKE '%' + @Keywords + '%'
+OR BinNumber LIKE '%' + @Keywords + '%'
+OR BinNumber2 LIKE '%' + @Keywords + '%'
+),
+PartsMerged (PartId, Rank) AS
+(
+	SELECT PartId, Rank FROM PartsExactMatch
+	UNION
+	SELECT PartId, Rank FROM PartsBeginsWith
+	UNION
+	SELECT PartId, Rank FROM PartsAny
+)
+SELECT pm.Rank, p.* FROM Parts p
+INNER JOIN (
+  SELECT PartId, MIN(Rank) Rank FROM PartsMerged GROUP BY PartId
+) pm ON pm.PartId = p.PartId ORDER BY pm.Rank ASC;
+;";
+            var result = await SqlQueryAsync<PartSearch>(query, new { Keywords = keywords, UserId = userContext?.UserId });
+            return result.Select(x => new SearchResult<Part>(x as Part, x.Rank)).OrderBy(x => x.Rank).ToList();
         }
 
         public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName, IUserContext userContext)

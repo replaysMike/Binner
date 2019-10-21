@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
@@ -40,8 +41,10 @@ namespace Binner.Web.Controllers
         {
             var part = await _partService.GetPartAsync(request.PartNumber);
             if (part == null) return NotFound();
-
-            return Ok(part);
+            var partResponse = Mapper.Map<Part, PartResponse>(part);
+            var partTypes = await _partService.GetPartTypesAsync();
+            partResponse.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+            return Ok(partResponse);
         }
 
         /// <summary>
@@ -52,7 +55,16 @@ namespace Binner.Web.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetPartsAsync([FromQuery] PaginatedRequest request)
         {
-            return Ok(await _partService.GetPartsAsync(request));
+            var parts = await _partService.GetPartsAsync(request);
+            var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(parts);
+            if (partsResponse.Any())
+            {
+                var partTypes = await _partService.GetPartTypesAsync();
+                // map part types
+                foreach (var part in partsResponse)
+                    part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+            }
+            return Ok(partsResponse);
         }
 
         /// <summary>
@@ -69,9 +81,11 @@ namespace Binner.Web.Controllers
             });
             var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            mappedPart.PartTypeId = partType.PartTypeId;
+            mappedPart.PartTypeId = partType.PartTypeId; 
             var part = await _partService.AddPartAsync(mappedPart);
-            return Ok(part);
+            var partResponse = Mapper.Map<Part, PartResponse>(part);
+            partResponse.PartType = partType.Name;
+            return Ok(partResponse);
         }
 
         /// <summary>
@@ -87,10 +101,13 @@ namespace Binner.Web.Controllers
                 Name = request.PartType
             });
             var mappedPart = Mapper.Map<UpdatePartRequest, Part>(request);
+            mappedPart.PartId = request.PartId;
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             mappedPart.PartTypeId = partType.PartTypeId;
             var part = await _partService.UpdatePartAsync(mappedPart);
-            return Ok(part);
+            var partResponse = Mapper.Map<Part, PartResponse>(part);
+            partResponse.PartType = partType.Name;
+            return Ok(partResponse);
         }
 
         /// <summary>
@@ -119,7 +136,14 @@ namespace Binner.Web.Controllers
             var parts = await _partService.FindPartsAsync(keywords);
             if (parts == null || !parts.Any())
                 return NotFound();
-            return Ok(parts.OrderBy(x => x.Rank).Select(x => x.Result));
+            var partTypes = await _partService.GetPartTypesAsync();
+            var partsOrdered = parts.OrderBy(x => x.Rank).Select(x => x.Result).ToList();
+            var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(partsOrdered);
+            // map part types
+            foreach (var part in partsResponse)
+                part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+
+            return Ok(partsResponse);
         }
 
         /// <summary>

@@ -17,7 +17,8 @@
     "react-scripts": "^3.0.1",
     "reactstrap": "^6.3.0",
     "rimraf": "^2.6.2",
-    "semantic-ui-react": "^0.88.1"
+    "semantic-ui-react": "^0.88.1",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "ajv": "^6.9.1",
