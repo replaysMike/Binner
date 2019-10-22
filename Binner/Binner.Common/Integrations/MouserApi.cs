@@ -35,7 +35,7 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
-        public async Task<ICollection<MouserPart>> GetPartsAsync(string partNumber)
+        public async Task<ICollection<MouserPart>> GetPartsAsync(string partNumber, string partType = "", string packageType = "")
         {
             var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);

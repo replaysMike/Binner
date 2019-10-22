@@ -147,7 +147,21 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Delete an existing part
+        /// Get part information
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("info")]
+        public async Task<IActionResult> GetPartInfoAsync([FromQuery]string partNumber, [FromQuery]string partType = "", [FromQuery]string packageType = "")
+        {
+            var metadata = await _partService.GetPartInformationAsync(partNumber, partType, packageType);
+            if (metadata == null)
+                return NotFound();
+            return Ok(metadata);
+        }
+
+        /// <summary>
+        /// Get part metadata
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>

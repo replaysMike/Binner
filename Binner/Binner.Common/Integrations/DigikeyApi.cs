@@ -6,13 +6,16 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using TypeSupport.Extensions;
 
 namespace Binner.Common.Integrations
 {
@@ -20,6 +23,13 @@ namespace Binner.Common.Integrations
     {
         public static readonly TimeSpan MaxAuthorizationWaitTime = TimeSpan.FromSeconds(30);
         private const string BasePath = "/Search/v3/Products";
+        private readonly Regex PercentageRegex = new Regex("^\\d{0,4}(\\.\\d{0,4})? *%?$", RegexOptions.Compiled);
+        private readonly Regex PowerRegex = new Regex("^(\\d+[\\/\\d. ]*[Ww]$|\\d*[Ww]$)", RegexOptions.Compiled);
+        private readonly Regex ResistanceRegex = new Regex("^(\\d+[\\d. ]*[KkMm]$|\\d*[KkMm]$|\\d*(?i)ohm(?-i)$)", RegexOptions.Compiled);
+        private readonly Regex CapacitanceRegex = new Regex("^\\d+\\.?\\d*(uf|pf|mf|f)$", RegexOptions.Compiled);
+        private readonly Regex VoltageRegex = new Regex("^\\d+\\.?\\d*(v|mv)$", RegexOptions.Compiled);
+        private readonly Regex CurrentRegex = new Regex("^\\d+\\.?\\d*(a|ma)$", RegexOptions.Compiled);
+        private readonly Regex InductanceRegex = new Regex("^\\d+\\.?\\d*(nh|uh|h)$", RegexOptions.Compiled);
         // the full url to the Api
         private readonly string _apiUrl;
         private readonly OAuth2Service _oAuth2Service;
@@ -44,10 +54,28 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
-        public async Task<KeywordSearchResponse> GetPartsAsync(string partNumber)
+        public enum PackageTypes
         {
+            None = 0,
+            SurfaceMount = 3,
+            ThroughHole = 80
+        }
+
+        public async Task<KeywordSearchResponse> GetPartsAsync(string partNumber, string partType = "", string packageType = "")
+        {
+            var keywords = partNumber.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
             var authResponse = await AuthorizeAsync();
             if (authResponse == null || !authResponse.IsAuthorized) throw new UnauthorizedAccessException("Unable to authenticate with DigiKey!");
+            var packageTypeEnum = PackageTypes.None;
+            switch (packageType.ToLower())
+            {
+                case "surface mount":
+                    packageTypeEnum = PackageTypes.SurfaceMount;
+                    break;
+                case "through hole":
+                    packageTypeEnum = PackageTypes.ThroughHole;
+                    break;
+            }
 
             return await WrapApiRequestAsync<KeywordSearchResponse>(authResponse, async(authenticationResponse) =>
             {
@@ -61,9 +89,16 @@ namespace Binner.Common.Integrations
                     };
                     var uri = Url.Combine(_apiUrl, BasePath, $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
+                    var taxonomies = MapTaxonomies(partType, packageTypeEnum);
+                    var parametricFilters = MapParametricFilters(keywords, packageTypeEnum, taxonomies);
                     var request = new KeywordSearchRequest
                     {
-                        Keywords = partNumber
+                        Keywords = string.Join(" ", keywords),
+                        Filters = new Filters
+                        {
+                            TaxonomyIds = taxonomies.Select(x => (int)x).ToList(),
+                            ParametricFilters = parametricFilters
+                        }
                     };
                     var json = JsonConvert.SerializeObject(request, _serializerSettings);
                     requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -95,6 +130,157 @@ namespace Binner.Common.Integrations
         public async Task<ICollection<object>> GetOrderAsync()
         {
             return null;
+        }
+
+        private ICollection<ParametricFilter> MapParametricFilters(ICollection<string> keywords, PackageTypes packageType, ICollection<Taxonomies> taxonomies)
+        {
+            var filters = new List<ParametricFilter>();
+            var percent = "";
+            var power = "";
+            var resistance = "";
+            var capacitance = "";
+            var voltageRating = "";
+            var currentRating = "";
+            var inductance = "";
+            foreach (var keyword in keywords)
+            {
+                if (PercentageRegex.IsMatch(keyword))
+                    percent = keyword;
+                if (PowerRegex.IsMatch(keyword))
+                    power = keyword;
+                if (ResistanceRegex.IsMatch(keyword))
+                    resistance = keyword;
+                if (CapacitanceRegex.IsMatch(keyword))
+                    capacitance = keyword;
+                if (VoltageRegex.IsMatch(keyword))
+                    voltageRating = keyword;
+                if (CurrentRegex.IsMatch(keyword))
+                    currentRating = keyword;
+                if (InductanceRegex.IsMatch(keyword))
+                    inductance = keyword;
+            }
+            // add tolerance parameter
+            if (keywords.Contains("precision") || !string.IsNullOrEmpty(percent))
+            {
+                if (keywords.Contains("precision"))
+                    keywords.Remove("precision");
+                if (keywords.Contains(percent))
+                    keywords.Remove(percent);
+                else
+                    percent = "1%";
+                var filter = new ParametricFilter
+                {
+                    ParameterId = (int)Parametrics.Tolerance,
+                    ValueId = ((int)GetTolerance(percent)).ToString()
+                };
+                filters.Add(filter);
+            }
+            if (!string.IsNullOrEmpty(power))
+            {
+                keywords.Remove(power);
+                var filter = new ParametricFilter
+                {
+                    ParameterId = (int)Parametrics.Power,
+                    ValueId = GetPower(power)
+                };
+                filters.Add(filter);
+            }
+            if (!string.IsNullOrEmpty(resistance))
+            {
+                keywords.Remove(resistance);
+                var filter = new ParametricFilter
+                {
+                    ParameterId = (int)Parametrics.Resistance,
+                    ValueId = GetResistance(resistance)
+                };
+                filters.Add(filter);
+            }
+            if (!string.IsNullOrEmpty(capacitance))
+            {
+                keywords.Remove(capacitance);
+                var filter = new ParametricFilter
+                {
+                    ParameterId = (int)Parametrics.Capacitance,
+                    ValueId = GetCapacitance(capacitance)
+                };
+                filters.Add(filter);
+            }
+            if (!string.IsNullOrEmpty(voltageRating))
+            {
+                keywords.Remove(voltageRating);
+                var filter = new ParametricFilter
+                {
+                    ParameterId = (int)Parametrics.VoltageRating,
+                    ValueId = GetVoltageRating(voltageRating)
+                };
+                filters.Add(filter);
+            }
+            if (!string.IsNullOrEmpty(currentRating))
+            {
+                keywords.Remove(currentRating);
+                var filter = new ParametricFilter
+                {
+                    ParameterId = (int)Parametrics.CurrentRating,
+                    ValueId = GetVoltageRating(currentRating)
+                };
+                filters.Add(filter);
+            }
+            if (!string.IsNullOrEmpty(inductance))
+            {
+                keywords.Remove(inductance);
+                var filter = new ParametricFilter
+                {
+                    ParameterId = (int)Parametrics.Inductance,
+                    ValueId = GetInductance(inductance)
+                };
+                filters.Add(filter);
+            }
+            // dont add mounting type to resistors, they dont seem to be mapped
+            if (!taxonomies.ContainsAny(new List<Taxonomies> { Taxonomies.Resistor, Taxonomies.SurfaceMountResistor, Taxonomies.ThroughHoleResistor }))
+            {
+                if (packageType != PackageTypes.None)
+                    filters.Add(new ParametricFilter
+                    {
+                        ParameterId = (int)Parametrics.MountingType,
+                        ValueId = ((int)packageType).ToString()
+                    });
+            }
+            return filters;
+        }
+
+        private ICollection<Taxonomies> MapTaxonomies(string partType, PackageTypes packageType)
+        {
+            var taxonomies = new List<Taxonomies>();
+            var taxonomy = Taxonomies.None;
+            if (Enum.TryParse<Taxonomies>(partType, true, out taxonomy))
+            {
+                var addBaseType = true;
+                // also map all the alternates
+                var memberInfos = typeof(Taxonomies).GetMember(taxonomy.ToString());
+                var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(Taxonomies));
+                var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
+                var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
+                // taxonomies.AddRange(alternateIds);
+                switch (taxonomy)
+                {
+                    case Taxonomies.Resistor:
+                        if (packageType == PackageTypes.ThroughHole)
+                        {
+                            taxonomies.Add(Taxonomies.ThroughHoleResistor);
+                            addBaseType = false;
+                        }
+                        if (packageType == PackageTypes.SurfaceMount)
+                        {
+                            taxonomies.Add(Taxonomies.SurfaceMountResistor);
+                            addBaseType = false;
+                        }
+                        break;
+                }
+                if(addBaseType)
+                    taxonomies.Add(taxonomy);
+            }
+
+            return taxonomies;
         }
 
         /// <summary>
@@ -254,6 +440,142 @@ namespace Binner.Common.Integrations
             }
             else
                 throw new InvalidOperationException("Failed to launch default web browser - I don't know how to do this on your platform!");
+        }
+
+        private Tolerances GetTolerance(string perc)
+        {
+            return GetEnumByDescription<Tolerances>(perc);
+        }
+
+        private string GetPower(string power)
+        {
+            power = new Regex("[Ww]|").Replace(power, "");
+            // convert decimal percentages to fractions
+            if (power.Contains("."))
+            {
+                var fraction = MathExtensions.RealToFraction(double.Parse(power), 0.01);
+                return ((int)GetEnumByDescription<Power>($"{fraction.Numerator}/{fraction.Denominator}")).ToString();
+            }
+            return ((int)GetEnumByDescription<Power>(power)).ToString();
+        }
+
+        private string GetResistance(string resistance)
+        {
+            var val = new String(resistance.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
+            var unitsParsed = resistance.Replace(val, "").ToLower();
+            var units = "ohms";
+            switch (unitsParsed)
+            {
+                case "k":
+                case "kohms":
+                    units = "kOhms";
+                    break;
+                case "m":
+                case "mohms":
+                    units = "mOhms";
+                    break;
+            }
+            var result = $"u{val} {units}";
+            return result;
+        }
+
+        private string GetCapacitance(string capacitance)
+        {
+            var val = new String(capacitance.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
+            var unitsParsed = capacitance.Replace(val, "").ToLower();
+            var units = "µF";
+            switch (unitsParsed)
+            {
+                case "uf":
+                    units = "µF";
+                    break;
+                case "nf":
+                    // convert to uf, api doesn't seem to handle it?
+                    val = (decimal.Parse(val) * 0.001M).ToString();
+                    units = "µF";
+                    break;
+                case "pf":
+                    units = "pF";
+                    break;
+                case "f":
+                    units = "F";
+                    break;
+            }
+            var result = $"u{val}{units}";
+            return result;
+        }
+
+        private string GetVoltageRating(string voltage)
+        {
+            var val = new String(voltage.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
+            var unitsParsed = voltage.Replace(val, "").ToLower();
+            var units = "V";
+            switch (unitsParsed)
+            {
+                case "v":
+                    units = "V";
+                    break;
+            }
+            var result = $"u{val}{units}";
+            return result;
+        }
+
+        private string GetCurrentRating(string current)
+        {
+            var val = new String(current.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
+            var unitsParsed = current.Replace(val, "").ToLower();
+            var units = "A";
+            switch (unitsParsed)
+            {
+                case "a":
+                    units = "A";
+                    break;
+                case "ma":
+                    units = "mA";
+                    break;
+            }
+            var result = $"u{val}{units}";
+            return result;
+        }
+
+        private string GetInductance(string inductance)
+        {
+            var val = new String(inductance.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
+            var unitsParsed = inductance.Replace(val, "").ToLower();
+            var units = "µH";
+            switch (unitsParsed)
+            {
+                case "uh":
+                    units = "µH";
+                    break;
+                case "nh":
+                    units = "nH";
+                    break;
+                case "mh":
+                    units = "mH";
+                    break;
+                case "h":
+                    units = "H";
+                    break;
+            }
+            var result = $"u{val}{units}";
+            return result;
+        }
+
+        private T GetEnumByDescription<T>(string description)
+        {
+            var type = typeof(T).GetExtendedType();
+            foreach(var val in type.EnumValues)
+            {
+                var memberInfos = type.Type.GetMember(val.Value);
+                var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == type.Type);
+                var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
+                var descriptionVal = ((DescriptionAttribute)valueAttributes[0]).Description;
+                if (descriptionVal.Equals(description))
+                    return (T)val.Key;
+
+            }
+            return default(T);
         }
 
     }
