@@ -28,8 +28,8 @@ export class Search extends Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  componentDidMount() {
-    this.loadParts(this.state.page);
+  async componentDidMount() {
+    await this.loadParts(this.state.page);
   }
 
   async loadParts(page, reset = false) {
@@ -50,6 +50,7 @@ export class Search extends Component {
   async search(input) {
     this.setState({ loading: true });
     const response = await fetch(`part/search?keywords=${input}`);
+
     if (response.status == 200) {
       const data = await response.json();
       this.setState({ parts: data || [], loading: false, noRemainingData: true });

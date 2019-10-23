@@ -1,8 +1,10 @@
 ﻿using Binner.Common.Extensions;
+using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Mouser;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -35,7 +37,7 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
-        public async Task<ICollection<MouserPart>> GetPartsAsync(string partNumber, string partType = "", string packageType = "")
+        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string packageType = "")
         {
             var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
@@ -57,12 +59,12 @@ namespace Binner.Common.Integrations
                 var resultString = response.Content.ReadAsStringAsync().Result;
                 var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
                 if (results.Errors.Any())
-                    throw new MouserErrorsException(results.Errors);
-                return results.SearchResults.Parts;
+                    new ApiResponse(results.Errors.Select(x => x.Message), nameof(MouserApi));
+                return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
             }
-            return null;
+            return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
-        public async Task<ICollection<MouserPart>> SearchAsync(string keyword)
+        public async Task<IApiResponse> SearchAsync(string keyword)
         {
             var uri = Url.Combine(_apiUrl, BasePath, $"/search/keyword?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
@@ -86,23 +88,8 @@ namespace Binner.Common.Integrations
                 var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
                 if (results.Errors.Any())
                     throw new MouserErrorsException(results.Errors);
-                return results.SearchResults.Parts;
+                return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
             }
-            return null;
-        }
-
-        public async Task<ICollection<object>> BuildCartAsync()
-        {
-            return null;
-        }
-
-        public async Task<ICollection<object>> GetOrderAsync()
-        {
-            return null;
-        }
-
-        public async Task<ICollection<object>> CreateOrderAsync()
-        {
             return null;
         }
 

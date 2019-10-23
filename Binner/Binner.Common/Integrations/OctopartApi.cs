@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Extensions;
+using Binner.Common.Integrations.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
-        public async Task<ICollection<string>> GetDatasheetsAsync(string partNumber)
+        public async Task<IApiResponse> GetDatasheetsAsync(string partNumber)
         {
             var datasheets = new List<string>();
             partNumber = "SN74S74N";
@@ -59,7 +60,7 @@ namespace Binner.Common.Integrations
                 }
                 // parse into readable format
             }
-            return datasheets;
+            return new ApiResponse(datasheets, nameof(OctopartApi));
         }
     }
 }

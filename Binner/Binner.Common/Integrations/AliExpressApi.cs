@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Binner.Common.Integrations.Models;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -21,9 +22,9 @@ namespace Binner.Common.Integrations
 
         public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public async Task<ICollection<string>> GetDatasheetsAsync(string partNumber)
+        public async Task<IApiResponse> GetDatasheetsAsync(string partNumber)
         {
-            return new List<string>();
+            return ApiResponse.Create(new List<string>(), nameof(AliExpressApi));
         }
     }
 }

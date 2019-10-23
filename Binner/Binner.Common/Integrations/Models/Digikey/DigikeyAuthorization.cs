@@ -29,6 +29,16 @@ namespace Binner.Common.Integrations.Models.Digikey
         /// Error description
         /// </summary>
         public string ErrorDescription { get; set; }
+
+        /// <summary>
+        /// True if the user must authorize
+        /// </summary>
+        public bool MustAuthorize { get; set; }
+
+        /// <summary>
+        /// If the user must authorize, the Authorization Url they need to visit
+        /// </summary>
+        public string AuthorizationUrl { get; set; }
         
         /// <summary>
         /// Digikey ClientId
@@ -54,6 +64,12 @@ namespace Binner.Common.Integrations.Models.Digikey
         /// Time in which the current token expires
         /// </summary>
         public DateTime ExpiresUtc { get; set; }
+
+        public DigikeyAuthorization(bool mustAuthorize, string authorizationUrl)
+        {
+            MustAuthorize = mustAuthorize;
+            AuthorizationUrl = authorizationUrl;
+        }
 
         public DigikeyAuthorization(string clientId)
         {

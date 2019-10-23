@@ -1,4 +1,6 @@
 ﻿using Binner.Common.Integrations;
+using Binner.Common.Integrations.Models.Digikey;
+using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
 using Binner.Common.StorageProviders;
 using System;
@@ -67,7 +69,7 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
         }
 
-        public async Task<PartResults> GetPartInformationAsync(string partNumber, string partType = "", string packageType = "")
+        public async Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string packageType = "")
         {
             var datasheets = new List<string>();
             var response = new PartResults();
@@ -75,13 +77,30 @@ namespace Binner.Common.Services
             var searchKeywords = partNumber;
             ICollection<Integrations.Models.Mouser.MouserPart> mouserParts = new List<Integrations.Models.Mouser.MouserPart>();
             if (_octopartApi.IsConfigured)
-                datasheets.AddRange(await _octopartApi.GetDatasheetsAsync(partNumber));
+            {
+                var octopartResponse = await _octopartApi.GetDatasheetsAsync(partNumber);
+                datasheets.AddRange((ICollection<string>)octopartResponse.Response);
+            }
             if (_digikeyApi.IsConfigured)
-                digikeyResponse = await _digikeyApi.GetPartsAsync(searchKeywords, partType, packageType);
+            {
+                var apiResponse = await _digikeyApi.GetPartsAsync(searchKeywords, partType, packageType);
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                else if (apiResponse.Errors?.Any() == true)
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                digikeyResponse = (KeywordSearchResponse)apiResponse.Response;
+            }
             if (_mouserApi.IsConfigured)
-                mouserParts = await _mouserApi.GetPartsAsync(searchKeywords, partType, packageType);
+            {
+                var apiResponse = await _mouserApi.GetPartsAsync(searchKeywords, partType, packageType);
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                else if (apiResponse.Errors?.Any() == true)
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                mouserParts = (ICollection<MouserPart>)apiResponse.Response;
+            }
 
-            foreach(var part in digikeyResponse.Products)
+            foreach (var part in digikeyResponse.Products)
             {
                 var additionalPartNumbers = new List<string>();
                 var basePart = part.Parameters.Where(x => x.Parameter.Equals("Base Part Number")).Select(x => x.Value).FirstOrDefault();
@@ -140,12 +159,12 @@ namespace Binner.Common.Services
                 part.Keywords = DetermineKeywords(part, partTypes);
             }
 
-            return response;
+            return ServiceResult<PartResults>.Create(response);
         }
 
         public async Task<PartMetadata> GetPartMetadataAsync(string partNumber)
         {
-            var dataSheets = new List<string>();
+            /*var dataSheets = new List<string>();
             var digikeyResponse = new Integrations.Models.Digikey.KeywordSearchResponse();
             ICollection<Integrations.Models.Mouser.MouserPart> mouserParts = new List<Integrations.Models.Mouser.MouserPart>();
             if (_octopartApi.IsConfigured)
@@ -231,7 +250,8 @@ namespace Binner.Common.Services
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
             metadata.PartType = DeterminePartType(metadata, partTypes);
             metadata.Keywords = DetermineKeywords(metadata, partTypes);
-            return metadata;
+            return metadata;*/
+            return null;
         }
 
         private ICollection<string> DetermineKeywords(PartMetadata metadata, ICollection<PartType> partTypes)
@@ -298,7 +318,7 @@ namespace Binner.Common.Services
                 if (wordCount >= 4)
                     break;
             }
-            foreach(var basePart in part.AdditionalPartNumbers)
+            foreach (var basePart in part.AdditionalPartNumbers)
                 if (basePart != null && !keywords.Contains(basePart, StringComparer.InvariantCultureIgnoreCase))
                     keywords.Add(basePart.ToLower());
             var mountingType = part.MountingType;
@@ -350,7 +370,7 @@ namespace Binner.Common.Services
                     addPart = true;
                 if (part.ManufacturerPartNumber?.IndexOf(partType.Name, StringComparison.InvariantCultureIgnoreCase) >= 0)
                     addPart = true;
-                foreach(var datasheet in part.DataSheetUrls)
+                foreach (var datasheet in part.DataSheetUrls)
                     if (datasheet.IndexOf(partType.Name, StringComparison.InvariantCultureIgnoreCase) >= 0)
                         addPart = true;
                 if (addPart)
