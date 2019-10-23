@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { Statistic } from 'semantic-ui-react';
 
 export class Home extends Component {
   static displayName = Home.name;
@@ -23,14 +24,23 @@ export class Home extends Component {
         <div className="divTable">
           <div className="divTableBody">
             <div className="divTableRow">
-              <div className="divTableCell header">Inventory</div>
-              <div className="divTableCell header">Low Stock</div>
-              <div className="divTableCell header">Projects</div>
+              <div className="divTableCell header">Dashboard</div>
             </div>
             <div className="divTableRow">
-              <div className="divTableCell">12,000 parts<br />$800.00 value</div>
-              <div className="divTableCell">4 Parts</div>
-              <div className="divTableCell">2 Projects</div>
+            <div className="divTableCell">
+                <Statistic>
+                  <Statistic.Value>18</Statistic.Value>
+                  <Statistic.Label>Low Stock</Statistic.Label>
+                </Statistic>
+                <Statistic>
+                  <Statistic.Value>50,000</Statistic.Value>
+                  <Statistic.Label>Parts</Statistic.Label>
+                </Statistic>
+                <Statistic>
+                  <Statistic.Value>4</Statistic.Value>
+                  <Statistic.Label>Projects</Statistic.Label>
+                </Statistic>
+              </div>
             </div>
           </div>
         </div>
