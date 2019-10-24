@@ -57,6 +57,16 @@ namespace Binner.Common.Models
         public long PartTypeId { get; set; }
 
         /// <summary>
+        /// Mounting Type
+        /// </summary>
+        public int MountingType { get; set; }
+
+        /// <summary>
+        /// Package Type (eg. DIP8)
+        /// </summary>
+        public string PackageType { get; set; }
+
+        /// <summary>
         /// Product Url
         /// </summary>
         public string ProductUrl { get; set; }

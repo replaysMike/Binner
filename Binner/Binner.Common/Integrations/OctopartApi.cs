@@ -1,5 +1,6 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +15,14 @@ namespace Binner.Common.Integrations
         private readonly string _apiKey;
         private readonly string _apiUrl;
         private readonly HttpClient _client;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public OctopartApi(string apiKey, string apiUrl)
+        public OctopartApi(string apiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
         {
             _apiKey = apiKey;
             _apiUrl = apiUrl;
+            _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 

@@ -83,9 +83,9 @@ namespace Binner.Common.Models
         public string LowestCostSupplierUrl { get; set; }
 
         /// <summary>
-        /// Package type
+        /// Mounting type
         /// </summary>
-        public string Package { get; set; }
+        public string MountingType { get; set; }
 
         /// <summary>
         /// Manufacturer name

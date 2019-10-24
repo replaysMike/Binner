@@ -31,9 +31,9 @@ namespace Binner.Common.StorageProviders
         {
             part.UserId = userContext?.UserId;
             var query =
-$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId, Cost, Manufacturer, ManufacturerPartNumber, LowestCostSupplier, LowestCostSupplierUrl, ProductUrl, ImageUrl, DateCreatedUtc) 
+$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, PackageType, MountingType, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId, Cost, Manufacturer, ManufacturerPartNumber, LowestCostSupplier, LowestCostSupplierUrl, ProductUrl, ImageUrl, DateCreatedUtc) 
 output INSERTED.PartId 
-VALUES(@Quantity, @LowStockThreshold, @PartNumber, @DigiKeyPartNumber, @MouserPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Location, @BinNumber, @BinNumber2, @UserId, @Cost, @Manufacturer, @ManufacturerPartNumber, @LowestCostSupplier, @LowestCostSupplierUrl, @ProductUrl, @ImageUrl, @DateCreatedUtc);
+VALUES(@Quantity, @LowStockThreshold, @PartNumber, @PackageType, @MountingType, @DigiKeyPartNumber, @MouserPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Location, @BinNumber, @BinNumber2, @UserId, @Cost, @Manufacturer, @ManufacturerPartNumber, @LowestCostSupplier, @LowestCostSupplierUrl, @ProductUrl, @ImageUrl, @DateCreatedUtc);
 ";
             return await InsertAsync<Part, long>(query, part, (x, key) => { x.PartId = key; });
         }
@@ -260,7 +260,7 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
             var result = await SqlQueryAsync<Part>(query, part);
             if (result.Any())
             {
-                query = $"UPDATE Parts SET Quantity = @Quantity, LowStockThreshold = @LowStockThreshold, PartNumber = @PartNumber, DigiKeyPartNumber = @DigiKeyPartNumber, MouserPartNumber = @MouserPartNumber, Description = @Description, PartTypeId = @PartTypeId, ProjectId = @ProjectId, Keywords = @Keywords, DatasheetUrl = @DatasheetUrl, Location = @Location, BinNumber = @BinNumber, BinNumber2 = @BinNumber2 WHERE PartId = @PartId AND (@UserId IS NULL OR UserId = @UserId);";
+                query = $"UPDATE Parts SET Quantity = @Quantity, LowStockThreshold = @LowStockThreshold, PartNumber = @PartNumber, PackageType = @PackageType, MountingType = @MountingType, DigiKeyPartNumber = @DigiKeyPartNumber, MouserPartNumber = @MouserPartNumber, Description = @Description, PartTypeId = @PartTypeId, ProjectId = @ProjectId, Keywords = @Keywords, DatasheetUrl = @DatasheetUrl, Location = @Location, BinNumber = @BinNumber, BinNumber2 = @BinNumber2 WHERE PartId = @PartId AND (@UserId IS NULL OR UserId = @UserId);";
                 await ExecuteAsync<Part>(query, part);
             }
             else

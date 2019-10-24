@@ -59,9 +59,9 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="partNumber">Part number</param>
         /// <param name="partType">Part type</param>
-        /// <param name="packageType">Package type</param>
+        /// <param name="mountingType">Mounting type</param>
         /// <returns></returns>
-        Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string packageType = "");
+        Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
 
         /// <summary>
         /// Get metadata about a part number

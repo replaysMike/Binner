@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Input, Label, Button, TextArea, Grid, Image, Form, Table, Dropdown, Segment, Popup } from 'semantic-ui-react';
 import NumberPicker from './NumberPicker';
@@ -9,8 +10,7 @@ export class AddInventory extends Component {
   constructor(props) {
     super(props);
     this.searchDebounced = AwesomeDebouncePromise(this.fetchPartMetadata.bind(this), 1200);
-    const viewPreferences = JSON.parse(localStorage.getItem('viewPreferences')) || { helpDisabled: false };
-    console.log('prefs', { ...viewPreferences, helpDisabled: true });
+    const viewPreferences = JSON.parse(localStorage.getItem('viewPreferences')) || { helpDisabled: false, lastPartType: '', lastMountingType: '' };
     this.state = {
       recentParts: [],
       viewPreferences,
@@ -18,7 +18,8 @@ export class AddInventory extends Component {
         partNumber: '',
         quantity: '0',
         lowStockThreshold: '',
-        partType: '',
+        partType: viewPreferences.lastPartType,
+        mountingType: viewPreferences.lastMountingType,
         packageType: '',
         keywords: '',
         description: '',
@@ -38,7 +39,7 @@ export class AddInventory extends Component {
         projectId: '',
       },
       partTypes: [],
-      packageTypes: [
+      mountingTypes: [
         {
           key: 'through hole',
           value: 'through hole',
@@ -52,6 +53,7 @@ export class AddInventory extends Component {
       ],
       loading: false
     };
+    console.log('prefs', viewPreferences);
     this.handleChange = this.handleChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.updateNumberPicker = this.updateNumberPicker.bind(this);
@@ -61,45 +63,63 @@ export class AddInventory extends Component {
   async fetchPartMetadata(input) {
     const { part } = this.state;
     this.setState({ loading: true });
-    const response = await fetch(`part/info?partNumber=${input}&packageType=${part.packageType}&partType=${part.partType}`);
+    const response = await fetch(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`);
     const responseData = await response.json();
     if (responseData.requiresAuthentication) {
       // redirect for authentication
       window.open(responseData.redirectUrl, '_blank');
       return;
     }
-    const { response: data  } = responseData;
-    const mappedPart = {
-      partNumber: data.partNumber,
-      partType: data.partType,
-      keywords: data.keywords && data.keywords.join(' ').toLowerCase(),
-      description: data.description + '\r\n' + data.detailedDescription,
-      datasheetUrl: data.datasheetUrl,
-      digikeyPartNumber: data.digikeyPartNumber,
-      mouserPartNumber: data.mouserPartNumber,
-      cost: data.cost,
-      lowestCostSupplier: data.lowestCostSupplier,
-      lowestCostSupplierUrl: data.lowestCostSupplierUrl,
-      productUrl: data.productUrl,
-      manufacturer: data.manufacturer,
-      manufacturerPartNumber: data.manufacturerPartNumber,
-      imageUrl: data.imageUrl,
-    };
-    part.partType = mappedPart.partType || '';
-    part.packageType = mappedPart.packageType || '';
-    part.keywords = mappedPart.keywords || '';
-    part.description = mappedPart.description || '';
-    part.datasheetUrl = mappedPart.datasheetUrl || '';
-    part.digikeyPartNumber = mappedPart.digikeyPartNumber || '';
-    part.mouserPartNumber = mappedPart.mouserPartNumber || '';
-    part.cost = mappedPart.cost || '';
-    part.lowestCostSupplier = mappedPart.lowestCostSupplier || '';
-    part.lowestCostSupplierUrl = mappedPart.lowestCostSupplierUrl || '';
-    part.manufacturer = mappedPart.manufacturer || '';
-    part.manufacturerPartNumber = mappedPart.manufacturerPartNumber || '';
-    part.productUrl = mappedPart.productUrl || '';
-    part.imageUrl = mappedPart.imageUrl || '';
-    this.setState({ part, loading: false });
+    const { response: data } = responseData;
+    if (data && data.parts && data.parts.length > 0) {
+      const suggestedPart = data.parts[0];
+
+      const mappedPart = {
+        partNumber: suggestedPart.partNumber,
+        partType: suggestedPart.partType,
+        mountingType: suggestedPart.mountingType,
+        packageType: suggestedPart.packageType,
+        keywords: suggestedPart.keywords && suggestedPart.keywords.join(' ').toLowerCase(),
+        description: suggestedPart.description + '\r\n' + suggestedPart.detailedDescription,
+        datasheetUrls: suggestedPart.datasheetUrls,
+        supplier: suggestedPart.supplier,
+        supplierPartNumber: suggestedPart.supplierPartNumber,
+        cost: suggestedPart.cost,
+        lowestCostSupplier: suggestedPart.lowestCostSupplier,
+        lowestCostSupplierUrl: suggestedPart.lowestCostSupplierUrl,
+        productUrl: suggestedPart.productUrl,
+        manufacturer: suggestedPart.manufacturer,
+        manufacturerPartNumber: suggestedPart.manufacturerPartNumber,
+        imageUrl: suggestedPart.imageUrl,
+        status: suggestedPart.status,
+      };
+      if (mappedPart.partType && mappedPart.partType.length > 0)
+        part.partType = mappedPart.partType || '';
+      if (mappedPart.mountingType && mappedPart.mountingType.length > 0)
+        part.mountingType = mappedPart.mountingType || '';
+      part.packageType = mappedPart.packageType || '';
+      part.keywords = mappedPart.keywords || '';
+      part.description = mappedPart.description || '';
+      if (mappedPart.datasheetUrls.length > 0)
+        part.datasheetUrl = mappedPart.supplierPartNumber || '';
+      if (mappedPart.supplier === 'DigiKey') {
+        part.digikeyPartNumber = mappedPart.supplierPartNumber || '';
+        part.mouserPartNumber = _.find(data.parts, e => { return e.supplier === 'Mouser' && e.supplierPartNumber !== 'N/A' })
+          .supplierPartNumber;
+      }
+      if (mappedPart.supplier === 'Mouser') {
+        part.mouserPartNumber = mappedPart.mouserPartNumber || '';
+        part.digikeyPartNumber = _.findWhere(data.parts, { supplier: 'DigiKey' }).supplierPartNumber;
+      }
+      part.cost = mappedPart.cost || '';
+      part.lowestCostSupplier = mappedPart.lowestCostSupplier || '';
+      part.lowestCostSupplierUrl = mappedPart.lowestCostSupplierUrl || '';
+      part.manufacturer = mappedPart.manufacturer || '';
+      part.manufacturerPartNumber = mappedPart.manufacturerPartNumber || '';
+      part.productUrl = mappedPart.productUrl || '';
+      part.imageUrl = mappedPart.imageUrl || '';
+      this.setState({ part, loading: false });
+    }
   }
 
   async fetchRecentRows() {
@@ -127,7 +147,7 @@ export class AddInventory extends Component {
   }
 
   async onSubmit(e, form) {
-    const { part } = this.state;
+    const { part, viewPreferences } = this.state;
     part.quantity = Number.parseInt(part.quantity) || 0;
     part.lowStockThreshold = Number.parseInt(part.lowStockThreshold) || 0;
     part.cost = Number.parseFloat(part.cost) || 0.00;
@@ -147,7 +167,9 @@ export class AddInventory extends Component {
         partNumber: '',
         quantity: '',
         lowStockThreshold: '',
-        partType: '',
+        partType: viewPreferences.lastPartType,
+        mountingType: viewPreferences.lastMountingType,
+        packageType: '',
         keywords: '',
         description: '',
         datasheetUrl: '',
@@ -177,12 +199,18 @@ export class AddInventory extends Component {
   }
 
   handleChange(e, control) {
-    const { part } = this.state;
+    const { part, viewPreferences } = this.state;
     part[control.name] = control.value;
     switch (control.name) {
       case 'partNumber':
         if (control.value && control.value.length > 0)
           this.searchDebounced(control.value);
+        break;
+      case 'partType':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastPartType: control.value }));
+        break;
+      case 'mountingType':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastMountingType: control.value }));
         break;
     }
     this.setState({ part });
@@ -195,7 +223,7 @@ export class AddInventory extends Component {
   }
 
   render() {
-    const { part, recentParts, partTypes, packageTypes, viewPreferences } = this.state;
+    const { part, recentParts, partTypes, mountingTypes, viewPreferences, loading } = this.state;
     return (
       <div>
         <Form onSubmit={this.onSubmit}>
@@ -203,7 +231,7 @@ export class AddInventory extends Component {
           <Form.Group>
             <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={this.handleChange} name='partNumber' />
             <Form.Dropdown label='Part Type' placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={this.handleChange} name='partType' />
-            <Form.Dropdown label='Package Type' placeholder='Package Type' search selection value={part.packageType} options={packageTypes} onChange={this.handleChange} name='packageType' />
+            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={this.handleChange} name='mountingType' />
           </Form.Group>
           <Form.Group>
             <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity} onChange={this.updateNumberPicker} name='quantity' autoComplete='off' />} />
@@ -211,7 +239,7 @@ export class AddInventory extends Component {
             <Form.Input label='Bin Number' placeholder='IC Components 2' value={part.binNumber} onChange={this.handleChange} name='binNumber' />
             <Form.Input label='Bin Number 2' placeholder='14' value={part.binNumber2} onChange={this.handleChange} name='binNumber2' />
           </Form.Group>
-          <Segment>
+          <Segment loading={loading}>
             <Form.Field width={4}>
               <label>Cost</label>
               <Input label='$' placeholder='0.000' value={part.cost} type='text' onChange={this.handleChange} name='cost' />
@@ -253,6 +281,10 @@ export class AddInventory extends Component {
               <label>Mouser Part Number</label>
               <Input placeholder='595-LM358AP' value={part.mouserPartNumber} onChange={this.handleChange} name='mouserPartNumber' />
             </Form.Field>
+            <Form.Field width={4}>
+              <label>Package Type</label>
+              <Input placeholder='DIP8' value={part.packageType} onChange={this.handleChange} name='packageType' />
+            </Form.Field>
           </Segment>
           <Button type='submit'>Save</Button>
         </Form>
@@ -261,6 +293,7 @@ export class AddInventory extends Component {
             <Table.Row>
               <Table.HeaderCell>Part</Table.HeaderCell>
               <Table.HeaderCell>Quantity</Table.HeaderCell>
+              <Table.HeaderCell>Part Type</Table.HeaderCell>
               <Table.HeaderCell>Manufacturer Part</Table.HeaderCell>
               <Table.HeaderCell>Location</Table.HeaderCell>
               <Table.HeaderCell>Bin Number</Table.HeaderCell>
@@ -276,6 +309,7 @@ export class AddInventory extends Component {
                     : p.partNumber}
                 </Table.Cell>
                 <Table.Cell>{p.quantity}</Table.Cell>
+                <Table.Cell>{p.partType}</Table.Cell>
                 <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
                 <Table.Cell>{p.location}</Table.Cell>
                 <Table.Cell>{p.binNumber}</Table.Cell>

@@ -3,6 +3,8 @@ using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -39,6 +41,7 @@ namespace Binner.Common.Integrations
         private readonly string _apiUrl;
         private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
@@ -51,35 +54,36 @@ namespace Binner.Common.Integrations
         public bool IsConfigured => !string.IsNullOrEmpty(_oAuth2Service.ClientSettings.ClientId) 
             && !string.IsNullOrEmpty(_oAuth2Service.ClientSettings.ClientSecret) && !string.IsNullOrEmpty(_apiUrl);
 
-        public DigikeyApi(OAuth2Service oAuth2Service, string apiUrl, ICredentialService credentialService)
+        public DigikeyApi(OAuth2Service oAuth2Service, string apiUrl, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor)
         {
             _oAuth2Service = oAuth2Service;
             _apiUrl = apiUrl;
             _credentialService = credentialService;
+            _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 
-        public enum PackageTypes
+        public enum MountingTypes
         {
             None = 0,
             SurfaceMount = 3,
             ThroughHole = 80
         }
 
-        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string packageType = "")
+        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
         {
             var keywords = partNumber.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
             var authResponse = await AuthorizeAsync();
             if (authResponse == null || !authResponse.IsAuthorized) 
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
-            var packageTypeEnum = PackageTypes.None;
-            switch (packageType.ToLower())
+            var packageTypeEnum = MountingTypes.None;
+            switch (mountingType.ToLower())
             {
                 case "surface mount":
-                    packageTypeEnum = PackageTypes.SurfaceMount;
+                    packageTypeEnum = MountingTypes.SurfaceMount;
                     break;
                 case "through hole":
-                    packageTypeEnum = PackageTypes.ThroughHole;
+                    packageTypeEnum = MountingTypes.ThroughHole;
                     break;
             }
 
@@ -127,7 +131,7 @@ namespace Binner.Common.Integrations
             });
         }
 
-        private ICollection<ParametricFilter> MapParametricFilters(ICollection<string> keywords, PackageTypes packageType, ICollection<Taxonomies> taxonomies)
+        private ICollection<ParametricFilter> MapParametricFilters(ICollection<string> keywords, MountingTypes packageType, ICollection<Taxonomies> taxonomies)
         {
             var filters = new List<ParametricFilter>();
             var percent = "";
@@ -233,7 +237,7 @@ namespace Binner.Common.Integrations
             // dont add mounting type to resistors, they dont seem to be mapped
             if (!taxonomies.ContainsAny(new List<Taxonomies> { Taxonomies.Resistor, Taxonomies.SurfaceMountResistor, Taxonomies.ThroughHoleResistor }))
             {
-                if (packageType != PackageTypes.None)
+                if (packageType != MountingTypes.None)
                     filters.Add(new ParametricFilter
                     {
                         ParameterId = (int)Parametrics.MountingType,
@@ -243,7 +247,7 @@ namespace Binner.Common.Integrations
             return filters;
         }
 
-        private ICollection<Taxonomies> MapTaxonomies(string partType, PackageTypes packageType)
+        private ICollection<Taxonomies> MapTaxonomies(string partType, MountingTypes packageType)
         {
             var taxonomies = new List<Taxonomies>();
             var taxonomy = Taxonomies.None;
@@ -259,12 +263,12 @@ namespace Binner.Common.Integrations
                 switch (taxonomy)
                 {
                     case Taxonomies.Resistor:
-                        if (packageType == PackageTypes.ThroughHole)
+                        if (packageType == MountingTypes.ThroughHole)
                         {
                             taxonomies.Add(Taxonomies.ThroughHoleResistor);
                             addBaseType = false;
                         }
-                        if (packageType == PackageTypes.SurfaceMount)
+                        if (packageType == MountingTypes.SurfaceMount)
                         {
                             taxonomies.Add(Taxonomies.SurfaceMountResistor);
                             addBaseType = false;
@@ -284,7 +288,7 @@ namespace Binner.Common.Integrations
         /// <typeparam name="T"></typeparam>
         /// <param name="func"></param>
         /// <returns></returns>
-        private async Task<IApiResponse> WrapApiRequestAsync(DigikeyAuthorization authResponse, Func<DigikeyAuthorization, Task<IApiResponse>> func)
+        private async Task<IApiResponse> WrapApiRequestAsync(OAuthAuthorization authResponse, Func<OAuthAuthorization, Task<IApiResponse>> func)
         {
             try
             {
@@ -295,7 +299,7 @@ namespace Binner.Common.Integrations
                 // get refresh token, retry
                 _oAuth2Service.ClientSettings.RefreshToken = ex.Authorization.RefreshToken;
                 var token = await _oAuth2Service.RefreshTokenAsync();
-                var refreshTokenResponse = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId)
+                var refreshTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString())
                 {
                     AccessToken = token.AccessToken,
                     RefreshToken = token.RefreshToken,
@@ -303,13 +307,14 @@ namespace Binner.Common.Integrations
                     ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(token.ExpiresIn)),
                     AuthorizationReceived = true,
                 };
-                ServerContext.Set(nameof(DigikeyAuthorization), refreshTokenResponse);
+                var contextKey = $"{nameof(DigikeyApi)}-{_httpContextAccessor.HttpContext.User.Identity.Name}";
+                ServerContext.Set(contextKey, refreshTokenResponse);
                 if (refreshTokenResponse.IsAuthorized)
                 {
                     // save the credential
                     await _credentialService.SaveOAuthCredentialAsync(new Common.Models.OAuthCredential
                     {
-                        Provider = nameof(DigikeyApi),
+                        Provider = contextKey,
                         AccessToken = refreshTokenResponse.AccessToken,
                         RefreshToken = refreshTokenResponse.RefreshToken,
                         DateCreatedUtc = refreshTokenResponse.CreatedUtc,
@@ -337,24 +342,25 @@ namespace Binner.Common.Integrations
 
         private async Task ForgetAuthenticationTokens()
         {
-            ServerContext.Remove<DigikeyAuthorization>(nameof(DigikeyAuthorization));
+            ServerContext.Remove<OAuthAuthorization>(nameof(OAuthAuthorization));
             await _credentialService.RemoveOAuthCredentialAsync(nameof(DigikeyApi));
         }
 
-        private async Task<DigikeyAuthorization> AuthorizeAsync()
+        private async Task<OAuthAuthorization> AuthorizeAsync()
         {
+            var contextKey = $"{nameof(DigikeyApi)}-{_httpContextAccessor.HttpContext.User.Identity.Name}";
             // check if we have an in-memory auth credential
-            var getAuth = ServerContext.Get<DigikeyAuthorization>(nameof(DigikeyAuthorization));
+            var getAuth = ServerContext.Get<OAuthAuthorization>(contextKey);
             if (getAuth != null && getAuth.IsAuthorized)
                 return getAuth;
 
             // check if we have a saved to disk auth credential
-            DigikeyAuthorization authRequest;
-            var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
+            OAuthAuthorization authRequest;
+            var credential = await _credentialService.GetOAuthCredentialAsync(contextKey);
             if (credential != null)
             {
                 // reuse a saved oAuth credential
-                authRequest = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId)
+                authRequest = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString())
                 {
                     AccessToken = credential.AccessToken,
                     RefreshToken = credential.RefreshToken,
@@ -363,7 +369,7 @@ namespace Binner.Common.Integrations
                     AuthorizationReceived = true,
                 };
                 // also store it in memory
-                ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
+                ServerContext.Set(contextKey, authRequest);
                 return authRequest;
 
             }
@@ -373,10 +379,10 @@ namespace Binner.Common.Integrations
             var scopes = "";
             var authUrl = _oAuth2Service.GenerateAuthUrl(scopes);
             // OpenBrowser(authUrl);
-            authRequest = new DigikeyAuthorization(_oAuth2Service.ClientSettings.ClientId);
-            ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
+            authRequest = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString());
+            ServerContext.Set(contextKey, authRequest);
 
-            return new DigikeyAuthorization(true, authUrl);
+            return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
             /*
             // wait for oAuth callback authorization from Digikey or timeout
             var startTime = DateTime.Now;
@@ -411,7 +417,7 @@ namespace Binner.Common.Integrations
             }*/
         }
 
-        private HttpRequestMessage CreateRequest(DigikeyAuthorization authResponse, HttpMethod method, Uri uri)
+        private HttpRequestMessage CreateRequest(OAuthAuthorization authResponse, HttpMethod method, Uri uri)
         {
             var message = new HttpRequestMessage(method, uri);
             message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
@@ -580,8 +586,8 @@ namespace Binner.Common.Integrations
 
     public class DigikeyUnauthorizedException : Exception
     {
-        public DigikeyAuthorization Authorization { get; }
-        public DigikeyUnauthorizedException(DigikeyAuthorization authorization)
+        public OAuthAuthorization Authorization { get; }
+        public DigikeyUnauthorizedException(OAuthAuthorization authorization)
         {
             Authorization = authorization;
         }

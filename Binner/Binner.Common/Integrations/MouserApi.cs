@@ -1,6 +1,7 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Mouser;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -21,6 +22,7 @@ namespace Binner.Common.Integrations
         private readonly string _apiUrl;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -30,14 +32,15 @@ namespace Binner.Common.Integrations
 
         public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public MouserApi(string apiKey, string apiUrl)
+        public MouserApi(string apiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
         {
             _apiKey = apiKey;
             _apiUrl = apiUrl;
+            _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 
-        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string packageType = "")
+        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
         {
             var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);

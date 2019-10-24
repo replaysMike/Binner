@@ -7,6 +7,7 @@ using Binner.Common.StorageProviders;
 using Binner.Web.ServiceHost;
 using Binner.Web.WebHost;
 using LightInject;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Binner.Web.Configuration
@@ -83,24 +84,28 @@ namespace Binner.Web.Configuration
             container.Register<OctopartApi>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                return new OctopartApi(config.Integrations.Octopart.ApiKey, config.Integrations.Octopart.ApiUrl);
+                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
+                return new OctopartApi(config.Integrations.Octopart.ApiKey, config.Integrations.Octopart.ApiUrl, httpContextAccessor);
             }, new PerContainerLifetime());
             container.Register<DigikeyApi>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
                 var oAuth2Service = serviceFactory.GetInstance<OAuth2Service>();
                 var credentialService = serviceFactory.GetInstance<ICredentialService>();
-                return new DigikeyApi(oAuth2Service, config.Integrations.Digikey.ApiUrl, credentialService);
+                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
+                return new DigikeyApi(oAuth2Service, config.Integrations.Digikey.ApiUrl, credentialService, httpContextAccessor);
             }, new PerContainerLifetime());
             container.Register<MouserApi>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                return new MouserApi(config.Integrations.Mouser.ApiKey, config.Integrations.Mouser.ApiUrl);
+                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
+                return new MouserApi(config.Integrations.Mouser.ApiKey, config.Integrations.Mouser.ApiUrl, httpContextAccessor);
             }, new PerContainerLifetime());
             container.Register<AliExpressApi>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                return new AliExpressApi(config.Integrations.AliExpress.ApiKey, config.Integrations.AliExpress.ApiUrl);
+                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
+                return new AliExpressApi(config.Integrations.AliExpress.ApiKey, config.Integrations.AliExpress.ApiUrl, httpContextAccessor);
             }, new PerContainerLifetime());
         }
     }

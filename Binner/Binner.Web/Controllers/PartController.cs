@@ -152,9 +152,9 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet("info")]
-        public async Task<IActionResult> GetPartInfoAsync([FromQuery]string partNumber, [FromQuery]string partType = "", [FromQuery]string packageType = "")
+        public async Task<IActionResult> GetPartInfoAsync([FromQuery]string partNumber, [FromQuery]string partType = "", [FromQuery]string mountingType = "")
         {
-            var metadata = await _partService.GetPartInformationAsync(partNumber, partType, packageType);
+            var metadata = await _partService.GetPartInformationAsync(partNumber, partType, mountingType);
             if (metadata == null)
                 return NotFound();
             return Ok(metadata);
