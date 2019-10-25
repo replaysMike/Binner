@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Statistic, Segment } from 'semantic-ui-react';
+import { Statistic, Segment, Icon } from 'semantic-ui-react';
 
 export class Home extends Component {
   static displayName = Home.name;
@@ -53,19 +53,21 @@ export class Home extends Component {
             </div>
             <div className="divTableRow">
               <div className="divTableCell">
-                <Segment loading={loading}>
-                  <Statistic>
-                    <Statistic.Value>{summary.lowStockCount}</Statistic.Value>
-                    <Statistic.Label>Low Stock</Statistic.Label>
-                  </Statistic>
-                  <Statistic>
-                    <Statistic.Value>{summary.partsCount}</Statistic.Value>
-                    <Statistic.Label>Parts</Statistic.Label>
-                  </Statistic>
-                  <Statistic>
-                    <Statistic.Value>{summary.projectsCount}</Statistic.Value>
-                    <Statistic.Label>Projects</Statistic.Label>
-                  </Statistic>
+                <Segment loading={loading} textAlign='center'>
+                  <Statistic.Group widths='three'>
+                    <Statistic>
+                      <Statistic.Value><Icon name='plus' />{summary.lowStockCount}</Statistic.Value>
+                      <Statistic.Label>Low Stock</Statistic.Label>
+                    </Statistic>
+                    <Statistic>
+                      <Statistic.Value><Icon name='microchip' />{summary.partsCount}</Statistic.Value>
+                      <Statistic.Label>Parts</Statistic.Label>
+                    </Statistic>
+                    <Statistic>
+                      <Statistic.Value><Icon name='folder open' />{summary.projectsCount}</Statistic.Value>
+                      <Statistic.Label>Projects</Statistic.Label>
+                    </Statistic>
+                  </Statistic.Group>
                 </Segment>
               </div>
             </div>
