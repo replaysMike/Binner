@@ -1,6 +1,7 @@
 ﻿using Binner.Common.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Binner.Common.StorageProviders
@@ -65,6 +66,13 @@ namespace Binner.Common.StorageProviders
         /// <param name="partNumber"></param>
         /// <returns></returns>
         Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext);
+
+        /// <summary>
+        /// Get all parts
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> condition, IUserContext userContext);
 
         /// <summary>
         /// Find a part that matches any keyword

@@ -1,5 +1,7 @@
 ﻿using Binner.Common.Models;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services
@@ -46,6 +48,14 @@ namespace Binner.Common.Services
         /// </summary>
         /// <returns></returns>
         Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request);
+
+        /// <summary>
+        /// Get parts based on a condition
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="condition"></param>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> condition);
 
         /// <summary>
         /// Get a partType object, or create it if it doesn't exist

@@ -6,6 +6,7 @@ using Binner.Common.StorageProviders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services
@@ -50,6 +51,11 @@ namespace Binner.Common.Services
         public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request)
         {
             return await _storageProvider.GetPartsAsync(request, _requestContext.GetUserContext());
+        }
+
+        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> condition)
+        {
+            return await _storageProvider.GetPartsAsync(condition, _requestContext.GetUserContext());
         }
 
         public async Task<Part> AddPartAsync(Part part)

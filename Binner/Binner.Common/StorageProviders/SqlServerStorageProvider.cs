@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TypeSupport.Extensions;
 
@@ -183,6 +184,15 @@ VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
             var query = $"SELECT * FROM Parts WHERE PartNumber = @PartNumber AND (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<Part>(query, new { PartNumber = partNumber, UserId = userContext?.UserId });
             return result.FirstOrDefault();
+        }
+
+        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> condition, IUserContext userContext)
+        {
+            // todo: translate this to sql
+            var conditionalQuery = "";
+            var query = $"SELECT * FROM Parts WHERE {conditionalQuery} AND (@UserId IS NULL OR UserId = @UserId);";
+            var result = await SqlQueryAsync<Part>(query, new { UserId = userContext?.UserId });
+            return result.ToList();
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
