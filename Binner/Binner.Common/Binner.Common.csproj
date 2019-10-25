@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AnyMapper" Version="1.0.19" />
     <PackageReference Include="AnySerializer" Version="1.1.31" />
     <PackageReference Include="ExcelLibrary" Version="1.2011.7.31" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />

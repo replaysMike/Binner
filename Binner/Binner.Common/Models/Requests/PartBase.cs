@@ -1,11 +1,16 @@
 ﻿namespace Binner.Common.Models
 {
-    public class PartBase
+    public class PartBase : IPreventDuplicateResource
     {
         /// <summary>
         /// The main part number
         /// </summary>
         public string PartNumber { get; set; }
+
+        /// <summary>
+        /// True to allow potential duplicate of this part
+        /// </summary>
+        public bool AllowPotentialDuplicate { get; set; }
 
         /// <summary>
         /// Quantity on hand
@@ -63,9 +68,19 @@
         public string ImageUrl { get; set; }
 
         /// <summary>
+        /// Type of package
+        /// </summary>
+        public string PackageType { get; set; }
+
+        /// <summary>
         /// Type of part
         /// </summary>
         public string PartType { get; set; }
+
+        /// <summary>
+        /// Mounting Type of part
+        /// </summary>
+        public string MountingType { get; set; }
 
         /// <summary>
         /// Additional keywords

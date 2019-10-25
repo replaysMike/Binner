@@ -75,5 +75,17 @@ namespace Binner.Common.Services
         /// </summary>
         /// <returns></returns>
         Task<ICollection<PartType>> GetPartTypesAsync();
+
+        /// <summary>
+        /// Get count of all parts
+        /// </summary>
+        /// <returns></returns>
+        Task<long> GetPartsCountAsync();
+
+        /// <summary>
+        /// Get count of all parts
+        /// </summary>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetLowStockAsync();
     }
 }

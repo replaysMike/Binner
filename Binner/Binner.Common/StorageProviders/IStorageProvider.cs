@@ -135,5 +135,17 @@ namespace Binner.Common.StorageProviders
         /// <param name="project"></param>
         /// <returns></returns>
         Task<bool> DeleteProjectAsync(Project project, IUserContext userContext);
+
+        /// <summary>
+        /// Get total parts count
+        /// </summary>
+        /// <returns></returns>
+        Task<long> GetPartsCountAsync(IUserContext userContext);
+
+        /// <summary>
+        /// Get low stock
+        /// </summary>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetLowStockAsync(IUserContext userContext);
     }
 }

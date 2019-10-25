@@ -59,7 +59,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Mounting Type
         /// </summary>
-        public int MountingType { get; set; }
+        public int MountingTypeId { get; set; }
 
         /// <summary>
         /// Package Type (eg. DIP8)

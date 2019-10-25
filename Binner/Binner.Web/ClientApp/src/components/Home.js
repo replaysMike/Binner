@@ -1,11 +1,36 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Statistic } from 'semantic-ui-react';
+import { Statistic, Segment } from 'semantic-ui-react';
 
 export class Home extends Component {
   static displayName = Home.name;
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      summary: {},
+      loading: true
+    };
+  }
+
+  async componentDidMount() {
+    await this.loadDashboard();
+  }
+
+  async loadDashboard() {
+    this.setState({ loading: true });
+    const response = await fetch(`part/summary`);
+
+    if (response.status == 200) {
+      const data = await response.json();
+      this.setState({ summary: data || {}, loading: false });
+    }
+    else
+      this.setState({ summary: {}, loading: false });
+  }
+
   render() {
+    const { summary, loading } = this.state;
     return (
       <div>
         <h1>Welcome to Binner</h1>
@@ -27,19 +52,21 @@ export class Home extends Component {
               <div className="divTableCell header">Dashboard</div>
             </div>
             <div className="divTableRow">
-            <div className="divTableCell">
-                <Statistic>
-                  <Statistic.Value>18</Statistic.Value>
-                  <Statistic.Label>Low Stock</Statistic.Label>
-                </Statistic>
-                <Statistic>
-                  <Statistic.Value>50,000</Statistic.Value>
-                  <Statistic.Label>Parts</Statistic.Label>
-                </Statistic>
-                <Statistic>
-                  <Statistic.Value>4</Statistic.Value>
-                  <Statistic.Label>Projects</Statistic.Label>
-                </Statistic>
+              <div className="divTableCell">
+                <Segment loading={loading}>
+                  <Statistic>
+                    <Statistic.Value>{summary.lowStockCount}</Statistic.Value>
+                    <Statistic.Label>Low Stock</Statistic.Label>
+                  </Statistic>
+                  <Statistic>
+                    <Statistic.Value>{summary.partsCount}</Statistic.Value>
+                    <Statistic.Label>Parts</Statistic.Label>
+                  </Statistic>
+                  <Statistic>
+                    <Statistic.Value>{summary.projectsCount}</Statistic.Value>
+                    <Statistic.Label>Projects</Statistic.Label>
+                  </Statistic>
+                </Segment>
               </div>
             </div>
           </div>

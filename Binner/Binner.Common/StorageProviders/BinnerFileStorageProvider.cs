@@ -1,4 +1,5 @@
-﻿using AnySerializer;
+﻿using AnyMapper;
+using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Common.Models;
 using System;
@@ -142,21 +143,8 @@ namespace Binner.Common.StorageProviders
             {
                 part.UserId = userContext?.UserId;
                 var existingPart = await GetPartAsync(part.PartId, userContext);
-                // todo: automate this assignment or use a mapper
-                existingPart.BinNumber = part.BinNumber;
-                existingPart.BinNumber2 = part.BinNumber2;
-                existingPart.DatasheetUrl = part.DatasheetUrl;
-                existingPart.Description = part.Description;
-                existingPart.DigiKeyPartNumber = part.DigiKeyPartNumber;
-                existingPart.Keywords = part.Keywords;
-                existingPart.Location = part.Location;
-                existingPart.LowStockThreshold = part.LowStockThreshold;
-                existingPart.MouserPartNumber = part.MouserPartNumber;
-                existingPart.PartNumber = part.PartNumber;
-                existingPart.PartTypeId = part.PartTypeId;
-                existingPart.ProjectId = part.ProjectId;
-                existingPart.Quantity = part.Quantity;
-                existingPart.UserId = part.UserId;
+                existingPart = Mapper.Map<Part, Part>(part, x => x.PartId);
+                existingPart.PartId = part.PartId;
                 _isDirty = true;
             }
             finally
@@ -317,6 +305,35 @@ namespace Binner.Common.StorageProviders
             }
         }
 
+        public async Task<long> GetPartsCountAsync(IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Count;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Part>> GetLowStockAsync(IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts
+                    .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
+                    .OrderBy(x => x.Quantity)
+                    .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
         public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -407,11 +424,9 @@ namespace Binner.Common.StorageProviders
             try
             {
                 project.UserId = userContext?.UserId;
-                var existingPart = await GetProjectAsync(project.ProjectId, userContext);
-                existingPart.Name = project.Name;
-                existingPart.Description = project.Description;
-                existingPart.Location = project.Location;
-                existingPart.UserId = project.UserId;
+                var existingProject = await GetProjectAsync(project.ProjectId, userContext);
+                existingProject = Mapper.Map<Project, Project>(project, x => x.ProjectId);
+                existingProject.ProjectId = project.ProjectId;
                 _isDirty = true;
             }
             finally

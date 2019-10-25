@@ -27,13 +27,27 @@ namespace Binner.Common.StorageProviders
             Task.Run(async () => await GenerateDatabaseIfNotExistsAsync<IBinnerDb>()).GetAwaiter().GetResult();
         }
 
+        public async Task<long> GetPartsCountAsync(IUserContext userContext)
+        {
+            var query = $"SELECT COUNT_BIG(*) FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId);";
+            var result = await ExecuteScalarAsync<long>(query, new { UserId = userContext?.UserId });
+            return result;
+        }
+
+        public async Task<ICollection<Part>> GetLowStockAsync(IUserContext userContext)
+        {
+            var query = $"SELECT * FROM Parts WHERE Quantity <= LowStockThreshold AND (@UserId IS NULL OR UserId = @UserId);";
+            var result = await SqlQueryAsync<Part>(query, new { UserId = userContext?.UserId });
+            return result;
+        }
+
         public async Task<Part> AddPartAsync(Part part, IUserContext userContext)
         {
             part.UserId = userContext?.UserId;
             var query =
-$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, PackageType, MountingType, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId, Cost, Manufacturer, ManufacturerPartNumber, LowestCostSupplier, LowestCostSupplierUrl, ProductUrl, ImageUrl, DateCreatedUtc) 
+$@"INSERT INTO Parts (Quantity, LowStockThreshold, PartNumber, PackageType, MountingTypeId, DigiKeyPartNumber, MouserPartNumber, Description, PartTypeId, ProjectId, Keywords, DatasheetUrl, Location, BinNumber, BinNumber2, UserId, Cost, Manufacturer, ManufacturerPartNumber, LowestCostSupplier, LowestCostSupplierUrl, ProductUrl, ImageUrl, DateCreatedUtc) 
 output INSERTED.PartId 
-VALUES(@Quantity, @LowStockThreshold, @PartNumber, @PackageType, @MountingType, @DigiKeyPartNumber, @MouserPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Location, @BinNumber, @BinNumber2, @UserId, @Cost, @Manufacturer, @ManufacturerPartNumber, @LowestCostSupplier, @LowestCostSupplierUrl, @ProductUrl, @ImageUrl, @DateCreatedUtc);
+VALUES(@Quantity, @LowStockThreshold, @PartNumber, @PackageType, @MountingTypeId, @DigiKeyPartNumber, @MouserPartNumber, @Description, @PartTypeId, @ProjectId, @Keywords, @DatasheetUrl, @Location, @BinNumber, @BinNumber2, @UserId, @Cost, @Manufacturer, @ManufacturerPartNumber, @LowestCostSupplier, @LowestCostSupplierUrl, @ProductUrl, @ImageUrl, @DateCreatedUtc);
 ";
             return await InsertAsync<Part, long>(query, part, (x, key) => { x.PartId = key; });
         }
@@ -176,6 +190,7 @@ VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
             var offsetRecords = (request.Page - 1) * request.Results;
             var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
             var query = $@"SELECT * FROM Parts 
+WHERE (@UserId IS NULL OR UserId = @UserId) 
 ORDER BY 
 CASE WHEN @OrderBy IS NULL THEN PartId ELSE NULL END {sortDirection}, 
 CASE WHEN @OrderBy = 'PartNumber' THEN PartNumber ELSE NULL END {sortDirection}, 
@@ -193,7 +208,14 @@ CASE WHEN @OrderBy = 'Manufacturer' THEN Manufacturer ELSE NULL END {sortDirecti
 CASE WHEN @OrderBy = 'ManufacturerPartNumber' THEN ManufacturerPartNumber ELSE NULL END {sortDirection}, 
 CASE WHEN @OrderBy = 'DateCreatedUtc' THEN DateCreatedUtc ELSE NULL END {sortDirection} 
 OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
-            var result = await SqlQueryAsync<Part>(query, request);
+            var result = await SqlQueryAsync<Part>(query, new
+            {
+                Results = request.Results,
+                Page = request.Page,
+                OrderBy = request.OrderBy,
+                Direction = request.Direction,
+                UserId = userContext?.UserId
+            });
             return result.ToList();
         }
 
@@ -215,7 +237,8 @@ OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
         {
             var offsetRecords = (request.Page - 1) * request.Results;
             var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
-            var query = $@"SELECT * FROM Projects WHERE (@UserId IS NULL OR UserId = @UserId)
+            var query = $@"SELECT * FROM Projects 
+WHERE (@UserId IS NULL OR UserId = @UserId) 
 ORDER BY 
 CASE WHEN @OrderBy IS NULL THEN ProjectId ELSE NULL END {sortDirection}, 
 CASE WHEN @OrderBy = 'Name' THEN Name ELSE NULL END {sortDirection}, 
@@ -223,7 +246,14 @@ CASE WHEN @OrderBy = 'Description' THEN Description ELSE NULL END {sortDirection
 CASE WHEN @OrderBy = 'Location' THEN Location ELSE NULL END {sortDirection}, 
 CASE WHEN @OrderBy = 'DateCreatedUtc' THEN DateCreatedUtc ELSE NULL END {sortDirection} 
 OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
-            var result = await SqlQueryAsync<Project>(query);
+            var result = await SqlQueryAsync<Project>(query, new
+            {
+                Results = request.Results,
+                Page = request.Page,
+                OrderBy = request.OrderBy,
+                Direction = request.Direction,
+                UserId = userContext?.UserId
+            });
             return result.ToList();
         }
 
@@ -260,7 +290,7 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
             var result = await SqlQueryAsync<Part>(query, part);
             if (result.Any())
             {
-                query = $"UPDATE Parts SET Quantity = @Quantity, LowStockThreshold = @LowStockThreshold, PartNumber = @PartNumber, PackageType = @PackageType, MountingType = @MountingType, DigiKeyPartNumber = @DigiKeyPartNumber, MouserPartNumber = @MouserPartNumber, Description = @Description, PartTypeId = @PartTypeId, ProjectId = @ProjectId, Keywords = @Keywords, DatasheetUrl = @DatasheetUrl, Location = @Location, BinNumber = @BinNumber, BinNumber2 = @BinNumber2 WHERE PartId = @PartId AND (@UserId IS NULL OR UserId = @UserId);";
+                query = $"UPDATE Parts SET Quantity = @Quantity, LowStockThreshold = @LowStockThreshold, PartNumber = @PartNumber, PackageType = @PackageType, MountingTypeId = @MountingTypeId, DigiKeyPartNumber = @DigiKeyPartNumber, MouserPartNumber = @MouserPartNumber, Description = @Description, PartTypeId = @PartTypeId, ProjectId = @ProjectId, Keywords = @Keywords, DatasheetUrl = @DatasheetUrl, Location = @Location, BinNumber = @BinNumber, BinNumber2 = @BinNumber2 WHERE PartId = @PartId AND (@UserId IS NULL OR UserId = @UserId);";
                 await ExecuteAsync<Part>(query, part);
             }
             else
@@ -335,6 +365,23 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
                 connection.Close();
             }
             return results;
+        }
+
+        private async Task<T> ExecuteScalarAsync<T>(string query, object parameters = null)
+        {
+            T result;
+            using (var connection = new SqlConnection(_config.ConnectionString))
+            {
+                connection.Open();
+                using (var sqlCmd = new SqlCommand(query, connection))
+                {
+                    sqlCmd.Parameters.AddRange(CreateParameters(parameters));
+                    sqlCmd.CommandType = CommandType.Text;
+                    result = (T)await sqlCmd.ExecuteScalarAsync();
+                }
+                connection.Close();
+            }
+            return result;
         }
 
         private async Task<int> ExecuteAsync<T>(string query, T record)

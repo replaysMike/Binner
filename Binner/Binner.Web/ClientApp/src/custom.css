@@ -75,3 +75,23 @@ code {
 .fixed100 {
     width: 100px;
 }
+
+.partstable {
+    font-size: 0.7em !important;
+}
+
+.ui.page.modals.transition.visible {
+    display: flex !important;
+}
+
+.ui.modal.scrolling.content {
+    max-height: calc(100vh - 11em);
+}
+
+.ui.modal {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    display: inline-block !important;
+    position: relative;
+    top: auto;
+}

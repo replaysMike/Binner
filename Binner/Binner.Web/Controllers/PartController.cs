@@ -1,5 +1,6 @@
 ﻿using AnyMapper;
 using Binner.Common.Models;
+using Binner.Common.Models.Responses;
 using Binner.Common.Services;
 using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -22,13 +24,15 @@ namespace Binner.Web.Controllers
         private readonly IMemoryCache _cache;
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
+        private readonly IProjectService _projectService;
 
-        public PartController(ILogger<PartController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IPartService partService)
+        public PartController(ILogger<PartController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService)
         {
             _logger = logger;
             _cache = cache;
             _config = config;
             _partService = partService;
+            _projectService = projectService;
         }
 
         /// <summary>
@@ -62,7 +66,10 @@ namespace Binner.Web.Controllers
                 var partTypes = await _partService.GetPartTypesAsync();
                 // map part types
                 foreach (var part in partsResponse)
+                {
                     part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+                    part.MountingType = ((MountingType)part.MountingTypeId).ToString();
+                }
             }
             return Ok(partsResponse);
         }
@@ -81,7 +88,25 @@ namespace Binner.Web.Controllers
             });
             var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            mappedPart.PartTypeId = partType.PartTypeId; 
+            mappedPart.PartTypeId = partType.PartTypeId;
+            mappedPart.MountingTypeId = (int)Enum.Parse<MountingType>(request.MountingType.Replace(" ", ""), true);
+
+            if (request is IPreventDuplicateResource && !((IPreventDuplicateResource)request).AllowPotentialDuplicate)
+            {
+                var existingSearch = await _partService.FindPartsAsync(mappedPart.PartNumber);
+                if (existingSearch.Any())
+                {
+                    var existingParts = existingSearch.Select(x => x.Result).ToList();
+                    var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(existingParts);
+                    var partTypes = await _partService.GetPartTypesAsync();
+                    foreach (var p in partsResponse)
+                    {
+                        p.PartType = partTypes.Where(x => x.PartTypeId == p.PartTypeId).Select(x => x.Name).FirstOrDefault();
+                        p.MountingType = ((MountingType)p.MountingTypeId).ToString();
+                    }
+                    return StatusCode((int)HttpStatusCode.Conflict, new PossibleDuplicateResponse(partsResponse));
+                }
+            }
             var part = await _partService.AddPartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
@@ -104,6 +129,7 @@ namespace Binner.Web.Controllers
             mappedPart.PartId = request.PartId;
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             mappedPart.PartTypeId = partType.PartTypeId;
+            mappedPart.MountingTypeId = (int)Enum.Parse<MountingType>(request.MountingType.Replace(" ", ""), true);
             var part = await _partService.UpdatePartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
@@ -144,6 +170,25 @@ namespace Binner.Web.Controllers
                 part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
 
             return Ok(partsResponse);
+        }
+
+        /// <summary>
+        /// Get part summary (dashboard)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetDashboardSummaryAsync()
+        {
+            var count = await _partService.GetPartsCountAsync();
+            var lowStock = await _partService.GetLowStockAsync();
+            var projects = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
+            return Ok(new
+            {
+                PartsCount = count,
+                LowStockCount = lowStock.Count,
+                ProjectsCount = projects.Count,
+            });
         }
 
         /// <summary>

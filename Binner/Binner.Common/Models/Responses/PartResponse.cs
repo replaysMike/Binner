@@ -73,9 +73,19 @@
         public long PartTypeId { get; set; }
 
         /// <summary>
+        /// Mounting Type of part
+        /// </summary>
+        public int MountingTypeId { get; set; }
+
+        /// <summary>
         /// Type of part
         /// </summary>
         public string PartType { get; set; }
+
+        /// <summary>
+        /// Mounting Type of part
+        /// </summary>
+        public string MountingType { get; set; }
 
         /// <summary>
         /// Additional keywords
