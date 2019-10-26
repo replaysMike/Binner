@@ -72,7 +72,7 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="partNumber"></param>
         /// <returns></returns>
-        Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> condition, IUserContext userContext);
+        Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext userContext);
 
         /// <summary>
         /// Find a part that matches any keyword

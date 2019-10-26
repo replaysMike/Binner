@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlTypes;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using TypeSupport.Extensions;
 
@@ -186,13 +188,20 @@ VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
             return result.FirstOrDefault();
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> condition, IUserContext userContext)
+        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext userContext)
         {
-            // todo: translate this to sql
-            var conditionalQuery = "";
-            var query = $"SELECT * FROM Parts WHERE {conditionalQuery} AND (@UserId IS NULL OR UserId = @UserId);";
-            var result = await SqlQueryAsync<Part>(query, new { UserId = userContext?.UserId });
+            var conditionalQuery = TranslatePredicateToSql(predicate);
+            var query = $"SELECT * FROM Parts WHERE {conditionalQuery.Sql} AND (@UserId IS NULL OR UserId = @UserId);";
+            conditionalQuery.Parameters.Add("UserId", userContext?.UserId);
+            var result = await SqlQueryAsync<Part>(query, conditionalQuery.Parameters);
             return result.ToList();
+        }
+
+        private WhereCondition TranslatePredicateToSql(Expression<Func<Part, bool>> predicate)
+        {
+            var builder = new SqlWhereExpressionBuilder();
+            var sql = builder.ToParameterizedSql<Part>(predicate);
+            return sql;
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
@@ -414,12 +423,27 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
         private SqlParameter[] CreateParameters<T>(T record)
         {
             var parameters = new List<SqlParameter>();
-            var properties = record.GetProperties(PropertyOptions.HasGetter);
-            foreach (var property in properties)
+            var extendedType = record.GetExtendedType();
+            if (extendedType.IsDictionary)
             {
-                var propertyValue = record.GetPropertyValue(property);
-                var propertyMapped = MapFromPropertyValue(propertyValue);
-                parameters.Add(new SqlParameter(property.Name, propertyMapped));
+                var t = record as IDictionary<string, object>;
+                foreach(var p in t)
+                {
+                    var key = p.Key;
+                    var val = p.Value;
+                    var propertyMapped = MapFromPropertyValue(val);
+                    parameters.Add(new SqlParameter(key.ToString(), propertyMapped));
+                }
+            }
+            else
+            {
+                var properties = record.GetProperties(PropertyOptions.HasGetter);
+                foreach (var property in properties)
+                {
+                    var propertyValue = record.GetPropertyValue(property);
+                    var propertyMapped = MapFromPropertyValue(propertyValue);
+                    parameters.Add(new SqlParameter(property.Name, propertyMapped));
+                }
             }
             return parameters.ToArray();
         }

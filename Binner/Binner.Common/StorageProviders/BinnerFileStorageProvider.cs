@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -346,6 +347,19 @@ namespace Binner.Common.StorageProviders
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts.Where(predicate.Compile()).ToList();
             }
             finally
             {
