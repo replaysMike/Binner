@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal } from 'semantic-ui-react';
+import { Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dropdown } from 'semantic-ui-react';
 import NumberPicker from './NumberPicker';
+import { ProjectColors } from './Types';
 
 const inlineStyle = {
   modal: {
@@ -26,6 +27,7 @@ export class AddInventory extends Component {
       lastPartType: '',
       lastMountingType: '',
       lastQuantity: 1,
+      lastProjectId: null,
       lowStockThreshold: 10,
     };
     this.state = {
@@ -58,11 +60,12 @@ export class AddInventory extends Component {
         manufacturer: '',
         manufacturerPartNumber: '',
         imageUrl: '',
-        projectId: '',
+        projectId: viewPreferences.lastProjectId,
         supplier: '',
         supplierPartNumber: ''
       },
       partTypes: [],
+      projects: [],
       mountingTypes: [
         {
           key: 1,
@@ -89,6 +92,12 @@ export class AddInventory extends Component {
     this.handlePartModalClose = this.handlePartModalClose.bind(this);
     this.handleDuplicatePartModalClose = this.handleDuplicatePartModalClose.bind(this);
     this.handleHighlightAndVisit = this.handleHighlightAndVisit.bind(this);
+  }
+
+  async componentDidMount() {
+    await this.fetchPartTypes();
+    await this.fetchProjects();
+    await this.fetchRecentRows();
   }
 
   async fetchPartMetadata(input) {
@@ -130,6 +139,20 @@ export class AddInventory extends Component {
     this.setState({ partTypes });
   }
 
+  async fetchProjects() {
+    const response = await fetch('project/list?orderBy=DateCreatedUtc&direction=Descending&results=999');
+    const data = await response.json();
+    const projects = _.sortBy(data.map((item) => {
+      return {
+        key: item.projectId,
+        value: item.name,
+        text: `${item.name}`,
+        label: { color: _.find(ProjectColors, c => c.value == item.color).name, circular: true, content: item.parts, size: 'tiny' },
+      };
+    }), 'text');
+    this.setState({ projects });
+  }
+
   getMountingTypeById(mountingTypeId) {
     switch (mountingTypeId) {
       case 1:
@@ -137,11 +160,6 @@ export class AddInventory extends Component {
       case 2:
         return 'surface mount';
     }
-  }
-
-  async componentDidMount() {
-    await this.fetchRecentRows();
-    await this.fetchPartTypes();
   }
 
   /**
@@ -210,7 +228,7 @@ export class AddInventory extends Component {
           manufacturer: '',
           manufacturerPartNumber: '',
           imageUrl: '',
-          projectId: '',
+          projectId: viewPreferences.lastProjectId,
           supplier: '',
           supplierPartNumber: '',
         },
@@ -249,6 +267,9 @@ export class AddInventory extends Component {
         break;
       case 'lowStockThreshold':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lowStockThreshold: control.value }));
+        break;
+      case 'projectId':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastProjectId: control.value }));
         break;
     }
     this.setState({ part });
@@ -447,7 +468,7 @@ export class AddInventory extends Component {
   }
 
   render() {
-    const { part, recentParts, metadataParts, partTypes, mountingTypes, viewPreferences, partModalOpen, duplicatePartModalOpen, loading } = this.state;
+    const { part, recentParts, metadataParts, partTypes, mountingTypes, projects, viewPreferences, partModalOpen, duplicatePartModalOpen, loading } = this.state;
     const matchingPartsList = this.renderAllMatchingParts(part, metadataParts);
     return (
       <div>
@@ -473,6 +494,7 @@ export class AddInventory extends Component {
             <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={this.handleChange} name='partNumber' />
             <Form.Dropdown label='Part Type' placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={this.handleChange} name='partType' />
             <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={this.handleChange} name='mountingType' />
+            <Form.Dropdown label='Project' placeholder='My Project' search selection value={part.projectId} options={projects} onChange={this.handleChange} name='projectId' />
           </Form.Group>
           <Form.Group>
             <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity} onChange={this.updateNumberPicker} name='quantity' autoComplete='off' />} />

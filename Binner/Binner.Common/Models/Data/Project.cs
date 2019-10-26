@@ -30,6 +30,11 @@ namespace Binner.Common.Models
         public string Location { get; set; }
 
         /// <summary>
+        /// Project color
+        /// </summary>
+        public int Color { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;

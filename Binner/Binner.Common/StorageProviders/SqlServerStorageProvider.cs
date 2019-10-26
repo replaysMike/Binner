@@ -59,9 +59,9 @@ VALUES(@Quantity, @LowStockThreshold, @PartNumber, @PackageType, @MountingTypeId
         {
             project.UserId = userContext?.UserId;
             var query =
-            $@"INSERT INTO Projects (Name, Description, Location, DateCreatedUtc, UserId, DateCreatedUtc) 
+            $@"INSERT INTO Projects (Name, Description, Location, Color, DateCreatedUtc, UserId, DateCreatedUtc) 
 output INSERTED.ProjectId 
-VALUES(@Name, @Description, @Location, @DateCreatedUtc, @UserId, @DateCreatedUtc);
+VALUES(@Name, @Description, @Location, @Color, @DateCreatedUtc, @UserId, @DateCreatedUtc);
 ";
             return await InsertAsync<Project, long>(query, project, (x, key) => { x.ProjectId = key; });
         }
@@ -326,7 +326,7 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
             var result = await SqlQueryAsync<Project>(query, project);
             if (result.Any())
             {
-                query = $"UPDATE Projects SET Name = @Name, Description = @Description, Location = @Location WHERE ProjectId = @ProjectId AND (@UserId IS NULL OR UserId = @UserId);";
+                query = $"UPDATE Projects SET Name = @Name, Description = @Description, Location = @Location, Color = @Color WHERE ProjectId = @ProjectId AND (@UserId IS NULL OR UserId = @UserId);";
                 await ExecuteAsync<Project>(query, project);
             }
             else
