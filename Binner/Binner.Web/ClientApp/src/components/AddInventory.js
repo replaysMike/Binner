@@ -147,7 +147,7 @@ export class AddInventory extends Component {
         key: item.projectId,
         value: item.name,
         text: `${item.name}`,
-        label: { color: _.find(ProjectColors, c => c.value == item.color).name, circular: true, content: item.parts, size: 'tiny' },
+        label: { ...(_.find(ProjectColors, c => c.value == item.color).name !== '' && { color: _.find(ProjectColors, c => c.value == item.color).name }), circular: true, content: item.parts, size: 'tiny' },
       };
     }), 'text');
     this.setState({ projects });
