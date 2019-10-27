@@ -3,9 +3,9 @@ Binner is a free open-source parts inventory tracking system you can run locally
 
 ## Features
 * Standard inventory management input
-* Import your orders from Digikey, Mouser or AliExpress
+* Import your orders from Digikey, Mouser or ~AliExpress~
 * Customizable nested category placement
-* Automated datasheet retrieval
+* Automated datasheet retrieval / Datasheet search
 * Automated part lookup on Digikey/Mouser
 * Flexible search engine
 * Export your data to CSV / Excel if you need
@@ -31,4 +31,4 @@ Binner is in active development and nearing release. It is designed for electron
 
 ## Integrations
 
-Currently supports _Digikey_, _Mouser_ and _AliExpress_. For standalone installations, you will need to obtain your own API keys to enable these features. It's easy to do and instructions will be documented in the Wiki.
+Currently supports _Digikey_, _Mouser_ and ~_AliExpress_~. For standalone installations, you will need to obtain your own API keys to enable these features. It's easy to do and instructions will be documented in the Wiki.
