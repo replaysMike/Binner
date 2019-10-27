@@ -91,5 +91,15 @@ namespace Binner.Common.Models
         /// Status of part (Active, Inactive)
         /// </summary>
         public string Status { get; set; }
+
+        /// <summary>
+        /// Quantity of parts
+        /// </summary>
+        public long Quantity { get; set; }
+
+        /// <summary>
+        /// Custom reference value
+        /// </summary>
+        public string Reference { get; set; }
     }
 }

@@ -229,6 +229,58 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// External order import search
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("import")]
+        public async Task<IActionResult> OrderImportAsync(OrderImportRequest request)
+        {
+            var metadata = await _partService.GetExternalOrderAsync(request.OrderId, request.Supplier);
+            if (metadata == null)
+                return NotFound();
+            return Ok(metadata);
+        }
+
+        /// <summary>
+        /// External order import parts
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("importparts")]
+        public async Task<IActionResult> OrderImportPartsAsync(OrderImportPartsRequest request)
+        {
+            var parts = new List<PartResponse>();
+            foreach(var commonPart in request.Parts)
+            {
+                var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == commonPart.ManufacturerPartNumber);
+                if (existingParts.Any())
+                {
+                    var existingPart = existingParts.First();
+                    // update quantity
+                    existingPart.Quantity += commonPart.Quantity;
+                    existingPart = await _partService.UpdatePartAsync(existingPart);
+                    parts.Add(Mapper.Map<Part, PartResponse>(existingPart));
+                } else
+                {
+                    // create new part
+                    var part = Mapper.Map<CommonPart, Part>(commonPart);
+                    if (commonPart.Supplier.Equals("digikey", StringComparison.InvariantCultureIgnoreCase))
+                        part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
+                    if (commonPart.Supplier.Equals("mouser", StringComparison.InvariantCultureIgnoreCase))
+                        part.MouserPartNumber = commonPart.SupplierPartNumber;
+                    part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
+                    part.PartNumber = commonPart.ManufacturerPartNumber;
+                    part.DateCreatedUtc = DateTime.UtcNow;
+                    part = await _partService.AddPartAsync(part);
+                    parts.Add(Mapper.Map<Part, PartResponse>(part));
+                }
+            }
+
+            return Ok(parts);
+        }
+
+        /// <summary>
         /// Get part metadata
         /// </summary>
         /// <param name="request"></param>

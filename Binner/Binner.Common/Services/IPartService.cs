@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Models;
+using Binner.Common.Models.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -79,6 +80,14 @@ namespace Binner.Common.Services
         /// <param name="partNumber"></param>
         /// <returns></returns>
         Task<PartMetadata> GetPartMetadataAsync(string partNumber);
+
+        /// <summary>
+        /// Get an external order
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="supplier"></param>
+        /// <returns></returns>
+        Task<IServiceResult<ExternalOrderResponse>> GetExternalOrderAsync(string orderId, string supplier);
 
         /// <summary>
         /// Get all part types

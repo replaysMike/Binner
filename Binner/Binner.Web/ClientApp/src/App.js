@@ -23,7 +23,7 @@ export default class App extends Component {
         <Route path='/search' component={Search} />
         <Route path='/datasheets' component={Datasheets} />
         <Route path='/order' component={Order} />
-        <Route path='/order/import' component={OrderImport} />
+        <Route path='/import' component={OrderImport} />
         <Route path='/partTypes' component={PartTypes} />
         <Route path='/projects' component={Projects} />
       </Layout>

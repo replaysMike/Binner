@@ -24,7 +24,6 @@ namespace Binner.Common.Integrations
     public class DigikeyApi : IIntegrationApi
     {
         public static readonly TimeSpan MaxAuthorizationWaitTime = TimeSpan.FromSeconds(30);
-        private const string BasePath = "/Search/v3/Products";
 
         #region Regex Matching
         private readonly Regex PercentageRegex = new Regex("^\\d{0,4}(\\.\\d{0,4})? *%?$", RegexOptions.Compiled);
@@ -69,14 +68,82 @@ namespace Binner.Common.Integrations
             ThroughHole = 80
         }
 
-        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
+        public async Task<IApiResponse> GetOrderAsync(string orderId)
         {
-            var keywords = new List<string>();
-            if (!string.IsNullOrEmpty(partNumber))
-                keywords = partNumber.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
             var authResponse = await AuthorizeAsync();
             if (authResponse == null || !authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+            return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
+            {
+                try
+                {
+                    // set what fields we want from the API
+                    var uri = Url.Combine(_apiUrl, "OrderDetails/v3/Status/", orderId);
+                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
+                    // perform a keywords API search
+                    var response = await _client.SendAsync(requestMessage);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        throw new DigikeyUnauthorizedException(authenticationResponse);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var resultString = response.Content.ReadAsStringAsync().Result;
+                        var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings);
+                        return new ApiResponse(results, nameof(DigikeyApi));
+                    }
+                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Get information about a DigiKey product
+        /// </summary>
+        /// <param name="digikeyPartNumber"></param>
+        /// <returns></returns>
+        public async Task<IApiResponse> GetProductDetailsAsync(string digikeyPartNumber)
+        {
+            var authResponse = await AuthorizeAsync();
+            if (authResponse == null || !authResponse.IsAuthorized)
+                return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+            return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
+            {
+                try
+                {
+                    // set what fields we want from the API
+                    var uri = Url.Combine(_apiUrl, "Search/v3/Products/", digikeyPartNumber);
+                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
+                    // perform a keywords API search
+                    var response = await _client.SendAsync(requestMessage);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        throw new DigikeyUnauthorizedException(authenticationResponse);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var resultString = response.Content.ReadAsStringAsync().Result;
+                        var results = JsonConvert.DeserializeObject<Product>(resultString, _serializerSettings);
+                        return new ApiResponse(results, nameof(DigikeyApi));
+                    }
+                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            });
+        }
+
+        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
+        {
+            var authResponse = await AuthorizeAsync();
+            if (authResponse == null || !authResponse.IsAuthorized)
+                return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+
+            var keywords = new List<string>();
+            if (!string.IsNullOrEmpty(partNumber))
+                keywords = partNumber.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
             var packageTypeEnum = MountingTypes.None;
             if (!string.IsNullOrEmpty(mountingType))
             {
@@ -101,7 +168,7 @@ namespace Binner.Common.Integrations
                     {
                         { "Includes", $"Products({string.Join(",", includes)})" },
                     };
-                    var uri = Url.Combine(_apiUrl, BasePath, $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
+                    var uri = Url.Combine(_apiUrl, "/Search/v3/Products", $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
                     var taxonomies = MapTaxonomies(partType, packageTypeEnum);
                     var parametricFilters = MapParametricFilters(keywords, packageTypeEnum, taxonomies);

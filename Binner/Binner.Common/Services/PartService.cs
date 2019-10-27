@@ -2,6 +2,7 @@
 using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
+using Binner.Common.Models.Responses;
 using Binner.Common.StorageProviders;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartsCountAsync(_requestContext.GetUserContext());
         }
 
-        public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request) 
+        public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request)
         {
             return await _storageProvider.GetLowStockAsync(request, _requestContext.GetUserContext());
         }
@@ -83,6 +84,105 @@ namespace Binner.Common.Services
         public async Task<ICollection<PartType>> GetPartTypesAsync()
         {
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+        }
+
+        /// <summary>
+        /// Get an external order
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="supplier"></param>
+        /// <returns></returns>
+        public async Task<IServiceResult<ExternalOrderResponse>> GetExternalOrderAsync(string orderId, string supplier)
+        {
+            switch (supplier.ToLower())
+            {
+                case "digikey":
+                    if (!_digikeyApi.IsConfigured) throw new InvalidOperationException($"DigiKey Api is not configured!");
+                    return await GetExternalDigikeyOrderAsync(orderId);
+                case "mouser":
+                    if (!_mouserApi.IsConfigured) throw new InvalidOperationException($"Mouser Api is not configured!");
+
+                    return ServiceResult<ExternalOrderResponse>.Create(new ExternalOrderResponse());
+                default:
+                    throw new InvalidOperationException($"Unknown supplier {supplier}");
+            }
+        }
+
+        private async Task<IServiceResult<ExternalOrderResponse>> GetExternalDigikeyOrderAsync(string orderId)
+        {
+            var apiResponse = await _digikeyApi.GetOrderAsync(orderId);
+            if (apiResponse.RequiresAuthentication)
+                return ServiceResult<ExternalOrderResponse>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+            else if (apiResponse.Errors?.Any() == true)
+                return ServiceResult<ExternalOrderResponse>.Create(apiResponse.Errors, apiResponse.ApiName);
+            var digikeyResponse = (OrderSearchResponse)apiResponse.Response;
+
+            var lineItems = digikeyResponse.LineItems;
+            var commonParts = new List<CommonPart>();
+            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+            // look up every part by digikey part number
+            foreach (var lineItem in lineItems)
+            {
+                // get details on this digikey part
+                var partResponse = await _digikeyApi.GetProductDetailsAsync(lineItem.DigiKeyPartNumber);
+                if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                {
+                    var part = (Product)partResponse.Response;
+                    // convert the part to a common part
+                    var additionalPartNumbers = new List<string>();
+                    var basePart = part.Parameters.Where(x => x.Parameter.Equals("Base Part Number")).Select(x => x.Value).FirstOrDefault();
+                    if (!string.IsNullOrEmpty(basePart))
+                        additionalPartNumbers.Add(basePart);
+                    var mountingTypeId = MountingType.ThroughHole;
+                    Enum.TryParse<MountingType>(part.Parameters.Where(x => x.Parameter.Equals("Mounting Type")).Select(x => x.Value.Replace(" ", "")).FirstOrDefault(), out mountingTypeId);
+                    var currency = digikeyResponse.Currency;
+                    if (string.IsNullOrEmpty(currency))
+                        currency = "USD";
+                    var packageType = part.Parameters
+                            ?.Where(x => x.Parameter.Equals("Supplier Device Package", StringComparison.InvariantCultureIgnoreCase))
+                            .Select(x => x.Value)
+                            .FirstOrDefault();
+                    if (string.IsNullOrEmpty(packageType))
+                        packageType = part.Parameters
+                            ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
+                            .Select(x => x.Value)
+                            .FirstOrDefault();
+                    commonParts.Add(new CommonPart
+                    {
+                        SupplierPartNumber = part.DigiKeyPartNumber,
+                        Supplier = "DigiKey",
+                        ManufacturerPartNumber = part.ManufacturerPartNumber,
+                        Manufacturer = part.Manufacturer.Value,
+                        Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
+                        ImageUrl = part.PrimaryPhoto,
+                        DatasheetUrls = new List<string> { part.PrimaryDatasheet },
+                        ProductUrl = part.ProductUrl,
+                        Status = part.ProductStatus,
+                        Currency = currency,
+                        AdditionalPartNumbers = additionalPartNumbers,
+                        BasePartNumber = basePart,
+                        MountingTypeId = (int)mountingTypeId,
+                        PackageType = packageType,
+                        Cost = lineItem.UnitPrice,
+                        Quantity = lineItem.Quantity,
+                        Reference = lineItem.CustomerReference,
+                    });
+                }
+            }
+            foreach (var part in commonParts)
+            {
+                part.PartType = DeterminePartType(part, partTypes);
+                part.Keywords = DetermineKeywords(part, partTypes);
+            }
+            return ServiceResult<ExternalOrderResponse>.Create(new ExternalOrderResponse
+            {
+                OrderDate = digikeyResponse.ShippingDetails.Any() ? DateTime.Parse(digikeyResponse.ShippingDetails.First().DateTransaction ?? DateTime.MinValue.ToString()) : DateTime.MinValue,
+                Currency = digikeyResponse.Currency,
+                CustomerId = digikeyResponse.CustomerId.ToString(),
+                Amount = lineItems.Sum(x => x.TotalPrice),
+                TrackingNumber = digikeyResponse.ShippingDetails.Any() ? digikeyResponse.ShippingDetails.First().TrackingUrl : "",
+                Parts = commonParts
+            });
         }
 
         public async Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")

@@ -173,7 +173,7 @@ export class Datasheets extends Component {
     const partsWithDatasheets = _.filter(parts, function (x) { return x.datasheetUrls.length > 0 && _.first(x.datasheetUrls).length > 0; });
     return (
       <div>
-        <Form onSubmit={this.onSubmit}>
+        <Form>
           <Form.Group>
             <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={this.handleChange} name='partNumber' />
             <Form.Dropdown label='Part Type' placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={this.handleChange} name='partType' />

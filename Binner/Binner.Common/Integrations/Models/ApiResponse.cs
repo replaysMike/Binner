@@ -27,7 +27,7 @@ namespace Binner.Common.Integrations.Models
         /// <summary>
         /// Errors
         /// </summary>
-        public IEnumerable<string> Errors { get; set; }
+        public IEnumerable<string> Errors { get; set; } = new List<string>();
         
         /// <summary>
         /// Name of api

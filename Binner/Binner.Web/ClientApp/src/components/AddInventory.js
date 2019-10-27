@@ -69,6 +69,11 @@ export class AddInventory extends Component {
       projects: [],
       mountingTypes: [
         {
+          key: 999,
+          value: null,
+          text: '',
+        },
+        {
           key: 1,
           value: 'through hole',
           text: 'Through Hole',
@@ -211,7 +216,6 @@ export class AddInventory extends Component {
     if (response.status === 409) {
       // possible duplicate
       const data = await response.json();
-      console.log('resp', response, data);
       this.setState({ duplicateParts: data.parts, duplicatePartModalOpen: true });
     } else {
 

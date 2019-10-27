@@ -531,7 +531,7 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
             {
                 case var p when p.IsCollection:
                 case var a when a.IsArray:
-                    return string.Join(",", ((ICollection<object>)obj).Select(x => x.ToString()).ToArray());
+                    return string.Join(",", ((ICollection<string>)obj).Select(x => x.ToString()).ToArray());
                 case var p when p.Type == typeof(DateTime):
                     if (((DateTime)obj) == DateTime.MinValue)
                         return SqlDateTime.MinValue.Value;
