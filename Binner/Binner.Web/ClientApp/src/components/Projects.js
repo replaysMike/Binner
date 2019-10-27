@@ -13,15 +13,18 @@ export class Projects extends Component {
       project: {
         name: '',
         description: '',
-        color: '',
+        location: '',
+        color: 0,
+        loading: false,
       },
-      addProjectVisible: false,
+      changeTracker: [],
+      lastSavedProjectId: 0,
+      addVisible: false,
       page: 1,
       records: 10,
       column: null,
       direction: null,
       noRemainingData: false,
-      lastSavedProjectId: 0,
       loading: true,
       colors: _.map(ProjectColors, function (c) {
         return {
@@ -34,10 +37,14 @@ export class Projects extends Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleInlineChange = this.handleInlineChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.handleSort = this.handleSort.bind(this);
     this.handleNextPage = this.handleNextPage.bind(this);
-    this.handleAddProject = this.handleAddProject.bind(this);
+    this.handleShowAdd = this.handleShowAdd.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.save = this.save.bind(this);
+    this.saveColumn = this.saveColumn.bind(this);
   }
 
   async componentDidMount() {
@@ -50,6 +57,9 @@ export class Projects extends Component {
     let endOfData = false;
     const response = await fetch(`project/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}`);
     const pageOfData = await response.json();
+    pageOfData.forEach(function (element) {
+      element.loading = true;
+    });
     if (pageOfData && pageOfData.length === 0)
       endOfData = true;
     let newData = [];
@@ -91,6 +101,15 @@ export class Projects extends Component {
     this.setState({ project });
   }
 
+  handleInlineChange(e, control, project) {
+    const { projects, changeTracker } = this.state;
+    project[control.name] = control.value;
+    let changes = [...changeTracker];
+    if (_.where(changes, { projectId: project.projectId }).length === 0)
+      changes.push({ projectId: project.projectId });
+    this.setState({ projects, changeTracker: changes });
+  }
+
   /**
    * Save new project
    * @param {any} e
@@ -110,28 +129,79 @@ export class Projects extends Component {
         project: {
           name: '',
           description: '',
-          color: '',
+          location: '',
+          color: 0,
+          loading: false,
         },
         addProjectVisible: false
       });
-      await this.loadProjects(this.state.page);
+      await this.loadProjects(this.state.page, true);
     }
   }
 
-  handleAddProject(e) {
-    this.setState({ addProjectVisible: !this.state.addProjectVisible });
+  async onDelete(project) {
+    const response = await fetch('project', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ projectId: project.projectId})
+    });
+    await this.loadProjects(this.state.page, true);
+  }
+
+  async saveColumn(e) {
+    const { projects, changeTracker } = this.state;
+    changeTracker.forEach(async (val) => {
+      const project = _.where(projects, { projectId: val.projectId }) || [];
+      if (project.length > 0)
+        await this.save(project[0]);
+    });
+    this.setState({ projects, changeTracker: [] });
+  }
+
+  async save(project) {
+    const { projects } = this.state;
+    const p = _.where(projects, { projectId: project.projectId });
+    p.loading = false;
+    this.setState({ projects });
+    let lastSavedProjectId = 0;
+    project.color = Number.parseInt(project.color) || 0;
+    const response = await fetch('project', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(project)
+    });
+    if (response.status == 200) {
+      const data = await response.json();
+      lastSavedProjectId = project.projectId;
+    }
+    else
+      console.log('failed to save project');
+    p.loading = false;
+    this.setState({ projects, lastSavedProjectId });
+  }
+
+  handleShowAdd(e) {
+    this.setState({ addProjectVisible: !this.state.addVisible });
+  }
+
+  async handleDelete(e, project) {
+    await this.onDelete(project);
   }
 
   renderProjects(projects, column, direction) {
-    const { project, lastSavedProjectId, colors, addProjectVisible } = this.state;
+    const { project, lastSavedProjectId, colors, addVisible } = this.state;
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
         <div>
           <div style={{ minHeight: '35px' }}>
-            <Button onClick={this.handleAddProject} icon size='mini' floated='right'><Icon name='file' /> Add Project</Button>
+            <Button onClick={this.handleShowAdd} icon size='mini' floated='right'><Icon name='file' /> Add Project</Button>
           </div>
           <div>
-            {addProjectVisible &&
+            {addVisible &&
               <Segment>
                 <Form onSubmit={this.onSubmit}>
                   <Form.Input width={6} label='Name' required placeholder='555 Timer Project' focus value={project.name} onChange={this.handleChange} name='name' />
@@ -145,19 +215,23 @@ export class Projects extends Component {
           <Table compact celled sortable selectable striped size='small'>
             <Table.Header>
               <Table.Row>
+                <Table.HeaderCell></Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={this.handleSort('name')}>Project</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'parts' ? direction : null} onClick={this.handleSort('parts')}>Parts</Table.HeaderCell>
+                <Table.HeaderCell></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
               {projects.map(p =>
                 <Table.Row key={p.projectId} onClick={this.handleClick}>
-                  <Table.Cell><Label ribbon={lastSavedProjectId === p.projectId}>{p.name}</Label></Table.Cell>
-                  <Table.Cell>{p.description}</Table.Cell>
-                  <Table.Cell>{p.location}</Table.Cell>
+                  <Table.Cell textAlign='center'><Label circular {...(_.find(ProjectColors, c => c.value == p.color).name !== '' && { color: _.find(ProjectColors, c => c.value == p.color).name })} size='mini' /></Table.Cell>
+                  <Table.Cell><Input labelPosition='left' type='text' transparent name='name' onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
+                  <Table.Cell><Input type='text' transparent name='description' onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
+                  <Table.Cell><Input type='text' transparent name='location' onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
                   <Table.Cell>{p.parts}</Table.Cell>
+                  <Table.Cell textAlign='center'><Button icon='delete' size='tiny' onClick={e => this.handleDelete(e, p)} /></Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>

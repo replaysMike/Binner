@@ -41,7 +41,7 @@ export class Home extends Component {
           <li><Link to="/search">Search inventory</Link></li>
           <li><Link to="/datasheets">Datasheet Search</Link></li>
           <li><Link to="/order">Order Low Stock</Link></li>
-          <li><Link to="/categories">Manage Categories</Link></li>
+          <li><Link to="/partTypes">Manage Part Types</Link></li>
           <li><Link to="/projects">Manage Projects</Link></li>
         </ul>
 

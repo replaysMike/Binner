@@ -20,15 +20,15 @@ namespace Binner.Web.Controllers
         private readonly ILogger<ProjectController> _logger;
         private readonly IMemoryCache _cache;
         private readonly WebHostServiceConfiguration _config;
-        private readonly IPartService _partsService;
+        private readonly IPartService _partService;
         private readonly IProjectService _projectService;
 
-        public ProjectController(ILogger<ProjectController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IPartService partsService, IProjectService projectService)
+        public ProjectController(ILogger<ProjectController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService)
         {
             _logger = logger;
             _cache = cache;
             _config = config;
-            _partsService = partsService;
+            _partService = partService;
             _projectService = projectService;
         }
 
@@ -58,7 +58,7 @@ namespace Binner.Web.Controllers
             var projectsResponse = Mapper.Map<ICollection<Project>, ICollection<ProjectResponse>>(projects);
             foreach (var project in projectsResponse)
             {
-                var partsForProject = await _partsService.GetPartsAsync(x => x.ProjectId == project.ProjectId);
+                var partsForProject = await _partService.GetPartsAsync(x => x.ProjectId == project.ProjectId);
                 project.Parts = partsForProject.Count;
             }
 

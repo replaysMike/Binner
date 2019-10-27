@@ -31,9 +31,9 @@ namespace Binner.Common.Services
             return await _storageProvider.GetProjectAsync(projectId, _requestContext.GetUserContext());
         }
 
-        public async Task<Project> GetProjectAsync(string projectName)
+        public async Task<Project> GetProjectAsync(string name)
         {
-            return await _storageProvider.GetProjectAsync(projectName, _requestContext.GetUserContext());
+            return await _storageProvider.GetProjectAsync(name, _requestContext.GetUserContext());
         }
 
         public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request)

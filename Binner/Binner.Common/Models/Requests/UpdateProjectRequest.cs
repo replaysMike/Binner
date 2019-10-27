@@ -21,5 +21,10 @@
         /// Location of project
         /// </summary>
         public string Location { get; set; }
+
+        /// <summary>
+        /// Color of project
+        /// </summary>
+        public int Color { get; set; }
     }
 }

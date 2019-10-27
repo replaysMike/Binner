@@ -127,7 +127,7 @@ export class AddInventory extends Component {
   }
 
   async fetchPartTypes() {
-    const response = await fetch('partTypes');
+    const response = await fetch('partType/list');
     const data = await response.json();
     const partTypes = _.sortBy(data.map((item) => {
       return {
@@ -146,7 +146,7 @@ export class AddInventory extends Component {
       return {
         key: item.projectId,
         value: item.name,
-        text: `${item.name}`,
+        text: item.name,
         label: { ...(_.find(ProjectColors, c => c.value == item.color).name !== '' && { color: _.find(ProjectColors, c => c.value == item.color).name }), circular: true, content: item.parts, size: 'tiny' },
       };
     }), 'text');

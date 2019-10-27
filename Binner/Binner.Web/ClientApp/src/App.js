@@ -7,7 +7,7 @@ import { Search } from './components/Search';
 import { Datasheets } from './components/Datasheets';
 import { Order } from './components/Order';
 import { OrderImport } from './components/OrderImport';
-import { Categories } from './components/Categories';
+import { PartTypes } from './components/PartTypes';
 import { Projects } from './components/Projects';
 
 import './custom.css'
@@ -24,7 +24,7 @@ export default class App extends Component {
         <Route path='/datasheets' component={Datasheets} />
         <Route path='/order' component={Order} />
         <Route path='/order/import' component={OrderImport} />
-        <Route path='/categories' component={Categories} />
+        <Route path='/partTypes' component={PartTypes} />
         <Route path='/projects' component={Projects} />
       </Layout>
     );

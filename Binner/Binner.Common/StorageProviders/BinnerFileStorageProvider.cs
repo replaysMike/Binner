@@ -210,6 +210,45 @@ namespace Binner.Common.StorageProviders
         }
 
         /// <summary>
+        /// Get a part type
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        public async Task<PartType> GetPartTypeAsync(long partTypeId, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.PartTypes
+                    .Where(x => x.PartTypeId == partTypeId && x.UserId == userContext?.UserId)
+                    .FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext userContext)
+        {
+            if (partType == null) throw new ArgumentNullException(nameof(partType));
+            await _dataLock.WaitAsync();
+            try
+            {
+                partType.UserId = userContext?.UserId;
+                var existingProject = await GetPartTypeAsync(partType.PartTypeId, userContext);
+                existingProject = Mapper.Map<PartType, PartType>(partType, x => x.PartTypeId);
+                existingProject.PartTypeId = partType.PartTypeId;
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return partType;
+        }
+
+        /// <summary>
         /// Delete an existing part
         /// </summary>
         /// <param name="part"></param>
@@ -448,6 +487,29 @@ namespace Binner.Common.StorageProviders
                 _dataLock.Release();
             }
             return project;
+        }
+
+        public async Task<bool> DeletePartTypeAsync(PartType partType, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                partType.UserId = userContext?.UserId;
+                var itemRemoved = _db.PartTypes.Remove(partType);
+                if (itemRemoved)
+                {
+                    var nextPartTypeId = _db.PartTypes.OrderByDescending(x => x.PartTypeId)
+                        .Select(x => x.PartTypeId)
+                        .FirstOrDefault() + 1;
+                    _primaryKeyTracker.SetNextKey<PartType>(nextPartTypeId);
+                    _isDirty = true;
+                }
+                return itemRemoved;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
         }
 
         public async Task<bool> DeleteProjectAsync(Project project, IUserContext userContext)

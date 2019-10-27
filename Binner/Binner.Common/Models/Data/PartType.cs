@@ -17,7 +17,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// If this is a child type, indicates the parent type
         /// </summary>
-        public int? ParentPartTypeId { get; set; }
+        public long? ParentPartTypeId { get; set; }
 
         /// <summary>
         /// The name of the part type

@@ -65,6 +65,7 @@ namespace Binner.Web.Configuration
         private static void RegisterServices(IServiceContainer container)
         {
             container.Register<IPartService, PartService>(new PerContainerLifetime());
+            container.Register<IPartTypeService, PartTypeService>(new PerContainerLifetime());
             container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
             container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
         }

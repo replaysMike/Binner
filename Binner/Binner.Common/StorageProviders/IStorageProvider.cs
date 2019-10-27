@@ -96,6 +96,27 @@ namespace Binner.Common.StorageProviders
         Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext);
 
         /// <summary>
+        /// Get an existing part type
+        /// </summary>
+        /// <param name="partTypeId"></param>
+        /// <returns></returns>
+        Task<PartType> GetPartTypeAsync(long partTypeId, IUserContext userContext);
+
+        /// <summary>
+        /// Update an existing part type
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext userContext);
+
+        /// <summary>
+        /// Delete an existing partType
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        Task<bool> DeletePartTypeAsync(PartType partType, IUserContext userContext);
+
+        /// <summary>
         /// Get all of the part types
         /// </summary>
         /// <param name="userContext"></param>

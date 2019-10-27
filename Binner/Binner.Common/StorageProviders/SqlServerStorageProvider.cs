@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlTypes;
-using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 using TypeSupport.Extensions;
 
@@ -59,7 +57,7 @@ VALUES(@Quantity, @LowStockThreshold, @PartNumber, @PackageType, @MountingTypeId
         {
             project.UserId = userContext?.UserId;
             var query =
-            $@"INSERT INTO Projects (Name, Description, Location, Color, UserId, DateCreatedUtc) 
+$@"INSERT INTO Projects (Name, Description, Location, Color, UserId, DateCreatedUtc) 
 output INSERTED.ProjectId 
 VALUES(@Name, @Description, @Location, @Color, @UserId, @DateCreatedUtc);
 ";
@@ -73,6 +71,13 @@ VALUES(@Name, @Description, @Location, @Color, @UserId, @DateCreatedUtc);
             return await ExecuteAsync<Part>(query, part) > 0;
         }
 
+        public async Task<bool> DeletePartTypeAsync(PartType partType, IUserContext userContext)
+        {
+            partType.UserId = userContext?.UserId;
+            var query = $"DELETE FROM PartTypes WHERE PartTypeId = @PartTypeId AND (@UserId IS NULL OR UserId = @UserId);";
+            return await ExecuteAsync<PartType>(query, partType) > 0;
+        }
+
         public async Task<bool> DeleteProjectAsync(Project project, IUserContext userContext)
         {
             project.UserId = userContext?.UserId;
@@ -83,8 +88,8 @@ VALUES(@Name, @Description, @Location, @Color, @UserId, @DateCreatedUtc);
         public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext userContext)
         {
             // basic ranked search by Michael Brown :)
-            var query = $@"
-WITH PartsExactMatch (PartId, Rank) AS
+            var query = 
+$@"WITH PartsExactMatch (PartId, Rank) AS
 (
 SELECT PartId, 10 as Rank FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId) AND 
 PartNumber = @Keywords 
@@ -208,7 +213,8 @@ VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
         {
             var offsetRecords = (request.Page - 1) * request.Results;
             var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
-            var query = $@"SELECT * FROM Parts 
+            var query = 
+$@"SELECT * FROM Parts 
 WHERE (@UserId IS NULL OR UserId = @UserId) 
 ORDER BY 
 CASE WHEN @OrderBy IS NULL THEN PartId ELSE NULL END {sortDirection}, 
@@ -238,6 +244,13 @@ OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
             return result.ToList();
         }
 
+        public async Task<PartType> GetPartTypeAsync(long partTypeId, IUserContext userContext)
+        {
+            var query = $"SELECT * FROM PartTypes WHERE PartTypeId = @PartTypeId AND (@UserId IS NULL OR UserId = @UserId);";
+            var result = await SqlQueryAsync<PartType>(query, new { PartTypeId = partTypeId, UserId = userContext?.UserId });
+            return result.FirstOrDefault();
+        }
+
         public async Task<Project> GetProjectAsync(long projectId, IUserContext userContext)
         {
             var query = $"SELECT * FROM Projects WHERE ProjectId = @ProjectId AND (@UserId IS NULL OR UserId = @UserId);";
@@ -256,7 +269,8 @@ OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
         {
             var offsetRecords = (request.Page - 1) * request.Results;
             var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
-            var query = $@"SELECT * FROM Projects 
+            var query = 
+$@"SELECT * FROM Projects 
 WHERE (@UserId IS NULL OR UserId = @UserId) 
 ORDER BY 
 CASE WHEN @OrderBy IS NULL THEN ProjectId ELSE NULL END {sortDirection}, 
@@ -317,6 +331,23 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
                 throw new ArgumentException($"Record not found for {nameof(Part)} = {part.PartId}");
             }
             return part;
+        }
+
+        public async Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext userContext)
+        {
+            partType.UserId = userContext?.UserId;
+            var query = $"SELECT PartTypeId FROM PartTypes WHERE PartTypeId = @PartTypeId AND (@UserId IS NULL OR UserId = @UserId);";
+            var result = await SqlQueryAsync<PartType>(query, partType);
+            if (result.Any())
+            {
+                query = $"UPDATE PartTypes SET Name = @Name, ParentPartTypeId = @ParentPartTypeId WHERE PartTypeId = @PartTypeId AND (@UserId IS NULL OR UserId = @UserId);";
+                await ExecuteAsync<PartType>(query, partType);
+            }
+            else
+            {
+                throw new ArgumentException($"Record not found for {nameof(PartType)} = {partType.PartTypeId}");
+            }
+            return partType;
         }
 
         public async Task<Project> UpdateProjectAsync(Project project, IUserContext userContext)
