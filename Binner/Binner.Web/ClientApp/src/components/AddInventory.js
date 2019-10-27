@@ -17,6 +17,7 @@ const inlineStyle = {
 
 export class AddInventory extends Component {
   static displayName = AddInventory.name;
+  static abortController = new AbortController();
 
   constructor(props) {
     super(props);
@@ -101,23 +102,34 @@ export class AddInventory extends Component {
   }
 
   async fetchPartMetadata(input) {
+    AddInventory.abortController.abort(); // Cancel the previous request
+    AddInventory.abortController = new AbortController();
     const { part } = this.state;
     this.setState({ loading: true });
-    const response = await fetch(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`);
-    const responseData = await response.json();
-    if (responseData.requiresAuthentication) {
-      // redirect for authentication
-      window.open(responseData.redirectUrl, '_blank');
-      return;
+    try {
+      const response = await fetch(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
+        signal: AddInventory.abortController.signal
+      });
+      const responseData = await response.json();
+      if (responseData.requiresAuthentication) {
+        // redirect for authentication
+        window.open(responseData.redirectUrl, '_blank');
+        return;
+      }
+      const { response: data } = responseData;
+      let metadataParts = [];
+      if (data && data.parts && data.parts.length > 0) {
+        metadataParts = data.parts;
+        const suggestedPart = data.parts[0];
+        this.setPartFromMetadata(metadataParts, suggestedPart);
+      }
+      this.setState({ metadataParts, loading: false });
+    } catch (ex) {
+      if (ex.name === 'AbortError') {
+        return; // Continuation logic has already been skipped, so return normally
+      }
+      throw ex;
     }
-    const { response: data } = responseData;
-    let metadataParts = [];
-    if (data && data.parts && data.parts.length > 0) {
-      metadataParts = data.parts;
-      const suggestedPart = data.parts[0];
-      this.setPartFromMetadata(metadataParts, suggestedPart);
-    }
-    this.setState({ metadataParts, loading: false });
   }
 
   async fetchRecentRows() {

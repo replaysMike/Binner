@@ -5,6 +5,7 @@ import { Table, Visibility, Input, Label } from 'semantic-ui-react';
 
 export class Search extends Component {
   static displayName = Search.name;
+  static abortController = new AbortController();
 
   constructor(props) {
     super(props);
@@ -48,15 +49,26 @@ export class Search extends Component {
   }
 
   async search(input) {
+    Search.abortController.abort(); // Cancel the previous request
+    Search.abortController = new AbortController();
     this.setState({ loading: true });
-    const response = await fetch(`part/search?keywords=${input}`);
+    try {
+      const response = await fetch(`part/search?keywords=${input}`, {
+        signal: Search.abortController.signal
+      });
 
-    if (response.status == 200) {
-      const data = await response.json();
-      this.setState({ parts: data || [], loading: false, noRemainingData: true });
+      if (response.status == 200) {
+        const data = await response.json();
+        this.setState({ parts: data || [], loading: false, noRemainingData: true });
+      }
+      else
+        this.setState({ parts: [], loading: false, noRemainingData: true });
+    } catch (ex) {
+      if (ex.name === 'AbortError') {
+        return; // Continuation logic has already been skipped, so return normally
+      }
+      throw ex;
     }
-    else
-      this.setState({ parts: [], loading: false, noRemainingData: true });
   }
 
   async save(part) {
@@ -124,20 +136,21 @@ export class Search extends Component {
   async saveColumn(e) {
     const { parts, changeTracker } = this.state;
     changeTracker.forEach(async (val) => {
-      const part = _.where(parts, { partId: val.partId }) || [];
-      if (part.length > 0)
-        await this.save(part[0]);
+      const part = _.find(parts, { partId: val.partId });
+      if (part)
+        await this.save(part);
     });
     this.setState({ parts, changeTracker: [] });
   }
 
   handleChange(e, control) {
     const { parts, changeTracker } = this.state;
-    const part = _.where(parts, { partId: control.data }) || [];
+    const part = _.find(parts, { partId: control.data });
     let changes = [...changeTracker];
-    if (part.length > 0) {
-      part[0].quantity = control.value;
-      changes.push({ partId: part[0].partId });
+    if (part) {
+      part[control.name] = control.value;
+      if (_.where(changes, { partId: part.partId }).length === 0)
+        changes.push({ partId: part.partId });
     }
     this.setState({ parts, changeTracker: changes });
   }

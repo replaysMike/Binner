@@ -4,7 +4,6 @@ using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -72,19 +71,24 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
         {
-            var keywords = partNumber.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            var keywords = new List<string>();
+            if (!string.IsNullOrEmpty(partNumber))
+                keywords = partNumber.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
             var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized) 
+            if (authResponse == null || !authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             var packageTypeEnum = MountingTypes.None;
-            switch (mountingType.ToLower())
+            if (!string.IsNullOrEmpty(mountingType))
             {
-                case "surface mount":
-                    packageTypeEnum = MountingTypes.SurfaceMount;
-                    break;
-                case "through hole":
-                    packageTypeEnum = MountingTypes.ThroughHole;
-                    break;
+                switch (mountingType.ToLower())
+                {
+                    case "surface mount":
+                        packageTypeEnum = MountingTypes.SurfaceMount;
+                        break;
+                    case "through hole":
+                        packageTypeEnum = MountingTypes.ThroughHole;
+                        break;
+                }
             }
 
             return await WrapApiRequestAsync(authResponse, async(authenticationResponse) =>
@@ -251,32 +255,35 @@ namespace Binner.Common.Integrations
         {
             var taxonomies = new List<Taxonomies>();
             var taxonomy = Taxonomies.None;
-            if (Enum.TryParse<Taxonomies>(partType, true, out taxonomy))
+            if (!string.IsNullOrEmpty(partType))
             {
-                var addBaseType = true;
-                // also map all the alternates
-                var memberInfos = typeof(Taxonomies).GetMember(taxonomy.ToString());
-                var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(Taxonomies));
-                var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
-                var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
-                // taxonomies.AddRange(alternateIds);
-                switch (taxonomy)
+                if (Enum.TryParse<Taxonomies>(partType, true, out taxonomy))
                 {
-                    case Taxonomies.Resistor:
-                        if (packageType == MountingTypes.ThroughHole)
-                        {
-                            taxonomies.Add(Taxonomies.ThroughHoleResistor);
-                            addBaseType = false;
-                        }
-                        if (packageType == MountingTypes.SurfaceMount)
-                        {
-                            taxonomies.Add(Taxonomies.SurfaceMountResistor);
-                            addBaseType = false;
-                        }
-                        break;
+                    var addBaseType = true;
+                    // also map all the alternates
+                    var memberInfos = typeof(Taxonomies).GetMember(taxonomy.ToString());
+                    var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(Taxonomies));
+                    var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
+                    var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
+                    // taxonomies.AddRange(alternateIds);
+                    switch (taxonomy)
+                    {
+                        case Taxonomies.Resistor:
+                            if (packageType == MountingTypes.ThroughHole)
+                            {
+                                taxonomies.Add(Taxonomies.ThroughHoleResistor);
+                                addBaseType = false;
+                            }
+                            if (packageType == MountingTypes.SurfaceMount)
+                            {
+                                taxonomies.Add(Taxonomies.SurfaceMountResistor);
+                                addBaseType = false;
+                            }
+                            break;
+                    }
+                    if (addBaseType)
+                        taxonomies.Add(taxonomy);
                 }
-                if(addBaseType)
-                    taxonomies.Add(taxonomy);
             }
 
             return taxonomies;
@@ -383,38 +390,6 @@ namespace Binner.Common.Integrations
             ServerContext.Set(contextKey, authRequest);
 
             return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
-            /*
-            // wait for oAuth callback authorization from Digikey or timeout
-            var startTime = DateTime.Now;
-            while (!_manualResetEvent.WaitOne(100))
-            {
-                getAuth = ServerContext.Get<DigikeyAuthorization>(nameof(DigikeyAuthorization));
-                if (getAuth.AuthorizationReceived)
-                {
-                    // ok, it either failed or succeeded
-                    if (getAuth.IsAuthorized)
-                    {
-                        // save the credential
-                        await _credentialService.SaveOAuthCredentialAsync(new Common.Models.OAuthCredential
-                        {
-                            Provider = nameof(DigikeyApi),
-                            AccessToken = getAuth.AccessToken,
-                            RefreshToken = getAuth.RefreshToken,
-                            DateCreatedUtc = getAuth.CreatedUtc,
-                            DateExpiresUtc = getAuth.ExpiresUtc,
-                        });
-                    }
-                    return getAuth;
-                }
-                else
-                {
-                    if (DateTime.Now.Subtract(startTime) >= MaxAuthorizationWaitTime)
-                    {
-                        // timeout
-                        return null;
-                    }
-                }
-            }*/
         }
 
         private HttpRequestMessage CreateRequest(OAuthAuthorization authResponse, HttpMethod method, Uri uri)

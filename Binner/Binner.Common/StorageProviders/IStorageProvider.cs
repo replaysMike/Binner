@@ -175,6 +175,6 @@ namespace Binner.Common.StorageProviders
         /// Get low stock
         /// </summary>
         /// <returns></returns>
-        Task<ICollection<Part>> GetLowStockAsync(IUserContext userContext);
+        Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext);
     }
 }

@@ -358,14 +358,17 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Part>> GetLowStockAsync(IUserContext userContext)
+        public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
             try
             {
                 return _db.Parts
                     .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
-                    .OrderBy(x => x.Quantity)
+                    .OrderBy(request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
                     .ToList();
             }
             finally

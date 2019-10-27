@@ -38,9 +38,9 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartsCountAsync(_requestContext.GetUserContext());
         }
 
-        public async Task<ICollection<Part>> GetLowStockAsync() 
+        public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request) 
         {
-            return await _storageProvider.GetLowStockAsync(_requestContext.GetUserContext());
+            return await _storageProvider.GetLowStockAsync(request, _requestContext.GetUserContext());
         }
 
         public async Task<Part> GetPartAsync(string partNumber)

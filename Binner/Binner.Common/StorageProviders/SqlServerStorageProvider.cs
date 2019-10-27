@@ -35,10 +35,38 @@ namespace Binner.Common.StorageProviders
             return result;
         }
 
-        public async Task<ICollection<Part>> GetLowStockAsync(IUserContext userContext)
+        public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext)
         {
-            var query = $"SELECT * FROM Parts WHERE Quantity <= LowStockThreshold AND (@UserId IS NULL OR UserId = @UserId);";
-            var result = await SqlQueryAsync<Part>(query, new { UserId = userContext?.UserId });
+            var offsetRecords = (request.Page - 1) * request.Results;
+            var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
+            var query = 
+$@"SELECT * FROM Parts 
+WHERE Quantity <= LowStockThreshold AND (@UserId IS NULL OR UserId = @UserId)
+ORDER BY 
+CASE WHEN @OrderBy IS NULL THEN PartId ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'PartNumber' THEN PartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'DigikeyPartNumber' THEN DigikeyPartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'MouserPartNumber' THEN MouserPartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Cost' THEN Cost ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Quantity' THEN Quantity ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'LowStockThreshold' THEN LowStockThreshold ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'PartTypeId' THEN PartTypeId ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'ProjectId' THEN ProjectId ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Location' THEN Location ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'BinNumber' THEN BinNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'BinNumber2' THEN BinNumber2 ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'Manufacturer' THEN Manufacturer ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'ManufacturerPartNumber' THEN ManufacturerPartNumber ELSE NULL END {sortDirection}, 
+CASE WHEN @OrderBy = 'DateCreatedUtc' THEN DateCreatedUtc ELSE NULL END {sortDirection} 
+OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
+            var result = await SqlQueryAsync<Part>(query, new
+            {
+                Results = request.Results,
+                Page = request.Page,
+                OrderBy = request.OrderBy,
+                Direction = request.Direction,
+                UserId = userContext?.UserId
+            });
             return result;
         }
 
@@ -515,7 +543,8 @@ VALUES (@Provider, @AccessToken, @RefreshToken, @DateCreatedUtc, @DateExpiresUtc
 
         private async Task<bool> GenerateDatabaseIfNotExistsAsync<T>()
         {
-            var schemaGenerator = new SqlServerSchemaGenerator<T>("Binner");
+            var connectionStringBuilder = new SqlConnectionStringBuilder(_config.ConnectionString);
+            var schemaGenerator = new SqlServerSchemaGenerator<T>(connectionStringBuilder.InitialCatalog);
             var modified = 0;
             try
             {

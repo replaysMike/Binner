@@ -96,6 +96,6 @@ namespace Binner.Common.Services
         /// Get count of all parts
         /// </summary>
         /// <returns></returns>
-        Task<ICollection<Part>> GetLowStockAsync();
+        Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request);
     }
 }

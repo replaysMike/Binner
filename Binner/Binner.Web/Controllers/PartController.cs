@@ -181,7 +181,7 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> GetDashboardSummaryAsync()
         {
             var count = await _partService.GetPartsCountAsync();
-            var lowStock = await _partService.GetLowStockAsync();
+            var lowStock = await _partService.GetLowStockAsync(new PaginatedRequest { Results = 999 });
             var projects = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
             return Ok(new
             {
@@ -189,6 +189,29 @@ namespace Binner.Web.Controllers
                 LowStockCount = lowStock.Count,
                 ProjectsCount = projects.Count,
             });
+        }
+
+        /// <summary>
+        /// Get list of low stock
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("low")]
+        public async Task<IActionResult> GetLowStockAsync([FromQuery] PaginatedRequest request)
+        {
+            var lowStock = await _partService.GetLowStockAsync(request);
+            var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(lowStock);
+            if (partsResponse.Any())
+            {
+                var partTypes = await _partService.GetPartTypesAsync();
+                // map part types
+                foreach (var part in partsResponse)
+                {
+                    part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+                    part.MountingType = ((MountingType)part.MountingTypeId).ToString();
+                }
+            }
+            return Ok(partsResponse);
         }
 
         /// <summary>
