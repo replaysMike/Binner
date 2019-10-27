@@ -1,7 +1,11 @@
-﻿using Binner.Common.Integrations.Models.Mouser;
+﻿using Binner.Common.Extensions;
+using Binner.Common.Integrations.Models;
+using Binner.Common.Integrations.Models.Mouser;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -13,11 +17,12 @@ namespace Binner.Common.Integrations
 {
     public class MouserApi : IIntegrationApi
     {
-        public const string Path = "/api/v1";
+        private const string BasePath = "/api/v1";
         private readonly string _apiKey;
         private readonly string _apiUrl;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -27,16 +32,17 @@ namespace Binner.Common.Integrations
 
         public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public MouserApi(string apiKey, string apiUrl)
+        public MouserApi(string apiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
         {
             _apiKey = apiKey;
             _apiUrl = apiUrl;
+            _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 
-        public async Task<ICollection<MouserPart>> GetPartsAsync(string partNumber)
+        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
         {
-            var uri = new Uri($"{Path}/search/partnumber?apiKey={_apiKey}");
+            var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new {
                 SearchByPartRequest = new SearchByPartRequest
@@ -56,14 +62,14 @@ namespace Binner.Common.Integrations
                 var resultString = response.Content.ReadAsStringAsync().Result;
                 var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
                 if (results.Errors.Any())
-                    throw new MouserErrorsException(results.Errors);
-                return results.SearchResults.Parts;
+                    new ApiResponse(results.Errors.Select(x => x.Message), nameof(MouserApi));
+                return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
             }
-            return null;
+            return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
-        public async Task<ICollection<MouserPart>> SearchAsync(string keyword)
+        public async Task<IApiResponse> SearchAsync(string keyword)
         {
-            var uri = new Uri($"{Path}/search/keyword?apiKey={_apiKey}");
+            var uri = Url.Combine(_apiUrl, BasePath, $"/search/keyword?apiKey={_apiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new
             {
@@ -85,23 +91,8 @@ namespace Binner.Common.Integrations
                 var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
                 if (results.Errors.Any())
                     throw new MouserErrorsException(results.Errors);
-                return results.SearchResults.Parts;
+                return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
             }
-            return null;
-        }
-
-        public async Task<ICollection<object>> BuildCartAsync()
-        {
-            return null;
-        }
-
-        public async Task<ICollection<object>> GetOrderAsync()
-        {
-            return null;
-        }
-
-        public async Task<ICollection<object>> CreateOrderAsync()
-        {
             return null;
         }
 

@@ -31,14 +31,14 @@ namespace Binner.Common.Services
             return await _storageProvider.GetProjectAsync(projectId, _requestContext.GetUserContext());
         }
 
-        public async Task<Project> GetProjectAsync(string projectName)
+        public async Task<Project> GetProjectAsync(string name)
         {
-            return await _storageProvider.GetProjectAsync(projectName, _requestContext.GetUserContext());
+            return await _storageProvider.GetProjectAsync(name, _requestContext.GetUserContext());
         }
 
-        public async Task<ICollection<Project>> GetProjectsAsync()
+        public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request)
         {
-            return await _storageProvider.GetProjectsAsync(_requestContext.GetUserContext());
+            return await _storageProvider.GetProjectsAsync(request, _requestContext.GetUserContext());
         }
 
         public async Task<Project> UpdateProjectAsync(Project project)

@@ -1,29 +1,32 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using Binner.Common.Extensions;
+using Binner.Common.Integrations.Models;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Integrations
 {
     public class OctopartApi : IIntegrationApi
     {
-        public const string Path = "/api/v3/parts";
+        public const string BasePath = "/api/v3/parts";
         private readonly string _apiKey;
         private readonly string _apiUrl;
         private readonly HttpClient _client;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public OctopartApi(string apiKey, string apiUrl)
+        public OctopartApi(string apiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
         {
             _apiKey = apiKey;
             _apiUrl = apiUrl;
+            _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 
-        public async Task<ICollection<string>> GetDatasheetsAsync(string partNumber)
+        public async Task<IApiResponse> GetDatasheetsAsync(string partNumber)
         {
             var datasheets = new List<string>();
             partNumber = "SN74S74N";
@@ -36,8 +39,8 @@ namespace Binner.Common.Integrations
                 { "include[]", "datasheets" },
             };
             System.Environment.SetEnvironmentVariable("MONO_URI_IRIPARSING", "true");
-            var uri = new Uri($"{Path}/match?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
-            ForceCanonicalPathAndQuery(uri);
+            var uri = Url.Combine(false, _apiUrl, BasePath, $"/match?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
+
             var k = uri.ToString();
             var req = new HttpRequestMessage(HttpMethod.Get, uri);
             // req.Content = new FormUrlEncodedContent(values);
@@ -60,19 +63,7 @@ namespace Binner.Common.Integrations
                 }
                 // parse into readable format
             }
-            return datasheets;
+            return new ApiResponse(datasheets, nameof(OctopartApi));
         }
-
-        void ForceCanonicalPathAndQuery(Uri uri)
-        {
-            string paq = uri.PathAndQuery; // need to access PathAndQuery
-            var flagsFieldInfo = typeof(Uri).GetField("_flags", BindingFlags.Instance | BindingFlags.NonPublic);
-            var flags = (ulong)flagsFieldInfo.GetValue(uri);
-            var flagsBefore = flags;
-            // System.Uri.Flags.E_QueryNotCanonical | System.Uri.Flags.DnsHostType | System.Uri.Flags.AuthorityFound | System.Uri.Flags.MinimalUriInfoSet | System.Uri.Flags.AllUriInfoSet | System.Uri.Flags.HostUnicodeNormalized | System.Uri.Flags.RestUnicodeNormalized
-            flags &= ~((ulong)0xC30); // Flags.PathNotCanonical|Flags.QueryNotCanonical|Flags.E_QueryNotCanonical|Flags.E_PathNotCanonical
-            flagsFieldInfo.SetValue(uri, flags);
-        }
-
     }
 }

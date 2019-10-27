@@ -6,7 +6,7 @@ namespace Binner.Common.Models
     /// <summary>
     /// Defines a type of part or category/sub-category
     /// </summary>
-    public class PartType
+    public class PartType : IEntity
     {
         /// <summary>
         /// Primary key
@@ -17,12 +17,17 @@ namespace Binner.Common.Models
         /// <summary>
         /// If this is a child type, indicates the parent type
         /// </summary>
-        public int? ParentPartTypeId { get; set; }
+        public long? ParentPartTypeId { get; set; }
 
         /// <summary>
         /// The name of the part type
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Creation date
+        /// </summary>
+        public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Optional user id to associate

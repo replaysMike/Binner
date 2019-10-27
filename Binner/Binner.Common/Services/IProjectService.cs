@@ -39,14 +39,14 @@ namespace Binner.Common.Services
         /// <summary>
         /// Get a project
         /// </summary>
-        /// <param name="projectName"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        Task<Project> GetProjectAsync(string projectName);
+        Task<Project> GetProjectAsync(string name);
 
         /// <summary>
         /// Get all projects
         /// </summary>
         /// <returns></returns>
-        Task<ICollection<Project>> GetProjectsAsync();
+        Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request);
     }
 }

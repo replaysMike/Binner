@@ -1,0 +1,97 @@
+/* Provide sufficient contrast against white background */
+a {
+  color: #0366d6;
+}
+
+code {
+  color: #E01A76;
+}
+
+.footer {
+    height: 50px;
+    width: 100%;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.divTable {
+    display: table;
+    width: 100%;
+}
+
+.divTableRow {
+    display: table-row;
+}
+
+.divTableRow .header {
+    font-weight: 600;
+    background-color: #eee;
+}
+
+.divTableHeading {
+    background-color: #EEE;
+    display: table-header-group;
+}
+
+.divTableCell, .divTableHead {
+    border: 1px solid #eee;
+    display: table-cell;
+    padding: 3px 10px;
+}
+
+.divTableHeading {
+    background-color: #EEE;
+    display: table-header-group;
+    font-weight: bold;
+}
+
+.divTableFoot {
+    background-color: #EEE;
+    display: table-footer-group;
+    font-weight: bold;
+}
+
+.divTableBody {
+    display: table-row-group;
+}
+
+.ui.grid {
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+}
+
+.borderless input {
+    border: 1px solid #fff !important;
+}
+
+.borderless input:focus {
+    border: 1px solid #85b7d9 !important;
+}
+
+.fixed100 {
+    width: 100px;
+}
+
+.partstable {
+    font-size: 0.7em !important;
+}
+
+.ui.page.modals.transition.visible {
+    display: flex !important;
+}
+
+.ui.modal.scrolling.content {
+    max-height: calc(100vh - 11em);
+}
+
+.ui.modal {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    display: inline-block !important;
+    position: relative;
+    top: auto;
+}

@@ -3,14 +3,12 @@ using LightInject;
 using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Binner.Web.WebHost
 {
@@ -49,7 +47,13 @@ namespace Binner.Web.WebHost
             // needed to store IP rate limit counters and ip rules, as well as in-memory API caching
             services.AddMemoryCache();
 
-            services.AddControllers();
+            services.AddControllersWithViews();
+
+            // In production, the React files will be served from this directory
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/build";
+            });
 
             StartupConfiguration.ConfigureIoC(Container, services);
             StartupConfiguration.ConfigureLogging(Container, services);
@@ -76,27 +80,29 @@ namespace Binner.Web.WebHost
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseSpaStaticFiles();
 
             app.UseRouting();
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}");
             });
-        }
 
-        /// <summary>
-        /// Convert a hex formatted string to bytes
-        /// </summary>
-        /// <param name="hex"></param>
-        /// <returns></returns>
-        private static byte[] ConvertHexToBytes(string hex)
-        {
-            var NumberChars = hex.Length;
-            var bytes = new byte[NumberChars / 2];
-            for (var i = 0; i < NumberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            return bytes;
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "ClientApp";
+
+                if (env.IsDevelopment())
+                {
+                    Console.WriteLine("Starting react dev server...");
+                    spa.UseReactDevelopmentServer(npmScript: "start");
+                }
+            });
         }
     }
 }

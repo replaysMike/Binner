@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Binner.Common.Integrations.Models;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -6,23 +9,25 @@ namespace Binner.Common.Integrations
 {
     public class AliExpressApi : IIntegrationApi
     {
-        public const string Path = "/api/v3/parts";
+        private const string BasePath = "/api/v3/parts";
         private readonly string _apiKey;
         private readonly string _apiUrl;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _client;
 
-        public AliExpressApi(string apiKey, string apiUrl)
+        public AliExpressApi(string apiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
         {
             _apiKey = apiKey;
             _apiUrl = apiUrl;
+            _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 
         public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public async Task<ICollection<string>> GetDatasheetsAsync(string partNumber)
+        public async Task<IApiResponse> GetDatasheetsAsync(string partNumber)
         {
-            return new List<string>();
+            return ApiResponse.Create(new List<string>(), nameof(AliExpressApi));
         }
     }
 }

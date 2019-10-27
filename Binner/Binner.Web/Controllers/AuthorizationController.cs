@@ -1,6 +1,8 @@
 ﻿using ApiClient.OAuth2;
 using Binner.Common;
+using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models.Digikey;
+using Binner.Common.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -16,17 +18,20 @@ namespace Binner.Web.Controllers
     {
         private readonly ILogger<AuthorizationController> _logger;
         private readonly OAuth2Service _oAuth2Service;
-        public AuthorizationController(ILogger<AuthorizationController> logger, OAuth2Service oAuth2Service)
+        private readonly ICredentialService _credentialService;
+
+        public AuthorizationController(ILogger<AuthorizationController> logger, OAuth2Service oAuth2Service, ICredentialService credentialService)
         {
             _logger = logger;
             _oAuth2Service = oAuth2Service;
+            _credentialService = credentialService;
         }
 
         /// <summary>
         /// Authorize an oAuth application
         /// </summary>
         /// <remarks>
-        /// This is used for Digikey oAuth authorization
+        /// This is used as a postback Url for oAuth authorization of external services/integrations
         /// </remarks>
         /// <param name="code"></param>
         /// <param name="scope"></param>
@@ -35,8 +40,14 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> AuthorizeAsync([FromQuery]string code, [FromQuery]string scope, [FromQuery]string state)
         {
-            // todo: generalize this so its not Api specific
-            var authRequest = ServerContext.Get<DigikeyAuthorization>(nameof(DigikeyAuthorization));
+            var contextKey = $"{nameof(DigikeyApi)}-{User.Identity.Name}";
+            var authRequest = ServerContext.Get<OAuthAuthorization>(contextKey);
+            if (authRequest == null)
+            {
+                // try get next integration
+                contextKey = $"{nameof(MouserApi)}-{User.Identity.Name}";
+                authRequest = ServerContext.Get<OAuthAuthorization>(contextKey);
+            }
             if (authRequest != null)
             {
                 var authResult = await _oAuth2Service.FinishAuthorization(code);
@@ -58,9 +69,18 @@ namespace Binner.Web.Controllers
                     authRequest.ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(authResult.ExpiresIn));
                 }
 
-                ServerContext.Set(nameof(DigikeyAuthorization), authRequest);
+                ServerContext.Set(contextKey, authRequest);
+                // save the credential
+                await _credentialService.SaveOAuthCredentialAsync(new Common.Models.OAuthCredential
+                {
+                    Provider = contextKey,
+                    AccessToken = authRequest.AccessToken,
+                    RefreshToken = authRequest.RefreshToken,
+                    DateCreatedUtc = authRequest.CreatedUtc,
+                    DateExpiresUtc = authRequest.ExpiresUtc,
+                });
 
-                return Ok("Authorization successful! You can now proceed to use integrations.");
+                return Redirect(authRequest.ReturnToUrl);
             }
             return BadRequest("No authorization request found, invalid callback.");
         }

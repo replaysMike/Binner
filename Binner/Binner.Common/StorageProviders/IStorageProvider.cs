@@ -1,6 +1,7 @@
 ﻿using Binner.Common.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Binner.Common.StorageProviders
@@ -64,7 +65,14 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="partNumber"></param>
         /// <returns></returns>
-        Task<ICollection<Part>> GetPartsAsync(IUserContext userContext);
+        Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext);
+
+        /// <summary>
+        /// Get all parts
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext userContext);
 
         /// <summary>
         /// Find a part that matches any keyword
@@ -86,6 +94,34 @@ namespace Binner.Common.StorageProviders
         /// <param name="partType"></param>
         /// <returns></returns>
         Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext);
+
+        /// <summary>
+        /// Get an existing part type
+        /// </summary>
+        /// <param name="partTypeId"></param>
+        /// <returns></returns>
+        Task<PartType> GetPartTypeAsync(long partTypeId, IUserContext userContext);
+
+        /// <summary>
+        /// Update an existing part type
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext userContext);
+
+        /// <summary>
+        /// Delete an existing partType
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        Task<bool> DeletePartTypeAsync(PartType partType, IUserContext userContext);
+
+        /// <summary>
+        /// Get all of the part types
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext);
 
         /// <summary>
         /// Create a new user defined project
@@ -113,7 +149,7 @@ namespace Binner.Common.StorageProviders
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext);
+        Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext userContext);
 
         /// <summary>
         /// Update an existing user defined project
@@ -128,5 +164,17 @@ namespace Binner.Common.StorageProviders
         /// <param name="project"></param>
         /// <returns></returns>
         Task<bool> DeleteProjectAsync(Project project, IUserContext userContext);
+
+        /// <summary>
+        /// Get total parts count
+        /// </summary>
+        /// <returns></returns>
+        Task<long> GetPartsCountAsync(IUserContext userContext);
+
+        /// <summary>
+        /// Get low stock
+        /// </summary>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext);
     }
 }

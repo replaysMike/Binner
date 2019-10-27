@@ -1,10 +1,12 @@
-﻿using AnySerializer;
+﻿using AnyMapper;
+using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -142,21 +144,8 @@ namespace Binner.Common.StorageProviders
             {
                 part.UserId = userContext?.UserId;
                 var existingPart = await GetPartAsync(part.PartId, userContext);
-                // todo: automate this assignment or use a mapper
-                existingPart.BinNumber = part.BinNumber;
-                existingPart.BinNumber2 = part.BinNumber2;
-                existingPart.DatasheetUrl = part.DatasheetUrl;
-                existingPart.Description = part.Description;
-                existingPart.DigiKeyPartNumber = part.DigiKeyPartNumber;
-                existingPart.Keywords = part.Keywords;
-                existingPart.Location = part.Location;
-                existingPart.LowStockThreshold = part.LowStockThreshold;
-                existingPart.MouserPartNumber = part.MouserPartNumber;
-                existingPart.PartNumber = part.PartNumber;
-                existingPart.PartTypeId = part.PartTypeId;
-                existingPart.ProjectId = part.ProjectId;
-                existingPart.Quantity = part.Quantity;
-                existingPart.UserId = part.UserId;
+                existingPart = Mapper.Map<Part, Part>(part, x => x.PartId);
+                existingPart.PartId = part.PartId;
                 _isDirty = true;
             }
             finally
@@ -198,6 +187,65 @@ namespace Binner.Common.StorageProviders
             {
                 _dataLock.Release();
             }
+        }
+
+        /// <summary>
+        /// Get list of part types
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.PartTypes
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Get a part type
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        public async Task<PartType> GetPartTypeAsync(long partTypeId, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.PartTypes
+                    .Where(x => x.PartTypeId == partTypeId && x.UserId == userContext?.UserId)
+                    .FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext userContext)
+        {
+            if (partType == null) throw new ArgumentNullException(nameof(partType));
+            await _dataLock.WaitAsync();
+            try
+            {
+                partType.UserId = userContext?.UserId;
+                var existingProject = await GetPartTypeAsync(partType.PartTypeId, userContext);
+                existingProject = Mapper.Map<PartType, PartType>(partType, x => x.PartTypeId);
+                existingProject.PartTypeId = partType.PartTypeId;
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return partType;
         }
 
         /// <summary>
@@ -297,12 +345,63 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync(IUserContext userContext)
+        public async Task<long> GetPartsCountAsync(IUserContext userContext)
         {
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Parts.Where(x => x.UserId == userContext?.UserId).ToList();
+                return _db.Count;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
+            try
+            {
+                return _db.Parts
+                    .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
+                    .OrderBy(request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
+            try
+            {
+                return _db.Parts
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .OrderBy(request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts.Where(predicate.Compile()).ToList();
             }
             finally
             {
@@ -338,12 +437,18 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
+        public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return _db.Projects.Where(x => x.UserId == userContext?.UserId).ToList();
+                return _db.Projects
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .OrderBy(request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToList();
             }
             finally
             {
@@ -375,11 +480,9 @@ namespace Binner.Common.StorageProviders
             try
             {
                 project.UserId = userContext?.UserId;
-                var existingPart = await GetProjectAsync(project.ProjectId, userContext);
-                existingPart.Name = project.Name;
-                existingPart.Description = project.Description;
-                existingPart.Location = project.Location;
-                existingPart.UserId = project.UserId;
+                var existingProject = await GetProjectAsync(project.ProjectId, userContext);
+                existingProject = Mapper.Map<Project, Project>(project, x => x.ProjectId);
+                existingProject.ProjectId = project.ProjectId;
                 _isDirty = true;
             }
             finally
@@ -387,6 +490,29 @@ namespace Binner.Common.StorageProviders
                 _dataLock.Release();
             }
             return project;
+        }
+
+        public async Task<bool> DeletePartTypeAsync(PartType partType, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                partType.UserId = userContext?.UserId;
+                var itemRemoved = _db.PartTypes.Remove(partType);
+                if (itemRemoved)
+                {
+                    var nextPartTypeId = _db.PartTypes.OrderByDescending(x => x.PartTypeId)
+                        .Select(x => x.PartTypeId)
+                        .FirstOrDefault() + 1;
+                    _primaryKeyTracker.SetNextKey<PartType>(nextPartTypeId);
+                    _isDirty = true;
+                }
+                return itemRemoved;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
         }
 
         public async Task<bool> DeleteProjectAsync(Project project, IUserContext userContext)

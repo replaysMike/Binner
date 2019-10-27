@@ -13,6 +13,16 @@ namespace Binner.Common.Models
         public string PartNumber { get; set; }
 
         /// <summary>
+        /// Part type
+        /// </summary>
+        public string PartType { get; set; }
+
+        /// <summary>
+        /// Part keywords
+        /// </summary>
+        public ICollection<string> Keywords { get; set; } = new List<string>();
+
+        /// <summary>
         /// Digikey's part number for this item
         /// </summary>
         public string DigikeyPartNumber { get; set; }
@@ -73,9 +83,9 @@ namespace Binner.Common.Models
         public string LowestCostSupplierUrl { get; set; }
 
         /// <summary>
-        /// Package type
+        /// Mounting type
         /// </summary>
-        public string Package { get; set; }
+        public string MountingType { get; set; }
 
         /// <summary>
         /// Manufacturer name

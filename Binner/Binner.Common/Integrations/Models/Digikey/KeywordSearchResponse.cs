@@ -37,7 +37,10 @@ namespace Binner.Common.Integrations.Models.Digikey
         public Series Series { get; set; } = new Series();
         public ICollection<ParameterObject> Parameters { get; set; } = new List<ParameterObject>();
         // todo: AlternatePackaging
-
+        public override string ToString()
+        {
+            return $"{DigiKeyPartNumber} {ProductDescription} | x{QuantityAvailable} {UnitPrice}";
+        }
     }
 
     public class Manufacturer
@@ -46,6 +49,10 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string ValueId { get; set; }
         public string Parameter { get; set; }
         public string Value { get; set; }
+        public override string ToString()
+        {
+            return $"{Parameter} = {Value}";
+        }
     }
 
     public class StandardPricing
@@ -53,6 +60,10 @@ namespace Binner.Common.Integrations.Models.Digikey
         public int BreakQuantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice { get; set; }
+        public override string ToString()
+        {
+            return $"{BreakQuantity} = {UnitPrice}";
+        }
     }
 
     public class Series
@@ -61,6 +72,10 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string ValueId { get; set; }
         public string Parameter { get; set; }
         public string Value { get; set; }
+        public override string ToString()
+        {
+            return $"{Parameter} = {Value}";
+        }
     }
 
     public class ParameterObject
@@ -69,6 +84,10 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string ValueId { get; set; }
         public string Parameter { get; set; }
         public string Value { get; set; }
+        public override string ToString()
+        {
+            return $"{Parameter} = {Value}";
+        }
     }
 
     public class LimitedTaxonomy
@@ -80,6 +99,10 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string ValueId { get; set; }
         public string Parameter { get; set; }
         public string Value { get; set; }
+        public override string ToString()
+        {
+            return $"{Parameter} = {Value}";
+        }
     }
 
     public class LimitedParameter
@@ -87,12 +110,20 @@ namespace Binner.Common.Integrations.Models.Digikey
         public ICollection<ValuePair> Values { get; set; }
         public int ParameterId { get; set; }
         public string Parameter { get; set; }
+        public override string ToString()
+        {
+            return $"{Parameter} = {string.Join(",", Values)}";
+        }
     }
 
     public class ValuePair
     {
         public string ValueId { get; set; }
         public string Value { get; set; }
+        public override string ToString()
+        {
+            return $"{ValueId} = {Value}";
+        }
     }
 
     public class IsoSearchLocale
@@ -101,6 +132,10 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string Language { get; set; }
         public string Currency { get; set; }
         public string ShipToCountry { get; set; }
+        public override string ToString()
+        {
+            return $"{Site} {Language} {Currency}";
+        }
     }
 
 }

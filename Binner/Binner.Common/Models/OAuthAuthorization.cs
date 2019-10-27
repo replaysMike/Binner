@@ -2,7 +2,7 @@
 
 namespace Binner.Common.Integrations.Models.Digikey
 {
-    public class DigikeyAuthorization
+    public class OAuthAuthorization
     {
         /// <summary>
         /// True if authorization was successful
@@ -14,6 +14,16 @@ namespace Binner.Common.Integrations.Models.Digikey
         /// Unique Id for the auth request
         /// </summary>
         public Guid Id { get; } = Guid.NewGuid();
+
+        /// <summary>
+        /// Name of the provider used
+        /// </summary>
+        public string Provider { get; set; }
+
+        /// <summary>
+        /// The UserId associated with this authorization
+        /// </summary>
+        public int? UserId { get; set; }
 
         /// <summary>
         /// True if an oAuth callback was received from Digikey
@@ -29,6 +39,16 @@ namespace Binner.Common.Integrations.Models.Digikey
         /// Error description
         /// </summary>
         public string ErrorDescription { get; set; }
+
+        /// <summary>
+        /// True if the user must authorize
+        /// </summary>
+        public bool MustAuthorize { get; set; }
+
+        /// <summary>
+        /// If the user must authorize, the Authorization Url they need to visit
+        /// </summary>
+        public string AuthorizationUrl { get; set; }
         
         /// <summary>
         /// Digikey ClientId
@@ -55,9 +75,23 @@ namespace Binner.Common.Integrations.Models.Digikey
         /// </summary>
         public DateTime ExpiresUtc { get; set; }
 
-        public DigikeyAuthorization(string clientId)
+        /// <summary>
+        /// The full url to return the user to
+        /// </summary>
+        public string ReturnToUrl { get; set; }
+
+        public OAuthAuthorization(string provider, bool mustAuthorize, string authorizationUrl)
         {
+            Provider = provider;
+            MustAuthorize = mustAuthorize;
+            AuthorizationUrl = authorizationUrl;
+        }
+
+        public OAuthAuthorization(string provider, string clientId, string returnToUrl)
+        {
+            Provider = provider;
             ClientId = clientId;
+            ReturnToUrl = returnToUrl;
         }
     }
 }

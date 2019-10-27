@@ -1,4 +1,7 @@
-﻿namespace Binner.Common.Models
+﻿using System;
+using static Binner.Common.Models.SystemDefaults;
+
+namespace Binner.Common.Models
 {
     /// <summary>
     /// Global default data
@@ -21,7 +24,6 @@
             Diode,
             LED,
             Transistor,
-            Mosfet,
             Relay,
             Transformer,
             Crystal,
@@ -31,7 +33,51 @@
             Connector,
             IC,
             Hardware,
-            Other
+            Other,
+            [Parent(DefaultPartTypes.IC)]
+            OpAmp,
+            [Parent(DefaultPartTypes.IC)]
+            Amplifier,
+            [Parent(DefaultPartTypes.IC)]
+            Memory,
+            [Parent(DefaultPartTypes.IC)]
+            Logic,
+            [Parent(DefaultPartTypes.IC)]
+            Interface,
+            [Parent(DefaultPartTypes.IC)]
+            Microcontroller,
+            [Parent(DefaultPartTypes.IC)]
+            Clock,
+            [Parent(DefaultPartTypes.IC)]
+            ADC,
+            [Parent(DefaultPartTypes.IC)]
+            VoltageRegulator,
+            [Parent(DefaultPartTypes.IC)]
+            EnergyMetering,
+            [Parent(DefaultPartTypes.IC)]
+            LedDriver,
+            [Parent(DefaultPartTypes.Transistor)]
+            MOSFET,
+            [Parent(DefaultPartTypes.Transistor)]
+            IGBT,
+            [Parent(DefaultPartTypes.Transistor)]
+            JFET,
+            [Parent(DefaultPartTypes.Transistor)]
+            SCR,
+            [Parent(DefaultPartTypes.Transistor)]
+            DIAC,
+            [Parent(DefaultPartTypes.Transistor)]
+            TRIAC,
         }
     }
+
+    public class ParentAttribute : Attribute
+    {
+        DefaultPartTypes Parent { get; }
+        public ParentAttribute(DefaultPartTypes parent)
+        {
+            Parent = parent;
+        }
+    }
+
 }

@@ -6,7 +6,7 @@ namespace Binner.Common.Models
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class Project
+    public class Project : IEntity
     {
         /// <summary>
         /// Primary key
@@ -30,9 +30,14 @@ namespace Binner.Common.Models
         public string Location { get; set; }
 
         /// <summary>
-        /// Project creation date
+        /// Project color
         /// </summary>
-        public DateTime DateCreatedUtc { get; set; }
+        public int Color { get; set; }
+
+        /// <summary>
+        /// Creation date
+        /// </summary>
+        public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Optional user id to associate
