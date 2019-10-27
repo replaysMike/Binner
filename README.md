@@ -1,6 +1,10 @@
 # Binner
 Binner is a free open-source parts inventory tracking system you can run locally in Windows or Unix, or online at [Binner.io (launches in Dec 2019)](http://binner.io). It was created for makers (like myself), hobbyists or electronic engineers to keep track of your local parts inventory.
 
+# Screenshot
+
+![Binner](https://github.com/replaysMike/Binner/wiki/binner.png)
+
 ## Features
 * Standard inventory management input
 * Import your orders from Digikey, Mouser or ~AliExpress~
