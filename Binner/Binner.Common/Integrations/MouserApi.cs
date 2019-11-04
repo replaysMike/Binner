@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -18,7 +17,9 @@ namespace Binner.Common.Integrations
     public class MouserApi : IIntegrationApi
     {
         private const string BasePath = "/api/v1";
-        private readonly string _apiKey;
+        private readonly string _searchApiKey;
+        private readonly string _orderApiKey;
+        private readonly string _cartApiKey;
         private readonly string _apiUrl;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
@@ -30,21 +31,47 @@ namespace Binner.Common.Integrations
             Converters = new List<JsonConverter> { new StringEnumConverter() }
         };
 
-        public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
+        public bool IsConfigured => !string.IsNullOrEmpty(_searchApiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public MouserApi(string apiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
+        public MouserApi(string searchApiKey, string orderApiKey, string cartApiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
         {
-            _apiKey = apiKey;
+            _searchApiKey = searchApiKey;
+            _orderApiKey = orderApiKey;
+            _cartApiKey = cartApiKey;
             _apiUrl = apiUrl;
             _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 
-        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
+        public async Task<IApiResponse> GetOrderAsync(string orderId)
         {
-            var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_apiKey}");
+            var uri = Url.Combine(_apiUrl, BasePath, $"/order/{orderId}?apiKey={_orderApiKey}");
+            var requestMessage = CreateRequest(HttpMethod.Get, uri);
+            var response = await _client.SendAsync(requestMessage);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new MouserUnauthorizedException(response.ReasonPhrase);
+            if (response.IsSuccessStatusCode)
+            {
+                var resultString = response.Content.ReadAsStringAsync().Result;
+                var results = JsonConvert.DeserializeObject<Order>(resultString, _serializerSettings);
+                if (results.Errors.Any())
+                    new ApiResponse(results.Errors.Select(x => x.Message), nameof(MouserApi));
+                return new ApiResponse(results, nameof(MouserApi));
+            }
+            return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
+        }
+
+        /// <summary>
+        /// Get information about a mouser part number
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber)
+        {
+            var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_searchApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
-            var request = new {
+            var request = new
+            {
                 SearchByPartRequest = new SearchByPartRequest
                 {
                     MouserPartNumber = partNumber,
@@ -62,14 +89,15 @@ namespace Binner.Common.Integrations
                 var resultString = response.Content.ReadAsStringAsync().Result;
                 var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
                 if (results.Errors.Any())
-                    new ApiResponse(results.Errors.Select(x => x.Message), nameof(MouserApi));
+                    throw new MouserErrorsException(results.Errors);
                 return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
             }
             return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
-        public async Task<IApiResponse> SearchAsync(string keyword)
+
+        public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType)
         {
-            var uri = Url.Combine(_apiUrl, BasePath, $"/search/keyword?apiKey={_apiKey}");
+            var uri = Url.Combine(_apiUrl, BasePath, $"/search/keyword?apiKey={_searchApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new
             {
@@ -117,7 +145,7 @@ namespace Binner.Common.Integrations
     {
         public MouserUnauthorizedException(string message) : base(message)
         {
-            
+
         }
     }
 }

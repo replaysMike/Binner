@@ -135,7 +135,7 @@ namespace Binner.Common.Integrations
             });
         }
 
-        public async Task<IApiResponse> GetPartsAsync(string partNumber, string partType = "", string mountingType = "")
+        public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "")
         {
             var authResponse = await AuthorizeAsync();
             if (authResponse == null || !authResponse.IsAuthorized)

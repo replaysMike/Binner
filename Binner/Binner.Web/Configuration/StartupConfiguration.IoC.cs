@@ -100,7 +100,7 @@ namespace Binner.Web.Configuration
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
                 var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
-                return new MouserApi(config.Integrations.Mouser.ApiKey, config.Integrations.Mouser.ApiUrl, httpContextAccessor);
+                return new MouserApi(config.Integrations.Mouser.ApiKeys.SearchApiKey, config.Integrations.Mouser.ApiKeys.OrderApiKey, config.Integrations.Mouser.ApiKeys.CartApiKey, config.Integrations.Mouser.ApiUrl, httpContextAccessor);
             }, new PerContainerLifetime());
             container.Register<AliExpressApi>((serviceFactory) =>
             {
