@@ -84,8 +84,8 @@ namespace Binner.Common.Integrations.Models.Mouser
         public int SecondaryCode { get; set; }
         public string PrimaryMethod { get; set; }
         public string SecondaryMethod { get; set; }
-        public decimal PrimaryShippingRate { get; set; }
-        public decimal SecondaryShippingRate { get; set; }
+        public decimal? PrimaryShippingRate { get; set; }
+        public decimal? SecondaryShippingRate { get; set; }
         public string PrimaryFreightCollectAccount { get; set; }
         public string SecondaryFreightCollectAccount { get; set; }
     }

@@ -101,8 +101,7 @@ namespace Binner.Common.Services
                     return await GetExternalDigikeyOrderAsync(orderId);
                 case "mouser":
                     if (!_mouserApi.IsConfigured) throw new InvalidOperationException($"Mouser Api is not configured!");
-
-                    return ServiceResult<ExternalOrderResponse>.Create(new ExternalOrderResponse());
+                    return await GetExternalMouserOrderAsync(orderId);
                 default:
                     throw new InvalidOperationException($"Unknown supplier {supplier}");
             }
@@ -185,6 +184,67 @@ namespace Binner.Common.Services
             });
         }
 
+        private async Task<IServiceResult<ExternalOrderResponse>> GetExternalMouserOrderAsync(string orderId)
+        {
+            var apiResponse = await _mouserApi.GetOrderAsync(orderId);
+            if (apiResponse.RequiresAuthentication)
+                return ServiceResult<ExternalOrderResponse>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+            else if (apiResponse.Errors?.Any() == true)
+                return ServiceResult<ExternalOrderResponse>.Create(apiResponse.Errors, apiResponse.ApiName);
+            var mouserOrderResponse = (Order)apiResponse.Response;
+
+
+            var lineItems = mouserOrderResponse.OrderLines;
+            var commonParts = new List<CommonPart>();
+            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+            // look up every part by digikey part number
+            foreach (var lineItem in lineItems)
+            {
+                // get details on this digikey part
+                var partResponse = await _mouserApi.GetProductDetailsAsync(lineItem.MouserPartNumber);
+                if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                {
+                    var searchResults = (ICollection<MouserPart>)partResponse.Response;
+                    // convert the part to a common part
+                    var part = searchResults.First();
+                    commonParts.Add(new CommonPart
+                    {
+                        SupplierPartNumber = part.MouserPartNumber,
+                        Supplier = "Mouser",
+                        ManufacturerPartNumber = part.ManufacturerPartNumber,
+                        Manufacturer = part.Manufacturer,
+                        Description = part.Description,
+                        ImageUrl = part.ImagePath,
+                        DatasheetUrls = new List<string> { part.DataSheetUrl },
+                        ProductUrl = part.ProductDetailUrl,
+                        Status = part.LifecycleStatus,
+                        Currency = mouserOrderResponse.CurrencyCode,
+                        AdditionalPartNumbers = new List<string>(),
+                        BasePartNumber = "",
+                        MountingTypeId = 0,
+                        PackageType = "",
+                        Cost = lineItem.UnitPrice,
+                        Quantity = lineItem.Quantity,
+                        Reference = lineItem.CartItemCustPartNumber,
+                    });
+                }
+            }
+            foreach (var part in commonParts)
+            {
+                part.PartType = DeterminePartType(part, partTypes);
+                part.Keywords = DetermineKeywords(part, partTypes);
+            }
+            return ServiceResult<ExternalOrderResponse>.Create(new ExternalOrderResponse
+            {
+                OrderDate = DateTime.MinValue,
+                Currency = mouserOrderResponse.CurrencyCode,
+                CustomerId = "",
+                Amount = mouserOrderResponse.OrderTotal,
+                TrackingNumber = "",
+                Parts = commonParts
+            });
+        }
+
         public async Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")
         {
             var datasheets = new List<string>();
@@ -199,7 +259,7 @@ namespace Binner.Common.Services
             }
             if (_digikeyApi.IsConfigured)
             {
-                var apiResponse = await _digikeyApi.GetPartsAsync(searchKeywords, partType, mountingType);
+                var apiResponse = await _digikeyApi.SearchAsync(searchKeywords, partType, mountingType);
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
                 else if (apiResponse.Errors?.Any() == true)
@@ -208,7 +268,7 @@ namespace Binner.Common.Services
             }
             if (_mouserApi.IsConfigured)
             {
-                var apiResponse = await _mouserApi.GetPartsAsync(searchKeywords, partType, mountingType);
+                var apiResponse = await _mouserApi.SearchAsync(searchKeywords, partType, mountingType);
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
                 else if (apiResponse.Errors?.Any() == true)
