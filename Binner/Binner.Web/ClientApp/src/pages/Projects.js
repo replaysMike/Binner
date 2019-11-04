@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import _ from 'underscore';
 import { Table, Visibility, Input, Label, Button, Segment, Form, TextArea, Icon } from 'semantic-ui-react';
-import { ProjectColors } from './Types';
+import { ProjectColors } from '../common/Types';
 
 export class Projects extends Component {
   static displayName = Projects.name;
@@ -37,6 +37,7 @@ export class Projects extends Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
     this.handleInlineChange = this.handleInlineChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.handleSort = this.handleSort.bind(this);
@@ -99,6 +100,9 @@ export class Projects extends Component {
     const { project } = this.state;
     project[control.name] = control.value;
     this.setState({ project });
+  }
+
+  handleClick(e, control) {
   }
 
   handleInlineChange(e, control, project) {
@@ -193,10 +197,10 @@ export class Projects extends Component {
   }
 
   renderProjects(projects, column, direction) {
-    const { project, lastSavedProjectId, colors, addVisible } = this.state;
+    const { project, lastSavedProjectId, colors, addVisible, loading } = this.state;
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
-        <div>
+        <Segment loading={loading}>
           <div style={{ minHeight: '35px' }}>
             <Button onClick={this.handleShowAdd} icon size='mini' floated='right'><Icon name='file' /> Add Project</Button>
           </div>
@@ -236,16 +240,14 @@ export class Projects extends Component {
               )}
             </Table.Body>
           </Table>
-        </div>
+        </Segment>
       </Visibility>
     );
   }
 
   render() {
-    const { projects, column, direction, loading } = this.state;
-    let contents = loading
-      ? <p><em>Loading...</em></p>
-      : this.renderProjects(projects, column, direction);
+    const { projects, column, direction } = this.state;
+    let contents = this.renderProjects(projects, column, direction);
 
     return (
       <div>

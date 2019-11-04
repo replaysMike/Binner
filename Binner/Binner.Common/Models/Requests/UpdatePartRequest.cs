@@ -7,6 +7,6 @@ namespace Binner.Common.Models
         /// <summary>
         /// The part id
         /// </summary>
-        public int PartId { get; set; }
+        public long PartId { get; set; }
     }
 }

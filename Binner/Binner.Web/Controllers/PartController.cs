@@ -41,7 +41,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetAsync(GetPartRequest request)
+        public async Task<IActionResult> GetAsync([FromQuery] GetPartRequest request)
         {
             var part = await _partService.GetPartAsync(request.PartNumber);
             if (part == null) return NotFound();
@@ -82,14 +82,14 @@ namespace Binner.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePartAsync(CreatePartRequest request)
         {
-            var partType = await _partService.GetOrCreatePartTypeAsync(new PartType
-            {
-                Name = request.PartType
-            });
             var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+
+            var partType = await GetPartTypeAsync(request.PartTypeId);
+            if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
             mappedPart.PartTypeId = partType.PartTypeId;
-            mappedPart.MountingTypeId = (int)Enum.Parse<MountingType>(request.MountingType.Replace(" ", ""), true);
+            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId);
+            if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             if (request is IPreventDuplicateResource && !((IPreventDuplicateResource)request).AllowPotentialDuplicate)
             {
@@ -113,6 +113,42 @@ namespace Binner.Web.Controllers
             return Ok(partResponse);
         }
 
+        private async Task<PartType> GetPartTypeAsync(string partType)
+        {
+            PartType result = null;
+            if (int.TryParse(partType, out int partTypeId))
+            {
+                // numeric format
+                result = await _partService.GetPartTypeAsync(partTypeId);
+            }
+            else
+            {
+                // string format
+                result = await _partService.GetOrCreatePartTypeAsync(new PartType
+                {
+                    Name = partType
+                });
+            }
+            return result;
+        }
+
+        private int GetMountingTypeId(string mountingType)
+        {
+            if (int.TryParse(mountingType, out int mountingTypeId))
+            {
+                // numeric format
+                if (Enum.IsDefined(typeof(MountingType), mountingTypeId))
+                    return mountingTypeId;
+            }
+            else
+            {
+                // string format
+                if (Enum.IsDefined(typeof(MountingType), mountingType))
+                    return (int)Enum.Parse<MountingType>(mountingType.Replace(" ", ""), true);
+            }
+            return -1;
+        }
+
         /// <summary>
         /// Update an existing part
         /// </summary>
@@ -121,15 +157,15 @@ namespace Binner.Web.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdatePartAsync(UpdatePartRequest request)
         {
-            var partType = await _partService.GetOrCreatePartTypeAsync(new PartType
-            {
-                Name = request.PartType
-            });
             var mappedPart = Mapper.Map<UpdatePartRequest, Part>(request);
+            var partType = await GetPartTypeAsync(request.PartTypeId);
+            if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
+            mappedPart.PartTypeId = partType.PartTypeId;
+            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId);
+            if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
+
             mappedPart.PartId = request.PartId;
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            mappedPart.PartTypeId = partType.PartTypeId;
-            mappedPart.MountingTypeId = (int)Enum.Parse<MountingType>(request.MountingType.Replace(" ", ""), true);
             var part = await _partService.UpdatePartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;

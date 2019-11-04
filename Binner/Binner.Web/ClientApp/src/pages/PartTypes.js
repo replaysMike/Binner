@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import _ from 'underscore';
-import { Table, Visibility, Input, Label, Button, Segment, Form, TextArea, Icon, Dropdown } from 'semantic-ui-react';
+import { Table, Input, Button, Segment, Form, Icon, Dropdown } from 'semantic-ui-react';
 
 export class PartTypes extends Component {
   static displayName = PartTypes.name;
@@ -180,9 +180,9 @@ export class PartTypes extends Component {
   }
 
   renderPartTypes(partTypes, column, direction) {
-    const { partType, lastSavedPartTypeId, addVisible, partTypeOptions } = this.state;
+    const { partType, lastSavedPartTypeId, addVisible, partTypeOptions, loading } = this.state;
     return (
-      <div>
+      <Segment loading={loading}>
         <div style={{ minHeight: '35px' }}>
           <Button onClick={this.handleShowAdd} icon size='mini' floated='right'><Icon name='file' /> Add Part Type</Button>
         </div>
@@ -217,15 +217,13 @@ export class PartTypes extends Component {
             )}
           </Table.Body>
         </Table>
-      </div>
+      </Segment>
     );
   }
 
   render() {
-    const { partTypes, column, direction, loading } = this.state;
-    let contents = loading
-      ? <p><em>Loading...</em></p>
-      : this.renderPartTypes(partTypes, column, direction);
+    const { partTypes, column, direction } = this.state;
+    let contents = this.renderPartTypes(partTypes, column, direction);
 
     return (
       <div>

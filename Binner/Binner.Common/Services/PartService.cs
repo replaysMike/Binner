@@ -81,6 +81,11 @@ namespace Binner.Common.Services
             return await _storageProvider.GetOrCreatePartTypeAsync(partType, _requestContext.GetUserContext());
         }
 
+        public async Task<PartType> GetPartTypeAsync(int partTypeId)
+        {
+            return await _storageProvider.GetPartTypeAsync(partTypeId, _requestContext.GetUserContext());
+        }
+
         public async Task<ICollection<PartType>> GetPartTypesAsync()
         {
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());

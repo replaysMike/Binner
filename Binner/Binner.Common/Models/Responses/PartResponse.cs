@@ -30,7 +30,7 @@
         /// <summary>
         /// Project Id
         /// </summary>
-        public int? ProjectId { get; set; }
+        public long? ProjectId { get; set; }
 
         /// <summary>
         /// The optional Digikey part number
@@ -46,6 +46,11 @@
         /// Description of part
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Package type
+        /// </summary>
+        public string PackageType { get; set; }
 
         /// <summary>
         /// Product Url
