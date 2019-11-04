@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'underscore';
-import { Input, Label, Button, TextArea, Image, Form, Table, Segment, Dimmer, Checkbox, Loader } from 'semantic-ui-react';
+import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader } from 'semantic-ui-react';
 
 export class OrderImport extends Component {
   static displayName = OrderImport.name;

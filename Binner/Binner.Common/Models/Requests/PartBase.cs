@@ -30,7 +30,7 @@
         /// <summary>
         /// Project Id
         /// </summary>
-        public int? ProjectId { get; set; }
+        public long? ProjectId { get; set; }
 
         /// <summary>
         /// The optional Digikey part number
@@ -75,12 +75,12 @@
         /// <summary>
         /// Type of part
         /// </summary>
-        public string PartType { get; set; }
+        public string PartTypeId { get; set; }
 
         /// <summary>
         /// Mounting Type of part
         /// </summary>
-        public string MountingType { get; set; }
+        public string MountingTypeId { get; set; }
 
         /// <summary>
         /// Additional keywords

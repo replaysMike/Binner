@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import _ from 'underscore';
-import { Table, Visibility, Input, Label } from 'semantic-ui-react';
+import { Table, Visibility, Input, Label, Segment } from 'semantic-ui-react';
 
-export class Order extends Component {
-  static displayName = Order.name;
+export class LowInventory extends Component {
+  static displayName = LowInventory.name;
 
   constructor(props) {
     super(props);
@@ -23,6 +23,7 @@ export class Order extends Component {
     this.handleNextPage = this.handleNextPage.bind(this);
     this.saveColumn = this.saveColumn.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleLoadPartClick = this.handleLoadPartClick.bind(this);
   }
 
   async componentDidMount() {
@@ -115,49 +116,53 @@ export class Order extends Component {
     this.setState({ parts, changeTracker: changes });
   }
 
+  handleLoadPartClick(e, part) {
+    this.props.history.push(`/inventory/${part.partNumber}`);
+  }
+
   renderParts(parts, column, direction) {
-    const { keyword, lastSavedPartId } = this.state;
+    const { keyword, lastSavedPartId, loading } = this.state;
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
-        <Table compact celled sortable selectable striped size='small'>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'lowStockThreshold' ? direction : null} onClick={this.handleSort('lowStockThreshold')}>Low Threshold</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>Bin Number</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>Bin Number 2</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>DigiKey Part</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>Mouser Part</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {parts.map(p =>
-              <Table.Row key={p.partId} onClick={this.handleClick}>
-                <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>
-                <Table.Cell><Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed100' onChange={this.handleChange} onBlur={this.saveColumn} /></Table.Cell>
-                <Table.Cell><Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed100' onChange={this.handleChange} onBlur={this.saveColumn} /></Table.Cell>
-                <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                <Table.Cell>{p.location}</Table.Cell>
-                <Table.Cell>{p.binNumber}</Table.Cell>
-                <Table.Cell>{p.binNumber2}</Table.Cell>
-                <Table.Cell>{p.digiKeyPartNumber}</Table.Cell>
-                <Table.Cell>{p.mouserPartNumber}</Table.Cell>
+        <Segment loading={loading}>
+          <Table compact celled sortable selectable striped size='small'>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'lowStockThreshold' ? direction : null} onClick={this.handleSort('lowStockThreshold')}>Low Threshold</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>Bin Number</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>Bin Number 2</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>DigiKey Part</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>Mouser Part</Table.HeaderCell>
               </Table.Row>
-            )}
-          </Table.Body>
-        </Table>
+            </Table.Header>
+            <Table.Body>
+              {parts.map(p =>
+                <Table.Row key={p.partId} onClick={e => this.handleLoadPartClick(e, p)}>
+                  <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>
+                  <Table.Cell><Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed100' onClick={e => e.stopPropagation()} onChange={this.handleChange} onBlur={this.saveColumn} /></Table.Cell>
+                  <Table.Cell><Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed100' onClick={e => e.stopPropagation()} onChange={this.handleChange} onBlur={this.saveColumn} /></Table.Cell>
+                  <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
+                  <Table.Cell>{p.location}</Table.Cell>
+                  <Table.Cell>{p.binNumber}</Table.Cell>
+                  <Table.Cell>{p.binNumber2}</Table.Cell>
+                  <Table.Cell>{p.digiKeyPartNumber}</Table.Cell>
+                  <Table.Cell>{p.mouserPartNumber}</Table.Cell>
+                </Table.Row>
+              )}
+            </Table.Body>
+          </Table>
+        </Segment>
       </Visibility>
     );
   }
 
   render() {
-    const { parts, column, direction, loading } = this.state;
-    let contents = loading
-      ? <p><em>Loading...</em></p>
-      : this.renderParts(parts, column, direction);
+    const { parts, column, direction } = this.state;
+    let contents = this.renderParts(parts, column, direction);
 
     return (
       <div>

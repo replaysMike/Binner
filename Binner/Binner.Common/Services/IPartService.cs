@@ -66,6 +66,13 @@ namespace Binner.Common.Services
         Task<PartType> GetOrCreatePartTypeAsync(PartType partType);
 
         /// <summary>
+        /// Get a partType by its id
+        /// </summary>
+        /// <param name="partTypeId"></param>
+        /// <returns></returns>
+        Task<PartType> GetPartTypeAsync(int partTypeId);
+
+        /// <summary>
         /// Get metadata about a part number
         /// </summary>
         /// <param name="partNumber">Part number</param>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Table, Visibility, Input, Label, Form, Loader } from 'semantic-ui-react';
+import { Table, Form, Segment } from 'semantic-ui-react';
 
 export class Datasheets extends Component {
   static displayName = Datasheets.name;
@@ -180,35 +180,35 @@ export class Datasheets extends Component {
             <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={this.handleChange} name='mountingType' />
           </Form.Group>
         </Form>
-        <Loader active={loading} />
-        {!loading && <Table compact celled sortable selectable striped size='small'>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Part</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'manufacturer' ? direction : null} onClick={this.handleSort('manufacturer')}>Manufacturer</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'website' ? direction : null} onClick={this.handleSort('website')}>Website</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'package' ? direction : null} onClick={this.handleSort('package')}>Package</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'status' ? direction : null} onClick={this.handleSort('status')}>Status</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {partsWithDatasheets.map((p, i) =>
-              <Table.Row key={i}>
-                <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                <Table.Cell>{p.manufacturer}</Table.Cell>
-                <Table.Cell>{this.getHostnameFromRegex(_.first(p.datasheetUrls))}</Table.Cell>
-                <Table.Cell>{p.datasheetUrls.map((url, dindex) =>
-                  <a href={url} alt={url} key={dindex} onClick={e => this.handleHighlightAndVisit(e, url)}>View Datasheet</a>
-                )}
-                </Table.Cell>
-                <Table.Cell>{p.packageType.replace(/\([^()]*\)/g, '')}</Table.Cell>
-                <Table.Cell>{p.status}</Table.Cell>
+        <Segment loading={loading}>
+          <Table compact celled sortable selectable striped size='small'>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Part</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'manufacturer' ? direction : null} onClick={this.handleSort('manufacturer')}>Manufacturer</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'website' ? direction : null} onClick={this.handleSort('website')}>Website</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'package' ? direction : null} onClick={this.handleSort('package')}>Package</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'status' ? direction : null} onClick={this.handleSort('status')}>Status</Table.HeaderCell>
               </Table.Row>
-            )}
-          </Table.Body>
-        </Table>
-        }
+            </Table.Header>
+            <Table.Body>
+              {partsWithDatasheets.map((p, i) =>
+                <Table.Row key={i}>
+                  <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
+                  <Table.Cell>{p.manufacturer}</Table.Cell>
+                  <Table.Cell>{this.getHostnameFromRegex(_.first(p.datasheetUrls))}</Table.Cell>
+                  <Table.Cell>{p.datasheetUrls.map((url, dindex) =>
+                    <a href={url} alt={url} key={dindex} onClick={e => this.handleHighlightAndVisit(e, url)}>View Datasheet</a>
+                  )}
+                  </Table.Cell>
+                  <Table.Cell>{p.packageType.replace(/\([^()]*\)/g, '')}</Table.Cell>
+                  <Table.Cell>{p.status}</Table.Cell>
+                </Table.Row>
+              )}
+            </Table.Body>
+          </Table>
+        </Segment>
       </div>
     );
   }

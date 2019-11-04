@@ -38,9 +38,9 @@ export class Home extends Component {
         <p>Choose an action:</p>
         <ul>
           <li><Link to="/inventory/add">Add Inventory</Link></li>
-          <li><Link to="/search">Search inventory</Link></li>
+          <li><Link to="/inventory">Search inventory</Link></li>
           <li><Link to="/datasheets">Datasheet Search</Link></li>
-          <li><Link to="/order">Order Low Stock</Link></li>
+          <li><Link to="/lowstock">Display Low Stock</Link></li>
           <li><Link to="/partTypes">Manage Part Types</Link></li>
           <li><Link to="/projects">Manage Projects</Link></li>
         </ul>

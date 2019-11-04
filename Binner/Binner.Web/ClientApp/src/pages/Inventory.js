@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dropdown } from 'semantic-ui-react';
-import NumberPicker from './NumberPicker';
-import { ProjectColors } from './Types';
+import { Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader } from 'semantic-ui-react';
+import NumberPicker from '../components/NumberPicker';
+import { ProjectColors } from '../common/Types';
 
 const inlineStyle = {
   modal: {
@@ -15,23 +16,37 @@ const inlineStyle = {
   }
 };
 
-export class AddInventory extends Component {
-  static displayName = AddInventory.name;
+export class Inventory extends Component {
+  static displayName = Inventory.name;
   static abortController = new AbortController();
+
+  static propTypes = {
+    partNumber: PropTypes.string
+  };
+
+  static defaultProps = {
+    partNumber: ''
+  };
 
   constructor(props) {
     super(props);
+    const { partNumber } = props.match.params;
     this.searchDebounced = AwesomeDebouncePromise(this.fetchPartMetadata.bind(this), 500);
     const viewPreferences = JSON.parse(localStorage.getItem('viewPreferences')) || {
       helpDisabled:
         false,
-      lastPartType: '',
-      lastMountingType: '',
+      lastPartTypeId: 14, // IC
+      lastMountingTypeId: 1, // Through Hole
       lastQuantity: 1,
       lastProjectId: null,
+      lastLocation: '',
+      lastBinNumber: '',
+      lastBinNumber2: '',
       lowStockThreshold: 10,
     };
+    console.log('partNumber', partNumber);
     this.state = {
+      partNumber,
       recentParts: [],
       metadataParts: [],
       duplicateParts: [],
@@ -39,21 +54,22 @@ export class AddInventory extends Component {
       partModalOpen: false,
       duplicatePartModalOpen: false,
       part: {
+        partId: 0,
+        partNumber,
         allowPotentialDuplicate: false,
-        partNumber: '',
         quantity: viewPreferences.lastQuantity + '',
         lowStockThreshold: viewPreferences.lowStockThreshold + '',
-        partType: viewPreferences.lastPartType || 'IC',
-        mountingType: viewPreferences.lastMountingType || 'through hole',
+        partTypeId: viewPreferences.lastPartTypeId || 14,
+        mountingTypeId: viewPreferences.lastMountingTypeId || 1,
         packageType: '',
         keywords: '',
         description: '',
         datasheetUrl: '',
-        digikeyPartNumber: '',
+        digiKeyPartNumber: '',
         mouserPartNumber: '',
-        location: '',
-        binNumber: '',
-        binNumber2: '',
+        location: viewPreferences.lastLocation || '',
+        binNumber: viewPreferences.lastBinNumber || '',
+        binNumber2: viewPreferences.lastBinNumber2 || '',
         cost: '',
         lowestCostSupplier: '',
         lowestCostSupplierUrl: '',
@@ -75,19 +91,24 @@ export class AddInventory extends Component {
         },
         {
           key: 1,
-          value: 'through hole',
+          value: 1,
           text: 'Through Hole',
         },
         {
           key: 2,
-          value: 'surface mount',
+          value: 2,
           text: 'Surface Mount',
         },
       ],
-      loading: false
+      loadingPartMetadata: false,
+      loadingPartTypes: true,
+      loadingProjects: true,
+      loadingRecent: true,
+      saveMessage: '',
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleRecentPartClick = this.handleRecentPartClick.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.handleForceSubmit = this.handleForceSubmit.bind(this);
     this.updateNumberPicker = this.updateNumberPicker.bind(this);
@@ -101,19 +122,38 @@ export class AddInventory extends Component {
   }
 
   async componentDidMount() {
-    await this.fetchPartTypes();
-    await this.fetchProjects();
-    await this.fetchRecentRows();
+    this.fetchPartTypes();
+    this.fetchProjects();
+    this.fetchRecentRows();
+    if (this.state.partNumber) await this.fetchPart(this.state.partNumber);
+  }
+
+  async fetchPart(partNumber) {
+    Inventory.abortController.abort(); // Cancel the previous request
+    Inventory.abortController = new AbortController();
+    this.setState({ loadingPartMetadata: true });
+    try {
+      const response = await fetch(`part?partNumber=${partNumber}`, {
+        signal: Inventory.abortController.signal
+      });
+      const data = await response.json();
+      this.setState({ part: data, loadingPartMetadata: false });
+    } catch (ex) {
+      if (ex.name === 'AbortError') {
+        return; // Continuation logic has already been skipped, so return normally
+      }
+      throw ex;
+    }
   }
 
   async fetchPartMetadata(input) {
-    AddInventory.abortController.abort(); // Cancel the previous request
-    AddInventory.abortController = new AbortController();
+    Inventory.abortController.abort(); // Cancel the previous request
+    Inventory.abortController = new AbortController();
     const { part } = this.state;
-    this.setState({ loading: true });
+    this.setState({ loadingPartMetadata: true });
     try {
       const response = await fetch(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
-        signal: AddInventory.abortController.signal
+        signal: Inventory.abortController.signal
       });
       const responseData = await response.json();
       if (responseData.requiresAuthentication) {
@@ -128,7 +168,7 @@ export class AddInventory extends Component {
         const suggestedPart = data.parts[0];
         this.setPartFromMetadata(metadataParts, suggestedPart);
       }
-      this.setState({ metadataParts, loading: false });
+      this.setState({ metadataParts, loadingPartMetadata: false });
     } catch (ex) {
       if (ex.name === 'AbortError') {
         return; // Continuation logic has already been skipped, so return normally
@@ -138,36 +178,39 @@ export class AddInventory extends Component {
   }
 
   async fetchRecentRows() {
+    this.setState({ loadingRecent: true });
     const response = await fetch('part/list?orderBy=DateCreatedUtc&direction=Descending&results=10');
     const data = await response.json();
-    this.setState({ recentParts: data });
+    this.setState({ recentParts: data, loadingRecent: false });
   }
 
   async fetchPartTypes() {
+    this.setState({ loadingPartTypes: true });
     const response = await fetch('partType/list');
     const data = await response.json();
     const partTypes = _.sortBy(data.map((item) => {
       return {
         key: item.partTypeId,
-        value: item.name,
+        value: item.partTypeId,
         text: item.name,
       };
     }), 'text');
-    this.setState({ partTypes });
+    this.setState({ partTypes, loadingPartTypes: false });
   }
 
   async fetchProjects() {
+    this.setState({ loadingProjects: true });
     const response = await fetch('project/list?orderBy=DateCreatedUtc&direction=Descending&results=999');
     const data = await response.json();
     const projects = _.sortBy(data.map((item) => {
       return {
         key: item.projectId,
-        value: item.name,
+        value: item.projectId,
         text: item.name,
         label: { ...(_.find(ProjectColors, c => c.value == item.color).name !== '' && { color: _.find(ProjectColors, c => c.value == item.color).name }), circular: true, content: item.parts, size: 'tiny' },
       };
     }), 'text');
-    this.setState({ projects });
+    this.setState({ projects, loadingProjects: false });
   }
 
   getMountingTypeById(mountingTypeId) {
@@ -200,56 +243,67 @@ export class AddInventory extends Component {
    */
   async onSubmit(e) {
     const { part, viewPreferences } = this.state;
+    const isExisting = part.partId > 0;
+    part.partTypeId = part.partTypeId + '';
+    part.mountingTypeId = part.mountingTypeId + '';
     part.quantity = Number.parseInt(part.quantity) || 0;
     part.lowStockThreshold = Number.parseInt(part.lowStockThreshold) || 0;
     part.cost = Number.parseFloat(part.cost) || 0.00;
     part.projectId = Number.parseInt(part.projectId) || null;
 
+    const saveMethod = isExisting ? 'PUT' : 'POST';
     const response = await fetch('part', {
-      method: 'POST',
+      method: saveMethod,
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(part)
     });
 
+    let saveMessage = '';
     if (response.status === 409) {
       // possible duplicate
       const data = await response.json();
       this.setState({ duplicateParts: data.parts, duplicatePartModalOpen: true });
-    } else {
-
-      // reset form
-      this.setState({
-        part: {
-          allowPotentialDuplicate: false,
-          partNumber: '',
-          quantity: viewPreferences.lastQuantity + '',
-          lowStockThreshold: viewPreferences.lowStockThreshold + '',
-          partType: viewPreferences.lastPartType,
-          mountingType: viewPreferences.lastMountingType,
-          packageType: '',
-          keywords: '',
-          description: '',
-          datasheetUrl: '',
-          digikeyPartNumber: '',
-          mouserPartNumber: '',
-          location: '',
-          binNumber: '',
-          binNumber2: '',
-          cost: '',
-          lowestCostSupplier: '',
-          lowestCostSupplierUrl: '',
-          productUrl: '',
-          manufacturer: '',
-          manufacturerPartNumber: '',
-          imageUrl: '',
-          projectId: viewPreferences.lastProjectId,
-          supplier: '',
-          supplierPartNumber: '',
-        },
-      });
-
+    } else if (response.status === 200) {
+      // reset form if it was a new part
+      if (isExisting) {
+        saveMessage = `Saved part ${part.partNumber}!`;
+        this.setState({ saveMessage });
+      } else {
+        saveMessage = `Added part ${part.partNumber}!`;
+        this.setState({
+          saveMessage,
+          part: {
+            allowPotentialDuplicate: false,
+            partId: 0,
+            partNumber: '',
+            quantity: viewPreferences.lastQuantity + '',
+            lowStockThreshold: viewPreferences.lowStockThreshold + '',
+            partTypeId: viewPreferences.lastPartTypeId,
+            mountingTypeId: viewPreferences.lastMountingTypeId,
+            packageType: '',
+            keywords: '',
+            description: '',
+            datasheetUrl: '',
+            digiKeyPartNumber: '',
+            mouserPartNumber: '',
+            location: viewPreferences.lastLocation,
+            binNumber: viewPreferences.lastBinNumber,
+            binNumber2: viewPreferences.lastBinNumber2,
+            cost: '',
+            lowestCostSupplier: '',
+            lowestCostSupplierUrl: '',
+            productUrl: '',
+            manufacturer: '',
+            manufacturerPartNumber: '',
+            imageUrl: '',
+            projectId: viewPreferences.lastProjectId,
+            supplier: '',
+            supplierPartNumber: '',
+          },
+        });
+      }
       // refresh recent parts list
       await this.fetchRecentRows();
     }
@@ -268,24 +322,33 @@ export class AddInventory extends Component {
     part[control.name] = control.value;
     switch (control.name) {
       case 'partNumber':
-        if (control.value && control.value.length > 0)
-          this.searchDebounced(control.value);
+        if (part.partNumber && part.partNumber.length > 0)
+          this.searchDebounced(part.partNumber);
         break;
-      case 'partType':
-        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastPartType: control.value }));
-        if (control.value && control.value.length > 0)
-          this.searchDebounced(control.value);
+      case 'partTypeId':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastPartTypeId: control.value }));
+        if (part.partNumber && part.partNumber.length > 0)
+          this.searchDebounced(part.partNumber);
         break;
-      case 'mountingType':
-        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastMountingType: control.value }));
-        if (control.value && control.value.length > 0)
-          this.searchDebounced(control.value);
+      case 'mountingTypeId':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastMountingTypeId: control.value }));
+        if (part.partNumber && part.partNumber.length > 0)
+          this.searchDebounced(part.partNumber);
         break;
       case 'lowStockThreshold':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lowStockThreshold: control.value }));
         break;
       case 'projectId':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastProjectId: control.value }));
+        break;
+      case 'location':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastLocation: control.value }));
+        break;
+      case 'binNumber':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastBinNumber: control.value }));
+        break;
+      case 'binNumber2':
+        localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastBinNumber2: control.value }));
         break;
     }
     this.setState({ part });
@@ -295,8 +358,8 @@ export class AddInventory extends Component {
     const { part } = this.state;
     const mappedPart = {
       partNumber: suggestedPart.partNumber,
-      partType: suggestedPart.partType,
-      mountingType: suggestedPart.mountingTypeId,
+      partTypeId: suggestedPart.partTypeId,
+      mountingTypeId: suggestedPart.mountingTypeId,
       packageType: suggestedPart.packageType,
       keywords: suggestedPart.keywords && suggestedPart.keywords.join(' ').toLowerCase(),
       description: suggestedPart.description,
@@ -312,10 +375,10 @@ export class AddInventory extends Component {
     };
     part.supplier = mappedPart.supplier;
     part.supplierPartNumber = mappedPart.supplierPartNumber;
-    if (mappedPart.partType && mappedPart.partType.length > 0)
-      part.partType = mappedPart.partType || '';
-    if (mappedPart.mountingType)
-      part.mountingType = this.getMountingTypeById(mappedPart.mountingType) || '';
+    if (mappedPart.partTypeId)
+      part.partTypeId = mappedPart.partTypeId || '';
+    if (mappedPart.mountingTypeId)
+      part.mountingTypeId = mappedPart.mountingTypeId || '';
     part.packageType = mappedPart.packageType || '';
     part.keywords = mappedPart.keywords || '';
     part.description = mappedPart.description || '';
@@ -327,23 +390,23 @@ export class AddInventory extends Component {
       part.datasheetUrl = _.first(mappedPart.datasheetUrls) || '';
     }
     if (mappedPart.supplier === 'DigiKey') {
-      part.digikeyPartNumber = mappedPart.supplierPartNumber || '';
+      part.digiKeyPartNumber = mappedPart.supplierPartNumber || '';
       const searchResult = _.find(metadataParts, e => { return e !== undefined && e.supplier === 'Mouser' && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber });
       if (searchResult) {
         part.mouserPartNumber = searchResult.supplierPartNumber;
         if (part.packageType.length === 0) part.packageType = searchResult.packageType;
         if (part.datasheetUrl.length === 0) part.datasheetUrl = _.first(searchResult.datasheetUrls) || '';
-        if (part.packageType.length === 0) part.imageUrl = searchResult.imageUrl;
+        if (part.imageUrl.length === 0) part.imageUrl = searchResult.imageUrl;
       }
     }
     if (mappedPart.supplier === 'Mouser') {
       part.mouserPartNumber = mappedPart.supplierPartNumber || '';
       const searchResult = _.find(metadataParts, e => { return e !== undefined && e.supplier === 'DigiKey' && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber });
       if (searchResult) {
-        part.digikeyPartNumber = searchResult.supplierPartNumber;
+        part.digiKeyPartNumber = searchResult.supplierPartNumber;
         if (part.packageType.length === 0) part.packageType = searchResult.packageType;
         if (part.datasheetUrl.length === 0) part.datasheetUrl = _.first(searchResult.datasheetUrls) || '';
-        if (part.packageType.length === 0) part.imageUrl = searchResult.imageUrl;
+        if (part.imageUrl.length === 0) part.imageUrl = searchResult.imageUrl;
       }
     }
 
@@ -352,7 +415,6 @@ export class AddInventory extends Component {
     part.cost = lowestCostPart.cost;
     part.lowestCostSupplier = lowestCostPart.supplier;
     part.lowestCostSupplierUrl = lowestCostPart.productUrl;
-    console.log('updating part metadata', part);
     this.setState({ part });
   }
 
@@ -483,9 +545,54 @@ export class AddInventory extends Component {
     window.open(url, '_blank');
   }
 
+  async handleRecentPartClick(e, part) {
+    this.setState({ partNumber: part.partNumber, part });
+    this.props.history.push(`/inventory/${part.partNumber}`);
+    await this.fetchPart(part.partNumber);
+  }
+
+  renderRecentParts(recentParts) {
+    return (
+      <Table compact celled selectable striped>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Part</Table.HeaderCell>
+            <Table.HeaderCell>Quantity</Table.HeaderCell>
+            <Table.HeaderCell>Part Type</Table.HeaderCell>
+            <Table.HeaderCell>Manufacturer Part</Table.HeaderCell>
+            <Table.HeaderCell>Location</Table.HeaderCell>
+            <Table.HeaderCell>Bin Number</Table.HeaderCell>
+            <Table.HeaderCell>Bin Number 2</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {recentParts.map((p, index) =>
+            <Table.Row key={index} onClick={e => this.handleRecentPartClick(e, p)}>
+              <Table.Cell>
+                {index === 0 ?
+                  <Label ribbon>{p.partNumber}</Label>
+                  : p.partNumber}
+              </Table.Cell>
+              <Table.Cell>{p.quantity}</Table.Cell>
+              <Table.Cell>{p.partType}</Table.Cell>
+              <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
+              <Table.Cell>{p.location}</Table.Cell>
+              <Table.Cell>{p.binNumber}</Table.Cell>
+              <Table.Cell>{p.binNumber2}</Table.Cell>
+            </Table.Row>
+          )}
+        </Table.Body>
+      </Table>
+    );
+  }
+
   render() {
-    const { part, recentParts, metadataParts, partTypes, mountingTypes, projects, viewPreferences, partModalOpen, duplicatePartModalOpen, loading } = this.state;
+    const { part,
+      recentParts, metadataParts, partTypes, mountingTypes, projects, viewPreferences, partModalOpen, duplicatePartModalOpen,
+      loadingPartMetadata, loadingPartTypes, loadingProjects, loadingRecent, saveMessage
+    } = this.state;
     const matchingPartsList = this.renderAllMatchingParts(part, metadataParts);
+    const title = this.props.match.params.partNumber ? 'Edit Inventory' : 'Add Inventory';
     return (
       <div>
         <Modal centered
@@ -505,22 +612,25 @@ export class AddInventory extends Component {
           </Modal.Actions>
         </Modal>
         <Form onSubmit={this.onSubmit}>
-          <h1>Add Inventory</h1>
+          <h1>{title}</h1>
           <Form.Group>
-            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={this.handleChange} name='partNumber' />
-            <Form.Dropdown label='Part Type' placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={this.handleChange} name='partType' />
-            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={this.handleChange} name='mountingType' />
-            <Form.Dropdown label='Project' placeholder='My Project' search selection value={part.projectId} options={projects} onChange={this.handleChange} name='projectId' />
+            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' />
+            <Form.Dropdown label='Part Type' placeholder='Part Type' loading={loadingPartTypes} search selection value={part.partTypeId || ''} options={partTypes} onChange={this.handleChange} name='partTypeId' />
+            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingTypeId || ''} options={mountingTypes} onChange={this.handleChange} name='mountingTypeId' />
+            <Form.Dropdown label='Project' placeholder='My Project' loading={loadingProjects} search selection value={part.projectId || ''} options={projects} onChange={this.handleChange} name='projectId' />
           </Form.Group>
           <Form.Group>
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity} onChange={this.updateNumberPicker} name='quantity' autoComplete='off' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Location' placeholder='Home lab' value={part.location} onChange={this.handleChange} name='location' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number' placeholder='IC Components 2' value={part.binNumber} onChange={this.handleChange} name='binNumber' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number 2' placeholder='14' value={part.binNumber2} onChange={this.handleChange} name='binNumber2' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold} onChange={this.handleChange} name='lowStockThreshold' width={3} />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity || ''} onChange={this.updateNumberPicker} name='quantity' autoComplete='off' />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Location' placeholder='Home lab' value={part.location || ''} onChange={this.handleChange} name='location' />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number' placeholder='IC Components 2' value={part.binNumber || ''} onChange={this.handleChange} name='binNumber' />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number 2' placeholder='14' value={part.binNumber2 || ''} onChange={this.handleChange} name='binNumber2' />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold || ''} onChange={this.handleChange} name='lowStockThreshold' width={3} />} />
           </Form.Group>
-          <Button type='submit'>Save</Button>
-          <Segment loading={loading}>
+          <Form.Field inline>
+            <Button type='submit'>Save</Button>
+            {saveMessage.length > 0 && <Label pointing='left'>{saveMessage}</Label>}
+          </Form.Field>
+          <Segment loading={loadingPartMetadata}>
             {metadataParts.length > 0 &&
               <Modal centered
                 trigger={<a href="#" onClick={this.handleOpenModal}>Choose alternate part</a>}
@@ -538,91 +648,69 @@ export class AddInventory extends Component {
             <Form.Group>
               <Form.Field width={4}>
                 <label>Cost</label>
-                <Input label='$' placeholder='0.000' value={part.cost} type='text' onChange={this.handleChange} name='cost' />
+                <Input label='$' placeholder='0.000' value={part.cost || ''} type='text' onChange={this.handleChange} name='cost' />
               </Form.Field>
-              <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer} onChange={this.handleChange} name='manufacturer' width={4} />
-              <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber} onChange={this.handleChange} name='manufacturerPartNumber' />
+              <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer || ''} onChange={this.handleChange} name='manufacturer' width={4} />
+              <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber || ''} onChange={this.handleChange} name='manufacturerPartNumber' />
               <Image src={part.imageUrl} size='tiny' />
             </Form.Group>
             <Form.Field width={10}>
               <label>Keywords</label>
-              <Input icon='tags' iconPosition='left' label={{ tag: true, content: 'Add Keyword' }} labelPosition='right' placeholder='op amp' onChange={this.handleChange} value={part.keywords} name='keywords' />
+              <Input icon='tags' iconPosition='left' label={{ tag: true, content: 'Add Keyword' }} labelPosition='right' placeholder='op amp' onChange={this.handleChange} value={part.keywords || ''} name='keywords' />
             </Form.Field>
             <Form.Field width={4}>
               <label>Package Type</label>
-              <Input placeholder='DIP8' value={part.packageType} onChange={this.handleChange} name='packageType' />
+              <Input placeholder='DIP8' value={part.packageType || ''} onChange={this.handleChange} name='packageType' />
             </Form.Field>
-            <Form.Field width={10} control={TextArea} label='Description' value={part.description} onChange={this.handleChange} name='description' />
+            <Form.Field width={10} control={TextArea} label='Description' value={part.description || ''} onChange={this.handleChange} name='description' />
             <Form.Field width={10}>
               <label>Datasheet Url</label>
-              <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={part.datasheetUrl.replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='datasheetUrl'>
+              <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='datasheetUrl'>
                 <Label>http://</Label>
                 <input />
-                <Button onClick={e => this.handleVisitLink(e, part.datasheetUrl)} disabled={part.datasheetUrl.length === 0}>View</Button>
+                <Button onClick={e => this.handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>View</Button>
               </Input>
             </Form.Field>
             <Form.Field width={10}>
               <label>Product Url</label>
-              <Input action className='labeled' placeholder='' value={part.productUrl.replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='productUrl'>
+              <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='productUrl'>
                 <Label>http://</Label>
                 <input />
-                <Button onClick={e => this.handleVisitLink(e, part.productUrl)} disabled={part.productUrl.length === 0}>Visit</Button>
+                <Button onClick={e => this.handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>Visit</Button>
               </Input>
             </Form.Field>
             <Form.Field width={4}>
               <label>Lowest Cost Supplier</label>
-              <Input placeholder='DigiKey' value={part.lowestCostSupplier} onChange={this.handleChange} name='lowestCostSupplier' />
+              <Input placeholder='DigiKey' value={part.lowestCostSupplier || ''} onChange={this.handleChange} name='lowestCostSupplier' />
             </Form.Field>
             <Form.Field width={10}>
               <label>Lowest Cost Supplier Url</label>
-              <Input action className='labeled' placeholder='' value={part.lowestCostSupplierUrl.replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='lowestCostSupplierUrl'>
+              <Input action className='labeled' placeholder='' value={(part.lowestCostSupplierUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='lowestCostSupplierUrl'>
                 <Label>http://</Label>
                 <input />
-                <Button onClick={e => this.handleVisitLink(e, part.lowestCostSupplierUrl)} disabled={part.lowestCostSupplierUrl.length === 0}>Visit</Button>
+                <Button onClick={e => this.handleVisitLink(e, part.lowestCostSupplierUrl)} disabled={!part.lowestCostSupplierUrl || part.lowestCostSupplierUrl.length === 0}>Visit</Button>
               </Input>
             </Form.Field>
             <Form.Field width={4}>
               <label>DigiKey Part Number</label>
-              <Input placeholder='296-1395-5-ND' value={part.digikeyPartNumber} onChange={this.handleChange} name='digikeyPartNumber' />
+              <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={this.handleChange} name='digiKeyPartNumber' />
             </Form.Field>
             <Form.Field width={4}>
               <label>Mouser Part Number</label>
-              <Input placeholder='595-LM358AP' value={part.mouserPartNumber} onChange={this.handleChange} name='mouserPartNumber' />
+              <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={this.handleChange} name='mouserPartNumber' />
             </Form.Field>
           </Segment>
         </Form>
         <br />
         <h4>Recently added parts</h4>
-        <Table compact celled>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>Part</Table.HeaderCell>
-              <Table.HeaderCell>Quantity</Table.HeaderCell>
-              <Table.HeaderCell>Part Type</Table.HeaderCell>
-              <Table.HeaderCell>Manufacturer Part</Table.HeaderCell>
-              <Table.HeaderCell>Location</Table.HeaderCell>
-              <Table.HeaderCell>Bin Number</Table.HeaderCell>
-              <Table.HeaderCell>Bin Number 2</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {recentParts.map((p, index) =>
-              <Table.Row key={index}>
-                <Table.Cell>
-                  {index === 0 ?
-                    <Label ribbon>{p.partNumber}</Label>
-                    : p.partNumber}
-                </Table.Cell>
-                <Table.Cell>{p.quantity}</Table.Cell>
-                <Table.Cell>{p.partType}</Table.Cell>
-                <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                <Table.Cell>{p.location}</Table.Cell>
-                <Table.Cell>{p.binNumber}</Table.Cell>
-                <Table.Cell>{p.binNumber2}</Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table>
+        <div style={{ marginTop: '20px' }}>
+          <Segment style={{ minHeight: '50px' }}>
+            <Dimmer active={loadingRecent} inverted>
+              <Loader inverted />
+            </Dimmer>
+            {!loadingRecent && recentParts && this.renderRecentParts(recentParts)}
+          </Segment>
+        </div>
       </div>
     );
   }
