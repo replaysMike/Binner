@@ -41,6 +41,23 @@ namespace Binner.Common.StorageProviders
         }
 
         /// <summary>
+        /// Get an instance of the entire database
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IBinnerDb> GetDatabaseAsync()
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        /// <summary>
         /// Get an oAuth Credential
         /// </summary>
         /// <param name="credential"></param>

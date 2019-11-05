@@ -12,6 +12,12 @@ namespace Binner.Common.StorageProviders
     public interface IStorageProvider : IDisposable
     {
         /// <summary>
+        /// Get an instance of the entire database
+        /// </summary>
+        /// <returns></returns>
+        Task<IBinnerDb> GetDatabaseAsync();
+
+        /// <summary>
         /// Get an oAuth Credential
         /// </summary>
         /// <param name="credential"></param>

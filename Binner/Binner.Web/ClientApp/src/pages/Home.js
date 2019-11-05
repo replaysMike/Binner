@@ -43,6 +43,7 @@ export class Home extends Component {
           <li><Link to="/lowstock">Display Low Stock</Link></li>
           <li><Link to="/partTypes">Manage Part Types</Link></li>
           <li><Link to="/projects">Manage Projects</Link></li>
+          <li><Link to="/exportData">Export data</Link></li>
         </ul>
 
         <h2>Dashboard</h2>

@@ -9,6 +9,7 @@ import { LowInventory } from './pages/LowInventory';
 import { OrderImport } from './pages/OrderImport';
 import { PartTypes } from './pages/PartTypes';
 import { Projects } from './pages/Projects';
+import { ExportData } from './pages/ExportData';
 
 import './custom.css'
 
@@ -28,6 +29,7 @@ export default class App extends Component {
           <Route path='/import' component={OrderImport} />
           <Route path='/partTypes' component={PartTypes} />
           <Route path='/projects' component={Projects} />
+          <Route path='/exportData' component={ExportData} />
         </Switch>
       </Layout>
     );

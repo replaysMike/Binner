@@ -39,6 +39,8 @@ namespace Binner.Common.IO
         {
             if (dataType == typeof(string))
                 return $@"""{value?.ToString()}""";
+            if (dataType == typeof(ICollection<string>))
+                return $@"""{string.Join(",", value)}""";
             return value.ToString();
         }
     }
