@@ -2,7 +2,6 @@
 using ExcelLibrary;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Binner.Common.IO
 {
@@ -15,10 +14,7 @@ namespace Binner.Common.IO
             var dataSet = builder.Build(db);
 
             var stream = new MemoryStream();
-            using (var writer = new StreamWriter(stream, Encoding.UTF8, 4096, true))
-            {
-                DataSetHelper.CreateWorkbook(stream, dataSet);
-            }
+            DataSetHelper.CreateWorkbook(stream, dataSet);
             streams.Add("BinnerParts", stream);
             return streams;
         }
