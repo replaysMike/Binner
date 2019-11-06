@@ -37,6 +37,35 @@ Binner is designed for electronics in mind, however it could be used for other t
 
 I welcome all who want to contribute to this project, and please suggest features in the Issues section.
 
+## Storage Provider
+
+Binner supports multiple storage providers. If your needs are simple, you can continue to use the built-in `Binner` storage provider which is configured by default. Alternatively, you can use SQL Server as your data provider if you have SQL Server installed.
+
+### Configuring Binner Provider (default)
+In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `Binner` and under `ProviderConfiguration` specify the database file location as `"Filename": "C:\\Binner\\binner.db"` or the location of your choice. It should look like the following:
+
+```json
+"StorageProviderConfiguration": {
+    "Provider": "Binner",
+    "ProviderConfiguration": {
+      "Filename": "C:\\Binner\\binner.db"
+    }
+  },
+ ```
+
+### Configuring SQL Server Provider
+
+In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `SqlServer` and under `ProviderConfiguration` specify the connection string as `"ConnectionString": "Server=localhost;Database=Binner;Trusted_Connection=True;"`. It should look like the following:
+
+```json
+"StorageProviderConfiguration": {
+    "Provider": "SqlServer",
+    "ProviderConfiguration": {
+      "ConnectionString": "Server=localhost;Database=Binner;Trusted_Connection=True;"
+    }
+  },
+ ```
+
 ## Integrations
 
 Currently supports _Digikey_, _Mouser_, _Octopart_ and ~_AliExpress_~. For standalone installations, you will need to obtain your own API keys to enable these features. It's easy to obtain them but be aware Octopart _is not free_ so you may want to avoid using it.
