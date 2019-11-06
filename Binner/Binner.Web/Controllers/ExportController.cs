@@ -19,7 +19,7 @@ namespace Binner.Web.Controllers
     [Consumes(MediaTypeNames.Application.Json)]
     public class ExportController : ControllerBase
     {
-        private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-mm-dd")}.zip";
+        private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
         private readonly ILogger<ProjectController> _logger;
         private readonly IMemoryCache _cache;
         private readonly WebHostServiceConfiguration _config;
@@ -66,21 +66,22 @@ namespace Binner.Web.Controllers
             return ExportToFile(streams);
         }
 
-        private IActionResult ExportToFile(IDictionary<string, Stream> streams)
+        private IActionResult ExportToFile(IDictionary<StreamName, Stream> streams)
         {
             var zipStream = new MemoryStream();
-            var zipFile = new ZipArchive(zipStream, ZipArchiveMode.Create, true);
-            foreach (var stream in streams)
+            using (var zipFile = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
             {
-                var writer = new BinaryWriter(stream.Value);
-                // write stream to a buffer
-                byte[] buffer = new byte[stream.Value.Length];
-                stream.Value.Write(buffer, 0, buffer.Length);
+                foreach (var stream in streams)
+                {
+                    // write stream to a buffer
+                    var buffer = new byte[stream.Value.Length];
+                    stream.Value.Read(buffer, 0, (int)stream.Value.Length);
 
-                // add the stream to the zipfile
-                var file = zipFile.CreateEntry($"{stream.Key}.xls");
-                using var fileStream = file.Open();
-                fileStream.Write(buffer, 0, buffer.Length);
+                    // add the stream to the zipfile
+                    var file = zipFile.CreateEntry($"{stream.Key.Name}.{stream.Key.FileExtension}");
+                    using var fileStream = file.Open();
+                    fileStream.Write(buffer, 0, buffer.Length);
+                }
             }
             zipStream.Seek(0, SeekOrigin.Begin);
             return File(zipStream, "application/octet-stream", BinnerExportFilename);

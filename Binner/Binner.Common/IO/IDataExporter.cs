@@ -7,9 +7,9 @@ namespace Binner.Common.IO
     public interface IDataExporter
     {
         /// <summary>
-        /// Export data to a stream
+        /// Export Binner database to multiple streams, one for each table.
         /// </summary>
-        /// <param name="db">The database to export</param>
-        IDictionary<string, Stream> Export(IBinnerDb db);
+        /// <param name="db">The Binner database to export</param>
+        IDictionary<StreamName, Stream> Export(IBinnerDb db);
     }
 }

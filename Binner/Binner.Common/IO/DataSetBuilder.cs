@@ -1,7 +1,6 @@
 ﻿using Binner.Common.Models;
 using Binner.Common.StorageProviders;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading;
@@ -14,6 +13,8 @@ namespace Binner.Common.IO
     /// </summary>
     public class DataSetBuilder : IBuilder<DataSet>
     {
+        private readonly List<Type> _numericTypes = new List<Type> { typeof(byte), typeof(sbyte), typeof(ushort), typeof(short), typeof(uint), typeof(int), typeof(ulong), typeof(long), typeof(float), typeof(double), typeof(decimal) };
+
         /// <summary>
         /// Build a dataset from an IBinnerDb object
         /// </summary>
@@ -50,7 +51,7 @@ namespace Binner.Common.IO
             {
                 var row = partsTable.NewRow();
                 foreach (var prop in partType.Properties)
-                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), prop.Type);
+                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), partsTable.Columns[prop.Name].DataType, prop.Type);
                 partsTable.Rows.Add(row);
             }
 
@@ -59,7 +60,7 @@ namespace Binner.Common.IO
             {
                 var row = partTypesTable.NewRow();
                 foreach (var prop in partTypesType.Properties)
-                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), prop.Type);
+                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), partTypesTable.Columns[prop.Name].DataType, prop.Type);
                 partTypesTable.Rows.Add(row);
             }
 
@@ -68,23 +69,38 @@ namespace Binner.Common.IO
             {
                 var row = projectsTable.NewRow();
                 foreach (var prop in projectsType.Properties)
-                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), prop.Type);
+                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), projectsTable.Columns[prop.Name].DataType, prop.Type);
                 projectsTable.Rows.Add(row);
             }
 
             return dataSet;
         }
 
-        private object TranslateValue(object val, Type type)
+        private object DefaultValue(Type type)
+        {
+            if (type == typeof(string))
+                return "";
+            if (type == typeof(DateTime))
+                return DateTime.MinValue;
+            if (type == typeof(TimeSpan))
+                return TimeSpan.MinValue.ToString();
+            return Activator.CreateInstance(Nullable.GetUnderlyingType(type) ?? type);
+        }
+
+        private object TranslateValue(object val, Type rowType, Type originalType)
         {
             var newVal = val;
-            var extendedType = type.GetExtendedType();
-            if (extendedType.IsCollection)
+            var originalExtendedType = originalType.GetExtendedType();
+            if (_numericTypes.Contains(originalExtendedType.UnderlyingType))
+                newVal = Convert.ToDouble(val);
+            if (val != null && originalExtendedType.IsCollection)
             {
                 // join collections
                 newVal = string.Join(",", (ICollection<string>)val);
             }
-            return newVal ?? Activator.CreateInstance(Nullable.GetUnderlyingType(type) ?? type);
+            if (val != null && originalExtendedType.UnderlyingType == typeof(TimeSpan))
+                newVal = ((TimeSpan)val).ToString();
+            return newVal ?? DefaultValue(rowType);
         }
 
         private Type TranslateType(Type type)
@@ -92,9 +108,11 @@ namespace Binner.Common.IO
             Type translatedType = type;
             var extendedType = type.GetExtendedType();
             if (extendedType.IsCollection)
-            {
                 translatedType = extendedType.ElementType;
-            }
+            if (_numericTypes.Contains(extendedType.UnderlyingType))
+                translatedType = typeof(double);
+            if (extendedType.UnderlyingType == typeof(TimeSpan))
+                translatedType = typeof(string);
             return Nullable.GetUnderlyingType(translatedType) ?? translatedType;
         }
     }
