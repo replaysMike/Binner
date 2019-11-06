@@ -28,6 +28,25 @@ namespace Binner.Common.StorageProviders
             Task.Run(async () => await GenerateDatabaseIfNotExistsAsync<IBinnerDb>()).GetAwaiter().GetResult();
         }
 
+        /// <summary>
+        /// Get an instance of the entire database
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IBinnerDb> GetDatabaseAsync()
+        {
+            var parts = await GetPartsAsync();
+            return new BinnerDbV1
+            {
+                OAuthCredentials = await GetOAuthCredentialAsync(),
+                Parts = parts,
+                PartTypes = await GetPartTypesAsync(),
+                Projects = await GetProjectsAsync(),
+                Count = parts.Count,
+                FirstPartId = parts.OrderBy(x => x.PartId).First().PartId,
+                LastPartId = parts.OrderBy(x => x.PartId).Last().PartId,
+            };
+        }
+
         public async Task<long> GetPartsCountAsync(IUserContext userContext)
         {
             var query = $"SELECT COUNT_BIG(*) FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId);";
@@ -173,6 +192,13 @@ INNER JOIN (
             return result.Select(x => new SearchResult<Part>(x as Part, x.Rank)).OrderBy(x => x.Rank).ToList();
         }
 
+        private async Task<ICollection<OAuthCredential>> GetOAuthCredentialAsync()
+        {
+            var query = $"SELECT * FROM OAuthCredentials;";
+            var result = await SqlQueryAsync<OAuthCredential>(query);
+            return result;
+        }
+
         public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName, IUserContext userContext)
         {
             var query = $"SELECT * FROM OAuthCredentials WHERE Provider = @ProviderName AND (@UserId IS NULL OR UserId = @UserId);";
@@ -200,6 +226,13 @@ VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
             return partType;
         }
 
+        private async Task<ICollection<PartType>> GetPartTypesAsync()
+        {
+            var query = $"SELECT * FROM PartTypes;";
+            var result = await SqlQueryAsync<PartType>(query);
+            return result;
+        }
+
         public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext)
         {
             var query = $"SELECT * FROM PartTypes WHERE (@UserId IS NULL OR UserId = @UserId);";
@@ -219,6 +252,13 @@ VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
             var query = $"SELECT * FROM Parts WHERE PartNumber = @PartNumber AND (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<Part>(query, new { PartNumber = partNumber, UserId = userContext?.UserId });
             return result.FirstOrDefault();
+        }
+
+        private async Task<ICollection<Part>> GetPartsAsync()
+        {
+            var query = $"SELECT * FROM Parts;";
+            var result = await SqlQueryAsync<Part>(query);
+            return result;
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext userContext)
@@ -291,6 +331,13 @@ OFFSET {offsetRecords} ROWS FETCH NEXT {request.Results} ROWS ONLY;";
             var query = $"SELECT * FROM Projects WHERE Name = @Name AND (@UserId IS NULL OR UserId = @UserId);";
             var result = await SqlQueryAsync<Project>(query, new { Name = projectName, UserId = userContext?.UserId });
             return result.FirstOrDefault();
+        }
+
+        private async Task<ICollection<Project>> GetProjectsAsync()
+        {
+            var query = $@"SELECT * FROM Projects;";
+            var result = await SqlQueryAsync<Project>(query);
+            return result;
         }
 
         public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext userContext)

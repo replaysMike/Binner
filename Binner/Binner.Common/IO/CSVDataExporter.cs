@@ -7,13 +7,18 @@ using System.Text;
 
 namespace Binner.Common.IO
 {
+    /// <summary>
+    /// Export data to CSV (Comma delimited file)
+    /// </summary>
     public class CSVDataExporter : IDataExporter
     {
-        public IDictionary<string, Stream> Export(IBinnerDb db)
+        public CSVOptions Options { get; } = CSVOptions.QuoteStrings;
+
+        public IDictionary<StreamName, Stream> Export(IBinnerDb db)
         {
             const string delimiter = ",";
             const string lineBreak = "\r\n";
-            var streams = new Dictionary<string, Stream>();
+            var streams = new Dictionary<StreamName, Stream>();
             var builder = new DataSetBuilder();
             var dataSet = builder.Build(db);
 
@@ -30,16 +35,33 @@ namespace Binner.Common.IO
                         writer.Write($"{string.Join(delimiter, rowValues)}{lineBreak}");
                     }
                 }
-                streams.Add(dataTable.TableName, stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                streams.Add(new StreamName(dataTable.TableName, "csv"), stream);
             }
             return streams;
         }
 
         private string EscapeValue(object value, Type dataType)
         {
-            if (dataType == typeof(string))
-                return $@"""{value?.ToString()}""";
+            if (Options.HasFlag(CSVOptions.QuoteStrings))
+            {
+                if (dataType == typeof(string))
+                    return $@"""{value?.ToString()}""";
+                if (dataType == typeof(ICollection<string>))
+                    return $@"""{string.Join(",", value)}""";
+            }
+            if (dataType == typeof(ICollection<string>))
+                return $@"{string.Join(" ", value)}";
+            if (dataType == typeof(DateTime))
+                return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
             return value.ToString();
+        }
+
+        [Flags]
+        public enum CSVOptions
+        {
+            None = 0,
+            QuoteStrings = 1,
         }
     }
 }
