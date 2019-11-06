@@ -95,3 +95,7 @@ code {
     position: relative;
     top: auto;
 }
+
+.selectable {
+    cursor: pointer;
+}

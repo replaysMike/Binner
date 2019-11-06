@@ -60,8 +60,8 @@ namespace Binner.Web.Controllers
         {
             var mappedPartType = Mapper.Map<CreatePartTypeRequest, PartType>(request);
             mappedPartType.DateCreatedUtc = DateTime.UtcNow;
-            var project = await _partTypeService.AddPartTypeAsync(mappedPartType);
-            return Ok(project);
+            var partType = await _partTypeService.AddPartTypeAsync(mappedPartType);
+            return Ok(partType);
         }
 
         /// <summary>
@@ -70,11 +70,11 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateProjectAsync(UpdatePartTypeRequest request)
+        public async Task<IActionResult> UpdatePartTypeAsync(UpdatePartTypeRequest request)
         {
             var mappedPartType = Mapper.Map<UpdatePartTypeRequest, PartType>(request);
-            var project = await _partTypeService.UpdatePartTypeAsync(mappedPartType);
-            return Ok(project);
+            var partType = await _partTypeService.UpdatePartTypeAsync(mappedPartType);
+            return Ok(partType);
         }
 
         /// <summary>

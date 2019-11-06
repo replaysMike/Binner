@@ -75,28 +75,25 @@ namespace Binner.Common.Extensions
         public static IEnumerable<TSource> OrderBy<TSource>(this IEnumerable<TSource> query, string key, SortDirection direction)
         {
             if (string.IsNullOrWhiteSpace(key))
-            {
                 return query;
-            }
 
-            var lambda = (dynamic)CreateExpression(typeof(TSource), key);
+            var lambda = CreateExpression<TSource>(key);
 
+            var func = lambda.Compile();
             return direction == SortDirection.Ascending
-                ? Queryable.OrderBy(query, lambda)
-                : Queryable.OrderByDescending(query, lambda);
+                ? Enumerable.OrderBy<TSource, object>(query, func)
+                : Enumerable.OrderByDescending<TSource, object>(query, func);
         }
 
-        private static LambdaExpression CreateExpression(Type type, string propertyName)
+        private static Expression<Func<TSource, object>> CreateExpression<TSource>(string propertyName)
         {
-            var param = Expression.Parameter(type, "x");
+            var param = Expression.Parameter(typeof(TSource), "x");
 
             Expression body = param;
             foreach (var member in propertyName.Split('.'))
-            {
                 body = Expression.PropertyOrField(body, member);
-            }
 
-            return Expression.Lambda(body, param);
+            return Expression.Lambda<Func<TSource, object>>(Expression.Convert(body, typeof(object)), param);
         }
     }
 }

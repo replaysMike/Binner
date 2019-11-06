@@ -120,12 +120,18 @@ export class Projects extends Component {
    */
   async onSubmit(e) {
     const { project } = this.state;
+    const request = {
+      name: project.name,
+      description: project.description,
+      location: project.location,
+      color: Number.parseInt(project.color) || 0
+    };
     const response = await fetch('project', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(project)
+      body: JSON.stringify(request)
     });
     if (response.status === 200) {
       // reset form
@@ -171,16 +177,22 @@ export class Projects extends Component {
     this.setState({ projects });
     let lastSavedProjectId = 0;
     project.color = Number.parseInt(project.color) || 0;
+    const request = {
+      name: project.name,
+      description: project.description,
+      location: project.location,
+      color: project.color
+    };
     const response = await fetch('project', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(project)
+      body: JSON.stringify(request)
     });
     if (response.status == 200) {
       const data = await response.json();
-      lastSavedProjectId = project.projectId;
+      lastSavedProjectId = data.projectId;
     }
     else
       console.log('failed to save project');
@@ -189,7 +201,7 @@ export class Projects extends Component {
   }
 
   handleShowAdd(e) {
-    this.setState({ addProjectVisible: !this.state.addVisible });
+    this.setState({ addVisible: !this.state.addVisible });
   }
 
   async handleDelete(e, project) {
@@ -210,6 +222,7 @@ export class Projects extends Component {
                 <Form onSubmit={this.onSubmit}>
                   <Form.Input width={6} label='Name' required placeholder='555 Timer Project' focus value={project.name} onChange={this.handleChange} name='name' />
                   <Form.Field width={10} control={TextArea} label='Description' value={project.description} onChange={this.handleChange} name='description' />
+                  <Form.Input width={6} label='Location' required placeholder='New York' focus value={project.location} onChange={this.handleChange} name='location' />
                   <Form.Dropdown width={4} label='Color' selection value={project.color} options={colors} onChange={this.handleChange} name='color' />
                   <Button primary type='submit' icon><Icon name='save' /> Save</Button>
                 </Form>

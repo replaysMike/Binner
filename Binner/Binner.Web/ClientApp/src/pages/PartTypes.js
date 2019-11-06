@@ -106,12 +106,16 @@ export class PartTypes extends Component {
    */
   async onSubmit(e) {
     const { partType } = this.state;
+    const request = {
+      name: partType.name,
+      parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
+    };
     const response = await fetch('partType', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(partType)
+      body: JSON.stringify(request)
     });
     if (response.status === 200) {
       // reset form
@@ -154,12 +158,17 @@ export class PartTypes extends Component {
     p.loading = false;
     this.setState({ partTypes });
     let lastSavedPartTypeId = 0;
+    const request = {
+      partTypeId: Number.parseInt(partType.partTypeId),
+      name: partType.name,
+      parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
+    };
     const response = await fetch('partType', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(partType)
+      body: JSON.stringify(request)
     });
     if (response.status == 200) {
       const data = await response.json();

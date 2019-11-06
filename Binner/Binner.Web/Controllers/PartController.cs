@@ -64,11 +64,12 @@ namespace Binner.Web.Controllers
             if (partsResponse.Any())
             {
                 var partTypes = await _partService.GetPartTypesAsync();
-                // map part types
+                // map fields that can't be automapped
                 foreach (var part in partsResponse)
                 {
                     part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
                     part.MountingType = ((MountingType)part.MountingTypeId).ToString();
+                    part.Keywords = string.Join(" ", parts.First(x => x.PartId == part.PartId).Keywords);
                 }
             }
             return Ok(partsResponse);
@@ -83,7 +84,7 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> CreatePartAsync(CreatePartRequest request)
         {
             var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
-            mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            mappedPart.Keywords = request.Keywords?.Split(new string[] { " ", "," }, StringSplitOptions.RemoveEmptyEntries);
 
             var partType = await GetPartTypeAsync(request.PartTypeId);
             if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
@@ -91,62 +92,15 @@ namespace Binner.Web.Controllers
             mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId);
             if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
-            if (request is IPreventDuplicateResource && !((IPreventDuplicateResource)request).AllowPotentialDuplicate)
-            {
-                var existingSearch = await _partService.FindPartsAsync(mappedPart.PartNumber);
-                if (existingSearch.Any())
-                {
-                    var existingParts = existingSearch.Select(x => x.Result).ToList();
-                    var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(existingParts);
-                    var partTypes = await _partService.GetPartTypesAsync();
-                    foreach (var p in partsResponse)
-                    {
-                        p.PartType = partTypes.Where(x => x.PartTypeId == p.PartTypeId).Select(x => x.Name).FirstOrDefault();
-                        p.MountingType = ((MountingType)p.MountingTypeId).ToString();
-                    }
-                    return StatusCode((int)HttpStatusCode.Conflict, new PossibleDuplicateResponse(partsResponse));
-                }
-            }
+            var duplicatePartResponse = await CheckForDuplicateAsync(request, mappedPart);
+            if (duplicatePartResponse != null)
+                return duplicatePartResponse;
+            
             var part = await _partService.AddPartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
+            partResponse.Keywords = string.Join(" ", part.Keywords);
             return Ok(partResponse);
-        }
-
-        private async Task<PartType> GetPartTypeAsync(string partType)
-        {
-            PartType result = null;
-            if (int.TryParse(partType, out int partTypeId))
-            {
-                // numeric format
-                result = await _partService.GetPartTypeAsync(partTypeId);
-            }
-            else
-            {
-                // string format
-                result = await _partService.GetOrCreatePartTypeAsync(new PartType
-                {
-                    Name = partType
-                });
-            }
-            return result;
-        }
-
-        private int GetMountingTypeId(string mountingType)
-        {
-            if (int.TryParse(mountingType, out int mountingTypeId))
-            {
-                // numeric format
-                if (Enum.IsDefined(typeof(MountingType), mountingTypeId))
-                    return mountingTypeId;
-            }
-            else
-            {
-                // string format
-                if (Enum.IsDefined(typeof(MountingType), mountingType))
-                    return (int)Enum.Parse<MountingType>(mountingType.Replace(" ", ""), true);
-            }
-            return -1;
         }
 
         /// <summary>
@@ -165,10 +119,11 @@ namespace Binner.Web.Controllers
             if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             mappedPart.PartId = request.PartId;
-            mappedPart.Keywords = request.Keywords?.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            mappedPart.Keywords = request.Keywords?.Split(new string[] { " ", "," }, StringSplitOptions.RemoveEmptyEntries);
             var part = await _partService.UpdatePartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
+            partResponse.Keywords = string.Join(" ", part.Keywords);
             return Ok(partResponse);
         }
 
@@ -203,7 +158,11 @@ namespace Binner.Web.Controllers
             var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(partsOrdered);
             // map part types
             foreach (var part in partsResponse)
+            {
                 part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+                part.MountingType = ((MountingType)part.MountingTypeId).ToString();
+                part.Keywords = string.Join(" ", partsOrdered.First(x => x.PartId == part.PartId).Keywords);
+            }
 
             return Ok(partsResponse);
         }
@@ -245,6 +204,7 @@ namespace Binner.Web.Controllers
                 {
                     part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
                     part.MountingType = ((MountingType)part.MountingTypeId).ToString();
+                    part.Keywords = string.Join(" ", partsResponse.First(x => x.PartId == part.PartId).Keywords);
                 }
             }
             return Ok(partsResponse);
@@ -287,7 +247,7 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> OrderImportPartsAsync(OrderImportPartsRequest request)
         {
             var parts = new List<PartResponse>();
-            foreach(var commonPart in request.Parts)
+            foreach (var commonPart in request.Parts)
             {
                 var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == commonPart.ManufacturerPartNumber);
                 if (existingParts.Any())
@@ -297,7 +257,8 @@ namespace Binner.Web.Controllers
                     existingPart.Quantity += commonPart.Quantity;
                     existingPart = await _partService.UpdatePartAsync(existingPart);
                     parts.Add(Mapper.Map<Part, PartResponse>(existingPart));
-                } else
+                }
+                else
                 {
                     // create new part
                     var part = Mapper.Map<CommonPart, Part>(commonPart);
@@ -309,7 +270,9 @@ namespace Binner.Web.Controllers
                     part.PartNumber = commonPart.ManufacturerPartNumber;
                     part.DateCreatedUtc = DateTime.UtcNow;
                     part = await _partService.AddPartAsync(part);
-                    parts.Add(Mapper.Map<Part, PartResponse>(part));
+                    var mappedPart = Mapper.Map<Part, PartResponse>(part);
+                    mappedPart.Keywords = string.Join(" ", part.Keywords);
+                    parts.Add(mappedPart);
                 }
             }
 
@@ -328,6 +291,74 @@ namespace Binner.Web.Controllers
             if (metadata == null)
                 return NotFound();
             return Ok(metadata);
+        }
+
+        /// <summary>
+        /// Check for duplicate part
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="part"></param>
+        /// <returns></returns>
+        private async Task<IActionResult> CheckForDuplicateAsync(CreatePartRequest request, Part part)
+        {
+            if (request is IPreventDuplicateResource && !((IPreventDuplicateResource)request).AllowPotentialDuplicate)
+            {
+                var existingSearch = await _partService.FindPartsAsync(part.PartNumber);
+                if (existingSearch.Any())
+                {
+                    var existingParts = existingSearch.Select(x => x.Result).ToList();
+                    var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(existingParts);
+                    var partTypes = await _partService.GetPartTypesAsync();
+                    foreach (var p in partsResponse)
+                    {
+                        p.PartType = partTypes.Where(x => x.PartTypeId == p.PartTypeId).Select(x => x.Name).FirstOrDefault();
+                        p.MountingType = ((MountingType)p.MountingTypeId).ToString();
+                    }
+                    return StatusCode((int)HttpStatusCode.Conflict, new PossibleDuplicateResponse(partsResponse));
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get an existing part type, or create if it doesn't exist
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        private async Task<PartType> GetPartTypeAsync(string partType)
+        {
+            PartType result = null;
+            if (int.TryParse(partType, out int partTypeId))
+            {
+                // numeric format
+                result = await _partService.GetPartTypeAsync(partTypeId);
+            }
+            else
+            {
+                // string format
+                result = await _partService.GetOrCreatePartTypeAsync(new PartType
+                {
+                    Name = partType
+                });
+            }
+            return result;
+        }
+
+        private int GetMountingTypeId(string mountingType)
+        {
+            if (int.TryParse(mountingType, out int mountingTypeId))
+            {
+                // numeric format
+                if (Enum.IsDefined(typeof(MountingType), mountingTypeId))
+                    return mountingTypeId;
+            }
+            else
+            {
+                // string format
+                if (Enum.IsDefined(typeof(MountingType), mountingType))
+                    return (int)Enum.Parse<MountingType>(mountingType.Replace(" ", ""), true);
+            }
+            return -1;
         }
     }
 }

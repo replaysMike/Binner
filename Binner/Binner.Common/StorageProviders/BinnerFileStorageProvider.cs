@@ -560,32 +560,32 @@ namespace Binner.Common.StorageProviders
             var matches = new List<SearchResult<Part>>();
 
             // by part number
-            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber.Equals(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber?.Equals(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 10))
                 .ToList();
             matches.AddRange(partNumberMatches);
 
             // by keyword
             var keywordMatches = _db.Parts
-                .Where(x => words.Any(y => x.Keywords.Contains(y, StringComparer.OrdinalIgnoreCase)) && x.UserId == userContext?.UserId)
+                .Where(x => words.Any(y => x.Keywords?.Contains(y, StringComparer.OrdinalIgnoreCase) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 20))
                 .ToList();
             matches.AddRange(keywordMatches);
 
             // by description
-            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description.Equals(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description?.Equals(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 30))
                 .ToList();
             matches.AddRange(descriptionMatches);
 
             // by digikey id
-            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber.Equals(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber?.Equals(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 40))
                 .ToList();
             matches.AddRange(digikeyMatches);
 
             // by bin number
-            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber.Equals(y, comparisonType) || x.BinNumber2.Equals(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber?.Equals(y, comparisonType) == true || x.BinNumber2?.Equals(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 50))
                 .ToList();
             matches.AddRange(binNumberMatches);
@@ -598,32 +598,32 @@ namespace Binner.Common.StorageProviders
             var matches = new List<SearchResult<Part>>();
 
             // by part number
-            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber.Contains(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var partNumberMatches = _db.Parts.Where(x => words.Any(y => x.PartNumber?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 100))
                 .ToList();
             matches.AddRange(partNumberMatches);
 
             // by keyword
             var keywordMatches = _db.Parts
-                .Where(x => words.Any(y => x.Keywords.Contains(y, StringComparer.OrdinalIgnoreCase)) && x.UserId == userContext?.UserId)
+                .Where(x => words.Any(y => x.Keywords?.Contains(y, StringComparer.OrdinalIgnoreCase) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 200))
                 .ToList();
             matches.AddRange(keywordMatches);
 
             // by description
-            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description.Contains(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var descriptionMatches = _db.Parts.Where(x => words.Any(y => x.Description?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 300))
                 .ToList();
             matches.AddRange(descriptionMatches);
 
             // by digikey id
-            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber.Contains(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var digikeyMatches = _db.Parts.Where(x => words.Any(y => x.DigiKeyPartNumber?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 400))
                 .ToList();
             matches.AddRange(digikeyMatches);
 
             // by bin number
-            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber.Contains(y, comparisonType) || x.BinNumber2.Contains(y, comparisonType)) && x.UserId == userContext?.UserId)
+            var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber?.Contains(y, comparisonType) == true || x.BinNumber2?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 500))
                 .ToList();
             matches.AddRange(binNumberMatches);
@@ -661,8 +661,9 @@ namespace Binner.Common.StorageProviders
                         _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>
                         {
                             // there is no guaranteed order so we must sort first
-                            { typeof(Part).Name, _db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() },
-                            { typeof(PartType).Name, _db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() },
+                            { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault(), 1) },
+                            { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault(), 1) },
+                            { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault(), 1) },
                         });
                     }
                 }
@@ -786,6 +787,7 @@ namespace Binner.Common.StorageProviders
             {
                 { typeof(Part).Name, 1 },
                 { typeof(PartType).Name, 1 },
+                { typeof(Project).Name, 1 },
             });
 
             var defaultPartTypesTs = typeof(SystemDefaults.DefaultPartTypes).GetExtendedType();
@@ -805,6 +807,7 @@ namespace Binner.Common.StorageProviders
                 DateModifiedUtc = created,
                 PartTypes = initialPartTypes,
                 Parts = new List<Part>(),
+                Projects = new List<Project>(),
                 OAuthCredentials = new List<OAuthCredential>()
             };
         }
