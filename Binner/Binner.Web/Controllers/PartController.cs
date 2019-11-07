@@ -21,18 +21,22 @@ namespace Binner.Web.Controllers
     public class PartController : ControllerBase
     {
         private readonly ILogger<PartController> _logger;
-        private readonly IMemoryCache _cache;
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
         private readonly IProjectService _projectService;
 
-        public PartController(ILogger<PartController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService)
         {
             _logger = logger;
-            _cache = cache;
             _config = config;
             _partService = partService;
             _projectService = projectService;
+        }
+
+        [HttpGet("ping")]
+        public async Task<IActionResult> GetPing()
+        {
+            return Ok("Pong");
         }
 
         /// <summary>

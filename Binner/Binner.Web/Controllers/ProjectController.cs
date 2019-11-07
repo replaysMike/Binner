@@ -18,15 +18,13 @@ namespace Binner.Web.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly ILogger<ProjectController> _logger;
-        private readonly IMemoryCache _cache;
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
         private readonly IProjectService _projectService;
 
-        public ProjectController(ILogger<ProjectController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService)
+        public ProjectController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService)
         {
             _logger = logger;
-            _cache = cache;
             _config = config;
             _partService = partService;
             _projectService = projectService;

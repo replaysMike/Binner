@@ -18,15 +18,13 @@ namespace Binner.Web.Controllers
     public class PartTypeController : ControllerBase
     {
         private readonly ILogger<PartTypeController> _logger;
-        private readonly IMemoryCache _cache;
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartTypeService _partTypeService;
         private readonly IPartService _partService;
 
-        public PartTypeController(ILogger<PartTypeController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IPartTypeService partTypeService, IPartService partService)
+        public PartTypeController(ILogger<PartTypeController> logger, WebHostServiceConfiguration config, IPartTypeService partTypeService, IPartService partService)
         {
             _logger = logger;
-            _cache = cache;
             _config = config;
             _partTypeService = partTypeService;
             _partService = partService;

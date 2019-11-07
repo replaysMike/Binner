@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Binner.Web.WebHost
@@ -40,12 +41,9 @@ namespace Binner.Web.WebHost
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             // needed to load IP Rate limit configuration from appsettings.json
-            services.AddOptions();
+            //services.AddOptions();
 
             var configuration = StartupConfiguration.Configure(Container, services);
-
-            // needed to store IP rate limit counters and ip rules, as well as in-memory API caching
-            services.AddMemoryCache();
 
             services.AddControllersWithViews();
 
@@ -80,7 +78,7 @@ namespace Binner.Web.WebHost
                 app.UseHsts();
             }
 
-            // app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
@@ -100,7 +98,7 @@ namespace Binner.Web.WebHost
                 if (env.IsDevelopment())
                 {
                     Console.WriteLine("Starting react dev server...");
-                    spa.UseReactDevelopmentServer(npmScript: "start");
+                    spa.UseReactDevelopmentServer(npmScript: "start-vs");
                 }
             });
         }

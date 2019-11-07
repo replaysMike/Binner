@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Statistic, Segment, Icon } from 'semantic-ui-react';
+import { Statistic, Segment, Icon, Label } from 'semantic-ui-react';
 
 export class Home extends Component {
   static displayName = Home.name;
+  static abortController = new AbortController();
 
   constructor(props) {
     super(props);
@@ -11,15 +12,24 @@ export class Home extends Component {
       summary: {},
       loading: true
     };
+    this.route = this.route.bind(this);
   }
 
   async componentDidMount() {
     await this.loadDashboard();
   }
 
+  componentWillUnmount() {
+    Home.abortController.abort();
+  }
+
   async loadDashboard() {
+    Home.abortController.abort(); // Cancel the previous request
+    Home.abortController = new AbortController();
     this.setState({ loading: true });
-    const response = await fetch(`part/summary`);
+    const response = await fetch(`part/summary`, {
+      signal: Home.abortController.signal
+    });
 
     if (response.status == 200) {
       const data = await response.json();
@@ -29,6 +39,12 @@ export class Home extends Component {
       this.setState({ summary: {}, loading: false });
   }
 
+  route(e, url) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.props.history.push(url);
+  }
+
   render() {
     const { summary, loading } = this.state;
     return (
@@ -36,44 +52,58 @@ export class Home extends Component {
         <h1>Welcome to Binner</h1>
         <p>Binner is an inventory management app for makers, hobbyists and professionals.</p>
         <p>Choose an action:</p>
-        <ul>
-          <li><Link to="/inventory/add">Add Inventory</Link></li>
-          <li><Link to="/inventory">Search inventory</Link></li>
-          <li><Link to="/datasheets">Datasheet Search</Link></li>
-          <li><Link to="/lowstock">Display Low Stock</Link></li>
-          <li><Link to="/partTypes">Manage Part Types</Link></li>
-          <li><Link to="/projects">Manage Projects</Link></li>
-          <li><Link to="/exportData">Export data</Link></li>
-        </ul>
+        <Segment>
+          <Statistic.Group widths='three'>
+            <Statistic onClick={e => this.route(e, '/inventory/add')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='plus' /></Statistic.Value>
+              <Statistic.Label>Add Inventory</Statistic.Label>
+            </Statistic>
+            <Statistic onClick={e => this.route(e, '/inventory')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='search' /></Statistic.Value>
+              <Statistic.Label>Search Inventory</Statistic.Label>
+            </Statistic>
+            <Statistic onClick={e => this.route(e, '/datasheets')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='file alternate' /></Statistic.Value>
+              <Statistic.Label>Datasheets</Statistic.Label>
+            </Statistic>
+          </Statistic.Group>
+          <Statistic.Group widths='four' size='tiny' style={{ marginTop: '50px' }}>
+            <Statistic onClick={e => this.route(e, '/lowstock')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='barcode' /></Statistic.Value>
+              <Statistic.Label>View Low Stock</Statistic.Label>
+            </Statistic>
+            <Statistic onClick={e => this.route(e, '/partTypes')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='sitemap' /></Statistic.Value>
+              <Statistic.Label>Part Types</Statistic.Label>
+            </Statistic>
+            <Statistic onClick={e => this.route(e, '/projects')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='folder open' /></Statistic.Value>
+              <Statistic.Label>Projects</Statistic.Label>
+            </Statistic>
+            <Statistic onClick={e => this.route(e, '/exportData')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='cloud download' /></Statistic.Value>
+              <Statistic.Label>Export Data</Statistic.Label>
+            </Statistic>
+          </Statistic.Group>
+        </Segment>
 
         <h2>Dashboard</h2>
-        <div className="divTable">
-          <div className="divTableBody">
-            <div className="divTableRow">
-              <div className="divTableCell header">Dashboard</div>
-            </div>
-            <div className="divTableRow">
-              <div className="divTableCell">
-                <Segment loading={loading} textAlign='center'>
-                  <Statistic.Group widths='three'>
-                    <Statistic>
-                      <Statistic.Value><Icon name='plus' />{summary.lowStockCount}</Statistic.Value>
-                      <Statistic.Label>Low Stock</Statistic.Label>
-                    </Statistic>
-                    <Statistic>
-                      <Statistic.Value><Icon name='microchip' />{summary.partsCount}</Statistic.Value>
-                      <Statistic.Label>Parts</Statistic.Label>
-                    </Statistic>
-                    <Statistic>
-                      <Statistic.Value><Icon name='folder open' />{summary.projectsCount}</Statistic.Value>
-                      <Statistic.Label>Projects</Statistic.Label>
-                    </Statistic>
-                  </Statistic.Group>
-                </Segment>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Segment inverted loading={loading} textAlign='center'>
+          <Statistic.Group widths='three'>
+            <Statistic color='red' inverted>
+              <Statistic.Value><Icon name='barcode' />{summary.lowStockCount}</Statistic.Value>
+              <Statistic.Label>Low Stock</Statistic.Label>
+            </Statistic>
+            <Statistic color='orange' inverted>
+              <Statistic.Value><Icon name='microchip' />{summary.partsCount}</Statistic.Value>
+              <Statistic.Label>Parts</Statistic.Label>
+            </Statistic>
+            <Statistic color='blue' inverted>
+              <Statistic.Value><Icon name='folder open' />{summary.projectsCount}</Statistic.Value>
+              <Statistic.Label>Projects</Statistic.Label>
+            </Statistic>
+          </Statistic.Group>
+        </Segment>
       </div>
     );
   }

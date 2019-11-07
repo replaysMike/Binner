@@ -10,15 +10,21 @@ import { OrderImport } from './pages/OrderImport';
 import { PartTypes } from './pages/PartTypes';
 import { Projects } from './pages/Projects';
 import { ExportData } from './pages/ExportData';
+import { createBrowserHistory as createHistory } from "history";
 
 import './custom.css'
 
 export default class App extends Component {
   static displayName = App.name;
+  history = createHistory(this.props);
+
+  constructor(props) {
+    super(props);
+  }
 
   render() {
     return (
-      <Layout>
+      <Layout history={this.history}>
         <Switch>
           <Route exact path='/' component={Home} />
           <Route exact path='/inventory/add' component={Inventory} />

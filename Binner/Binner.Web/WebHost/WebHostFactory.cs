@@ -27,17 +27,17 @@ namespace Binner.Web.WebHost
             var host = Microsoft.AspNetCore.WebHost
                 .CreateDefaultBuilder()
                 .ConfigureKestrel(options => {
-                    if (certificate != null)
+                    /*if (certificate != null)
                     {
                         options.ConfigureHttpsDefaults(opt =>
                         {
                             opt.ServerCertificate = certificate;
                             opt.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
                         });
-                    }
+                    }*/
                     options.Listen(ipAddress, port.Value, c => {
-                        if (certificate != null)
-                            c.UseHttps(certificate);
+                        //if (certificate != null)
+                        //    c.UseHttps(certificate);
                     });
                 })
                 .UseEnvironment(environment.EnvironmentName)

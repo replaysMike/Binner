@@ -99,3 +99,8 @@ code {
 .selectable {
     cursor: pointer;
 }
+
+.nav-item > .ui.mini.input {
+    font-size: .7em !important;
+    margin-top: 5px;
+}

@@ -44,7 +44,7 @@ export class Inventory extends Component {
       lastBinNumber2: '',
       lowStockThreshold: 10,
     };
-    console.log('partNumber', partNumber);
+
     this.state = {
       partNumber,
       recentParts: [],

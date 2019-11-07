@@ -21,14 +21,12 @@ namespace Binner.Web.Controllers
     {
         private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
         private readonly ILogger<ProjectController> _logger;
-        private readonly IMemoryCache _cache;
         private readonly WebHostServiceConfiguration _config;
         private readonly IStorageProvider _storageProvider;
 
-        public ExportController(ILogger<ProjectController> logger, IMemoryCache cache, WebHostServiceConfiguration config, IStorageProvider storageProvider)
+        public ExportController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IStorageProvider storageProvider)
         {
             _logger = logger;
-            _cache = cache;
             _config = config;
             _storageProvider = storageProvider;
         }

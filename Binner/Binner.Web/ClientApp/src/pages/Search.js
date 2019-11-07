@@ -41,6 +41,20 @@ export class Search extends Component {
       await this.loadParts(this.state.page);
   }
 
+  componentWillUnmount() {
+    Search.abortController.abort();
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    // if the path changes due to a new search via query, reset the keyword and perform the search
+    // the component will not be recreated when this happens, only during rerender
+    if (nextProps.location.search !== this.props.location.search) {
+      const keyword = getQueryVariable(nextProps.location.search, 'keyword') || '';
+      this.setState({ keyword });
+      this.search(keyword);
+    }
+  }
+
   async loadParts(page, reset = false) {
     const { records, parts } = this.state;
     let endOfData = false;
