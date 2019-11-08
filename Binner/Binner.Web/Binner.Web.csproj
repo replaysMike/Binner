@@ -38,6 +38,17 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="appsettings.*.json" />
+    <Content Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.json" />
+    <Content Include="appsettings.Production.json" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+
+  <Target Name="RenameAppsettings" AfterTargets="Publish">
+    <Move SourceFiles="$(PublishDir)\appsettings.Production.json" DestinationFiles="$(PublishDir)\appsettings.json" />
+  </Target>
+
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">

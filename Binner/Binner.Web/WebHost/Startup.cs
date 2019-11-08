@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
-using System.Globalization;
 using System.Linq;
 
 namespace Binner.Web.WebHost
@@ -67,9 +65,9 @@ namespace Binner.Web.WebHost
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             var config = Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
-            Console.WriteLine($"ENVIRONMENT NAME: {env.EnvironmentName}");
+            Console.WriteLine($"ENVIRONMENT NAME: {config.Environment}");
 
-            if (env.IsDevelopment())
+            if (config.Environment == Web.Configuration.Environments.Development)
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -95,10 +93,14 @@ namespace Binner.Web.WebHost
             {
                 spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment())
+                if (config.Environment == Web.Configuration.Environments.Development)
                 {
                     Console.WriteLine("Starting react dev server...");
                     spa.UseReactDevelopmentServer(npmScript: "start-vs");
+                }
+                else
+                {
+                    Console.WriteLine("Using pre-built react application");
                 }
             });
         }

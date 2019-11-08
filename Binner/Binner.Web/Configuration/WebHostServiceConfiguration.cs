@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Binner.Web.Configuration
+﻿namespace Binner.Web.Configuration
 {
     /// <summary>
     /// Service Configuration
     /// </summary>
     public class WebHostServiceConfiguration
     {
+        /// <summary>
+        /// The application environment (Development, Production)
+        /// </summary>
+        public Environments Environment { get; set; }
+
         /// <summary>
         /// The server name
         /// </summary>
@@ -54,5 +55,11 @@ namespace Binner.Web.Configuration
         /// Digikey configuration
         /// </summary>
         public IntegrationConfiguration Integrations { get; set; } = new IntegrationConfiguration();
+    }
+
+    public enum Environments
+    {
+        Development,
+        Production
     }
 }
