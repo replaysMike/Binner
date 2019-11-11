@@ -40,12 +40,6 @@ namespace Binner.Web.Controllers
             _barcodeGenerator = barcodeGenerator;
         }
 
-        [HttpGet("ping")]
-        public async Task<IActionResult> GetPing()
-        {
-            return Ok("Pong");
-        }
-
         /// <summary>
         /// Get an existing part
         /// </summary>
@@ -320,20 +314,6 @@ namespace Binner.Web.Controllers
             image.Save(stream, ImageFormat.Png);
             stream.Seek(0, SeekOrigin.Begin);
             return new FileStreamResult(stream, "image/png");
-        }
-
-        /// <summary>
-        /// Get part metadata
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpGet("metadata")]
-        public async Task<IActionResult> GetMetadataAsync([FromQuery]string partNumber)
-        {
-            var metadata = await _partService.GetPartMetadataAsync(partNumber);
-            if (metadata == null)
-                return NotFound();
-            return Ok(metadata);
         }
 
         /// <summary>

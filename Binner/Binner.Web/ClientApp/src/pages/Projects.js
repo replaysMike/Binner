@@ -150,7 +150,7 @@ export class Projects extends Component {
   }
 
   async onDelete(project) {
-    const response = await fetch('project', {
+    await fetch('project', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -190,7 +190,7 @@ export class Projects extends Component {
       },
       body: JSON.stringify(request)
     });
-    if (response.status == 200) {
+    if (response.status === 200) {
       const data = await response.json();
       lastSavedProjectId = data.projectId;
     }
@@ -209,7 +209,7 @@ export class Projects extends Component {
   }
 
   renderProjects(projects, column, direction) {
-    const { project, lastSavedProjectId, colors, addVisible, loading } = this.state;
+    const { project, colors, addVisible, loading } = this.state;
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
         <Segment loading={loading}>
@@ -243,7 +243,7 @@ export class Projects extends Component {
             <Table.Body>
               {projects.map(p =>
                 <Table.Row key={p.projectId} onClick={this.handleClick}>
-                  <Table.Cell textAlign='center'><Label circular {...(_.find(ProjectColors, c => c.value == p.color).name !== '' && { color: _.find(ProjectColors, c => c.value == p.color).name })} size='mini' /></Table.Cell>
+                  <Table.Cell textAlign='center'><Label circular {...(_.find(ProjectColors, c => c.value === p.color).name !== '' && { color: _.find(ProjectColors, c => c.value === p.color).name })} size='mini' /></Table.Cell>
                   <Table.Cell><Input labelPosition='left' type='text' transparent name='name' onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
                   <Table.Cell><Input type='text' transparent name='description' onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
                   <Table.Cell><Input type='text' transparent name='location' onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>

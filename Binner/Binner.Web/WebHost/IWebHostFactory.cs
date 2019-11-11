@@ -11,8 +11,9 @@ namespace Binner.Web.WebHost
         /// </summary>
         /// <param name="ipAddress">The IP address of the host</param>
         /// <param name="port">The port of the host</param>
+        /// <param name="environment">Environment to run</param>
         /// <param name="certificate">The SSL certificate to use</param>
         /// <returns></returns>
-        IWebHost CreateHttps(IPAddress ipAddress, int? port = 80, X509Certificate2 certificate = null);
+        IWebHost CreateHttps(IPAddress ipAddress, int? port = 80, string environment = "Development", X509Certificate2 certificate = null);
     }
 }

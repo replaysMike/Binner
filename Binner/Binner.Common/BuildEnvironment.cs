@@ -15,7 +15,7 @@ namespace Binner.Common
         public static EnvironmentData GetBuildEnvironment()
         {
             var environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentVariableTarget.Machine)
-                ?? System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentVariableTarget.User);
+                ?? System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentVariableTarget.User) ?? "Development";
             var buildVersion = System.Environment.GetEnvironmentVariable("BUILD_VERSION", EnvironmentVariableTarget.Machine)
                 ?? System.Environment.GetEnvironmentVariable("BUILD_VERSION", EnvironmentVariableTarget.User);
             var buildCommit = System.Environment.GetEnvironmentVariable("BUILD_COMMIT", EnvironmentVariableTarget.Machine)

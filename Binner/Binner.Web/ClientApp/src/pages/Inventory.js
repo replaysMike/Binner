@@ -7,15 +7,6 @@ import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popu
 import NumberPicker from '../components/NumberPicker';
 import { ProjectColors } from '../common/Types';
 
-const inlineStyle = {
-  modal: {
-    display: 'fixed !important',
-    marginTop: '0px !important',
-    marginLeft: 'auto',
-    marginRight: 'auto'
-  }
-};
-
 export class Inventory extends Component {
   static displayName = Inventory.name;
   static abortController = new AbortController();
@@ -208,7 +199,7 @@ export class Inventory extends Component {
         key: item.projectId,
         value: item.projectId,
         text: item.name,
-        label: { ...(_.find(ProjectColors, c => c.value == item.color).name !== '' && { color: _.find(ProjectColors, c => c.value == item.color).name }), circular: true, content: item.parts, size: 'tiny' },
+        label: { ...(_.find(ProjectColors, c => c.value === item.color).name !== '' && { color: _.find(ProjectColors, c => c.value === item.color).name }), circular: true, content: item.parts, size: 'tiny' },
       };
     }), 'text');
     this.setState({ projects, loadingProjects: false });

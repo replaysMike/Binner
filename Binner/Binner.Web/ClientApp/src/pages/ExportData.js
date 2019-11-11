@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import _ from 'underscore';
-import { Label, Button, Form } from 'semantic-ui-react';
+import { Button, Form } from 'semantic-ui-react';
 
 export class ExportData extends Component {
   static displayName = ExportData.name;

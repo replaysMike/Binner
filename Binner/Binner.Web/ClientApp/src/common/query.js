@@ -9,7 +9,7 @@ export const getQueryVariable = (query, variable) => {
   var pairs = queryStr.split("&");
   for (var i = 0; i < pairs.length; i++) {
     var pair = pairs[i].split("=");
-    if (pair[0] == variable && pair.length > 1) return pair[1];
+    if (pair[0] === variable && pair.length > 1) return pair[1];
   }
   return false;
 };

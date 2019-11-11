@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { Statistic, Segment, Icon, Label } from 'semantic-ui-react';
+import { Statistic, Segment, Icon } from 'semantic-ui-react';
 
 export class Home extends Component {
   static displayName = Home.name;
@@ -31,7 +30,7 @@ export class Home extends Component {
       signal: Home.abortController.signal
     });
 
-    if (response.status == 200) {
+    if (response.status === 200) {
       const data = await response.json();
       this.setState({ summary: data || {}, loading: false });
     }

@@ -63,7 +63,7 @@ namespace Binner.Web.ServiceHost
                 if (!string.IsNullOrEmpty(ipString) && ipString != "*")
                     IPAddress.TryParse(_config.IP, out ipAddress);
 
-                WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port);
+                WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port, _config.Environment.ToString());
 
                 await WebHost.RunAsync();
             }).ContinueWith(t => {

@@ -8,6 +8,11 @@
     <SpaRoot>ClientApp\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <OutputType>Exe</OutputType>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
+    <PublishSingleFile>true</PublishSingleFile>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win10-x64;osx.10.12-x64;linux-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
@@ -39,11 +44,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.Production.json" Condition="'$(Configuration)' == 'Release' " CopyToPublishDirectory="Always" />
+    <None Include="appsettings.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
   </ItemGroup>
 
-  <Target Name="RenameAppsettings" AfterTargets="Publish">
+  <Target Name="RenameAppsettings" BeforeTargets="Publish">
     <Move SourceFiles="$(PublishDir)\appsettings.Production.json" DestinationFiles="$(PublishDir)\appsettings.json" />
+    <Delete Files="$(PublishDir)\appsettings.Development.json" />
   </Target>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
@@ -67,7 +75,6 @@
       <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>%(DistFiles.Identity)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </ResolvedFileToPublish>
     </ItemGroup>
   </Target>

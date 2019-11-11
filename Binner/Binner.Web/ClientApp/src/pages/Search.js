@@ -81,7 +81,7 @@ export class Search extends Component {
         signal: Search.abortController.signal
       });
 
-      if (response.status == 200) {
+      if (response.status === 200) {
         const data = await response.json();
         this.setState({ parts: data || [], loading: false, noRemainingData: true });
       }
@@ -113,7 +113,7 @@ export class Search extends Component {
       body: JSON.stringify(part)
     });
     let saveMessage = '';
-    if (response.status == 200) {
+    if (response.status === 200) {
       const data = await response.json();
       lastSavedPartId = part.partId;
       saveMessage = `Saved part ${part.partNumber}!`;

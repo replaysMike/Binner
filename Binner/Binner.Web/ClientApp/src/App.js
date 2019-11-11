@@ -18,10 +18,6 @@ export default class App extends Component {
   static displayName = App.name;
   history = createHistory(this.props);
 
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return (
       <Layout history={this.history}>

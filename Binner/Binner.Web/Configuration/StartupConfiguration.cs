@@ -4,6 +4,7 @@ using LightInject;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace Binner.Web.Configuration
@@ -14,11 +15,12 @@ namespace Binner.Web.Configuration
 
         public static IConfigurationRoot Configure(IServiceContainer container, IServiceCollection services)
         {
-            // var environmentData = BuildEnvironment.GetBuildEnvironment();
-
-            var configPath = AppDomain.CurrentDomain.BaseDirectory;
+            //var configPath = AppDomain.CurrentDomain.BaseDirectory;
+            //var configPath = Environment.CurrentDirectory;
+            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
             var configFile = Path.Combine(configPath, ConfigFile);
-            System.Console.WriteLine($"Config file location: {configFile}");
+            Console.WriteLine($".Net Core bundle path: {AppContext.BaseDirectory}");
+            Console.WriteLine($"Config file location: {configFile}");
             var configuration = Config.GetConfiguration(configFile);
             var serviceConfiguration = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();

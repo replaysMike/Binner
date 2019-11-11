@@ -82,13 +82,6 @@ namespace Binner.Common.Services
         Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
 
         /// <summary>
-        /// Get metadata about a part number
-        /// </summary>
-        /// <param name="partNumber"></param>
-        /// <returns></returns>
-        Task<PartMetadata> GetPartMetadataAsync(string partNumber);
-
-        /// <summary>
         /// Get an external order
         /// </summary>
         /// <param name="orderId"></param>

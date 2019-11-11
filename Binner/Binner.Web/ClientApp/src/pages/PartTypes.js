@@ -43,7 +43,7 @@ export class PartTypes extends Component {
   }
 
   async loadPartTypes(page, reset = false) {
-    const { records, partTypes } = this.state;
+    const { partTypes } = this.state;
     this.setState({ loading: true });
     let endOfData = false;
     const response = await fetch(`partType/list`);
@@ -132,7 +132,7 @@ export class PartTypes extends Component {
   }
 
   async onDelete(partType) {
-    const response = await fetch('partType', {
+    await fetch('partType', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -170,8 +170,8 @@ export class PartTypes extends Component {
       },
       body: JSON.stringify(request)
     });
-    if (response.status == 200) {
-      const data = await response.json();
+    if (response.status === 200) {
+      await response.json();
       lastSavedPartTypeId = partType.partTypeId;
     }
     else
@@ -189,7 +189,7 @@ export class PartTypes extends Component {
   }
 
   renderPartTypes(partTypes, column, direction) {
-    const { partType, lastSavedPartTypeId, addVisible, partTypeOptions, loading } = this.state;
+    const { partType, addVisible, partTypeOptions, loading } = this.state;
     return (
       <Segment loading={loading}>
         <div style={{ minHeight: '35px' }}>

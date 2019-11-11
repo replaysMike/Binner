@@ -60,7 +60,7 @@ export class Datasheets extends Component {
   async fetchPartMetadata(input) {
     Datasheets.abortController.abort(); // Cancel the previous request
     Datasheets.abortController = new AbortController();
-    const { part, parts } = this.state;
+    const { part } = this.state;
     this.setState({ loading: true });
     try {
       const response = await fetch(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
@@ -129,6 +129,8 @@ export class Datasheets extends Component {
       case 'mountingType':
         if (control.value && control.value.length > 0 && part.partNumber.length > 0)
           this.searchDebounced(control.value);
+        break;
+      default:
         break;
     }
     this.setState({ part });
@@ -214,7 +216,7 @@ export class Datasheets extends Component {
   }
 
   render() {
-    const { parts, column, direction, loading } = this.state;
+    const { parts, column, direction } = this.state;
     let contents = this.renderParts(parts, column, direction);
 
     return (

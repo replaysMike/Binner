@@ -37,13 +37,13 @@
     "extends": "react-app"
   },
   "scripts": {
-    "start-vs": "cd ../../../../ClientApp && .\\node_modules\\.bin\\react-scripts start",
+    "start-vs": "cd ../../../../../ClientApp && .\\node_modules\\.bin\\react-scripts start",
     "start": ".\\node_modules\\.bin\\react-scripts start",
-    "build-vs": "cd ../../../../ClientApp && .\\node_modules\\.bin\\react-scripts build",
+    "build-vs": "cd ../../../../../ClientApp && .\\node_modules\\.bin\\react-scripts build",
     "build": ".\\node_modules\\.bin\\react-scripts build",
-    "test": "cross-env CI=true cd ../../../../ClientApp && .\\node_modules\\.bin\\react-scripts test --env=jsdom",
-    "eject": "cd ../../../../ClientApp && .\\node_modules\\.bin\\react-scripts eject",
-    "lint": "cd ../../../../ClientApp && .\\node_modules\\.bin\\eslint ../../src/"
+    "test": "cross-env CI=true cd ../../../../../ClientApp && .\\node_modules\\.bin\\react-scripts test --env=jsdom",
+    "eject": "cd ../../../../../ClientApp && .\\node_modules\\.bin\\react-scripts eject",
+    "lint": "cd ../../../../../ClientApp && .\\node_modules\\.bin\\eslint ../../src/"
   },
   "browserslist": {
     "production": [

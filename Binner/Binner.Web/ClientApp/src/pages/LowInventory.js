@@ -62,7 +62,7 @@ export class LowInventory extends Component {
       },
       body: JSON.stringify(part)
     });
-    if (response.status == 200) {
+    if (response.status === 200) {
       const data = await response.json();
       lastSavedPartId = part.partId;
     }
@@ -135,7 +135,7 @@ export class LowInventory extends Component {
   }
 
   renderParts(parts, column, direction) {
-    const { keyword, lastSavedPartId, loading } = this.state;
+    const { lastSavedPartId, loading } = this.state;
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
         <Segment loading={loading}>
