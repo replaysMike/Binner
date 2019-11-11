@@ -1,4 +1,5 @@
 ﻿using AnyMapper;
+using Binner.Common.IO.Printing;
 using Binner.Common.Models;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
@@ -24,13 +27,17 @@ namespace Binner.Web.Controllers
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
         private readonly IProjectService _projectService;
+        private readonly ILabelPrinter _labelPrinter;
+        private readonly IBarcodeGenerator _barcodeGenerator;
 
-        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService, ILabelPrinter labelPrinter, IBarcodeGenerator barcodeGenerator)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
             _projectService = projectService;
+            _labelPrinter = labelPrinter;
+            _barcodeGenerator = barcodeGenerator;
         }
 
         [HttpGet("ping")]
@@ -103,7 +110,7 @@ namespace Binner.Web.Controllers
             var part = await _partService.AddPartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
-            partResponse.Keywords = string.Join(" ", part.Keywords);
+            partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
             return Ok(partResponse);
         }
 
@@ -127,7 +134,7 @@ namespace Binner.Web.Controllers
             var part = await _partService.UpdatePartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
-            partResponse.Keywords = string.Join(" ", part.Keywords);
+            partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
             return Ok(partResponse);
         }
 
@@ -208,7 +215,7 @@ namespace Binner.Web.Controllers
                 {
                     part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
                     part.MountingType = ((MountingType)part.MountingTypeId).ToString();
-                    part.Keywords = string.Join(" ", partsResponse.First(x => x.PartId == part.PartId).Keywords);
+                    part.Keywords = partsResponse.First(x => x.PartId == part.PartId).Keywords;
                 }
             }
             return Ok(partsResponse);
@@ -275,12 +282,44 @@ namespace Binner.Web.Controllers
                     part.DateCreatedUtc = DateTime.UtcNow;
                     part = await _partService.AddPartAsync(part);
                     var mappedPart = Mapper.Map<Part, PartResponse>(part);
-                    mappedPart.Keywords = string.Join(" ", part.Keywords);
+                    mappedPart.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
                     parts.Add(mappedPart);
                 }
             }
 
             return Ok(parts);
+        }
+
+        /// <summary>
+        /// Print a part label
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("print")]
+        public async Task<IActionResult> PrintPartAsync([FromQuery] GetPartRequest request)
+        {
+            var part = await _partService.GetPartAsync(request.PartNumber);
+            if (part == null) return NotFound();
+            var stream = new MemoryStream();
+            var image = _labelPrinter.PrintLabel(new List<string> { part.PartNumber, part.Description });
+            image.Save(stream, ImageFormat.Png);
+            stream.Seek(0, SeekOrigin.Begin);
+            return new FileStreamResult(stream, "image/png");
+        }
+
+        /// <summary>
+        /// Generate a part barcode
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("barcode")]
+        public IActionResult BarcodePart([FromQuery] GetPartRequest request)
+        {
+            var stream = new MemoryStream();
+            var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, 300, 25);
+            image.Save(stream, ImageFormat.Png);
+            stream.Seek(0, SeekOrigin.Begin);
+            return new FileStreamResult(stream, "image/png");
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 using ApiClient.OAuth2;
 using Binner.Common;
 using Binner.Common.Integrations;
+using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Common.StorageProviders;
 using Binner.Web.ServiceHost;
@@ -24,6 +25,9 @@ namespace Binner.Web.Configuration
 
             services.AddTransient<IWebHostFactory, WebHostFactory>();
             container.RegisterInstance(container);
+
+            // register printer configuration
+            RegisterPrinterService(container);
 
             // register Api integrations
             RegisterApiIntegrations(container);
@@ -60,6 +64,23 @@ namespace Binner.Web.Configuration
             {
                 config.AddProfile(profile);
             });
+        }
+
+        private static void RegisterPrinterService(IServiceContainer container)
+        {
+            container.Register<IBarcodeGenerator, BarcodeGenerator>(new PerContainerLifetime());
+            container.Register<ILabelPrinter>((serviceFactory) =>
+            {
+                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
+                var barcodeGenerator = serviceFactory.GetInstance<IBarcodeGenerator>();
+                return new DymoPrinter(new PrinterSettings
+                {
+                    PrinterName = config.PrinterConfiguration.PrinterName,
+                    LabelName = config.PrinterConfiguration.LabelName,
+                    LabelSource = config.PrinterConfiguration.LabelSource,
+                    Font = config.PrinterConfiguration.Font
+                }, barcodeGenerator);
+            }, new PerContainerLifetime());
         }
 
         private static void RegisterServices(IServiceContainer container)
