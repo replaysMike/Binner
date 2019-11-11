@@ -27,9 +27,26 @@ Binner is a free open-source parts inventory tracking system you can run locally
 * Windows desktop UI
 * Maybe a parts marketplace?
 
-## Install
+## Installation
 
-Download the [latest release](https://github.com/replaysMike/Binner/releases) for your environment
+Download the [latest release](https://github.com/replaysMike/Binner/releases) for your environment.
+
+Binner can be run as a standalone console application, or as a service.
+
+To run as a console application:
+
+```ps
+.\Binner.Web.exe
+```
+
+To run as a service, run the following in an Administrative console:
+
+```ps
+.\Binner.Web.exe install
+.\Binner.Web.exe start
+```
+
+Proceed to the web interface at http://localhost:8090 to start using Binner!
 
 ## Description
 
