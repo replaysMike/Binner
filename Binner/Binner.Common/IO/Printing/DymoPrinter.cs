@@ -15,7 +15,7 @@ namespace Binner.Common.IO.Printing
         /// For debugging, true to draw the label bounds
         /// </summary>
         private const bool DrawBounds = false;
-
+        private const string DefaultFont = "Segoe UI";
         private ICollection<string> _lines;
         private IBarcodeGenerator _barcodeGenerator;
         private Image _printImage;
@@ -66,13 +66,12 @@ namespace Binner.Common.IO.Printing
         {
             if (!string.IsNullOrEmpty(PrinterSettings.PrinterName))
             {
-                var installedPrinters = System.Drawing.Printing.PrinterSettings.InstalledPrinters;
-                var foundPrinter = string.Empty;
-                foreach (string p in installedPrinters)
-                    if (p.Equals(PrinterSettings.PrinterName, StringComparison.CurrentCultureIgnoreCase))
-                        foundPrinter = p;
+                var installedPrinters = System.Drawing.Printing.PrinterSettings.InstalledPrinters.Cast<string>().ToList();
+                var foundPrinter = installedPrinters.FirstOrDefault(x => x.Equals(PrinterSettings.PrinterName, StringComparison.CurrentCultureIgnoreCase));
                 if (!string.IsNullOrEmpty(foundPrinter))
                     t.PrinterSettings.PrinterName = foundPrinter;
+                else
+                    throw new Exception($"Could not locate printer named: '{PrinterSettings.PrinterName}' - the following printers are available: {string.Join(",", installedPrinters)}");
             }
         }
 
@@ -96,10 +95,14 @@ namespace Binner.Common.IO.Printing
             var line1 = _lines.First().ToUpper();
             var line2 = string.Empty;
             var line3 = string.Empty;
+            var binNumberWidth = 0;
+            // allow vertical binNumber to be written, if provided
+            if (_lines.Count > 2)
+                binNumberWidth = 25;
             // autodecrease the font on line1, if it exceeds the bounds
-            var line1Font = AutosizeFont(g, PrinterSettings.Font ?? "Segoe UI", _labelProperties.LineFontSizes.First(), line1, paperRect.Width);
+            var line1Font = AutosizeFont(g, PrinterSettings.Font ?? DefaultFont, _labelProperties.LineFontSizes.First(), line1, paperRect.Width);
             // autowrap text on lines 2/3
-            var line2Font = new Font(PrinterSettings.Font ?? "Segoe UI", _labelProperties.LineFontSizes.Skip(1).First(), GraphicsUnit.Point);
+            var line2Font = new Font(PrinterSettings.Font ?? DefaultFont, _labelProperties.LineFontSizes.Skip(1).First(), GraphicsUnit.Point);
             if (_lines.Count > 1)
             {
                 SizeF len;
@@ -110,9 +113,9 @@ namespace Binner.Common.IO.Printing
                 do
                 {
                     len = g.MeasureString(line2, line2Font);
-                    if (len.Width > paperRect.Width)
+                    if (len.Width > paperRect.Width- binNumberWidth)
                         line2 = line2.Substring(0, line2.Length - 1);
-                } while (len.Width > paperRect.Width);
+                } while (len.Width > paperRect.Width- binNumberWidth);
                 if (line2.Length < description.Length)
                 {
                     // autowrap line 3
@@ -120,16 +123,16 @@ namespace Binner.Common.IO.Printing
                     do
                     {
                         len = g.MeasureString(line3, line2Font);
-                        if (len.Width > paperRect.Width)
+                        if (len.Width > paperRect.Width- binNumberWidth)
                             line3 = line3.Substring(0, line3.Length - 1);
-                    } while (len.Width > paperRect.Width);
+                    } while (len.Width > paperRect.Width- binNumberWidth);
                 }
             }
             var line1Bounds = g.MeasureString(line1, line1Font);
             var line2Bounds = g.MeasureString(line2, line2Font);
             var line3Bounds = g.MeasureString(line3, line2Font);
-            var line1x = paperRect.Width / 2 - line1Bounds.Width / 2 + _labelProperties.LeftMargin;
-            var line2x = paperRect.Width / 2 - line2Bounds.Width / 2 + _labelProperties.LeftMargin;
+            var line1x = (paperRect.Width- binNumberWidth) / 2 - line1Bounds.Width / 2 + _labelProperties.LeftMargin;
+            var line2x = (paperRect.Width- binNumberWidth) / 2 - line2Bounds.Width / 2 + _labelProperties.LeftMargin;
             var startY = _labelProperties.TopMargin + paperRect.Height - (paperRect.Height / _labelProperties.LabelCount);
             var line2startY = startY + (int)(line1Bounds.Height * 0.65);
             var line3startY = line2startY + (int)(line2Bounds.Height * 0.6);
@@ -143,6 +146,20 @@ namespace Binner.Common.IO.Printing
                 lastEndLine = line3startY + (int)(line3Bounds.Height * 0.9);
             var barcodeY = lastEndLine;
             DrawBarcode128(g, new Rectangle(0, barcodeY, paperRect.Width, paperRect.Height / _labelProperties.LabelCount));
+
+            // draw vertical right bin number if specified
+            if(binNumberWidth > 0)
+            {
+                var binNumber = _lines.Last();
+                var binNumberBounds = g.MeasureString(binNumber, line2Font);
+                var state = g.Save();
+                g.ResetTransform();
+                g.RotateTransform(90);
+                g.TranslateTransform(paperRect.Width, startY + 14, System.Drawing.Drawing2D.MatrixOrder.Append);
+                g.DrawString(binNumber, line2Font, printBrush, 0, 0);
+                g.Restore(state);
+            }
+
             if (DrawBounds)
             {
                 g.DrawRectangle(Pens.Red, 0, 0, paperRect.Width - 1, paperRect.Height - 1);
@@ -190,7 +207,7 @@ namespace Binner.Common.IO.Printing
                     return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: -15, leftMargin: -20, labelCount: 0, totalLines: 2, dimensions: new Size(350, 120), lineFontSizes: new List<float> { 16, 10 });
                 case "30346": // 1/2" x 1 7/8"
                 default:
-                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 0, leftMargin: 0, labelCount: 2, totalLines: 3, dimensions: new Size(450, 175), lineFontSizes: new List<float> { 16, 8 });
+                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 0, leftMargin: 0, labelCount: 2, totalLines: 3, dimensions: new Size(475, 175), lineFontSizes: new List<float> { 16, 8 });
             }
         }
     }

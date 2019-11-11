@@ -64,7 +64,10 @@ namespace Binner.Web.WebHost
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var config = Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
+            //if (Configuration == null) throw new InvalidOperationException("Configuration cannot be null!");
+            //var config = Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
+            var config = app.ApplicationServices.GetRequiredService<WebHostServiceConfiguration>();
+            if (config == null) throw new InvalidOperationException("Could not retrieve WebHostServiceConfiguration, configuration file may be invalid!");
             Console.WriteLine($"ENVIRONMENT NAME: {config.Environment}");
 
             if (config.Environment == Web.Configuration.Environments.Development)

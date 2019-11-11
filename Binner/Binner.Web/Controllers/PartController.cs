@@ -296,7 +296,7 @@ namespace Binner.Web.Controllers
             var part = await _partService.GetPartAsync(request.PartNumber);
             if (part == null) return NotFound();
             var stream = new MemoryStream();
-            var image = _labelPrinter.PrintLabel(new List<string> { part.PartNumber, part.Description });
+            var image = _labelPrinter.PrintLabel(new List<string> { part.PartNumber, part.Description, part.BinNumber2 });
             image.Save(stream, ImageFormat.Png);
             stream.Seek(0, SeekOrigin.Begin);
             return new FileStreamResult(stream, "image/png");
