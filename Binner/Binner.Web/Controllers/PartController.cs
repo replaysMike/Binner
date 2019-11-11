@@ -53,6 +53,7 @@ namespace Binner.Web.Controllers
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             var partTypes = await _partService.GetPartTypesAsync();
             partResponse.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+            partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
             return Ok(partResponse);
         }
 
