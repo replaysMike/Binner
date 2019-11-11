@@ -9,11 +9,14 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
-    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRun>false</PublishReadyToRun>
     <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
     <PublishSingleFile>true</PublishSingleFile>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win10-x64;osx.10.12-x64;linux-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

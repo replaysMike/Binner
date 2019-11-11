@@ -5,6 +5,7 @@ using LightInject.Microsoft.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Binner.Web
 {
@@ -20,6 +21,8 @@ namespace Binner.Web
                 _logger = NLog.Web.NLogBuilder.ConfigureNLog(_logFile).GetCurrentClassLogger();
             try
             {
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                _logger.Info($"Binner Version {version.ToString()}");
                 using (var container = new ServiceContainer(new ContainerOptions { EnablePropertyInjection = false }))
                 {
                     var provider = ConfigureServices(container);
