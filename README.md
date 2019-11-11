@@ -18,12 +18,12 @@ Binner is a free open-source parts inventory tracking system you can run locally
 * No web server installation required, uses standalone Kestrel service API
 * Based on .Net Core - runs on Windows and Unix
 * Simple web-based UI
+* Barcoding support
+* Label printing
 
 ## Planned Upcoming Features
-* Barcoding support
 * Barcode scanning
 * Dedicated datasheet repository
-* Label printing
 * Windows desktop UI
 * Maybe a parts marketplace?
 
