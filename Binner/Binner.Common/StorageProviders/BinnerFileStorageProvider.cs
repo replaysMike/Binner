@@ -160,8 +160,8 @@ namespace Binner.Common.StorageProviders
             try
             {
                 part.UserId = userContext?.UserId;
-                var existingPart = await GetPartAsync(part.PartId, userContext);
-                existingPart = Mapper.Map<Part, Part>(part, x => x.PartId);
+                var existingPart = GetPartInternal(part.PartId, userContext);
+                existingPart = Mapper.Map<Part, Part>(part, existingPart, x => x.PartId);
                 existingPart.PartId = part.PartId;
                 _isDirty = true;
             }
@@ -236,14 +236,19 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.PartTypes
-                    .Where(x => x.PartTypeId == partTypeId && x.UserId == userContext?.UserId)
-                    .FirstOrDefault();
+                return GetPartTypeInternal(partTypeId, userContext);
             }
             finally
             {
                 _dataLock.Release();
             }
+        }
+
+        private PartType GetPartTypeInternal(long partTypeId, IUserContext userContext)
+        {
+            return _db.PartTypes
+                .Where(x => x.PartTypeId == partTypeId && x.UserId == userContext?.UserId)
+                .FirstOrDefault();
         }
 
         public async Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext userContext)
@@ -253,9 +258,9 @@ namespace Binner.Common.StorageProviders
             try
             {
                 partType.UserId = userContext?.UserId;
-                var existingProject = await GetPartTypeAsync(partType.PartTypeId, userContext);
-                existingProject = Mapper.Map<PartType, PartType>(partType, x => x.PartTypeId);
-                existingProject.PartTypeId = partType.PartTypeId;
+                var existingPartType = GetPartTypeInternal(partType.PartTypeId, userContext);
+                existingPartType = Mapper.Map<PartType, PartType>(partType, existingPartType, x => x.PartTypeId);
+                existingPartType.PartTypeId = partType.PartTypeId;
                 _isDirty = true;
             }
             finally
@@ -335,12 +340,17 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Parts.Where(x => x.PartId == partId && x.UserId == userContext?.UserId).FirstOrDefault();
+                return GetPartInternal(partId, userContext);
             }
             finally
             {
                 _dataLock.Release();
             }
+        }
+
+        private Part GetPartInternal(long partId, IUserContext userContext)
+        {
+            return _db.Parts.Where(x => x.PartId == partId && x.UserId == userContext?.UserId).FirstOrDefault();
         }
 
         /// <summary>
@@ -432,12 +442,17 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Projects.Where(x => x.ProjectId.Equals(projectId) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return GetProjectInternal(projectId, userContext);
             }
             finally
             {
                 _dataLock.Release();
             }
+        }
+
+        public Project GetProjectInternal(long projectId, IUserContext userContext)
+        {
+            return _db.Projects.Where(x => x.ProjectId.Equals(projectId) && x.UserId == userContext?.UserId).FirstOrDefault();
         }
 
         public async Task<Project> GetProjectAsync(string projectName, IUserContext userContext)
@@ -497,8 +512,8 @@ namespace Binner.Common.StorageProviders
             try
             {
                 project.UserId = userContext?.UserId;
-                var existingProject = await GetProjectAsync(project.ProjectId, userContext);
-                existingProject = Mapper.Map<Project, Project>(project, x => x.ProjectId);
+                var existingProject = GetProjectInternal(project.ProjectId, userContext);
+                existingProject = Mapper.Map<Project, Project>(project, existingProject, x => x.ProjectId);
                 existingProject.ProjectId = project.ProjectId;
                 _isDirty = true;
             }

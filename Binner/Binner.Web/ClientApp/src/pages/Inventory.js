@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader } from 'semantic-ui-react';
+import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader } from 'semantic-ui-react';
 import NumberPicker from '../components/NumberPicker';
 import { ProjectColors } from '../common/Types';
 
@@ -119,6 +119,7 @@ export class Inventory extends Component {
     this.handlePartModalClose = this.handlePartModalClose.bind(this);
     this.handleDuplicatePartModalClose = this.handleDuplicatePartModalClose.bind(this);
     this.handleHighlightAndVisit = this.handleHighlightAndVisit.bind(this);
+    this.printLabel = this.printLabel.bind(this);
   }
 
   async componentDidMount() {
@@ -352,6 +353,12 @@ export class Inventory extends Component {
         break;
     }
     this.setState({ part });
+  }
+
+  printLabel(e) {
+    e.preventDefault();
+    const { part } = this.state;
+    fetch(`part/print?partNumber=${part.partNumber}`, { method: 'POST' });
   }
 
   setPartFromMetadata(metadataParts, suggestedPart) {
@@ -612,6 +619,13 @@ export class Inventory extends Component {
           </Modal.Actions>
         </Modal>
         <Form onSubmit={this.onSubmit}>
+          {part.partNumber && <Image src={'/part/barcode?partNumber=' + part.partNumber} width={232} height={24} floated='right' style={{marginTop: '4px'}} />}
+          {part.partId > 0 &&
+            <Button animated='vertical' circular floated='right' size='mini' onClick={this.printLabel}>
+              <Button.Content visible><Icon name='print' /></Button.Content>
+              <Button.Content hidden>Print</Button.Content>
+            </Button>
+          }
           <h1>{title}</h1>
           <Form.Group>
             <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' />
@@ -627,7 +641,7 @@ export class Inventory extends Component {
             <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold || ''} onChange={this.handleChange} name='lowStockThreshold' width={3} />} />
           </Form.Group>
           <Form.Field inline>
-            <Button type='submit'>Save</Button>
+            <Button type='submit' primary><Icon name='save'/>Save</Button>
             {saveMessage.length > 0 && <Label pointing='left'>{saveMessage}</Label>}
           </Form.Field>
           <Segment loading={loadingPartMetadata}>

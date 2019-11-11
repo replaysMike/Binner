@@ -55,6 +55,11 @@
         /// Digikey configuration
         /// </summary>
         public IntegrationConfiguration Integrations { get; set; } = new IntegrationConfiguration();
+
+        /// <summary>
+        /// Printer configuration
+        /// </summary>
+        public PrinterConfiguration PrinterConfiguration { get; set; } = new PrinterConfiguration();
     }
 
     public enum Environments

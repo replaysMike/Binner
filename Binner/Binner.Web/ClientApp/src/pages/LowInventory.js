@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import _ from 'underscore';
-import { Table, Visibility, Input, Label, Segment } from 'semantic-ui-react';
+import { Table, Visibility, Input, Label, Segment, Button } from 'semantic-ui-react';
 
 export class LowInventory extends Component {
   static displayName = LowInventory.name;
@@ -24,6 +24,8 @@ export class LowInventory extends Component {
     this.saveColumn = this.saveColumn.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleLoadPartClick = this.handleLoadPartClick.bind(this);
+    this.handleVisitLink = this.handleVisitLink.bind(this);
+    this.handlePrintLabel = this.handlePrintLabel.bind(this);
   }
 
   async componentDidMount() {
@@ -116,8 +118,20 @@ export class LowInventory extends Component {
     this.setState({ parts, changeTracker: changes });
   }
 
+  handleVisitLink(e, url) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(url, '_blank');
+  }
+
   handleLoadPartClick(e, part) {
     this.props.history.push(`/inventory/${part.partNumber}`);
+  }
+
+  handlePrintLabel(e, part) {
+    e.preventDefault();
+    e.stopPropagation();
+    fetch(`part/print?partNumber=${part.partNumber}`, { method: 'POST' });
   }
 
   renderParts(parts, column, direction) {
@@ -132,11 +146,14 @@ export class LowInventory extends Component {
                 <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'lowStockThreshold' ? direction : null} onClick={this.handleSort('lowStockThreshold')}>Low Threshold</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>Bin Number</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>Bin Number 2</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>DigiKey Part</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>Mouser Part</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
+                <Table.HeaderCell>Print</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -146,11 +163,14 @@ export class LowInventory extends Component {
                   <Table.Cell><Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed100' onClick={e => e.stopPropagation()} onChange={this.handleChange} onBlur={this.saveColumn} /></Table.Cell>
                   <Table.Cell><Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed100' onClick={e => e.stopPropagation()} onChange={this.handleChange} onBlur={this.saveColumn} /></Table.Cell>
                   <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                  <Table.Cell>{p.location}</Table.Cell>
+                  <Table.Cell><span className='truncate small' title={p.description}>{p.description}</span></Table.Cell>
+                  <Table.Cell><span className='truncate'>{p.location}</span></Table.Cell>
                   <Table.Cell>{p.binNumber}</Table.Cell>
                   <Table.Cell>{p.binNumber2}</Table.Cell>
-                  <Table.Cell>{p.digiKeyPartNumber}</Table.Cell>
-                  <Table.Cell>{p.mouserPartNumber}</Table.Cell>
+                  <Table.Cell><span className='truncate'>{p.digiKeyPartNumber}</span></Table.Cell>
+                  <Table.Cell><span className='truncate'>{p.mouserPartNumber}</span></Table.Cell>
+                  <Table.Cell>{p.datasheetUrl && <a href='#' onClick={e => this.handleVisitLink(e, p.datasheetUrl)}>View Datasheet</a>}</Table.Cell>
+                  <Table.Cell><Button circular size='mini' icon='print' onClick={e => this.handlePrintLabel(e, p)} /></Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>
