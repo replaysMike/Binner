@@ -21,8 +21,12 @@ namespace Binner.Web
                 _logger = NLog.Web.NLogBuilder.ConfigureNLog(_logFile).GetCurrentClassLogger();
             try
             {
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
-                _logger.Info($"Binner Version {version.ToString()}");
+                try
+                {
+                    var version = Assembly.GetExecutingAssembly().GetName().Version;
+                    _logger.Info($"Binner Version {version.ToString()}");
+                }
+                catch (Exception) { }
                 using (var container = new ServiceContainer(new ContainerOptions { EnablePropertyInjection = false }))
                 {
                     var provider = ConfigureServices(container);

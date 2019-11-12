@@ -21,8 +21,8 @@
         LabelSource LabelSource { get; set; }
 
         /// <summary>
-        /// Label font
+        /// Template for printing part labels
         /// </summary>
-        string Font { get; set; }
+        PartLabelTemplate PartLabelTemplate { get; set; }
     }
 }

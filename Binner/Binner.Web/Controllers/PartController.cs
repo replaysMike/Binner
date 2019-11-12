@@ -291,12 +291,12 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("print")]
-        public async Task<IActionResult> PrintPartAsync([FromQuery] GetPartRequest request)
+        public async Task<IActionResult> PrintPartAsync([FromQuery] PrintPartRequest request)
         {
             var part = await _partService.GetPartAsync(request.PartNumber);
             if (part == null) return NotFound();
             var stream = new MemoryStream();
-            var image = _labelPrinter.PrintLabel(new List<string> { part.PartNumber, part.Description, part.BinNumber2 });
+            var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
             image.Save(stream, ImageFormat.Png);
             stream.Seek(0, SeekOrigin.Begin);
             return new FileStreamResult(stream, "image/png");

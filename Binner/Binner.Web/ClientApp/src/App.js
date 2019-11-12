@@ -10,6 +10,7 @@ import { OrderImport } from './pages/OrderImport';
 import { PartTypes } from './pages/PartTypes';
 import { Projects } from './pages/Projects';
 import { ExportData } from './pages/ExportData';
+import { PrintLabels } from './pages/PrintLabels';
 import { createBrowserHistory as createHistory } from "history";
 
 import './custom.css'
@@ -32,6 +33,7 @@ export default class App extends Component {
           <Route path='/partTypes' component={PartTypes} />
           <Route path='/projects' component={Projects} />
           <Route path='/exportData' component={ExportData} />
+          <Route path='/print' component={PrintLabels} />
         </Switch>
       </Layout>
     );

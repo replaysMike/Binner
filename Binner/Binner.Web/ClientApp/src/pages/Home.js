@@ -66,7 +66,7 @@ export class Home extends Component {
               <Statistic.Label>Datasheets</Statistic.Label>
             </Statistic>
           </Statistic.Group>
-          <Statistic.Group widths='four' size='tiny' style={{ marginTop: '50px' }}>
+          <Statistic.Group widths='five' size='tiny' style={{ marginTop: '50px' }}>
             <Statistic onClick={e => this.route(e, '/lowstock')} style={{ cursor: 'pointer' }}>
               <Statistic.Value><Icon name='barcode' /></Statistic.Value>
               <Statistic.Label>View Low Stock</Statistic.Label>
@@ -81,7 +81,11 @@ export class Home extends Component {
             </Statistic>
             <Statistic onClick={e => this.route(e, '/exportData')} style={{ cursor: 'pointer' }}>
               <Statistic.Value><Icon name='cloud download' /></Statistic.Value>
-              <Statistic.Label>Export Data</Statistic.Label>
+              <Statistic.Label>Import/Export</Statistic.Label>
+            </Statistic>
+            <Statistic onClick={e => this.route(e, '/print')} style={{ cursor: 'pointer' }}>
+              <Statistic.Value><Icon name='print' /></Statistic.Value>
+              <Statistic.Label>Print Labels</Statistic.Label>
             </Statistic>
           </Statistic.Group>
         </Segment>

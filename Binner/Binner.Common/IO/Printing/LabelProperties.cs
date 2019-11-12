@@ -31,11 +31,7 @@ namespace Binner.Common.IO.Printing
         /// Pixel dimensions of label
         /// </summary>
         public Size Dimensions { get; set; }
-        /// <summary>
-        /// Font sizes to use for each line
-        /// </summary>
-        public ICollection<float> LineFontSizes { get; set; } = new List<float>();
-        public LabelProperties(string labelName, int topMargin, int leftMargin, int labelCount, int totalLines, Size dimensions, ICollection<float> lineFontSizes)
+        public LabelProperties(string labelName, int topMargin, int leftMargin, int labelCount, int totalLines, Size dimensions)
         {
             LabelName = labelName;
             TopMargin = topMargin;
@@ -43,7 +39,6 @@ namespace Binner.Common.IO.Printing
             LabelCount = labelCount;
             TotalLines = totalLines;
             Dimensions = dimensions;
-            LineFontSizes = lineFontSizes;
         }
     }
 }

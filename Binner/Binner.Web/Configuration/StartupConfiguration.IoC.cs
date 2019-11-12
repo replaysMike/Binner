@@ -78,7 +78,7 @@ namespace Binner.Web.Configuration
                     PrinterName = config.PrinterConfiguration.PrinterName,
                     LabelName = config.PrinterConfiguration.LabelName,
                     LabelSource = config.PrinterConfiguration.LabelSource,
-                    Font = config.PrinterConfiguration.Font
+                    PartLabelTemplate = config.PrinterConfiguration.PartLabelTemplate
                 }, barcodeGenerator);
             }, new PerContainerLifetime());
         }
