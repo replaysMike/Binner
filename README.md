@@ -1,10 +1,10 @@
 # Binner
-Binner is a free open-source parts inventory tracking system you can run locally in Windows or Unix, or online at [Binner.io (launches in Dec 2019)](http://binner.io). It was created for makers (like myself), hobbyists or electronic engineers to keep track of your local parts inventory.
-
 [![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/replaysMike/Binner/total.svg)](https://GitHub.com/replaysMike/Binner/releases/)
 [![GitHub contributors](https://img.shields.io/github/contributors/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/graphs/contributors/)
 [![GitHub license](https://img.shields.io/github/license/replaysMike/Binner.svg)](https://github.com/replaysMike/Binner/blob/master/LICENSE)
+
+Binner is a free open-source parts inventory tracking system you can run locally in Windows or Unix, or online at [Binner.io (launches in Dec 2019)](http://binner.io). It was created for makers (like myself), hobbyists or electronic engineers to keep track of your local parts inventory.
 
 # Screenshots
 
