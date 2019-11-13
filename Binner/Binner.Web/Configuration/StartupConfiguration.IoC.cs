@@ -80,7 +80,7 @@ namespace Binner.Web.Configuration
                     LabelSource = config.PrinterConfiguration.LabelSource,
                     PartLabelTemplate = config.PrinterConfiguration.PartLabelTemplate
                 }, barcodeGenerator);
-            }, new PerContainerLifetime());
+            }, new PerScopeLifetime());
         }
 
         private static void RegisterServices(IServiceContainer container)

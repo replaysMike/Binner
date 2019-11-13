@@ -166,7 +166,14 @@ export class PrintLabels extends Component {
 
   handleLineChange(e, control, line) {
     const { lines } = this.state;
-    line[control.name] = control.value;
+    switch (control.name) {
+      case 'barcode':
+        line[control.name] = control.checked || false;
+        break;
+      default:
+        line[control.name] = control.value;
+        break;
+    }
     // const existingLine = _.find(lines, { lineId: line.lineId });
     this.setState({ lines });
   }
@@ -224,7 +231,7 @@ export class PrintLabels extends Component {
                   </Table.Cell>
                   <Table.Cell><Input name='topMargin' value={l.topMargin} onChange={(e, c) => this.handleLineChange(e, c, l)} /></Table.Cell>
                   <Table.Cell><Input name='leftMargin' value={l.leftMargin} onChange={(e, c) => this.handleLineChange(e, c, l)} /></Table.Cell>
-                  <Table.Cell><Checkbox toggle name='barcode' checked={l.barcode} onChange={e => this.handleLineChange(e, l)} /></Table.Cell>
+                  <Table.Cell><Checkbox toggle name='barcode' checked={l.barcode} onChange={(e, c) => this.handleLineChange(e, c, l)} /></Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>
@@ -234,6 +241,7 @@ export class PrintLabels extends Component {
           <div>
             {imgBase64 && <Image label={{
               color: 'grey',
+              className: 'transparent',
               content: 'Preview',
               icon: 'eye',
               ribbon: true,

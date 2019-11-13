@@ -244,30 +244,30 @@ namespace Binner.Common.IO.Printing
         {
             var font = CreateFont(g, template, lineValue, paperRect);
             var lineBounds = g.MeasureString(lineValue, font);
+            var x = 0f;
+            var y = lineOffset.Y;
+            x += template.Margin.Left;
+            y += template.Margin.Top;
             if (template.Barcode)
             {
-                var x = 0;
-                var y = lineOffset.Y + 12;
+                x = 0;
+                y += 12;
                 DrawBarcode128(lineValue, g, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height / _labelProperties.LabelCount));
             }
             else
             {
-                float x = 0;
-                float y = lineOffset.Y;
                 switch (template.Position)
                 {
                     case LabelPosition.Right:
-                        x = paperRect.Width;
+                        x += paperRect.Width;
                         break;
                     case LabelPosition.Left:
-                        x = (int)lineBounds.Height;
+                        x += (int)lineBounds.Height;
                         break;
                     case LabelPosition.Center:
-                        x = (margins.Left + paperRect.Width - margins.Right) / 2 - lineBounds.Width / 2 + _labelProperties.LeftMargin;
+                        x += (margins.Left + paperRect.Width - margins.Right) / 2 - lineBounds.Width / 2 + _labelProperties.LeftMargin;
                         break;
                 }
-                x += template.Margin.Left;
-                y += template.Margin.Top;
                 if (template.Rotate > 0)
                 {
                     // rotated labels will start at the top of the label
@@ -287,7 +287,7 @@ namespace Binner.Common.IO.Printing
 
             font.Dispose();
             // return the new drawing cursor position
-            return new PointF(0, lineOffset.Y + lineBounds.Height * 0.65f);
+            return new PointF(0, y + lineBounds.Height * 0.65f);
         }
 
         private Font CreateFont(Graphics g, LineConfiguration template, string lineValue, Rectangle paperRect)

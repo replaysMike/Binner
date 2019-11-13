@@ -68,7 +68,7 @@ export class Home extends Component {
           </Statistic.Group>
           <Statistic.Group widths='five' size='tiny' style={{ marginTop: '50px' }}>
             <Statistic onClick={e => this.route(e, '/lowstock')} style={{ cursor: 'pointer' }}>
-              <Statistic.Value><Icon name='barcode' /></Statistic.Value>
+              <Statistic.Value><Icon name='battery low' /></Statistic.Value>
               <Statistic.Label>View Low Stock</Statistic.Label>
             </Statistic>
             <Statistic onClick={e => this.route(e, '/partTypes')} style={{ cursor: 'pointer' }}>
@@ -94,7 +94,7 @@ export class Home extends Component {
         <Segment inverted loading={loading} textAlign='center'>
           <Statistic.Group widths='three'>
             <Statistic color='red' inverted>
-              <Statistic.Value><Icon name='barcode' />{summary.lowStockCount}</Statistic.Value>
+              <Statistic.Value><Icon name='battery low' />{summary.lowStockCount}</Statistic.Value>
               <Statistic.Label>Low Stock</Statistic.Label>
             </Statistic>
             <Statistic color='orange' inverted>

@@ -118,3 +118,6 @@ code {
     .truncate.small {
         font-size: 0.8em;
     }
+.ribbon.transparent{
+    opacity: 0.35;
+}
