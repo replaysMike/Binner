@@ -120,5 +120,5 @@ Visit [https://octopart.com/api/home](https://octopart.com/api/home) and sign up
 
 Binner currently has limited label printing support. It works best with a Dymo LabelWriter 450 series printer (Turbo dual label is supported too), model 30346 or 30277 labels. If desired additional label sizes and other printers can be easily added.
 
-Label Example
+### Label Example
 ![Binner](https://github.com/replaysMike/Binner/wiki/binner-label.png)
