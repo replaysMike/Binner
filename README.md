@@ -4,7 +4,7 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/graphs/contributors/)
 [![GitHub license](https://img.shields.io/github/license/replaysMike/Binner.svg)](https://github.com/replaysMike/Binner/blob/master/LICENSE)
 
-Binner is a free open-source parts inventory tracking system you can run locally in Windows or Unix, or online at [Binner.io (launches in Dec 2019)](http://binner.io). It was created for makers (like myself), hobbyists or electronic engineers to keep track of your local parts inventory.
+Binner is a free open-source parts inventory tracking system you can run locally in Windows or Unix environments. It was created for makers (like myself), hobbyists or professionals to keep track of your parts inventory.
 
 # Screenshots
 
@@ -60,6 +60,10 @@ Proceed to the web interface at http://localhost:8090 to start using Binner!
 Binner is designed for electronics in mind, however it could be used for other types of inventory management (chemistry, retail). It is purpose built for quick data entry and fast performance. I built it because I couldn't find good free alternatives for tracking inventory in my home maker lab - it's easy to forget what you bought and where you put them and I end up sometimes ordering things I already have around. Saves money and time! It's built on .Net Core / C# with a React js front end.
 
 I welcome all who want to contribute to this project, and please suggest features in the Issues section.
+
+## What if I want to use it but not bother to set it up myself?
+
+I will be launching a free online version at [Binner.io)](http://binner.io) which should be available around January 2020. This will have both free (max 100 parts) or $20/year for unlimited. Compared to other options out there it's incredibly inexpensive for makers!
 
 ## Storage Provider
 
