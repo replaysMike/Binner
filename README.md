@@ -1,7 +1,12 @@
 # Binner
+[![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/replaysMike/Binner/total.svg)](https://GitHub.com/replaysMike/Binner/releases/)
+[![GitHub contributors](https://img.shields.io/github/contributors/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/graphs/contributors/)
+[![GitHub license](https://img.shields.io/github/license/replaysMike/Binner.svg)](https://github.com/replaysMike/Binner/blob/master/LICENSE)
+
 Binner is a free open-source parts inventory tracking system you can run locally in Windows or Unix, or online at [Binner.io (launches in Dec 2019)](http://binner.io). It was created for makers (like myself), hobbyists or electronic engineers to keep track of your local parts inventory.
 
-# Screenshot
+# Screenshots
 
 ![Binner](https://github.com/replaysMike/Binner/wiki/binner-v1.png)
 
@@ -42,9 +47,11 @@ To run as a console application:
 To run as a service, run the following in an Administrative console:
 
 ```ps
-.\Binner.Web.exe install
-.\Binner.Web.exe start
+.\Binner.Web install
+.\Binner.Web start
 ```
+
+Other commands are available to manage the service such as `uninstall`, `stop`, `help`.
 
 Proceed to the web interface at http://localhost:8090 to start using Binner!
 
@@ -108,3 +115,10 @@ Visit [https://www.mouser.com/api-hub/](https://www.mouser.com/api-hub/) and sig
 ### Configuring Octopart API
 
 Visit [https://octopart.com/api/home](https://octopart.com/api/home) and sign up for a developer account. Please note that Octopart API _is not free_ to use so you may opt to skip this one. They don't advertise pricing until you start using the API (sneaky), but if you already have a key it can be used for additional datasheet support. If you do not wish to use it Digikey and Mouser will be used to access datasheets for parts, as well as the free Binner datasheet API.
+
+## Label printing
+
+Binner currently has limited label printing support. It works best with a Dymo LabelWriter 450 series printer (Turbo dual label is supported too), model 30346 or 30277 labels. If desired additional label sizes and other printers can be easily added.
+
+### Label Example
+![Binner](https://github.com/replaysMike/Binner/wiki/binner-label.png)
