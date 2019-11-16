@@ -102,6 +102,12 @@ namespace Binner.Common.Services
         Task<long> GetPartsCountAsync();
 
         /// <summary>
+        /// Get financial value/cost of all parts
+        /// </summary>
+        /// <returns></returns>
+        Task<decimal> GetPartsValueAsync();
+
+        /// <summary>
         /// Get count of all parts
         /// </summary>
         /// <returns></returns>

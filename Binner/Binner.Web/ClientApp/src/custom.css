@@ -118,6 +118,16 @@ code {
     .truncate.small {
         font-size: 0.8em;
     }
+
 .ribbon.transparent{
     opacity: 0.35;
+}
+
+.ui.small.table {
+    font-size: 0.8em !important;
+}
+
+/*undo bootstrap modal css*/
+.modal {
+    height: unset !important;
 }

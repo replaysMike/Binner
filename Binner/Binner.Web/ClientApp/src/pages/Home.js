@@ -92,7 +92,7 @@ export class Home extends Component {
 
         <h2>Dashboard</h2>
         <Segment inverted loading={loading} textAlign='center'>
-          <Statistic.Group widths='three'>
+          <Statistic.Group widths='four'>
             <Statistic color='red' inverted>
               <Statistic.Value><Icon name='battery low' />{summary.lowStockCount}</Statistic.Value>
               <Statistic.Label>Low Stock</Statistic.Label>
@@ -100,6 +100,10 @@ export class Home extends Component {
             <Statistic color='orange' inverted>
               <Statistic.Value><Icon name='microchip' />{summary.partsCount}</Statistic.Value>
               <Statistic.Label>Parts</Statistic.Label>
+            </Statistic>
+            <Statistic color='green' inverted>
+              <Statistic.Value><Icon name='dollar' />{(summary.partsCost || 0).toFixed(2)}</Statistic.Value>
+              <Statistic.Label>Value</Statistic.Label>
             </Statistic>
             <Statistic color='blue' inverted>
               <Statistic.Value><Icon name='folder open' />{summary.projectsCount}</Statistic.Value>

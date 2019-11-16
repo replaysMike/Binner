@@ -26,15 +26,17 @@ namespace Binner.Web.Controllers
         private readonly ILogger<PartController> _logger;
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
+        private readonly IPartTypeService _partTypeService;
         private readonly IProjectService _projectService;
         private readonly ILabelPrinter _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
 
-        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService, ILabelPrinter labelPrinter, IBarcodeGenerator barcodeGenerator)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinter labelPrinter, IBarcodeGenerator barcodeGenerator)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
+            _partTypeService = partTypeService;
             _projectService = projectService;
             _labelPrinter = labelPrinter;
             _barcodeGenerator = barcodeGenerator;
@@ -182,11 +184,13 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> GetDashboardSummaryAsync()
         {
             var count = await _partService.GetPartsCountAsync();
+            var partsCost = await _partService.GetPartsValueAsync();
             var lowStock = await _partService.GetLowStockAsync(new PaginatedRequest { Results = 999 });
             var projects = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
             return Ok(new
             {
                 PartsCount = count,
+                PartsCost = partsCost,
                 LowStockCount = lowStock.Count,
                 ProjectsCount = projects.Count,
             });
@@ -222,8 +226,24 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet("info")]
-        public async Task<IActionResult> GetPartInfoAsync([FromQuery]string partNumber, [FromQuery]string partType = "", [FromQuery]string mountingType = "")
+        public async Task<IActionResult> GetPartInfoAsync([FromQuery]string partNumber, [FromQuery]string partTypeId = "", [FromQuery]string mountingTypeId = "")
         {
+            var partType = partTypeId;
+            var mountingType = mountingTypeId;
+            if (int.TryParse(partTypeId, out var _partTypeId))
+            {
+                var _partType = await _partTypeService.GetPartTypeAsync(_partTypeId);
+                if (_partType != null) partType = _partType.Name;
+            }
+            if (int.TryParse(mountingTypeId, out var _mountingTypeId))
+            {
+                if (Enum.IsDefined(typeof(MountingType), _mountingTypeId))
+                {
+                    var _mountingType = (MountingType)_mountingTypeId;
+                    mountingType = _mountingType.ToString();
+                }
+            }
+
             var metadata = await _partService.GetPartInformationAsync(partNumber, partType, mountingType);
             if (metadata == null)
                 return NotFound();

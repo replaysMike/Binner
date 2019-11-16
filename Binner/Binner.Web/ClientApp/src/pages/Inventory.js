@@ -111,6 +111,7 @@ export class Inventory extends Component {
     this.handleDuplicatePartModalClose = this.handleDuplicatePartModalClose.bind(this);
     this.handleHighlightAndVisit = this.handleHighlightAndVisit.bind(this);
     this.printLabel = this.printLabel.bind(this);
+    this.resetForm = this.resetForm.bind(this);
   }
 
   async componentDidMount() {
@@ -118,6 +119,14 @@ export class Inventory extends Component {
     this.fetchProjects();
     this.fetchRecentRows();
     if (this.state.partNumber) await this.fetchPart(this.state.partNumber);
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    // if the path changes do some necessary housekeeping
+    if (nextProps.location !== this.props.location) {
+      // reset the form if the URL has changed
+      this.resetForm();
+    }
   }
 
   async fetchPart(partNumber) {
@@ -144,7 +153,7 @@ export class Inventory extends Component {
     const { part } = this.state;
     this.setState({ loadingPartMetadata: true });
     try {
-      const response = await fetch(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
+      const response = await fetch(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
         signal: Inventory.abortController.signal
       });
       const responseData = await response.json();
@@ -264,42 +273,47 @@ export class Inventory extends Component {
         this.setState({ saveMessage });
       } else {
         saveMessage = `Added part ${part.partNumber}!`;
-        this.setState({
-          saveMessage,
-          part: {
-            allowPotentialDuplicate: false,
-            partId: 0,
-            partNumber: '',
-            quantity: viewPreferences.lastQuantity + '',
-            lowStockThreshold: viewPreferences.lowStockThreshold + '',
-            partTypeId: viewPreferences.lastPartTypeId,
-            mountingTypeId: viewPreferences.lastMountingTypeId,
-            packageType: '',
-            keywords: '',
-            description: '',
-            datasheetUrl: '',
-            digiKeyPartNumber: '',
-            mouserPartNumber: '',
-            location: viewPreferences.lastLocation,
-            binNumber: viewPreferences.lastBinNumber,
-            binNumber2: viewPreferences.lastBinNumber2,
-            cost: '',
-            lowestCostSupplier: '',
-            lowestCostSupplierUrl: '',
-            productUrl: '',
-            manufacturer: '',
-            manufacturerPartNumber: '',
-            imageUrl: '',
-            projectId: viewPreferences.lastProjectId,
-            supplier: '',
-            supplierPartNumber: '',
-          },
-        });
+        this.resetForm(saveMessage);
       }
       // refresh recent parts list
       await this.fetchRecentRows();
     }
 
+  }
+
+  resetForm(saveMessage = '') {
+    const { viewPreferences } = this.state;
+    this.setState({
+      saveMessage,
+      part: {
+        allowPotentialDuplicate: false,
+        partId: 0,
+        partNumber: '',
+        quantity: viewPreferences.lastQuantity + '',
+        lowStockThreshold: viewPreferences.lowStockThreshold + '',
+        partTypeId: viewPreferences.lastPartTypeId,
+        mountingTypeId: viewPreferences.lastMountingTypeId,
+        packageType: '',
+        keywords: '',
+        description: '',
+        datasheetUrl: '',
+        digiKeyPartNumber: '',
+        mouserPartNumber: '',
+        location: viewPreferences.lastLocation,
+        binNumber: viewPreferences.lastBinNumber,
+        binNumber2: viewPreferences.lastBinNumber2,
+        cost: '',
+        lowestCostSupplier: '',
+        lowestCostSupplierUrl: '',
+        productUrl: '',
+        manufacturer: '',
+        manufacturerPartNumber: '',
+        imageUrl: '',
+        projectId: viewPreferences.lastProjectId,
+        supplier: '',
+        supplierPartNumber: '',
+      },
+    });
   }
 
   updateNumberPicker(e) {
@@ -462,7 +476,7 @@ export class Inventory extends Component {
               <Table.Cell>{p.cost}</Table.Cell>
               <Table.Cell><Image src={p.imageUrl} size='mini'></Image></Table.Cell>
               <Table.Cell>{p.datasheetUrls.map((d, dindex) =>
-                <a href='#' key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</a>
+                d && d.length > 0 && <a href='#' key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</a>
               )}</Table.Cell>
             </Table.Row>
           )}
@@ -526,6 +540,7 @@ export class Inventory extends Component {
   }
 
   handleHighlightAndVisit(e, url) {
+    console.log('url', url);
     this.handleVisitLink(e, url);
     // this handles highlighting of parent row
     const parentTable = ReactDOM.findDOMNode(e.target).parentNode.parentNode.parentNode;
