@@ -12,13 +12,6 @@ export class ResistorColorCodeCalculator extends Component {
       lastResistorBands: 4,
       lastBands: [0, 0, 0, 0.1, null, null]
     };
-    this.state = {
-      resistorColorCodePreferences,
-      bands: [],
-      resistorBands: resistorColorCodePreferences.lastResistorBands || 4,
-      tolerance: 0.05,
-      ppm: 0
-    };
     this.colors = [
       { key: 0, value: 0, order: 2, text: 'Black', color: 'black', label: { color: 'black', empty: true, circular: true }, tolerance: 0, ppm: 0 },
       { key: 1, value: 1, order: 3, text: 'Brown', color: '#654b2f', label: { color: 'brown', empty: true, circular: true }, tolerance: 0.01, ppm: 100 },
@@ -33,6 +26,16 @@ export class ResistorColorCodeCalculator extends Component {
       { key: 10, value: 0.1, order: 0, text: 'Gold', color: 'gold', label: { color: 'yellow', empty: true, circular: true }, tolerance: 0.05, ppm: 0 },
       { key: 11, value: 0.01, order: 1, text: 'Silver', color: 'silver', label: { color: 'grey', empty: true, circular: true }, tolerance: 0.1, ppm: 0 },
     ];
+    const resistorBands = resistorColorCodePreferences.lastResistorBands || 4;
+    const tolerance = _.find(this.colors, x => x.value === resistorColorCodePreferences.lastBands[resistorBands - 1]).tolerance;
+    const ppm = 0;
+    this.state = {
+      resistorColorCodePreferences,
+      bands: [],
+      resistorBands,
+      tolerance,
+      ppm
+    };
     this.bandOptions = [
       { key: 1, text: '4 Band', value: 4 },
       { key: 2, text: '5 Band', value: 5 },
@@ -72,11 +75,11 @@ export class ResistorColorCodeCalculator extends Component {
     switch (control.name) {
       case 'bandValue':
         band.value = control.value;
+        resistorColorCodePreferences.lastBands[index] = control.value;
         if ((band.key == resistorBands && resistorBands < 6) || band.key == resistorBands - 1 && resistorBands === 6)
           toleranceValue = Number.parseFloat(_.find(this.colors, x => x.value === band.value).tolerance);
         if (band.key == resistorBands && resistorBands === 6)
           ppmValue = Number.parseInt(_.find(this.colors, x => x.value === band.value).ppm);
-        resistorColorCodePreferences.lastBands[index] = control.value;
         localStorage.setItem('resistorColorCodePreferences', JSON.stringify(resistorColorCodePreferences));
         this.setState({ bands, tolerance: toleranceValue, ppm: ppmValue });
         break;
