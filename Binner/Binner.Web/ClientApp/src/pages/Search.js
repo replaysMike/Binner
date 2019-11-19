@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Table, Visibility, Input, Label, Segment, Button, Confirm, Icon } from 'semantic-ui-react';
+import { Table, Visibility, Input, Label, Segment, Button, Confirm, Icon, Responsive } from 'semantic-ui-react';
 import { getQueryVariable } from '../common/query';
 
 export class Search extends Component {
@@ -265,28 +265,29 @@ export class Search extends Component {
 
   renderParts(parts, column, direction) {
     const { keyword, lastSavedPartId, confirmDeleteIsOpen, loading, by, byValue } = this.state;
+    console.log('minWidth', Responsive.onlyMobile);
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
         <Input placeholder='Search' icon='search' focus value={keyword} onChange={this.handleSearch} name='keyword' />
         <div style={{ paddingTop: '5px'}}>
           {by && <Button primary size='mini' onClick={this.removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
         </div>
-        <Segment loading={loading}>
-          <Table compact celled sortable selectable striped size='small'>
+        <div>
+          <Table compact celled sortable selectable striped unstackable size='small'>
             <Table.Header>
               <Table.Row>
                 <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>Bin Number</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>Bin Number 2</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'cost' ? direction : null} onClick={this.handleSort('cost')}>Cost</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>DigiKey Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>Mouser Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
-                <Table.HeaderCell></Table.HeaderCell>
+                <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={500} sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={600} sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>Bin Number</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={700} sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>Bin Number 2</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={1100} sorted={column === 'cost' ? direction : null} onClick={this.handleSort('cost')}>Cost</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={1200} sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>DigiKey Part</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={1300} sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>Mouser Part</Responsive>
+                <Responsive as={Table.HeaderCell} sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Responsive>
+                <Responsive as={Table.HeaderCell} minWidth={1400}></Responsive>
                 <Table.HeaderCell></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
@@ -294,25 +295,47 @@ export class Search extends Component {
               {parts.map(p =>
                 <Table.Row key={p.partId} onClick={e => this.handleLoadPartClick(e, p)}>
                   <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>
-                  <Table.Cell><Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed100' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} /></Table.Cell>
-                  <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                  <Table.Cell><span className='truncate small' title={p.description}>{p.description}</span></Table.Cell>
-                  <Table.Cell><span className='truncate'><Link to={`inventory?by=location&value=${p.location}`} onClick={this.handleSelfLink}>{p.location}</Link></span></Table.Cell>
-                  <Table.Cell><Link to={`inventory?by=binNumber&value=${p.binNumber}`} onClick={this.handleSelfLink}>{p.binNumber}</Link></Table.Cell>
-                  <Table.Cell><Link to={`inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link></Table.Cell>
-                  <Table.Cell>${p.cost}</Table.Cell>
-                  <Table.Cell><span className='truncate'>{p.digiKeyPartNumber}</span></Table.Cell>
-                  <Table.Cell><span className='truncate'>{p.mouserPartNumber}</span></Table.Cell>
-                  <Table.Cell>{p.datasheetUrl && <a href='#' onClick={e => this.handleVisitLink(e, p.datasheetUrl)}>View Datasheet</a>}</Table.Cell>
-                  <Table.Cell><Button circular size='mini' icon='print' onClick={e => this.handlePrintLabel(e, p)} /></Table.Cell>
                   <Table.Cell>
-                    <Button circular size='mini' icon='delete' onClick={e => this.confirmDeleteOpen(e, p)} />
+                    <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
+                  </Table.Cell>
+                  <Responsive as={Table.Cell} minWidth={800}>
+                    {p.manufacturerPartNumber}
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={800}>
+                    <span className='truncate small' title={p.description}>{p.description}</span>
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={500}>
+                    <Link to={`inventory?by=location&value=${p.location}`} onClick={this.handleSelfLink}><span className='truncate'>{p.location}</span></Link>
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={600}>
+                    <Link to={`inventory?by=binNumber&value=${p.binNumber}`} onClick={this.handleSelfLink}>{p.binNumber}</Link>
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={700}>
+                    <Link to={`inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link>
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={1100}>
+                    ${p.cost}
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={1200}>
+                    <span className='truncate'>{p.digiKeyPartNumber}</span>
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={1300}>
+                    <span className='truncate'>{p.mouserPartNumber}</span>
+                  </Responsive>
+                  <Responsive as={Table.Cell} textAlign='center' verticalAlign='middle'>
+                    {p.datasheetUrl && <a href='#' onClick={e => this.handleVisitLink(e, p.datasheetUrl)}>View</a>}
+                  </Responsive>
+                  <Responsive as={Table.Cell} minWidth={1400} textAlign='center' verticalAlign='middle'>
+                    <Button circular size='mini' icon='print' title='Print Label' onClick={e => this.handlePrintLabel(e, p)} />
+                  </Responsive>
+                  <Table.Cell textAlign='center' verticalAlign='middle'>
+                    <Button circular size='mini' icon='delete' title='Delete' onClick={e => this.confirmDeleteOpen(e, p)} />
                   </Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>
           </Table>
-        </Segment>
+        </div>
         <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} />
       </Visibility>
     );

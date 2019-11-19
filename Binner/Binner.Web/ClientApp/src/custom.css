@@ -1,3 +1,18 @@
+@media only screen and (max-width: 768px) {
+    /* For mobile phones: */
+    i.icon, i.icons{
+        font-size: 0.8em !important;
+    }
+    .ui.statistic > .label {
+        font-size: 0.8em !important;
+    }
+}
+
+.ui.statistic {
+    display: -webkit-box;
+    margin: 10px auto 10px auto !important;
+}
+
 /* Provide sufficient contrast against white background */
 a {
   color: #0366d6;
@@ -71,6 +86,11 @@ code {
 .borderless input:focus {
     border: 1px solid #85b7d9 !important;
 }
+
+.fixed50 {
+    width: 50px;
+}
+
 
 .fixed100 {
     width: 100px;

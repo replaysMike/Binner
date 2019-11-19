@@ -7,12 +7,18 @@ export class PrintLabels extends Component {
 
   constructor(props) {
     super(props);
+    const printPreferences = JSON.parse(localStorage.getItem('printPreferences')) || {
+      lastLabelName: '30277',
+      lastLabelSource: 0,
+    };
+
     this.state = {
       loading: false,
+      printPreferences,
       lines: [],
       imgBase64: '',
-      labelName: '30277',
-      labelSource: 0,
+      labelName: printPreferences.lastLabelName || '30277',
+      labelSource: printPreferences.lastLabelSource || 0,
       labelPositions: [
         {
           key: 1,
@@ -152,16 +158,20 @@ export class PrintLabels extends Component {
   }
 
   handleChange(e, control) {
-    const { labelName, labelSource } = this.state;
+    const { labelName, labelSource, printPreferences } = this.state;
+    let newLabelName = labelName;
+    let newLabelSource = labelSource;
     switch (control.name) {
       case 'labelName':
-        labelName = control.value;
+        newLabelName = control.value;
+        localStorage.setItem('printPreferences', JSON.stringify({ ...printPreferences, lastLabelName: control.value }));
         break;
       case 'labelSource':
-        labelSource = control.value;
+        newLabelSource = control.value;
+        localStorage.setItem('printPreferences', JSON.stringify({ ...printPreferences, lastLabelSource: control.value }));
         break;
     }
-    this.setState({ labelName, labelSource });
+    this.setState({ labelName: newLabelName, labelSource: newLabelSource, printPreferences });
   }
 
   handleLineChange(e, control, line) {
