@@ -23,6 +23,8 @@ export class Inventory extends Component {
     super(props);
     const { partNumber } = props.match.params;
     this.searchDebounced = AwesomeDebouncePromise(this.fetchPartMetadata.bind(this), 500);
+    this.scannerDebounced = AwesomeDebouncePromise(this.barcodeInput.bind(this), 100);
+    this.barcodeBuffer = '';
     const viewPreferences = JSON.parse(localStorage.getItem('viewPreferences')) || {
       helpDisabled:
         false,
@@ -96,8 +98,13 @@ export class Inventory extends Component {
       loadingProjects: true,
       loadingRecent: true,
       saveMessage: '',
+      isKeyboardListening: true,
     };
 
+    this.barcodeInput = this.barcodeInput.bind(this);
+    this.onKeydown = this.onKeydown.bind(this);
+    this.enableKeyboardListening = this.enableKeyboardListening.bind(this);
+    this.disableKeyboardListening = this.disableKeyboardListening.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleRecentPartClick = this.handleRecentPartClick.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
@@ -119,6 +126,27 @@ export class Inventory extends Component {
     this.fetchProjects();
     this.fetchRecentRows();
     if (this.state.partNumber) await this.fetchPart(this.state.partNumber);
+    this.addKeyboardHandler();
+  }
+
+  componentWillUnmount() {
+    this.removeKeyboardHandler();
+  }
+
+  addKeyboardHandler() {
+    if (document) document.addEventListener('keydown', this.onKeydown);
+  }
+
+  removeKeyboardHandler() {
+    if (document) document.removeEventListener('keydown');
+  }
+
+  enableKeyboardListening() {
+    this.setState({ isKeyboardListening: true });
+  }
+
+  disableKeyboardListening() {
+    this.setState({ isKeyboardListening: false });
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -126,6 +154,27 @@ export class Inventory extends Component {
     if (nextProps.location !== this.props.location) {
       // reset the form if the URL has changed
       this.resetForm();
+    }
+  }
+
+  // listens for document keydown events, used for barcode scanner input
+  onKeydown(e) {
+    const { isKeyboardListening } = this.state;
+    if (isKeyboardListening) {
+      this.barcodeBuffer += String.fromCharCode(e.keyCode);
+      this.scannerDebounced(e, this.barcodeBuffer);
+    }
+  }
+
+  // debounced handler for processing barcode scanner input
+  barcodeInput(e, value) {
+    this.barcodeBuffer = '';
+    if (value.indexOf(String.fromCharCode(13), value.length - 2) >= 0) {
+      const cleanValue = value.replace(String.fromCharCode(13), '').trim();
+      // if we have an ok string lets search for the part
+      if (cleanValue.length > 2) {
+        this.handleChange(e, { name: 'partNumber', value: cleanValue });
+      }
     }
   }
 
@@ -324,6 +373,8 @@ export class Inventory extends Component {
   }
 
   handleChange(e, control) {
+    e.preventDefault();
+    e.stopPropagation();
     const { part, viewPreferences } = this.state;
     part[control.name] = control.value;
     switch (control.name) {
@@ -634,17 +685,17 @@ export class Inventory extends Component {
           }
           <h1>{title}</h1>
           <Form.Group>
-            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' />
-            <Form.Dropdown label='Part Type' placeholder='Part Type' loading={loadingPartTypes} search selection value={part.partTypeId || ''} options={partTypes} onChange={this.handleChange} name='partTypeId' />
-            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingTypeId || ''} options={mountingTypes} onChange={this.handleChange} name='mountingTypeId' />
-            <Form.Dropdown label='Project' placeholder='My Project' loading={loadingProjects} search selection value={part.projectId || ''} options={projects} onChange={this.handleChange} name='projectId' />
+            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+            <Form.Dropdown label='Part Type' placeholder='Part Type' loading={loadingPartTypes} search selection value={part.partTypeId || ''} options={partTypes} onChange={this.handleChange} name='partTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingTypeId || ''} options={mountingTypes} onChange={this.handleChange} name='mountingTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+            <Form.Dropdown label='Project' placeholder='My Project' loading={loadingProjects} search selection value={part.projectId || ''} options={projects} onChange={this.handleChange} name='projectId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
           </Form.Group>
           <Form.Group>
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity || ''} onChange={this.updateNumberPicker} name='quantity' autoComplete='off' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Location' placeholder='Home lab' value={part.location || ''} onChange={this.handleChange} name='location' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number' placeholder='IC Components 2' value={part.binNumber || ''} onChange={this.handleChange} name='binNumber' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number 2' placeholder='14' value={part.binNumber2 || ''} onChange={this.handleChange} name='binNumber2' />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold || ''} onChange={this.handleChange} name='lowStockThreshold' width={3} />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity || ''} onChange={this.updateNumberPicker} name='quantity' autoComplete='off' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Location' placeholder='Home lab' value={part.location || ''} onChange={this.handleChange} name='location' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number' placeholder='IC Components 2' value={part.binNumber || ''} onChange={this.handleChange} name='binNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number 2' placeholder='14' value={part.binNumber2 || ''} onChange={this.handleChange} name='binNumber2' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
+            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold || ''} onChange={this.handleChange} name='lowStockThreshold' width={3} onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
           </Form.Group>
           <Form.Field inline>
             <Button type='submit' primary><Icon name='save'/>Save</Button>
@@ -668,26 +719,26 @@ export class Inventory extends Component {
             <Form.Group>
               <Form.Field width={4}>
                 <label>Cost</label>
-                <Input label='$' placeholder='0.000' value={part.cost || ''} type='text' onChange={this.handleChange} name='cost' />
+                <Input label='$' placeholder='0.000' value={part.cost || ''} type='text' onChange={this.handleChange} name='cost' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
               </Form.Field>
-              <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer || ''} onChange={this.handleChange} name='manufacturer' width={4} />
-              <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber || ''} onChange={this.handleChange} name='manufacturerPartNumber' />
+              <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer || ''} onChange={this.handleChange} name='manufacturer' width={4} onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+              <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber || ''} onChange={this.handleChange} name='manufacturerPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
               <Image src={part.imageUrl} size='tiny' />
             </Form.Group>
             <Form.Field width={10}>
               <label>Keywords</label>
-              <Input icon='tags' iconPosition='left' label={{ tag: true, content: 'Add Keyword' }} labelPosition='right' placeholder='op amp' onChange={this.handleChange} value={part.keywords || ''} name='keywords' />
+              <Input icon='tags' iconPosition='left' label={{ tag: true, content: 'Add Keyword' }} labelPosition='right' placeholder='op amp' onChange={this.handleChange} value={part.keywords || ''} name='keywords' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             </Form.Field>
             <Form.Field width={4}>
               <label>Package Type</label>
-              <Input placeholder='DIP8' value={part.packageType || ''} onChange={this.handleChange} name='packageType' />
+              <Input placeholder='DIP8' value={part.packageType || ''} onChange={this.handleChange} name='packageType' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             </Form.Field>
-            <Form.Field width={10} control={TextArea} label='Description' value={part.description || ''} onChange={this.handleChange} name='description' />
+            <Form.Field width={10} control={TextArea} label='Description' value={part.description || ''} onChange={this.handleChange} name='description' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             <Form.Field width={10}>
               <label>Datasheet Url</label>
               <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='datasheetUrl'>
                 <Label>http://</Label>
-                <input />
+                <input onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
                 <Button onClick={e => this.handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>View</Button>
               </Input>
             </Form.Field>
@@ -695,29 +746,29 @@ export class Inventory extends Component {
               <label>Product Url</label>
               <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='productUrl'>
                 <Label>http://</Label>
-                <input />
+                <input onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
                 <Button onClick={e => this.handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>Visit</Button>
               </Input>
             </Form.Field>
             <Form.Field width={4}>
               <label>Lowest Cost Supplier</label>
-              <Input placeholder='DigiKey' value={part.lowestCostSupplier || ''} onChange={this.handleChange} name='lowestCostSupplier' />
+              <Input placeholder='DigiKey' value={part.lowestCostSupplier || ''} onChange={this.handleChange} name='lowestCostSupplier' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             </Form.Field>
             <Form.Field width={10}>
               <label>Lowest Cost Supplier Url</label>
               <Input action className='labeled' placeholder='' value={(part.lowestCostSupplierUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='lowestCostSupplierUrl'>
                 <Label>http://</Label>
-                <input />
+                <input onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
                 <Button onClick={e => this.handleVisitLink(e, part.lowestCostSupplierUrl)} disabled={!part.lowestCostSupplierUrl || part.lowestCostSupplierUrl.length === 0}>Visit</Button>
               </Input>
             </Form.Field>
             <Form.Field width={4}>
               <label>DigiKey Part Number</label>
-              <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={this.handleChange} name='digiKeyPartNumber' />
+              <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={this.handleChange} name='digiKeyPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             </Form.Field>
             <Form.Field width={4}>
               <label>Mouser Part Number</label>
-              <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={this.handleChange} name='mouserPartNumber' />
+              <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={this.handleChange} name='mouserPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             </Form.Field>
           </Segment>
         </Form>

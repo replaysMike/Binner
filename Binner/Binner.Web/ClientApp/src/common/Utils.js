@@ -14,3 +14,19 @@ export const encodeResistance = (number, decimals = 0) => {
     return `${(ohms / (1000)).toFixed(decimals)}kΩ`;
   return `${ohms.toFixed(decimals)}Ω`;
 };
+
+/**
+ * Decode a resistor value into ohms
+ * @param {any} str the resistance value, such as 4.7k
+ */
+export const decodeResistance = (str) => {
+  str = str.toString().toLowerCase();
+  if (str.indexOf('k') > 0) {
+    return (Number.parseInt(str.replace('k', '')) * 1000);
+  } else if (str.indexOf('m') > 0) {
+    return (Number.parseInt(str.replace('m', '')) * 1000 * 1000);
+  } else if (str.indexOf('g') > 0) {
+    return (Number.parseInt(str.replace('g', '')) * 1000 * 1000 * 1000);
+  }
+  return Number.parseInt(str);
+};

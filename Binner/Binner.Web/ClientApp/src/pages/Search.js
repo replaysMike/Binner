@@ -265,7 +265,6 @@ export class Search extends Component {
 
   renderParts(parts, column, direction) {
     const { keyword, lastSavedPartId, confirmDeleteIsOpen, loading, by, byValue } = this.state;
-    console.log('minWidth', Responsive.onlyMobile);
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
         <Input placeholder='Search' icon='search' focus value={keyword} onChange={this.handleSearch} name='keyword' />

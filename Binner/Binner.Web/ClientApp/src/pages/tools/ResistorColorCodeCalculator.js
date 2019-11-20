@@ -167,6 +167,7 @@ export class ResistorColorCodeCalculator extends Component {
 
   renderCanvas() {
     const { bands, resistorBands, tolerance } = this.state;
+    // draw a resistor with color bands
     const canvas = this.refs.canvas;
     const g = canvas.getContext('2d');
     g.strokeStyle = '#999';
@@ -176,7 +177,6 @@ export class ResistorColorCodeCalculator extends Component {
     g.lineTo(300, 25);
     g.closePath();
     g.stroke();
-    console.log('tol', tolerance);
     if (tolerance === 0.01)
       g.fillStyle = '#5e7dce';
     else
