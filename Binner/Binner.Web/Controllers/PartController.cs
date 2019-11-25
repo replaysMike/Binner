@@ -14,7 +14,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Binner.Common.Models.SystemDefaults;
 
 namespace Binner.Web.Controllers
 {
@@ -77,7 +79,7 @@ namespace Binner.Web.Controllers
                 {
                     part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
                     part.MountingType = ((MountingType)part.MountingTypeId).ToString();
-                    part.Keywords = string.Join(" ", parts.First(x => x.PartId == part.PartId).Keywords);
+                    part.Keywords = string.Join(" ", parts.First(x => x.PartId == part.PartId).Keywords ?? new List<string>());
                 }
             }
             return Ok(partsResponse);
@@ -132,6 +134,107 @@ namespace Binner.Web.Controllers
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
             partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
+            return Ok(partResponse);
+        }
+
+        [HttpGet("barcode/info")]
+        public async Task<IActionResult> GetBarcodeInfoAsync([FromQuery] string barcode)
+        {
+            var partDetails = await _partService.GetBarcodeInfoAsync(barcode);
+            return Ok(partDetails);
+        }
+
+        /// <summary>
+        /// Create multiple new parts
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("bulk")]
+        public async Task<IActionResult> CreateBulkPartsAsync(CreateBulkPartRequest request)
+        {
+            var updatedParts = new List<Part>();
+            var mappedParts = Mapper.Map<ICollection<PartBase>, ICollection<Part>>(request.Parts);
+            var partTypes = await _partTypeService.GetPartTypesAsync();
+            var defaultPartType = partTypes.Where(x => x.Name.Equals("Other", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ?? partTypes.FirstOrDefault();
+            foreach (var mappedPart in mappedParts)
+            {
+                // does it already exist?
+                var existingSearch = await _partService.FindPartsAsync(mappedPart.PartNumber);
+                if (existingSearch.Any())
+                {
+                    // update it's quantity only
+                    var existingPart = existingSearch.First().Result;
+                    existingPart.Quantity += mappedPart.Quantity;
+                    updatedParts.Add(await _partService.UpdatePartAsync(existingPart));
+                }
+                else
+                {
+                    var isMapped = false;
+                    // if it's numeric only, try getting barcode information
+                    var isNumber = new Regex(@"^\d+$");
+                    if (isNumber.Match(mappedPart.PartNumber).Success)
+                    {
+                        var barcodeResult = await _partService.GetBarcodeInfoAsync(mappedPart.PartNumber);
+                        if (barcodeResult.Response.Parts.Any())
+                        {
+                            // convert this entry to a part
+                            var entry = barcodeResult.Response.Parts.First();
+                            var partType = partTypes.Where(x => x.Name == entry.PartType).FirstOrDefault();
+                            mappedPart.PartNumber = entry.ManufacturerPartNumber;
+                            mappedPart.PartTypeId = partType != null ? partType.PartTypeId : defaultPartType.PartTypeId;
+                            mappedPart.MountingTypeId = entry.MountingTypeId;
+                            mappedPart.DatasheetUrl = entry.DatasheetUrls.FirstOrDefault();
+                            mappedPart.ManufacturerPartNumber = entry.ManufacturerPartNumber;
+                            mappedPart.Manufacturer = entry.Manufacturer;
+                            mappedPart.Description = entry.Description;
+                            mappedPart.DigiKeyPartNumber = entry.SupplierPartNumber;
+                            mappedPart.Keywords = entry.Keywords ?? new List<string>();
+                            mappedPart.ImageUrl = entry.ImageUrl;
+                            mappedPart.LowStockThreshold = 10;
+                            mappedPart.ProductUrl = entry.ProductUrl;
+                            mappedPart.PackageType = entry.PackageType;
+                            mappedPart.Cost = entry.Cost;
+                            isMapped = true;
+                        }
+                    }
+
+                    // if we didn't already map it using above methods, get metadata on the part
+                    if (!isMapped)
+                    {
+                        var metadataResponse = await _partService.GetPartInformationAsync(mappedPart.PartNumber);
+                        var digikeyParts = metadataResponse.Response.Parts.Where(x => x.Supplier.Equals("Digikey", StringComparison.InvariantCultureIgnoreCase)).OrderByDescending(x => x.DatasheetUrls.Any()).ThenBy(x => x.Cost).ToList();
+                        var mouserParts = metadataResponse.Response.Parts.Where(x => x.Supplier.Equals("Mouser", StringComparison.InvariantCultureIgnoreCase)).OrderByDescending(x => x.DatasheetUrls.Any()).ThenBy(x => x.Cost).ToList();
+                        var metadata = metadataResponse.Response.Parts.FirstOrDefault();
+                        if (metadata != null)
+                        {
+                            var partType = partTypes.Where(x => x.Name == metadata.PartType).FirstOrDefault();
+                            mappedPart.PartTypeId = partType != null ? partType.PartTypeId : defaultPartType.PartTypeId;
+                            mappedPart.MountingTypeId = metadata.MountingTypeId;
+                            mappedPart.Description = metadata.Description;
+                            mappedPart.DatasheetUrl = metadata.DatasheetUrls.FirstOrDefault();
+                            mappedPart.DigiKeyPartNumber = digikeyParts.FirstOrDefault()?.SupplierPartNumber;
+                            mappedPart.MouserPartNumber = mouserParts.FirstOrDefault()?.SupplierPartNumber;
+                            mappedPart.ImageUrl = metadata.ImageUrl;
+                            mappedPart.Manufacturer = metadata.Manufacturer;
+                            mappedPart.ManufacturerPartNumber = metadata.ManufacturerPartNumber;
+                            mappedPart.Keywords = metadata.Keywords ?? new List<string>();
+                            mappedPart.LowStockThreshold = 10;
+                            mappedPart.ProductUrl = metadata.ProductUrl;
+                            mappedPart.PackageType = metadata.PackageType;
+                            mappedPart.Cost = metadata.Cost;
+                        }
+                        else
+                        {
+                            // map some default values as we don't know what this is
+                            mappedPart.PartTypeId = defaultPartType.PartTypeId;
+                            mappedPart.MountingTypeId = (int)MountingType.ThroughHole;
+                        }
+                    }
+                    updatedParts.Add(await _partService.AddPartAsync(mappedPart));
+                }
+            }
+
+            var partResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(updatedParts);
             return Ok(partResponse);
         }
 

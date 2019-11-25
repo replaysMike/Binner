@@ -135,6 +135,42 @@ namespace Binner.Common.Integrations
             });
         }
 
+        /// <summary>
+        /// Get information about a DigiKey product via a barcode value
+        /// </summary>
+        /// <param name="barcode"></param>
+        /// <returns></returns>
+        public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode)
+        {
+            var authResponse = await AuthorizeAsync();
+            if (authResponse == null || !authResponse.IsAuthorized)
+                return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+            return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
+            {
+                try
+                {
+                    // set what fields we want from the API
+                    var uri = Url.Combine(_apiUrl, "Barcoding/v3/ProductBarcodes/", barcode);
+                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
+                    // perform a keywords API search
+                    var response = await _client.SendAsync(requestMessage);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        throw new DigikeyUnauthorizedException(authenticationResponse);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var resultString = response.Content.ReadAsStringAsync().Result;
+                        var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(resultString, _serializerSettings);
+                        return new ApiResponse(results, nameof(DigikeyApi));
+                    }
+                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            });
+        }
+
         public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "")
         {
             var authResponse = await AuthorizeAsync();

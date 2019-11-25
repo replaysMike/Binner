@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader } from 'semantic-ui-react';
+import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader, Header } from 'semantic-ui-react';
 import NumberPicker from '../components/NumberPicker';
 import { ProjectColors } from '../common/Types';
 
@@ -43,6 +43,8 @@ export class Inventory extends Component {
       recentParts: [],
       metadataParts: [],
       duplicateParts: [],
+      scannedParts: [],
+      highlightScannedPart: null,
       viewPreferences,
       partModalOpen: false,
       duplicatePartModalOpen: false,
@@ -99,6 +101,8 @@ export class Inventory extends Component {
       loadingRecent: true,
       saveMessage: '',
       isKeyboardListening: true,
+      showBarcodeBeingScanned: false,
+      bulkScanIsOpen: false
     };
 
     this.barcodeInput = this.barcodeInput.bind(this);
@@ -108,6 +112,7 @@ export class Inventory extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleRecentPartClick = this.handleRecentPartClick.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
+    this.onSubmitScannedParts = this.onSubmitScannedParts.bind(this);
     this.handleForceSubmit = this.handleForceSubmit.bind(this);
     this.updateNumberPicker = this.updateNumberPicker.bind(this);
     this.disableHelp = this.disableHelp.bind(this);
@@ -119,6 +124,11 @@ export class Inventory extends Component {
     this.handleHighlightAndVisit = this.handleHighlightAndVisit.bind(this);
     this.printLabel = this.printLabel.bind(this);
     this.resetForm = this.resetForm.bind(this);
+    this.handleBulkBarcodeScan = this.handleBulkBarcodeScan.bind(this);
+    this.handleBulkScanClose = this.handleBulkScanClose.bind(this);
+    this.renderScannedParts = this.renderScannedParts.bind(this);
+    this.handleScannedPartChange = this.handleScannedPartChange.bind(this);
+    this.deleteScannedPart = this.deleteScannedPart.bind(this);
   }
 
   async componentDidMount() {
@@ -168,12 +178,34 @@ export class Inventory extends Component {
 
   // debounced handler for processing barcode scanner input
   barcodeInput(e, value) {
+    const { bulkScanIsOpen, scannedParts } = this.state;
     this.barcodeBuffer = '';
     if (value.indexOf(String.fromCharCode(13), value.length - 2) >= 0) {
-      const cleanValue = value.replace(String.fromCharCode(13), '').trim();
+      const cleanPartNumber = value.replace(String.fromCharCode(13), '').trim();
       // if we have an ok string lets search for the part
-      if (cleanValue.length > 2) {
-        this.handleChange(e, { name: 'partNumber', value: cleanValue });
+      if (cleanPartNumber.length > 2) {
+        if (bulkScanIsOpen) {
+          // add to bulk scanned parts
+          const lastPart = _.last(scannedParts);
+          const scannedPart = {
+            partNumber: cleanPartNumber,
+            quantity: 1,
+            location: lastPart && lastPart.location || '',
+            binNumber: lastPart && lastPart.binNumber || '',
+            binNumber2: lastPart && lastPart.binNumber2 || '',
+          };
+          const existingPartNumber = _.find(scannedParts, { partNumber: cleanPartNumber });
+          if (existingPartNumber) {
+            existingPartNumber.quantity++;
+            this.setState({ showBarcodeBeingScanned: false, highlightScannedPart: existingPartNumber, scannedParts });
+          }
+          else
+            this.setState({ showBarcodeBeingScanned: false, highlightScannedPart: scannedPart, scannedParts: [...scannedParts, scannedPart] });
+        } else {
+          // scan single part
+          this.handleChange(e, { name: 'partNumber', value: cleanPartNumber });
+          this.setState({ showBarcodeBeingScanned: false });
+        }
       }
     }
   }
@@ -334,6 +366,8 @@ export class Inventory extends Component {
     const { viewPreferences } = this.state;
     this.setState({
       saveMessage,
+      metadataParts: [],
+      duplicateParts: [],
       part: {
         allowPotentialDuplicate: false,
         partId: 0,
@@ -493,6 +527,15 @@ export class Inventory extends Component {
     this.setState({ partModalOpen: true });
   }
 
+  handleBulkBarcodeScan(e) {
+    e.preventDefault();
+    this.setState({ bulkScanIsOpen: true });
+  }
+
+  handleBulkScanClose() {
+    this.setState({ bulkScanIsOpen: false });
+  }
+
   renderAllMatchingParts(part, metadataParts) {
     return (
       <Table compact celled selectable size='small' className='partstable'>
@@ -591,7 +634,6 @@ export class Inventory extends Component {
   }
 
   handleHighlightAndVisit(e, url) {
-    console.log('url', url);
     this.handleVisitLink(e, url);
     // this handles highlighting of parent row
     const parentTable = ReactDOM.findDOMNode(e.target).parentNode.parentNode.parentNode;
@@ -613,6 +655,97 @@ export class Inventory extends Component {
     this.setState({ partNumber: part.partNumber, part });
     this.props.history.push(`/inventory/${part.partNumber}`);
     await this.fetchPart(part.partNumber);
+  }
+
+  async onSubmitScannedParts(e) {
+    const { scannedParts } = this.state;
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('onSubmitScannedParts');
+    const request = {
+      parts: scannedParts
+    };
+    const response = await fetch('part/bulk', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    });
+    this.setState({ bulkScanIsOpen: false, scannedParts: [] });
+  }
+
+  handleScannedPartChange(e, control, scannedPart) {
+    e.preventDefault();
+    e.stopPropagation();
+    const { scannedParts } = this.state;
+    scannedPart[control.name] = control.value;
+    this.setState({ scannedParts });
+  }
+
+  deleteScannedPart(e, scannedPart) {
+    e.preventDefault();
+    e.stopPropagation();
+    const { scannedParts } = this.state;
+    const scannedPartsDeleted = _.without(scannedParts, _.findWhere(scannedParts, { partNumber: scannedPart.partNumber }));
+    this.setState({ scannedParts: scannedPartsDeleted });
+  }
+
+  onScannedInputKeyDown(e, scannedPart) {
+    const { scannedParts } = this.state;
+    if (e.keyCode === 13) {
+      // copy downward
+      let beginCopy = false;
+      scannedParts.forEach(part => {
+        if (part.partName === scannedPart.partName) beginCopy = true;
+        if (beginCopy && part[e.target.name] === '') {
+          part[e.target.name] = scannedPart[e.target.name];
+        }
+      });
+      this.setState({ scannedParts });
+    }
+  }
+
+  renderScannedParts(scannedParts, highlightScannedPart) {
+    if (highlightScannedPart) {
+      // reset the css highlight animation
+      setTimeout(() => {
+        const elements = document.getElementsByClassName('scannedPartAnimation');
+        for (let i = 0; i < elements.length; i++) {
+          elements[i].classList.add('lastScannedPart');
+          if (elements[i].classList.contains('scannedPartAnimation'))
+            elements[i].classList.remove('scannedPartAnimation');
+        }
+      }, 750);
+    }
+    return (
+      <Form>
+        <Table compact celled striped size='small'>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Part</Table.HeaderCell>
+              <Table.HeaderCell width={2}>Quantity</Table.HeaderCell>
+              <Table.HeaderCell>Location</Table.HeaderCell>
+              <Table.HeaderCell>Bin Number</Table.HeaderCell>
+              <Table.HeaderCell>Bin Number 2</Table.HeaderCell>
+              <Table.HeaderCell width={1}></Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {scannedParts.map((p, index) =>
+              <Table.Row key={index} className={(highlightScannedPart && p.partNumber === highlightScannedPart.partNumber ? `scannedPartAnimation ${Math.random()}` : '')}>
+                <Table.Cell collapsing><Label>{p.partNumber}</Label></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={10} value={p.quantity} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='quantity' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} /></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={16} placeholder='Home lab' value={p.location} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='location' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} onKeyDown={e => this.onScannedInputKeyDown(e, p)} /></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={14} placeholder='' value={p.binNumber} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='binNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} onKeyDown={e => this.onScannedInputKeyDown(e, p)} /></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={14} placeholder='' value={p.binNumber2} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='binNumber2' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} onKeyDown={e => this.onScannedInputKeyDown(e, p)} /></Table.Cell>
+                <Table.Cell collapsing textAlign='center' verticalAlign='middle'><Button type='button' circular size='mini' icon='delete' title='Delete' onClick={e => this.deleteScannedPart(e, p)} /></Table.Cell>
+              </Table.Row>
+            )}
+          </Table.Body>
+        </Table>
+      </Form>
+    );
   }
 
   renderRecentParts(recentParts) {
@@ -653,7 +786,7 @@ export class Inventory extends Component {
   render() {
     const { part,
       recentParts, metadataParts, partTypes, mountingTypes, projects, viewPreferences, partModalOpen, duplicatePartModalOpen,
-      loadingPartMetadata, loadingPartTypes, loadingProjects, loadingRecent, saveMessage
+      loadingPartMetadata, loadingPartTypes, loadingProjects, loadingRecent, saveMessage, showBarcodeBeingScanned, scannedParts, highlightScannedPart
     } = this.state;
     const matchingPartsList = this.renderAllMatchingParts(part, metadataParts);
     const title = this.props.match.params.partNumber ? 'Edit Inventory' : 'Add Inventory';
@@ -676,16 +809,42 @@ export class Inventory extends Component {
           </Modal.Actions>
         </Modal>
         <Form onSubmit={this.onSubmit}>
-          {part.partNumber && <Image src={'/part/barcode?partNumber=' + part.partNumber} width={232} height={24} floated='right' style={{marginTop: '4px'}} />}
+          {part.partNumber && <Image src={'/part/barcode?partNumber=' + part.partNumber} width={232} height={24} floated='right' style={{ marginTop: '4px' }} />}
           {part.partId > 0 &&
             <Button animated='vertical' circular floated='right' size='mini' onClick={this.printLabel}>
               <Button.Content visible><Icon name='print' /></Button.Content>
               <Button.Content hidden>Print</Button.Content>
             </Button>
           }
-          <h1>{title}</h1>
+          <h1 style={{ display: 'inline-block', marginRight: '30px' }}>{title}</h1>
+          <div title='Bulk Barcode Scan' style={{ width: '132px', height: '30px', display: 'inline-block', cursor: 'pointer' }} onClick={this.handleBulkBarcodeScan}>
+            <div className='anim-box'>
+              <div className='scanner' />
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-lg'></div>
+              <div className='anim-item anim-item-lg'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-lg'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-md'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-md'></div>
+              <div className='anim-item anim-item-lg'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-lg'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-lg'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-lg'></div>
+              <div className='anim-item anim-item-sm'></div>
+              <div className='anim-item anim-item-md'></div>
+            </div>
+          </div>
           <Form.Group>
-            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+            <div>
+              <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+            </div>
             <Form.Dropdown label='Part Type' placeholder='Part Type' loading={loadingPartTypes} search selection value={part.partTypeId || ''} options={partTypes} onChange={this.handleChange} name='partTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingTypeId || ''} options={mountingTypes} onChange={this.handleChange} name='mountingTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             <Form.Dropdown label='Project' placeholder='My Project' loading={loadingProjects} search selection value={part.projectId || ''} options={projects} onChange={this.handleChange} name='projectId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
@@ -698,10 +857,11 @@ export class Inventory extends Component {
             <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold || ''} onChange={this.handleChange} name='lowStockThreshold' width={3} onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
           </Form.Group>
           <Form.Field inline>
-            <Button type='submit' primary><Icon name='save'/>Save</Button>
+            <Button type='submit' primary style={{ marginTop: '10px' }}><Icon name='save' />Save</Button>
             {saveMessage.length > 0 && <Label pointing='left'>{saveMessage}</Label>}
           </Form.Field>
-          <Segment loading={loadingPartMetadata}>
+          <Segment loading={loadingPartMetadata} color='blue'>
+            <Header dividing as='h3'>Part Metadata</Header>
             {metadataParts.length > 0 &&
               <Modal centered
                 trigger={<a href="#" onClick={this.handleOpenModal}>Choose alternate part</a>}
@@ -771,11 +931,62 @@ export class Inventory extends Component {
               <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={this.handleChange} name='mouserPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             </Form.Field>
           </Segment>
+          <Modal centered
+            open={this.state.bulkScanIsOpen}
+            onClose={this.handleBulkScanClose}
+          >
+            <Modal.Header>Bulk Scan</Modal.Header>
+            <Modal.Content>
+              <div style={{ width: '200px', height: '100px', margin: 'auto' }}>
+                <div className='anim-box'>
+                  <div className='scanner animated' />
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-md'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-md'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-md'></div>
+                  <div className='anim-item anim-item-md'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-md'></div>
+                  <div className='anim-item anim-item-lg'></div>
+                  <div className='anim-item anim-item-sm'></div>
+                  <div className='anim-item anim-item-md'></div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                Start scanning parts...
+                {this.renderScannedParts(scannedParts, highlightScannedPart)}
+              </div>
+            </Modal.Content>
+            <Modal.Actions>
+              <Button onClick={() => this.setState({ bulkScanIsOpen: false })}>Cancel</Button>
+              <Button primary onClick={this.onSubmitScannedParts}>Save</Button>
+            </Modal.Actions>
+          </Modal>
         </Form>
         <br />
-        <h4>Recently added parts</h4>
         <div style={{ marginTop: '20px' }}>
-          <Segment style={{ minHeight: '50px' }}>
+          <Segment style={{ minHeight: '50px' }} color='teal'>
+            <Header dividing as='h3'>Recently Added</Header>
             <Dimmer active={loadingRecent} inverted>
               <Loader inverted />
             </Dimmer>

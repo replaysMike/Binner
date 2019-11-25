@@ -255,6 +255,92 @@ namespace Binner.Common.Services
             });
         }
 
+        public async Task<IServiceResult<PartResults>> GetBarcodeInfoAsync(string barcode)
+        {
+            // currently only supports DigiKey, as Mouser barcodes are part numbers
+            var response = new PartResults();
+            var digikeyResponse = new Integrations.Models.Digikey.ProductBarcodeResponse();
+            if (_digikeyApi.IsConfigured)
+            {
+                var apiResponse = await _digikeyApi.GetBarcodeDetailsAsync(barcode);
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                else if (apiResponse.Errors?.Any() == true)
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                digikeyResponse = (ProductBarcodeResponse)apiResponse.Response;
+                if (digikeyResponse != null)
+                {
+                    var partResponse = await _digikeyApi.GetProductDetailsAsync(digikeyResponse.DigiKeyPartNumber);
+                    if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                    {
+                        var part = (Product)partResponse.Response;
+                        var additionalPartNumbers = new List<string>();
+                        var basePart = part.Parameters.Where(x => x.Parameter.Equals("Base Part Number")).Select(x => x.Value).FirstOrDefault();
+                        if (!string.IsNullOrEmpty(basePart))
+                            additionalPartNumbers.Add(basePart);
+                        var mountingTypeId = MountingType.ThroughHole;
+                        Enum.TryParse<MountingType>(part.Parameters.Where(x => x.Parameter.Equals("Mounting Type")).Select(x => x.Value.Replace(" ", "")).FirstOrDefault(), out mountingTypeId);
+                        var currency = string.Empty;
+                        if (string.IsNullOrEmpty(currency))
+                            currency = "USD";
+                        var packageType = part.Parameters
+                                ?.Where(x => x.Parameter.Equals("Supplier Device Package", StringComparison.InvariantCultureIgnoreCase))
+                                .Select(x => x.Value)
+                                .FirstOrDefault();
+                        if (string.IsNullOrEmpty(packageType))
+                            packageType = part.Parameters
+                                ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
+                                .Select(x => x.Value)
+                                .FirstOrDefault();
+                        response.Parts.Add(new CommonPart
+                        {
+                            Supplier = "DigiKey",
+                            SupplierPartNumber = part.DigiKeyPartNumber,
+                            BasePartNumber = basePart,
+                            AdditionalPartNumbers = additionalPartNumbers,
+                            Manufacturer = part.Manufacturer.Value,
+                            ManufacturerPartNumber = part.ManufacturerPartNumber,
+                            Cost = part.UnitPrice,
+                            Currency = currency,
+                            DatasheetUrls = new List<string> { part.PrimaryDatasheet },
+                            Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
+                            ImageUrl = part.PrimaryPhoto,
+                            PackageType = part.Parameters
+                                ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
+                                .Select(x => x.Value)
+                                .FirstOrDefault(),
+                            MountingTypeId = (int)mountingTypeId,
+                            PartType = "",
+                            ProductUrl = part.ProductUrl,
+                            Status = part.ProductStatus,
+                            Quantity = digikeyResponse.Quantity
+                        });
+                    }
+                    else
+                    {
+                        response.Parts.Add(new CommonPart
+                        {
+                            Supplier = "DigiKey",
+                            SupplierPartNumber = digikeyResponse.DigiKeyPartNumber,
+                            Manufacturer = digikeyResponse.ManufacturerName,
+                            ManufacturerPartNumber = digikeyResponse.ManufacturerPartNumber,
+                            Description = digikeyResponse.ProductDescription,
+                            Quantity = digikeyResponse.Quantity
+                        });
+                    }
+                }
+            }
+
+            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+            foreach (var part in response.Parts)
+            {
+                part.PartType = DeterminePartType(part, partTypes);
+                part.Keywords = DetermineKeywords(part, partTypes);
+            }
+
+            return ServiceResult<PartResults>.Create(response);
+        }
+
         public async Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")
         {
             var datasheets = new List<string>();
