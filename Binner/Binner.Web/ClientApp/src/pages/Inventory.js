@@ -172,10 +172,16 @@ export class Inventory extends Component {
   onKeydown(e) {
     const { isKeyboardListening } = this.state;
     if (isKeyboardListening) {
-      // console.log('key', e.key, e.keyCode, String.fromCharCode(e.keyCode));
-      // allow alphanumeric, enter, space, tab and most punctuation
+      let char = String.fromCharCode((96 <= e.keyCode && e.keyCode <= 105) ? e.keyCode - 48 : e.keyCode);
+      // map proper value when shift is used
+      if (e.shiftKey)
+        char = e.key;
+      // map numlock extra keys
+      if ((e.keyCode >= 186 && e.keyCode <= 192) || (e.keyCode >= 219 && e.keyCode <= 222))
+        char = e.key;
+      // console.log('key', e, char);
       if (e.keyCode === 13 || e.keyCode === 32 || e.keyCode === 9 || (e.keyCode >= 48 && e.keyCode <= 90) || (e.keyCode >= 107 && e.keyCode <= 111) || (e.keyCode >= 186 && e.keyCode <= 222)) {
-        this.barcodeBuffer += String.fromCharCode(e.keyCode);
+        this.barcodeBuffer += char;
         this.scannerDebounced(e, this.barcodeBuffer);
       }
     }
