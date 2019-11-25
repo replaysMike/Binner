@@ -38,12 +38,13 @@ export class Inventory extends Component {
       lowStockThreshold: 10,
     };
 
+    const scannedPartsSerialized = JSON.parse(localStorage.getItem('scannedPartsSerialized')) || [];
     this.state = {
       partNumber,
       recentParts: [],
       metadataParts: [],
       duplicateParts: [],
-      scannedParts: [],
+      scannedParts: scannedPartsSerialized,
       highlightScannedPart: null,
       viewPreferences,
       partModalOpen: false,
@@ -171,8 +172,12 @@ export class Inventory extends Component {
   onKeydown(e) {
     const { isKeyboardListening } = this.state;
     if (isKeyboardListening) {
-      this.barcodeBuffer += String.fromCharCode(e.keyCode);
-      this.scannerDebounced(e, this.barcodeBuffer);
+      // console.log('key', e.key, e.keyCode, String.fromCharCode(e.keyCode));
+      // allow alphanumeric, enter, space, tab and most punctuation
+      if (e.keyCode === 13 || e.keyCode === 32 || e.keyCode === 9 || (e.keyCode >= 48 && e.keyCode <= 90) || (e.keyCode >= 107 && e.keyCode <= 111) || (e.keyCode >= 186 && e.keyCode <= 222)) {
+        this.barcodeBuffer += String.fromCharCode(e.keyCode);
+        this.scannerDebounced(e, this.barcodeBuffer);
+      }
     }
   }
 
@@ -197,10 +202,14 @@ export class Inventory extends Component {
           const existingPartNumber = _.find(scannedParts, { partNumber: cleanPartNumber });
           if (existingPartNumber) {
             existingPartNumber.quantity++;
+            localStorage.setItem('scannedPartsSerialized', JSON.stringify(scannedParts));
             this.setState({ showBarcodeBeingScanned: false, highlightScannedPart: existingPartNumber, scannedParts });
           }
-          else
-            this.setState({ showBarcodeBeingScanned: false, highlightScannedPart: scannedPart, scannedParts: [...scannedParts, scannedPart] });
+          else {
+            const newScannedParts = [...scannedParts, scannedPart];
+            localStorage.setItem('scannedPartsSerialized', JSON.stringify(newScannedParts));
+            this.setState({ showBarcodeBeingScanned: false, highlightScannedPart: scannedPart, scannedParts: newScannedParts });
+          }
         } else {
           // scan single part
           this.handleChange(e, { name: 'partNumber', value: cleanPartNumber });
@@ -672,6 +681,7 @@ export class Inventory extends Component {
       },
       body: JSON.stringify(request)
     });
+    localStorage.setItem('scannedPartsSerialized', JSON.stringify([]));
     this.setState({ bulkScanIsOpen: false, scannedParts: [] });
   }
 
@@ -688,6 +698,7 @@ export class Inventory extends Component {
     e.stopPropagation();
     const { scannedParts } = this.state;
     const scannedPartsDeleted = _.without(scannedParts, _.findWhere(scannedParts, { partNumber: scannedPart.partNumber }));
+    localStorage.setItem('scannedPartsSerialized', JSON.stringify(scannedPartsDeleted));
     this.setState({ scannedParts: scannedPartsDeleted });
   }
 
