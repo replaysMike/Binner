@@ -49,11 +49,23 @@ export class PrintLabels extends Component {
           key: 1,
           value: '30277',
           text: '30277 (Dual 9/16" x 3 7/16")',
+          defaults: {
+            label: 1, // use label 1,
+            fontSizes: [16, 7, 16],
+            topMargins: [0, 10, 0],
+            isBarcodes: [false, false, true],
+          }
         },
         {
           key: 2,
           value: '30346',
           text: '30346 (1/2" x 1 7/8")',
+          defaults: {
+            label: 2, // use label 2, there is no label 1,
+            fontSizes: [16, 6, 16],
+            topMargins: [0, 10, 0],
+            isBarcodes: [false, false, true],
+          }
         },
       ],
       labelSources: [
@@ -79,6 +91,7 @@ export class PrintLabels extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleLineChange = this.handleLineChange.bind(this);
     this.handleAdd = this.handleAdd.bind(this);
+    this.handleReset = this.handleReset.bind(this);
     this.handleLoad = this.handleLoad.bind(this);
   }
 
@@ -92,10 +105,10 @@ export class PrintLabels extends Component {
 
     const entry = {
       date: new Date(),
-      lines: [...lines]
+      lines: JSON.parse(JSON.stringify(lines))
     };
     var newPrintLabelHistory = printLabelHistory;
-    if (_.filter(printLabelHistory, f => { return _.isEqual(f.lines, entry.lines); }).length === 0) {
+    if (_.filter(printLabelHistory, f => _.isEqual(f.lines, entry.lines)).length === 0) {
       printLabelHistory.push(entry);
       newPrintLabelHistory = printLabelHistory.slice(Math.max(printLabelHistory.length - maxLineHistory, 0));
       localStorage.setItem('printLabelHistory', JSON.stringify(newPrintLabelHistory))
@@ -224,20 +237,27 @@ export class PrintLabels extends Component {
   handleAdd(e) {
     e.preventDefault();
     e.stopPropagation();
-    const { lines } = this.state;
+    const { lines, labelNames, labelName } = this.state;
+    const label = _.find(labelNames, x => x && x.value === labelName);
     const lastLine = _.last(lines);
     const newLine = {
-      id: 1,
-      label: lastLine && lastLine.label || 1,
+      id: lines.length + 1,
+      label: lastLine && lastLine.label || label && label.defaults.label,
       content: '',
-      fontSize: 16,
+      fontSize: label && label.defaults.fontSizes.length > lines.length && label.defaults.fontSizes[lines.length] || 16,
       position: 2,
-      topMargin: 0,
+      topMargin: label && label.defaults.topMargins.length >= lines.length && label.defaults.topMargins[lines.length] || 0,
       leftMargin: 0,
-      barcode: false
+      barcode: label && label.defaults.isBarcodes.length >= lines.length && label.defaults.isBarcodes[lines.length] || false
     };
     lines.push(newLine);
     this.setState({ lines });
+  }
+
+  handleReset(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({ lines: [] });
   }
 
   render() {
@@ -251,6 +271,7 @@ export class PrintLabels extends Component {
             <Form.Dropdown label='Paper Source' placeholder='Auto' selection value={labelSource} options={labelSources} onChange={this.handleChange} name='labelSource' />
           </Form.Group>
           <Button onClick={this.handleAdd}>Add line</Button>
+          <Button onClick={this.handleReset}>Reset</Button>
 
           <Table compact celled size='small'>
             <Table.Header>
