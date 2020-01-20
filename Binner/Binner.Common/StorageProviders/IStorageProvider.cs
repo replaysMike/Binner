@@ -178,6 +178,13 @@ namespace Binner.Common.StorageProviders
         Task<long> GetPartsCountAsync(IUserContext userContext);
 
         /// <summary>
+        /// Get financial value/cost of all parts
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<decimal> GetPartsValueAsync(IUserContext userContext);
+
+        /// <summary>
         /// Get low stock
         /// </summary>
         /// <returns></returns>

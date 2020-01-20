@@ -52,6 +52,16 @@ namespace Binner.Common.Extensions
         }
 
         /// <summary>
+        /// Uppercase the first character of a string
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string UcFirst(this string str)
+        {
+            return str.First().ToString().ToUpper() + str.Substring(1);
+        }
+
+        /// <summary>
         /// Get a distinct set of results
         /// </summary>
         /// <typeparam name="T"></typeparam>

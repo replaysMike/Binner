@@ -40,10 +40,6 @@ namespace Binner.Common.StorageProviders
             StartIOThread();
         }
 
-        /// <summary>
-        /// Get an instance of the entire database
-        /// </summary>
-        /// <returns></returns>
         public async Task<IBinnerDb> GetDatabaseAsync()
         {
             await _dataLock.WaitAsync();
@@ -57,11 +53,6 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        /// <summary>
-        /// Get an oAuth Credential
-        /// </summary>
-        /// <param name="credential"></param>
-        /// <returns></returns>
         public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -75,11 +66,6 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        /// <summary>
-        /// Save an oAuth Credential
-        /// </summary>
-        /// <param name="credential"></param>
-        /// <returns></returns>
         public async Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -103,11 +89,6 @@ namespace Binner.Common.StorageProviders
             return credential;
         }
 
-        /// <summary>
-        /// Remove an oAuth Credential
-        /// </summary>
-        /// <param name="credential"></param>
-        /// <returns></returns>
         public async Task RemoveOAuthCredentialAsync(string providerName, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -126,11 +107,6 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        /// <summary>
-        /// Add a new part
-        /// </summary>
-        /// <param name="part"></param>
-        /// <returns></returns>
         public async Task<Part> AddPartAsync(Part part, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -148,11 +124,6 @@ namespace Binner.Common.StorageProviders
             return part;
         }
 
-        /// <summary>
-        /// Update an existing part
-        /// </summary>
-        /// <param name="part"></param>
-        /// <returns></returns>
         public async Task<Part> UpdatePartAsync(Part part, IUserContext userContext)
         {
             if (part == null) throw new ArgumentNullException(nameof(part));
@@ -172,11 +143,6 @@ namespace Binner.Common.StorageProviders
             return part;
         }
 
-        /// <summary>
-        /// Get an existing part type or create a new one
-        /// </summary>
-        /// <param name="partType"></param>
-        /// <returns></returns>
         public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -206,11 +172,6 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        /// <summary>
-        /// Get list of part types
-        /// </summary>
-        /// <param name="userContext"></param>
-        /// <returns></returns>
         public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -226,11 +187,6 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        /// <summary>
-        /// Get a part type
-        /// </summary>
-        /// <param name="userContext"></param>
-        /// <returns></returns>
         public async Task<PartType> GetPartTypeAsync(long partTypeId, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -270,11 +226,6 @@ namespace Binner.Common.StorageProviders
             return partType;
         }
 
-        /// <summary>
-        /// Delete an existing part
-        /// </summary>
-        /// <param name="part"></param>
-        /// <returns></returns>
         public async Task<bool> DeletePartAsync(Part part, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
@@ -298,11 +249,6 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        /// <summary>
-        /// Find a part by any keyword
-        /// </summary>
-        /// <param name="keyword"></param>
-        /// <returns></returns>
         public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext userContext)
         {
             if (string.IsNullOrEmpty(keywords)) throw new ArgumentNullException(nameof(keywords));
@@ -329,11 +275,6 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        /// <summary>
-        /// Get a part by its internal id
-        /// </summary>
-        /// <param name="partId"></param>
-        /// <returns></returns>
         public async Task<Part> GetPartAsync(long partId, IUserContext userContext)
         {
             if (partId <= 0) throw new ArgumentException(nameof(partId));
@@ -353,11 +294,6 @@ namespace Binner.Common.StorageProviders
             return _db.Parts.Where(x => x.PartId == partId && x.UserId == userContext?.UserId).FirstOrDefault();
         }
 
-        /// <summary>
-        /// Get a part by part number
-        /// </summary>
-        /// <param name="partNumber"></param>
-        /// <returns></returns>
         public async Task<Part> GetPartAsync(string partNumber, IUserContext userContext)
         {
             if (string.IsNullOrEmpty(partNumber)) throw new ArgumentNullException(nameof(partNumber));
@@ -377,7 +313,22 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Count;
+                return _db.Parts.Where(x => x.UserId == userContext?.UserId)
+                    .Count();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<decimal> GetPartsValueAsync(IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts.Where(x => x.UserId == userContext?.UserId)
+                    .Sum(x => x.Cost * x.Quantity);
             }
             finally
             {
@@ -412,6 +363,7 @@ namespace Binner.Common.StorageProviders
             {
                 return _db.Parts
                     .Where(x => x.UserId == userContext?.UserId)
+                    .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst())?.ToString() == request.Value)
                     .OrderBy(request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
@@ -676,9 +628,9 @@ namespace Binner.Common.StorageProviders
                         _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>
                         {
                             // there is no guaranteed order so we must sort first
-                            { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault(), 1) },
-                            { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault(), 1) },
-                            { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault(), 1) },
+                            { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() + 1, 1) },
+                            { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() + 1, 1) },
+                            { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault() + 1, 1) },
                         });
                     }
                 }

@@ -73,6 +73,13 @@ namespace Binner.Common.Services
         Task<PartType> GetPartTypeAsync(int partTypeId);
 
         /// <summary>
+        /// Get information about a barcode
+        /// </summary>
+        /// <param name="barcode"></param>
+        /// <returns></returns>
+        Task<IServiceResult<PartResults>> GetBarcodeInfoAsync(string barcode);
+
+        /// <summary>
         /// Get metadata about a part number
         /// </summary>
         /// <param name="partNumber">Part number</param>
@@ -100,6 +107,12 @@ namespace Binner.Common.Services
         /// </summary>
         /// <returns></returns>
         Task<long> GetPartsCountAsync();
+
+        /// <summary>
+        /// Get financial value/cost of all parts
+        /// </summary>
+        /// <returns></returns>
+        Task<decimal> GetPartsValueAsync();
 
         /// <summary>
         /// Get count of all parts

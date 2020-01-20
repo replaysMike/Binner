@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Table, Visibility, Input, Label, Segment, Button } from 'semantic-ui-react';
+import { Input, Button, Icon } from 'semantic-ui-react';
 import { getQueryVariable } from '../common/query';
+import PartsGrid from '../components/PartsGrid';
 
 export class Search extends Component {
   static displayName = Search.name;
@@ -13,7 +14,10 @@ export class Search extends Component {
     this.searchDebounced = AwesomeDebouncePromise(this.search.bind(this), 1200);
     this.state = {
       parts: [],
+      selectedPart: null,
       keyword: getQueryVariable(props.location.search, 'keyword') || '',
+      by: getQueryVariable(props.location.search, 'by') || '',
+      byValue: getQueryVariable(props.location.search, 'value') || '',
       page: 1,
       records: 10,
       column: null,
@@ -22,22 +26,20 @@ export class Search extends Component {
       changeTracker: [],
       lastSavedPartId: 0,
       loading: true,
-      saveMessage: ''
+      saveMessage: '',
+      confirmDeleteIsOpen: false
     };
     this.loadParts = this.loadParts.bind(this);
     this.search = this.search.bind(this);
-    this.handleSort = this.handleSort.bind(this);
     this.handleNextPage = this.handleNextPage.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
-    this.saveColumn = this.saveColumn.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleLoadPartClick = this.handleLoadPartClick.bind(this);
-    this.handleVisitLink = this.handleVisitLink.bind(this);
-    this.handlePrintLabel = this.handlePrintLabel.bind(this);
+    this.handlePartClick = this.handlePartClick.bind(this);
+    this.removeFilter = this.removeFilter.bind(this);
   }
 
   async componentDidMount() {
-    if (this.state.keyword)
+    if (this.state.keyword && this.state.keyword.length > 0)
       await this.search(this.state.keyword);
     else
       await this.loadParts(this.state.page);
@@ -52,15 +54,30 @@ export class Search extends Component {
     // the component will not be recreated when this happens, only during rerender
     if (nextProps.location.search !== this.props.location.search) {
       const keyword = getQueryVariable(nextProps.location.search, 'keyword') || '';
-      this.setState({ keyword });
-      this.search(keyword);
+      const by = getQueryVariable(nextProps.location.search, 'by') || '';
+      const byValue = getQueryVariable(nextProps.location.search, 'value') || '';
+      if (keyword && keyword.length > 0) {
+        this.setState({ keyword });
+        this.search(keyword);
+      } else if (by && by.length > 0) {
+        this.setState({ by, byValue });
+        this.loadParts(this.state.page, true, by, byValue);
+      } else {
+        this.loadParts(this.state.page, true, '', '');
+      }
     }
   }
 
-  async loadParts(page, reset = false) {
-    const { records, parts } = this.state;
+  async loadParts(page, reset = false, _by = null, _byValue = null) {
+    const { records, parts, by, byValue } = this.state;
+    let byParameter = _by;
+    let byValueParameter = _byValue;
+    if (byParameter === null)
+      byParameter = by;
+    if (byValueParameter === null)
+      byValueParameter = byValue;
     let endOfData = false;
-    const response = await fetch(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}`);
+    const response = await fetch(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}&by=${byParameter}&value=${byValueParameter}`);
     const pageOfData = await response.json();
     if (pageOfData && pageOfData.length === 0)
       endOfData = true;
@@ -72,12 +89,12 @@ export class Search extends Component {
     this.setState({ parts: newData, page, noRemainingData: endOfData, loading: false });
   }
 
-  async search(input) {
+  async search(keyword) {
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
     this.setState({ loading: true });
     try {
-      const response = await fetch(`part/search?keywords=${input}`, {
+      const response = await fetch(`part/search?keywords=${keyword}`, {
         signal: Search.abortController.signal
       });
 
@@ -95,51 +112,8 @@ export class Search extends Component {
     }
   }
 
-  async save(part) {
-    this.setState({ loading: true });
-    let lastSavedPartId = 0;
-    part.partTypeId = part.partTypeId + '';
-    part.mountingTypeId = part.mountingTypeId + '';
-    part.quantity = Number.parseInt(part.quantity) || 0;
-    part.lowStockThreshold = Number.parseInt(part.lowStockThreshold) || 0;
-    part.cost = Number.parseFloat(part.cost) || 0.00;
-    part.projectId = Number.parseInt(part.projectId) || null;
-    part.keywords = part.keywords && part.keywords.join(' ').toLowerCase();
-    const response = await fetch('part', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(part)
-    });
-    let saveMessage = '';
-    if (response.status === 200) {
-      const data = await response.json();
-      lastSavedPartId = part.partId;
-      saveMessage = `Saved part ${part.partNumber}!`;
-    }
-    else {
-      console.log('failed to save part', response);
-      saveMessage = `Error saving part ${part.partNumber} - ${response.statusText}!`;
-    }
-    this.setState({ loading: false, lastSavedPartId, saveMessage });
-  }
-
-  handleSort = (clickedColumn) => () => {
-    const { column, parts, direction } = this.state
-
-    if (column !== clickedColumn) {
-      this.setState({
-        column: clickedColumn,
-        parts: _.sortBy(parts, [clickedColumn]),
-        direction: 'ascending',
-      })
-    } else {
-      this.setState({
-        parts: parts.reverse(),
-        direction: direction === 'ascending' ? 'descending' : 'ascending',
-      })
-    }
+  handlePartClick(e, part) {
+    this.props.history.push(`/inventory/${part.partNumber}`);
   }
 
   handleNextPage() {
@@ -163,16 +137,6 @@ export class Search extends Component {
     this.setState({ keyword: control.value });
   }
 
-  async saveColumn(e) {
-    const { parts, changeTracker } = this.state;
-    changeTracker.forEach(async (val) => {
-      const part = _.find(parts, { partId: val.partId });
-      if (part)
-        await this.save(part);
-    });
-    this.setState({ parts, changeTracker: [] });
-  }
-
   handleChange(e, control) {
     const { parts, changeTracker } = this.state;
     const part = _.find(parts, { partId: control.data });
@@ -185,75 +149,22 @@ export class Search extends Component {
     this.setState({ parts, changeTracker: changes });
   }
 
-  handleVisitLink(e, url) {
+  removeFilter(e) {
     e.preventDefault();
-    e.stopPropagation();
-    window.open(url, '_blank');
-  }
-
-  handleLoadPartClick(e, part) {
-    this.props.history.push(`/inventory/${part.partNumber}`);
-  }
-
-  handlePrintLabel(e, part) {
-    e.preventDefault();
-    e.stopPropagation();
-    fetch(`part/print?partNumber=${part.partNumber}`, { method: 'POST' });
-  }
-
-  renderParts(parts, column, direction) {
-    const { keyword, lastSavedPartId, loading } = this.state;
-    return (
-      <Visibility onBottomVisible={this.handleNextPage} continuous>
-        <Input placeholder='Search' icon='search' focus value={keyword} onChange={this.handleSearch} name='keyword' />
-        <Segment loading={loading}>
-          <Table compact celled sortable selectable striped size='small'>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>Bin Number</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>Bin Number 2</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>DigiKey Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>Mouser Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
-                <Table.HeaderCell>Print</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {parts.map(p =>
-                <Table.Row key={p.partId} onClick={e => this.handleLoadPartClick(e, p)}>
-                  <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>
-                  <Table.Cell><Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed100' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} /></Table.Cell>
-                  <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                  <Table.Cell><span className='truncate small' title={p.description}>{p.description}</span></Table.Cell>
-                  <Table.Cell><span className='truncate'>{p.location}</span></Table.Cell>
-                  <Table.Cell>{p.binNumber}</Table.Cell>
-                  <Table.Cell>{p.binNumber2}</Table.Cell>
-                  <Table.Cell><span className='truncate'>{p.digiKeyPartNumber}</span></Table.Cell>
-                  <Table.Cell><span className='truncate'>{p.mouserPartNumber}</span></Table.Cell>
-                  <Table.Cell>{p.datasheetUrl && <a href='#' onClick={e => this.handleVisitLink(e, p.datasheetUrl)}>View Datasheet</a>}</Table.Cell>
-                  <Table.Cell><Button circular size='mini' icon='print' onClick={e => this.handlePrintLabel(e, p)}/></Table.Cell>
-                </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
-        </Segment>
-      </Visibility>
-    );
+    this.setState({ by: '', byValue: '' });
+    this.props.history.push(`/inventory`);
   }
 
   render() {
-    const { parts, column, direction } = this.state;
-    let contents = this.renderParts(parts, column, direction);
-
+    const { parts, column, direction, loading, keyword, by, byValue } = this.state;
     return (
       <div>
         <h1>Inventory</h1>
-        {contents}
+        <Input placeholder='Search' icon='search' focus value={keyword} onChange={this.handleSearch} name='keyword' />
+        <div style={{ paddingTop: '10px', marginBottom: '10px' }}>
+          {by && <Button primary size='mini' onClick={this.removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
+        </div>
+        <PartsGrid parts={parts} loading={loading} loadPage={this.handleNextPage} onPartClick={this.handlePartClick} name='partsGrid' />
       </div>
     );
   }

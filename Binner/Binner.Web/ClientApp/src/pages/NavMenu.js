@@ -50,7 +50,7 @@ class NavMenu extends Component {
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
               <Form onSubmit={this.onSubmit}>
                 <ul className="navbar-nav flex-grow">
-                  <NavItem>
+                  <NavItem >
                     <Input icon={{ name: 'search', circular: true, link: true, onClick: this.onSubmit }} size='mini' placeholder='Search' onChange={this.handleChange} value={searchKeyword} name='searchKeyword' />
                   </NavItem>
                   <NavItem>

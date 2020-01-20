@@ -54,6 +54,13 @@ namespace Binner.Common.StorageProviders
             return result;
         }
 
+        public async Task<decimal> GetPartsValueAsync(IUserContext userContext)
+        {
+            var query = $"SELECT SUM(Cost * Quantity) FROM Parts WHERE (@UserId IS NULL OR UserId = @UserId);";
+            var result = await ExecuteScalarAsync<decimal>(query, new { UserId = userContext?.UserId });
+            return result;
+        }
+
         public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext)
         {
             var offsetRecords = (request.Page - 1) * request.Results;

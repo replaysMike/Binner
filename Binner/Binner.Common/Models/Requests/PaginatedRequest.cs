@@ -29,5 +29,15 @@ namespace Binner.Common.Models
         /// Direction to sort
         /// </summary>
         public SortDirection Direction { get; set; } = SortDirection.Ascending;
+
+        /// <summary>
+        /// Property to filter by
+        /// </summary>
+        public string By { get; set; }
+
+        /// <summary>
+        /// Property value to filter by
+        /// </summary>
+        public string Value { get; set; }
     }
 }
