@@ -12,13 +12,21 @@ export class PrintLabels extends Component {
       lastLabelSource: 0,
     };
 
+    const printLabelHistory = JSON.parse(localStorage.getItem('printLabelHistory')) || [];
+    var quantities = [];
+    for (var i = 1; i <= 10; i++)
+      quantities.push({ key: i, value: i, text: i.toString() });
+
     this.state = {
       loading: false,
       printPreferences,
+      printLabelHistory,
       lines: [],
+      quantity: 1,
       imgBase64: '',
       labelName: printPreferences.lastLabelName || '30277',
       labelSource: printPreferences.lastLabelSource || 0,
+      quantities,
       labelPositions: [
         {
           key: 1,
@@ -71,14 +79,27 @@ export class PrintLabels extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleLineChange = this.handleLineChange.bind(this);
     this.handleAdd = this.handleAdd.bind(this);
+    this.handleLoad = this.handleLoad.bind(this);
   }
 
   componentDidMount() {
   }
 
   async onSubmit(e) {
-    const { lines, labelSource, labelName } = this.state;
+    const { lines, labelSource, labelName, quantity, printLabelHistory } = this.state;
     this.setState({ loading: true });
+    const maxLineHistory = 20;
+
+    const entry = {
+      date: new Date(),
+      lines: [...lines]
+    };
+    var newPrintLabelHistory = printLabelHistory;
+    if (_.filter(printLabelHistory, f => { return _.isEqual(f.lines, entry.lines); }).length === 0) {
+      printLabelHistory.push(entry);
+      newPrintLabelHistory = printLabelHistory.slice(Math.max(printLabelHistory.length - maxLineHistory, 0));
+      localStorage.setItem('printLabelHistory', JSON.stringify(newPrintLabelHistory))
+    }
 
     const request = {
       showDiagnostic: false,
@@ -100,15 +121,17 @@ export class PrintLabels extends Component {
       generateImageOnly: false
     };
 
-    const response = await fetch('print/custom', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(request)
-    });
+    for (var i = 0; i < quantity; i++) {
+      const response = await fetch('print/custom', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(request)
+      });
+    }
 
-    this.setState({ loading: false });
+    this.setState({ loading: false, printLabelHistory: newPrintLabelHistory, quantity: 1 });
   }
 
   async handlePreview(e) {
@@ -158,9 +181,10 @@ export class PrintLabels extends Component {
   }
 
   handleChange(e, control) {
-    const { labelName, labelSource, printPreferences } = this.state;
+    const { labelName, labelSource, printPreferences, quantity } = this.state;
     let newLabelName = labelName;
     let newLabelSource = labelSource;
+    let newQuantity = quantity;
     switch (control.name) {
       case 'labelName':
         newLabelName = control.value;
@@ -170,8 +194,11 @@ export class PrintLabels extends Component {
         newLabelSource = control.value;
         localStorage.setItem('printPreferences', JSON.stringify({ ...printPreferences, lastLabelSource: control.value }));
         break;
+      case 'quantity':
+        newQuantity = control.value;
+        break;
     }
-    this.setState({ labelName: newLabelName, labelSource: newLabelSource, printPreferences });
+    this.setState({ labelName: newLabelName, labelSource: newLabelSource, printPreferences, quantity: newQuantity });
   }
 
   handleLineChange(e, control, line) {
@@ -188,13 +215,20 @@ export class PrintLabels extends Component {
     this.setState({ lines });
   }
 
+  handleLoad(e, entry) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({ lines: entry.lines });
+  }
+
   handleAdd(e) {
     e.preventDefault();
     e.stopPropagation();
     const { lines } = this.state;
+    const lastLine = _.last(lines);
     const newLine = {
       id: 1,
-      label: 1,
+      label: lastLine && lastLine.label || 1,
       content: '',
       fontSize: 16,
       position: 2,
@@ -207,7 +241,7 @@ export class PrintLabels extends Component {
   }
 
   render() {
-    const { labelName, labelNames, labelPositions, labelSource, labelSources, lines, loading, imgBase64 } = this.state;
+    const { labelName, labelNames, labelPositions, labelSource, labelSources, quantity, quantities, lines, loading, imgBase64, printLabelHistory } = this.state;
     return (
       <div>
         <h1>Print Label</h1>
@@ -246,6 +280,9 @@ export class PrintLabels extends Component {
               )}
             </Table.Body>
           </Table>
+          <Form.Group>
+            <Form.Dropdown label='Quantity' placeholder='1' selection value={quantity} options={quantities} onChange={this.handleChange} name='quantity' />
+          </Form.Group>
           <Button onClick={this.handlePreview}><Icon name='eye' /> Preview</Button>
           <Button primary><Icon name='print' /> Print</Button>
           <div>
@@ -257,6 +294,22 @@ export class PrintLabels extends Component {
               ribbon: true,
               size: 'tiny'
             }} name='previewImage' src={`data:image/png;base64,${imgBase64}`} size='medium' style={{ marginTop: '20px' }} />}
+          </div>
+          <div>
+            <h2>Print History</h2>
+            <Table compact celled size='small'>
+              <Table.Body>
+                {_.sortBy(printLabelHistory.map((l, k) =>
+                  <Table.Row key={k}>
+                    <Table.Cell>{new Date(l.date).toLocaleString('en-US')}</Table.Cell>
+                    <Table.Cell>{l.lines.length > 0 ? l.lines[0].content : ''}</Table.Cell>
+                    <Table.Cell>{l.lines.length > 1 ? l.lines[1].content : ''}</Table.Cell>
+                    <Table.Cell>{l.lines.length > 2 ? l.lines[2].content : ''}</Table.Cell>
+                    <Table.Cell><Button onClick={(e) => this.handleLoad(e, l)}><Icon name='folder open' /> Load</Button></Table.Cell>
+                  </Table.Row>
+                ), 'date').reverse()}
+                </Table.Body>
+            </Table>
           </div>
         </Form>
       </div>
