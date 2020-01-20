@@ -105,6 +105,7 @@ export class PrintLabels extends Component {
 
     const entry = {
       date: new Date(),
+      // dereference and copy
       lines: JSON.parse(JSON.stringify(lines))
     };
     var newPrintLabelHistory = printLabelHistory;
@@ -231,7 +232,9 @@ export class PrintLabels extends Component {
   handleLoad(e, entry) {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ lines: entry.lines });
+    // dereference and copy
+    const newLines = JSON.parse(JSON.stringify(entry.lines));
+    this.setState({ lines: newLines });
   }
 
   handleAdd(e) {
@@ -260,6 +263,14 @@ export class PrintLabels extends Component {
     this.setState({ lines: [] });
   }
 
+  removeLine(e, line, index) {
+    e.preventDefault();
+    e.stopPropagation();
+    const { lines } = this.state;
+    lines.splice(lines.indexOf(line), 1);
+    this.setState({ lines });
+  }
+
   render() {
     const { labelName, labelNames, labelPositions, labelSource, labelSources, quantity, quantities, lines, loading, imgBase64, printLabelHistory } = this.state;
     return (
@@ -283,6 +294,7 @@ export class PrintLabels extends Component {
                 <Table.HeaderCell>Top Margin</Table.HeaderCell>
                 <Table.HeaderCell>Left Margin</Table.HeaderCell>
                 <Table.HeaderCell>Is Barcode</Table.HeaderCell>
+                <Table.HeaderCell></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -297,6 +309,7 @@ export class PrintLabels extends Component {
                   <Table.Cell><Input name='topMargin' value={l.topMargin} onChange={(e, c) => this.handleLineChange(e, c, l)} /></Table.Cell>
                   <Table.Cell><Input name='leftMargin' value={l.leftMargin} onChange={(e, c) => this.handleLineChange(e, c, l)} /></Table.Cell>
                   <Table.Cell><Checkbox toggle name='barcode' checked={l.barcode} onChange={(e, c) => this.handleLineChange(e, c, l)} /></Table.Cell>
+                  <Table.Cell><Button circular size='mini' icon='delete' title='Delete' onClick={e => this.removeLine(e, l, k)} /></Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>
@@ -316,7 +329,7 @@ export class PrintLabels extends Component {
               size: 'tiny'
             }} name='previewImage' src={`data:image/png;base64,${imgBase64}`} size='medium' style={{ marginTop: '20px' }} />}
           </div>
-          <div>
+          <div style={{ marginTop: '20px' }}>
             <h2>Print History</h2>
             <Table compact celled size='small'>
               <Table.Body>
