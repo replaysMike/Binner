@@ -28,7 +28,7 @@ Binner is a free open-source parts inventory tracking system you can run locally
 * Label printing
 
 ## Planned Upcoming Features
-* Barcode scanning
+* ~~Barcode scanning~~ now supported!
 * Dedicated datasheet repository
 * Windows desktop UI
 * Maybe a parts marketplace?
