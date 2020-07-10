@@ -218,11 +218,12 @@ export default class PartsGrid extends Component {
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
         <div>
-          <Table compact celled sortable selectable striped unstackable size='small'>
+          <Table id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
             <Table.Header>
               <Table.Row>
                 {columns.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>}
                 {columns.quantity && <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>}
+                {columns.lowstockthreshold && <Table.HeaderCell sorted={column === 'lowstockthreshold' ? direction : null} onClick={this.handleSort('lowstockthreshold')}>Low Stock</Table.HeaderCell>}
                 {columns.manufacturerpartnumber && <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Responsive>}
                 {columns.description && <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Responsive>}
                 {columns.location && <Responsive as={Table.HeaderCell} minWidth={500} sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Responsive>}
@@ -242,6 +243,9 @@ export default class PartsGrid extends Component {
                   {columns.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
                   {columns.quantity && <Table.Cell>
                     <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
+                  </Table.Cell>}
+                  {columns.lowstockthreshold && <Table.Cell>
+                    <Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
                   </Table.Cell>}
                   {columns.manufacturerpartnumber && <Responsive as={Table.Cell} minWidth={800}>
                     {p.manufacturerPartNumber}
