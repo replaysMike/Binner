@@ -859,9 +859,7 @@ export class Inventory extends Component {
             </div>
           </div>
           <Form.Group>
-            <div>
-              <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            </div>
+            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             <Form.Dropdown label='Part Type' placeholder='Part Type' loading={loadingPartTypes} search selection value={part.partTypeId || ''} options={partTypes} onChange={this.handleChange} name='partTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingTypeId || ''} options={mountingTypes} onChange={this.handleChange} name='mountingTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
             <Form.Dropdown label='Project' placeholder='My Project' loading={loadingProjects} search selection value={part.projectId || ''} options={projects} onChange={this.handleChange} name='projectId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
