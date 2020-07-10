@@ -287,6 +287,7 @@ export default class PartsGrid extends Component {
             </Table.Body>
           </Table>
           {!this.props.noRemainingData && <Button onClick={this.handleNextPage}>Load More Parts</Button>}
+          {this.props.noRemainingData && <Button disabled={true}>No Additional Parts</Button>}
         </div>
         <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} content={this.state.confirmPartDeleteContent} />
         <Modal open={this.state.modalIsOpen} onCancel={this.handleModalClose} onClose={this.handleModalClose}>
