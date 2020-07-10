@@ -10,7 +10,7 @@ export class LowInventory extends Component {
       parts: [],
       keyword: '',
       page: 1,
-      records: 10,
+      records: 50,
       column: null,
       direction: null,
       noRemainingData: false,

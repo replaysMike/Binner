@@ -19,7 +19,7 @@ export class Search extends Component {
       by: getQueryVariable(props.location.search, 'by') || '',
       byValue: getQueryVariable(props.location.search, 'value') || '',
       page: 1,
-      records: 10,
+      records: 50,
       column: null,
       direction: null,
       noRemainingData: false,

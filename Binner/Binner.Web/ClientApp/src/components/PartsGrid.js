@@ -1,4 +1,4 @@
-import { Table, Visibility, Input, Label, Segment, Button, Confirm, Modal, Icon, Responsive, Header } from 'semantic-ui-react';
+﻿import { Table, Visibility, Input, Label, Segment, Button, Confirm, Modal, Icon, Responsive, Header } from 'semantic-ui-react';
 import React, { Component } from 'react';
 import _ from 'underscore';
 import { Link } from 'react-router-dom';
@@ -36,7 +36,7 @@ export default class PartsGrid extends Component {
       column: null,
       direction: null,
       page: 1,
-      records: 10,
+      records: 50,
       changeTracker: [],
       lastSavedPartId: 0,
       saveMessage: '',
