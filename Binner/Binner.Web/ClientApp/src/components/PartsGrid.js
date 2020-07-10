@@ -1,4 +1,4 @@
-﻿import { Table, Visibility, Input, Label, Segment, Button, Confirm, Modal, Icon, Responsive, Header } from 'semantic-ui-react';
+import { Table, Visibility, Input, Label, Segment, Button, Confirm, Modal, Icon, Responsive, Header } from 'semantic-ui-react';
 import React, { Component } from 'react';
 import _ from 'underscore';
 import { Link } from 'react-router-dom';
@@ -17,7 +17,9 @@ export default class PartsGrid extends Component {
     /** List of columns to display */
     columns: PropTypes.string,
     /** Event handler when a part is clicked */
-    onPartClick: PropTypes.func
+    onPartClick: PropTypes.func,
+    /** Determine if we should show button for loading more results */
+    noRemainingData: PropTypes.bool
   }
 
   static defaultProps = {
@@ -284,6 +286,7 @@ export default class PartsGrid extends Component {
               )}
             </Table.Body>
           </Table>
+          {!this.props.noRemainingData && <Button onClick={this.handleNextPage}>Load More Parts</Button>}
         </div>
         <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} content={this.state.confirmPartDeleteContent} />
         <Modal open={this.state.modalIsOpen} onCancel={this.handleModalClose} onClose={this.handleModalClose}>

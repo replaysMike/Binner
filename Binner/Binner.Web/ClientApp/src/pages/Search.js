@@ -164,7 +164,7 @@ export class Search extends Component {
         <div style={{ paddingTop: '10px', marginBottom: '10px' }}>
           {by && <Button primary size='mini' onClick={this.removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
         </div>
-        <PartsGrid parts={parts} loading={loading} loadPage={this.handleNextPage} onPartClick={this.handlePartClick} name='partsGrid' />
+        <PartsGrid parts={parts} loading={loading} loadPage={this.handleNextPage} noRemainingData={this.state.noRemainingData} onPartClick={this.handlePartClick} name='partsGrid' />
       </div>
     );
   }

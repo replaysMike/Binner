@@ -60,7 +60,7 @@ export class LowInventory extends Component {
     return (
       <div>
         <h1>Low Inventory</h1>
-        <PartsGrid parts={parts} columns={columns} loadPage={this.handleNextPage} onPartClick={this.handlePartClick} name='partsGrid' />
+        <PartsGrid parts={parts} columns={columns} loadPage={this.handleNextPage} noRemainingData={this.state.noRemainingData} onPartClick={this.handlePartClick} name='partsGrid' />
       </div>
     );
   }
