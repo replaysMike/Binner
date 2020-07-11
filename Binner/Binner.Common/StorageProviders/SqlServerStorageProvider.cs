@@ -288,9 +288,16 @@ VALUES (@ParentPartTypeId, @Name, @UserId, @DateCreatedUtc);";
         {
             var offsetRecords = (request.Page - 1) * request.Results;
             var sortDirection = request.Direction == SortDirection.Ascending ? "ASC" : "DESC";
+            var binFilter = "";
+
+            if (request.By != null)
+            {
+                binFilter = $" AND {request.By} = '{request.Value}'";
+            }
+            
             var query = 
 $@"SELECT * FROM Parts 
-WHERE (@UserId IS NULL OR UserId = @UserId) 
+WHERE (@UserId IS NULL OR UserId = @UserId) {binFilter}
 ORDER BY 
 CASE WHEN @OrderBy IS NULL THEN PartId ELSE NULL END {sortDirection}, 
 CASE WHEN @OrderBy = 'PartNumber' THEN PartNumber ELSE NULL END {sortDirection}, 
