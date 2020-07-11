@@ -56,13 +56,17 @@ export class Search extends Component {
       const keyword = getQueryVariable(nextProps.location.search, 'keyword') || '';
       const by = getQueryVariable(nextProps.location.search, 'by') || '';
       const byValue = getQueryVariable(nextProps.location.search, 'value') || '';
+      
       if (keyword && keyword.length > 0) {
-        this.setState({ keyword });
+        // if there's a keyword we should clear binning (because they use different endpoints)
+        this.setState({ keyword, by: '', byValue: '', page: 1 });
         this.search(keyword);
       } else if (by && by.length > 0) {
-        this.setState({ by, byValue });
+        // likewise, clear keyword if we're in a bin search
+        this.setState({ by, byValue, keyword: '', page: 1});
         this.loadParts(this.state.page, true, by, byValue);
       } else {
+        this.state.page = 1;
         this.loadParts(this.state.page, true, '', '');
       }
     }
@@ -92,6 +96,7 @@ export class Search extends Component {
   async search(keyword) {
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
+    this.setState({by: '', byValue: ''}) // if there's a keyword we should clear binning (because they use different endpoints)
     this.setState({ loading: true });
     try {
       const response = await fetch(`part/search?keywords=${keyword}`, {
