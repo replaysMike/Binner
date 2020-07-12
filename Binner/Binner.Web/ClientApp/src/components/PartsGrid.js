@@ -265,7 +265,7 @@ export default class PartsGrid extends Component {
                     <Link to={`inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link>
                   </Responsive>}
                   {columns.cost && <Responsive as={Table.Cell} minWidth={1100}>
-                    ${p.cost}
+                    ${p.cost.toFixed(2)}
                   </Responsive>}
                   {columns.digikeypartnumber && <Responsive as={Table.Cell} minWidth={1200}>
                     <span className='truncate'>{p.digiKeyPartNumber}</span>

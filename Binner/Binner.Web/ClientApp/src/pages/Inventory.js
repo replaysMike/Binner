@@ -894,7 +894,7 @@ export class Inventory extends Component {
             <Form.Group>
               <Form.Field width={4}>
                 <label>Cost</label>
-                <Input label='$' placeholder='0.000' value={part.cost || ''} type='text' onChange={this.handleChange} name='cost' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+                <Input label='$' placeholder='0.000' value={Number(part.cost).toFixed(2) || ''} type='text' onChange={this.handleChange} name='cost' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
               </Form.Field>
               <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer || ''} onChange={this.handleChange} name='manufacturer' width={4} onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
               <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber || ''} onChange={this.handleChange} name='manufacturerPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
