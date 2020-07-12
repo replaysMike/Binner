@@ -56,6 +56,14 @@ Other commands are available to manage the service such as `uninstall`, `stop`, 
 
 Proceed to the web interface at http://localhost:8090 to start using Binner!
 
+### Ubuntu Specific Instructions
+
+The `libgdiplus` package is required to generate bar codes. Install this with 
+
+```bash
+sudo apt install libgdiplus
+```
+
 ## Description
 
 Binner is designed for electronics in mind, however it could be used for other types of inventory management (chemistry, retail). It is purpose built for quick data entry and fast performance. I built it because I couldn't find good free alternatives for tracking inventory in my home maker lab - it's easy to forget what you bought and where you put them and I end up sometimes ordering things I already have around. Saves money and time! It's built on .Net Core / C# with a React js front end.
