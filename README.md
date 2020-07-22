@@ -64,7 +64,7 @@ I welcome all who want to contribute to this project, and please suggest feature
 
 ## What if I want to use it but not bother to set it up myself?
 
-I will be launching a free online version at [Binner.io)](http://binner.io) which should be available around January 2020. This will have both free (max 100 parts) or $20/year for unlimited. Compared to other options out there it's incredibly inexpensive for makers!
+I will be launching a free online version at [Binner.io)](http://binner.io) which should be available around October 2020. This will have both free (max 100 parts) or $20/year for unlimited. Compared to other options out there it's incredibly inexpensive for makers!
 
 ## Storage Provider
 
