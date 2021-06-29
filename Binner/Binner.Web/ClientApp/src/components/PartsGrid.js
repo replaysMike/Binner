@@ -17,7 +17,9 @@ export default class PartsGrid extends Component {
     /** List of columns to display */
     columns: PropTypes.string,
     /** Event handler when a part is clicked */
-    onPartClick: PropTypes.func
+    onPartClick: PropTypes.func,
+    /** Determine if we should show button for loading more results */
+    noRemainingData: PropTypes.bool
   }
 
   static defaultProps = {
@@ -34,7 +36,7 @@ export default class PartsGrid extends Component {
       column: null,
       direction: null,
       page: 1,
-      records: 10,
+      records: 50,
       changeTracker: [],
       lastSavedPartId: 0,
       saveMessage: '',
@@ -218,11 +220,12 @@ export default class PartsGrid extends Component {
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
         <div>
-          <Table compact celled sortable selectable striped unstackable size='small'>
+          <Table id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
             <Table.Header>
               <Table.Row>
                 {columns.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>}
                 {columns.quantity && <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>}
+                {columns.lowstockthreshold && <Table.HeaderCell sorted={column === 'lowstockthreshold' ? direction : null} onClick={this.handleSort('lowstockthreshold')}>Low Stock</Table.HeaderCell>}
                 {columns.manufacturerpartnumber && <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Responsive>}
                 {columns.description && <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Responsive>}
                 {columns.location && <Responsive as={Table.HeaderCell} minWidth={500} sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Responsive>}
@@ -243,6 +246,9 @@ export default class PartsGrid extends Component {
                   {columns.quantity && <Table.Cell>
                     <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
                   </Table.Cell>}
+                  {columns.lowstockthreshold && <Table.Cell>
+                    <Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
+                  </Table.Cell>}
                   {columns.manufacturerpartnumber && <Responsive as={Table.Cell} minWidth={800}>
                     {p.manufacturerPartNumber}
                   </Responsive>}
@@ -259,7 +265,7 @@ export default class PartsGrid extends Component {
                     <Link to={`inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link>
                   </Responsive>}
                   {columns.cost && <Responsive as={Table.Cell} minWidth={1100}>
-                    ${p.cost}
+                    ${p.cost.toFixed(2)}
                   </Responsive>}
                   {columns.digikeypartnumber && <Responsive as={Table.Cell} minWidth={1200}>
                     <span className='truncate'>{p.digiKeyPartNumber}</span>
@@ -280,6 +286,8 @@ export default class PartsGrid extends Component {
               )}
             </Table.Body>
           </Table>
+          {!this.props.noRemainingData && <Button onClick={this.handleNextPage}>Load More Parts</Button>}
+          {this.props.noRemainingData && <Button disabled={true}>No Additional Parts</Button>}
         </div>
         <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} content={this.state.confirmPartDeleteContent} />
         <Modal open={this.state.modalIsOpen} onCancel={this.handleModalClose} onClose={this.handleModalClose}>

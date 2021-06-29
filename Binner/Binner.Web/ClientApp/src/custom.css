@@ -13,6 +13,10 @@
     margin: 10px auto 10px auto !important;
 }
 
+.binner-container {
+    max-width: 1500px;
+}
+
 /* Provide sufficient contrast against white background */
 a {
   color: #0366d6;

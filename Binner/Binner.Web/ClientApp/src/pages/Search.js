@@ -19,7 +19,7 @@ export class Search extends Component {
       by: getQueryVariable(props.location.search, 'by') || '',
       byValue: getQueryVariable(props.location.search, 'value') || '',
       page: 1,
-      records: 10,
+      records: 50,
       column: null,
       direction: null,
       noRemainingData: false,
@@ -56,13 +56,17 @@ export class Search extends Component {
       const keyword = getQueryVariable(nextProps.location.search, 'keyword') || '';
       const by = getQueryVariable(nextProps.location.search, 'by') || '';
       const byValue = getQueryVariable(nextProps.location.search, 'value') || '';
+      
       if (keyword && keyword.length > 0) {
-        this.setState({ keyword });
+        // if there's a keyword we should clear binning (because they use different endpoints)
+        this.setState({ keyword, by: '', byValue: '', page: 1 });
         this.search(keyword);
       } else if (by && by.length > 0) {
-        this.setState({ by, byValue });
+        // likewise, clear keyword if we're in a bin search
+        this.setState({ by, byValue, keyword: '', page: 1});
         this.loadParts(this.state.page, true, by, byValue);
       } else {
+        this.state.page = 1;
         this.loadParts(this.state.page, true, '', '');
       }
     }
@@ -92,6 +96,7 @@ export class Search extends Component {
   async search(keyword) {
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
+    this.setState({by: '', byValue: ''}) // if there's a keyword we should clear binning (because they use different endpoints)
     this.setState({ loading: true });
     try {
       const response = await fetch(`part/search?keywords=${keyword}`, {
@@ -164,7 +169,7 @@ export class Search extends Component {
         <div style={{ paddingTop: '10px', marginBottom: '10px' }}>
           {by && <Button primary size='mini' onClick={this.removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
         </div>
-        <PartsGrid parts={parts} loading={loading} loadPage={this.handleNextPage} onPartClick={this.handlePartClick} name='partsGrid' />
+        <PartsGrid parts={parts} loading={loading} loadPage={this.handleNextPage} noRemainingData={this.state.noRemainingData} onPartClick={this.handlePartClick} name='partsGrid' />
       </div>
     );
   }
