@@ -69,7 +69,6 @@ namespace Binner.Common.IO
             var headerStyle = workbook.CreateCellStyle();
             headerStyle.Alignment = HorizontalAlignment.Center;
             var xssFont = new XSSFFont(new CT_Font());
-            xssFont.Boldweight = (short)FontBoldWeight.Bold;
             xssFont.IsBold = true;
             headerStyle.SetFont(xssFont);
             headerStyle.FillForegroundColor = HSSFColor.LightBlue.Index;

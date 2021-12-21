@@ -133,11 +133,11 @@ namespace ApiClient
 
                 return response;
             }
-            catch (HttpRequestException hre)
+            catch (HttpRequestException)
             {
                 throw;
             }
-            catch (ApiException dae)
+            catch (ApiException)
             {
                 throw;
             }

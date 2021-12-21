@@ -75,6 +75,21 @@ namespace Binner.Common.Extensions
         }
 
         /// <summary>
+        /// Get a distinct set of results
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> DistinctBy<T, TKey>(this IOrderedEnumerable<T> items, Func<T, TKey> property)
+        {
+            return items
+                .GroupBy(property)
+                .Select(x => x.First());
+        }
+
+        /// <summary>
         /// Sorts the elements of a sequence according to a key and the sort order.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of <paramref name="query" />.</typeparam>
