@@ -61,8 +61,6 @@ namespace Binner.Web
             StartupConfiguration.ConfigureLogging(container, services);
             var provider = container.CreateServiceProvider(services);
             container.RegisterInstance(provider);
-            StartupConfiguration.LoadNLogConfiguration(container, provider, LogManagerConfigFile);
-
             container.ScopeManagerProvider = new PerLogicalCallContextScopeManagerProvider();
             container.BeginScope();
 

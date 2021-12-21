@@ -783,7 +783,7 @@ namespace Binner.Common.StorageProviders
         {
             string hash;
             byte[] bytes = _serializer.Serialize(db, "Checksum");
-            using (var sha1 = new SHA1CryptoServiceProvider())
+            using (var sha1 = SHA1.Create())
             {
                 hash = Convert.ToBase64String(sha1.ComputeHash(bytes));
             }
@@ -842,8 +842,6 @@ namespace Binner.Common.StorageProviders
                 try
                 {
                     _quitEvent.Set();
-                    if (!_ioThread.Join(5000))
-                        _ioThread.Abort();
 
                     if (_isDirty)
                     {

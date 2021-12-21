@@ -25,9 +25,9 @@ namespace Binner.Common.Integrations
 
         public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
-        public async Task<IApiResponse> GetDatasheetsAsync(string partNumber)
+        public Task<IApiResponse> GetDatasheetsAsync(string partNumber)
         {
-            return ApiResponse.Create(new List<string>(), nameof(AliExpressApi));
+            return Task.FromResult<IApiResponse>(ApiResponse.Create(new List<string>(), nameof(AliExpressApi)));
         }
     }
 }
