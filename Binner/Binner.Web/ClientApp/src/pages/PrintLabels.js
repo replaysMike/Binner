@@ -159,13 +159,13 @@ export class PrintLabels extends Component {
       labelSource,
       lines: lines.map(l => {
         return {
-          label: Number.parseInt(l.label) || 1,
+          label: Number.parseInt(l.label),
           content: l.content,
-          fontSize: Number.parseInt(l.fontSize) || 16,
-          position: Number.parseInt(l.position) || 2,
+          fontSize: Number.parseInt(l.fontSize),
+          position: Number.parseInt(l.position),
           margin: {
-            top: Number.parseInt(l.topMargin) || 0,
-            left: Number.parseInt(l.leftMargin) || 0
+            top: Number.parseInt(l.topMargin),
+            left: Number.parseInt(l.leftMargin)
           },
           barcode: l.barcode
         };

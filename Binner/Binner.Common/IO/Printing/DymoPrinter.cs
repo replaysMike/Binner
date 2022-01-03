@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Printing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using TypeSupport.Extensions;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Drawing.Printing;
 
 namespace Binner.Common.IO.Printing
 {
     /// <summary>
-    /// Dymo Label printer
+    /// Dymo Label printer, manages generation of the print image
     /// </summary>
     public class DymoPrinter : ILabelPrinter
     {
         private const string DefaultFontName = "Segoe UI";
-        private IBarcodeGenerator _barcodeGenerator;
-        private Image _printImage;
-        private List<PointF> _labelStart = new List<PointF>();
-        private Rectangle _paperRect = new Rectangle();
-        private LabelProperties _labelProperties { get; set; }
+        private const float Dpi = 600;
+        private readonly IBarcodeGenerator _barcodeGenerator;
+        private readonly List<PointF> _labelStart = new();
+        private readonly IPrinter _printer;
+        private Rectangle _paperRect;
 
         /// <summary>
         /// Printer settings
@@ -29,119 +33,80 @@ namespace Binner.Common.IO.Printing
         {
             PrinterSettings = printerSettings ?? throw new ArgumentNullException(nameof(printerSettings));
             _barcodeGenerator = barcodeGenerator;
+            _printer = new PrinterFactory().CreatePrinter(printerSettings);
         }
 
-        public Image PrintLabel(LabelContent content)
+        public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
         {
-            return PrintLabel(content, PrinterOptions.None);
+            // generate the print image and send to printer hardware
+            if (content is null) throw new ArgumentNullException(nameof(content));
+            if (options is null) throw new ArgumentNullException(nameof(options));
+            var (image, labelProperties) = CreatePrinterImage(options);
+            DrawLabelFromContent(image, labelProperties, content, _paperRect);
+
+            return Print(image, labelProperties, options);
         }
 
-        public Image PrintLabel(LabelContent content, PrinterOptions options)
+        public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options)
         {
-            if (content == null) throw new ArgumentNullException(nameof(content));
-            _labelProperties = GetLabelDimensions(PrinterSettings.LabelName);
-            var doc = CreatePrinterDocument(options);
-            var g = Graphics.FromImage(_printImage);
-            DrawLabel(g, content, _paperRect);
+            // generate the print image and send to printer hardware
+            if (lines is null || !lines.Any()) throw new ArgumentNullException(nameof(lines));
+            if (options is null) throw new ArgumentNullException(nameof(options));
+            var (image, labelProperties) = CreatePrinterImage(options);
+            DrawLabelFromLines(image, labelProperties, lines, _paperRect);
 
+            return Print(image, labelProperties, options);
+        }
+
+        private Image<Rgba32> Print(Image<Rgba32> image, LabelProperties labelProperties, PrinterOptions options)
+        {
             // for debugging label layout
-            if (options.ShowDiagnostic) DrawDebug(g);
+            if (options.ShowDiagnostic) DrawDebug(image, labelProperties);
 
             if (!options.GenerateImageOnly)
-                doc.Print();
-            return _printImage;
+                _printer.PrintLabel(options, labelProperties, image);
+            return image;
         }
 
-        public Image PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options)
+        private void DrawDebug(Image<Rgba32> image, LabelProperties labelProperties)
         {
-            if (lines == null || !lines.Any()) throw new ArgumentNullException(nameof(lines));
-            _labelProperties = GetLabelDimensions(options.LabelName);
-            var doc = CreatePrinterDocument(options);
-            var g = Graphics.FromImage(_printImage);
-            DrawLabel(g, lines, _paperRect);
-
-            // for debugging label layout
-            if(options.ShowDiagnostic) DrawDebug(g);
-
-            if (!options.GenerateImageOnly)
-                doc.Print();
-            return _printImage;
-        }
-
-        private void DrawDebug(Graphics g)
-        {
-            g.DrawRectangle(Pens.LightGray, 0, 0, _paperRect.Width - 1, _paperRect.Height - 1);
-            var drawEveryY = _paperRect.Height / _labelProperties.LabelCount;
-            for (var i = 1; i < _labelProperties.LabelCount; i++)
-                g.DrawLine(new Pen(Color.Black, 2), 0, drawEveryY * i, _paperRect.Width, drawEveryY * i);
-        }
-
-        private PrintDocument CreatePrinterDocument(PrinterOptions options)
-        {
-            var doc = new PrintDocument();
-            SetPrinterFromSettings(doc);
-            doc.PrintPage += T_PrintPage;
-            doc.DefaultPageSettings.Landscape = true;
-            doc.DefaultPageSettings.Margins = new Margins(0, 0, 0, 0);
-            foreach (PaperSource paperSource in doc.PrinterSettings.PaperSources)
-            {
-                if (paperSource.SourceName.Equals(GetSourceName(options.LabelSource ?? PrinterSettings.LabelSource), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    doc.DefaultPageSettings.PaperSource = paperSource;
-                    break;
-                }
+            // draw rectangle
+            image.Mutate(c => c.Draw(Pens.Solid(Color.LightGray, 1), new RectangleF(0, 0, _paperRect.Width - 1, _paperRect.Height - 1)));
+            var drawEveryY = _paperRect.Height / labelProperties.LabelCount;
+            for (var i = 1; i < labelProperties.LabelCount; i++) {
+                image.Mutate(c => c.DrawLines(Pens.Solid(Color.Black, 2), new PointF(0, drawEveryY * i), new PointF(_paperRect.Width, drawEveryY * i)));
             }
-            doc.DefaultPageSettings.PaperSize = new PaperSize(_labelProperties.LabelName, _labelProperties.Dimensions.Width, _labelProperties.Dimensions.Height * _labelProperties.LabelCount);
+        }
+
+        private (Image<Rgba32>, LabelProperties labelProperties) CreatePrinterImage(PrinterOptions options)
+        {
+            var labelProperties = GetLabelDimensions(options.LabelName);
+
             // generate the label as an image
-            _paperRect = new Rectangle(0, 0, doc.DefaultPageSettings.PaperSize.Width, doc.DefaultPageSettings.PaperSize.Height);
-            for(var i = 1; i <= _labelProperties.LabelCount; i++)
-                _labelStart.Add(new PointF(0, _labelProperties.TopMargin + _paperRect.Height - (_paperRect.Height / i)));
-            var printImage = new Bitmap(_paperRect.Width, _paperRect.Height);
-            printImage.SetResolution(doc.DefaultPageSettings.PrinterResolution.X, doc.DefaultPageSettings.PrinterResolution.Y);
-            _printImage = printImage;
-            return doc;
+            _paperRect = new Rectangle(0, 0, labelProperties.Dimensions.Width, labelProperties.Dimensions.Height * labelProperties.LabelCount);
+            for (var i = 1; i <= labelProperties.LabelCount; i++)
+                _labelStart.Add(new PointF(0, labelProperties.TopMargin + _paperRect.Height - (_paperRect.Height / i)));
+            
+            var printerImage = new Image<Rgba32>(_paperRect.Width, _paperRect.Height);
+            printerImage.Metadata.VerticalResolution = Dpi;
+            printerImage.Metadata.HorizontalResolution = Dpi;
+
+            return (printerImage, labelProperties);
         }
 
-        private void SetPrinterFromSettings(PrintDocument t)
-        {
-            if (!string.IsNullOrEmpty(PrinterSettings.PrinterName))
-            {
-                var installedPrinters = System.Drawing.Printing.PrinterSettings.InstalledPrinters.Cast<string>().ToList();
-                var foundPrinter = installedPrinters.FirstOrDefault(x => x.Equals(PrinterSettings.PrinterName, StringComparison.CurrentCultureIgnoreCase));
-                if (!string.IsNullOrEmpty(foundPrinter))
-                    t.PrinterSettings.PrinterName = foundPrinter;
-                else
-                    throw new Exception($"Could not locate printer named: '{PrinterSettings.PrinterName}' - the following printers are available: {string.Join(",", installedPrinters)}");
-            }
-        }
-
-        private string GetSourceName(LabelSource labelSource)
-        {
-            switch (labelSource)
-            {
-                case LabelSource.Default:
-                    return "Automatically Select";
-                case LabelSource.Left:
-                    return "Left Roll";
-                case LabelSource.Right:
-                    return "Right Roll";
-            }
-            throw new InvalidOperationException($"Unknown label source: {labelSource.ToString()}");
-        }
-
-        private void DrawLabel(Graphics g, ICollection<LineConfiguration> lines, Rectangle paperRect)
+        private void DrawLabelFromLines(Image<Rgba32> image, LabelProperties labelProperties, ICollection<LineConfiguration> lines, Rectangle paperRect)
         {
             var margins = new Margin(0, 0, 0, 0);
             var lastLinePosition = new List<PointF>();
-            for (var i = 0; i < _labelProperties.LabelCount; i++)
+            for (var i = 0; i < labelProperties.LabelCount; i++)
                 lastLinePosition.Add(_labelStart[i]);
             foreach (var line in lines)
             {
-                lastLinePosition[line.Label - 1] = DrawLine(g, lastLinePosition[line.Label - 1], null, line.Content, line, paperRect, margins);
+                lastLinePosition[line.Label - 1] = DrawLine(image, labelProperties, lastLinePosition[line.Label - 1], null, line.Content, line, paperRect, margins);
             }
         }
 
-        private void DrawLabel(Graphics g, LabelContent content, Rectangle paperRect)
+        private void DrawLabelFromContent(Image<Rgba32> image, LabelProperties labelProperties, LabelContent content, Rectangle paperRect)
         {
             var rightMargin = 0;
             var leftMargin = 0;
@@ -160,12 +125,12 @@ namespace Binner.Common.IO.Printing
             content.Identifier = content.Identifier ?? ReplaceTemplate(content.Part, PrinterSettings.PartLabelTemplate.Identifier);
 
             // merge any adjascent template lines together
-            MergeLines(g, PrinterSettings.PartLabelTemplate, content, paperRect, margins);
-            var line1Position = DrawLine(g, new PointF(_labelStart[PrinterSettings.PartLabelTemplate.Line1.Label - 1].X, _labelStart[PrinterSettings.PartLabelTemplate.Line1.Label - 1].Y), content.Part, content.Line1, PrinterSettings.PartLabelTemplate.Line1, paperRect, margins);
-            var line2Position = DrawLine(g, line1Position, content.Part, content.Line2, PrinterSettings.PartLabelTemplate.Line2, paperRect, margins);
-            var line3Position = DrawLine(g, line2Position, content.Part, content.Line3, PrinterSettings.PartLabelTemplate.Line3, paperRect, margins);
-            var line4Position = DrawLine(g, line3Position, content.Part, content.Line4, PrinterSettings.PartLabelTemplate.Line4, paperRect, margins);
-            var identifierPosition = DrawLine(g, line4Position, content.Part, content.Identifier, PrinterSettings.PartLabelTemplate.Identifier, paperRect, margins);
+            MergeLines(PrinterSettings.PartLabelTemplate, content, paperRect, margins);
+            var line1Position = DrawLine(image, labelProperties, new PointF(_labelStart[PrinterSettings.PartLabelTemplate.Line1.Label - 1].X, _labelStart[PrinterSettings.PartLabelTemplate.Line1.Label - 1].Y), content.Part, content.Line1, PrinterSettings.PartLabelTemplate.Line1, paperRect, margins);
+            var line2Position = DrawLine(image, labelProperties, line1Position, content.Part, content.Line2, PrinterSettings.PartLabelTemplate.Line2, paperRect, margins);
+            var line3Position = DrawLine(image, labelProperties, line2Position, content.Part, content.Line3, PrinterSettings.PartLabelTemplate.Line3, paperRect, margins);
+            var line4Position = DrawLine(image, labelProperties, line3Position, content.Part, content.Line4, PrinterSettings.PartLabelTemplate.Line4, paperRect, margins);
+            var identifierPosition = DrawLine(image, labelProperties, line4Position, content.Part, content.Identifier, PrinterSettings.PartLabelTemplate.Identifier, paperRect, margins);
         }
 
         /// <summary>
@@ -175,23 +140,23 @@ namespace Binner.Common.IO.Printing
         /// <param name="content"></param>
         /// <param name="paperRect"></param>
         /// <param name="margins"></param>
-        private void MergeLines(Graphics g, PartLabelTemplate template, LabelContent content, Rectangle paperRect, Margin margins)
+        private void MergeLines(PartLabelTemplate template, LabelContent content, Rectangle paperRect, Margin margins)
         {
             if (template.Line1.Content == template.Line2.Content)
             {
-                MergeLines(g, content.Line1, content.Line2, paperRect, margins, out var newLine, out var newLine2);
+                MergeLines(content.Line1, content.Line2, paperRect, margins, out var newLine, out var newLine2);
                 content.Line1 = newLine;
                 content.Line2 = newLine2;
             }
             if (template.Line2.Content == template.Line3.Content)
             {
-                MergeLines(g, content.Line2, content.Line3, paperRect, margins, out var newLine, out var newLine2);
+                MergeLines(content.Line2, content.Line3, paperRect, margins, out var newLine, out var newLine2);
                 content.Line2 = newLine;
                 content.Line3 = newLine2;
             }
             if (template.Line3.Content == template.Line4.Content)
             {
-                MergeLines(g, content.Line3, content.Line4, paperRect, margins, out var newLine, out var newLine2);
+                MergeLines(content.Line3, content.Line4, paperRect, margins, out var newLine, out var newLine2);
                 content.Line3 = newLine;
                 content.Line4 = newLine2;
             }
@@ -204,21 +169,21 @@ namespace Binner.Common.IO.Printing
         /// <param name="secondLine"></param>
         /// <param name="paperRect"></param>
         /// <param name="margins"></param>
-        private void MergeLines(Graphics g, string firstLine, string secondLine, Rectangle paperRect, Margin margins, out string newFirstLine, out string newSecondLine)
+        private void MergeLines(string firstLine, string secondLine, Rectangle paperRect, Margin margins, out string newFirstLine, out string newSecondLine)
         {
-            var fontFirstLine = CreateFont(g, PrinterSettings.PartLabelTemplate.Line2, firstLine, paperRect);
-            var fontSecondLine = CreateFont(g, PrinterSettings.PartLabelTemplate.Line3, secondLine, paperRect);
+            var fontFirstLine = CreateFont(PrinterSettings.PartLabelTemplate.Line2, firstLine, paperRect);
+            var fontSecondLine = CreateFont(PrinterSettings.PartLabelTemplate.Line3, secondLine, paperRect);
             var line1 = firstLine.ToString();
             var line2 = secondLine.ToString();
             // merge lines and use the second line to wrap
-            SizeF len;
+            FontRectangle len;
             var description = line1?.Trim() ?? "";
             line1 = description.ToString();
             line2 = "";
             // autowrap line 2
             do
             {
-                len = g.MeasureString(line1, fontFirstLine);
+                len = TextMeasurer.Measure(line1, new RendererOptions(fontFirstLine));
                 if (len.Width > paperRect.Width - margins.Right - margins.Left)
                     line1 = line1.Substring(0, line1.Length - 1);
             } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -228,7 +193,7 @@ namespace Binner.Common.IO.Printing
                 line2 = description.Substring(line1.Length, description.Length - line1.Length).Trim();
                 do
                 {
-                    len = g.MeasureString(line2, fontSecondLine);
+                    len = TextMeasurer.Measure(line2, new RendererOptions(fontSecondLine));
                     if (len.Width > paperRect.Width - margins.Right - margins.Left)
                         line2 = line2.Substring(0, line2.Length - 1);
                 } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -236,14 +201,13 @@ namespace Binner.Common.IO.Printing
             // overwrite line2 and line3 with new values
             newFirstLine = line1;
             newSecondLine = line2;
-            fontFirstLine.Dispose();
-            fontSecondLine.Dispose();
         }
 
-        private PointF DrawLine(Graphics g, PointF lineOffset, object part, string lineValue, LineConfiguration template, Rectangle paperRect, Margin margins)
+        private PointF DrawLine(Image<Rgba32> image, LabelProperties labelProperties, PointF lineOffset, object part, string lineValue, LineConfiguration template, Rectangle paperRect, Margin margins)
         {
-            var font = CreateFont(g, template, lineValue, paperRect);
-            var lineBounds = g.MeasureString(lineValue, font);
+            var font = CreateFont(template, lineValue, paperRect);
+            var rendererOptions = new RendererOptions(font, Dpi);
+            var lineBounds = TextMeasurer.Measure(lineValue, rendererOptions);
             var x = 0f;
             var y = lineOffset.Y;
             x += template.Margin.Left;
@@ -252,55 +216,65 @@ namespace Binner.Common.IO.Printing
             {
                 x = 0;
                 y += 12;
-                DrawBarcode128(lineValue, g, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height / _labelProperties.LabelCount));
+                DrawBarcode128(image, lineValue, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height / labelProperties.LabelCount));
             }
             else
             {
                 switch (template.Position)
                 {
                     case LabelPosition.Right:
-                        x += paperRect.Width;
+                        x += (margins.Left + paperRect.Width - margins.Right) - lineBounds.Width + labelProperties.LeftMargin;
                         break;
                     case LabelPosition.Left:
-                        x += (int)lineBounds.Height;
+                        x += margins.Left + labelProperties.LeftMargin;
                         break;
                     case LabelPosition.Center:
-                        x += (margins.Left + paperRect.Width - margins.Right) / 2 - lineBounds.Width / 2 + _labelProperties.LeftMargin;
+                        x += (margins.Left + paperRect.Width - margins.Right) / 2 - lineBounds.Width / 2 + labelProperties.LeftMargin;
                         break;
                 }
                 if (template.Rotate > 0)
                 {
                     // rotated labels will start at the top of the label
                     y = _labelStart[template.Label - 1].Y + template.Margin.Top;
-                    var state = g.Save();
+                    /*var state = g.Save();
                     g.ResetTransform();
                     g.RotateTransform(PrinterSettings.PartLabelTemplate.Identifier.Rotate);
                     g.TranslateTransform(x, y, System.Drawing.Drawing2D.MatrixOrder.Append);
-                    g.DrawString(lineValue, font, Brushes.Black, new PointF(0, 0));
-                    g.Restore(state);
+                    g.DrawString(lineValue, font, Brushes.Horizontal(Color.Black), new PointF(0, 0));
+                    g.Restore(state);*/
                 }
                 else
                 {
-                    g.DrawString(lineValue, font, Brushes.Black, new PointF(x, y));
+                    var drawingOptions = new DrawingOptions
+                    {
+                        TextOptions = new TextOptions
+                        {
+                            ApplyKerning = true,
+                            DpiX = Dpi,
+                            DpiY = Dpi
+                        },
+                    };
+                    image.Mutate(c => c.DrawText(drawingOptions, lineValue, font, Color.Black, new PointF(x, y)));
                 }
             }
-
-            font.Dispose();
             // return the new drawing cursor position
-            return new PointF(0, y + lineBounds.Height * 0.65f);
+            return new PointF(0, y + lineBounds.Height);
         }
 
-        private Font CreateFont(Graphics g, LineConfiguration template, string lineValue, Rectangle paperRect)
+        private Font CreateFont(LineConfiguration template, string lineValue, Rectangle paperRect)
         {
             Font font;
             if (template.AutoSize)
-                font = AutosizeFont(g, template.FontName ?? DefaultFontName, template.FontSize, lineValue, paperRect.Width);
+                font = AutosizeFont(template.FontName ?? DefaultFontName, template.FontSize, lineValue, paperRect.Width);
             else
-                font = new Font(template.FontName ?? DefaultFontName, template.FontSize, GraphicsUnit.Point);
+            {
+                var fontFamily = SystemFonts.Find(template.FontName ?? DefaultFontName);
+                font = new Font(fontFamily, template.FontSize);
+            }
             return font;
         }
 
-        private string ReplaceTemplate(object data, LineConfiguration config)
+        private static string ReplaceTemplate(object data, LineConfiguration config)
         {
             var template = config.Content;
             var value = template;
@@ -321,34 +295,27 @@ namespace Binner.Common.IO.Printing
             return value;
         }
 
-        private void T_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        private void DrawBarcode128(Image<Rgba32> image, string encodeValue, Rectangle rect)
         {
-            e.Graphics.DrawImage(_printImage, new Point(0, -12));
-            e.HasMorePages = false;
+            var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, rect.Width, 25);
+            image.Mutate(c => c.DrawImage(generatedBarcodeImage, new Point(0, rect.Y), new GraphicsOptions()));
+            image.Metadata.HorizontalResolution = Dpi;
+            image.Metadata.VerticalResolution = Dpi;
         }
 
-        private void DrawBarcode128(string encodeValue, Graphics g, Rectangle rect)
+        private Font AutosizeFont(string fontName, float fontSize, string text, int maxWidth)
         {
-            var image = _barcodeGenerator.GenerateBarcode(encodeValue, rect.Width, 25);
-            image.SetResolution(g.DpiX, g.DpiY);
-            g.DrawImageUnscaled(image, new Point(0, rect.Y));
-        }
-
-        private Font AutosizeFont(Graphics g, string fontName, float fontSize, string text, int maxWidth)
-        {
-
-            SizeF len;
+            FontRectangle len;
             var newFontSize = fontSize;
+            var fontFamily = SystemFonts.Find(fontName);
             do
             {
-                using (var testFont = new Font(fontName, newFontSize, GraphicsUnit.Point))
-                {
-                    len = g.MeasureString(text, testFont);
-                    if (len.Width > maxWidth)
-                        newFontSize -= 0.5f;
-                }
+                var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
+                len = TextMeasurer.Measure(text, new RendererOptions(testFont));
+                if (len.Width > maxWidth)
+                    newFontSize -= 0.5f;
             } while (len.Width > maxWidth);
-            return new Font(fontName, newFontSize, GraphicsUnit.Point);
+            return new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
         }
 
         private LabelProperties GetLabelDimensions(string labelName)
@@ -356,11 +323,11 @@ namespace Binner.Common.IO.Printing
             switch (labelName)
             {
                 case "30277": // 9/16" x 3 7/16"
-                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: -15, leftMargin: -20, labelCount: 2, 
+                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 0, leftMargin: 0, labelCount: 2,
                         totalLines: 2, dimensions: new Size(900, 180));
                 case "30346": // 1/2" x 1 7/8"
                 default:
-                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 0, leftMargin: 0, labelCount: 2, 
+                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 0, leftMargin: 0, labelCount: 2,
                         totalLines: 3, dimensions: new Size(475, 175));
             }
         }

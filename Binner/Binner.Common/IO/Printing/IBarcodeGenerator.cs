@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Binner.Common.IO.Printing
 {
@@ -14,6 +15,6 @@ namespace Binner.Common.IO.Printing
         /// <param name="width">Barcode image width</param>
         /// <param name="height">Barcode image height</param>
         /// <returns></returns>
-        Bitmap GenerateBarcode(string partNumber, int width, int height);
+        Image<Rgba32> GenerateBarcode(string partNumber, int width, int height);
     }
 }

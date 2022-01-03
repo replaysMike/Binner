@@ -7,6 +7,7 @@ using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
@@ -420,7 +421,7 @@ namespace Binner.Web.Controllers
             if (part == null) return NotFound();
             var stream = new MemoryStream();
             var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
-            image.Save(stream, ImageFormat.Png);
+            image.SaveAsPng(stream);
             stream.Seek(0, SeekOrigin.Begin);
             return new FileStreamResult(stream, "image/png");
         }
@@ -435,7 +436,7 @@ namespace Binner.Web.Controllers
         {
             var stream = new MemoryStream();
             var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, 300, 25);
-            image.Save(stream, ImageFormat.Png);
+            image.SaveAsPng(stream);
             stream.Seek(0, SeekOrigin.Begin);
             return new FileStreamResult(stream, "image/png");
         }

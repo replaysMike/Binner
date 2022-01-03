@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
+﻿using SixLabors.ImageSharp;
 
 namespace Binner.Common.IO.Printing
 {
