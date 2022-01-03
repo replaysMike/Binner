@@ -17,7 +17,7 @@ namespace Binner.Common.IO.Printing
     public class DymoPrinter : ILabelPrinter
     {
         private const string DefaultFontName = "Segoe UI";
-        private const float Dpi = 600;
+        private const float Dpi = 300;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly List<PointF> _labelStart = new();
         private readonly IPrinter _printer;
@@ -322,7 +322,7 @@ namespace Binner.Common.IO.Printing
             switch (labelName)
             {
                 case "30277": // 9/16" x 3 7/16"
-                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 0, leftMargin: 0, labelCount: 2,
+                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 10, leftMargin: 0, labelCount: 2,
                         totalLines: 2, dimensions: new Size(900, 180));
                 case "30346": // 1/2" x 1 7/8"
                 default:
