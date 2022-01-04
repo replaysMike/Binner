@@ -69,11 +69,11 @@ namespace Binner.Web.Configuration
         private static void RegisterPrinterService(IServiceContainer container)
         {
             container.Register<IBarcodeGenerator, BarcodeGenerator>(new PerContainerLifetime());
-            container.Register<ILabelPrinter>((serviceFactory) =>
+            container.Register<ILabelPrinterHardware>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
                 var barcodeGenerator = serviceFactory.GetInstance<IBarcodeGenerator>();
-                return new DymoPrinter(new PrinterSettings
+                return new DymoLabelPrinterHardware(new PrinterSettings
                 {
                     PrinterName = config.PrinterConfiguration.PrinterName,
                     LabelName = config.PrinterConfiguration.LabelName,

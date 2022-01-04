@@ -4,6 +4,7 @@ using Binner.Common.Models;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
 using Binner.Web.Configuration;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -31,10 +32,10 @@ namespace Binner.Web.Controllers
         private readonly IPartService _partService;
         private readonly IPartTypeService _partTypeService;
         private readonly IProjectService _projectService;
-        private readonly ILabelPrinter _labelPrinter;
+        private readonly ILabelPrinterHardware _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
 
-        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinter labelPrinter, IBarcodeGenerator barcodeGenerator)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator)
         {
             _logger = logger;
             _config = config;
@@ -106,7 +107,7 @@ namespace Binner.Web.Controllers
             var duplicatePartResponse = await CheckForDuplicateAsync(request, mappedPart);
             if (duplicatePartResponse != null)
                 return duplicatePartResponse;
-            
+
             var part = await _partService.AddPartAsync(mappedPart);
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
@@ -260,7 +261,7 @@ namespace Binner.Web.Controllers
         /// <param name="keywords"></param>
         /// <returns></returns>
         [HttpGet("search")]
-        public async Task<IActionResult> SearchAsync([FromQuery]string keywords)
+        public async Task<IActionResult> SearchAsync([FromQuery] string keywords)
         {
             var parts = await _partService.FindPartsAsync(keywords);
             if (parts == null || !parts.Any())
@@ -330,7 +331,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet("info")]
-        public async Task<IActionResult> GetPartInfoAsync([FromQuery]string partNumber, [FromQuery]string partTypeId = "", [FromQuery]string mountingTypeId = "")
+        public async Task<IActionResult> GetPartInfoAsync([FromQuery] string partNumber, [FromQuery] string partTypeId = "", [FromQuery] string mountingTypeId = "")
         {
             var partType = partTypeId;
             var mountingType = mountingTypeId;
@@ -417,13 +418,20 @@ namespace Binner.Web.Controllers
         [HttpPost("print")]
         public async Task<IActionResult> PrintPartAsync([FromQuery] PrintPartRequest request)
         {
-            var part = await _partService.GetPartAsync(request.PartNumber);
-            if (part == null) return NotFound();
-            var stream = new MemoryStream();
-            var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
-            image.SaveAsPng(stream);
-            stream.Seek(0, SeekOrigin.Begin);
-            return new FileStreamResult(stream, "image/png");
+            try
+            {
+                var part = await _partService.GetPartAsync(request.PartNumber);
+                if (part == null) return NotFound();
+                var stream = new MemoryStream();
+                var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
+                image.SaveAsPng(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                return new FileStreamResult(stream, "image/png");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
         }
 
         /// <summary>
@@ -434,11 +442,18 @@ namespace Binner.Web.Controllers
         [HttpGet("barcode")]
         public IActionResult BarcodePart([FromQuery] GetPartRequest request)
         {
-            var stream = new MemoryStream();
-            var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, 300, 25);
-            image.SaveAsPng(stream);
-            stream.Seek(0, SeekOrigin.Begin);
-            return new FileStreamResult(stream, "image/png");
+            try
+            {
+                var stream = new MemoryStream();
+                var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, 300, 25);
+                image.SaveAsPng(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                return new FileStreamResult(stream, "image/png");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Barcode Error! ", ex));
+            }
         }
 
         /// <summary>

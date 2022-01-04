@@ -6,7 +6,7 @@ namespace Binner.Common.IO.Printing
     /// <summary>
     /// Printer hardware abstraction
     /// </summary>
-    public interface IPrinter
+    public interface IPrinterEnvironment
     {
         /// <summary>
         /// Print a label image

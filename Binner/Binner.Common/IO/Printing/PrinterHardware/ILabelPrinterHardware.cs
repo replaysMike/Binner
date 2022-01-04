@@ -7,7 +7,7 @@ namespace Binner.Common.IO.Printing
     /// <summary>
     /// Label printer
     /// </summary>
-    public interface ILabelPrinter
+    public interface ILabelPrinterHardware
     {
         /// <summary>
         /// Printer settings

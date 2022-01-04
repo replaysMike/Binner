@@ -12,15 +12,19 @@ namespace Binner.Common.IO.Printing
     /// <summary>
     /// Unix environment printer via CUPS
     /// </summary>
-    [SupportedOSPlatform("linux")]
+    /// <remarks>
+    /// https://www.cups.org/doc/options.html
+    /// </remarks>
+    [SupportedOSPlatform("linux"),]
     [SupportedOSPlatform("macos")]
     [SupportedOSPlatform("freebsd")]
-    internal class CupsPrinter : IPrinter
+    [SupportedOSPlatform("osx")]
+    internal class CupsPrinterEnvironment : IPrinterEnvironment
     {
         private readonly IPrinterSettings _printerSettings;
         private LabelProperties _labelProperties;
 
-        public CupsPrinter(IPrinterSettings printerSettings)
+        public CupsPrinterEnvironment(IPrinterSettings printerSettings)
         {
             _printerSettings = printerSettings;
         }
@@ -34,8 +38,19 @@ namespace Binner.Common.IO.Printing
             if (isSuccess)
             {
                 // execute lp process to print to CUPS
-                SendToCups(filename, options);
-                DeleteTempFile(filename);
+                try
+                {
+                    SendToCups(filename, options);
+                }
+                catch (Exception ex)
+                {
+                    const string CUPSError = "Please ensure CUPS print server is installed on your environment. Example: `sudo apt install cups`";
+                    throw new CupsException(CUPSError, ex);
+                }
+                finally
+                {
+                    DeleteTempFile(filename);
+                }
             }
             else
             {
@@ -58,7 +73,7 @@ namespace Binner.Common.IO.Printing
             if (string.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
             if (options is null) throw new ArgumentNullException(nameof(options));
 
-            using var process = CreateProcess();
+            var process = CreateProcess();
             var result = StartProcess(process);
 
             (bool isSuccess, string errorMessage, int exitCode) StartProcess(Process process)
@@ -68,12 +83,19 @@ namespace Binner.Common.IO.Printing
                     process.BeginErrorReadLine();
                     process.BeginOutputReadLine();
                     process.WaitForExit();
-                    if (process.ExitCode == 0)
-                        // print success
-                        return (true, string.Empty, process.ExitCode);
-                    else
+                    try
                     {
-                        return (false, $"Print process returned non-zero exit code ({process.ExitCode}), check for errors!", process.ExitCode);
+                        if (process.ExitCode == 0)
+                            // print success
+                            return (true, string.Empty, process.ExitCode);
+                        else
+                        {
+                            return (false, $"Print process returned non-zero exit code ({process.ExitCode}), check for errors!", process.ExitCode);
+                        }
+                    }
+                    finally
+                    {
+                        process.Dispose();
                     }
                 }
                 else
@@ -86,7 +108,7 @@ namespace Binner.Common.IO.Printing
             {
                 // print using CUPS command line (lp & lpr utilities)
                 //var printerName = "DYMO_LabelWriter_450_Twin_Turbo";
-                var printerName = _printerSettings.PrinterName;
+                var printerName = GetCupsSafePrinterName(_printerSettings.PrinterName);
                 var fileToPrint = filename;
                 /* lpoptions -p {printerName}
                  * copies=1 device-uri=usb://DYMO/LabelWriter%20450%20Twin%20Turbo?serial=19010918445943 finishings=3 job-cancel-after=10800 job-hold-until=no-hold job-priority=50 job-sheets=none,none marker-change-time=0 number-up=1 printer-commands=none printer-info='DYMO LabelWriter 450 Twin Turbo' printer-is-accepting-jobs=true printer-is-shared=false printer-is-temporary=false printer-location printer-make-and-model='Dymo Label Printer' printer-state=3 printer-state-change-time=1640312198 printer-state-reasons=none printer-type=2101252 printer-uri-supported=ipp://localhost/printers/DYMO_LabelWriter_450_Twin_Turbo
@@ -96,7 +118,7 @@ namespace Binner.Common.IO.Printing
                  * Resolution/Resolution: 136dpi 203dpi *300dpi
                  * cupsDarkness/Darkness: Light Medium *Normal Dark
                  */
-                var options = new List<string>
+                var printerOptions = new List<string>
                 {
                     //{ "-o fit-to-page" }
                     //{ "-o landscape" } // -o orientation-requested=3 (no rotation), -o orientation-requested=4 (90 degrees, landscape), -o orientation-requested=6 (180 degrees)
@@ -107,10 +129,13 @@ namespace Binner.Common.IO.Printing
                     //{ "-o job-hold-until=indefinite" } // hold job until released
                     //{ "-i job-id -H resume" } // release job to print
                 };
+                // specify label paper source (Auto, Left, Right)
+                if (options.LabelSource.HasValue)
+                    printerOptions.Add($"-o media={options.LabelSource.Value}");
                 var optionsStr = string.Empty;
-                if (options.Any())
-                    optionsStr = $"{string.Join(" ", options)}";
-                using var process = new Process();
+                if (printerOptions.Any())
+                    optionsStr = $"{string.Join(" ", printerOptions)}";
+                var process = new Process();
                 process.StartInfo.FileName = "lp";
                 // -d {printerName} ;specify a specific printer
                 // -o {optionName}={value} ;set a printer option
@@ -127,11 +152,19 @@ namespace Binner.Common.IO.Printing
                 return process;
             }
 
+            string GetCupsSafePrinterName(string printerName)
+            {
+                // respect CUPS allowed printer names
+                return printerName.Replace(" ", "_")
+                    .Replace("\t", "")
+                    .Replace("/", "")
+                    .Replace("#", "");
+            }
         }
 
         private (string filename, bool isSuccess, string errorMessage) SaveTempImage(Image<Rgba32> labelImage)
         {
-            var filename = Path.GetTempFileName();
+            var filename = $"{Path.GetTempFileName()}.png";
             if (filename is null)
                 return (filename, false, "The platform generated temporary filename was null!");
             try

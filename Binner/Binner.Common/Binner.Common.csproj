@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
+    <RuntimeIdentifiers>win10-x64;linux-arm;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
@@ -11,6 +12,36 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
     <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Fonts\segoeui.ttf" />
+    <None Remove="Resources\Fonts\segoeuib.ttf" />
+    <None Remove="Resources\Fonts\segoeuii.ttf" />
+    <None Remove="Resources\Fonts\segoeuil.ttf" />
+    <None Remove="Resources\Fonts\segoeuisl.ttf" />
+    <None Remove="Resources\Fonts\segoeuiz.ttf" />
+    <None Remove="Resources\Fonts\seguibl.ttf" />
+    <None Remove="Resources\Fonts\seguibli.ttf" />
+    <None Remove="Resources\Fonts\seguili.ttf" />
+    <None Remove="Resources\Fonts\seguisb.ttf" />
+    <None Remove="Resources\Fonts\seguisbi.ttf" />
+    <None Remove="Resources\Fonts\seguisli.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Fonts\segoeui.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\segoeuib.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\segoeuii.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\segoeuil.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\segoeuisl.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\segoeuiz.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\seguibl.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\seguibli.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\seguili.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\seguisb.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\seguisbi.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\seguisli.ttf" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AnyMapper" Version="1.0.34" />

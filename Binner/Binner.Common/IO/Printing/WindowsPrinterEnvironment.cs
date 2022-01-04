@@ -1,10 +1,7 @@
 ﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Drawing.Printing;
-using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 
@@ -14,13 +11,13 @@ namespace Binner.Common.IO.Printing
     /// Windows environment printer via System.Drawing.Printing abstraction
     /// </summary>
     [SupportedOSPlatform("windows")]
-    internal class WindowsPrinter : IPrinter
+    internal class WindowsPrinterEnvironment : IPrinterEnvironment
     {
         private readonly IPrinterSettings _printerSettings;
         private LabelProperties _labelProperties;
         private Image<Rgba32> _printImage;
 
-        public WindowsPrinter(IPrinterSettings printerSettings)
+        public WindowsPrinterEnvironment(IPrinterSettings printerSettings)
         {
             _printerSettings = printerSettings;
         }

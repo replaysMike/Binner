@@ -13,15 +13,16 @@ namespace Binner.Common.IO.Printing
         /// </summary>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
-        internal IPrinter CreatePrinter(IPrinterSettings printerSettings)
+        internal IPrinterEnvironment CreatePrinter(IPrinterSettings printerSettings)
         {
             if (OperatingSystem.IsWindows())
             {
-                return new WindowsPrinter(printerSettings);
+                return new CupsPrinterEnvironment(printerSettings);
+                //return new WindowsPrinter(printerSettings);
             }
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() || OperatingSystem.IsFreeBSD())
             {
-                return new CupsPrinter(printerSettings);
+                return new CupsPrinterEnvironment(printerSettings);
             }
 
             throw new PlatformNotSupportedException();

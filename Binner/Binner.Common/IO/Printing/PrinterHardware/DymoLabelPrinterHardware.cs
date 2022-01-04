@@ -14,13 +14,16 @@ namespace Binner.Common.IO.Printing
     /// <summary>
     /// Dymo Label printer, manages generation of the print image
     /// </summary>
-    public class DymoPrinter : ILabelPrinter
+    public class DymoLabelPrinterHardware : ILabelPrinterHardware
     {
         private const string DefaultFontName = "Segoe UI";
+        private const string DefaultFontFile = "segoeui.ttf";
         private const float Dpi = 300;
+        private static Lazy<FontCollection> _fontCollection = new Lazy<FontCollection>(() => new FontCollection());
+        private static Lazy<FontFamily> _fontFamily = new Lazy<FontFamily>(() => _fontCollection.Value.Install(ResourceLoader.LoadResourceStream($"Resources.Fonts.{DefaultFontFile}")));
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly List<PointF> _labelStart = new();
-        private readonly IPrinter _printer;
+        private readonly IPrinterEnvironment _printer;
         private Rectangle _paperRect;
 
         /// <summary>
@@ -28,7 +31,7 @@ namespace Binner.Common.IO.Printing
         /// </summary>
         public IPrinterSettings PrinterSettings { get; set; }
 
-        public DymoPrinter(IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator)
+        public DymoLabelPrinterHardware(IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator)
         {
             PrinterSettings = printerSettings ?? throw new ArgumentNullException(nameof(printerSettings));
             _barcodeGenerator = barcodeGenerator;
@@ -72,7 +75,8 @@ namespace Binner.Common.IO.Printing
             // draw rectangle
             image.Mutate(c => c.Draw(Pens.Solid(Color.LightGray, 1), new RectangleF(0, 0, _paperRect.Width - 1, _paperRect.Height - 1)));
             var drawEveryY = _paperRect.Height / labelProperties.LabelCount;
-            for (var i = 1; i < labelProperties.LabelCount; i++) {
+            for (var i = 1; i < labelProperties.LabelCount; i++)
+            {
                 image.Mutate(c => c.DrawLines(Pens.Solid(Color.Black, 2), new PointF(0, drawEveryY * i), new PointF(_paperRect.Width, drawEveryY * i)));
             }
         }
@@ -85,7 +89,7 @@ namespace Binner.Common.IO.Printing
             _paperRect = new Rectangle(0, 0, labelProperties.Dimensions.Width, labelProperties.Dimensions.Height * labelProperties.LabelCount);
             for (var i = 1; i <= labelProperties.LabelCount; i++)
                 _labelStart.Add(new PointF(0, labelProperties.TopMargin + _paperRect.Height - (_paperRect.Height / i)));
-            
+
             var printerImage = new Image<Rgba32>(_paperRect.Width, _paperRect.Height);
             printerImage.Metadata.VerticalResolution = Dpi;
             printerImage.Metadata.HorizontalResolution = Dpi;
@@ -263,14 +267,26 @@ namespace Binner.Common.IO.Printing
         private Font CreateFont(LineConfiguration template, string lineValue, Rectangle paperRect)
         {
             Font font;
+            var fontFamily = GetOrCreateFontFamily(template.FontName ?? DefaultFontName);
             if (template.AutoSize)
-                font = AutosizeFont(template.FontName ?? DefaultFontName, template.FontSize, lineValue, paperRect.Width);
+                font = AutosizeFont(fontFamily, template.FontSize, lineValue, paperRect.Width);
             else
             {
-                var fontFamily = SystemFonts.Find(template.FontName ?? DefaultFontName);
                 font = new Font(fontFamily, template.FontSize);
             }
             return font;
+        }
+
+        private FontFamily GetOrCreateFontFamily(string fontName)
+        {
+            if (_fontCollection.Value.TryFind(fontName, out FontFamily fontFamily))
+            {
+                return fontFamily;
+            }
+            // return the default font
+            return _fontFamily.Value;
+            // todo: add a way to register other fonts by filename
+            //return _fontCollection.Value.Install(ResourceLoader.LoadResourceStream($"Resources.Fonts.{fontName}.ttf"));
         }
 
         private static string ReplaceTemplate(object data, LineConfiguration config)
@@ -302,15 +318,19 @@ namespace Binner.Common.IO.Printing
             image.Metadata.VerticalResolution = Dpi;
         }
 
-        private Font AutosizeFont(string fontName, float fontSize, string text, int maxWidth)
+        private Font AutosizeFont(FontFamily fontFamily, float fontSize, string text, int maxWidth)
         {
             FontRectangle len;
             var newFontSize = fontSize;
-            var fontFamily = SystemFonts.Find(fontName);
             do
             {
                 var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
-                len = TextMeasurer.Measure(text, new RendererOptions(testFont));
+                var rendererOptions = new RendererOptions(testFont)
+                {
+                    DpiX = Dpi,
+                    DpiY = Dpi
+                };
+                len = TextMeasurer.Measure(text, rendererOptions);
                 if (len.Width > maxWidth)
                     newFontSize -= 0.5f;
             } while (len.Width > maxWidth);
