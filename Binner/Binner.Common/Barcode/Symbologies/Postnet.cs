@@ -7,11 +7,11 @@ namespace Binner.Common.Barcode.Symbologies
     /// </summary>
     public class Postnet : BarcodeCommon, IBarcode
     {
-        private readonly string[] POSTNET_Code = { "11000", "00011", "00101", "00110", "01001", "01010", "01100", "10001", "10010", "10100" };
+        private readonly string[] _postNetCode = { "11000", "00011", "00101", "00110", "01001", "01010", "01100", "10001", "10010", "10100" };
 
         public Postnet(string input)
         {
-            Raw_Data = input;
+            RawData = input;
         }
 
         /// <summary>
@@ -20,9 +20,9 @@ namespace Binner.Common.Barcode.Symbologies
         private string EncodePostnet()
         {
             // remove dashes if present
-            Raw_Data = Raw_Data.Replace("-", "");
+            RawData = RawData.Replace("-", "");
 
-            switch (Raw_Data.Length)
+            switch (RawData.Length)
             {
                 case 5:
                 case 6:
@@ -37,12 +37,12 @@ namespace Binner.Common.Barcode.Symbologies
             var result = "1";
             var checkdigitsum = 0;
 
-            foreach (var c in Raw_Data)
+            foreach (var c in RawData)
             {
                 try
                 {
                     var index = Convert.ToInt32(c.ToString());
-                    result += POSTNET_Code[index];
+                    result += _postNetCode[index];
                     checkdigitsum += index;
                 }
                 catch (Exception ex)
@@ -55,7 +55,7 @@ namespace Binner.Common.Barcode.Symbologies
             var temp = checkdigitsum % 10;
             var checkdigit = 10 - (temp == 0 ? 10 : temp);
 
-            result += POSTNET_Code[checkdigit];
+            result += _postNetCode[checkdigit];
 
             // ending bar
             result += "1";

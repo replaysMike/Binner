@@ -17,13 +17,13 @@ namespace Binner.Common.Barcode.Symbologies
         /// <param name="input">Data to encode.</param>
         public Pharmacode(string input)
         {
-            Raw_Data = input;
+            RawData = input;
 
-            if (!CheckNumericOnly(Raw_Data))
+            if (!CheckNumericOnly(RawData))
             {
                 Error("EPHARM-1: Data contains invalid  characters (non-numeric).");
             }
-            else if (Raw_Data.Length > 6)
+            else if (RawData.Length > 6)
             {
                 Error("EPHARM-2: Data too long (invalid data input length).");
             }
@@ -35,7 +35,7 @@ namespace Binner.Common.Barcode.Symbologies
         private string EncodePharmacode()
         {
 
-            if (!Int32.TryParse(Raw_Data, out int num))
+            if (!int.TryParse(RawData, out int num))
             {
                 Error("EPHARM-3: Input is unparseable.");
             }
@@ -44,7 +44,7 @@ namespace Binner.Common.Barcode.Symbologies
                 Error("EPHARM-4: Data contains invalid  characters (invalid numeric range).");
             }
 
-            var result = String.Empty;
+            var result = string.Empty;
             do
             {
                 if ((num & 1) == 0)

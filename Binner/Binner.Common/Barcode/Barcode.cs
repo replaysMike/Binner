@@ -374,9 +374,9 @@ namespace Binner.Common.Barcode
                     _barcode = new UPCSupplement2(RawData);
                     break;
                 case BarcodeType.MSI_Mod10:
-                case BarcodeType.MSI_2Mod10:
-                case BarcodeType.MSI_Mod11:
-                case BarcodeType.MSI_Mod11_Mod10:
+                case BarcodeType.Msi2Mod10:
+                case BarcodeType.MsiMod11:
+                case BarcodeType.MsiMod11Mod10:
                 case BarcodeType.Modified_Plessey: //Encode_MSI();
                     _barcode = new MSI(RawData, BarcodeType);
                     break;

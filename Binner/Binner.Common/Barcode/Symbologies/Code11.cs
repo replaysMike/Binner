@@ -11,7 +11,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         public Code11(string input)
         {
-            Raw_Data = input;
+            RawData = input;
         }
 
         /// <summary>
@@ -19,22 +19,22 @@ namespace Binner.Common.Barcode.Symbologies
         /// </summary>
         private string EncodeCode11()
         {
-            if (!CheckNumericOnly(Raw_Data.Replace("-", "")))
+            if (!CheckNumericOnly(RawData.Replace("-", "")))
                 Error("EC11-1: Numeric data and '-' Only");
 
             // calculate the checksums
             var weight = 1;
             var cTotal = 0;
-            var dataToEncodeWithChecksums = Raw_Data;
+            var dataToEncodeWithChecksums = RawData;
 
             // figure the C checksum
-            for (var i = Raw_Data.Length - 1; i >= 0; i--)
+            for (var i = RawData.Length - 1; i >= 0; i--)
             {
                 //C checksum weights go 1-10
                 if (weight == 10) weight = 1;
 
-                if (Raw_Data[i] != '-')
-                    cTotal += Int32.Parse(Raw_Data[i].ToString()) * weight++;
+                if (RawData[i] != '-')
+                    cTotal += int.Parse(RawData[i].ToString()) * weight++;
                 else
                     cTotal += 10 * weight++;
             }
@@ -43,7 +43,7 @@ namespace Binner.Common.Barcode.Symbologies
             dataToEncodeWithChecksums += checksumC.ToString();
 
             // K checksums are recommended on any message length greater than or equal to 10
-            if (Raw_Data.Length >= 10)
+            if (RawData.Length >= 10)
             {
                 weight = 1;
                 var kTotal = 0;
@@ -55,7 +55,7 @@ namespace Binner.Common.Barcode.Symbologies
                     if (weight == 9) weight = 1;
 
                     if (dataToEncodeWithChecksums[i] != '-')
-                        kTotal += Int32.Parse(dataToEncodeWithChecksums[i].ToString()) * weight++;
+                        kTotal += int.Parse(dataToEncodeWithChecksums[i].ToString()) * weight++;
                     else
                         kTotal += 10 * weight++;
                 }
@@ -69,7 +69,7 @@ namespace Binner.Common.Barcode.Symbologies
 
             foreach (var c in dataToEncodeWithChecksums)
             {
-                var index = (c == '-' ? 10 : Int32.Parse(c.ToString()));
+                var index = (c == '-' ? 10 : int.Parse(c.ToString()));
                 result += C11_Code[index];
 
                 // inter-character space

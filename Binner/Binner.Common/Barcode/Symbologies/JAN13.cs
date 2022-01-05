@@ -7,7 +7,7 @@ namespace Binner.Common.Barcode.Symbologies
     {
         public JAN13(string input)
         {
-            Raw_Data = input;
+            RawData = input;
         }
 
         /// <summary>
@@ -15,11 +15,11 @@ namespace Binner.Common.Barcode.Symbologies
         /// </summary>
         private string EncodeJAN13()
         {
-            if (!Raw_Data.StartsWith("49")) Error("EJAN13-1: Invalid Country Code for JAN13 (49 required)");
-            if (!CheckNumericOnly(Raw_Data))
+            if (!RawData.StartsWith("49")) Error("EJAN13-1: Invalid Country Code for JAN13 (49 required)");
+            if (!CheckNumericOnly(RawData))
                 Error("EJAN13-2: Numeric Data Only");
 
-            var ean13 = new EAN13(Raw_Data);
+            var ean13 = new EAN13(RawData);
             return ean13.Encoded_Value;
         }
 

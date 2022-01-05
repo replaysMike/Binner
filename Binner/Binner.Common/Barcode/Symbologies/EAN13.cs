@@ -8,10 +8,10 @@ namespace Binner.Common.Barcode.Symbologies
     /// </summary>
     public class EAN13 : BarcodeCommon, IBarcode
     {
-        private readonly string[] EAN_CodeA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
-        private readonly string[] EAN_CodeB = { "0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111" };
-        private readonly string[] EAN_CodeC = { "1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100" };
-        private readonly string[] EAN_Pattern = { "aaaaaa", "aababb", "aabbab", "aabbba", "abaabb", "abbaab", "abbbaa", "ababab", "ababba", "abbaba" };
+        private readonly string[] EANCodeA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
+        private readonly string[] EANCodeB = { "0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111" };
+        private readonly string[] EANCodeC = { "1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100" };
+        private readonly string[] EANPattern = { "aaaaaa", "aababb", "aabbab", "aabbba", "abaabb", "abbaab", "abbbaa", "ababab", "ababba", "abbaba" };
         private readonly Hashtable _countryCodes = new();
         private string _countryAssigningManufacturerCode = "N/A";
 
@@ -19,7 +19,7 @@ namespace Binner.Common.Barcode.Symbologies
 
 		public EAN13(string input, bool disableCountryCode = false)
         {
-            Raw_Data = input;
+            RawData = input;
 			DisableCountryCode = disableCountryCode;
 
 			CheckDigit();
@@ -36,13 +36,13 @@ namespace Binner.Common.Barcode.Symbologies
 		private string Encode_EAN13()
         {
             //check length of input
-            if (Raw_Data.Length < 12 || Raw_Data.Length > 13)
+            if (RawData.Length < 12 || RawData.Length > 13)
                 Error("EEAN13-1: Data length invalid. (Length must be 12 or 13)");
 
-            if (!CheckNumericOnly(Raw_Data))
+            if (!CheckNumericOnly(RawData))
                 Error("EEAN13-2: Numeric Data Only");
 
-            var patterncode = EAN_Pattern[Int32.Parse(Raw_Data[0].ToString())];
+            var patterncode = EANPattern[int.Parse(RawData[0].ToString())];
             var result = "101";
 
             //first
@@ -53,9 +53,9 @@ namespace Binner.Common.Barcode.Symbologies
             while (pos < 6)
             {
                 if (patterncode[pos] == 'a')
-                    result += EAN_CodeA[Int32.Parse(Raw_Data[pos + 1].ToString())];
+                    result += EANCodeA[int.Parse(RawData[pos + 1].ToString())];
                 if (patterncode[pos] == 'b')
-                    result += EAN_CodeB[Int32.Parse(Raw_Data[pos + 1].ToString())];
+                    result += EANCodeB[int.Parse(RawData[pos + 1].ToString())];
                 pos++;
             }
 
@@ -67,14 +67,14 @@ namespace Binner.Common.Barcode.Symbologies
             pos = 1;
             while (pos <= 5)
             {
-                result += EAN_CodeC[Int32.Parse(Raw_Data[(pos++) + 6].ToString())];
+                result += EANCodeC[int.Parse(RawData[(pos++) + 6].ToString())];
             }
 
             // checksum digit
-            var cs = Int32.Parse(Raw_Data[Raw_Data.Length - 1].ToString());
+            var cs = int.Parse(RawData[RawData.Length - 1].ToString());
 
             // add checksum
-            result += EAN_CodeC[cs];
+            result += EANCodeC[cs];
 
             // add ending bars
             result += "101";
@@ -92,8 +92,8 @@ namespace Binner.Common.Barcode.Symbologies
 			//get the manufacturer assigning country
 			Init_CountryCodes();
 			CountryAssigningManufacturerCode = "N/A";
-			var twodigitCode = Raw_Data.Substring(0, 2);
-			var threedigitCode = Raw_Data.Substring(0, 3);
+			var twodigitCode = RawData.Substring(0, 2);
+			var threedigitCode = RawData.Substring(0, 3);
 
 			var cc = _countryCodes[threedigitCode];
 			if (cc == null)
@@ -264,7 +264,7 @@ namespace Binner.Common.Barcode.Symbologies
         {
             try
             {
-                var rawDataHolder = Raw_Data.Substring(0, 12);
+                var rawDataHolder = RawData.Substring(0, 12);
 
                 var even = 0;
                 var odd = 0;
@@ -272,9 +272,9 @@ namespace Binner.Common.Barcode.Symbologies
                 for (var i = 0; i < rawDataHolder.Length; i++)
                 {
                     if (i % 2 == 0)
-                        odd += Int32.Parse(rawDataHolder.Substring(i, 1));
+                        odd += int.Parse(rawDataHolder.Substring(i, 1));
                     else
-                        even += Int32.Parse(rawDataHolder.Substring(i, 1)) * 3;
+                        even += int.Parse(rawDataHolder.Substring(i, 1)) * 3;
                 }
 
                 var total = even + odd;
@@ -283,7 +283,7 @@ namespace Binner.Common.Barcode.Symbologies
                 if (cs == 10)
                     cs = 0;
 
-                Raw_Data = rawDataHolder + cs.ToString()[0];
+                RawData = rawDataHolder + cs.ToString()[0];
             }
             catch
             {

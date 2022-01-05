@@ -7,13 +7,13 @@ namespace Binner.Common.Barcode.Symbologies
         /// <summary>
         /// MSI encoding
         /// </summary>
-        private readonly string[] MSI_Code = { "100100100100", "100100100110", "100100110100", "100100110110", "100110100100", "100110100110", "100110110100", "100110110110", "110100100100", "110100100110" };
-        private readonly BarcodeType Encoded_Type = BarcodeType.Unspecified;
+        private readonly string[] _msiCode = { "100100100100", "100100100110", "100100110100", "100100110110", "100110100100", "100110100110", "100110110100", "100110110110", "110100100100", "110100100110" };
+        private readonly BarcodeType _encodedType = BarcodeType.Unspecified;
 
         public MSI(string input, BarcodeType encodedType)
         {
-            Encoded_Type = encodedType;
-            Raw_Data = input;
+            _encodedType = encodedType;
+            RawData = input;
         }
 
         /// <summary>
@@ -22,13 +22,13 @@ namespace Binner.Common.Barcode.Symbologies
         private string EncodeMSI()
         {
             // check for non-numeric chars
-            if (!CheckNumericOnly(Raw_Data))
+            if (!CheckNumericOnly(RawData))
                 Error("EMSI-1: Numeric Data Only");
 
-            var preEncoded = Raw_Data;
+            var preEncoded = RawData;
 
             // get checksum
-            if (Encoded_Type == BarcodeType.MSI_Mod10 || Encoded_Type == BarcodeType.MSI_2Mod10)
+            if (_encodedType == BarcodeType.MSI_Mod10 || _encodedType == BarcodeType.Msi2Mod10)
             {
                 var odds = "";
                 var evens = "";
@@ -40,27 +40,27 @@ namespace Binner.Common.Barcode.Symbologies
                 }
 
                 // multiply odds by 2
-                odds = Convert.ToString((Int32.Parse(odds) * 2));
+                odds = Convert.ToString((int.Parse(odds) * 2));
 
                 var evensum = 0;
                 var oddsum = 0;
                 foreach (var c in evens)
-                    evensum += Int32.Parse(c.ToString());
+                    evensum += int.Parse(c.ToString());
                 foreach (var c in odds)
-                    oddsum += Int32.Parse(c.ToString());
+                    oddsum += int.Parse(c.ToString());
                 var mod = (oddsum + evensum) % 10;
                 var checksum = mod == 0 ? 0 : 10 - mod;
                 preEncoded += checksum.ToString();
             }
 
-            if (Encoded_Type == BarcodeType.MSI_Mod11 || Encoded_Type == BarcodeType.MSI_Mod11_Mod10)
+            if (_encodedType == BarcodeType.MsiMod11 || _encodedType == BarcodeType.MsiMod11Mod10)
             {
                 var sum = 0;
                 var weight = 2;
                 for (var i = preEncoded.Length - 1; i >= 0; i--)
                 {
                     if (weight > 7) weight = 2;
-                    sum += Int32.Parse(preEncoded[i].ToString()) * weight++;
+                    sum += int.Parse(preEncoded[i].ToString()) * weight++;
                 }
                 var mod = sum % 11;
                 var checksum = mod == 0 ? 0 : 11 - mod;
@@ -68,7 +68,7 @@ namespace Binner.Common.Barcode.Symbologies
                 preEncoded += checksum.ToString();
             }
 
-            if (Encoded_Type == BarcodeType.MSI_2Mod10 || Encoded_Type == BarcodeType.MSI_Mod11_Mod10)
+            if (_encodedType == BarcodeType.Msi2Mod10 || _encodedType == BarcodeType.MsiMod11Mod10)
             {
                 // get second check digit if 2 mod 10 was selected or Mod11/Mod10
                 var odds = "";
@@ -81,14 +81,14 @@ namespace Binner.Common.Barcode.Symbologies
                 }
 
                 // multiply odds by 2
-                odds = Convert.ToString((Int32.Parse(odds) * 2));
+                odds = Convert.ToString((int.Parse(odds) * 2));
 
                 var evensum = 0;
                 var oddsum = 0;
                 foreach (var c in evens)
-                    evensum += Int32.Parse(c.ToString());
+                    evensum += int.Parse(c.ToString());
                 foreach (var c in odds)
-                    oddsum += Int32.Parse(c.ToString());
+                    oddsum += int.Parse(c.ToString());
                 var checksum = 10 - ((oddsum + evensum) % 10);
                 preEncoded += checksum.ToString();
             }
@@ -96,7 +96,7 @@ namespace Binner.Common.Barcode.Symbologies
             var result = "110";
             foreach (var c in preEncoded)
             {
-                result += MSI_Code[Int32.Parse(c.ToString())];
+                result += _msiCode[int.Parse(c.ToString())];
             }
 
             // add stop character

@@ -8,14 +8,14 @@ namespace Binner.Common.Barcode.Symbologies
     /// </summary>
     public class UPCA : BarcodeCommon, IBarcode
     {
-        private readonly string[] UPC_Code_A = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
-        private readonly string[] UPC_Code_B = { "1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100" };
+        private readonly string[] _upcCodeA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
+        private readonly string[] _upcCodeB = { "1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100" };
         private string _countryAssigningManufacturerCode;
         private readonly Hashtable _countryCodes = new();
 
         public UPCA(string input)
         {
-            Raw_Data = input;
+            RawData = input;
         }
 
         /// <summary>
@@ -24,10 +24,10 @@ namespace Binner.Common.Barcode.Symbologies
         private string EncodeUPCA()
         {
             // check length of input
-            if (Raw_Data.Length != 11 && Raw_Data.Length != 12)
+            if (RawData.Length != 11 && RawData.Length != 12)
                 Error("EUPCA-1: Data length invalid. (Length must be 11 or 12)");
 
-            if (!CheckNumericOnly(Raw_Data))
+            if (!CheckNumericOnly(RawData))
                 Error("EUPCA-2: Numeric Data Only");
 
             CheckDigit();
@@ -35,13 +35,13 @@ namespace Binner.Common.Barcode.Symbologies
             var result = "101"; // start with guard bars
 
             // first number
-            result += UPC_Code_A[Int32.Parse(Raw_Data[0].ToString())];
+            result += _upcCodeA[int.Parse(RawData[0].ToString())];
 
             // second (group) of numbers
             var pos = 0;
             while (pos < 5)
             {
-                result += UPC_Code_A[Int32.Parse(Raw_Data[pos + 1].ToString())];
+                result += _upcCodeA[int.Parse(RawData[pos + 1].ToString())];
                 pos++;
             }
 
@@ -52,18 +52,18 @@ namespace Binner.Common.Barcode.Symbologies
             pos = 0;
             while (pos < 5)
             {
-                result += UPC_Code_B[Int32.Parse(Raw_Data[(pos++) + 6].ToString())];
+                result += _upcCodeB[int.Parse(RawData[(pos++) + 6].ToString())];
             }
 
             // forth
-            result += UPC_Code_B[Int32.Parse(Raw_Data[Raw_Data.Length - 1].ToString())];
+            result += _upcCodeB[int.Parse(RawData[RawData.Length - 1].ToString())];
 
             // add ending guard bars
             result += "101";
 
             // get the manufacturer assigning country
             InitCountryCodes();
-            var twodigitCode = string.Concat("0", Raw_Data.AsSpan(0, 1));
+            var twodigitCode = string.Concat("0", RawData.AsSpan(0, 1));
             try
             {
                 _countryAssigningManufacturerCode = _countryCodes[twodigitCode].ToString();
@@ -230,7 +230,7 @@ namespace Binner.Common.Barcode.Symbologies
         {
             try
             {
-                var rawDataHolder = Raw_Data.Substring(0, 11);
+                var rawDataHolder = RawData.Substring(0, 11);
 
                 // calculate check digit
                 var sum = 0;
@@ -238,15 +238,15 @@ namespace Binner.Common.Barcode.Symbologies
                 for (var i = 0; i < rawDataHolder.Length; i++)
                 {
                     if (i % 2 == 0)
-                        sum += Int32.Parse(rawDataHolder.Substring(i, 1)) * 3;
+                        sum += int.Parse(rawDataHolder.Substring(i, 1)) * 3;
                     else
-                        sum += Int32.Parse(rawDataHolder.Substring(i, 1));
+                        sum += int.Parse(rawDataHolder.Substring(i, 1));
                 }
 
-                int cs = (10 - sum % 10) % 10;
+                var cs = (10 - sum % 10) % 10;
 
                 // replace checksum if provided by the user and replace with the calculated checksum
-                Raw_Data = rawDataHolder + cs;
+                RawData = rawDataHolder + cs;
             }
             catch
             {

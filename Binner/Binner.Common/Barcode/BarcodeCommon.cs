@@ -4,24 +4,18 @@ using System.Text.RegularExpressions;
 
 namespace Binner.Common.Barcode
 {
+    /// <summary>
+    /// Abstract Barcode Common class
+    /// </summary>
     public abstract class BarcodeCommon
     {
-        protected string Raw_Data = string.Empty;
-        protected List<string> _Errors = new();
+        public string RawData { get; protected set; } = string.Empty;
 
-        public string RawData
-        {
-            get { return Raw_Data; }
-        }
-
-        public List<string> Errors
-        {
-            get { return _Errors; }
-        }
+        public List<string> Errors { get; protected set; } = new();
 
         public void Error(string errorMessage)
         {
-            _Errors.Add(errorMessage);
+            Errors.Add(errorMessage);
             throw new Exception(errorMessage);
         }
 

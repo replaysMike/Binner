@@ -11,23 +11,23 @@ namespace Binner.Common.Barcode.Symbologies
         public Interleaved2of5(string input, BarcodeType encodedType)
         {
             _encodedType = encodedType;
-            Raw_Data = input;
+            RawData = input;
         }
 
         /// <summary>
         /// Encode the raw data using the Interleaved 2 of 5 algorithm.
         /// </summary>
-        private string Encode_Interleaved2of5()
+        private string EncodeInterleaved2of5()
         {
             // check length of input (only even if no checkdigit, else with check digit odd)
-            if (Raw_Data.Length % 2 != (_encodedType == BarcodeType.Interleaved2of5_Mod10 ? 1 : 0))
+            if (RawData.Length % 2 != (_encodedType == BarcodeType.Interleaved2of5_Mod10 ? 1 : 0))
                 Error("EI25-1: Data length invalid.");
 
-            if (!CheckNumericOnly(Raw_Data))
+            if (!CheckNumericOnly(RawData))
                 Error("EI25-2: Numeric Data Only");
             
             var result = "1010";
-            var data = Raw_Data + (_encodedType == BarcodeType.Interleaved2of5_Mod10 ? CalculateMod10CheckDigit().ToString() : "");
+            var data = RawData + (_encodedType == BarcodeType.Interleaved2of5_Mod10 ? CalculateMod10CheckDigit().ToString() : "");
 
             for (int i = 0; i < data.Length; i += 2)
             {
@@ -73,11 +73,11 @@ namespace Binner.Common.Barcode.Symbologies
         {
             var sum = 0;
             var even = true;
-            for (var i = Raw_Data.Length - 1; i >= 0; --i)
+            for (var i = RawData.Length - 1; i >= 0; --i)
             {
                 //convert numeric in char format to integer and
                 //multiply by 3 or 1 based on if an even index from the end
-                sum += (Raw_Data[i] - '0') * (even ? 3 : 1);
+                sum += (RawData[i] - '0') * (even ? 3 : 1);
                 even = !even;
             }
 
@@ -86,7 +86,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => Encode_Interleaved2of5();
+        public string Encoded_Value => EncodeInterleaved2of5();
 
         #endregion
 

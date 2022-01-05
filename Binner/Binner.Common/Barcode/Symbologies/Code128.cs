@@ -29,7 +29,7 @@ namespace Binner.Common.Barcode.Symbologies
         /// <param name="input">Data to encode.</param>
         public Code128(string input)
         {
-            Raw_Data = input;
+            RawData = input;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Binner.Common.Barcode.Symbologies
         public Code128(string input, TYPES type)
         {
             this._type = type;
-            Raw_Data = input;
+            RawData = input;
         }
 
         string C128_ByA(string a) => _c128_Code[_c128_CodeIndexByA[a]];
@@ -181,7 +181,7 @@ namespace Binner.Common.Barcode.Symbologies
             var rows = new List<int>();
 
             // if two chars are numbers (or FNC1) then START_C or CODE_C
-            if (s.Length > 1 && (Char.IsNumber(s[0]) || s[0] == FNC1) && (Char.IsNumber(s[1]) || s[1] == FNC1))
+            if (s.Length > 1 && (char.IsNumber(s[0]) || s[0] == FNC1) && (char.IsNumber(s[1]) || s[1] == FNC1))
             {
                 if (!_startCharacterIndex.HasValue)
                 {
@@ -260,7 +260,7 @@ namespace Binner.Common.Barcode.Symbologies
         private void BreakUpDataForEncoding()
         {
             var temp = "";
-            var tempRawData = Raw_Data;
+            var tempRawData = RawData;
 
             // breaking the raw data up for code A and code B will mess up the encoding
             switch (_type)
@@ -268,7 +268,7 @@ namespace Binner.Common.Barcode.Symbologies
                 case TYPES.A:
                 case TYPES.B:
                     {
-                        foreach (var c in Raw_Data)
+                        foreach (var c in RawData)
                             _formattedData.Add(c.ToString());
                         return;
                     }
@@ -280,7 +280,7 @@ namespace Binner.Common.Barcode.Symbologies
                         for (var x = 0; x < RawData.Length; x++)
                         {
                             var c = RawData[x];
-                            if (Char.IsNumber(c))
+                            if (char.IsNumber(c))
                             {
                                 numericCount++;
                                 if (indexOfFirstNumeric == -1)
@@ -303,7 +303,7 @@ namespace Binner.Common.Barcode.Symbologies
 
             foreach (var c in tempRawData)
             {
-                if (Char.IsNumber(c))
+                if (char.IsNumber(c))
                 {
                     if (temp == "")
                     {
