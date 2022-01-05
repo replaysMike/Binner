@@ -329,32 +329,32 @@ namespace Binner.Common.Barcode
 
             switch (BarcodeType)
             {
-                case BarcodeType.UCC12:
-                case BarcodeType.UPCA: //Encode_UPCA();
+                case BarcodeType.Ucci12:
+                case BarcodeType.Upca: //Encode_UPCA();
                     _barcode = new UPCA(RawData);
                     break;
-                case BarcodeType.UCC13:
-                case BarcodeType.EAN13: //Encode_EAN13();
+                case BarcodeType.Ucci13:
+                case BarcodeType.Ean13: //Encode_EAN13();
                     _barcode = new EAN13(RawData, DisableEAN13CountryException);
                     break;
-                case BarcodeType.Interleaved2of5_Mod10:
+                case BarcodeType.Interleaved2of5Mod10:
                 case BarcodeType.Interleaved2of5: //Encode_Interleaved2of5();
                     _barcode = new Interleaved2of5(RawData, BarcodeType);
                     break;
-                case BarcodeType.Industrial2of5_Mod10:
+                case BarcodeType.Industrial2of5Mod10:
                 case BarcodeType.Industrial2of5:
-                case BarcodeType.Standard2of5_Mod10:
+                case BarcodeType.Standard2of5Mod10:
                 case BarcodeType.Standard2of5: //Encode_Standard2of5();
                     _barcode = new Standard2of5(RawData, BarcodeType);
                     break;
-                case BarcodeType.LOGMARS:
-                case BarcodeType.CODE39: //Encode_Code39();
+                case BarcodeType.LogMars:
+                case BarcodeType.Code39: //Encode_Code39();
                     _barcode = new Code39(RawData);
                     break;
-                case BarcodeType.CODE39Extended:
+                case BarcodeType.Code39Extended:
                     _barcode = new Code39(RawData, true);
                     break;
-                case BarcodeType.CODE39_Mod43:
+                case BarcodeType.Code9Mod43:
                     _barcode = new Code39(RawData, false, true);
                     break;
                 case BarcodeType.Codabar: //Encode_Codabar();
@@ -363,61 +363,61 @@ namespace Binner.Common.Barcode
                 case BarcodeType.PostNet: //Encode_PostNet();
                     _barcode = new Postnet(RawData);
                     break;
-                case BarcodeType.ISBN:
-                case BarcodeType.BOOKLAND: //Encode_ISBN_Bookland();
+                case BarcodeType.Isbn:
+                case BarcodeType.Bookland: //Encode_ISBN_Bookland();
                     _barcode = new ISBN(RawData);
                     break;
-                case BarcodeType.JAN13: //Encode_JAN13();
+                case BarcodeType.Jan13: //Encode_JAN13();
                     _barcode = new JAN13(RawData);
                     break;
-                case BarcodeType.UPC_SUPPLEMENTAL_2DIGIT: //Encode_UPCSupplemental_2();
+                case BarcodeType.UpcSupplemental2Digit: //Encode_UPCSupplemental_2();
                     _barcode = new UPCSupplement2(RawData);
                     break;
-                case BarcodeType.MSI_Mod10:
+                case BarcodeType.MsiMod10:
                 case BarcodeType.Msi2Mod10:
                 case BarcodeType.MsiMod11:
                 case BarcodeType.MsiMod11Mod10:
-                case BarcodeType.Modified_Plessey: //Encode_MSI();
+                case BarcodeType.ModifiedPlessey: //Encode_MSI();
                     _barcode = new MSI(RawData, BarcodeType);
                     break;
-                case BarcodeType.UPC_SUPPLEMENTAL_5DIGIT: //Encode_UPCSupplemental_5();
+                case BarcodeType.UpcSupplemental5Digit: //Encode_UPCSupplemental_5();
                     _barcode = new UPCSupplement5(RawData);
                     break;
-                case BarcodeType.UPCE: //Encode_UPCE();
+                case BarcodeType.Upce: //Encode_UPCE();
                     _barcode = new UPCE(RawData);
                     break;
-                case BarcodeType.EAN8: //Encode_EAN8();
+                case BarcodeType.Ean8: //Encode_EAN8();
                     _barcode = new EAN8(RawData);
                     break;
-                case BarcodeType.USD8:
-                case BarcodeType.CODE11: //Encode_Code11();
+                case BarcodeType.Usd8:
+                case BarcodeType.Code11: //Encode_Code11();
                     _barcode = new Code11(RawData);
                     break;
-                case BarcodeType.CODE128: //Encode_Code128();
+                case BarcodeType.Code128: //Encode_Code128();
                     _barcode = new Code128(RawData);
                     break;
-                case BarcodeType.CODE128A:
+                case BarcodeType.Code128A:
                     _barcode = new Code128(RawData, Code128.TYPES.A);
                     break;
-                case BarcodeType.CODE128B:
+                case BarcodeType.Code128B:
                     _barcode = new Code128(RawData, Code128.TYPES.B);
                     break;
-                case BarcodeType.CODE128C:
+                case BarcodeType.Code128C:
                     _barcode = new Code128(RawData, Code128.TYPES.C);
                     break;
-                case BarcodeType.ITF14:
+                case BarcodeType.Itf14:
                     _barcode = new ITF14(RawData);
                     break;
-                case BarcodeType.CODE93:
+                case BarcodeType.Code93:
                     _barcode = new Code93(RawData);
                     break;
-                case BarcodeType.TELEPEN:
+                case BarcodeType.Telepen:
                     _barcode = new Telepen(RawData);
                     break;
-                case BarcodeType.FIM:
+                case BarcodeType.Fim:
                     _barcode = new FIM(RawData);
                     break;
-                case BarcodeType.PHARMACODE:
+                case BarcodeType.PharmaCode:
                     _barcode = new Pharmacode(RawData);
                     break;
 
@@ -455,7 +455,7 @@ namespace Binner.Common.Barcode
 
             switch (BarcodeType)
             {
-                case BarcodeType.ITF14:
+                case BarcodeType.Itf14:
                     {
                         // Automatically calculate the Width if applicable. Quite confusing with this
                         // barcode type, and it seems this method overestimates the minimum width. But
@@ -527,7 +527,7 @@ namespace Binner.Common.Barcode
 
                         break;
                     }
-                case BarcodeType.UPCA:
+                case BarcodeType.Upca:
                     {
                         // Automatically calculate Width if applicable.
                         Width = BarWidth * EncodedValue.Length ?? Width;
@@ -630,7 +630,7 @@ namespace Binner.Common.Barcode
 
                         break;
                     }
-                case BarcodeType.EAN13:
+                case BarcodeType.Ean13:
                     {
                         // Automatically calculate Width if applicable.
                         Width = BarWidth * EncodedValue.Length ?? Width;

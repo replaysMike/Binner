@@ -29,7 +29,7 @@ namespace Binner.Common.Barcode.Symbologies
                 result += _s25Code[(int)char.GetNumericValue(RawData, i)];
             }
 
-            result += _encodedType == BarcodeType.Standard2of5_Mod10 ? _s25Code[CalculateMod10CheckDigit()] : "";
+            result += _encodedType == BarcodeType.Standard2of5Mod10 ? _s25Code[CalculateMod10CheckDigit()] : "";
 
             // add ending bars
             result += "1101011";

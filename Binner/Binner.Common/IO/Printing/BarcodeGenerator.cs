@@ -22,7 +22,7 @@ namespace Binner.Common.IO.Printing
         public Image<Rgba32> GenerateBarcode(string partNumber, int width, int height)
         {
             var barcode = new Barcode.Barcode();
-            var barcodeImage = barcode.Encode(BarcodeType.CODE128, partNumber, width, height);
+            var barcodeImage = barcode.Encode(BarcodeType.Code128, partNumber, width, height);
             // convert system.drawing.image to Imagesharp Image
             return ((Bitmap)barcodeImage).ToImageSharpImage<Rgba32>();
         }        

@@ -28,7 +28,7 @@ namespace Binner.Common.Barcode.Symbologies
             var preEncoded = RawData;
 
             // get checksum
-            if (_encodedType == BarcodeType.MSI_Mod10 || _encodedType == BarcodeType.Msi2Mod10)
+            if (_encodedType == BarcodeType.MsiMod10 || _encodedType == BarcodeType.Msi2Mod10)
             {
                 var odds = "";
                 var evens = "";

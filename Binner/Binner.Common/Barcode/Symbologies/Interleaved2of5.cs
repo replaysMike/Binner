@@ -20,14 +20,14 @@ namespace Binner.Common.Barcode.Symbologies
         private string EncodeInterleaved2of5()
         {
             // check length of input (only even if no checkdigit, else with check digit odd)
-            if (RawData.Length % 2 != (_encodedType == BarcodeType.Interleaved2of5_Mod10 ? 1 : 0))
+            if (RawData.Length % 2 != (_encodedType == BarcodeType.Interleaved2of5Mod10 ? 1 : 0))
                 Error("EI25-1: Data length invalid.");
 
             if (!CheckNumericOnly(RawData))
                 Error("EI25-2: Numeric Data Only");
             
             var result = "1010";
-            var data = RawData + (_encodedType == BarcodeType.Interleaved2of5_Mod10 ? CalculateMod10CheckDigit().ToString() : "");
+            var data = RawData + (_encodedType == BarcodeType.Interleaved2of5Mod10 ? CalculateMod10CheckDigit().ToString() : "");
 
             for (int i = 0; i < data.Length; i += 2)
             {
