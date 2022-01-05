@@ -1,5 +1,6 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,6 +22,9 @@ namespace Binner.Common.IO.Printing
     [SupportedOSPlatform("osx")]
     internal class CupsPrinterEnvironment : IPrinterEnvironment
     {
+        private const bool OutputDebug = true;
+        private const bool FlipLabelImage = true;
+        private const string CUPSError = "Please ensure CUPS print server is installed on your environment. Example: `sudo apt install cups`";
         private readonly IPrinterSettings _printerSettings;
         private LabelProperties _labelProperties;
 
@@ -44,7 +48,6 @@ namespace Binner.Common.IO.Printing
                 }
                 catch (Exception ex)
                 {
-                    const string CUPSError = "Please ensure CUPS print server is installed on your environment. Example: `sudo apt install cups`";
                     throw new CupsException(CUPSError, ex);
                 }
                 finally
@@ -82,6 +85,7 @@ namespace Binner.Common.IO.Printing
                 {
                     process.BeginErrorReadLine();
                     process.BeginOutputReadLine();
+                    WriteDebug($"CUPS: Print process id {process.Id} started!");
                     process.WaitForExit();
                     try
                     {
@@ -90,7 +94,7 @@ namespace Binner.Common.IO.Printing
                             return (true, string.Empty, process.ExitCode);
                         else
                         {
-                            return (false, $"Print process returned non-zero exit code ({process.ExitCode}), check for errors!", process.ExitCode);
+                            return (false, $"CUPS: Print process returned non-zero exit code ({process.ExitCode}), check for errors!", process.ExitCode);
                         }
                     }
                     finally
@@ -100,7 +104,7 @@ namespace Binner.Common.IO.Printing
                 }
                 else
                 {
-                    return (false, $"Failed to launch process named '{process.StartInfo.FileName}'", 0);
+                    return (false, $"Failed to launch process named '{process.StartInfo.FileName}'. {CUPSError}", 0);
                 }
             }
 
@@ -118,8 +122,11 @@ namespace Binner.Common.IO.Printing
                  * Resolution/Resolution: 136dpi 203dpi *300dpi
                  * cupsDarkness/Darkness: Light Medium *Normal Dark
                  */
+                
                 var printerOptions = new List<string>
                 {
+                    // note that the orientation doesn't seem to rotate the image on the Dymo 450 Turbo. We will handle rotation in the image itself
+                    //{ $"-o orientation-requested=6" }
                     //{ "-o fit-to-page" }
                     //{ "-o landscape" } // -o orientation-requested=3 (no rotation), -o orientation-requested=4 (90 degrees, landscape), -o orientation-requested=6 (180 degrees)
                     //{ "-o collate=true" }
@@ -129,6 +136,7 @@ namespace Binner.Common.IO.Printing
                     //{ "-o job-hold-until=indefinite" } // hold job until released
                     //{ "-i job-id -H resume" } // release job to print
                 };
+
                 // specify label paper source (Auto, Left, Right)
                 if (options.LabelSource.HasValue)
                     printerOptions.Add($"-o media={options.LabelSource.Value}");
@@ -169,6 +177,12 @@ namespace Binner.Common.IO.Printing
                 return (filename, false, "The platform generated temporary filename was null!");
             try
             {
+                if (FlipLabelImage)
+                {
+                    // can't get CUPS to flip the label, could be the driver. Maybe can try other options in the future
+                    labelImage.Mutate(x => x.Rotate(RotateMode.Rotate180));
+                }
+
                 labelImage.SaveAsPng(filename);
                 return (filename, true, null);
             }
@@ -191,17 +205,25 @@ namespace Binner.Common.IO.Printing
             if (sender is null)
                 return;
             var senderProcess = (Process)sender;
-            Console.WriteLine($"EXIT: Process ({senderProcess.Id}) exited!");
+            if (OutputDebug) Console.WriteLine($"CUPS: Process {senderProcess.Id} finished with exit code {senderProcess.ExitCode}");
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            Console.WriteLine($"ERR: {e.Data}");
+            if(!string.IsNullOrWhiteSpace(e.Data))
+                WriteDebug($"CUPS Error: {e.Data}");
         }
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            Console.WriteLine($"OUT: {e.Data}");
+            if (!string.IsNullOrWhiteSpace(e.Data))
+                WriteDebug($"CUPS Message: {e.Data}");
+        }
+
+        private void WriteDebug(string message)
+        {
+            if (OutputDebug)
+                Console.WriteLine(message);
         }
     }
 }

@@ -17,8 +17,7 @@ namespace Binner.Common.IO.Printing
         {
             if (OperatingSystem.IsWindows())
             {
-                return new CupsPrinterEnvironment(printerSettings);
-                //return new WindowsPrinter(printerSettings);
+                return new WindowsPrinterEnvironment(printerSettings);
             }
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() || OperatingSystem.IsFreeBSD())
             {

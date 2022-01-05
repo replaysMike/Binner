@@ -33,11 +33,28 @@ namespace Binner.Common.StorageProviders
         public BinnerFileStorageProvider(IDictionary<string, string> config)
         {
             _config = new BinnerFileStorageConfiguration(config);
+            ValidateBinnerConfiguration(_config);
             Task.Run(async () =>
             {
                 await LoadDatabaseAsync();
             }).GetAwaiter().GetResult();
             StartIOThread();
+        }
+
+
+        private void ValidateBinnerConfiguration(BinnerFileStorageConfiguration config)
+        {
+            if (string.IsNullOrWhiteSpace(_config.Filename)) throw new BinnerConfigurationException($"The database filename specified in the configuration cannot be empty for the {nameof(BinnerFileStorageProvider)} storage provider.");
+            if (OperatingSystem.IsWindows())
+            {
+            }
+            else
+            {
+                if (_config.Filename.Contains(":\\"))
+                {
+                    throw new BinnerConfigurationException($"The database filename is invalid on this environment and should be a unix-compatible path: '{_config.Filename}'");
+                }
+            }
         }
 
         public async Task<IBinnerDb> GetDatabaseAsync()
@@ -707,14 +724,12 @@ namespace Binner.Common.StorageProviders
                     .FirstOrDefault();
                 db.Count = db.Parts.Count;
                 db.Checksum = BuildChecksum(db);
-                using (var stream = new MemoryStream())
-                {
-                    WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV1.VersionNumber, BinnerDbV1.VersionCreated));
-                    var serializedBytes = _serializer.Serialize(db, _serializationOptions);
-                    stream.Write(serializedBytes, 0, serializedBytes.Length);
-                    Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
-                    File.WriteAllBytes(_config.Filename, stream.ToArray());
-                }
+                using var stream = new MemoryStream();
+                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV1.VersionNumber, BinnerDbV1.VersionCreated));
+                var serializedBytes = _serializer.Serialize(db, _serializationOptions);
+                stream.Write(serializedBytes, 0, serializedBytes.Length);
+                Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
+                File.WriteAllBytes(_config.Filename, stream.ToArray());
             }
             catch (Exception ex)
             {
@@ -741,11 +756,9 @@ namespace Binner.Common.StorageProviders
 
         private void WriteDbVersion(Stream stream, BinnerDbVersion version)
         {
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
-            {
-                writer.Write(version.Version);
-                writer.Write(version.Created.ToBinary());
-            }
+            using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
+            writer.Write(version.Version);
+            writer.Write(version.Created.ToBinary());
         }
 
         private IBinnerDb NewDatabase()
