@@ -2,7 +2,7 @@ using System;
 
 namespace Binner.Common.Barcode.Symbologies
 {
-    public class MSI : BarcodeCommon, IBarcode
+    public class MSI : BarcodeSymbology, IBarcode
     {
         /// <summary>
         /// MSI encoding

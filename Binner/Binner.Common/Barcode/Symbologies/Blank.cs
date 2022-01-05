@@ -6,7 +6,7 @@ namespace Binner.Common.Barcode.Symbologies
     ///  Blank encoding template
     ///  Written by: Brad Barnhill
     /// </summary>
-    public class Blank : BarcodeCommon, IBarcode
+    public class Blank : BarcodeSymbology, IBarcode
     {
 
         #region IBarcode Members

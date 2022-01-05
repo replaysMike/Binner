@@ -5,7 +5,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// ITF-14 encoding
     /// </summary>
-    public class ITF14 : BarcodeCommon, IBarcode
+    public class ITF14 : BarcodeSymbology, IBarcode
     {
         private readonly string[] ITF14Code = { "NNWWN", "WNNNW", "NWNNW", "WWNNN", "NNWNW", "WNWNN", "NWWNN", "NNNWW", "WNNWN", "NWNWN" };
 

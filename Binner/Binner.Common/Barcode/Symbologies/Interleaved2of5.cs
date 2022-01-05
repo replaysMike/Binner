@@ -3,7 +3,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Interleaved 2 of 5 encoding
     /// </summary>
-    public class Interleaved2of5 : BarcodeCommon, IBarcode
+    public class Interleaved2of5 : BarcodeSymbology, IBarcode
     {
         private readonly string[] _i25Code = { "NNWWN", "WNNNW", "NWNNW", "WWNNN", "NNWNW", "WNWNN", "NWWNN", "NNNWW", "WNNWN", "NWNWN" };
         private readonly BarcodeType _encodedType;

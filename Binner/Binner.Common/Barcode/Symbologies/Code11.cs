@@ -5,7 +5,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Code 11 encoding
     /// </summary>
-    public class Code11 : BarcodeCommon, IBarcode
+    public class Code11 : BarcodeSymbology, IBarcode
     {
         private readonly string[] C11_Code = { "101011", "1101011", "1001011", "1100101", "1011011", "1101101", "1001101", "1010011", "1101001", "110101", "101101", "1011001" };
 

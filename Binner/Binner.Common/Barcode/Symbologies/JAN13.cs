@@ -3,7 +3,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// JAN-13 encoding
     /// </summary>
-    public class JAN13 : BarcodeCommon, IBarcode
+    public class JAN13 : BarcodeSymbology, IBarcode
     {
         public JAN13(string input)
         {

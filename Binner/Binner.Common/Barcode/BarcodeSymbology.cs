@@ -7,7 +7,7 @@ namespace Binner.Common.Barcode
     /// <summary>
     /// Abstract Barcode Common class
     /// </summary>
-    public abstract class BarcodeCommon
+    public abstract class BarcodeSymbology
     {
         public string RawData { get; protected set; } = string.Empty;
 

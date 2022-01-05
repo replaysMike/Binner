@@ -5,7 +5,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Code 93 encoding
     /// </summary>
-    public class Code93 : BarcodeCommon, IBarcode
+    public class Code93 : BarcodeSymbology, IBarcode
     {
         private readonly System.Data.DataTable C93Code = new System.Data.DataTable("C93_Code");
 

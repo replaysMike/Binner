@@ -3,7 +3,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Standard 2 of 5 encoding
     /// </summary>
-    class Standard2of5 : BarcodeCommon, IBarcode
+    class Standard2of5 : BarcodeSymbology, IBarcode
     {
         private readonly string[] _s25Code = { "10101110111010", "11101010101110", "10111010101110", "11101110101010", "10101110101110", "11101011101010", "10111011101010", "10101011101110", "11101010111010", "10111010111010" };
         private readonly BarcodeType _encodedType = BarcodeType.Unspecified;

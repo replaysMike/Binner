@@ -5,7 +5,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Pharmacode encoding
     /// </summary>
-    public class Pharmacode: BarcodeCommon, IBarcode
+    public class Pharmacode: BarcodeSymbology, IBarcode
     {
         private readonly string _thinBar = "1";
         private readonly string _gap = "00";

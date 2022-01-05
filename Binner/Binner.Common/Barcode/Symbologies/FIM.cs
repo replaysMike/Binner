@@ -3,7 +3,7 @@
     /// <summary>
     /// FIM encoding
     /// </summary>
-    public class FIM: BarcodeCommon, IBarcode
+    public class FIM: BarcodeSymbology, IBarcode
     {
         private readonly string[] FIMCodes = { "110010011", "101101101", "110101011", "111010111" };
         public enum FIMTypes {FIM_A = 0, FIM_B, FIM_C, FIM_D};

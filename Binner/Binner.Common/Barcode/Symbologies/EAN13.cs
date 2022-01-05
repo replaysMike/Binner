@@ -6,7 +6,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// EAN-13 encoding
     /// </summary>
-    public class EAN13 : BarcodeCommon, IBarcode
+    public class EAN13 : BarcodeSymbology, IBarcode
     {
         private readonly string[] EANCodeA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
         private readonly string[] EANCodeB = { "0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111" };

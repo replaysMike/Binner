@@ -3,7 +3,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Codabar encoding
     /// </summary>
-    public class Codabar: BarcodeCommon, IBarcode
+    public class Codabar: BarcodeSymbology, IBarcode
     {
         private readonly System.Collections.Hashtable Codabar_Code = new();
         

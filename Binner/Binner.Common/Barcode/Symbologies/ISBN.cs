@@ -3,7 +3,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// ISBN encoding
     /// </summary>
-    public class ISBN : BarcodeCommon, IBarcode
+    public class ISBN : BarcodeSymbology, IBarcode
     {
         public ISBN(string input)
         {

@@ -6,7 +6,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Code 128 encoding
     /// </summary>
-    public class Code128 : BarcodeCommon, IBarcode
+    public class Code128 : BarcodeSymbology, IBarcode
     {
         public static readonly char FNC1 = Convert.ToChar(200);
         public static readonly char FNC2 = Convert.ToChar(201);

@@ -6,7 +6,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Telepen encoding
     /// </summary>
-    public class Telepen : BarcodeCommon, IBarcode
+    public class Telepen : BarcodeSymbology, IBarcode
     {
         private static readonly Hashtable _telepenCode = new();
         private enum StartStopCode : int { Start1, Stop1, Start2, Stop2, Start3, Stop3 };

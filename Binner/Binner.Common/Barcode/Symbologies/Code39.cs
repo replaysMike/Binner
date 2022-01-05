@@ -5,7 +5,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Code 39 encoding
     /// </summary>
-    public class Code39 : BarcodeCommon, IBarcode
+    public class Code39 : BarcodeSymbology, IBarcode
     {
         private readonly System.Collections.Hashtable C39Code = new();
         private readonly System.Collections.Hashtable ExtC39Translation = new();
