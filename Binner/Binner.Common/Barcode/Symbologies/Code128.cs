@@ -6,7 +6,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Code 128 encoding
     /// </summary>
-    public class Code128 : BarcodeSymbology, IBarcode
+    public class Code128 : BarcodeSymbology
     {
         public static readonly char FNC1 = Convert.ToChar(200);
         public static readonly char FNC2 = Convert.ToChar(201);
@@ -14,10 +14,10 @@ namespace Binner.Common.Barcode.Symbologies
         public static readonly char FNC4 = Convert.ToChar(203);
 
         public enum TYPES : int { DYNAMIC, A, B, C };
-        private readonly List<string> _c128_Code = new();
-        private readonly Dictionary<string, int> _c128_CodeIndexByA = new();
-        private readonly Dictionary<string, int> _c128_CodeIndexByB = new();
-        private readonly Dictionary<string, int> _c128_CodeIndexByC = new();
+        private readonly List<string> _c128Code = new();
+        private readonly Dictionary<string, int> _c128CodeIndexByA = new();
+        private readonly Dictionary<string, int> _c128CodeIndexByB = new();
+        private readonly Dictionary<string, int> _c128CodeIndexByC = new();
         private readonly List<string> _formattedData = new();
         private readonly List<string> _encodedData = new();
         private int? _startCharacterIndex;
@@ -39,15 +39,15 @@ namespace Binner.Common.Barcode.Symbologies
         /// <param name="type">Type of encoding to lock to. (Code 128A, Code 128B, Code 128C)</param>
         public Code128(string input, TYPES type)
         {
-            this._type = type;
+            _type = type;
             RawData = input;
         }
 
-        string C128_ByA(string a) => _c128_Code[_c128_CodeIndexByA[a]];
-        string C128_TryByLookup(Dictionary<string, int> lookup, string value) => lookup.TryGetValue(value, out var index) ? _c128_Code[index] : null;
-        string C128_TryByA(string a) => C128_TryByLookup(_c128_CodeIndexByA, a);
-        string C128_TryByB(string b) => C128_TryByLookup(_c128_CodeIndexByB, b);
-        string C128_TryByC(string c) => C128_TryByLookup(_c128_CodeIndexByC, c);
+        string _c128ByA(string a) => _c128Code[_c128CodeIndexByA[a]];
+        string _c128TryByLookup(Dictionary<string, int> lookup, string value) => lookup.TryGetValue(value, out var index) ? _c128Code[index] : null;
+        string _c128TryByA(string a) => _c128TryByLookup(_c128CodeIndexByA, a);
+        string _c128TryByB(string b) => _c128TryByLookup(_c128CodeIndexByB, b);
+        string _c128TryByC(string c) => _c128TryByLookup(_c128CodeIndexByC, c);
 
         private string Encode_Code128()
         {
@@ -56,125 +56,138 @@ namespace Binner.Common.Barcode.Symbologies
 
             return GetEncoding();
         }
+
+        private void Clear()
+        {
+            _c128CodeIndexByA.Clear();
+            _c128CodeIndexByB.Clear();
+            _c128CodeIndexByC.Clear();
+            _c128Code.Clear();
+            _formattedData.Clear();
+            _encodedData.Clear();
+        }
+
         private void InitCode128()
         {
+            Clear();
+
             // populate data
-            void entry(string a, string b, string c, string encoding)
+            AddEntry(" ", " ", "00", "11011001100");
+            AddEntry("!", "!", "01", "11001101100");
+            AddEntry("\"", "\"", "02", "11001100110");
+            AddEntry("#", "#", "03", "10010011000");
+            AddEntry("$", "$", "04", "10010001100");
+            AddEntry("%", "%", "05", "10001001100");
+            AddEntry("&", "&", "06", "10011001000");
+            AddEntry("'", "'", "07", "10011000100");
+            AddEntry("(", "(", "08", "10001100100");
+            AddEntry(")", ")", "09", "11001001000");
+            AddEntry("*", "*", "10", "11001000100");
+            AddEntry("+", "+", "11", "11000100100");
+            AddEntry(",", ",", "12", "10110011100");
+            AddEntry("-", "-", "13", "10011011100");
+            AddEntry(".", ".", "14", "10011001110");
+            AddEntry("/", "/", "15", "10111001100");
+            AddEntry("0", "0", "16", "10011101100");
+            AddEntry("1", "1", "17", "10011100110");
+            AddEntry("2", "2", "18", "11001110010");
+            AddEntry("3", "3", "19", "11001011100");
+            AddEntry("4", "4", "20", "11001001110");
+            AddEntry("5", "5", "21", "11011100100");
+            AddEntry("6", "6", "22", "11001110100");
+            AddEntry("7", "7", "23", "11101101110");
+            AddEntry("8", "8", "24", "11101001100");
+            AddEntry("9", "9", "25", "11100101100");
+            AddEntry(":", ":", "26", "11100100110");
+            AddEntry(";", ";", "27", "11101100100");
+            AddEntry("<", "<", "28", "11100110100");
+            AddEntry("=", "=", "29", "11100110010");
+            AddEntry(">", ">", "30", "11011011000");
+            AddEntry("?", "?", "31", "11011000110");
+            AddEntry("@", "@", "32", "11000110110");
+            AddEntry("A", "A", "33", "10100011000");
+            AddEntry("B", "B", "34", "10001011000");
+            AddEntry("C", "C", "35", "10001000110");
+            AddEntry("D", "D", "36", "10110001000");
+            AddEntry("E", "E", "37", "10001101000");
+            AddEntry("F", "F", "38", "10001100010");
+            AddEntry("G", "G", "39", "11010001000");
+            AddEntry("H", "H", "40", "11000101000");
+            AddEntry("I", "I", "41", "11000100010");
+            AddEntry("J", "J", "42", "10110111000");
+            AddEntry("K", "K", "43", "10110001110");
+            AddEntry("L", "L", "44", "10001101110");
+            AddEntry("M", "M", "45", "10111011000");
+            AddEntry("N", "N", "46", "10111000110");
+            AddEntry("O", "O", "47", "10001110110");
+            AddEntry("P", "P", "48", "11101110110");
+            AddEntry("Q", "Q", "49", "11010001110");
+            AddEntry("R", "R", "50", "11000101110");
+            AddEntry("S", "S", "51", "11011101000");
+            AddEntry("T", "T", "52", "11011100010");
+            AddEntry("U", "U", "53", "11011101110");
+            AddEntry("V", "V", "54", "11101011000");
+            AddEntry("W", "W", "55", "11101000110");
+            AddEntry("X", "X", "56", "11100010110");
+            AddEntry("Y", "Y", "57", "11101101000");
+            AddEntry("Z", "Z", "58", "11101100010");
+            AddEntry("[", "[", "59", "11100011010");
+            AddEntry(@"\", @"\", "60", "11101111010");
+            AddEntry("]", "]", "61", "11001000010");
+            AddEntry("^", "^", "62", "11110001010");
+            AddEntry("_", "_", "63", "10100110000");
+            AddEntry("\0", "`", "64", "10100001100");
+            AddEntry(Convert.ToChar(1).ToString(), "a", "65", "10010110000");
+            AddEntry(Convert.ToChar(2).ToString(), "b", "66", "10010000110");
+            AddEntry(Convert.ToChar(3).ToString(), "c", "67", "10000101100");
+            AddEntry(Convert.ToChar(4).ToString(), "d", "68", "10000100110");
+            AddEntry(Convert.ToChar(5).ToString(), "e", "69", "10110010000");
+            AddEntry(Convert.ToChar(6).ToString(), "f", "70", "10110000100");
+            AddEntry(Convert.ToChar(7).ToString(), "g", "71", "10011010000");
+            AddEntry(Convert.ToChar(8).ToString(), "h", "72", "10011000010");
+            AddEntry(Convert.ToChar(9).ToString(), "i", "73", "10000110100");
+            AddEntry(Convert.ToChar(10).ToString(), "j", "74", "10000110010");
+            AddEntry(Convert.ToChar(11).ToString(), "k", "75", "11000010010");
+            AddEntry(Convert.ToChar(12).ToString(), "l", "76", "11001010000");
+            AddEntry(Convert.ToChar(13).ToString(), "m", "77", "11110111010");
+            AddEntry(Convert.ToChar(14).ToString(), "n", "78", "11000010100");
+            AddEntry(Convert.ToChar(15).ToString(), "o", "79", "10001111010");
+            AddEntry(Convert.ToChar(16).ToString(), "p", "80", "10100111100");
+            AddEntry(Convert.ToChar(17).ToString(), "q", "81", "10010111100");
+            AddEntry(Convert.ToChar(18).ToString(), "r", "82", "10010011110");
+            AddEntry(Convert.ToChar(19).ToString(), "s", "83", "10111100100");
+            AddEntry(Convert.ToChar(20).ToString(), "t", "84", "10011110100");
+            AddEntry(Convert.ToChar(21).ToString(), "u", "85", "10011110010");
+            AddEntry(Convert.ToChar(22).ToString(), "v", "86", "11110100100");
+            AddEntry(Convert.ToChar(23).ToString(), "w", "87", "11110010100");
+            AddEntry(Convert.ToChar(24).ToString(), "x", "88", "11110010010");
+            AddEntry(Convert.ToChar(25).ToString(), "y", "89", "11011011110");
+            AddEntry(Convert.ToChar(26).ToString(), "z", "90", "11011110110");
+            AddEntry(Convert.ToChar(27).ToString(), "{", "91", "11110110110");
+            AddEntry(Convert.ToChar(28).ToString(), "|", "92", "10101111000");
+            AddEntry(Convert.ToChar(29).ToString(), "}", "93", "10100011110");
+            AddEntry(Convert.ToChar(30).ToString(), "~", "94", "10001011110");
+
+            AddEntry(Convert.ToChar(31).ToString(), Convert.ToChar(127).ToString(), "95", "10111101000");
+            AddEntry("FNC3", "FNC3", "96", "10111100010");
+            AddEntry("FNC2", "FNC2", "97", "11110101000");
+            AddEntry("SHIFT", "SHIFT", "98", "11110100010");
+            AddEntry("CODE_C", "CODE_C", "99", "10111011110");
+            AddEntry("CODE_B", "FNC4", "CODE_B", "10111101110");
+            AddEntry("FNC4", "CODE_A", "CODE_A", "11101011110");
+            AddEntry("FNC1", "FNC1", "FNC1", "11110101110");
+            AddEntry("START_A", "START_A", "START_A", "11010000100");
+            AddEntry("START_B", "START_B", "START_B", "11010010000");
+            AddEntry("START_C", "START_C", "START_C", "11010011100");
+            AddEntry("STOP", "STOP", "STOP", "11000111010");
+
+            void AddEntry(string a, string b, string c, string encoding)
             {
-                _c128_CodeIndexByA.Add(a, _c128_Code.Count);
-                _c128_CodeIndexByB.Add(b, _c128_Code.Count);
-                _c128_CodeIndexByC.Add(c, _c128_Code.Count);
-                _c128_Code.Add(encoding);
+                _c128CodeIndexByA.Add(a, _c128Code.Count);
+                _c128CodeIndexByB.Add(b, _c128Code.Count);
+                _c128CodeIndexByC.Add(c, _c128Code.Count);
+                _c128Code.Add(encoding);
             }
-            entry(" ", " ", "00", "11011001100");
-            entry("!", "!", "01", "11001101100");
-            entry("\"", "\"", "02", "11001100110");
-            entry("#", "#", "03", "10010011000");
-            entry("$", "$", "04", "10010001100");
-            entry("%", "%", "05", "10001001100");
-            entry("&", "&", "06", "10011001000");
-            entry("'", "'", "07", "10011000100");
-            entry("(", "(", "08", "10001100100");
-            entry(")", ")", "09", "11001001000");
-            entry("*", "*", "10", "11001000100");
-            entry("+", "+", "11", "11000100100");
-            entry(",", ",", "12", "10110011100");
-            entry("-", "-", "13", "10011011100");
-            entry(".", ".", "14", "10011001110");
-            entry("/", "/", "15", "10111001100");
-            entry("0", "0", "16", "10011101100");
-            entry("1", "1", "17", "10011100110");
-            entry("2", "2", "18", "11001110010");
-            entry("3", "3", "19", "11001011100");
-            entry("4", "4", "20", "11001001110");
-            entry("5", "5", "21", "11011100100");
-            entry("6", "6", "22", "11001110100");
-            entry("7", "7", "23", "11101101110");
-            entry("8", "8", "24", "11101001100");
-            entry("9", "9", "25", "11100101100");
-            entry(":", ":", "26", "11100100110");
-            entry(";", ";", "27", "11101100100");
-            entry("<", "<", "28", "11100110100");
-            entry("=", "=", "29", "11100110010");
-            entry(">", ">", "30", "11011011000");
-            entry("?", "?", "31", "11011000110");
-            entry("@", "@", "32", "11000110110");
-            entry("A", "A", "33", "10100011000");
-            entry("B", "B", "34", "10001011000");
-            entry("C", "C", "35", "10001000110");
-            entry("D", "D", "36", "10110001000");
-            entry("E", "E", "37", "10001101000");
-            entry("F", "F", "38", "10001100010");
-            entry("G", "G", "39", "11010001000");
-            entry("H", "H", "40", "11000101000");
-            entry("I", "I", "41", "11000100010");
-            entry("J", "J", "42", "10110111000");
-            entry("K", "K", "43", "10110001110");
-            entry("L", "L", "44", "10001101110");
-            entry("M", "M", "45", "10111011000");
-            entry("N", "N", "46", "10111000110");
-            entry("O", "O", "47", "10001110110");
-            entry("P", "P", "48", "11101110110");
-            entry("Q", "Q", "49", "11010001110");
-            entry("R", "R", "50", "11000101110");
-            entry("S", "S", "51", "11011101000");
-            entry("T", "T", "52", "11011100010");
-            entry("U", "U", "53", "11011101110");
-            entry("V", "V", "54", "11101011000");
-            entry("W", "W", "55", "11101000110");
-            entry("X", "X", "56", "11100010110");
-            entry("Y", "Y", "57", "11101101000");
-            entry("Z", "Z", "58", "11101100010");
-            entry("[", "[", "59", "11100011010");
-            entry(@"\", @"\", "60", "11101111010");
-            entry("]", "]", "61", "11001000010");
-            entry("^", "^", "62", "11110001010");
-            entry("_", "_", "63", "10100110000");
-            entry("\0", "`", "64", "10100001100");
-            entry(Convert.ToChar(1).ToString(), "a", "65", "10010110000");
-            entry(Convert.ToChar(2).ToString(), "b", "66", "10010000110");
-            entry(Convert.ToChar(3).ToString(), "c", "67", "10000101100");
-            entry(Convert.ToChar(4).ToString(), "d", "68", "10000100110");
-            entry(Convert.ToChar(5).ToString(), "e", "69", "10110010000");
-            entry(Convert.ToChar(6).ToString(), "f", "70", "10110000100");
-            entry(Convert.ToChar(7).ToString(), "g", "71", "10011010000");
-            entry(Convert.ToChar(8).ToString(), "h", "72", "10011000010");
-            entry(Convert.ToChar(9).ToString(), "i", "73", "10000110100");
-            entry(Convert.ToChar(10).ToString(), "j", "74", "10000110010");
-            entry(Convert.ToChar(11).ToString(), "k", "75", "11000010010");
-            entry(Convert.ToChar(12).ToString(), "l", "76", "11001010000");
-            entry(Convert.ToChar(13).ToString(), "m", "77", "11110111010");
-            entry(Convert.ToChar(14).ToString(), "n", "78", "11000010100");
-            entry(Convert.ToChar(15).ToString(), "o", "79", "10001111010");
-            entry(Convert.ToChar(16).ToString(), "p", "80", "10100111100");
-            entry(Convert.ToChar(17).ToString(), "q", "81", "10010111100");
-            entry(Convert.ToChar(18).ToString(), "r", "82", "10010011110");
-            entry(Convert.ToChar(19).ToString(), "s", "83", "10111100100");
-            entry(Convert.ToChar(20).ToString(), "t", "84", "10011110100");
-            entry(Convert.ToChar(21).ToString(), "u", "85", "10011110010");
-            entry(Convert.ToChar(22).ToString(), "v", "86", "11110100100");
-            entry(Convert.ToChar(23).ToString(), "w", "87", "11110010100");
-            entry(Convert.ToChar(24).ToString(), "x", "88", "11110010010");
-            entry(Convert.ToChar(25).ToString(), "y", "89", "11011011110");
-            entry(Convert.ToChar(26).ToString(), "z", "90", "11011110110");
-            entry(Convert.ToChar(27).ToString(), "{", "91", "11110110110");
-            entry(Convert.ToChar(28).ToString(), "|", "92", "10101111000");
-            entry(Convert.ToChar(29).ToString(), "}", "93", "10100011110");
-            entry(Convert.ToChar(30).ToString(), "~", "94", "10001011110");
-
-            entry(Convert.ToChar(31).ToString(), Convert.ToChar(127).ToString(), "95", "10111101000");
-            entry("FNC3", "FNC3", "96", "10111100010");
-            entry("FNC2", "FNC2", "97", "11110101000");
-            entry("SHIFT", "SHIFT", "98", "11110100010");
-            entry("CODE_C", "CODE_C", "99", "10111011110");
-            entry("CODE_B", "FNC4", "CODE_B", "10111101110");
-            entry("FNC4", "CODE_A", "CODE_A", "11101011110");
-            entry("FNC1", "FNC1", "FNC1", "11110101110");
-            entry("START_A", "START_A", "START_A", "11010000100");
-            entry("START_B", "START_B", "START_B", "11010010000");
-            entry("START_C", "START_C", "START_C", "11010011100");
-            entry("STOP", "STOP", "STOP", "11000111010");
-
         }
         private List<int> FindStartorCodeCharacter(string s)
         {
@@ -185,40 +198,40 @@ namespace Binner.Common.Barcode.Symbologies
             {
                 if (!_startCharacterIndex.HasValue)
                 {
-                    _startCharacterIndex = _c128_CodeIndexByA["START_C"];
+                    _startCharacterIndex = _c128CodeIndexByA["START_C"];
                     rows.Add(_startCharacterIndex.Value);
                 }
                 else
-                    rows.Add(_c128_CodeIndexByA["CODE_C"]);
+                    rows.Add(_c128CodeIndexByA["CODE_C"]);
             }
             else
             {
                 try
                 {
-                    var AFound = _c128_CodeIndexByA.TryGetValue(s, out var aIndex);
-                    if (AFound)
+                    var aFound = _c128CodeIndexByA.TryGetValue(s, out var aIndex);
+                    if (aFound)
                     {
                         if (!_startCharacterIndex.HasValue)
                         {
-                            _startCharacterIndex = _c128_CodeIndexByA["START_A"];
+                            _startCharacterIndex = _c128CodeIndexByA["START_A"];
                             rows.Add(_startCharacterIndex.Value);
                         }
                         else
                         {
-                            rows.Add(_c128_CodeIndexByB["CODE_A"]);//first column is FNC4 so use B
+                            rows.Add(_c128CodeIndexByB["CODE_A"]);//first column is FNC4 so use B
                         }
                     }
-                    var BFound = _c128_CodeIndexByB.TryGetValue(s, out var bIndex) && (!AFound || bIndex != aIndex);
-                    if (BFound)
+                    var bFound = _c128CodeIndexByB.TryGetValue(s, out var bIndex) && (!aFound || bIndex != aIndex);
+                    if (bFound)
                     {
                         if (!_startCharacterIndex.HasValue)
                         {
-                            _startCharacterIndex = _c128_CodeIndexByA["START_B"];
+                            _startCharacterIndex = _c128CodeIndexByA["START_B"];
                             rows.Add(_startCharacterIndex.Value);
                         }
                         else
                         {
-                            rows.Add(_c128_CodeIndexByA["CODE_B"]);
+                            rows.Add(_c128CodeIndexByA["CODE_B"]);
                         }
                     }
                 }
@@ -243,18 +256,18 @@ namespace Binner.Common.Barcode.Symbologies
                 var s = _formattedData[(int)i];
 
                 // try to find value in the A column
-                var value = _c128_CodeIndexByA.TryGetValue(s, out var index)
+                var value = _c128CodeIndexByA.TryGetValue(s, out var index)
                 // try to find value in the B column
-                    || _c128_CodeIndexByB.TryGetValue(s, out index)
+                    || _c128CodeIndexByB.TryGetValue(s, out index)
                 // try to find value in the C column
-                    || _c128_CodeIndexByC.TryGetValue(s, out index) ? (uint)index : throw new InvalidOperationException($"Unable to find character “{s}”");
+                    || _c128CodeIndexByC.TryGetValue(s, out index) ? (uint)index : throw new InvalidOperationException($"Unable to find character “{s}”");
 
                 var addition = value * ((i == 0) ? 1 : i);
                 checkSum += addition;
             }
 
             var remainder = checkSum % 103;
-            return _c128_Code[(int)remainder];
+            return _c128Code[(int)remainder];
         }
 
         private void BreakUpDataForEncoding()
@@ -368,9 +381,9 @@ namespace Binner.Common.Barcode.Symbologies
                         var sameCodeSet = false;
                         foreach (var row in tempStartChars)
                         {
-                            if (_c128_CodeIndexByA.TryGetValue(currentElement, out var index) && index == row
-                                || _c128_CodeIndexByB.TryGetValue(currentElement, out index) && index == row
-                                || _c128_CodeIndexByC.TryGetValue(currentElement, out index) && index == row)
+                            if (_c128CodeIndexByA.TryGetValue(currentElement, out var index) && index == row
+                                || _c128CodeIndexByB.TryGetValue(currentElement, out index) && index == row
+                                || _c128CodeIndexByC.TryGetValue(currentElement, out index) && index == row)
                             {
                                 sameCodeSet = true;
                                 break;
@@ -382,18 +395,18 @@ namespace Binner.Common.Barcode.Symbologies
 
                         if (col == null || !sameCodeSet)
                         {
-                            var CurrentCodeSet = tempStartChars[0];
+                            var currentCodeSet = tempStartChars[0];
 
                             foreach (var (start, code, nextCol) in new[] {
-                                ("START_A", "CODE_A", _c128_CodeIndexByA),
-                                ("START_B", "CODE_B", _c128_CodeIndexByB),
-                                ("START_C", "CODE_C", _c128_CodeIndexByC),
+                                ("START_A", "CODE_A", _c128CodeIndexByA),
+                                ("START_B", "CODE_B", _c128CodeIndexByB),
+                                ("START_C", "CODE_C", _c128CodeIndexByC),
                             })
                             {
                                 if (col == null)
                                 {
                                     // We still need to write the start char and establish the current code.
-                                    if (CurrentCodeSet == _c128_CodeIndexByA[start])
+                                    if (currentCodeSet == _c128CodeIndexByA[start])
                                     {
                                         col = nextCol;
                                         _formattedData.Insert(i++, start);
@@ -403,7 +416,7 @@ namespace Binner.Common.Barcode.Symbologies
                                 else
                                 {
                                     // We need to switch codes.
-                                    if (col != nextCol && CurrentCodeSet == col[code])
+                                    if (col != nextCol && currentCodeSet == col[code])
                                     {
                                         col = nextCol;
                                         _formattedData.Insert(i++, code);
@@ -430,69 +443,69 @@ namespace Binner.Common.Barcode.Symbologies
             // insert the start characters
             InsertStartandCodeCharacters();
 
-            var Encoded_Data = "";
+            var encodedData = "";
             foreach (var s in _formattedData)
             {
                 //handle exception with apostrophes in select statements
-                string E_Row;
+                string eRow;
 
                 //select encoding only for type selected
                 switch (_type)
                 {
                     case TYPES.A:
-                        E_Row = C128_TryByA(s);
+                        eRow = _c128TryByA(s);
                         break;
                     case TYPES.B:
-                        E_Row = C128_TryByB(s);
+                        eRow = _c128TryByB(s);
                         break;
                     case TYPES.C:
-                        E_Row = C128_TryByC(s);
+                        eRow = _c128TryByC(s);
                         break;
                     case TYPES.DYNAMIC:
-                        E_Row = C128_TryByA(s);
+                        eRow = _c128TryByA(s);
 
-                        if (E_Row == null)
+                        if (eRow == null)
                         {
-                            E_Row = C128_TryByB(s);
+                            eRow = _c128TryByB(s);
 
-                            if (E_Row == null)
+                            if (eRow == null)
                             {
-                                E_Row = C128_TryByC(s);
+                                eRow = _c128TryByC(s);
                             }
                         }
                         break;
                     default:
-                        E_Row = null;
+                        eRow = null;
                         break;
-                }            
+                }
 
-                if (E_Row == null)
+                if (eRow == null)
                     Error("EC128-5: Could not find encoding of a value( " + s + " ) in C128 type " + _type.ToString());
 
-                Encoded_Data += E_Row;
-                _encodedData.Add(E_Row);
+                encodedData += eRow;
+                _encodedData.Add(eRow);
             }
 
             // add the check digit
-            string checkDigit = CalculateCheckDigit();
-            Encoded_Data += checkDigit;
+            var checkDigit = CalculateCheckDigit();
+            encodedData += checkDigit;
             _encodedData.Add(checkDigit);
 
             // add the stop character
-            var stop = C128_ByA("STOP");
-            Encoded_Data += stop;
+            var stop = _c128ByA("STOP");
+            encodedData += stop;
             _encodedData.Add(stop);
 
             // add the termination bars
-            Encoded_Data += "11";
+            encodedData += "11";
             _encodedData.Add("11");
 
-            return Encoded_Data;
+            return encodedData;
         }
 
         #region IBarcode Members
 
-        public string Encoded_Value => Encode_Code128();
+        public override string EncodedValue => Encode_Code128();
 
         #endregion
 

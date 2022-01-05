@@ -6,7 +6,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Telepen encoding
     /// </summary>
-    public class Telepen : BarcodeSymbology, IBarcode
+    public class Telepen : BarcodeSymbology
     {
         private static readonly Hashtable _telepenCode = new();
         private enum StartStopCode : int { Start1, Stop1, Start2, Stop2, Start3, Stop3 };
@@ -29,18 +29,13 @@ namespace Binner.Common.Barcode.Symbologies
         /// </summary>
         private string EncodeTelepen()
         {
-            // only init if needed
-            if (_telepenCode.Count == 0)
-                InitTelepen();
+            InitTelepen();
 
             _iCheckSum = 0;
-            var result = "";
-
             SetEncodingSequence();
 
             // include the Start sequence pattern
-            result = _telepenCode[_startCode].ToString();
-
+            var result = _telepenCode[_startCode].ToString();
             switch (_startCode)
             {
                 // numeric --> ascii
@@ -124,16 +119,16 @@ namespace Binner.Common.Barcode.Symbologies
             _switchModeIndex = RawData.Length;
 
             // starting number of 'numbers'
-            var StartNumerics = 0;
+            var startNumerics = 0;
             foreach (var c in RawData)
             {
                 if (char.IsNumber(c))
-                    StartNumerics++;
+                    startNumerics++;
                 else
                     break;
             }
 
-            if (StartNumerics == RawData.Length)
+            if (startNumerics == RawData.Length)
             {
                 // Numeric only mode due to only numbers being present
                 _startCode = StartStopCode.Start2;
@@ -145,31 +140,31 @@ namespace Binner.Common.Barcode.Symbologies
             else
             {
                 // ending number of numbers
-                var EndNumerics = 0;
+                var endNumerics = 0;
                 for (var i = RawData.Length - 1; i >= 0; i--)
                 {
                     if (char.IsNumber(RawData[i]))
-                        EndNumerics++;
+                        endNumerics++;
                     else
                         break;
                 }
 
-                if (StartNumerics >= 4 || EndNumerics >= 4)
+                if (startNumerics >= 4 || endNumerics >= 4)
                 {
                     // hybrid mode will be used
-                    if (StartNumerics > EndNumerics)
+                    if (startNumerics > endNumerics)
                     {
                         // start in numeric switching to ascii
                         _startCode = StartStopCode.Start2;
                         _stopCode = StartStopCode.Stop2;
-                        _switchModeIndex = (StartNumerics % 2) == 1 ? StartNumerics - 1 : StartNumerics;
+                        _switchModeIndex = (startNumerics % 2) == 1 ? startNumerics - 1 : startNumerics;
                     }
                     else
                     {
                         // start in ascii switching to numeric
                         _startCode = StartStopCode.Start3;
                         _stopCode = StartStopCode.Stop3;
-                        _switchModeIndex = (EndNumerics % 2) == 1 ? RawData.Length - EndNumerics + 1 : RawData.Length - EndNumerics;
+                        _switchModeIndex = (endNumerics % 2) == 1 ? RawData.Length - endNumerics + 1 : RawData.Length - endNumerics;
                     }
                 }
             }
@@ -177,6 +172,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         private void InitTelepen()
         {
+            _telepenCode.Clear();
             _telepenCode.Add(Convert.ToChar(0), "1110111011101110");
             _telepenCode.Add(Convert.ToChar(1), "1011101110111010");
             _telepenCode.Add(Convert.ToChar(2), "1110001110111010");
@@ -315,7 +311,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeTelepen();
+        public override string EncodedValue => EncodeTelepen();
 
         #endregion
 

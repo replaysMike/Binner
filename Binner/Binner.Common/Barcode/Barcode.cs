@@ -1,9 +1,11 @@
 ﻿using Binner.Common.Barcode.Symbologies;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Security;
 using System.Text;
@@ -23,19 +25,20 @@ namespace Binner.Common.Barcode
         /// The default resolution of 96 dots per inch.
         /// </summary>
         const float DefaultResolution = 96f;
-        
+
         /// <summary>
-        ///  The number of pixels in one point at 96DPI. Since there are 72 points in an inch, this is 96/72.
+        /// The number of pixels in one point at 96DPI. Since there are 72 points in an inch, this is 96/72.
         /// </summary>
         public const float DotsPerPointAt96Dpi = DefaultResolution / 72;
-
+        private const int DefaultWidth = 300;
+        private const int DefaultHeight = 150;
         private bool _disposedValue = false;
         private IBarcode _barcode = new Blank();
 
         /// <summary>
         /// Gets or sets the raw data to encode.
         /// </summary>
-        public string RawData { get; set; } = "";
+        public string Data { get; set; } = "";
 
         /// <summary>
         /// Gets the encoded value.
@@ -70,7 +73,7 @@ namespace Binner.Common.Barcode
         /// <summary>
         /// Gets or sets the label font. (Default is Microsoft Sans Serif, 10pt, Bold)
         /// </summary>
-        public Font LabelFont { get; set; } = new Font("Microsoft Sans Serif", 10 * DotsPerPointAt96Dpi, FontStyle.Bold, GraphicsUnit.Pixel);
+        public Font LabelFont { get; set; } = new Font(SystemFonts.Find("Microsoft Sans Serif"), 10 * DotsPerPointAt96Dpi, FontStyle.Bold);
 
         /// <summary>
         /// Gets or sets the location of the label in relation to the barcode. (BOTTOMCENTER is default)
@@ -78,37 +81,37 @@ namespace Binner.Common.Barcode
         public LabelPositions LabelPosition { get; set; } = LabelPositions.BottomCenter;
 
         /// <summary>
-        /// Gets or sets the degree in which to rotate/flip the image.(No action is default)
+        /// Gets or sets the degree in which to rotate/flip the image
         /// </summary>
-        public RotateFlipType RotateFlipType { get; set; } = RotateFlipType.RotateNoneFlipNone;
+        public RotateMode RotateFlipType { get; set; } = RotateMode.None;
 
         /// <summary>
         /// Gets or sets the width of the image to be drawn. (Default is 300 pixels)
         /// </summary>
-        public int Width { get; set; } = 300;
+        public int Width { get; set; } = DefaultWidth;
 
         /// <summary>
         /// Gets or sets the height of the image to be drawn. (Default is 150 pixels)
         /// </summary>
-        public int Height { get; set; } = 150;
+        public int Height { get; set; } = DefaultHeight;
 
         /// <summary>
-        ///   The number of pixels per horizontal inch. Used when creating the Bitmap.
+        /// The number of pixels per horizontal inch. Used when creating the Bitmap.
         /// </summary>
         public float HoritontalResolution { get; set; } = DefaultResolution;
 
         /// <summary>
-        ///   The number of pixels per vertical inch. Used when creating the Bitmap.
+        /// The number of pixels per vertical inch. Used when creating the Bitmap.
         /// </summary>
         public float VerticalResolution { get; set; } = DefaultResolution;
 
         /// <summary>
-        ///   If non-null, sets the width of a bar. <see cref="Width"/> is ignored and calculated automatically.
+        /// If non-null, sets the width of a bar. <see cref="Width"/> is ignored and calculated automatically.
         /// </summary>
         public int? BarWidth { get; set; }
 
         /// <summary>
-        ///   If non-null, <see cref="Height"/> is ignored and set to <see cref="Width"/> divided by this value rounded down.
+        /// If non-null, <see cref="Height"/> is ignored and set to <see cref="Width"/> divided by this value rounded down.
         /// </summary>
         /// <remarks><para>
         ///   As longer barcodes may be more difficult to align a scanner gun with,
@@ -141,9 +144,9 @@ namespace Binner.Common.Barcode
         public double EncodingTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the image format to use when encoding and returning images. (Jpeg is default)
+        /// Gets or sets the image format to use when encoding and returning images. (Png is default)
         /// </summary>
-        public ImageFormat ImageFormat { get; set; } = ImageFormat.Jpeg;
+        public ImageFormat ImageFormat { get; set; } = ImageFormat.Png;
 
         /// <summary>
         /// Gets the list of errors encountered.
@@ -156,9 +159,9 @@ namespace Binner.Common.Barcode
         public AlignmentPositions Alignment { get; set; }
 
         /// <summary>
-        /// Gets a byte array representation of the encoded image. (Used for Crystal Reports)
+        /// Gets a byte array representation of the encoded image.
         /// </summary>
-        public byte[] Encoded_Image_Bytes
+        public byte[] EncodedImageBytes
         {
             get
             {
@@ -166,7 +169,24 @@ namespace Binner.Common.Barcode
                     return null;
 
                 using MemoryStream ms = new MemoryStream();
-                EncodedImage.Save(ms, ImageFormat);
+                switch (ImageFormat)
+                {
+                    case ImageFormat.Png:
+                        EncodedImage.SaveAsPng(ms);
+                        break;
+                    case ImageFormat.Jpeg:
+                        EncodedImage.SaveAsJpeg(ms);
+                        break;
+                    case ImageFormat.Bmp:
+                        EncodedImage.SaveAsBmp(ms);
+                        break;
+                    case ImageFormat.Gif:
+                        EncodedImage.SaveAsGif(ms);
+                        break;
+                    case ImageFormat.Tga:
+                        EncodedImage.SaveAsTga(ms);
+                        break;
+                }
                 return ms.ToArray();
             }
         }
@@ -191,22 +211,37 @@ namespace Binner.Common.Barcode
         /// <summary>
         /// Populates the raw data. No whitespace will be added before or after the barcode.
         /// </summary>
-        /// <param name="data">String to be encoded.</param>
-        public Barcode(string data)
+        /// <param name="stringToEncode">String to be encoded.</param>
+        public Barcode(string stringToEncode)
         {
-            RawData = data;
+            Data = stringToEncode;
         }
 
         /// <summary>
         /// Populates the raw data. No whitespace will be added before or after the barcode.
         /// </summary>
-        /// <param name="data">String to be encoded.</param>
+        /// <param name="stringToEncode">String to be encoded.</param>
         /// <param name="barcodeType">Barcode type to generate</param>
-        public Barcode(string data, BarcodeType barcodeType)
+        public Barcode(string stringToEncode, BarcodeType barcodeType)
         {
-            RawData = data;
+            Data = stringToEncode;
             BarcodeType = barcodeType;
-            GenerateBarcode();
+            Encode<Rgba32>(stringToEncode, barcodeType);
+        }
+
+        /// <summary>
+        /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
+        /// </summary>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="width">Width of the resulting barcode.(pixels)</param>
+        /// <param name="height">Height of the resulting barcode.(pixels)</param>
+        /// <returns>Image representing the barcode.</returns>
+        public Barcode(string stringToEncode, BarcodeType barcodeType, int width, int height)
+        {
+            Data = stringToEncode;
+            BarcodeType = barcodeType;
+            Encode<Rgba32>(stringToEncode, barcodeType, width, height);
         }
 
         #region General Encode
@@ -214,33 +249,34 @@ namespace Binner.Common.Barcode
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="barcodeType">Type of encoding to use.</param>
         /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
         /// <param name="width">Width of the resulting barcode.(pixels)</param>
         /// <param name="height">Height of the resulting barcode.(pixels)</param>
         /// <returns>Image representing the barcode.</returns>
-        public Image Encode(BarcodeType barcodeType, string stringToEncode, int width, int height)
+        public Image<TPixel> Encode<TPixel>(string stringToEncode, BarcodeType barcodeType, int width, int height) 
+            where TPixel : unmanaged, IPixel<TPixel>
         {
             Width = width;
             Height = height;
-            return Encode(barcodeType, stringToEncode);
+            return Encode<TPixel>(stringToEncode, barcodeType);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="barcodeType">Type of encoding to use.</param>
         /// <param name="stringToEncode">Raw data to encode.</param>
-        /// <param name="foreColor">Foreground color</param>
-        /// <param name="backColor">Background color</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="foregroundColor">Foreground color</param>
+        /// <param name="backgroundColor">Background color</param>
         /// <param name="width">Width of the resulting barcode.(pixels)</param>
         /// <param name="height">Height of the resulting barcode.(pixels)</param>
         /// <returns>Image representing the barcode.</returns>
-        public Image Encode(BarcodeType barcodeType, string stringToEncode, Color foreColor, Color backColor, int width, int height)
+        public Image<TPixel> Encode<TPixel>(string stringToEncode, BarcodeType barcodeType, Color foregroundColor, Color backgroundColor, int width, int height) where TPixel : unmanaged, IPixel<TPixel>
         {
             Width = width;
             Height = height;
-            return Encode(barcodeType, stringToEncode, foreColor, backColor);
+            return Encode<TPixel>(stringToEncode, barcodeType, foregroundColor, backgroundColor);
         }
 
         /// <summary>
@@ -249,56 +285,56 @@ namespace Binner.Common.Barcode
         /// <param name="barcodeType">Type of encoding to use.</param>
         /// <param name="stringToEncode">Raw data to encode.</param>
         /// <param name="DrawColor">Foreground color</param>
-        /// <param name="backColor">Background color</param>
+        /// <param name="backgroundColor">Background color</param>
         /// <returns>Image representing the barcode.</returns>
-        public Image Encode(BarcodeType barcodeType, string stringToEncode, Color foreColor, Color backColor)
+        public Image<TPixel> Encode<TPixel>(string stringToEncode, BarcodeType barcodeType, Color foregroundColor, Color backgroundColor) where TPixel : unmanaged, IPixel<TPixel>
         {
-            BackColor = backColor;
-            ForeColor = foreColor;
-            return Encode(barcodeType, stringToEncode);
+            BackColor = backgroundColor;
+            ForeColor = foregroundColor;
+            return Encode<TPixel>(stringToEncode, barcodeType);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="barcodeType">Type of encoding to use.</param>
         /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
         /// <returns>Image representing the barcode.</returns>
-        public Image Encode(BarcodeType barcodeType, string stringToEncode)
+        public Image<TPixel> Encode<TPixel>(string stringToEncode, BarcodeType barcodeType) where TPixel : unmanaged, IPixel<TPixel>
         {
-            RawData = stringToEncode;
-            return Encode(barcodeType);
+            Data = stringToEncode;
+            return Encode<TPixel>(barcodeType);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
         /// <param name="barcodeType">Type of encoding to use.</param>
-        internal Image Encode(BarcodeType barcodeType)
+        internal Image<TPixel> Encode<TPixel>(BarcodeType barcodeType) where TPixel : unmanaged, IPixel<TPixel>
         {
             BarcodeType = barcodeType;
-            return Encode();
+            return Encode<TPixel>();
         }
 
         /// <summary>
         /// Encodes the raw data into a barcode image.
         /// </summary>
-        internal Image Encode()
+        internal Image<TPixel> Encode<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
         {
             _barcode.Errors.Clear();
 
             var dtStartTime = DateTime.Now;
 
-            EncodedValue = GenerateBarcode();
-            RawData = _barcode.RawData;
+            EncodedValue = GenerateBarcode(Data);
+            Data = _barcode.RawData;
 
-            EncodedImage = Generate_Image();
+            var encodedImage = GenerateImage<TPixel>();
+            encodedImage.Mutate(x => x.Rotate(RotateFlipType));
 
-            EncodedImage.RotateFlip(RotateFlipType);
+            EncodedImage = encodedImage;
+            EncodingTime = ((DateTime.Now - dtStartTime)).TotalMilliseconds;
 
-            EncodingTime = ((TimeSpan)(DateTime.Now - dtStartTime)).TotalMilliseconds;
-
-            return EncodedImage;
+            return encodedImage;
         }
 
         /// <summary>
@@ -308,21 +344,16 @@ namespace Binner.Common.Barcode
         /// Returns a string containing the binary value of the barcode. 
         /// This also sets the internal values used within the class.
         /// </returns>
-        /// <param name="raw_data" >Optional raw_data parameter to for quick barcode generation</param>
-        public string GenerateBarcode(string raw_data = "")
+        /// <param name="stringToEncode" >Optional raw_data parameter to for quick barcode generation</param>
+        public string GenerateBarcode(string stringToEncode)
         {
-            if (raw_data != "")
-            {
-                RawData = raw_data;
-            }
-
-            // make sure there is something to encode
-            if (RawData.Trim() == "")
-                throw new Exception("EENCODE-1: Input data not allowed to be blank.");
+            if (string.IsNullOrWhiteSpace(stringToEncode))
+                throw new BarcodeException("Input data not allowed to be blank.");
 
             if (BarcodeType == BarcodeType.Unspecified)
-                throw new Exception("EENCODE-2: Symbology type not allowed to be unspecified.");
+                throw new BarcodeException("Symbology type not allowed to be unspecified.");
 
+            Data = stringToEncode;
             EncodedValue = "";
             CountryAssigningManufacturerCode = "N/A";
 
@@ -330,101 +361,102 @@ namespace Binner.Common.Barcode
             switch (BarcodeType)
             {
                 case BarcodeType.Ucci12:
-                case BarcodeType.Upca: //Encode_UPCA();
-                    _barcode = new UPCA(RawData);
+                case BarcodeType.Upca:
+                    _barcode = new Upca(Data);
                     break;
                 case BarcodeType.Ucci13:
-                case BarcodeType.Ean13: //Encode_EAN13();
-                    _barcode = new EAN13(RawData, DisableEAN13CountryException);
+                case BarcodeType.Ean13:
+                    _barcode = new Ean13(Data, DisableEAN13CountryException);
                     break;
                 case BarcodeType.Interleaved2of5Mod10:
-                case BarcodeType.Interleaved2of5: //Encode_Interleaved2of5();
-                    _barcode = new Interleaved2of5(RawData, BarcodeType);
+                case BarcodeType.Interleaved2of5:
+                    _barcode = new Interleaved2of5(Data, BarcodeType);
                     break;
                 case BarcodeType.Industrial2of5Mod10:
                 case BarcodeType.Industrial2of5:
                 case BarcodeType.Standard2of5Mod10:
-                case BarcodeType.Standard2of5: //Encode_Standard2of5();
-                    _barcode = new Standard2of5(RawData, BarcodeType);
+                case BarcodeType.Standard2of5:
+                    _barcode = new Standard2of5(Data, BarcodeType);
                     break;
                 case BarcodeType.LogMars:
-                case BarcodeType.Code39: //Encode_Code39();
-                    _barcode = new Code39(RawData);
+                case BarcodeType.Code39:
+                    _barcode = new Code39(Data);
                     break;
                 case BarcodeType.Code39Extended:
-                    _barcode = new Code39(RawData, true);
+                    _barcode = new Code39(Data, true);
                     break;
                 case BarcodeType.Code9Mod43:
-                    _barcode = new Code39(RawData, false, true);
+                    _barcode = new Code39(Data, false, true);
                     break;
-                case BarcodeType.Codabar: //Encode_Codabar();
-                    _barcode = new Codabar(RawData);
+                case BarcodeType.Codabar:
+                    _barcode = new Codabar(Data);
                     break;
-                case BarcodeType.PostNet: //Encode_PostNet();
-                    _barcode = new Postnet(RawData);
+                case BarcodeType.PostNet:
+                    _barcode = new Postnet(Data);
                     break;
                 case BarcodeType.Isbn:
-                case BarcodeType.Bookland: //Encode_ISBN_Bookland();
-                    _barcode = new ISBN(RawData);
+                case BarcodeType.Bookland:
+                    _barcode = new Isbn(Data);
                     break;
-                case BarcodeType.Jan13: //Encode_JAN13();
-                    _barcode = new JAN13(RawData);
+                case BarcodeType.Jan13:
+                    _barcode = new Jan13(Data);
                     break;
-                case BarcodeType.UpcSupplemental2Digit: //Encode_UPCSupplemental_2();
-                    _barcode = new UPCSupplement2(RawData);
+                case BarcodeType.UpcSupplemental2Digit:
+                    _barcode = new UpcSupplement2(Data);
                     break;
+                //Encode_MSI();
                 case BarcodeType.MsiMod10:
                 case BarcodeType.Msi2Mod10:
                 case BarcodeType.MsiMod11:
                 case BarcodeType.MsiMod11Mod10:
-                case BarcodeType.ModifiedPlessey: //Encode_MSI();
-                    _barcode = new MSI(RawData, BarcodeType);
+                case BarcodeType.ModifiedPlessey:
+                    _barcode = new Msi(Data, BarcodeType);
                     break;
-                case BarcodeType.UpcSupplemental5Digit: //Encode_UPCSupplemental_5();
-                    _barcode = new UPCSupplement5(RawData);
+                case BarcodeType.UpcSupplemental5Digit:
+                    _barcode = new UpcSupplement5(Data);
                     break;
-                case BarcodeType.Upce: //Encode_UPCE();
-                    _barcode = new UPCE(RawData);
+                case BarcodeType.Upce:
+                    _barcode = new Upce(Data);
                     break;
-                case BarcodeType.Ean8: //Encode_EAN8();
-                    _barcode = new EAN8(RawData);
+                case BarcodeType.Ean8:
+                    _barcode = new Ean8(Data);
                     break;
                 case BarcodeType.Usd8:
-                case BarcodeType.Code11: //Encode_Code11();
-                    _barcode = new Code11(RawData);
+                case BarcodeType.Code11:
+                    _barcode = new Code11(Data);
                     break;
-                case BarcodeType.Code128: //Encode_Code128();
-                    _barcode = new Code128(RawData);
+                case BarcodeType.Code128:
+                    _barcode = new Code128(Data);
                     break;
                 case BarcodeType.Code128A:
-                    _barcode = new Code128(RawData, Code128.TYPES.A);
+                    _barcode = new Code128(Data, Code128.TYPES.A);
                     break;
                 case BarcodeType.Code128B:
-                    _barcode = new Code128(RawData, Code128.TYPES.B);
+                    _barcode = new Code128(Data, Code128.TYPES.B);
                     break;
                 case BarcodeType.Code128C:
-                    _barcode = new Code128(RawData, Code128.TYPES.C);
+                    _barcode = new Code128(Data, Code128.TYPES.C);
                     break;
                 case BarcodeType.Itf14:
-                    _barcode = new ITF14(RawData);
+                    _barcode = new ITF14(Data);
                     break;
                 case BarcodeType.Code93:
-                    _barcode = new Code93(RawData);
+                    _barcode = new Code93(Data);
                     break;
                 case BarcodeType.Telepen:
-                    _barcode = new Telepen(RawData);
+                    _barcode = new Telepen(Data);
                     break;
                 case BarcodeType.Fim:
-                    _barcode = new FIM(RawData);
+                    _barcode = new Fim(Data);
                     break;
                 case BarcodeType.PharmaCode:
-                    _barcode = new Pharmacode(RawData);
+                    _barcode = new Pharmacode(Data);
                     break;
 
-                default: throw new Exception("EENCODE-2: Unsupported encoding type specified.");
+                default: throw new BarcodeException($"Unsupported barcode type specified '{BarcodeType}'.");
             }
 
-            return _barcode.Encoded_Value;
+            return _barcode.EncodedValue;
         }
 
         #endregion
@@ -435,21 +467,22 @@ namespace Binner.Common.Barcode
         /// Create and preconfigures a Bitmap for use by the library. Ensures it is independent from
         /// system DPI, etc.
         /// </summary>
-        internal Bitmap CreateBitmap(int width, int height)
+        internal Image<TPixel> CreateBitmap<TPixel>(int width, int height) where TPixel : unmanaged, IPixel<TPixel>
         {
-            var bitmap = new Bitmap(width, height);
-            bitmap.SetResolution(HoritontalResolution, VerticalResolution);
-            return bitmap;
+            var image = new Image<TPixel>(width, height);
+            image.Metadata.HorizontalResolution = HoritontalResolution;
+            image.Metadata.VerticalResolution = VerticalResolution;
+            return image;
         }
 
         /// <summary>
         /// Gets a bitmap representation of the encoded data.
         /// </summary>
         /// <returns>Bitmap of encoded value.</returns>
-        private Bitmap Generate_Image()
+        private Image<TPixel> GenerateImage<TPixel>() where TPixel : unmanaged, IPixel<TPixel>
         {
-            if (EncodedValue == "") throw new Exception("EGENERATE_IMAGE-1: Must be encoded first.");
-            Bitmap bitmap;
+            if (string.IsNullOrWhiteSpace(EncodedValue)) throw new BarcodeException("Must call Encode() before generating an image!");
+            Image<TPixel> image;
 
             var dtStartTime = DateTime.Now;
 
@@ -476,54 +509,55 @@ namespace Binner.Common.Barcode
                         var ILHeight = Height;
                         if (IncludeLabel)
                         {
-                            ILHeight -= LabelFont.Height;
+                            ILHeight -= LabelFont.LineHeight;
                         }
 
-                        bitmap = CreateBitmap(Width, Height);
+                        image = CreateBitmap<TPixel>(Width, Height);
 
-                        var bearerwidth = (int)((bitmap.Width) / 12.05);
-                        var iquietzone = Convert.ToInt32(bitmap.Width * 0.05);
-                        var iBarWidth = (bitmap.Width - (bearerwidth * 2) - (iquietzone * 2)) / EncodedValue.Length;
-                        var shiftAdjustment = ((bitmap.Width - (bearerwidth * 2) - (iquietzone * 2)) % EncodedValue.Length) / 2;
+                        var bearerwidth = (int)((image.Width) / 12.05);
+                        var iquietzone = Convert.ToInt32(image.Width * 0.05);
+                        var barWidth = (image.Width - (bearerwidth * 2) - (iquietzone * 2)) / EncodedValue.Length;
+                        var shiftAdjustment = ((image.Width - (bearerwidth * 2) - (iquietzone * 2)) % EncodedValue.Length) / 2;
 
-                        if (iBarWidth <= 0 || iquietzone <= 0)
-                            throw new Exception("EGENERATE_IMAGE-3: Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel or quiet zone determined to be less than 1 pixel)");
+                        if (barWidth <= 0 || iquietzone <= 0)
+                            throw new BarcodeException("Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel or quiet zone determined to be less than 1 pixel)");
 
                         // draw image
                         var pos = 0;
 
-                        using (var g = Graphics.FromImage(bitmap))
+                        // fill background
+                        image.Mutate(c => c.Clear(BackColor));
+
+                        // lines are barWidth wide so draw the appropriate color line vertically
+                        var pen = Pens.Solid(ForeColor, barWidth);
+                        // pen.Alignment = PenAlignment.Right; (no known setting for ImageSharp)
+
+                        while (pos < EncodedValue.Length)
                         {
-                            // fill background
-                            g.Clear(BackColor);
-
-                            // lines are fBarWidth wide so draw the appropriate color line vertically
-                            using (var pen = new Pen(ForeColor, iBarWidth))
+                            // draw the appropriate color line vertically
+                            if (EncodedValue[pos] == '1')
                             {
-                                pen.Alignment = PenAlignment.Right;
-
-                                while (pos < EncodedValue.Length)
-                                {
-                                    //draw the appropriate color line vertically
-                                    if (EncodedValue[pos] == '1')
-                                        g.DrawLine(pen, new Point((pos * iBarWidth) + shiftAdjustment + bearerwidth + iquietzone, 0), new Point((pos * iBarWidth) + shiftAdjustment + bearerwidth + iquietzone, Height));
-
-                                    pos++;
-                                }
-
-                                // bearer bars
-                                pen.Width = (float)ILHeight / 8;
-                                pen.Color = ForeColor;
-                                pen.Alignment = PenAlignment.Center;
-                                g.DrawLine(pen, new Point(0, 0), new Point(bitmap.Width, 0));//top
-                                g.DrawLine(pen, new Point(0, ILHeight), new Point(bitmap.Width, ILHeight));//bottom
-                                g.DrawLine(pen, new Point(0, 0), new Point(0, ILHeight));//left
-                                g.DrawLine(pen, new Point(bitmap.Width, 0), new Point(bitmap.Width, ILHeight));//right
+                                var startPoint = new Point((pos * barWidth) + shiftAdjustment + bearerwidth + iquietzone, 0);
+                                var endPoint = new Point((pos * barWidth) + shiftAdjustment + bearerwidth + iquietzone, Height);
+                                image.Mutate(c => c.DrawLines(pen, startPoint, endPoint));
                             }
+
+                            pos++;
                         }
 
+                        // bearer bars
+                        pen = Pens.Solid(ForeColor, ILHeight / 8f);
+                        //pen.Width = (float)ILHeight / 8;
+                        //pen.Color = ForeColor;
+                        //pen.Alignment = PenAlignment.Center; (no known setting for ImageSharp)
+
+                        image.Mutate(c => c.DrawLines(pen, new Point(0, 0), new Point(image.Width, 0))); // top
+                        image.Mutate(c => c.DrawLines(pen, new Point(0, ILHeight), new Point(image.Width, ILHeight))); // bottom
+                        image.Mutate(c => c.DrawLines(pen, new Point(0, 0), new Point(0, ILHeight))); // left
+                        image.Mutate(c => c.DrawLines(pen, new Point(image.Width, 0), new Point(image.Width, ILHeight))); // right
+
                         if (IncludeLabel)
-                            Labels.LabelITF14(this, bitmap);
+                            LabelWriter.LabelITF14<TPixel>(this, image);
 
                         break;
                     }
@@ -544,13 +578,13 @@ namespace Binner.Common.Barcode
                         // set alignment
                         switch (Alignment)
                         {
-                            case AlignmentPositions.LEFT:
+                            case AlignmentPositions.Left:
                                 shiftAdjustment = 0;
                                 break;
-                            case AlignmentPositions.RIGHT:
+                            case AlignmentPositions.Right:
                                 shiftAdjustment = (Width % EncodedValue.Length);
                                 break;
-                            case AlignmentPositions.CENTER:
+                            case AlignmentPositions.Center:
                             default:
                                 shiftAdjustment = (Width % EncodedValue.Length) / 2;
                                 break;
@@ -558,73 +592,63 @@ namespace Binner.Common.Barcode
 
                         if (IncludeLabel)
                         {
-                            if ((AlternateLabel == null || RawData.StartsWith(AlternateLabel)) && StandardizeLabel)
+                            if ((AlternateLabel == null || Data.StartsWith(AlternateLabel)) && StandardizeLabel)
                             {
                                 // UPCA standardized label
-                                var defTxt = RawData;
+                                var defTxt = Data;
                                 var labTxt = defTxt.Substring(0, 1) + "--" + defTxt.Substring(1, 6) + "--" + defTxt.Substring(7);
-
-                                var labFont = new Font(LabelFont != null ? LabelFont.FontFamily.Name : "Arial", Labels.GetFontsize(this, Width, Height, labTxt) * DotsPerPointAt96Dpi, FontStyle.Regular, GraphicsUnit.Pixel);
-                                if (LabelFont != null)
-                                {
-                                    LabelFont.Dispose();
-                                }
+                                var fontSize = LabelWriter.GetFontsize(this, Width, Height, labTxt) * DotsPerPointAt96Dpi;
+                                var labFont = new Font(LabelFont != null ? LabelFont.Family : SystemFonts.Find("Arial"), fontSize, FontStyle.Regular);
                                 LabelFont = labFont;
-
-                                ILHeight -= (labFont.Height / 2);
-
+                                ILHeight -= (labFont.LineHeight / 2);
                                 iBarWidth = Width / EncodedValue.Length;
                             }
                             else
                             {
                                 // Shift drawing down if top label.
                                 if ((LabelPosition & (LabelPositions.TopCenter | LabelPositions.TopLeft | LabelPositions.TopRight)) > 0)
-                                    topLabelAdjustment = LabelFont.Height;
+                                    topLabelAdjustment = LabelFont.LineHeight;
 
-                                ILHeight -= LabelFont.Height;
+                                ILHeight -= LabelFont.LineHeight;
                             }
                         }
 
-                        bitmap = CreateBitmap(Width, Height);
+                        image = CreateBitmap<TPixel>(Width, Height);
                         var iBarWidthModifier = 1;
                         if (iBarWidth <= 0)
-                            throw new Exception("EGENERATE_IMAGE-2: Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel)");
+                            throw new BarcodeException("Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel)");
 
                         // draw image
                         var pos = 0;
                         var halfBarWidth = (int)(iBarWidth * 0.5);
 
-                        using (Graphics g = Graphics.FromImage(bitmap))
+                        // clears the image and colors the entire background
+                        image.Mutate(c => c.Clear(BackColor));
+
+                        var backPen = Pens.Solid(BackColor, iBarWidth / iBarWidthModifier);
+                        var pen = Pens.Solid(ForeColor, iBarWidth / iBarWidthModifier);
+                        // lines are fBarWidth wide so draw the appropriate color line vertically
+                        while (pos < EncodedValue.Length)
                         {
-                            // clears the image and colors the entire background
-                            g.Clear(BackColor);
-
-                            // lines are fBarWidth wide so draw the appropriate color line vertically
-                            using (Pen backpen = new Pen(BackColor, iBarWidth / iBarWidthModifier))
+                            if (EncodedValue[pos] == '1')
                             {
-                                using (Pen pen = new Pen(ForeColor, iBarWidth / iBarWidthModifier))
-                                {
-                                    while (pos < EncodedValue.Length)
-                                    {
-                                        if (EncodedValue[pos] == '1')
-                                        {
-                                            g.DrawLine(pen, new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment), new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment));
-                                        }
-
-                                        pos++;
-                                    }
-                                }
+                                var startPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment);
+                                var endPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment);
+                                image.Mutate(c => c.DrawLines(pen, startPoint, endPoint));
                             }
+
+                            pos++;
                         }
+
                         if (IncludeLabel)
                         {
-                            if ((AlternateLabel == null || RawData.StartsWith(AlternateLabel)) && StandardizeLabel)
+                            if ((AlternateLabel == null || Data.StartsWith(AlternateLabel)) && StandardizeLabel)
                             {
-                                Labels.LabelUPCA(this, bitmap);
+                                LabelWriter.LabelUPCA<TPixel>(this, image);
                             }
                             else
                             {
-                                Labels.LabelGeneric(this, bitmap);
+                                LabelWriter.LabelGeneric<TPixel>(this, image);
                             }
                         }
 
@@ -646,13 +670,13 @@ namespace Binner.Common.Barcode
                         // set alignment
                         switch (Alignment)
                         {
-                            case AlignmentPositions.LEFT:
+                            case AlignmentPositions.Left:
                                 shiftAdjustment = 0;
                                 break;
-                            case AlignmentPositions.RIGHT:
+                            case AlignmentPositions.Right:
                                 shiftAdjustment = (Width % EncodedValue.Length);
                                 break;
-                            case AlignmentPositions.CENTER:
+                            case AlignmentPositions.Center:
                             default:
                                 shiftAdjustment = (Width % EncodedValue.Length) / 2;
                                 break;
@@ -660,75 +684,66 @@ namespace Binner.Common.Barcode
 
                         if (IncludeLabel)
                         {
-                            if (((AlternateLabel == null) || RawData.StartsWith(AlternateLabel)) && StandardizeLabel)
+                            if (((AlternateLabel == null) || Data.StartsWith(AlternateLabel)) && StandardizeLabel)
                             {
                                 // EAN13 standardized label
-                                var defTxt = RawData;
+                                var defTxt = Data;
                                 var labTxt = defTxt.Substring(0, 1) + "--" + defTxt.Substring(1, 6) + "--" + defTxt.Substring(7);
 
                                 var font = LabelFont;
-                                var labFont = new Font(font != null ? font.FontFamily.Name : "Arial", Labels.GetFontsize(this, Width, Height, labTxt) * DotsPerPointAt96Dpi, FontStyle.Regular, GraphicsUnit.Pixel);
 
-                                if (font != null)
-                                {
-                                    LabelFont.Dispose();
-                                }
-
+                                var fontSize = LabelWriter.GetFontsize(this, Width, Height, labTxt) * DotsPerPointAt96Dpi;
+                                var labFont = new Font(font != null ? font.Family : SystemFonts.Find("Arial"), fontSize, FontStyle.Regular);
                                 LabelFont = labFont;
-
-                                ILHeight -= (labFont.Height / 2);
+                                ILHeight -= (labFont.LineHeight / 2);
                             }
                             else
                             {
                                 // Shift drawing down if top label.
                                 if ((LabelPosition & (LabelPositions.TopCenter | LabelPositions.TopLeft | LabelPositions.TopRight)) > 0)
-                                    topLabelAdjustment = LabelFont.Height;
+                                    topLabelAdjustment = LabelFont.LineHeight;
 
-                                ILHeight -= LabelFont.Height;
+                                ILHeight -= LabelFont.LineHeight;
                             }
                         }
 
-                        bitmap = CreateBitmap(Width, Height);
+                        image = CreateBitmap<TPixel>(Width, Height);
                         var iBarWidth = Width / EncodedValue.Length;
                         var iBarWidthModifier = 1;
                         if (iBarWidth <= 0)
-                            throw new Exception("EGENERATE_IMAGE-2: Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel)");
+                            throw new Exception("Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel)");
 
                         // draw image
                         var pos = 0;
                         var halfBarWidth = (int)(iBarWidth * 0.5);
 
-                        using (var g = Graphics.FromImage(bitmap))
+
+                        // clears the image and colors the entire background
+                        image.Mutate(c => c.Clear(BackColor));
+
+                        var backPen = Pens.Solid(BackColor, iBarWidth / iBarWidthModifier);
+                        var pen = Pens.Solid(ForeColor, iBarWidth / iBarWidthModifier);
+                        while (pos < EncodedValue.Length)
                         {
-                            // clears the image and colors the entire background
-                            g.Clear(BackColor);
-
-                            // lines are fBarWidth wide so draw the appropriate color line vertically
-                            using (var backpen = new Pen(BackColor, iBarWidth / iBarWidthModifier))
+                            if (EncodedValue[pos] == '1')
                             {
-                                using (var pen = new Pen(ForeColor, iBarWidth / iBarWidthModifier))
-                                {
-                                    while (pos < EncodedValue.Length)
-                                    {
-                                        if (EncodedValue[pos] == '1')
-                                        {
-                                            g.DrawLine(pen, new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment), new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment));
-                                        }
-
-                                        pos++;
-                                    }
-                                }
+                                var startPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment);
+                                var endPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment);
+                                image.Mutate(c => c.DrawLines(pen, startPoint, endPoint));
                             }
+
+                            pos++;
                         }
+
                         if (IncludeLabel)
                         {
-                            if (((AlternateLabel == null) || RawData.StartsWith(AlternateLabel)) && StandardizeLabel)
+                            if (((AlternateLabel == null) || Data.StartsWith(AlternateLabel)) && StandardizeLabel)
                             {
-                                Labels.LabelEAN13(this, bitmap);
+                                LabelWriter.LabelEAN13<TPixel>(this, image);
                             }
                             else
                             {
-                                Labels.LabelGeneric(this, bitmap);
+                                LabelWriter.LabelGeneric<TPixel>(this, image);
                             }
                         }
 
@@ -749,13 +764,13 @@ namespace Binner.Common.Barcode
                         {
                             // Shift drawing down if top label.
                             if ((LabelPosition & (LabelPositions.TopCenter | LabelPositions.TopLeft | LabelPositions.TopRight)) > 0)
-                                topLabelAdjustment = LabelFont.Height;
+                                topLabelAdjustment = LabelFont.LineHeight;
 
-                            ILHeight -= LabelFont.Height;
+                            ILHeight -= LabelFont.LineHeight;
                         }
 
 
-                        bitmap = CreateBitmap(Width, Height);
+                        image = CreateBitmap<TPixel>(Width, Height);
                         var iBarWidth = Width / EncodedValue.Length;
                         var shiftAdjustment = 0;
                         var iBarWidthModifier = 1;
@@ -766,69 +781,74 @@ namespace Binner.Common.Barcode
                         // set alignment
                         switch (Alignment)
                         {
-                            case AlignmentPositions.LEFT:
+                            case AlignmentPositions.Left:
                                 shiftAdjustment = 0;
                                 break;
-                            case AlignmentPositions.RIGHT:
+                            case AlignmentPositions.Right:
                                 shiftAdjustment = (Width % EncodedValue.Length);
                                 break;
-                            case AlignmentPositions.CENTER:
+                            case AlignmentPositions.Center:
                             default:
                                 shiftAdjustment = (Width % EncodedValue.Length) / 2;
                                 break;
                         }
 
                         if (iBarWidth <= 0)
-                            throw new Exception("EGENERATE_IMAGE-2: Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel)");
+                            throw new BarcodeException("Image size specified not large enough to draw image. (Bar size determined to be less than 1 pixel)");
 
                         // draw image
                         var pos = 0;
                         var halfBarWidth = (int)Math.Round(iBarWidth * 0.5);
 
-                        using (var g = Graphics.FromImage(bitmap))
-                        {
-                            // clears the image and colors the entire background
-                            g.Clear(BackColor);
+                        // clears the image and colors the entire background
+                        image.Mutate(c => c.Clear(BackColor));
 
-                            // lines are fBarWidth wide so draw the appropriate color line vertically
-                            using (var backpen = new Pen(BackColor, iBarWidth / iBarWidthModifier))
+                        var backPen = Pens.Solid(BackColor, iBarWidth / iBarWidthModifier);
+                        var pen = Pens.Solid(ForeColor, iBarWidth / iBarWidthModifier);
+                        // lines are fBarWidth wide so draw the appropriate color line vertically
+                        while (pos < EncodedValue.Length)
+                        {
+                            if (BarcodeType == BarcodeType.PostNet)
                             {
-                                using (var pen = new Pen(ForeColor, iBarWidth / iBarWidthModifier))
+                                //draw half bars in postnet
+                                if (EncodedValue[pos] == '0')
                                 {
-                                    while (pos < EncodedValue.Length)
-                                    {
-                                        if (BarcodeType == BarcodeType.PostNet)
-                                        {
-                                            //draw half bars in postnet
-                                            if (EncodedValue[pos] == '0')
-                                                g.DrawLine(pen, new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment), new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, (ILHeight / 2) + topLabelAdjustment));
-                                            else
-                                                g.DrawLine(pen, new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment), new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment));
-                                        }
-                                        else
-                                        {
-                                            if (EncodedValue[pos] == '1')
-                                                g.DrawLine(pen, new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment), new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment));
-                                        }
-                                        pos++;
-                                    }
+                                    var startPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment);
+                                    var endPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, (ILHeight / 2) + topLabelAdjustment);
+                                    image.Mutate(c => c.DrawLines(pen, startPoint, endPoint));
+                                }
+                                else
+                                {
+                                    var startPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment);
+                                    var endPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment);
+                                    image.Mutate(c => c.DrawLines(pen, startPoint, endPoint));
                                 }
                             }
+                            else
+                            {
+                                if (EncodedValue[pos] == '1')
+                                {
+                                    var startPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, topLabelAdjustment);
+                                    var endPoint = new Point(pos * iBarWidth + shiftAdjustment + halfBarWidth, ILHeight + topLabelAdjustment);
+                                    image.Mutate(c => c.DrawLines(pen, startPoint, endPoint));
+                                }
+                            }
+                            pos++;
                         }
+
                         if (IncludeLabel)
                         {
-                            Labels.LabelGeneric(this, bitmap);
+                            LabelWriter.LabelGeneric<TPixel>(this, image);
                         }
 
                         break;
                     }
             }
 
-            EncodedImage = bitmap;
-
+            EncodedImage = image;
             EncodingTime += ((DateTime.Now - dtStartTime)).TotalMilliseconds;
 
-            return bitmap;
+            return image;
         }
 
         /// <summary>
@@ -854,38 +874,46 @@ namespace Binner.Common.Barcode
             }
             catch (Exception ex)
             {
-                throw new Exception("EGETIMAGEDATA-1: Could not retrieve image data. " + ex.Message);
-            }  
+                throw new BarcodeException("Could not retrieve image data due to exception! " + ex.Message, ex);
+            }
             return imageData;
         }
 
         /// <summary>
         /// Saves an encoded image to a specified file and type.
         /// </summary>
-        /// <param name="Filename">Filename to save to.</param>
-        /// <param name="FileType">Format to use.</param>
-        public void SaveImage(string Filename, SaveTypes FileType)
+        /// <param name="filename">Filename to save to.</param>
+        /// <param name="fileType">Format to use.</param>
+        public void SaveImage(string filename, SaveTypes fileType)
         {
             try
             {
                 if (EncodedImage != null)
                 {
-                    ImageFormat imageformat;
-                    switch (FileType)
+                    switch (fileType)
                     {
-                        case SaveTypes.Bmp: imageformat = ImageFormat.Bmp; break;
-                        case SaveTypes.Gif: imageformat = ImageFormat.Gif; break;
-                        case SaveTypes.Jpg: imageformat = ImageFormat.Jpeg; break;
-                        case SaveTypes.Png: imageformat = ImageFormat.Png; break;
-                        case SaveTypes.Tiff: imageformat = ImageFormat.Tiff; break;
-                        default: imageformat = ImageFormat; break;
+                        case SaveTypes.Bmp:
+                            EncodedImage.SaveAsBmp(filename);
+                            break;
+                        case SaveTypes.Gif:
+                            EncodedImage.SaveAsGif(filename);
+                            break;
+                        case SaveTypes.Jpg:
+                            EncodedImage.SaveAsJpeg(filename);
+                            break;
+                        case SaveTypes.Tiff:
+                            EncodedImage.SaveAsTga(filename);
+                            break;
+                        default:
+                        case SaveTypes.Png:
+                            EncodedImage.SaveAsPng(filename);
+                            break;
                     }
-                    ((Bitmap)EncodedImage).Save(Filename, imageformat);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("ESAVEIMAGE-1: Could not save image.\n\n=======================\n\n" + ex.Message);
+                throw new BarcodeException("Could not save image due to exception! " + ex.Message, ex);
             }
         }
 
@@ -893,101 +921,119 @@ namespace Binner.Common.Barcode
         /// Saves an encoded image to a specified stream.
         /// </summary>
         /// <param name="stream">Stream to write image to.</param>
-        /// <param name="FileType">Format to use.</param>
-        public void SaveImage(Stream stream, SaveTypes FileType)
+        /// <param name="fileType">Format to use.</param>
+        public void SaveImage(Stream stream, SaveTypes fileType)
         {
             try
             {
                 if (EncodedImage != null)
                 {
-                    ImageFormat imageformat;
-                    switch (FileType)
+                    switch (fileType)
                     {
-                        case SaveTypes.Bmp: imageformat = ImageFormat.Bmp; break;
-                        case SaveTypes.Gif: imageformat = ImageFormat.Gif; break;
-                        case SaveTypes.Jpg: imageformat = ImageFormat.Jpeg; break;
-                        case SaveTypes.Png: imageformat = ImageFormat.Png; break;
-                        case SaveTypes.Tiff: imageformat = ImageFormat.Tiff; break;
-                        default: imageformat = ImageFormat; break;
+                        case SaveTypes.Bmp:
+                            EncodedImage.SaveAsBmp(stream);
+                            break;
+                        case SaveTypes.Gif:
+                            EncodedImage.SaveAsGif(stream);
+                            break;
+                        case SaveTypes.Jpg:
+                            EncodedImage.SaveAsJpeg(stream);
+                            break;
+                        case SaveTypes.Tiff:
+                            EncodedImage.SaveAsTga(stream);
+                            break;
+                        default:
+                        case SaveTypes.Png:
+                            EncodedImage.SaveAsPng(stream);
+                            break;
                     }
-                    ((Bitmap)EncodedImage).Save(stream, imageformat);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("ESAVEIMAGE-2: Could not save image.\n\n=======================\n\n" + ex.Message);
+                throw new BarcodeException("Could not save image due to exception! " + ex.Message, ex);
             }
         }
 
         /// <summary>
         /// Returns the size of the EncodedImage in real world coordinates (millimeters or inches).
         /// </summary>
-        /// <param name="Metric">Millimeters if true, otherwise Inches.</param>
+        /// <param name="units">Specify the real world units</param>
         /// <returns></returns>
-        public ImageSize GetSizeOfImage(bool Metric)
+        public ImageSize GetSizeOfImage(ImageUnits units)
         {
-            var Width = 0d;
-            var Height = 0d;
+            var width = 0d;
+            var height = 0d;
             if (EncodedImage != null && EncodedImage.Width > 0 && EncodedImage.Height > 0)
             {
                 var MillimetersPerInch = 25.4d;
-                using var g = Graphics.FromImage(EncodedImage);
-                Width = EncodedImage.Width / g.DpiX;
-                Height = EncodedImage.Height / g.DpiY;
+                width = EncodedImage.Width / EncodedImage.Metadata.HorizontalResolution;
+                height = EncodedImage.Height / EncodedImage.Metadata.VerticalResolution;
 
-                if (Metric)
+                if (units == ImageUnits.Millimeters)
                 {
-                    Width *= MillimetersPerInch;
-                    Height *= MillimetersPerInch;
+                    width *= MillimetersPerInch;
+                    height *= MillimetersPerInch;
                 }
             }
 
-            return new ImageSize(Width, Height, Metric);
+            return new ImageSize(width, height, units);
         }
 
         #endregion
 
         #region XML Methods
 
-        private SaveData GetSaveData(Boolean includeImage = true)
+        private SaveData GetSaveData(bool includeImage = true)
         {
-            var saveData = new SaveData();
-            saveData.Type = BarcodeType.ToString();
-            saveData.RawData = RawData;
-            saveData.EncodedValue = EncodedValue;
-            saveData.EncodingTime = EncodingTime;
-            saveData.IncludeLabel = IncludeLabel;
-            saveData.Forecolor = ColorTranslator.ToHtml(ForeColor);
-            saveData.Backcolor = ColorTranslator.ToHtml(BackColor);
-            saveData.CountryAssigningManufacturingCode = CountryAssigningManufacturerCode;
-            saveData.ImageWidth = Width;
-            saveData.ImageHeight = Height;
-            saveData.RotateFlipType = RotateFlipType;
-            saveData.LabelPosition = (int)LabelPosition;
-            saveData.LabelFont = LabelFont.ToString();
-            saveData.ImageFormat = ImageFormat.ToString();
-            saveData.Alignment = (int)Alignment;
+            var saveData = new SaveData
+            {
+                Type = BarcodeType.ToString(),
+                RawData = Data,
+                EncodedValue = EncodedValue,
+                EncodingTime = EncodingTime,
+                IncludeLabel = IncludeLabel,
+                Forecolor = ForeColor.ToHex(),
+                Backcolor = BackColor.ToHex(),
+                CountryAssigningManufacturingCode = CountryAssigningManufacturerCode,
+                ImageWidth = Width,
+                ImageHeight = Height,
+                RotateFlipType = RotateFlipType,
+                LabelPosition = (int)LabelPosition,
+                LabelFont = LabelFont.ToString(),
+                ImageFormat = ImageFormat.ToString(),
+                Alignment = (int)Alignment
+            };
 
             // get image in base 64
             if (includeImage)
             {
-                using var ms = new MemoryStream();
-                EncodedImage.Save(ms, ImageFormat);
-                saveData.Image = Convert.ToBase64String(ms.ToArray(), Base64FormattingOptions.None);
+                saveData.Image = Convert.ToBase64String(EncodedImageBytes, Base64FormattingOptions.None);
             }
             return saveData;
         }
 
-        public string ToJSON(bool includeImage = true)
+        /// <summary>
+        /// Get the SaveData as Json
+        /// </summary>
+        /// <param name="includeImage"></param>
+        /// <returns></returns>
+        public string ToJson(bool includeImage = true)
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(GetSaveData(includeImage));
             return (new UTF8Encoding(false)).GetString(bytes); // no BOM
         }
 
-        public string ToXML(bool includeImage = true)
+        /// <summary>
+        /// Get the SaveData as Xml
+        /// </summary>
+        /// <param name="includeImage"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public string ToXml(bool includeImage = true)
         {
             if (EncodedValue == "")
-                throw new Exception("EGETXML-1: Could not retrieve XML due to the barcode not being encoded first.  Please call Encode first.");
+                throw new BarcodeException("Could not retrieve XML due to the barcode not being encoded first. Please call Encode first.");
             else
             {
                 try
@@ -1000,12 +1046,17 @@ namespace Binner.Common.Barcode
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("EGETXML-2: " + ex.Message);
+                    throw new BarcodeException("Could not convert to Xml. ", ex);
                 }
             }
         }
-
-        public static SaveData FromJSON(Stream jsonStream)
+        
+        /// <summary>
+        /// Get a SaveData object from a json formatted stream
+        /// </summary>
+        /// <param name="jsonStream"></param>
+        /// <returns></returns>
+        public static SaveData FromJson(Stream jsonStream)
         {
             using (jsonStream)
             {
@@ -1023,7 +1074,13 @@ namespace Binner.Common.Barcode
             }
         }
 
-        public static SaveData FromXML(Stream xmlStream)
+        /// <summary>
+        /// Get the SaveData from an xml formatted stream
+        /// </summary>
+        /// <param name="xmlStream"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static SaveData FromXml(Stream xmlStream)
         {
             try
             {
@@ -1033,21 +1090,28 @@ namespace Binner.Common.Barcode
             }
             catch (Exception ex)
             {
-                throw new Exception("EGETIMAGEFROMXML-1: " + ex.Message);
+                throw new BarcodeException("Could not parse Xml to SaveData.", ex);
             }
         }
 
-        public static Image GetImageFromSaveData(SaveData saveData)
+        /// <summary>
+        /// Get the image from a SaveData object
+        /// </summary>
+        /// <typeparam name="TPixel"></typeparam>
+        /// <param name="saveData"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static Image<TPixel> GetImageFromSaveData<TPixel>(SaveData saveData) where TPixel : unmanaged, IPixel<TPixel>
         {
             try
             {
                 // loading it to memory stream and then to image object
                 using var ms = new MemoryStream(Convert.FromBase64String(saveData.Image));
-                return Image.FromStream(ms);
+                return Image.Load<TPixel>(ms);
             }
             catch (Exception ex)
             {
-                throw new Exception("EGETIMAGEFROMXML-1: " + ex.Message);
+                throw new BarcodeException("Could not get image from SaveData.", ex);
             }
         }
 
@@ -1058,112 +1122,113 @@ namespace Binner.Common.Barcode
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="iType">Type of encoding to use.</param>
-        /// <param name="Data">Raw data to encode.</param>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
         /// <returns>Image representing the barcode.</returns>
-        public static Image DoEncode(BarcodeType iType, string Data)
+        public static Image<TPixel> DoEncode<TPixel>(string stringToEncode, BarcodeType barcodeType) where TPixel : unmanaged, IPixel<TPixel>
         {
             using var b = new Barcode();
-            return b.Encode(iType, Data);
+            return b.Encode<TPixel>(stringToEncode, barcodeType);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="iType">Type of encoding to use.</param>
-        /// <param name="Data">Raw data to encode.</param>
-        /// <param name="XML">XML representation of the data and the image of the barcode.</param>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="xml">XML representation of the data and the image of the barcode.</param>
         /// <returns>Image representing the barcode.</returns>
-        public static Image DoEncode(BarcodeType iType, string Data, ref string XML)
+        public static Image<TPixel> DoEncode<TPixel>(string stringToEncode, BarcodeType barcodeType, ref string xml) where TPixel : unmanaged, IPixel<TPixel>
         {
             using var b = new Barcode();
-            var i = b.Encode(iType, Data);
-            XML = b.ToXML();
+            var i = b.Encode<TPixel>(stringToEncode, barcodeType);
+            xml = b.ToXml();
             return i;
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="iType">Type of encoding to use.</param>
-        /// <param name="Data">Raw data to encode.</param>
-        /// <param name="IncludeLabel">Include the label at the bottom of the image with data encoded.</param>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="includeLabel">Include the label at the bottom of the image with data encoded.</param>
         /// <returns>Image representing the barcode.</returns>
-        public static Image DoEncode(BarcodeType iType, string Data, bool IncludeLabel)
+        public static Image<TPixel> DoEncode<TPixel>(string stringToEncode, BarcodeType barcodeType, bool includeLabel) where TPixel : unmanaged, IPixel<TPixel>
         {
             using var b = new Barcode();
-            b.IncludeLabel = IncludeLabel;
-            return b.Encode(iType, Data);
+            b.IncludeLabel = includeLabel;
+            return b.Encode<TPixel>(stringToEncode, barcodeType);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="iType">Type of encoding to use.</param>
-        /// <param name="data">Raw data to encode.</param>
-        /// <param name="IncludeLabel">Include the label at the bottom of the image with data encoded.</param>
-        /// <param name="Width">Width of the resulting barcode.(pixels)</param>
-        /// <param name="Height">Height of the resulting barcode.(pixels)</param>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="includeLabel">Include the label at the bottom of the image with data encoded.</param>
+        /// <param name="width">Width of the resulting barcode.(pixels)</param>
+        /// <param name="height">Height of the resulting barcode.(pixels)</param>
         /// <returns>Image representing the barcode.</returns>
-        public static Image DoEncode(BarcodeType iType, string Data, bool IncludeLabel, int Width, int Height)
+        public static Image<TPixel> DoEncode<TPixel>(string stringToEncode, BarcodeType barcodeType, bool includeLabel, int width, int height) where TPixel : unmanaged, IPixel<TPixel>
         {
             using var b = new Barcode();
-            b.IncludeLabel = IncludeLabel;
-            return b.Encode(iType, Data, Width, Height);
+            b.IncludeLabel = includeLabel;
+            return b.Encode<TPixel>(stringToEncode, barcodeType, width, height);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="iType">Type of encoding to use.</param>
-        /// <param name="Data">Raw data to encode.</param>
-        /// <param name="IncludeLabel">Include the label at the bottom of the image with data encoded.</param>
-        /// <param name="DrawColor">Foreground color</param>
-        /// <param name="BackColor">Background color</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="includeLabel">Include the label at the bottom of the image with data encoded.</param>
+        /// <param name="foregroundColor">Foreground color</param>
+        /// <param name="backgroundColor">Background color</param>
         /// <returns>Image representing the barcode.</returns>
-        public static Image DoEncode(BarcodeType iType, string Data, bool IncludeLabel, Color DrawColor, Color BackColor)
+        public static Image<TPixel> DoEncode<TPixel>(string stringToEncode, BarcodeType barcodeType, bool includeLabel, Color foregroundColor, Color backgroundColor) where TPixel : unmanaged, IPixel<TPixel>
         {
             using var b = new Barcode();
-            b.IncludeLabel = IncludeLabel;
-            return b.Encode(iType, Data, DrawColor, BackColor);
+            b.IncludeLabel = includeLabel;
+            return b.Encode<TPixel>(stringToEncode, barcodeType, foregroundColor, backgroundColor);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="iType">Type of encoding to use.</param>
-        /// <param name="Data">Raw data to encode.</param>
-        /// <param name="IncludeLabel">Include the label at the bottom of the image with data encoded.</param>
-        /// <param name="DrawColor">Foreground color</param>
-        /// <param name="BackColor">Background color</param>
-        /// <param name="Width">Width of the resulting barcode.(pixels)</param>
-        /// <param name="Height">Height of the resulting barcode.(pixels)</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="includeLabel">Include the label at the bottom of the image with data encoded.</param>
+        /// <param name="foregroundColor">Foreground color</param>
+        /// <param name="backgroundColor">Background color</param>
+        /// <param name="width">Width of the resulting barcode.(pixels)</param>
+        /// <param name="height">Height of the resulting barcode.(pixels)</param>
         /// <returns>Image representing the barcode.</returns>
-        public static Image DoEncode(BarcodeType iType, string Data, bool IncludeLabel, Color DrawColor, Color BackColor, int Width, int Height)
+        public static Image<TPixel> DoEncode<TPixel>(string stringToEncode, BarcodeType barcodeType, bool includeLabel, Color foregroundColor, Color backgroundColor, int width, int height) where TPixel : unmanaged, IPixel<TPixel>
         {
             using var b = new Barcode();
-            b.IncludeLabel = IncludeLabel;
-            return b.Encode(iType, Data, DrawColor, BackColor, Width, Height);
+            b.IncludeLabel = includeLabel;
+            return b.Encode<TPixel>(stringToEncode, barcodeType, foregroundColor, backgroundColor, width, height);
         }
 
         /// <summary>
         /// Encodes the raw data into binary form representing bars and spaces.  Also generates an Image of the barcode.
         /// </summary>
-        /// <param name="iType">Type of encoding to use.</param>
-        /// <param name="Data">Raw data to encode.</param>
-        /// <param name="IncludeLabel">Include the label at the bottom of the image with data encoded.</param>
-        /// <param name="DrawColor">Foreground color</param>
-        /// <param name="BackColor">Background color</param>
-        /// <param name="Width">Width of the resulting barcode.(pixels)</param>
-        /// <param name="Height">Height of the resulting barcode.(pixels)</param>
-        /// <param name="XML">XML representation of the data and the image of the barcode.</param>
+        /// <param name="stringToEncode">Raw data to encode.</param>
+        /// <param name="barcodeType">Type of encoding to use.</param>
+        /// <param name="includeLabel">Include the label at the bottom of the image with data encoded.</param>
+        /// <param name="foregroundColor">Foreground color</param>
+        /// <param name="backgroundColor">Background color</param>
+        /// <param name="width">Width of the resulting barcode.(pixels)</param>
+        /// <param name="height">Height of the resulting barcode.(pixels)</param>
+        /// <param name="xml">XML representation of the data and the image of the barcode.</param>
         /// <returns>Image representing the barcode.</returns>
-        public static Image DoEncode(BarcodeType iType, string Data, bool IncludeLabel, Color DrawColor, Color BackColor, int Width, int Height, ref string XML)
+        public static Image<TPixel> DoEncode<TPixel>(string stringToEncode, BarcodeType barcodeType, bool includeLabel, Color foregroundColor, Color backgroundColor, int width, int height, ref string xml)
+            where TPixel : unmanaged, IPixel<TPixel>
         {
             using var b = new Barcode();
-            b.IncludeLabel = IncludeLabel;
-            var i = b.Encode(iType, Data, DrawColor, BackColor, Width, Height);
-            XML = b.ToXML();
+            b.IncludeLabel = includeLabel;
+            var i = b.Encode<TPixel>(stringToEncode, barcodeType, foregroundColor, backgroundColor, width, height);
+            xml = b.ToXml();
             return i;
         }
 
@@ -1175,20 +1240,17 @@ namespace Binner.Common.Barcode
             {
                 if (disposing)
                 {
-
                 }
 
                 _disposedValue = true;
-                LabelFont?.Dispose();
                 LabelFont = null;
 
                 EncodedImage?.Dispose();
                 EncodedImage = null;
 
-                RawData = null;
+                Data = null;
                 EncodedValue = null;
                 CountryAssigningManufacturerCode = null;
-                ImageFormat = null;
             }
         }
 

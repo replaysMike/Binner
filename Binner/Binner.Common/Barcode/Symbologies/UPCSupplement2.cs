@@ -3,13 +3,13 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// UPC Supplement-2 encoding
     /// </summary>
-    public class UPCSupplement2 : BarcodeSymbology, IBarcode
+    public class UpcSupplement2 : BarcodeSymbology
     {
         private readonly string [] _eanCodeA    = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
         private readonly string [] _eanCodeB    = { "0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111" };
         private readonly string[] _upcSupp2 = { "aa", "ab", "ba", "bb" };
 
-        public UPCSupplement2(string input)
+        public UpcSupplement2(string input)
         {
             RawData = input;
         }
@@ -55,7 +55,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeUPCSupplemental2();
+        public override string EncodedValue => EncodeUPCSupplemental2();
 
         #endregion
 

@@ -5,10 +5,10 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Code 39 encoding
     /// </summary>
-    public class Code39 : BarcodeSymbology, IBarcode
+    public class Code39 : BarcodeSymbology
     {
-        private readonly System.Collections.Hashtable C39Code = new();
-        private readonly System.Collections.Hashtable ExtC39Translation = new();
+        private readonly System.Collections.Hashtable _c39Code = new();
+        private readonly System.Collections.Hashtable _extC39Translation = new();
         private readonly bool _allowExtended;
         private readonly bool _enableChecksum;
 
@@ -64,7 +64,7 @@ namespace Binner.Common.Barcode.Symbologies
             {
                 try
                 {
-                    result += C39Code[c].ToString();
+                    result += _c39Code[c].ToString();
                     result += "0"; // whitespace
                 }
                 catch
@@ -76,154 +76,154 @@ namespace Binner.Common.Barcode.Symbologies
                 }
             }
 
-            result = result.Substring(0, result.Length-1);
-            
+            result = result.Substring(0, result.Length - 1);
+
             // clear the hashtable so it no longer takes up memory
-            C39Code.Clear();
+            _c39Code.Clear();
 
             return result;
         }
         private void InitCode39()
         {
-            C39Code.Clear();
-            C39Code.Add('0', "101001101101");
-            C39Code.Add('1', "110100101011");
-            C39Code.Add('2', "101100101011");
-            C39Code.Add('3', "110110010101");
-            C39Code.Add('4', "101001101011");
-            C39Code.Add('5', "110100110101");
-            C39Code.Add('6', "101100110101");
-            C39Code.Add('7', "101001011011");
-            C39Code.Add('8', "110100101101");
-            C39Code.Add('9', "101100101101");
-            C39Code.Add('A', "110101001011");
-            C39Code.Add('B', "101101001011");
-            C39Code.Add('C', "110110100101");
-            C39Code.Add('D', "101011001011");
-            C39Code.Add('E', "110101100101");
-            C39Code.Add('F', "101101100101");
-            C39Code.Add('G', "101010011011");
-            C39Code.Add('H', "110101001101");
-            C39Code.Add('I', "101101001101");
-            C39Code.Add('J', "101011001101");
-            C39Code.Add('K', "110101010011");
-            C39Code.Add('L', "101101010011");
-            C39Code.Add('M', "110110101001");
-            C39Code.Add('N', "101011010011");
-            C39Code.Add('O', "110101101001");
-            C39Code.Add('P', "101101101001");
-            C39Code.Add('Q', "101010110011");
-            C39Code.Add('R', "110101011001");
-            C39Code.Add('S', "101101011001");
-            C39Code.Add('T', "101011011001");
-            C39Code.Add('U', "110010101011");
-            C39Code.Add('V', "100110101011");
-            C39Code.Add('W', "110011010101");
-            C39Code.Add('X', "100101101011");
-            C39Code.Add('Y', "110010110101");
-            C39Code.Add('Z', "100110110101");
-            C39Code.Add('-', "100101011011");
-            C39Code.Add('.', "110010101101");
-            C39Code.Add(' ', "100110101101");
-            C39Code.Add('$', "100100100101");
-            C39Code.Add('/', "100100101001");
-            C39Code.Add('+', "100101001001");
-            C39Code.Add('%', "101001001001");
-            C39Code.Add('*', "100101101101");
+            _c39Code.Clear();
+            _c39Code.Add('0', "101001101101");
+            _c39Code.Add('1', "110100101011");
+            _c39Code.Add('2', "101100101011");
+            _c39Code.Add('3', "110110010101");
+            _c39Code.Add('4', "101001101011");
+            _c39Code.Add('5', "110100110101");
+            _c39Code.Add('6', "101100110101");
+            _c39Code.Add('7', "101001011011");
+            _c39Code.Add('8', "110100101101");
+            _c39Code.Add('9', "101100101101");
+            _c39Code.Add('A', "110101001011");
+            _c39Code.Add('B', "101101001011");
+            _c39Code.Add('C', "110110100101");
+            _c39Code.Add('D', "101011001011");
+            _c39Code.Add('E', "110101100101");
+            _c39Code.Add('F', "101101100101");
+            _c39Code.Add('G', "101010011011");
+            _c39Code.Add('H', "110101001101");
+            _c39Code.Add('I', "101101001101");
+            _c39Code.Add('J', "101011001101");
+            _c39Code.Add('K', "110101010011");
+            _c39Code.Add('L', "101101010011");
+            _c39Code.Add('M', "110110101001");
+            _c39Code.Add('N', "101011010011");
+            _c39Code.Add('O', "110101101001");
+            _c39Code.Add('P', "101101101001");
+            _c39Code.Add('Q', "101010110011");
+            _c39Code.Add('R', "110101011001");
+            _c39Code.Add('S', "101101011001");
+            _c39Code.Add('T', "101011011001");
+            _c39Code.Add('U', "110010101011");
+            _c39Code.Add('V', "100110101011");
+            _c39Code.Add('W', "110011010101");
+            _c39Code.Add('X', "100101101011");
+            _c39Code.Add('Y', "110010110101");
+            _c39Code.Add('Z', "100110110101");
+            _c39Code.Add('-', "100101011011");
+            _c39Code.Add('.', "110010101101");
+            _c39Code.Add(' ', "100110101101");
+            _c39Code.Add('$', "100100100101");
+            _c39Code.Add('/', "100100101001");
+            _c39Code.Add('+', "100101001001");
+            _c39Code.Add('%', "101001001001");
+            _c39Code.Add('*', "100101101101");
         }
 
         private void InitExtendedCode39()
         {
-            ExtC39Translation.Clear();
-            ExtC39Translation.Add(Convert.ToChar(0).ToString(), "%U");
-            ExtC39Translation.Add(Convert.ToChar(1).ToString(), "$A");
-            ExtC39Translation.Add(Convert.ToChar(2).ToString(), "$B");
-            ExtC39Translation.Add(Convert.ToChar(3).ToString(), "$C");
-            ExtC39Translation.Add(Convert.ToChar(4).ToString(), "$D");
-            ExtC39Translation.Add(Convert.ToChar(5).ToString(), "$E");
-            ExtC39Translation.Add(Convert.ToChar(6).ToString(), "$F");
-            ExtC39Translation.Add(Convert.ToChar(7).ToString(), "$G");
-            ExtC39Translation.Add(Convert.ToChar(8).ToString(), "$H");
-            ExtC39Translation.Add(Convert.ToChar(9).ToString(), "$I");
-            ExtC39Translation.Add(Convert.ToChar(10).ToString(), "$J");
-            ExtC39Translation.Add(Convert.ToChar(11).ToString(), "$K");
-            ExtC39Translation.Add(Convert.ToChar(12).ToString(), "$L");
-            ExtC39Translation.Add(Convert.ToChar(13).ToString(), "$M");
-            ExtC39Translation.Add(Convert.ToChar(14).ToString(), "$N");
-            ExtC39Translation.Add(Convert.ToChar(15).ToString(), "$O");
-            ExtC39Translation.Add(Convert.ToChar(16).ToString(), "$P");
-            ExtC39Translation.Add(Convert.ToChar(17).ToString(), "$Q");
-            ExtC39Translation.Add(Convert.ToChar(18).ToString(), "$R");
-            ExtC39Translation.Add(Convert.ToChar(19).ToString(), "$S");
-            ExtC39Translation.Add(Convert.ToChar(20).ToString(), "$T");
-            ExtC39Translation.Add(Convert.ToChar(21).ToString(), "$U");
-            ExtC39Translation.Add(Convert.ToChar(22).ToString(), "$V");
-            ExtC39Translation.Add(Convert.ToChar(23).ToString(), "$W");
-            ExtC39Translation.Add(Convert.ToChar(24).ToString(), "$X");
-            ExtC39Translation.Add(Convert.ToChar(25).ToString(), "$Y");
-            ExtC39Translation.Add(Convert.ToChar(26).ToString(), "$Z");
-            ExtC39Translation.Add(Convert.ToChar(27).ToString(), "%A");
-            ExtC39Translation.Add(Convert.ToChar(28).ToString(), "%B");
-            ExtC39Translation.Add(Convert.ToChar(29).ToString(), "%C");
-            ExtC39Translation.Add(Convert.ToChar(30).ToString(), "%D");
-            ExtC39Translation.Add(Convert.ToChar(31).ToString(), "%E");
-            ExtC39Translation.Add("!", "/A");
-            ExtC39Translation.Add("\"", "/B");
-            ExtC39Translation.Add("#", "/C");
-            ExtC39Translation.Add("$", "/D");
-            ExtC39Translation.Add("%", "/E");
-            ExtC39Translation.Add("&", "/F");
-            ExtC39Translation.Add("'", "/G");
-            ExtC39Translation.Add("(", "/H");
-            ExtC39Translation.Add(")", "/I");
-            ExtC39Translation.Add("*", "/J");
-            ExtC39Translation.Add("+", "/K");
-            ExtC39Translation.Add(",", "/L");
-            ExtC39Translation.Add("/", "/O");
-            ExtC39Translation.Add(":", "/Z");
-            ExtC39Translation.Add(";", "%F");
-            ExtC39Translation.Add("<", "%G");
-            ExtC39Translation.Add("=", "%H");
-            ExtC39Translation.Add(">", "%I");
-            ExtC39Translation.Add("?", "%J");
-            ExtC39Translation.Add("[", "%K");
-            ExtC39Translation.Add("\\", "%L");
-            ExtC39Translation.Add("]", "%M");
-            ExtC39Translation.Add("^", "%N");
-            ExtC39Translation.Add("_", "%O");
-            ExtC39Translation.Add("{", "%P");
-            ExtC39Translation.Add("|", "%Q");
-            ExtC39Translation.Add("}", "%R");
-            ExtC39Translation.Add("~", "%S");
-            ExtC39Translation.Add("`", "%W");
-            ExtC39Translation.Add("@", "%V");
-            ExtC39Translation.Add("a", "+A");
-            ExtC39Translation.Add("b", "+B");
-            ExtC39Translation.Add("c", "+C");
-            ExtC39Translation.Add("d", "+D");
-            ExtC39Translation.Add("e", "+E");
-            ExtC39Translation.Add("f", "+F");
-            ExtC39Translation.Add("g", "+G");
-            ExtC39Translation.Add("h", "+H");
-            ExtC39Translation.Add("i", "+I");
-            ExtC39Translation.Add("j", "+J");
-            ExtC39Translation.Add("k", "+K");
-            ExtC39Translation.Add("l", "+L");
-            ExtC39Translation.Add("m", "+M");
-            ExtC39Translation.Add("n", "+N");
-            ExtC39Translation.Add("o", "+O");
-            ExtC39Translation.Add("p", "+P");
-            ExtC39Translation.Add("q", "+Q");
-            ExtC39Translation.Add("r", "+R");
-            ExtC39Translation.Add("s", "+S");
-            ExtC39Translation.Add("t", "+T");
-            ExtC39Translation.Add("u", "+U");
-            ExtC39Translation.Add("v", "+V");
-            ExtC39Translation.Add("w", "+W");
-            ExtC39Translation.Add("x", "+X");
-            ExtC39Translation.Add("y", "+Y");
-            ExtC39Translation.Add("z", "+Z");
-            ExtC39Translation.Add(Convert.ToChar(127).ToString(), "%T"); // also %X, %Y, %Z 
+            _extC39Translation.Clear();
+            _extC39Translation.Add(Convert.ToChar(0).ToString(), "%U");
+            _extC39Translation.Add(Convert.ToChar(1).ToString(), "$A");
+            _extC39Translation.Add(Convert.ToChar(2).ToString(), "$B");
+            _extC39Translation.Add(Convert.ToChar(3).ToString(), "$C");
+            _extC39Translation.Add(Convert.ToChar(4).ToString(), "$D");
+            _extC39Translation.Add(Convert.ToChar(5).ToString(), "$E");
+            _extC39Translation.Add(Convert.ToChar(6).ToString(), "$F");
+            _extC39Translation.Add(Convert.ToChar(7).ToString(), "$G");
+            _extC39Translation.Add(Convert.ToChar(8).ToString(), "$H");
+            _extC39Translation.Add(Convert.ToChar(9).ToString(), "$I");
+            _extC39Translation.Add(Convert.ToChar(10).ToString(), "$J");
+            _extC39Translation.Add(Convert.ToChar(11).ToString(), "$K");
+            _extC39Translation.Add(Convert.ToChar(12).ToString(), "$L");
+            _extC39Translation.Add(Convert.ToChar(13).ToString(), "$M");
+            _extC39Translation.Add(Convert.ToChar(14).ToString(), "$N");
+            _extC39Translation.Add(Convert.ToChar(15).ToString(), "$O");
+            _extC39Translation.Add(Convert.ToChar(16).ToString(), "$P");
+            _extC39Translation.Add(Convert.ToChar(17).ToString(), "$Q");
+            _extC39Translation.Add(Convert.ToChar(18).ToString(), "$R");
+            _extC39Translation.Add(Convert.ToChar(19).ToString(), "$S");
+            _extC39Translation.Add(Convert.ToChar(20).ToString(), "$T");
+            _extC39Translation.Add(Convert.ToChar(21).ToString(), "$U");
+            _extC39Translation.Add(Convert.ToChar(22).ToString(), "$V");
+            _extC39Translation.Add(Convert.ToChar(23).ToString(), "$W");
+            _extC39Translation.Add(Convert.ToChar(24).ToString(), "$X");
+            _extC39Translation.Add(Convert.ToChar(25).ToString(), "$Y");
+            _extC39Translation.Add(Convert.ToChar(26).ToString(), "$Z");
+            _extC39Translation.Add(Convert.ToChar(27).ToString(), "%A");
+            _extC39Translation.Add(Convert.ToChar(28).ToString(), "%B");
+            _extC39Translation.Add(Convert.ToChar(29).ToString(), "%C");
+            _extC39Translation.Add(Convert.ToChar(30).ToString(), "%D");
+            _extC39Translation.Add(Convert.ToChar(31).ToString(), "%E");
+            _extC39Translation.Add("!", "/A");
+            _extC39Translation.Add("\"", "/B");
+            _extC39Translation.Add("#", "/C");
+            _extC39Translation.Add("$", "/D");
+            _extC39Translation.Add("%", "/E");
+            _extC39Translation.Add("&", "/F");
+            _extC39Translation.Add("'", "/G");
+            _extC39Translation.Add("(", "/H");
+            _extC39Translation.Add(")", "/I");
+            _extC39Translation.Add("*", "/J");
+            _extC39Translation.Add("+", "/K");
+            _extC39Translation.Add(",", "/L");
+            _extC39Translation.Add("/", "/O");
+            _extC39Translation.Add(":", "/Z");
+            _extC39Translation.Add(";", "%F");
+            _extC39Translation.Add("<", "%G");
+            _extC39Translation.Add("=", "%H");
+            _extC39Translation.Add(">", "%I");
+            _extC39Translation.Add("?", "%J");
+            _extC39Translation.Add("[", "%K");
+            _extC39Translation.Add("\\", "%L");
+            _extC39Translation.Add("]", "%M");
+            _extC39Translation.Add("^", "%N");
+            _extC39Translation.Add("_", "%O");
+            _extC39Translation.Add("{", "%P");
+            _extC39Translation.Add("|", "%Q");
+            _extC39Translation.Add("}", "%R");
+            _extC39Translation.Add("~", "%S");
+            _extC39Translation.Add("`", "%W");
+            _extC39Translation.Add("@", "%V");
+            _extC39Translation.Add("a", "+A");
+            _extC39Translation.Add("b", "+B");
+            _extC39Translation.Add("c", "+C");
+            _extC39Translation.Add("d", "+D");
+            _extC39Translation.Add("e", "+E");
+            _extC39Translation.Add("f", "+F");
+            _extC39Translation.Add("g", "+G");
+            _extC39Translation.Add("h", "+H");
+            _extC39Translation.Add("i", "+I");
+            _extC39Translation.Add("j", "+J");
+            _extC39Translation.Add("k", "+K");
+            _extC39Translation.Add("l", "+L");
+            _extC39Translation.Add("m", "+M");
+            _extC39Translation.Add("n", "+N");
+            _extC39Translation.Add("o", "+O");
+            _extC39Translation.Add("p", "+P");
+            _extC39Translation.Add("q", "+Q");
+            _extC39Translation.Add("r", "+R");
+            _extC39Translation.Add("s", "+S");
+            _extC39Translation.Add("t", "+T");
+            _extC39Translation.Add("u", "+U");
+            _extC39Translation.Add("v", "+V");
+            _extC39Translation.Add("w", "+W");
+            _extC39Translation.Add("x", "+X");
+            _extC39Translation.Add("y", "+Y");
+            _extC39Translation.Add("z", "+Z");
+            _extC39Translation.Add(Convert.ToChar(127).ToString(), "%T"); // also %X, %Y, %Z 
         }
         private void InsertExtendedCharsIfNeeded(ref string formattedData)
         {
@@ -232,39 +232,39 @@ namespace Binner.Common.Barcode.Symbologies
             {
                 try
                 {
-                    var s = C39Code[c].ToString();
+                    var s = _c39Code[c].ToString();
                     output += c;
                 }
-                catch 
-                { 
+                catch
+                {
                     // insert extended substitution
-                    var oTrans = ExtC39Translation[c.ToString()];
+                    var oTrans = _extC39Translation[c.ToString()];
                     output += oTrans.ToString();
                 }
             }
 
             formattedData = output;
         }
-        private char GetChecksumChar(string strNoAstr) 
+        private char GetChecksumChar(string strNoAstr)
         {
             // checksum
-            var Code39_Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
+            var code39Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
             var sum = 0;
             InsertExtendedCharsIfNeeded(ref strNoAstr);
 
             // Calculate the checksum
             foreach (var t in strNoAstr)
             {
-                sum = sum + Code39_Charset.IndexOf(t.ToString(), StringComparison.Ordinal);
+                sum += code39Charset.IndexOf(t.ToString(), StringComparison.Ordinal);
             }
 
             // return the checksum char
-            return Code39_Charset[sum % 43];
+            return code39Charset[sum % 43];
         }
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeCode39();
+        public override string EncodedValue => EncodeCode39();
 
         #endregion
 

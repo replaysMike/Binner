@@ -6,14 +6,14 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// UPC-A encoding
     /// </summary>
-    public class UPCA : BarcodeSymbology, IBarcode
+    public class Upca : BarcodeSymbology
     {
         private readonly string[] _upcCodeA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
         private readonly string[] _upcCodeB = { "1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100" };
         private string _countryAssigningManufacturerCode;
         private readonly Hashtable _countryCodes = new();
 
-        public UPCA(string input)
+        public Upca(string input)
         {
             RawData = input;
         }
@@ -31,7 +31,7 @@ namespace Binner.Common.Barcode.Symbologies
                 Error("EUPCA-2: Numeric Data Only");
 
             CheckDigit();
-            
+
             var result = "101"; // start with guard bars
 
             // first number
@@ -256,7 +256,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeUPCA();
+        public override string EncodedValue => EncodeUPCA();
 
         #endregion
 

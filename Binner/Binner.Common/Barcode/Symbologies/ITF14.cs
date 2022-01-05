@@ -1,13 +1,11 @@
-using System;
-
 namespace Binner.Common.Barcode.Symbologies
 {
     /// <summary>
     /// ITF-14 encoding
     /// </summary>
-    public class ITF14 : BarcodeSymbology, IBarcode
+    public class ITF14 : BarcodeSymbology
     {
-        private readonly string[] ITF14Code = { "NNWWN", "WNNNW", "NWNNW", "WWNNN", "NNWNW", "WNWNN", "NWWNN", "NNNWW", "WNNWN", "NWNWN" };
+        private readonly string[] _itf14Code = { "NNWWN", "WNNNW", "NWNNW", "WWNNN", "NNWNW", "WNWNN", "NWWNN", "NNNWW", "WNNWN", "NWNWN" };
 
         public ITF14(string input)
         {
@@ -33,8 +31,8 @@ namespace Binner.Common.Barcode.Symbologies
             for (var i = 0; i < RawData.Length; i += 2)
             {
                 var bars = true;
-                var patternbars = ITF14Code[int.Parse(RawData[i].ToString())];
-                var patternspaces = ITF14Code[int.Parse(RawData[i + 1].ToString())];
+                var patternbars = _itf14Code[int.Parse(RawData[i].ToString())];
+                var patternspaces = _itf14Code[int.Parse(RawData[i + 1].ToString())];
                 var patternmixed = "";
 
                 // interleave
@@ -77,7 +75,7 @@ namespace Binner.Common.Barcode.Symbologies
             {
                 var total = 0;
 
-                for (var i = 0; i <= RawData.Length-1; i++)
+                for (var i = 0; i <= RawData.Length - 1; i++)
                 {
                     var temp = int.Parse(RawData.Substring(i, 1));
                     total += temp * ((i == 0 || i % 2 == 0) ? 3 : 1);
@@ -88,13 +86,13 @@ namespace Binner.Common.Barcode.Symbologies
                 if (cs == 10)
                     cs = 0;
 
-                this.RawData += cs.ToString();
+                RawData += cs.ToString();
             }
         }
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeITF14();
+        public override string EncodedValue => EncodeITF14();
 
         #endregion
 

@@ -2,7 +2,7 @@ using System;
 
 namespace Binner.Common.Barcode.Symbologies
 {
-    public class MSI : BarcodeSymbology, IBarcode
+    public class Msi : BarcodeSymbology
     {
         /// <summary>
         /// MSI encoding
@@ -10,7 +10,7 @@ namespace Binner.Common.Barcode.Symbologies
         private readonly string[] _msiCode = { "100100100100", "100100100110", "100100110100", "100100110110", "100110100100", "100110100110", "100110110100", "100110110110", "110100100100", "110100100110" };
         private readonly BarcodeType _encodedType = BarcodeType.Unspecified;
 
-        public MSI(string input, BarcodeType encodedType)
+        public Msi(string input, BarcodeType encodedType)
         {
             _encodedType = encodedType;
             RawData = input;
@@ -107,7 +107,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeMSI();
+        public override string EncodedValue => EncodeMSI();
 
         #endregion
 

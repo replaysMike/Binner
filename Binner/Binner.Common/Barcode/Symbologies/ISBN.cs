@@ -3,9 +3,9 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// ISBN encoding
     /// </summary>
-    public class ISBN : BarcodeSymbology, IBarcode
+    public class Isbn : BarcodeSymbology
     {
-        public ISBN(string input)
+        public Isbn(string input)
         {
             RawData = input;
         }
@@ -23,12 +23,12 @@ namespace Binner.Common.Barcode.Symbologies
             {
                 case 10:
                 case 9:
-                {
-                    if (RawData.Length == 10) RawData = RawData.Remove(9, 1);
-                    RawData = "978" + RawData;
-                    type = "ISBN";
-                    break;
-                }
+                    {
+                        if (RawData.Length == 10) RawData = RawData.Remove(9, 1);
+                        RawData = "978" + RawData;
+                        type = "ISBN";
+                        break;
+                    }
                 case 12 when RawData.StartsWith("978"):
                     type = "BOOKLAND-NOCHECKDIGIT";
                     break;
@@ -41,13 +41,13 @@ namespace Binner.Common.Barcode.Symbologies
             // check to see if its an unknown type
             if (type == "UNKNOWN") Error("EBOOKLANDISBN-2: Invalid input.  Must start with 978 and be length must be 9, 10, 12, 13 characters.");
 
-            var ean13 = new EAN13(RawData);
-            return ean13.Encoded_Value;
+            var ean13 = new Ean13(RawData);
+            return ean13.EncodedValue;
         }
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeISBNBookland();
+        public override string EncodedValue => EncodeISBNBookland();
 
         #endregion
 

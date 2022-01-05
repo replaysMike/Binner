@@ -3,12 +3,12 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// EAN-8 encoding
     /// </summary>
-    public class EAN8 : BarcodeSymbology, IBarcode
+    public class Ean8 : BarcodeSymbology, IBarcode
     {
-        private readonly string[] EANCodeA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
-        private readonly string[] EANCodeC = { "1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100" };
+        private readonly string[] _eanCodeA = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };
+        private readonly string[] _eanCodeC = { "1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100" };
 
-        public EAN8(string input)
+        public Ean8(string input)
         {
             RawData = input;
 
@@ -21,7 +21,7 @@ namespace Binner.Common.Barcode.Symbologies
         /// <summary>
         /// Encode the raw data using the EAN-8 algorithm.
         /// </summary>
-        private string Encode_EAN8()
+        private string EncodeEAN8()
         {
             // check length
             if (RawData.Length != 8 && RawData.Length != 7) Error("EEAN8-1: Invalid data length. (7 or 8 numbers only)");
@@ -32,7 +32,7 @@ namespace Binner.Common.Barcode.Symbologies
             // first half (Encoded using left hand / odd parity)
             for (var i = 0; i < RawData.Length / 2; i++)
             {
-                result += EANCodeA[int.Parse(RawData[i].ToString())];
+                result += _eanCodeA[int.Parse(RawData[i].ToString())];
             }
 
             // center guard bars
@@ -41,7 +41,7 @@ namespace Binner.Common.Barcode.Symbologies
             // second half (Encoded using right hand / even parity)
             for (var i = RawData.Length / 2; i < RawData.Length; i++)
             {
-                result += EANCodeC[int.Parse(RawData[i].ToString())];
+                result += _eanCodeC[int.Parse(RawData[i].ToString())];
             }
 
             result += "101";
@@ -83,7 +83,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => Encode_EAN8();
+        public override string EncodedValue => EncodeEAN8();
 
         #endregion
 

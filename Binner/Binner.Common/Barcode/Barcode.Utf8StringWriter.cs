@@ -3,7 +3,6 @@ using System.Text;
 
 namespace Binner.Common.Barcode
 {
-
     public partial class Barcode
     {
         public class Utf8StringWriter : StringWriter

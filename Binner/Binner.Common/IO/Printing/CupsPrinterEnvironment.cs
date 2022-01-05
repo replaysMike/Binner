@@ -182,7 +182,7 @@ namespace Binner.Common.IO.Printing
                     // can't get CUPS to flip the label, could be the driver. Maybe can try other options in the future
                     labelImage.Mutate(x => x.Rotate(RotateMode.Rotate180));
                 }
-
+                //
                 labelImage.SaveAsPng(filename);
                 return (filename, true, null);
             }

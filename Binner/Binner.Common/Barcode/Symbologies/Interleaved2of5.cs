@@ -25,7 +25,7 @@ namespace Binner.Common.Barcode.Symbologies
 
             if (!CheckNumericOnly(RawData))
                 Error("EI25-2: Numeric Data Only");
-            
+
             var result = "1010";
             var data = RawData + (_encodedType == BarcodeType.Interleaved2of5Mod10 ? CalculateMod10CheckDigit().ToString() : "");
 
@@ -63,7 +63,7 @@ namespace Binner.Common.Barcode.Symbologies
                     bars = !bars;
                 }
             }
-            
+
             // add ending bars
             result += "1101";
             return result;
@@ -86,7 +86,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeInterleaved2of5();
+        public override string EncodedValue => EncodeInterleaved2of5();
 
         #endregion
 

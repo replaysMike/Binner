@@ -11,7 +11,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value
+        public string EncodedValue
         {
             get { throw new NotImplementedException(); }
         }

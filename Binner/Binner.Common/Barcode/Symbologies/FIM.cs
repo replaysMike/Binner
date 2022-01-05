@@ -3,35 +3,40 @@
     /// <summary>
     /// FIM encoding
     /// </summary>
-    public class FIM: BarcodeSymbology, IBarcode
+    public class Fim : BarcodeSymbology
     {
-        private readonly string[] FIMCodes = { "110010011", "101101101", "110101011", "111010111" };
-        public enum FIMTypes {FIM_A = 0, FIM_B, FIM_C, FIM_D};
+        private readonly string[] _fimCodes = { "110010011", "101101101", "110101011", "111010111" };
+        public enum FIMTypes { FIM_A = 0, FIM_B, FIM_C, FIM_D };
 
-        public FIM(string input)
+        public Fim(string input)
         {
             input = input.Trim();
 
             switch (input)
             {
                 case "A":
-                case "a": RawData = FIMCodes[(int)FIMTypes.FIM_A];
+                case "a":
+                    RawData = _fimCodes[(int)FIMTypes.FIM_A];
                     break;
                 case "B":
-                case "b": RawData = FIMCodes[(int)FIMTypes.FIM_B];
+                case "b":
+                    RawData = _fimCodes[(int)FIMTypes.FIM_B];
                     break;
                 case "C":
-                case "c": RawData = FIMCodes[(int)FIMTypes.FIM_C];
+                case "c":
+                    RawData = _fimCodes[(int)FIMTypes.FIM_C];
                     break;
                 case "D":
-                case "d": RawData = FIMCodes[(int)FIMTypes.FIM_D];
+                case "d":
+                    RawData = _fimCodes[(int)FIMTypes.FIM_D];
                     break;
-                default: Error("EFIM-1: Could not determine encoding type. (Only pass in A, B, C, or D)");
+                default:
+                    Error("EFIM-1: Could not determine encoding type. (Only pass in A, B, C, or D)");
                     break;
             }
         }
 
-        public string Encode_FIM()
+        public string EncodeFIM()
         {
             var encoded = "";
             foreach (char c in RawData)
@@ -46,7 +51,7 @@
 
         #region IBarcode Members
 
-        public string Encoded_Value => Encode_FIM();
+        public override string EncodedValue => EncodeFIM();
 
         #endregion
 

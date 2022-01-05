@@ -7,7 +7,7 @@ namespace Binner.Common.Barcode
     /// </summary>
     interface IBarcode
     {
-        string Encoded_Value { get; }
+        string EncodedValue { get; }
 
         string RawData { get; }
 

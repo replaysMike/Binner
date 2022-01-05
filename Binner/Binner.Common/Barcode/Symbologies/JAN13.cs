@@ -3,9 +3,9 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// JAN-13 encoding
     /// </summary>
-    public class JAN13 : BarcodeSymbology, IBarcode
+    public class Jan13 : BarcodeSymbology
     {
-        public JAN13(string input)
+        public Jan13(string input)
         {
             RawData = input;
         }
@@ -19,13 +19,13 @@ namespace Binner.Common.Barcode.Symbologies
             if (!CheckNumericOnly(RawData))
                 Error("EJAN13-2: Numeric Data Only");
 
-            var ean13 = new EAN13(RawData);
-            return ean13.Encoded_Value;
+            var ean13 = new Ean13(RawData);
+            return ean13.EncodedValue;
         }
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodeJAN13();
+        public override string EncodedValue => EncodeJAN13();
 
         #endregion
 

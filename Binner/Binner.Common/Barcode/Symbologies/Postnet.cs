@@ -5,7 +5,7 @@ namespace Binner.Common.Barcode.Symbologies
     /// <summary>
     /// Postnet encoding
     /// </summary>
-    public class Postnet : BarcodeSymbology, IBarcode
+    public class Postnet : BarcodeSymbology
     {
         private readonly string[] _postNetCode = { "11000", "00011", "00101", "00110", "01001", "01010", "01100", "10001", "10010", "10100" };
 
@@ -28,7 +28,8 @@ namespace Binner.Common.Barcode.Symbologies
                 case 6:
                 case 9:
                 case 11: break;
-                default: Error("EPOSTNET-2: Invalid data length. (5, 6, 9, or 11 digits only)"); 
+                default:
+                    Error("EPOSTNET-2: Invalid data length. (5, 6, 9, or 11 digits only)");
                     break;
             }
 
@@ -65,7 +66,7 @@ namespace Binner.Common.Barcode.Symbologies
 
         #region IBarcode Members
 
-        public string Encoded_Value => EncodePostnet();
+        public override string EncodedValue => EncodePostnet();
 
         #endregion
 
