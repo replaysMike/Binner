@@ -1,4 +1,4 @@
-﻿using BarcodeLib;
+﻿using Binner.Common.Barcode;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Drawing;
@@ -21,8 +21,8 @@ namespace Binner.Common.IO.Printing
         [SupportedOSPlatform("windows")]
         public Image<Rgba32> GenerateBarcode(string partNumber, int width, int height)
         {
-            var barcode = new Barcode();
-            var barcodeImage = barcode.Encode(TYPE.CODE128, partNumber, width, height);
+            var barcode = new Barcode.Barcode();
+            var barcodeImage = barcode.Encode(BarcodeType.CODE128, partNumber, width, height);
             // convert system.drawing.image to Imagesharp Image
             return ((Bitmap)barcodeImage).ToImageSharpImage<Rgba32>();
         }        
