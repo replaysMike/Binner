@@ -1,6 +1,5 @@
 ﻿import React, { Component } from 'react';
-import _ from 'underscore';
-import { Table, Visibility, Input, Label, Button, Segment, Form, TextArea, Icon, Statistic } from 'semantic-ui-react';
+import { Input, Segment, Form, Statistic } from 'semantic-ui-react';
 import { decodeResistance } from '../../common/Utils';
 
 export class VoltageDividerCalculator extends Component {
@@ -42,6 +41,8 @@ export class VoltageDividerCalculator extends Component {
         break;
       case 'r2':
         newR2 = control.value;
+        break;
+      default:
         break;
     }
     this.setState({ inputVoltage: newInputVoltage, r1: newR1, r2: newR2 });

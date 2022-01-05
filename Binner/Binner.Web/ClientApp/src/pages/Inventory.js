@@ -201,9 +201,9 @@ export class Inventory extends Component {
           const scannedPart = {
             partNumber: cleanPartNumber,
             quantity: 1,
-            location: lastPart && lastPart.location || '',
-            binNumber: lastPart && lastPart.binNumber || '',
-            binNumber2: lastPart && lastPart.binNumber2 || '',
+            location: (lastPart && lastPart.location) || '',
+            binNumber: (lastPart && lastPart.binNumber) || '',
+            binNumber2: (lastPart && lastPart.binNumber2) || '',
           };
           const existingPartNumber = _.find(scannedParts, { partNumber: cleanPartNumber });
           if (existingPartNumber) {
@@ -312,6 +312,7 @@ export class Inventory extends Component {
 
   getMountingTypeById(mountingTypeId) {
     switch (mountingTypeId) {
+      default:
       case 1:
         return 'through hole';
       case 2:
@@ -339,7 +340,7 @@ export class Inventory extends Component {
    * @param {any} e
    */
   async onSubmit(e) {
-    const { part, viewPreferences } = this.state;
+    const { part } = this.state;
     const isExisting = part.partId > 0;
     part.partTypeId = part.partTypeId + '';
     part.mountingTypeId = part.mountingTypeId + '';
@@ -456,6 +457,8 @@ export class Inventory extends Component {
       case 'binNumber2':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastBinNumber2: control.value }));
         break;
+      default:
+          break;
     }
     this.setState({ part });
   }
@@ -585,7 +588,7 @@ export class Inventory extends Component {
               <Table.Cell>{p.cost}</Table.Cell>
               <Table.Cell><Image src={p.imageUrl} size='mini'></Image></Table.Cell>
               <Table.Cell>{p.datasheetUrls.map((d, dindex) =>
-                d && d.length > 0 && <a href='#' key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</a>
+                d && d.length > 0 && <Button key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</Button>
               )}</Table.Cell>
             </Table.Row>
           )}
@@ -626,7 +629,7 @@ export class Inventory extends Component {
               <Table.Cell>{p.binNumber2}</Table.Cell>
               <Table.Cell>{this.getMountingTypeById(p.mountingTypeId)}</Table.Cell>
               <Table.Cell><Image src={p.imageUrl} size='mini'></Image></Table.Cell>
-              <Table.Cell><a href='#' onClick={e => this.handleHighlightAndVisit(e, p.datasheetUrl)}>View Datasheet</a></Table.Cell>
+              <Table.Cell><Button onClick={e => this.handleHighlightAndVisit(e, p.datasheetUrl)}>View Datasheet</Button></Table.Cell>
             </Table.Row>
           )}
         </Table.Body>
@@ -643,8 +646,8 @@ export class Inventory extends Component {
   }
 
   disableHelp() {
-    const { viewPreferences } = this.state;
-    const val = { ...viewPreferences, helpDisabled: true };
+    // const { viewPreferences } = this.state;
+    // const val = { ...viewPreferences, helpDisabled: true };
     // localStorage.setItem('viewPreferences', JSON.stringify(val));
   }
 
@@ -680,7 +683,7 @@ export class Inventory extends Component {
     const request = {
       parts: scannedParts
     };
-    const response = await fetch('part/bulk', {
+    await fetch('part/bulk', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -803,7 +806,7 @@ export class Inventory extends Component {
   render() {
     const { part,
       recentParts, metadataParts, partTypes, mountingTypes, projects, viewPreferences, partModalOpen, duplicatePartModalOpen,
-      loadingPartMetadata, loadingPartTypes, loadingProjects, loadingRecent, saveMessage, showBarcodeBeingScanned, scannedParts, highlightScannedPart
+      loadingPartMetadata, loadingPartTypes, loadingProjects, loadingRecent, saveMessage, scannedParts, highlightScannedPart
     } = this.state;
     const matchingPartsList = this.renderAllMatchingParts(part, metadataParts);
     const title = this.props.match.params.partNumber ? 'Edit Inventory' : 'Add Inventory';
@@ -879,7 +882,7 @@ export class Inventory extends Component {
             <Header dividing as='h3'>Part Metadata</Header>
             {metadataParts.length > 0 &&
               <Modal centered
-                trigger={<a href="#" onClick={this.handleOpenModal}>Choose alternate part</a>}
+                trigger={<Button onClick={this.handleOpenModal}>Choose alternate part</Button>}
                 open={partModalOpen}
                 onClose={this.handlePartModalClose}
               >

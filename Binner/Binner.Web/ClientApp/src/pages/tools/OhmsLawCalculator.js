@@ -1,6 +1,5 @@
 ﻿import React, { Component } from 'react';
-import _ from 'underscore';
-import { Table, Visibility, Input, Label, Button, Segment, Form, TextArea, Icon, Statistic } from 'semantic-ui-react';
+import { Input, Segment, Form, Statistic } from 'semantic-ui-react';
 import { encodeResistance, decodeResistance } from '../../common/Utils';
 
 export class OhmsLawCalculator extends Component {
@@ -53,6 +52,8 @@ export class OhmsLawCalculator extends Component {
         break;
       case 'inputPower':
         newInputPower = control.value;
+        break;
+      default:
         break;
     }
     this.setState({ inputVoltage: newInputVoltage, inputCurrent: newInputCurrent, inputResistance: newInputResistance, inputPower: newInputPower });

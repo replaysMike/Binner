@@ -29,6 +29,8 @@ class NavMenu extends Component {
       case 'searchKeyword':
         this.setState({ searchKeyword: control.value });
         break;
+      default:
+        break;
     }
   }
 

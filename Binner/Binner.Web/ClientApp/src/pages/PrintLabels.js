@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import _ from 'underscore';
-import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown, Segment } from 'semantic-ui-react';
+import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown } from 'semantic-ui-react';
 
 export class PrintLabels extends Component {
   static displayName = PrintLabels.name;
@@ -136,7 +136,7 @@ export class PrintLabels extends Component {
     };
 
     for (var i = 0; i < quantity; i++) {
-      const response = await fetch('print/custom', {
+      await fetch('print/custom', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -211,6 +211,8 @@ export class PrintLabels extends Component {
       case 'quantity':
         newQuantity = control.value;
         break;
+      default:
+        break;
     }
     this.setState({ labelName: newLabelName, labelSource: newLabelSource, printPreferences, quantity: newQuantity });
   }
@@ -245,13 +247,13 @@ export class PrintLabels extends Component {
     const lastLine = _.last(lines);
     const newLine = {
       id: lines.length + 1,
-      label: lastLine && lastLine.label || label && label.defaults.label,
+      label: (lastLine && lastLine.label) || (label && label.defaults.label),
       content: '',
-      fontSize: label && label.defaults.fontSizes.length > lines.length && label.defaults.fontSizes[lines.length] || 16,
+      fontSize: label && label.defaults.fontSizes.length > lines.length && (label.defaults.fontSizes[lines.length] || 16),
       position: 2,
-      topMargin: label && label.defaults.topMargins.length >= lines.length && label.defaults.topMargins[lines.length] || 0,
+      topMargin: label && label.defaults.topMargins.length >= lines.length && (label.defaults.topMargins[lines.length] || 0),
       leftMargin: 0,
-      barcode: label && label.defaults.isBarcodes.length >= lines.length && label.defaults.isBarcodes[lines.length] || false
+      barcode: label && label.defaults.isBarcodes.length >= lines.length && (label.defaults.isBarcodes[lines.length] || false)
     };
     lines.push(newLine);
     this.setState({ lines });
