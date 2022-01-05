@@ -278,6 +278,10 @@ export class PrintLabels extends Component {
     return (
       <div>
         <h1>Print Label</h1>
+        <p>
+          Print custom multi-line labels for your storage bins.<br/>
+          Print history is kept so you can reuse templates for your labels.
+        </p>
         <Form onSubmit={this.onSubmit} loading={loading}>
           <Form.Group>
             <Form.Dropdown label='Label Type' placeholder='30277' selection value={labelName} options={labelNames} onChange={this.handleChange} name='labelName' />
