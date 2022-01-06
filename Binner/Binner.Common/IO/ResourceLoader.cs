@@ -6,7 +6,7 @@ namespace Binner.Common.IO
     /// <summary>
     /// Resource loading library
     /// </summary>
-    public static class ResourceLoader
+    internal static class ResourceLoader
     {
         /// <summary>
         /// Load an embedded resource as a string
