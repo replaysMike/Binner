@@ -15,6 +15,6 @@ namespace Binner.Common.IO.Printing
         /// <param name="labelProperties">The label media properties</param>
         /// <param name="labelImage">Label image to print in Rgba32 format</param>
         /// <returns></returns>
-        PrinterResult PrintLabel(PrinterOptions options, LabelProperties labelProperties, Image<Rgba32> labelImage);
+        PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage);
     }
 }

@@ -14,7 +14,7 @@ namespace Binner.Common.IO.Printing
     internal class WindowsPrinterEnvironment : IPrinterEnvironment
     {
         private readonly IPrinterSettings _printerSettings;
-        private LabelProperties _labelProperties;
+        private LabelDefinition _labelProperties;
         private Image<Rgba32> _printImage;
 
         public WindowsPrinterEnvironment(IPrinterSettings printerSettings)
@@ -22,7 +22,7 @@ namespace Binner.Common.IO.Printing
             _printerSettings = printerSettings;
         }
 
-        public PrinterResult PrintLabel(PrinterOptions options, LabelProperties labelProperties, Image<Rgba32> labelImage)
+        public PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage)
         {
             // _printImage is required at the class level because of System.Drawing.Printing event that sets the contents of the document
             _printImage = labelImage;
@@ -43,15 +43,23 @@ namespace Binner.Common.IO.Printing
             doc.PrintPage += T_PrintPage;
             doc.DefaultPageSettings.Landscape = true;
             doc.DefaultPageSettings.Margins = new Margins(0, 0, 0, 0);
+            // select the paper source
             foreach (PaperSource paperSource in doc.PrinterSettings.PaperSources)
             {
-                if (paperSource.SourceName.Equals(GetSourceName(options.LabelSource ?? _printerSettings.LabelSource), StringComparison.CurrentCultureIgnoreCase))
+                if (paperSource.SourceName.Equals(GetSourceName(options.LabelSource ?? _printerSettings.PartLabelSource), StringComparison.CurrentCultureIgnoreCase))
                 {
                     doc.DefaultPageSettings.PaperSource = paperSource;
                     break;
                 }
             }
-            doc.DefaultPageSettings.PaperSize = new PaperSize(_labelProperties.LabelName, _labelProperties.Dimensions.Width, _labelProperties.Dimensions.Height * _labelProperties.LabelCount);
+            // select the paper size
+            foreach(PaperSize paperSize in doc.PrinterSettings.PaperSizes)
+            {
+                if (paperSize.PaperName.StartsWith(_labelProperties.MediaSize.ModelName))
+                {
+                    doc.DefaultPageSettings.PaperSize = paperSize;
+                }
+            }
             return doc;
         }
 
@@ -82,8 +90,9 @@ namespace Binner.Common.IO.Printing
         private void T_PrintPage(object sender, PrintPageEventArgs e)
         {
             // Printing requires a System.Drawing.Bitmap so it must be converted
+            const int magicNumberLeft = -15; // todo: why is there a 15px left margin and where does it come from?
             var bitmap = _printImage.ToBitmap();
-            e.Graphics.DrawImage(bitmap, new System.Drawing.Point(0, -12));
+            e.Graphics.DrawImage(bitmap, new System.Drawing.Point(magicNumberLeft, 0));
             e.HasMorePages = false;
         }
     }

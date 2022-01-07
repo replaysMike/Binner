@@ -1,4 +1,6 @@
-﻿namespace Binner.Common.IO.Printing
+﻿using System.Collections.Generic;
+
+namespace Binner.Common.IO.Printing
 {
     /// <summary>
     /// Printer settings
@@ -11,14 +13,19 @@
         string PrinterName { get; set; }
 
         /// <summary>
-        /// Label model number
+        /// Label model number for printing parts
         /// </summary>
-        string LabelName { get; set; }
+        string PartLabelName { get; set; } // "30346";
 
         /// <summary>
-        /// Label paper source
+        /// Label paper source for printing parts
         /// </summary>
-        LabelSource LabelSource { get; set; }
+        LabelSource PartLabelSource { get; set; }
+
+        /// <summary>
+        /// List of label definitions
+        /// </summary>
+        IEnumerable<LabelDefinition> LabelDefinitions { get; set; }
 
         /// <summary>
         /// Template for printing part labels

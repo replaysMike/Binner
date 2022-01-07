@@ -76,9 +76,10 @@ namespace Binner.Web.Configuration
                 return new DymoLabelPrinterHardware(new PrinterSettings
                 {
                     PrinterName = config.PrinterConfiguration.PrinterName,
-                    LabelName = config.PrinterConfiguration.LabelName,
-                    LabelSource = config.PrinterConfiguration.LabelSource,
-                    PartLabelTemplate = config.PrinterConfiguration.PartLabelTemplate
+                    PartLabelName = config.PrinterConfiguration.PartLabelName,
+                    PartLabelSource = config.PrinterConfiguration.PartLabelSource,
+                    PartLabelTemplate = config.PrinterConfiguration.PartLabelTemplate,
+                    LabelDefinitions = config.PrinterConfiguration.LabelDefinitions
                 }, barcodeGenerator);
             }, new PerScopeLifetime());
         }

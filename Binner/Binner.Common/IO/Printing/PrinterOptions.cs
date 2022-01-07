@@ -8,7 +8,7 @@
         public LabelSource? LabelSource { get; set; }
 
         /// <summary>
-        /// Label model name
+        /// Label name
         /// </summary>
         public string LabelName { get; set; }
 

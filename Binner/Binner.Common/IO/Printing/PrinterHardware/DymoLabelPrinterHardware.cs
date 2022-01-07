@@ -60,7 +60,7 @@ namespace Binner.Common.IO.Printing
             return Print(image, labelProperties, options);
         }
 
-        private Image<Rgba32> Print(Image<Rgba32> image, LabelProperties labelProperties, PrinterOptions options)
+        private Image<Rgba32> Print(Image<Rgba32> image, LabelDefinition labelProperties, PrinterOptions options)
         {
             // for debugging label layout
             if (options.ShowDiagnostic) DrawDebug(image, labelProperties);
@@ -70,7 +70,7 @@ namespace Binner.Common.IO.Printing
             return image;
         }
 
-        private void DrawDebug(Image<Rgba32> image, LabelProperties labelProperties)
+        private void DrawDebug(Image<Rgba32> image, LabelDefinition labelProperties)
         {
             // draw rectangle
             image.Mutate(c => c.Draw(Pens.Solid(Color.LightGray, 1), new RectangleF(0, 0, _paperRect.Width - 1, _paperRect.Height - 1)));
@@ -81,12 +81,13 @@ namespace Binner.Common.IO.Printing
             }
         }
 
-        private (Image<Rgba32>, LabelProperties labelProperties) CreatePrinterImage(PrinterOptions options)
+        private (Image<Rgba32>, LabelDefinition labelProperties) CreatePrinterImage(PrinterOptions options)
         {
             var labelProperties = GetLabelDimensions(options.LabelName);
 
             // generate the label as an image
-            _paperRect = new Rectangle(0, 0, labelProperties.Dimensions.Width, labelProperties.Dimensions.Height * labelProperties.LabelCount);
+            _paperRect = new Rectangle(0, 0, labelProperties.ImageDimensions.Width, labelProperties.ImageDimensions.Height);
+            // for each physical label, calculate where it's Y start position will be in the image
             for (var i = 1; i <= labelProperties.LabelCount; i++)
                 _labelStart.Add(new PointF(0, labelProperties.TopMargin + _paperRect.Height - (_paperRect.Height / i)));
 
@@ -97,7 +98,7 @@ namespace Binner.Common.IO.Printing
             return (printerImage, labelProperties);
         }
 
-        private void DrawLabelFromLines(Image<Rgba32> image, LabelProperties labelProperties, ICollection<LineConfiguration> lines, Rectangle paperRect)
+        private void DrawLabelFromLines(Image<Rgba32> image, LabelDefinition labelProperties, ICollection<LineConfiguration> lines, Rectangle paperRect)
         {
             var margins = new Margin(0, 0, 0, 0);
             var lastLinePosition = new List<PointF>();
@@ -109,7 +110,7 @@ namespace Binner.Common.IO.Printing
             }
         }
 
-        private void DrawLabelFromContent(Image<Rgba32> image, LabelProperties labelProperties, LabelContent content, Rectangle paperRect)
+        private void DrawLabelFromContent(Image<Rgba32> image, LabelDefinition labelProperties, LabelContent content, Rectangle paperRect)
         {
             var rightMargin = 0;
             var leftMargin = 0;
@@ -206,7 +207,7 @@ namespace Binner.Common.IO.Printing
             newSecondLine = line2;
         }
 
-        private PointF DrawLine(Image<Rgba32> image, LabelProperties labelProperties, PointF lineOffset, object part, string lineValue, LineConfiguration template, Rectangle paperRect, Margin margins)
+        private PointF DrawLine(Image<Rgba32> image, LabelDefinition labelProperties, PointF lineOffset, object part, string lineValue, LineConfiguration template, Rectangle paperRect, Margin margins)
         {
             var font = CreateFont(template, lineValue, paperRect);
             var rendererOptions = new RendererOptions(font, Dpi);
@@ -219,7 +220,7 @@ namespace Binner.Common.IO.Printing
             {
                 x = 0;
                 y += 12;
-                DrawBarcode128(image, lineValue, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height / labelProperties.LabelCount));
+                DrawBarcode128(image, lineValue, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height));
             }
             else
             {
@@ -337,18 +338,17 @@ namespace Binner.Common.IO.Printing
             return new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
         }
 
-        private LabelProperties GetLabelDimensions(string labelName)
+        private LabelDefinition GetLabelDimensions(string labelName)
         {
-            switch (labelName)
-            {
-                case "30277": // 9/16" x 3 7/16"
-                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 10, leftMargin: 0, labelCount: 2,
-                        totalLines: 2, dimensions: new Size(900, 180));
-                case "30346": // 1/2" x 1 7/8"
-                default:
-                    return new LabelProperties(labelName: PrinterSettings.LabelName, topMargin: 0, leftMargin: 0, labelCount: 2,
-                        totalLines: 3, dimensions: new Size(475, 175));
+            var labelDefinition = PrinterSettings.LabelDefinitions
+                .FirstOrDefault(x => x.MediaSize.ModelName.Equals(labelName));
+            if (labelDefinition != null) { 
+                // call set dimensions to ensure we calculate all the properties correctly
+                labelDefinition.UpdateDimensions();
+                return labelDefinition;
             }
+
+            throw new BinnerConfigurationException($"Unsupported label: '{labelName}'");
         }
     }
 }

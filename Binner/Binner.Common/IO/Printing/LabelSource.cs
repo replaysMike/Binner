@@ -8,7 +8,7 @@
         /// <summary>
         /// Auto select the paper source
         /// </summary>
-        Default,
+        Auto,
         /// <summary>
         /// Use the left paper source
         /// </summary>

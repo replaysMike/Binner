@@ -18,7 +18,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Printer paper source to use
         /// </summary>
-        public LabelSource LabelSource { get; set; } = LabelSource.Default;
+        public LabelSource LabelSource { get; set; } = LabelSource.Auto;
 
         /// <summary>
         /// Lines to print

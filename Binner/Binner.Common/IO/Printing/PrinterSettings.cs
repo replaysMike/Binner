@@ -1,12 +1,19 @@
-﻿namespace Binner.Common.IO.Printing
+﻿using System.Collections.Generic;
+
+namespace Binner.Common.IO.Printing
 {
     public class PrinterSettings : IPrinterSettings
     {
-        public string PrinterName { get; set; } = "Dymo LabelWriter 450";
+        public string PrinterName { get; set; } = "Dymo LabelWriter 450 Twin Turbo";
         
-        public string LabelName { get; set; } = "30346"; // LW 1/2" x 1 7/8"
+        public string PartLabelName { get; set; } = "30346"; // LW 1/2" x 1 7/8"
         
-        public LabelSource LabelSource { get; set; } = LabelSource.Default;
+        public LabelSource PartLabelSource { get; set; } = LabelSource.Auto;
+
+        /// <summary>
+        /// List of label definitions
+        /// </summary>
+        public IEnumerable<LabelDefinition> LabelDefinitions { get; set; } = new List<LabelDefinition>();
 
         /// <summary>
         /// Template for printing part labels
