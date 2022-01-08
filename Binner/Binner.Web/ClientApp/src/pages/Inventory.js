@@ -466,7 +466,7 @@ export class Inventory extends Component {
   printLabel(e) {
     e.preventDefault();
     const { part } = this.state;
-    fetch(`part/print?partNumber=${part.partNumber}&generateImageOnly=true`, { method: 'POST' });
+    fetch(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: 'POST' });
   }
 
   setPartFromMetadata(metadataParts, suggestedPart) {
