@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using TypeSupport.Extensions;
 
@@ -83,10 +84,13 @@ namespace Binner.Common.IO.Printing
 
         private (Image<Rgba32>, LabelDefinition labelProperties) CreatePrinterImage(PrinterOptions options)
         {
-            var labelProperties = GetLabelDimensions(options.LabelName);
+            var labelName = options.LabelName;
+            if (string.IsNullOrWhiteSpace(labelName))
+                labelName = PrinterSettings.PartLabelName;
+            var labelProperties = GetLabelDimensions(labelName);
 
             // generate the label as an image
-            _paperRect = new Rectangle(0, 0, labelProperties.ImageDimensions.Width, labelProperties.ImageDimensions.Height);
+            _paperRect = new Rectangle(0, 0, labelProperties.ImageDimensions.Width - 90, labelProperties.ImageDimensions.Height);
             // for each physical label, calculate where it's Y start position will be in the image
             for (var i = 1; i <= labelProperties.LabelCount; i++)
                 _labelStart.Add(new PointF(0, labelProperties.TopMargin + _paperRect.Height - (_paperRect.Height / i)));
@@ -178,7 +182,7 @@ namespace Binner.Common.IO.Printing
             var fontFirstLine = CreateFont(PrinterSettings.PartLabelTemplate.Line2, firstLine, paperRect);
             var fontSecondLine = CreateFont(PrinterSettings.PartLabelTemplate.Line3, secondLine, paperRect);
             var line1 = firstLine.ToString();
-            var line2 = secondLine.ToString();
+            string line2;
             // merge lines and use the second line to wrap
             FontRectangle len;
             var description = line1?.Trim() ?? "";
@@ -240,12 +244,27 @@ namespace Binner.Common.IO.Printing
                 {
                     // rotated labels will start at the top of the label
                     y = _labelStart[template.Label - 1].Y + template.Margin.Top;
-                    /*var state = g.Save();
-                    g.ResetTransform();
-                    g.RotateTransform(PrinterSettings.PartLabelTemplate.Identifier.Rotate);
-                    g.TranslateTransform(x, y, System.Drawing.Drawing2D.MatrixOrder.Append);
-                    g.DrawString(lineValue, font, Brushes.Horizontal(Color.Black), new PointF(0, 0));
-                    g.Restore(state);*/
+
+                    // https://github.com/SixLabors/ImageSharp.Drawing/discussions/190
+                    // rotating text correctly in ImageSharp turned out to be beyond trivial
+                    var builder = new AffineTransformBuilder()
+                        .AppendRotationDegrees(PrinterSettings.PartLabelTemplate.Identifier.Rotate)
+                        .AppendTranslation(new PointF(0, 0));
+                    var rotationAngleDegrees = (float)PrinterSettings.PartLabelTemplate.Identifier.Rotate;
+                    var rotationAngleRadians = (float)(rotationAngleDegrees * (Math.PI / 180));
+                    var drawingOptions = new DrawingOptions
+                    {
+                        TextOptions = new TextOptions
+                        {
+                            ApplyKerning = true,
+                            DpiX = Dpi,
+                            DpiY = Dpi,
+                        },
+                        Transform = Matrix3x2.CreateRotation(rotationAngleRadians)
+                            * Matrix3x2.CreateTranslation(lineBounds.Height * (rotationAngleDegrees / 90f), 0)
+                            * Matrix3x2.CreateTranslation(x, y)
+                    };
+                    image.Mutate(c => c.DrawText(drawingOptions, lineValue, font, Color.Black, new PointF(0, 0)));
                 }
                 else
                 {
@@ -313,10 +332,21 @@ namespace Binner.Common.IO.Printing
 
         private void DrawBarcode128(Image<Rgba32> image, string encodeValue, Rectangle rect)
         {
+            var graphicsOptions = new GraphicsOptions
+            {
+                Antialias = false,
+            };
             var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, rect.Width, 25);
-            image.Mutate(c => c.DrawImage(generatedBarcodeImage, new Point(0, rect.Y), new GraphicsOptions()));
-            image.Metadata.HorizontalResolution = Dpi;
-            image.Metadata.VerticalResolution = Dpi;
+            try
+            {
+                image.Mutate(c => c.DrawImage(generatedBarcodeImage, new Point(0, rect.Y), graphicsOptions));
+                image.Metadata.HorizontalResolution = Dpi;
+                image.Metadata.VerticalResolution = Dpi;
+            }
+            catch(Exception)
+            {
+                // swallow exceptions if we draw outside the bounds
+            }
         }
 
         private Font AutosizeFont(FontFamily fontFamily, float fontSize, string text, int maxWidth)
@@ -342,7 +372,8 @@ namespace Binner.Common.IO.Printing
         {
             var labelDefinition = PrinterSettings.LabelDefinitions
                 .FirstOrDefault(x => x.MediaSize.ModelName.Equals(labelName));
-            if (labelDefinition != null) { 
+            if (labelDefinition != null)
+            {
                 // call set dimensions to ensure we calculate all the properties correctly
                 labelDefinition.UpdateDimensions();
                 return labelDefinition;

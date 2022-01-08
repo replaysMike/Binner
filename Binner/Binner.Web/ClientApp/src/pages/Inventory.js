@@ -466,7 +466,7 @@ export class Inventory extends Component {
   printLabel(e) {
     e.preventDefault();
     const { part } = this.state;
-    fetch(`part/print?partNumber=${part.partNumber}`, { method: 'POST' });
+    fetch(`part/print?partNumber=${part.partNumber}&generateImageOnly=true`, { method: 'POST' });
   }
 
   setPartFromMetadata(metadataParts, suggestedPart) {
@@ -829,13 +829,13 @@ export class Inventory extends Component {
           </Modal.Actions>
         </Modal>
         <Form onSubmit={this.onSubmit}>
-          {part.partNumber && <Image src={'/part/barcode?partNumber=' + part.partNumber} width={232} height={24} floated='right' style={{ marginTop: '4px' }} />}
           {part.partId > 0 &&
-            <Button animated='vertical' circular floated='right' size='mini' onClick={this.printLabel}>
+            <Button animated='vertical' circular floated='right' size='mini' onClick={this.printLabel} style={{ marginTop: '5px'}}>
               <Button.Content visible><Icon name='print' /></Button.Content>
               <Button.Content hidden>Print</Button.Content>
             </Button>
           }
+          {part.partNumber && <Image src={'/part/preview?partNumber=' + part.partNumber} width={180} floated='right' style={{ marginTop: '0px' }} />}
           <h1 style={{ display: 'inline-block', marginRight: '30px' }}>{title}</h1>
           <div title='Bulk Barcode Scan' style={{ width: '132px', height: '30px', display: 'inline-block', cursor: 'pointer' }} onClick={this.handleBulkBarcodeScan}>
             <div className='anim-box'>

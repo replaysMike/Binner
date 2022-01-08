@@ -435,6 +435,30 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Preview part label
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("preview")]
+        public async Task<IActionResult> PreviewPrintPartAsync([FromQuery] PrintPartRequest request)
+        {
+            try
+            {
+                var part = await _partService.GetPartAsync(request.PartNumber);
+                if (part == null) return NotFound();
+                var stream = new MemoryStream();
+                var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(true));
+                image.SaveAsPng(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                return new FileStreamResult(stream, "image/png");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
+        }
+
+        /// <summary>
         /// Generate a part barcode
         /// </summary>
         /// <param name="request"></param>

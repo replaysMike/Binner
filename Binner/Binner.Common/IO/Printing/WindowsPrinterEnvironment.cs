@@ -90,9 +90,8 @@ namespace Binner.Common.IO.Printing
         private void T_PrintPage(object sender, PrintPageEventArgs e)
         {
             // Printing requires a System.Drawing.Bitmap so it must be converted
-            const int magicNumberLeft = -15; // todo: why is there a 15px left margin and where does it come from?
             var bitmap = _printImage.ToBitmap();
-            e.Graphics.DrawImage(bitmap, new System.Drawing.Point(magicNumberLeft, 0));
+            e.Graphics.DrawImage(bitmap, new System.Drawing.Point(0, 0));
             e.HasMorePages = false;
         }
     }
