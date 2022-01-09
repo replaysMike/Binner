@@ -138,6 +138,7 @@ export class Datasheets extends Component {
 
   getMountingTypeById(mountingTypeId) {
     switch (mountingTypeId) {
+      default:
       case 1:
         return 'through hole';
       case 2:
@@ -165,7 +166,7 @@ export class Datasheets extends Component {
 
   getHostnameFromRegex(url) {
     // run against regex
-    const matches = url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
+    const matches = url.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i);
     // extract hostname (will be null if no match is found)
     return matches && matches[1];
   }

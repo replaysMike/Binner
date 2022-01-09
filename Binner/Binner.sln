@@ -1,11 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29102.190
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Web", "Binner.Web\Binner.Web.csproj", "{F353F747-5968-4761-BF8C-FA813D7FF6E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Web", "Binner.Web\Binner.Web.csproj", "{F353F747-5968-4761-BF8C-FA813D7FF6E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Common", "Binner.Common\Binner.Common.csproj", "{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Common", "Library\Binner.Common\Binner.Common.csproj", "{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Web.Tests", "Tests\Binner.Web.Tests\Binner.Web.Tests.csproj", "{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{2D9C4743-1B04-41B1-A12F-4CCF6F5BAB3E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Common.Tests", "Tests\Binner.Common.Tests\Binner.Common.Tests.csproj", "{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{AEDE65C0-249F-42B0-8C80-49422C006CC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +31,23 @@ Global
 		{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F353F747-5968-4761-BF8C-FA813D7FF6E4} = {AEDE65C0-249F-42B0-8C80-49422C006CC2}
+		{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9} = {2D9C4743-1B04-41B1-A12F-4CCF6F5BAB3E}
+		{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7} = {3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}
+		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9} = {3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {413F8D19-37B6-4A57-858F-DD8AFF2DAE96}

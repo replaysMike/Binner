@@ -66,7 +66,7 @@ export class Search extends Component {
         this.setState({ by, byValue, keyword: '', page: 1});
         this.loadParts(this.state.page, true, by, byValue);
       } else {
-        this.state.page = 1;
+        this.setState({ page: 1});
         this.loadParts(this.state.page, true, '', '');
       }
     }
@@ -138,6 +138,8 @@ export class Search extends Component {
           this.loadParts(this.state.page, true);
         }
         break;
+      default:
+          break;
     }
     this.setState({ keyword: control.value });
   }
@@ -161,7 +163,7 @@ export class Search extends Component {
   }
 
   render() {
-    const { parts, column, direction, loading, keyword, by, byValue } = this.state;
+    const { parts, loading, keyword, by, byValue } = this.state;
     return (
       <div>
         <h1>Inventory</h1>

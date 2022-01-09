@@ -109,7 +109,8 @@ export default class NumberPicker extends Component {
           console.log("Invalid number specified");
         else
           setVal = currentValue;
-
+        break;
+      default:
         break;
     }
 

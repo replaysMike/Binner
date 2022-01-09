@@ -1,6 +1,6 @@
 ﻿import React, { Component } from 'react';
 import _ from 'underscore';
-import { Table, Visibility, Input, Label, Button, Segment, Form, TextArea, Icon, Dropdown, Statistic } from 'semantic-ui-react';
+import { Label, Segment, Form, Dropdown, Statistic } from 'semantic-ui-react';
 import { encodeResistance } from '../../common/Utils';
 
 export class ResistorColorCodeCalculator extends Component {
@@ -57,13 +57,15 @@ export class ResistorColorCodeCalculator extends Component {
   }
 
   handleChangeBands(e, control) {
-    const { resistorBands, resistorColorCodePreferences } = this.state;
+    const { resistorColorCodePreferences } = this.state;
     switch (control.name) {
       case 'resistorBands':
         this.setState({ resistorBands: control.value });
         this.setBands(control.value);
         resistorColorCodePreferences.lastResistorBands = control.value;
         localStorage.setItem('resistorColorCodePreferences', JSON.stringify(resistorColorCodePreferences));
+        break;
+      default:
         break;
     }
   }
@@ -76,12 +78,14 @@ export class ResistorColorCodeCalculator extends Component {
       case 'bandValue':
         band.value = control.value;
         resistorColorCodePreferences.lastBands[index] = control.value;
-        if ((band.key == resistorBands && resistorBands < 6) || band.key == resistorBands - 1 && resistorBands === 6)
+        if ((band.key === resistorBands && resistorBands < 6) || (band.key === resistorBands - 1 && resistorBands === 6))
           toleranceValue = Number.parseFloat(_.find(this.colors, x => x.value === band.value).tolerance);
-        if (band.key == resistorBands && resistorBands === 6)
+        if (band.key === resistorBands && resistorBands === 6)
           ppmValue = Number.parseInt(_.find(this.colors, x => x.value === band.value).ppm);
         localStorage.setItem('resistorColorCodePreferences', JSON.stringify(resistorColorCodePreferences));
         this.setState({ bands, tolerance: toleranceValue, ppm: ppmValue });
+        break;
+      default:
         break;
     }
   }
@@ -160,6 +164,8 @@ export class ResistorColorCodeCalculator extends Component {
           return Number.parseInt(bands[0].value.toString() + bands[1].value.toString() + bands[2].value.toString()) * Math.pow(10, bands[3].value);
         case 6:
           return Number.parseInt(bands[0].value.toString() + bands[1].value.toString() + bands[2].value.toString()) * Math.pow(10, bands[3].value);
+        default:
+          return 0;
       }
     }
     return 0;

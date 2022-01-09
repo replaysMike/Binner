@@ -48,6 +48,9 @@ export class ExportData extends Component {
     return (
       <div>
         <h1>Data Export</h1>
+        <p>
+          Export your Binner database to a human-readable format.
+        </p>
         <Form onSubmit={this.onSubmit} loading={loading}>
           <Form.Group>
             <Form.Dropdown label='Format' placeholder='Choose a format' selection value={exportFormat} options={exportFormats} onChange={this.handleChange} name='exportFormat' />

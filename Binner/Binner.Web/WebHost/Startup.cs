@@ -2,12 +2,14 @@
 using LightInject;
 using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Binner.Web.WebHost
 {
@@ -64,8 +66,6 @@ namespace Binner.Web.WebHost
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //if (Configuration == null) throw new InvalidOperationException("Configuration cannot be null!");
-            //var config = Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
             var config = app.ApplicationServices.GetRequiredService<WebHostServiceConfiguration>();
             if (config == null) throw new InvalidOperationException("Could not retrieve WebHostServiceConfiguration, configuration file may be invalid!");
             Console.WriteLine($"ENVIRONMENT NAME: {config.Environment}");
@@ -80,6 +80,19 @@ namespace Binner.Web.WebHost
             }
 
             //app.UseHttpsRedirection();
+            app.UseExceptionHandler(appError =>
+            {
+                appError.Run(context =>
+                {
+                    var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+                    if (contextFeature != null) { 
+                        Console.WriteLine($"Application Error: {contextFeature.Endpoint}");
+                        Console.WriteLine($"  Exception: {contextFeature.Error.GetType().Name} {contextFeature.Error.GetBaseException().Message}");
+                        Console.WriteLine($"  Stack Trace: {contextFeature.Error.GetBaseException().Message}");
+                    }
+                    return Task.CompletedTask;
+                });
+            });
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 

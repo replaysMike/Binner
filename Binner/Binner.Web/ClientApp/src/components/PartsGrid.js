@@ -1,8 +1,22 @@
-﻿import { Table, Visibility, Input, Label, Segment, Button, Confirm, Modal, Icon, Responsive, Header } from 'semantic-ui-react';
+﻿import { createMedia } from "@artsy/fresnel";
+import { Table, Visibility, Input, Label, Button, Confirm, Modal, Header } from 'semantic-ui-react';
 import React, { Component } from 'react';
 import _ from 'underscore';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+
+const AppMedia = createMedia({
+  breakpoints: {
+    mobile: 0,
+    tablet: 768,
+    computer: 992,
+    largeScreen: 1200,
+    widescreen: 1920
+  }
+});
+
+const mediaStyles = AppMedia.createMediaStyle();
+const { Media, MediaContextProvider } = AppMedia;
 
 export default class PartsGrid extends Component {
   static displayName = PartsGrid.name;
@@ -116,7 +130,6 @@ export default class PartsGrid extends Component {
     });
     let saveMessage = '';
     if (response.status === 200) {
-      const data = await response.json();
       lastSavedPartId = part.partId;
       saveMessage = `Saved part ${part.partNumber}!`;
     }
@@ -215,86 +228,87 @@ export default class PartsGrid extends Component {
   }
 
   renderParts(parts, column, direction) {
-    const { keyword, lastSavedPartId, confirmDeleteIsOpen, loading, by, byValue } = this.state;
+    const { lastSavedPartId } = this.state;
     const columns = this.getColumns(this.props.columns);
     return (
       <Visibility onBottomVisible={this.handleNextPage} continuous>
-        <div>
-          <Table id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
-            <Table.Header>
-              <Table.Row>
-                {columns.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>}
-                {columns.quantity && <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>}
-                {columns.lowstockthreshold && <Table.HeaderCell sorted={column === 'lowstockthreshold' ? direction : null} onClick={this.handleSort('lowstockthreshold')}>Low Stock</Table.HeaderCell>}
-                {columns.manufacturerpartnumber && <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Responsive>}
-                {columns.description && <Responsive as={Table.HeaderCell} minWidth={800} sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>Description</Responsive>}
-                {columns.location && <Responsive as={Table.HeaderCell} minWidth={500} sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>Location</Responsive>}
-                {columns.binnumber && <Responsive as={Table.HeaderCell} minWidth={600} sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>Bin Number</Responsive>}
-                {columns.binnumber2 && <Responsive as={Table.HeaderCell} minWidth={700} sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>Bin Number 2</Responsive>}
-                {columns.cost && <Responsive as={Table.HeaderCell} minWidth={1100} sorted={column === 'cost' ? direction : null} onClick={this.handleSort('cost')}>Cost</Responsive>}
-                {columns.digikeypartnumber && <Responsive as={Table.HeaderCell} minWidth={1200} sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>DigiKey Part</Responsive>}
-                {columns.mouserpartnumber && <Responsive as={Table.HeaderCell} minWidth={1300} sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>Mouser Part</Responsive>}
-                {columns.datasheeturl && <Responsive as={Table.HeaderCell} sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Responsive>}
-                {columns.print && <Responsive as={Table.HeaderCell} minWidth={1400}></Responsive>}
-                {columns.delete && <Table.HeaderCell></Table.HeaderCell>}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {parts.map(p =>
-                <Table.Row key={p.partId} onClick={e => this.handleLoadPartClick(e, p)}>
-                  {columns.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
-                  {columns.quantity && <Table.Cell>
-                    <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
-                  </Table.Cell>}
-                  {columns.lowstockthreshold && <Table.Cell>
-                    <Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
-                  </Table.Cell>}
-                  {columns.manufacturerpartnumber && <Responsive as={Table.Cell} minWidth={800}>
-                    {p.manufacturerPartNumber}
-                  </Responsive>}
-                  {columns.description && <Responsive as={Table.Cell} minWidth={800}>
-                    <span className='truncate small' title={p.description}>{p.description}</span>
-                  </Responsive>}
-                  {columns.location && <Responsive as={Table.Cell} minWidth={500}>
-                    <Link to={`inventory?by=location&value=${p.location}`} onClick={this.handleSelfLink}><span className='truncate'>{p.location}</span></Link>
-                  </Responsive>}
-                  {columns.binnumber && <Responsive as={Table.Cell} minWidth={600}>
-                    <Link to={`inventory?by=binNumber&value=${p.binNumber}`} onClick={this.handleSelfLink}>{p.binNumber}</Link>
-                  </Responsive>}
-                  {columns.binnumber2 && <Responsive as={Table.Cell} minWidth={700}>
-                    <Link to={`inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link>
-                  </Responsive>}
-                  {columns.cost && <Responsive as={Table.Cell} minWidth={1100}>
-                    ${p.cost.toFixed(2)}
-                  </Responsive>}
-                  {columns.digikeypartnumber && <Responsive as={Table.Cell} minWidth={1200}>
-                    <span className='truncate'>{p.digiKeyPartNumber}</span>
-                  </Responsive>}
-                  {columns.mouserpartnumber && <Responsive as={Table.Cell} minWidth={1300}>
-                    <span className='truncate'>{p.mouserPartNumber}</span>
-                  </Responsive>}
-                  {columns.datasheeturl && <Responsive as={Table.Cell} textAlign='center' verticalAlign='middle'>
-                    {p.datasheetUrl && <a href='#' onClick={e => this.handleVisitLink(e, p.datasheetUrl)}>View</a>}
-                  </Responsive>}
-                  {columns.print && <Responsive as={Table.Cell} minWidth={1400} textAlign='center' verticalAlign='middle'>
-                    <Button circular size='mini' icon='print' title='Print Label' onClick={e => this.handlePrintLabel(e, p)} />
-                  </Responsive>}
-                  {columns.delete && <Table.Cell textAlign='center' verticalAlign='middle'>
-                    <Button circular size='mini' icon='delete' title='Delete' onClick={e => this.confirmDeleteOpen(e, p)} />
-                  </Table.Cell>}
+        <style>{mediaStyles}</style>
+        <MediaContextProvider>
+            <Table id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
+              <Table.Header>
+                <Table.Row>
+                  {columns.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={this.handleSort('partNumber')}>Part</Table.HeaderCell>}
+                  {columns.quantity && <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={this.handleSort('quantity')}>Quantity</Table.HeaderCell>}
+                  {columns.lowstockthreshold && <Table.HeaderCell sorted={column === 'lowstockthreshold' ? direction : null} onClick={this.handleSort('lowstockthreshold')}>Low Stock</Table.HeaderCell>}
+                  {columns.manufacturerpartnumber && <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Manufacturer Part</Table.HeaderCell> }
+                  {columns.description && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'description' ? direction : null} onClick={this.handleSort('description')}>{renderChildren ? "Description" : null}</Table.HeaderCell>)}}</Media>}              
+                  {columns.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'location' ? direction : null} onClick={this.handleSort('location')}>{renderChildren ? "Location" : null}</Table.HeaderCell>)}}</Media> }
+                  {columns.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber' ? direction : null} onClick={this.handleSort('binNumber')}>{renderChildren ? "Bin Number" : null}</Table.HeaderCell>)}}</Media> }
+                  {columns.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber2' ? direction : null} onClick={this.handleSort('binNumber2')}>{renderChildren ? "Bin Number 2" : null}</Table.HeaderCell>)}}</Media> }
+                  {columns.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'cost' ? direction : null} onClick={this.handleSort('cost')}>{renderChildren ? "Cost" : null}</Table.HeaderCell>)}}</Media> }
+                  {columns.digikeypartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={this.handleSort('digiKeyPartNumber')}>{renderChildren ? "DigiKey Part" : null}</Table.HeaderCell>)}}</Media> }
+                  {columns.mouserpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'mouserPartNumber' ? direction : null} onClick={this.handleSort('mouserPartNumber')}>{renderChildren ? "Mouser Part" : null}</Table.HeaderCell>)}}</Media> }
+                  {columns.datasheeturl && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>{renderChildren ? "Datasheet" : null}</Table.HeaderCell>)}}</Media> }
+                  {columns.print && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className}></Table.HeaderCell>)}}</Media> }
+                  {columns.delete && <Table.HeaderCell></Table.HeaderCell>}
                 </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
-          {!this.props.noRemainingData && <Button onClick={this.handleNextPage}>Load More Parts</Button>}
-          {this.props.noRemainingData && <Button disabled={true}>No Additional Parts</Button>}
-        </div>
+              </Table.Header>
+              <Table.Body>
+                {parts.map(p =>
+                  <Table.Row key={p.partId} onClick={e => this.handleLoadPartClick(e, p)}>
+                    {columns.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
+                    {columns.quantity && <Table.Cell>
+                      <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
+                    </Table.Cell>}
+                    {columns.lowstockthreshold && <Table.Cell>
+                      <Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
+                    </Table.Cell>}
+                    {columns.manufacturerpartnumber && <Table.Cell>
+                      {p.manufacturerPartNumber}
+                    </Table.Cell> }
+                    {columns.description && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                      {renderChildren ? <span className='truncate small' title={p.description}>{p.description}</span> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                      {renderChildren ? <Link to={`inventory?by=location&value=${p.location}`} onClick={this.handleSelfLink}><span className='truncate'>{p.location}</span></Link> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                      {renderChildren ? <Link to={`inventory?by=binNumber&value=${p.binNumber}`} onClick={this.handleSelfLink}>{p.binNumber}</Link> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                      {renderChildren ? <Link to={`inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                      {renderChildren ? "$" + p.cost.toFixed(2) : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.digikeypartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                      {renderChildren ? <span className='truncate'>{p.digiKeyPartNumber}</span> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.mouserpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                      {renderChildren ? <span className='truncate'>{p.mouserPartNumber}</span> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.datasheeturl && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className} textAlign='center' verticalAlign='middle'>
+                      {renderChildren ? p.datasheetUrl && <button onClick={e => this.handleVisitLink(e, p.datasheetUrl)}>View</button> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.print && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className} textAlign='center' verticalAlign='middle'>
+                      {renderChildren ? <Button circular size='mini' icon='print' title='Print Label' onClick={e => this.handlePrintLabel(e, p)} /> : null}
+                    </Table.Cell>)}}</Media> }
+                    {columns.delete && <Table.Cell textAlign='center' verticalAlign='middle'>
+                      <Button circular size='mini' icon='delete' title='Delete' onClick={e => this.confirmDeleteOpen(e, p)} />
+                    </Table.Cell>}
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table>
+            {!this.props.noRemainingData && <Button onClick={this.handleNextPage}>Load More Parts</Button>}
+            {this.props.noRemainingData && <Button disabled={true}>No Additional Parts</Button>}
+        </MediaContextProvider>
         <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} content={this.state.confirmPartDeleteContent} />
-        <Modal open={this.state.modalIsOpen} onCancel={this.handleModalClose} onClose={this.handleModalClose}>
-          {this.state.modalHeader && <Header>{this.state.modalHeader}</Header>}
-          <Modal.Content>{this.state.modalContent}</Modal.Content>
-          <Modal.Actions><Button onClick={this.handleModalClose}>OK</Button></Modal.Actions>
-        </Modal>
+          <Modal open={this.state.modalIsOpen} onCancel={this.handleModalClose} onClose={this.handleModalClose}>
+            {this.state.modalHeader && <Header>{this.state.modalHeader}</Header>}
+            <Modal.Content>{this.state.modalContent}</Modal.Content>
+            <Modal.Actions><Button onClick={this.handleModalClose}>OK</Button></Modal.Actions>
+          </Modal>
       </Visibility>
     );
   }

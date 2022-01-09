@@ -60,6 +60,10 @@ export class LowInventory extends Component {
     return (
       <div>
         <h1>Low Inventory</h1>
+        <p>
+          Use this page to reorder parts you are low on.<br/>
+          You can define a custom <i>Low Stock</i> value per part in your inventory.
+        </p>
         <PartsGrid parts={parts} columns={columns} loadPage={this.handleNextPage} noRemainingData={this.state.noRemainingData} onPartClick={this.handlePartClick} name='partsGrid' />
       </div>
     );

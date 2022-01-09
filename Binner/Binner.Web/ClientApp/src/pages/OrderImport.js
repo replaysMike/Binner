@@ -54,7 +54,7 @@ export class OrderImport extends Component {
       },
       body: JSON.stringify(request),
     });
-    const responseData = await response.json();
+    await response.json();
     // reset form
     this.setState({
       order: { orderId: '', supplier: order.supplier },
@@ -112,12 +112,15 @@ export class OrderImport extends Component {
       case 'supplier':
         order.supplier = control.value;
         break;
+      default:
+        break;
     }
     this.setState({ order });
   }
 
   getMountingTypeById(mountingTypeId) {
     switch (mountingTypeId) {
+      default:
       case 1:
         return 'through hole';
       case 2:
@@ -210,7 +213,7 @@ export class OrderImport extends Component {
                   <Table.Cell>{p.cost}</Table.Cell>
                   <Table.Cell><Image src={p.imageUrl} size='mini'></Image></Table.Cell>
                   <Table.Cell>{p.datasheetUrls.map((d, dindex) =>
-                    <a href='#' key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</a>
+                    <Button key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</Button>
                   )}</Table.Cell>
                 </Table.Row>
               )}

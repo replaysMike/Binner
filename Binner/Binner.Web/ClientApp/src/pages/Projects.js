@@ -265,6 +265,10 @@ export class Projects extends Component {
     return (
       <div>
         <h1>Projects</h1>
+        <p>
+          Projects allow you to associate Parts for a particular project.<br/>
+          You will be able to generate part lists and reports by Project.
+        </p>
         {contents}
       </div>
     );

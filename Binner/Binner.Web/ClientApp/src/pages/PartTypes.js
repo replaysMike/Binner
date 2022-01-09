@@ -237,6 +237,10 @@ export class PartTypes extends Component {
     return (
       <div>
         <h1>Part Types</h1>
+        <p>
+          Part Types allow you to separate your parts by type. <i>Parent</i> types allow for unlimited part type hierarchy.<br/>
+          For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.
+        </p>
         {contents}
       </div>
     );

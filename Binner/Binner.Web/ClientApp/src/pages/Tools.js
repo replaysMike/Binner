@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import _ from 'underscore';
 import { Segment, Statistic, Icon } from 'semantic-ui-react';
 
 export class Tools extends Component {
