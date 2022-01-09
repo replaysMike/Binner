@@ -38,6 +38,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Fonts\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Binner.Common\Binner.Common.csproj" />
   </ItemGroup>
 

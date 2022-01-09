@@ -14,33 +14,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Fonts\segoeui.ttf" />
-    <None Remove="Resources\Fonts\segoeuib.ttf" />
-    <None Remove="Resources\Fonts\segoeuii.ttf" />
-    <None Remove="Resources\Fonts\segoeuil.ttf" />
-    <None Remove="Resources\Fonts\segoeuisl.ttf" />
-    <None Remove="Resources\Fonts\segoeuiz.ttf" />
-    <None Remove="Resources\Fonts\seguibl.ttf" />
-    <None Remove="Resources\Fonts\seguibli.ttf" />
-    <None Remove="Resources\Fonts\seguili.ttf" />
-    <None Remove="Resources\Fonts\seguisb.ttf" />
-    <None Remove="Resources\Fonts\seguisbi.ttf" />
-    <None Remove="Resources\Fonts\seguisli.ttf" />
+    <Compile Remove="Resources\**" />
+    <EmbeddedResource Remove="Resources\**" />
+    <None Remove="Resources\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Fonts\segoeui.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\segoeuib.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\segoeuii.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\segoeuil.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\segoeuisl.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\segoeuiz.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\seguibl.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\seguibli.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\seguili.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\seguisb.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\seguisbi.ttf" />
-    <EmbeddedResource Include="Resources\Fonts\seguisli.ttf" />
+    <Content Remove="C:\Users\mikeb\.nuget\packages\anybarcode\1.0.10\contentFiles\any\net6.0\Fonts\micross.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="C:\Users\mikeb\.nuget\packages\anybarcode\1.0.10\contentFiles\any\net6.0\Fonts\micross.ttf" />
   </ItemGroup>
 
   <ItemGroup>

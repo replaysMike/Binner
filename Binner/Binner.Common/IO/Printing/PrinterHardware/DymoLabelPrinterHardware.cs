@@ -5,8 +5,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text.RegularExpressions;
 using TypeSupport.Extensions;
 
@@ -18,10 +18,11 @@ namespace Binner.Common.IO.Printing
     public class DymoLabelPrinterHardware : ILabelPrinterHardware
     {
         private const string DefaultFontName = "Segoe UI";
-        private const string DefaultFontFile = "segoeui.ttf";
+        private static readonly Color DefaultTextColor = Color.Black;
         private const float Dpi = 300;
+        private const string FontsPath = "./Fonts";
         private static Lazy<FontCollection> _fontCollection = new Lazy<FontCollection>(() => new FontCollection());
-        private static Lazy<FontFamily> _fontFamily = new Lazy<FontFamily>(() => _fontCollection.Value.Install(ResourceLoader.LoadResourceStream($"Resources.Fonts.{DefaultFontFile}")));
+        private static FontFamily _fontFamily;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly List<PointF> _labelStart = new();
         private readonly IPrinterEnvironment _printer;
@@ -32,11 +33,40 @@ namespace Binner.Common.IO.Printing
         /// </summary>
         public IPrinterSettings PrinterSettings { get; set; }
 
+        static DymoLabelPrinterHardware()
+        {
+            LoadFonts();
+        }
+
         public DymoLabelPrinterHardware(IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator)
         {
             PrinterSettings = printerSettings ?? throw new ArgumentNullException(nameof(printerSettings));
             _barcodeGenerator = barcodeGenerator;
             _printer = new PrinterFactory().CreatePrinter(printerSettings);
+        }
+
+        private static void LoadFonts()
+        {
+            // Load fonts
+            if (!_fontCollection.IsValueCreated)
+            {
+                var fontFiles = new FontScanner().GetFonts(FontsPath);
+                foreach (var fontFile in fontFiles)
+                {
+                    if (File.Exists(fontFile))
+                    {
+                        try
+                        {
+                            _fontCollection.Value.Install(fontFile);
+                        }
+                        catch (Exception)
+                        {
+                            // can't use font
+                        }
+                    }
+                }
+            }
+            _fontFamily = _fontCollection.Value.Find(DefaultFontName);
         }
 
         public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
@@ -120,9 +150,9 @@ namespace Binner.Common.IO.Printing
             var leftMargin = 0;
             // allow vertical binNumber to be written, if provided
             if (!string.IsNullOrEmpty(PrinterSettings.PartLabelTemplate.Identifier.Content) && PrinterSettings.PartLabelTemplate.Identifier.Position == LabelPosition.Right)
-                rightMargin = 25;
+                rightMargin = 5;
             if (!string.IsNullOrEmpty(PrinterSettings.PartLabelTemplate.Identifier.Content) && PrinterSettings.PartLabelTemplate.Identifier.Position == LabelPosition.Left)
-                leftMargin = 25;
+                leftMargin = 5;
             var margins = new Margin(leftMargin, rightMargin, 0, 0);
 
             // process template values
@@ -131,6 +161,7 @@ namespace Binner.Common.IO.Printing
             content.Line3 = content.Line3 ?? ReplaceTemplate(content.Part, PrinterSettings.PartLabelTemplate.Line3);
             content.Line4 = content.Line4 ?? ReplaceTemplate(content.Part, PrinterSettings.PartLabelTemplate.Line4);
             content.Identifier = content.Identifier ?? ReplaceTemplate(content.Part, PrinterSettings.PartLabelTemplate.Identifier);
+            content.Identifier2 = content.Identifier2 ?? ReplaceTemplate(content.Part, PrinterSettings.PartLabelTemplate.Identifier2);
 
             // merge any adjascent template lines together
             MergeLines(PrinterSettings.PartLabelTemplate, content, paperRect, margins);
@@ -138,7 +169,9 @@ namespace Binner.Common.IO.Printing
             var line2Position = DrawLine(image, labelProperties, line1Position, content.Part, content.Line2, PrinterSettings.PartLabelTemplate.Line2, paperRect, margins);
             var line3Position = DrawLine(image, labelProperties, line2Position, content.Part, content.Line3, PrinterSettings.PartLabelTemplate.Line3, paperRect, margins);
             var line4Position = DrawLine(image, labelProperties, line3Position, content.Part, content.Line4, PrinterSettings.PartLabelTemplate.Line4, paperRect, margins);
+
             var identifierPosition = DrawLine(image, labelProperties, line4Position, content.Part, content.Identifier, PrinterSettings.PartLabelTemplate.Identifier, paperRect, margins);
+            var identifierPosition2 = DrawLine(image, labelProperties, identifierPosition, content.Part, content.Identifier2, PrinterSettings.PartLabelTemplate.Identifier2, paperRect, margins);
         }
 
         /// <summary>
@@ -211,11 +244,12 @@ namespace Binner.Common.IO.Printing
             newSecondLine = line2;
         }
 
-        private PointF DrawLine(Image<Rgba32> image, LabelDefinition labelProperties, PointF lineOffset, object part, string lineValue, LineConfiguration template, Rectangle paperRect, Margin margins)
+        private PointF DrawLine(Image<Rgba32> image, LabelDefinition labelProperties, PointF lineOffset, object part, string text, LineConfiguration template, Rectangle paperRect, Margin margins)
         {
-            var font = CreateFont(template, lineValue, paperRect);
+            var font = CreateFont(template, text, paperRect);
+            var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
             var rendererOptions = new RendererOptions(font, Dpi);
-            var lineBounds = TextMeasurer.Measure(lineValue, rendererOptions);
+            var textBounds = TextMeasurer.Measure(text, rendererOptions);
             var x = 0f;
             var y = lineOffset.Y;
             x += template.Margin.Left;
@@ -224,20 +258,20 @@ namespace Binner.Common.IO.Printing
             {
                 x = 0;
                 y += 12;
-                DrawBarcode128(image, lineValue, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height));
+                DrawBarcode128(image, fontColor, Color.White, text, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height));
             }
             else
             {
                 switch (template.Position)
                 {
                     case LabelPosition.Right:
-                        x += (margins.Left + paperRect.Width - margins.Right) - lineBounds.Width + labelProperties.LeftMargin;
+                        x += (margins.Left + paperRect.Width - margins.Right) - textBounds.Width + labelProperties.LeftMargin;
                         break;
                     case LabelPosition.Left:
                         x += margins.Left + labelProperties.LeftMargin;
                         break;
                     case LabelPosition.Center:
-                        x += (margins.Left + paperRect.Width - margins.Right) / 2 - lineBounds.Width / 2 + labelProperties.LeftMargin;
+                        x += (margins.Left + paperRect.Width - margins.Right) / 2 - textBounds.Width / 2 + labelProperties.LeftMargin;
                         break;
                 }
                 if (template.Rotate > 0)
@@ -249,22 +283,18 @@ namespace Binner.Common.IO.Printing
                     // rotating text correctly in ImageSharp turned out to be beyond trivial
                     var builder = new AffineTransformBuilder()
                         .AppendRotationDegrees(PrinterSettings.PartLabelTemplate.Identifier.Rotate)
-                        .AppendTranslation(new PointF(0, 0));
-                    var rotationAngleDegrees = (float)PrinterSettings.PartLabelTemplate.Identifier.Rotate;
-                    var rotationAngleRadians = (float)(rotationAngleDegrees * (Math.PI / 180));
+                        .AppendTranslation(new PointF(x, y));
                     var drawingOptions = new DrawingOptions
                     {
                         TextOptions = new TextOptions
                         {
                             ApplyKerning = true,
                             DpiX = Dpi,
-                            DpiY = Dpi,
+                            DpiY = Dpi
                         },
-                        Transform = Matrix3x2.CreateRotation(rotationAngleRadians)
-                            * Matrix3x2.CreateTranslation(lineBounds.Height * (rotationAngleDegrees / 90f), 0)
-                            * Matrix3x2.CreateTranslation(x, y)
+                        Transform = builder.BuildMatrix(Rectangle.Round(new RectangleF(textBounds.X, textBounds.Y, textBounds.Width, textBounds.Height)))
                     };
-                    image.Mutate(c => c.DrawText(drawingOptions, lineValue, font, Color.Black, new PointF(0, 0)));
+                    image.Mutate(c => c.DrawText(drawingOptions, text, font, fontColor, new PointF(0, 0)));
                 }
                 else
                 {
@@ -277,11 +307,11 @@ namespace Binner.Common.IO.Printing
                             DpiY = Dpi
                         },
                     };
-                    image.Mutate(c => c.DrawText(drawingOptions, lineValue, font, Color.Black, new PointF(x, y)));
+                    image.Mutate(c => c.DrawText(drawingOptions, text, font, fontColor, new PointF(x, y)));
                 }
             }
             // return the new drawing cursor position
-            return new PointF(0, y + lineBounds.Height);
+            return new PointF(0, y + textBounds.Height);
         }
 
         private Font CreateFont(LineConfiguration template, string lineValue, Rectangle paperRect)
@@ -299,14 +329,21 @@ namespace Binner.Common.IO.Printing
 
         private FontFamily GetOrCreateFontFamily(string fontName)
         {
-            if (_fontCollection.Value.TryFind(fontName, out FontFamily fontFamily))
+            FontFamily fontFamily;
+            if (_fontCollection.Value.TryFind(fontName, out fontFamily))
             {
                 return fontFamily;
             }
+            else
+            {
+                // try to load it from system fonts
+                if (SystemFonts.TryFind(fontName, out fontFamily))
+                {
+                    return fontFamily;
+                }
+            }
             // return the default font
-            return _fontFamily.Value;
-            // todo: add a way to register other fonts by filename
-            //return _fontCollection.Value.Install(ResourceLoader.LoadResourceStream($"Resources.Fonts.{fontName}.ttf"));
+            return _fontFamily;
         }
 
         private static string ReplaceTemplate(object data, LineConfiguration config)
@@ -330,20 +367,20 @@ namespace Binner.Common.IO.Printing
             return value;
         }
 
-        private void DrawBarcode128(Image<Rgba32> image, string encodeValue, Rectangle rect)
+        private void DrawBarcode128(Image<Rgba32> image, Color foregroundColor, Color backgroundColor, string encodeValue, Rectangle rect)
         {
             var graphicsOptions = new GraphicsOptions
             {
                 Antialias = false,
             };
-            var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, rect.Width, 25);
+            var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, foregroundColor, backgroundColor, rect.Width, 25);
             try
             {
                 image.Mutate(c => c.DrawImage(generatedBarcodeImage, new Point(0, rect.Y), graphicsOptions));
                 image.Metadata.HorizontalResolution = Dpi;
                 image.Metadata.VerticalResolution = Dpi;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 // swallow exceptions if we draw outside the bounds
             }

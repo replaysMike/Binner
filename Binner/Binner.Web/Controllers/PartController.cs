@@ -469,7 +469,7 @@ namespace Binner.Web.Controllers
             try
             {
                 var stream = new MemoryStream();
-                var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, 300, 25);
+                var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, Color.Black, Color.White, 300, 25);
                 image.SaveAsPng(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 return new FileStreamResult(stream, "image/png");

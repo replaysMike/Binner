@@ -13,5 +13,6 @@ namespace Binner.Common.IO.Printing
         public string Line3 { get; set; }
         public string Line4 { get; set; }
         public string Identifier { get; set; }
+        public string Identifier2 { get; set; }
     }
 }

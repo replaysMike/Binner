@@ -10,5 +10,9 @@
         /// Optional Location identifier
         /// </summary>
         public LineConfiguration Identifier { get; set; } = new LineConfiguration();
+        /// <summary>
+        /// Optional Location identifier 2
+        /// </summary>
+        public LineConfiguration Identifier2 { get; set; } = new LineConfiguration();
     }
 }

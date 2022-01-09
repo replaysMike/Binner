@@ -60,5 +60,11 @@ namespace Binner.Common.IO.Printing
         /// Label margins
         /// </summary>
         public Margin Margin { get; set; } = new Margin(0, 0, 0, 0);
+
+        /// <summary>
+        /// Font color to use.
+        /// Will show on previews and for printers that use color
+        /// </summary>
+        public string Color { get; set; }
     }
 }
