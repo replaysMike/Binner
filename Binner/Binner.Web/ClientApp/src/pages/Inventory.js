@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader, Header } from 'semantic-ui-react';
+import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader, Header, Confirm } from 'semantic-ui-react';
 import NumberPicker from '../components/NumberPicker';
 import { ProjectColors } from '../common/Types';
 
@@ -49,6 +49,8 @@ export class Inventory extends Component {
       viewPreferences,
       partModalOpen: false,
       duplicatePartModalOpen: false,
+      confirmDeleteIsOpen: false,
+      confirmPartDeleteContent: 'Are you sure you want to delete this part?',
       part: {
         partId: 0,
         partNumber,
@@ -130,6 +132,9 @@ export class Inventory extends Component {
     this.renderScannedParts = this.renderScannedParts.bind(this);
     this.handleScannedPartChange = this.handleScannedPartChange.bind(this);
     this.deleteScannedPart = this.deleteScannedPart.bind(this);
+    this.handleDeletePart = this.handleDeletePart.bind(this);
+    this.confirmDeleteOpen = this.confirmDeleteOpen.bind(this);
+    this.confirmDeleteClose = this.confirmDeleteClose.bind(this);
   }
 
   async componentDidMount() {
@@ -711,6 +716,34 @@ export class Inventory extends Component {
     this.setState({ scannedParts: scannedPartsDeleted });
   }
 
+  async handleDeletePart(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const { selectedPart, parts } = this.state;
+    await fetch(`part`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ partId: selectedPart.partId })
+    });
+    const partsDeleted = _.without(parts, _.findWhere(parts, { partId: selectedPart.partId }));
+    this.setState({ confirmDeleteIsOpen: false, parts: partsDeleted, selectedPart: null });
+    this.props.history.push(`/inventory`);
+  }
+
+  confirmDeleteOpen(e, part) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({ confirmDeleteIsOpen: true, selectedPart: part, confirmPartDeleteContent: `Are you sure you want to delete part ${part.partNumber}?` });
+  }
+
+  confirmDeleteClose(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({ confirmDeleteIsOpen: false, selectedPart: null });
+  }
+
   onScannedInputKeyDown(e, scannedPart) {
     const { scannedParts } = this.state;
     if (e.keyCode === 13) {
@@ -828,6 +861,7 @@ export class Inventory extends Component {
             <Button primary onClick={this.handleForceSubmit}>Save Anyways</Button>
           </Modal.Actions>
         </Modal>
+        <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} content={this.state.confirmPartDeleteContent} />
         <Form onSubmit={this.onSubmit}>
           {part.partId > 0 &&
             <Button animated='vertical' circular floated='right' size='mini' onClick={this.printLabel} style={{ marginTop: '5px'}}>
@@ -876,6 +910,9 @@ export class Inventory extends Component {
           </Form.Group>
           <Form.Field inline>
             <Button type='submit' primary style={{ marginTop: '10px' }}><Icon name='save' />Save</Button>
+            {part.partId > 0 &&
+              <Button type='button' title='Delete' onClick={e => this.confirmDeleteOpen(e, part)}><Icon name='delete' />Delete</Button>
+            }
             {saveMessage.length > 0 && <Label pointing='left'>{saveMessage}</Label>}
           </Form.Field>
           <Segment loading={loadingPartMetadata} color='blue'>
