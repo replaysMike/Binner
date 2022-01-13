@@ -22,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.0.11" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
+    <PackageReference Include="Binner.Model.Common" Version="1.0.11" />
     <PackageReference Include="LightInject" Version="6.4.0" />
     <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1" />

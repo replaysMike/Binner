@@ -1,4 +1,6 @@
-﻿namespace Binner.Common.Models
+﻿using Binner.Model.Common;
+
+namespace Binner.Common.Models
 {
     /// <summary>
     /// A user context

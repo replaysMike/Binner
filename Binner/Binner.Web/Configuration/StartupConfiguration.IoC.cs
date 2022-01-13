@@ -5,6 +5,7 @@ using Binner.Common.Integrations;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Common.StorageProviders;
+using Binner.Model.Common;
 using Binner.Web.ServiceHost;
 using Binner.Web.WebHost;
 using LightInject;
@@ -39,13 +40,12 @@ namespace Binner.Web.Configuration
             RegisterMappingProfiles(container);
 
             // register storage provider
+            // we are doing it this way because RegisterSingleton swallows the exception, we would like to shutdown the server if there is a configuration problem
             container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
-            container.RegisterSingleton<IStorageProvider>((serviceFactory) =>
-            {
-                var providerFactory = serviceFactory.Create<IStorageProviderFactory>();
-                var storageProviderConfig = serviceFactory.GetInstance<StorageProviderConfiguration>();
-                return providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
-            });
+            var providerFactory = container.GetInstance<IStorageProviderFactory>();
+            var storageProviderConfig = container.GetInstance<StorageProviderConfiguration>();
+            var storageProvider = providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
+            container.RegisterInstance(storageProvider);
 
             // request context
             container.Register<RequestContextAccessor>(new PerContainerLifetime());

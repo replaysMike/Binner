@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Binner.Model.Common;
+using System.Collections.Generic;
 
 namespace Binner.Common.StorageProviders
 {

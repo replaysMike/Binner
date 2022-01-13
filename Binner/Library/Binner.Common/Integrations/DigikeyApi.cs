@@ -3,6 +3,7 @@ using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Services;
+using Binner.Model.Common;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -422,7 +423,7 @@ namespace Binner.Common.Integrations
                 if (refreshTokenResponse.IsAuthorized)
                 {
                     // save the credential
-                    await _credentialService.SaveOAuthCredentialAsync(new Common.Models.OAuthCredential
+                    await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
                     {
                         Provider = contextKey,
                         AccessToken = refreshTokenResponse.AccessToken,

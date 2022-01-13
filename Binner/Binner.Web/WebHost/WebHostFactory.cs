@@ -1,12 +1,8 @@
-﻿using Binner.Common;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using NLog.Web;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace Binner.Web.WebHost
 {

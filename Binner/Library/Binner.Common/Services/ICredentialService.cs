@@ -1,4 +1,4 @@
-﻿using Binner.Common.Models;
+﻿using Binner.Model.Common;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services

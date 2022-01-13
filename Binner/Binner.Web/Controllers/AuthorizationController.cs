@@ -3,6 +3,7 @@ using Binner.Common;
 using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Services;
+using Binner.Model.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -71,7 +72,7 @@ namespace Binner.Web.Controllers
 
                 ServerContext.Set(contextKey, authRequest);
                 // save the credential
-                await _credentialService.SaveOAuthCredentialAsync(new Common.Models.OAuthCredential
+                await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
                 {
                     Provider = contextKey,
                     AccessToken = authRequest.AccessToken,

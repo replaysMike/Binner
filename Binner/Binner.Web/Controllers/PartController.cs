@@ -3,22 +3,21 @@ using Binner.Common.IO.Printing;
 using Binner.Common.Models;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
+using Binner.Model.Common;
 using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static Binner.Common.Models.SystemDefaults;
 
 namespace Binner.Web.Controllers
 {
@@ -445,9 +444,18 @@ namespace Binner.Web.Controllers
             try
             {
                 var part = await _partService.GetPartAsync(request.PartNumber);
-                if (part == null) return NotFound();
+                Image<Rgba32> image;
+                if (part == null)
+                {
+                    // generate a general barcode as the part isn't created or doesn't exist
+                    image = _barcodeGenerator.GenerateBarcode(request.PartNumber, Color.Black, Color.White, 300, 25);
+                }
+                else
+                {
+                    // generate a label for a part
+                    image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(true));
+                }
                 var stream = new MemoryStream();
-                var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(true));
                 image.SaveAsPng(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 return new FileStreamResult(stream, "image/png");

@@ -37,15 +37,9 @@ namespace Binner.Web.ServiceHost
                     return provider.GetRequiredService<T>();
                 });
 
-                //x.RunAsLocalSystem();
                 x.SetServiceName(serviceName);
                 x.SetDescription(serviceDescription);
                 x.SetDisplayName(displayName);
-
-                // x.SetStartTimeout(timeout);
-                // x.SetStopTimeout(timeout);
-                // x.EnableShutdown();
-                //x.StartAutomatically();
                 x.BeforeInstall(() => {
                     logger.LogInformation($"Installing service {serviceName}...");
                 });
@@ -67,7 +61,7 @@ namespace Binner.Web.ServiceHost
                     // rc.RestartComputer(TimeSpan.FromMinutes(5), "Restarting system due to service failure");
                     rc.SetResetPeriod(1);
                 }); */
-                x.UnhandledExceptionPolicy = Topshelf.Runtime.UnhandledExceptionPolicyCode.LogErrorAndStopService;
+                x.UnhandledExceptionPolicy = UnhandledExceptionPolicyCode.LogErrorAndStopService;
             });
         }
     }

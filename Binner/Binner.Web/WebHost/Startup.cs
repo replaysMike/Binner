@@ -82,16 +82,21 @@ namespace Binner.Web.WebHost
             //app.UseHttpsRedirection();
             app.UseExceptionHandler(appError =>
             {
-                appError.Run(context =>
+                /*appError.Run(context =>
                 {
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (contextFeature != null) { 
                         Console.WriteLine($"Application Error: {contextFeature.Endpoint}");
-                        Console.WriteLine($"  Exception: {contextFeature.Error.GetType().Name} {contextFeature.Error.GetBaseException().Message}");
-                        Console.WriteLine($"  Stack Trace: {contextFeature.Error.GetBaseException().Message}");
+                        Console.WriteLine($"  Exception: {contextFeature.Error.GetType().Name} {contextFeature.Error.Message}");
+                        if (contextFeature.Error.InnerException != null)
+                            Console.WriteLine($"  Inner Exception: {contextFeature.Error.InnerException.GetType().Name} {contextFeature.Error.InnerException.Message}");
+                        if (contextFeature.Error.InnerException?.InnerException != null)
+                            Console.WriteLine($"  Base Exception: {contextFeature.Error.GetBaseException().GetType().Name} {contextFeature.Error.GetBaseException().Message}");
+                        if (contextFeature.Error.StackTrace != null)
+                            Console.WriteLine($"  Stack Trace: {contextFeature.Error.StackTrace}");
                     }
                     return Task.CompletedTask;
-                });
+                });*/
             });
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
