@@ -1,4 +1,4 @@
-﻿using Binner.Common.StorageProviders;
+﻿using Binner.Model.Common;
 
 namespace Binner.Common.IO
 {

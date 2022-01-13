@@ -246,6 +246,8 @@ namespace Binner.Common.IO.Printing
 
         private PointF DrawLine(Image<Rgba32> image, LabelDefinition labelProperties, PointF lineOffset, object part, string text, LineConfiguration template, Rectangle paperRect, Margin margins)
         {
+            if (string.IsNullOrWhiteSpace(text))
+                return new PointF(0, lineOffset.Y);
             var font = CreateFont(template, text, paperRect);
             var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
             var rendererOptions = new RendererOptions(font, Dpi);
@@ -357,7 +359,11 @@ namespace Binner.Common.IO.Printing
                 if (matches.Groups.Count > 1)
                     propertyName = matches.Groups[1].Value;
                 propertyName = propertyName[0].ToString().ToUpper() + propertyName.Substring(1);
-                value = value.Replace(template, data.GetPropertyValue(propertyName).ToString());
+                var propertyValue = data.GetPropertyValue(propertyName);
+                if (propertyValue != null)
+                    value = value.Replace(template, propertyValue.ToString());
+                else
+                    value = value.Replace(template, string.Empty);
             }
             if (config.UpperCase)
                 value = value.ToUpper();

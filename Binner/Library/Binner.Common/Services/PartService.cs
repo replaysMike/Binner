@@ -3,7 +3,7 @@ using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
 using Binner.Common.Models.Responses;
-using Binner.Common.StorageProviders;
+using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;

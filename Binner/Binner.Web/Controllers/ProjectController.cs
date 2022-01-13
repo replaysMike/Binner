@@ -1,9 +1,9 @@
 ﻿using AnyMapper;
 using Binner.Common.Models;
 using Binner.Common.Services;
+using Binner.Model.Common;
 using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

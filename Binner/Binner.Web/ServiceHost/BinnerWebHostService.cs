@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Topshelf;
 using Topshelf.Runtime;
@@ -21,7 +22,7 @@ namespace Binner.Web.ServiceHost
         private bool _isDisposed;
         private readonly WebHostServiceConfiguration _config;
         private HostSettings _hostSettings;
-
+        public static CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
         /// <summary>
         /// The logging facility used by the service.
         /// </summary>
@@ -29,6 +30,7 @@ namespace Binner.Web.ServiceHost
         public IServiceProvider ServiceProvider { get; }
         public IWebHostFactory WebHostFactory { get; }
         public IWebHost WebHost { get; private set; }
+        public static HostControl Host { get; private set; }
 
         public BinnerWebHostService(HostSettings hostSettings, WebHostServiceConfiguration config, IWebHostFactory webHostFactory,
             ILogger<BinnerWebHostService> logger, IServiceProvider serviceProvider)
@@ -43,12 +45,14 @@ namespace Binner.Web.ServiceHost
 
         public bool Start(HostControl hostControl)
         {
+            Host = hostControl;
             InitializeWebHost();
             return true;
         }
 
         public bool Stop(HostControl hostControl)
         {
+            Host = hostControl;
             ShutdownWebHost();
             return true;
         }
@@ -56,20 +60,29 @@ namespace Binner.Web.ServiceHost
         private void InitializeWebHost()
         {
             // run without awaiting to avoid service startup delays
-            Task.Run(async () => {
+            Task.Run(async () =>
+            {
                 // parse the requested IP from the config
                 var ipAddress = IPAddress.Any;
                 var ipString = _config.IP;
                 if (!string.IsNullOrEmpty(ipString) && ipString != "*")
                     IPAddress.TryParse(_config.IP, out ipAddress);
 
-                WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port, _config.Environment.ToString());
+                try
+                {
+                    WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port, _config.Environment.ToString());
 
-                await WebHost.RunAsync();
-            }).ContinueWith(t => {
+                    await WebHost.RunAsync(CancellationTokenSource.Token);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }).ContinueWith(t =>
+            {
                 if (t.Exception != null)
                 {
-                    // Logger.LogError(t.Exception, $"{_hostSettings.ServiceName} had an error starting up!");
+                    Logger.LogError(t.Exception, $"{_hostSettings.ServiceName} had an error starting up!");
                     Stop(null);
                 }
             }, TaskContinuationOptions.OnlyOnFaulted);

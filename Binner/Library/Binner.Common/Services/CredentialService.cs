@@ -1,5 +1,4 @@
-﻿using Binner.Common.Models;
-using Binner.Common.StorageProviders;
+﻿using Binner.Model.Common;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services

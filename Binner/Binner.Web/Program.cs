@@ -24,7 +24,7 @@ namespace Binner.Web
                 try
                 {
                     var version = Assembly.GetExecutingAssembly().GetName().Version;
-                    _logger.Info($"Binner Version {version.ToString()}");
+                    _logger.Info($"Binner Version {version}");
                 }
                 catch (Exception) { }
                 using (var container = new ServiceContainer(new ContainerOptions { EnablePropertyInjection = false }))

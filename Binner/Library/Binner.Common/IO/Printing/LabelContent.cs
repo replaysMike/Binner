@@ -1,4 +1,4 @@
-﻿using Binner.Common.Models;
+﻿using Binner.Model.Common;
 
 namespace Binner.Common.IO.Printing
 {

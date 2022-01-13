@@ -1,4 +1,4 @@
-﻿using Binner.Common.StorageProviders;
+﻿using Binner.Model.Common;
 using NPOI.HSSF.Util;
 using NPOI.OpenXmlFormats.Spreadsheet;
 using NPOI.SS.UserModel;

@@ -2,6 +2,7 @@
 using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Common.Models;
+using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TypeSupport.Extensions;
+using static Binner.Model.Common.SystemDefaults;
 
 namespace Binner.Common.StorageProviders
 {
@@ -763,6 +765,7 @@ namespace Binner.Common.StorageProviders
 
         private IBinnerDb NewDatabase()
         {
+            var created = DateTime.UtcNow;
             _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>
             {
                 { typeof(Part).Name, 1 },
@@ -770,14 +773,27 @@ namespace Binner.Common.StorageProviders
                 { typeof(Project).Name, 1 },
             });
 
-            var defaultPartTypesTs = typeof(SystemDefaults.DefaultPartTypes).GetExtendedType();
-            var initialPartTypes = defaultPartTypesTs.EnumValues.Select(x => new PartType
+            var initialPartTypes = new List<PartType>();
+            var defaultPartTypes = typeof(SystemDefaults.DefaultPartTypes).GetExtendedType();
+            foreach (var partType in defaultPartTypes.EnumValues)
             {
-                PartTypeId = (int)x.Key,
-                Name = x.Value
-            }).ToList();
+                int? parentPartTypeId = null;
+                var partTypeEnum = (DefaultPartTypes)partType.Key;
+                var field = typeof(DefaultPartTypes).GetField(partType.Value);
+                if (field.IsDefined(typeof(ParentPartTypeAttribute), false))
+                {
+                    var customAttribute = Attribute.GetCustomAttribute(field, typeof(ParentPartTypeAttribute)) as ParentPartTypeAttribute;
+                    parentPartTypeId = (int)customAttribute.Parent;
+                }
+                initialPartTypes.Add(new PartType
+                {
+                    PartTypeId = (int)partType.Key,
+                    ParentPartTypeId = parentPartTypeId,
+                    Name = partType.Value,
+                    DateCreatedUtc = created,
+                });
+            }
 
-            var created = DateTime.UtcNow;
             return new BinnerDbV1
             {
                 Count = 0,

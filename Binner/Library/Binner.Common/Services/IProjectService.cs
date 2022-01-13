@@ -1,7 +1,5 @@
-﻿using Binner.Common.Models;
-using System;
+﻿using Binner.Model.Common;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services
