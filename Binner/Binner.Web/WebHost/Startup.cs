@@ -59,7 +59,6 @@ namespace Binner.Web.WebHost
 
             Container.ScopeManagerProvider = new PerLogicalCallContextScopeManagerProvider();
             Container.BeginScope();
-
             return provider;
         }
 

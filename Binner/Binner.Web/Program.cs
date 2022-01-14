@@ -1,3 +1,4 @@
+using Binner.Model.Common;
 using Binner.Web.Configuration;
 using Binner.Web.ServiceHost;
 using LightInject;
@@ -34,6 +35,11 @@ namespace Binner.Web
                     ServiceHostProvider
                         .ConfigureService<BinnerWebHostService>(container, provider)
                         .Run();
+
+                    // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
+                    container
+                        .GetInstance<IStorageProvider>()
+                        ?.Dispose();
                 }
             }
             catch (Exception ex)

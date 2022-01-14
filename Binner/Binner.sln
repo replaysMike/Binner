@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{2D9C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Common.Tests", "Tests\Binner.Common.Tests\Binner.Common.Tests.csproj", "{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Common.Tests", "Tests\Binner.Common.Tests\Binner.Common.Tests.csproj", "{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{AEDE65C0-249F-42B0-8C80-49422C006CC2}"
 EndProject
