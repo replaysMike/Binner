@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Binner"
-#define MyAppVersion "1.1"
+#define MyAppVersion "0.0"
 #define MyAppPublisher "Binner"
 #define MyAppURL "https://github.com/replaysMike/Binner/"
 #define MyAppExeName "Binner.Web.exe"
@@ -20,20 +20,20 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=B:\gitrepo\personalcode\Binner\Binner\Binner.Web\LICENSE
+LicenseFile=..\Binner.Web\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=B:\gitrepo\personalcode\Binner\Binner\BinnerInstaller
+OutputDir=.\
 OutputBaseFilename=BinnerSetup
-SetupIconFile=B:\gitrepo\personalcode\Binner\Binner\Binner.Web\binner128x128.ico
+SetupIconFile=..\Binner.Web\binner128x128.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
-UninstallDisplayIcon=B:\gitrepo\personalcode\Binner\Binner\Binner.Web\binner128x128.ico
-WizardImageFile=B:\gitrepo\personalcode\Binner\Binner\BinnerInstaller\WizardLarge.bmp
-WizardSmallImageFile=B:\gitrepo\personalcode\Binner\Binner\BinnerInstaller\WizardSmall.bmp
+UninstallDisplayIcon=..\Binner.Web\binner128x128.ico
+WizardImageFile=.\WizardLarge.bmp
+WizardSmallImageFile=.\WizardSmall.bmp
 CloseApplications=force
 
 [Languages]
@@ -49,7 +49,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "installservice"; Description: "Install {#MyAppName} as a Windows service"
 
 [Files]
-Source: "B:\gitrepo\personalcode\Binner\Binner\Binner.Web\bin\Release\net6.0\win10-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Binner.Web\bin\Release\net6.0\win10-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
