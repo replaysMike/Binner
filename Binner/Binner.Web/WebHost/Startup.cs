@@ -81,7 +81,7 @@ namespace Binner.Web.WebHost
             //app.UseHttpsRedirection();
             app.UseExceptionHandler(appError =>
             {
-                /*appError.Run(context =>
+                appError.Run(context =>
                 {
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (contextFeature != null) { 
@@ -95,7 +95,7 @@ namespace Binner.Web.WebHost
                             Console.WriteLine($"  Stack Trace: {contextFeature.Error.StackTrace}");
                     }
                     return Task.CompletedTask;
-                });*/
+                });
             });
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
@@ -122,6 +122,14 @@ namespace Binner.Web.WebHost
                 {
                     Console.WriteLine("Using pre-built react application");
                 }
+            });
+
+            // add build version to the response headers
+            var buildVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("X-Version", $"{buildVersion.ToString(3)}");
+                await next.Invoke();
             });
         }
     }
