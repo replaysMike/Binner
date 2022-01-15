@@ -1,4 +1,5 @@
 ﻿using Binner.Web.Configuration;
+using Binner.Web.ServiceHost;
 using LightInject;
 using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
@@ -69,6 +70,9 @@ namespace Binner.Web.WebHost
             if (config == null) throw new InvalidOperationException("Could not retrieve WebHostServiceConfiguration, configuration file may be invalid!");
             Console.WriteLine($"ENVIRONMENT NAME: {config.Environment}");
 
+            // add build version to the response headers
+            app.UseVersionHeader();
+
             if (config.Environment == Web.Configuration.Environments.Development)
             {
                 app.UseDeveloperExceptionPage();
@@ -122,18 +126,6 @@ namespace Binner.Web.WebHost
                 {
                     Console.WriteLine("Using pre-built react application");
                 }
-            });
-
-            // add build version to the response headers
-            var buildVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            app.Use(async (context, next) =>
-            {
-                context.Response.OnStarting(() =>
-                {
-                    context.Response.Headers.Add("X-Version", $"{buildVersion.ToString(3)}");
-                    return Task.FromResult(0);
-                });
-                await next.Invoke();
             });
         }
     }
