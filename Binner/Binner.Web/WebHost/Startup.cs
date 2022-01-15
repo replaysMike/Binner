@@ -128,7 +128,11 @@ namespace Binner.Web.WebHost
             var buildVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             app.Use(async (context, next) =>
             {
-                context.Response.Headers.Add("X-Version", $"{buildVersion.ToString(3)}");
+                context.Response.OnStarting(() =>
+                {
+                    context.Response.Headers.Add("X-Version", $"{buildVersion.ToString(3)}");
+                    return Task.FromResult(0);
+                });
                 await next.Invoke();
             });
         }
