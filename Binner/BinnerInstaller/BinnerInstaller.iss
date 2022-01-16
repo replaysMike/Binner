@@ -17,17 +17,18 @@ DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\Binner.Web\LICENSE
 OutputDir=.\
-OutputBaseFilename=BinnerSetup-{#MyAppVersion}
+OutputBaseFilename=BinnerSetup-win10x64-{#MyAppVersion}
 SetupIconFile=.\binner128x128.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
-UninstallDisplayIcon=.\binner128x128.ico
+UninstallDisplayIcon={app}\{#MyAppExeName}
 WizardImageFile=.\WizardLarge.bmp
 WizardSmallImageFile=.\WizardSmall.bmp
 CloseApplications=force
+
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
