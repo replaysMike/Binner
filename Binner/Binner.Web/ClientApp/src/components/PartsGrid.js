@@ -304,11 +304,11 @@ export default class PartsGrid extends Component {
             {this.props.noRemainingData && <Button disabled={true}>No Additional Parts</Button>}
         </MediaContextProvider>
         <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} content={this.state.confirmPartDeleteContent} />
-          <Modal open={this.state.modalIsOpen} onCancel={this.handleModalClose} onClose={this.handleModalClose}>
-            {this.state.modalHeader && <Header>{this.state.modalHeader}</Header>}
-            <Modal.Content>{this.state.modalContent}</Modal.Content>
-            <Modal.Actions><Button onClick={this.handleModalClose}>OK</Button></Modal.Actions>
-          </Modal>
+        <Modal open={this.state.modalIsOpen} onCancel={this.handleModalClose} onClose={this.handleModalClose}>
+          {this.state.modalHeader && <Header>{this.state.modalHeader}</Header>}
+          <Modal.Content>{this.state.modalContent}</Modal.Content>
+          <Modal.Actions><Button onClick={this.handleModalClose}>OK</Button></Modal.Actions>
+        </Modal>
       </Visibility>
     );
   }

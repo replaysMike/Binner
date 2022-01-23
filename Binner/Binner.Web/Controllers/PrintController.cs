@@ -1,4 +1,5 @@
-﻿using Binner.Common.IO.Printing;
+﻿using Binner.Common.IO;
+using Binner.Common.IO.Printing;
 using Binner.Common.Models;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
@@ -10,6 +11,7 @@ using SixLabors.ImageSharp;
 using System;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Net.Mime;
 
 namespace Binner.Web.Controllers
@@ -23,13 +25,15 @@ namespace Binner.Web.Controllers
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
         private readonly ILabelPrinterHardware _labelPrinter;
+        private readonly FontManager _fontManager;
 
-        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter)
+        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, FontManager fontManager)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
             _labelPrinter = labelPrinter;
+            _fontManager = fontManager;
         }
 
         /// <summary>
@@ -43,7 +47,12 @@ namespace Binner.Web.Controllers
             try
             {
                 var stream = new MemoryStream();
-                var image = _labelPrinter.PrintLabel(request.Lines, new PrinterOptions(request.LabelSource, request.LabelName, request.GenerateImageOnly, request.ShowDiagnostic));
+
+                Image image;
+                if (!request.Lines.Any())
+                    image = new BlankImage(text: "No lines specified!", fontFamily: _fontManager.InstalledFonts.Families.First()).Image;
+                else
+                    image = _labelPrinter.PrintLabel(request.Lines, new PrinterOptions(request.LabelSource, request.LabelName, request.GenerateImageOnly, request.ShowDiagnostic));
                 image.SaveAsPng(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 return new FileStreamResult(stream, "image/png");
@@ -52,6 +61,25 @@ namespace Binner.Web.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
             }
+        }
+
+        /// <summary>
+        /// Get a list of available fonts
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("fonts")]
+        public IActionResult GetFonts()
+        {
+            try
+            {
+                var fontFiles = _fontManager.InstalledFonts.Families.Select(x => x.Name);
+                return Ok(fontFiles);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Fonts Error! ", ex));
+            }
+
         }
     }
 }

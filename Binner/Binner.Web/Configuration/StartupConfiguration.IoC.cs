@@ -47,6 +47,9 @@ namespace Binner.Web.Configuration
             var storageProvider = providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
             container.RegisterInstance(storageProvider);
 
+            // register the font manager
+            container.Register<FontManager>(new PerContainerLifetime());
+
             // request context
             container.Register<RequestContextAccessor>(new PerContainerLifetime());
 

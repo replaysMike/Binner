@@ -118,6 +118,7 @@ code {
     display: inline-block !important;
     position: relative;
     top: auto;
+    width: 88%;
 }
 
 .selectable {
@@ -257,4 +258,29 @@ code {
     100% {
         background-color: #ffffff;
     }
+}
+
+/* error modal */
+.description h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.description h2 {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #888;
+}
+
+.description h3 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.description p {
+    color: #bbb;
+    font-size: 0.9rem;
+    font-weight: 300;
+    font-family: 'Source Code Pro', monospace;
 }
