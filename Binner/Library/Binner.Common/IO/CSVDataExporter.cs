@@ -10,14 +10,14 @@ namespace Binner.Common.IO
     /// <summary>
     /// Export data to CSV (Comma delimited file)
     /// </summary>
-    public class CSVDataExporter : IDataExporter
+    public sealed class CsvDataExporter : IDataExporter
     {
         public CSVOptions Options { get; } = CSVOptions.QuoteStrings;
 
         public IDictionary<StreamName, Stream> Export(IBinnerDb db)
         {
             const string delimiter = ",";
-            const string lineBreak = "\r\n";
+            var lineBreak = Environment.NewLine;
             var streams = new Dictionary<StreamName, Stream>();
             var builder = new DataSetBuilder();
             var dataSet = builder.Build(db);

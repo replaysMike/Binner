@@ -13,7 +13,7 @@ namespace Binner.Common.IO
     /// <summary>
     /// Exports data to Excel Open XML Format 2007+ (XLSX)
     /// </summary>
-    public class ExcelDataExporter : IDataExporter
+    public sealed class ExcelDataExporter : IDataExporter
     {
         public IDictionary<StreamName, Stream> Export(IBinnerDb db)
         {

@@ -21,6 +21,11 @@ export class ExportData extends Component {
           value: 'CSV',
           text: 'CSV',
         },
+        {
+          key: 3,
+          value: 'SQL',
+          text: 'SQL',
+        },
       ]
     };
     this.onSubmit = this.onSubmit.bind(this);

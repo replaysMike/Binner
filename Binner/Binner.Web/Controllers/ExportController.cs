@@ -19,14 +19,10 @@ namespace Binner.Web.Controllers
     public class ExportController : ControllerBase
     {
         private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
-        private readonly ILogger<ProjectController> _logger;
-        private readonly WebHostServiceConfiguration _config;
         private readonly IStorageProvider _storageProvider;
 
-        public ExportController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IStorageProvider storageProvider)
+        public ExportController(IStorageProvider storageProvider)
         {
-            _logger = logger;
-            _config = config;
             _storageProvider = storageProvider;
         }
 
@@ -44,6 +40,8 @@ namespace Binner.Web.Controllers
                     return await ExportCsvAsync();
                 case "excel":
                     return await ExportExcelAsync();
+                case "sql":
+                    return await ExportSqlAsync();
                 default:
                     return BadRequest($"Unknown format '{request.ExportFormat}'");
             }
@@ -51,7 +49,7 @@ namespace Binner.Web.Controllers
 
         private async Task<IActionResult> ExportCsvAsync()
         {
-            var exporter = new CSVDataExporter();
+            var exporter = new CsvDataExporter();
             var streams = exporter.Export(await _storageProvider.GetDatabaseAsync());
             return ExportToFile(streams);
         }
@@ -59,6 +57,13 @@ namespace Binner.Web.Controllers
         private async Task<IActionResult> ExportExcelAsync()
         {
             var exporter = new ExcelDataExporter();
+            var streams = exporter.Export(await _storageProvider.GetDatabaseAsync());
+            return ExportToFile(streams);
+        }
+
+        private async Task<IActionResult> ExportSqlAsync()
+        {
+            var exporter = new SqlDataExporter();
             var streams = exporter.Export(await _storageProvider.GetDatabaseAsync());
             return ExportToFile(streams);
         }
