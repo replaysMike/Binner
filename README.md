@@ -35,15 +35,13 @@ Binner is a free open-source parts inventory tracking system you can run locally
 
 ## Installation
 
-Download the [latest release](https://github.com/replaysMike/Binner/releases) for your environment.
+Binner is a cross-platform distribution and runs on Windows, Raspberry Pi OS, Ubuntu and more!
+
+### Installation on Windows
+
+Download the Windows installer from the [latest release](https://github.com/replaysMike/Binner/releases) [![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/).
 
 Binner can be run as a standalone console application, or as a service.
-
-To run as a console application:
-
-```ps
-.\Binner.Web.exe
-```
 
 To run as a service, run the following in an Administrative console:
 
@@ -51,18 +49,50 @@ To run as a service, run the following in an Administrative console:
 .\Binner.Web install
 .\Binner.Web start
 ```
-
 Other commands are available to manage the service such as `uninstall`, `stop`, `help`.
+
+To run as a console application:
+```ps
+.\Binner.Web.exe
+```
 
 Proceed to the web interface at http://localhost:8090 to start using Binner!
 
-### Ubuntu Specific Instructions
+### Installation on Ubuntu
 
-The `libgdiplus` package is required to generate bar codes. Install this with 
+Download the ubuntu.14.04-x64.tar.gz from the [latest release](https://github.com/replaysMike/Binner/releases) [![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/).
 
 ```bash
-sudo apt install libgdiplus
+// extract the archive
+tar zxfp ./Binner_ubuntu.14.04-x64-VERSION.tar.gz
+
+// to install as a service
+sudo chmod +x ./install-as-service.sh
+sudo ./install-as-service.sh
+
+// or you can just run directly
+sudo chmod +x ./Binner.Web
+./Binner.Web
 ```
+
+### Installation on Raspberry Pi OS
+
+Download the linux-arm.tar.gz from the [latest release](https://github.com/replaysMike/Binner/releases) [![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/).
+
+```bash
+// extract the archive
+tar zxfp Binner_linux-arm-VERSION.tar.gz
+
+// to install as a service
+sudo chmod +x ./install-as-service.sh
+sudo ./install-as-service.sh
+
+// or you can just run directly
+sudo chmod +x ./Binner.Web
+./Binner.Web
+```
+
+See the [Wiki](https://github.com/replaysMike/Binner/wiki/Installation-on-Linux) for help installing on other platforms.
 
 ## Description
 
@@ -72,11 +102,17 @@ I welcome all who want to contribute to this project, and please suggest feature
 
 ## What if I want to use it but not bother to set it up myself?
 
-I will be launching a free online version at [Binner.io)](http://binner.io) which should be available around October 2020. This will have both free (max 100 parts) or $20/year for unlimited. Compared to other options out there it's incredibly inexpensive for makers!
+I will be launching a free online version at [Binner.io](http://binner.io) which will be available around Q1 2022. This service will have both free and paid subscriptions. Compared to other options out there it's incredibly inexpensive for makers!
 
 ## Storage Provider
 
-Binner supports multiple storage providers. If your needs are simple, you can continue to use the built-in `Binner` storage provider which is configured by default. Alternatively, you can use SQL Server as your data provider if you have SQL Server installed.
+Binner supports multiple storage providers. If your needs are simple, you can continue to use the built-in `Binner` storage provider which is configured by default. Alternatively, you can specify to use any of the following supported storage providers:
+
+* Binner
+* SqlServer
+* Postgresql
+* MySql
+* Sqlite
 
 ### Configuring Binner Provider (default)
 In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `Binner` and under `ProviderConfiguration` specify the database file location as `"Filename": "C:\\Binner\\binner.db"` or the location of your choice. It should look like the following:
@@ -85,20 +121,59 @@ In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to
 "StorageProviderConfiguration": {
     "Provider": "Binner",
     "ProviderConfiguration": {
-      "Filename": "C:\\Binner\\binner.db"
+      "Filename": "C:\\Binner\\binner.db" // for unix environments use: "./binner.db"
     }
   },
  ```
 
-### Configuring SQL Server Provider
+### Configuring SQL Server
 
-In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `SqlServer` and under `ProviderConfiguration` specify the connection string as `"ConnectionString": "Server=localhost;Database=Binner;Trusted_Connection=True;"`. It should look like the following:
+In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `SqlServer`. Example:
 
 ```json
 "StorageProviderConfiguration": {
     "Provider": "SqlServer",
     "ProviderConfiguration": {
-      "ConnectionString": "Server=localhost;Database=Binner;Trusted_Connection=True;"
+      "ConnectionString": "Server=localhost;Database=Binner;Trusted_Connection=True;TrustServerCertificate=True;Integrated Security=True;"
+    }
+  },
+ ```
+ 
+### Configuring Postgresql
+
+In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `Postgresql`. Example:
+
+```json
+"StorageProviderConfiguration": {
+    "Provider": "Postgresql",
+    "ProviderConfiguration": {
+      "ConnectionString": "Server=localhost;Port=5432;Database=Binner;Userid=postgres;Password=password;SslMode=Disable;Persist Security Info=true;"
+    }
+  },
+ ```
+ 
+ ### Configuring MySql / MariaDb
+
+In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `MySql`. Example:
+
+```json
+"StorageProviderConfiguration": {
+    "Provider": "MySql",
+    "ProviderConfiguration": {
+      "ConnectionString": "Server=localhost;Database=Binner;Uid=root;Pwd=password;"
+    }
+  },
+ ```
+ 
+### Configuring Sqlite
+
+In `appsettings.json` under `StorageProviderConfiguration` set the `Provider` to `Sqlite`. Example:
+
+```json
+"StorageProviderConfiguration": {
+    "Provider": "Sqlite",
+    "ProviderConfiguration": {
+      "ConnectionString": "Server=localhost;Database=Binner;Uid=root;Pwd=password;"
     }
   },
  ```
