@@ -1,0 +1,8 @@
+[Unit]
+Description=Binner
+
+[Service]
+ExecStart=@INSTALLPATH@/Binner.Web
+
+[Install]
+WantedBy=multi-user.target
