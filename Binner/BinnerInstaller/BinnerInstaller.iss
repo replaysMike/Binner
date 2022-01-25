@@ -5,7 +5,6 @@
 #define MyAppExeName "Binner.Web.exe"
 
 [Setup]
-SignTool=mycustom sign /a /n $qMy Common Name$q /t http://timestamp.comodoca.com/authenticode /d $qMy Program$q $f
 AppId={{5B8E7506-21A8-49BB-B144-6523D0E43E34}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
