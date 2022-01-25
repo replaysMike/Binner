@@ -1,10 +1,10 @@
-﻿import React, { Component } from 'react';
+﻿import React, { Component } from "react";
 import _ from "lodash";
 import { Button, Input } from "semantic-ui-react";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
-export const DECREASE_VALUE = 'DECREASE_VALUE';
-export const INCREASE_VALUE = 'INCREASE_VALUE';
+export const DECREASE_VALUE = "DECREASE_VALUE";
+export const INCREASE_VALUE = "INCREASE_VALUE";
 
 /*
  USAGE EXAMPLES:
@@ -34,7 +34,7 @@ export default class NumberPicker extends Component {
         },
         buttonRight: {
           borderTopLeftRadius: "0px",
-          borderBottomLeftRadius: "0px",
+          borderBottomLeftRadius: "0px"
         }
       },
       circular: {
@@ -79,54 +79,45 @@ export default class NumberPicker extends Component {
   handleAction(event, v) {
     let actionFilter = event.currentTarget.name;
     let currentValue = event.currentTarget.value.replace(",", ".");
-    // test and only allow numeric values
-    var newValue = parseInt(currentValue);
-    if (isNaN(newValue))
-      return;
+    // test and only allow numeric values when manually input
+    if (currentValue) {
+      var newValue = parseInt(currentValue);
+      if (isNaN(newValue)) return;
+    }
     this.handleSetValue(actionFilter, currentValue, this.props.step);
   }
 
   handleSetValue(actionFilter, currentValue, requestedStepSize) {
-    var setVal = (_.isFinite(parseFloat(this.props.value))) ? parseFloat(this.props.value) : null;
-    let stepSize = (_.isFinite(parseFloat(requestedStepSize))) ? parseFloat(requestedStepSize) : 1;
+    var setVal = _.isFinite(parseFloat(this.props.value)) ? parseFloat(this.props.value) : null;
+    let stepSize = _.isFinite(parseFloat(requestedStepSize)) ? parseFloat(requestedStepSize) : 1;
     switch (actionFilter) {
       case DECREASE_VALUE:
-        if (this.props.value - stepSize >= this.props.min)
-          setVal -= stepSize;
-        else
-          setVal = this.props.min;
+        if (this.props.value - stepSize >= this.props.min) setVal -= stepSize;
+        else setVal = this.props.min;
 
         break;
       case INCREASE_VALUE:
-        if (setVal + stepSize <= this.props.max)
-          setVal += stepSize;
-        else
-          setVal = this.props.max;
+        if (setVal + stepSize <= this.props.max) setVal += stepSize;
+        else setVal = this.props.max;
 
         break;
       case this.props.name:
         let parsedVal = parseFloat(currentValue);
-        if (currentValue === "-")
-          this.setState({ buffer: "-" });
+        if (currentValue === "-") this.setState({ buffer: "-" });
 
-        if (parsedVal > this.props.max || parsedVal < this.props.min)
-          console.log("Invalid number specified");
-        else
-          setVal = currentValue;
+        if (parsedVal > this.props.max || parsedVal < this.props.min) console.log("Invalid number specified");
+        else setVal = currentValue;
         break;
       default:
         break;
     }
 
-
     let lastChar = ("" + setVal).charAt(setVal.length - 1) || "";
     let returnValue = setVal;
     let precision = 1000;
-    if (_.isFinite(parseFloat(setVal)))
-      returnValue = Math.floor(parseFloat(setVal) * precision) / precision;
+    if (_.isFinite(parseFloat(setVal))) returnValue = Math.floor(parseFloat(setVal) * precision) / precision;
 
-    if (setVal === "" || setVal === "-" || lastChar === "." || lastChar === ",")
-      returnValue = setVal;
+    if (setVal === "" || setVal === "-" || lastChar === "." || lastChar === ",") returnValue = setVal;
 
     setTimeout(this.props.onChange, 1, { name: this.props.name, value: returnValue });
   }
@@ -139,10 +130,9 @@ export default class NumberPicker extends Component {
     switch (actionFilter) {
       case this.props.name:
         let parsedVal = parseFloat(currentValue);
-        setVal = (_.isFinite(parsedVal)) ? parsedVal : null;
+        setVal = _.isFinite(parsedVal) ? parsedVal : null;
 
-        if (parsedVal > this.props.max)
-          setVal = this.props.max;
+        if (parsedVal > this.props.max) setVal = this.props.max;
         break;
 
       case DECREASE_VALUE:
@@ -154,15 +144,20 @@ export default class NumberPicker extends Component {
 
   render() {
     var { name, step, maxLength, placeholder, required, autoComplete, circular, basic, compact, min, max, value, ...rest } = this.props;
-    var style = (circular) ? this.style.circular : this.style.default;
+    var style = circular ? this.style.circular : this.style.default;
     var display = { circular, basic, compact };
     return (
       <Input {...rest}>
-        <Button {...display} type="button" icon='minus' onClick={this.handleAction} name={DECREASE_VALUE}
-          style={style.buttonLeft} disabled={(value <= min)} />
-        <input type="text" name={name} min={min} max={max}
+        <Button {...display} type="button" icon="minus" onClick={this.handleAction} name={DECREASE_VALUE} style={style.buttonLeft} disabled={value <= min} />
+        <input
+          type="text"
+          name={name}
+          min={min}
+          max={max}
           step={step}
-          maxLength={maxLength} placeholder={placeholder} required={required}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          required={required}
           value={this.props.value}
           onChange={this.handleAction}
           onBlur={this.validateInput}
@@ -170,8 +165,7 @@ export default class NumberPicker extends Component {
           style={style.input}
           autoComplete={autoComplete}
         />
-        <Button {...display} type="button" icon='plus' onClick={this.handleAction} name={INCREASE_VALUE}
-          style={style.buttonRight} disabled={(value >= max)} />
+        <Button {...display} type="button" icon="plus" onClick={this.handleAction} name={INCREASE_VALUE} style={style.buttonRight} disabled={value >= max} />
       </Input>
     );
   }
@@ -189,7 +183,7 @@ export default class NumberPicker extends Component {
     basic: false,
     circular: false,
     compact: false,
-    autoComplete: 'off'
+    autoComplete: "off"
   };
 
   static propTypes = {
@@ -205,6 +199,6 @@ export default class NumberPicker extends Component {
     basic: PropTypes.bool,
     circular: PropTypes.bool,
     compact: PropTypes.bool,
-    autoComplete: PropTypes.string,
+    autoComplete: PropTypes.string
   };
 }
