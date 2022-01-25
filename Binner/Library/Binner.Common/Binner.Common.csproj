@@ -32,11 +32,11 @@
     <PackageReference Include="AnyBarcode" Version="1.0.11" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AnySerializer" Version="1.1.46" />
-    <PackageReference Include="Binner.Model.Common" Version="1.0.11" />
-    <PackageReference Include="Binner.StorageProvider.Sqlite" Version="1.0.7" />
-    <PackageReference Include="Binner.StorageProvider.SqlServer" Version="1.0.4" />
-    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.7" />
-    <PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.5" />
+    <PackageReference Include="Binner.Model.Common" Version="1.0.12" />
+    <PackageReference Include="Binner.StorageProvider.Sqlite" Version="1.0.8" />
+    <PackageReference Include="Binner.StorageProvider.SqlServer" Version="1.0.6" />
+    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.8" />
+    <PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />

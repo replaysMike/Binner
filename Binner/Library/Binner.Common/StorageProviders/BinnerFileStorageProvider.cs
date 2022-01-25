@@ -333,6 +333,20 @@ namespace Binner.Common.StorageProviders
             try
             {
                 return _db.Parts.Where(x => x.UserId == userContext?.UserId)
+                    .Sum(x => x.Quantity);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<long> GetUniquePartsCountAsync(IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.Parts.Where(x => x.UserId == userContext?.UserId)
                     .Count();
             }
             finally

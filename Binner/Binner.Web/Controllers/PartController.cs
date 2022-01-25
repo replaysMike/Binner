@@ -287,16 +287,18 @@ namespace Binner.Web.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetDashboardSummaryAsync()
         {
-            var count = await _partService.GetPartsCountAsync();
+            var uniquePartsCount = await _partService.GetUniquePartsCountAsync();
+            var partsCount = await _partService.GetPartsCountAsync();
             var partsCost = await _partService.GetPartsValueAsync();
-            var lowStock = await _partService.GetLowStockAsync(new PaginatedRequest { Results = 999 });
-            var projects = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
+            var lowStockCount = await _partService.GetLowStockAsync(new PaginatedRequest { Results = 999 });
+            var projectsCount = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
             return Ok(new
             {
-                PartsCount = count,
+                UniquePartsCount = uniquePartsCount,
+                PartsCount = partsCount,
                 PartsCost = partsCost,
-                LowStockCount = lowStock.Count,
-                ProjectsCount = projects.Count,
+                LowStockCount = lowStockCount.Count,
+                ProjectsCount = projectsCount.Count,
             });
         }
 
