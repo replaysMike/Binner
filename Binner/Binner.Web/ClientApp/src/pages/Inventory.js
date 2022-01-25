@@ -135,6 +135,7 @@ export class Inventory extends Component {
     this.handleDeletePart = this.handleDeletePart.bind(this);
     this.confirmDeleteOpen = this.confirmDeleteOpen.bind(this);
     this.confirmDeleteClose = this.confirmDeleteClose.bind(this);
+    this.formatField = this.formatField.bind(this);
   }
 
   async componentDidMount() {
@@ -228,6 +229,21 @@ export class Inventory extends Component {
         }
       }
     }
+  }
+
+  formatField(e) {
+    const { part } = this.state;
+    switch(e.target.name){
+      default:
+        break;
+      case 'cost':
+        part.cost = Number(part.cost).toFixed(2);
+        if (isNaN(part.cost))
+          part.cost = Number(0).toFixed(2);
+        break;
+    }
+    this.enableKeyboardListening(e);
+    this.setState({ part });
   }
 
   async fetchPart(partNumber) {
@@ -934,7 +950,7 @@ export class Inventory extends Component {
             <Form.Group>
               <Form.Field width={4}>
                 <label>Cost</label>
-                <Input label='$' placeholder='0.000' value={Number(part.cost).toFixed(2) || ''} type='text' onChange={this.handleChange} name='cost' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
+                <Input label='$' placeholder='0.00' value={part.cost} type='text' onChange={this.handleChange} name='cost' onFocus={this.disableKeyboardListening} onBlur={this.formatField} />
               </Form.Field>
               <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer || ''} onChange={this.handleChange} name='manufacturer' width={4} onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
               <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber || ''} onChange={this.handleChange} name='manufacturerPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />

@@ -79,6 +79,10 @@ export default class NumberPicker extends Component {
   handleAction(event, v) {
     let actionFilter = event.currentTarget.name;
     let currentValue = event.currentTarget.value.replace(",", ".");
+    // test and only allow numeric values
+    var newValue = parseInt(currentValue);
+    if (isNaN(newValue))
+      return;
     this.handleSetValue(actionFilter, currentValue, this.props.step);
   }
 
