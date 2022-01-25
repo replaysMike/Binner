@@ -40,7 +40,7 @@ namespace Binner.Common.Services
 
             var jsonOutput = JsonConvert.SerializeObject(json, serializerSettings);
             using var file = File.Open(filename, FileMode.Open, FileAccess.Write, FileShare.Read);
-            var buffer = Encoding.Unicode.GetBytes(jsonOutput);
+            var buffer = Encoding.Default.GetBytes(jsonOutput);
             file.Write(buffer, 0, buffer.Length);
             file.Close();
         }
