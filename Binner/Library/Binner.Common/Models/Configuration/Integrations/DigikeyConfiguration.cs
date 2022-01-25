@@ -1,4 +1,4 @@
-﻿namespace Binner.Web.Configuration
+﻿namespace Binner.Common.Models.Configuration
 {
     /// <summary>
     /// Digikey APi configuration settings

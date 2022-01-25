@@ -1,4 +1,6 @@
-﻿namespace Binner.Web.Configuration
+﻿using Binner.Common.Models.Configuration;
+
+namespace Binner.Web.Configuration
 {
     /// <summary>
     /// Service Configuration

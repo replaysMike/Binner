@@ -2,23 +2,10 @@ import React, { Component } from "react";
 import _ from "underscore";
 import { Layout } from './Layout';
 import {ErrorContext} from '../common/ErrorContext';
+import { DEFAULT_FONT } from '../common/Types';
 
-import {
-  HandleBinaryResponse,
-  HandleJsonResponse
-} from "../common/handleResponse.js";
-import {
-  Button,
-  Icon,
-  Form,
-  Input,
-  Checkbox,
-  Table,
-  Image,
-  Dropdown
-} from "semantic-ui-react";
-
-const DEFAULT_FONT = "Segoe UI";
+import { HandleBinaryResponse } from "../common/handleResponse.js";
+import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown } from "semantic-ui-react";
 
 export class PrintLabels extends Component {
   static displayName = PrintLabels.name;

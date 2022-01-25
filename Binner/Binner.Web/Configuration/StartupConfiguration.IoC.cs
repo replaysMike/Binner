@@ -1,5 +1,4 @@
-﻿using AnyMapper;
-using ApiClient.OAuth2;
+﻿using ApiClient.OAuth2;
 using Binner.Common;
 using Binner.Common.Integrations;
 using Binner.Common.IO.Printing;
@@ -11,6 +10,7 @@ using Binner.Web.WebHost;
 using LightInject;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Binner.Web.Configuration
 {
@@ -63,10 +63,14 @@ namespace Binner.Web.Configuration
         private static void RegisterMappingProfiles(IServiceContainer container)
         {
             var profile = new BinnerMappingProfile();
-            Mapper.Configure(config =>
+            AnyMapper.Mapper.Configure(config =>
             {
                 config.AddProfile(profile);
             });
+            // register automapper
+            var config = new AutoMapper.MapperConfiguration(cfg => cfg.AddMaps(Assembly.GetEntryAssembly()));
+            config.AssertConfigurationIsValid();
+            container.RegisterInstance(config.CreateMapper());
         }
 
         private static void RegisterPrinterService(IServiceContainer container)
@@ -93,6 +97,7 @@ namespace Binner.Web.Configuration
             container.Register<IPartTypeService, PartTypeService>(new PerContainerLifetime());
             container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
             container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
+            container.Register<ISettingsService, SettingsService>(new PerContainerLifetime());
         }
 
         private static void RegisterApiIntegrations(IServiceContainer container)

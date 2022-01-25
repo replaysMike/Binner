@@ -11,3 +11,5 @@
   { name: 'grey', value: 9 },
   { name: 'violet', value: 10 },
 ];
+
+export const DEFAULT_FONT = "Segoe UI";

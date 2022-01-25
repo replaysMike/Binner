@@ -319,7 +319,7 @@ namespace Binner.Common.IO.Printing
         private Font CreateFont(LineConfiguration template, string lineValue, Rectangle paperRect)
         {
             Font font;
-            var fontFamily = GetOrCreateFontFamily(template.Font ?? DefaultFontName);
+            var fontFamily = GetOrCreateFontFamily(template.FontName ?? DefaultFontName);
             if (template.AutoSize)
                 font = AutosizeFont(fontFamily, template.FontSize, lineValue, paperRect.Width);
             else

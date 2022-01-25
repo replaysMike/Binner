@@ -19,7 +19,7 @@ namespace Binner.Common.IO.Printing
         /// <summary>
         /// Font name
         /// </summary>
-        public string Font { get; set; } = "Segoe UI";
+        public string FontName { get; set; } = "Segoe UI";
 
         /// <summary>
         /// Auto size the font size if it exceeds the line

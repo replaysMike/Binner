@@ -260,6 +260,23 @@ code {
     }
 }
 
+/* segment */
+.segment .secondary h3 {
+    font-size: 1.1rem;
+}
+
+.segment .secondary label {
+    font-size: 0.9rem !important;
+}
+
+.segment .tertiary h3 {
+    font-size: 1.0rem;
+}
+
+.segment .tertiary label {
+    font-size: 0.8rem !important;
+}
+
 /* error modal */
 .description h1 {
     font-size: 1.75rem;

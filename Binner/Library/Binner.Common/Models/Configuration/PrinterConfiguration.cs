@@ -1,7 +1,7 @@
 ﻿using Binner.Common.IO.Printing;
 using System.Collections.Generic;
 
-namespace Binner.Web.Configuration
+namespace Binner.Common.Models.Configuration
 {
     public class PrinterConfiguration
     {

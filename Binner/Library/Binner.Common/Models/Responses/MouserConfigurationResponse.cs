@@ -1,20 +1,12 @@
-﻿namespace Binner.Web.Configuration
+﻿namespace Binner.Common.Models.Responses
 {
-    public class MouserConfiguration
+    public class MouserConfigurationResponse
     {
-        /// <summary>
-        /// Mouser Api Keys
-        /// </summary>
-        public MouserApiKeys ApiKeys { get; set; } = new MouserApiKeys();
-
         /// <summary>
         /// Path to the Mouser Api
         /// </summary>
         public string ApiUrl { get; set; } = "https://api.mouser.com";
-    }
 
-    public class MouserApiKeys
-    {
         /// <summary>
         /// The Api key for search features
         /// </summary>
