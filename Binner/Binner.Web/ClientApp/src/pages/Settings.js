@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import _ from "underscore";
-import { Icon, Input, Label, Button, Form, Segment, Header } from "semantic-ui-react";
+import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown } from "semantic-ui-react";
 import LineTemplate from "../components/LineTemplate";
 import { DEFAULT_FONT } from "../common/Types";
 import { HandleJsonResponse } from "../common/handleResponse.js";
+import { createImportSpecifier } from "typescript";
 
 export class Settings extends Component {
   static displayName = Settings.name;
@@ -12,6 +13,23 @@ export class Settings extends Component {
     super(props);
     this.state = {
       fonts: [],
+      labelSources: [
+        {
+          key: 1,
+          value: 0,
+          text: "Auto"
+        },
+        {
+          key: 2,
+          value: 1,
+          text: "Left"
+        },
+        {
+          key: 3,
+          value: 2,
+          text: "Right"
+        }
+      ],
       settings: {
         digikey: {
           clientId: "",
@@ -42,6 +60,7 @@ export class Settings extends Component {
               fontSize: 8,
               autoSize: false,
               upperCase: false,
+              lowerCase: false,
               barcode: false,
               color: "",
               rotate: 0,
@@ -59,6 +78,7 @@ export class Settings extends Component {
               fontSize: 8,
               autoSize: false,
               upperCase: false,
+              lowerCase: false,
               barcode: false,
               color: "",
               rotate: 0,
@@ -76,6 +96,7 @@ export class Settings extends Component {
               fontSize: 8,
               autoSize: false,
               upperCase: false,
+              lowerCase: false,
               barcode: false,
               color: "",
               rotate: 0,
@@ -93,6 +114,7 @@ export class Settings extends Component {
               fontSize: 8,
               autoSize: false,
               upperCase: false,
+              lowerCase: false,
               barcode: false,
               color: "",
               rotate: 0,
@@ -112,6 +134,7 @@ export class Settings extends Component {
               fontSize: 8,
               autoSize: false,
               upperCase: false,
+              lowerCase: false,
               barcode: false,
               color: "",
               rotate: 0,
@@ -129,6 +152,7 @@ export class Settings extends Component {
               fontSize: 8,
               autoSize: false,
               upperCase: false,
+              lowerCase: false,
               barcode: false,
               color: "",
               rotate: 0,
@@ -214,7 +238,7 @@ export class Settings extends Component {
       .then(HandleJsonResponse)
       .catch(HandleJsonResponse)
       .then((response) => {
-        const saveMessage = "Saved part";
+        const saveMessage = "System settings were saved!";
         this.setState({ saveMessage });
       });
   }
@@ -226,42 +250,53 @@ export class Settings extends Component {
 
     // redirect new values to the correct state object
     if (control.name.startsWith("digikey")) {
-      settings.digikey[this.getControlInstance(control, "digikey")] = control.value;
+      this.setControlValue(settings.digikey, "digikey", control);
     }
     if (control.name.startsWith("mouser")) {
-      settings.mouser[this.getControlInstance(control, "mouser")] = control.value;
+      this.setControlValue(settings.mouser, "mouser", control);
     }
     if (control.name.startsWith("octopart")) {
-      settings.octopart[this.getControlInstance(control, "octopart")] = control.value;
+      this.setControlValue(settings.octopart, "octopart", control);
     }
 
     // todo: find a better way to clean up state changes
     if (control.name.startsWith("printer")) {
       if (control.name.startsWith("printerLine")) {
-        if (control.name.startsWith("printerLine1")) settings.printer.lines[0][this.getControlInstance(control, "printerLine1")] = control.value;
-        else if (control.name.startsWith("printerLine2")) settings.printer.lines[1][this.getControlInstance(control, "printerLine2")] = control.value;
-        else if (control.name.startsWith("printerLine3")) settings.printer.lines[2][this.getControlInstance(control, "printerLine3")] = control.value;
-        else if (control.name.startsWith("printerLine4")) settings.printer.lines[3][this.getControlInstance(control, "printerLine4")] = control.value;
+        if (control.name.startsWith("printerLine1")) this.setControlValue(settings.printer.lines[0], "printerLine1", control);
+        else if (control.name.startsWith("printerLine2")) this.setControlValue(settings.printer.lines[1], "printerLine2", control);
+        else if (control.name.startsWith("printerLine3")) this.setControlValue(settings.printer.lines[2], "printerLine3", control);
+        else if (control.name.startsWith("printerLine4")) this.setControlValue(settings.printer.lines[3], "printerLine4", control);
       } else if (control.name.startsWith("printerIdentifier")) {
-        if (control.name.startsWith("printerIdentifier1"))
-          settings.printer.identifiers[0][this.getControlInstance(control, "printerIdentifier1")] = control.value;
-        else if (control.name.startsWith("printerIdentifier2"))
-          settings.printer.identifiers[1][this.getControlInstance(control, "printerIdentifier2")] = control.value;
+        if (control.name.startsWith("printerIdentifier1")) this.setControlValue(settings.printer.identifiers[0], "printerIdentifier1", control);
+        else if (control.name.startsWith("printerIdentifier2")) this.setControlValue(settings.printer.identifiers[1], "printerIdentifier2", control);
       } else {
-        settings.printer[this.getControlInstance(control, "printer")] = control.value;
+        this.setControlValue(settings.printer, "printer", control);
       }
     }
-
     this.setState({ settings });
   }
 
-  getControlInstance(control, prefix) {
+  setControlValue(setting, name, control) {
+    switch (control.type) {
+      case "checkbox":
+        // type is a checkbox, we only care about the checked value
+        setting[this.getControlInstanceName(control, name)] = control.checked;
+        break;
+      default:
+        // this is a text input or any other value type control
+        setting[this.getControlInstanceName(control, name)] = control.value;
+        break;
+    }
+  }
+
+  getControlInstanceName(control, prefix) {
     let controlName = control.name.replace(prefix, "");
-    return controlName.charAt(0).toLowerCase() + controlName.slice(1);
+    const instance = controlName.charAt(0).toLowerCase() + controlName.slice(1);
+    return instance;
   }
 
   render() {
-    const { settings, loading, saveMessage, fonts, font } = this.state;
+    const { settings, loading, saveMessage, fonts, font, labelSources } = this.state;
 
     return (
       <div>
@@ -285,6 +320,7 @@ export class Settings extends Component {
               <Header dividing as="h3">
                 DigiKey
               </Header>
+              <p>Digikey API Keys can be obtained at <a href="https://developer.digikey.com/" target="_blank" rel="noreferrer">https://developer.digikey.com/</a></p>
               <Form.Field width={10}>
                 <label>ClientId</label>
                 <Input className="labeled" placeholder="" value={settings.digikey.clientId || ""} name="digikeyClientId" onChange={this.handleChange}></Input>
@@ -299,38 +335,56 @@ export class Settings extends Component {
                   onChange={this.handleChange}
                 ></Input>
               </Form.Field>
-              <Form.Field width={10}>
-                <label>ApiUrl</label>
-                <Input
-                  className="labeled"
-                  placeholder="sandbox-api.digikey.com"
-                  value={(settings.digikey.apiUrl || "").replace("http://", "").replace("https://", "")}
-                  name="digikeyApiUrl"
-                  onChange={this.handleChange}
-                >
-                  <Label>http://</Label>
-                  <input />
-                </Input>
-              </Form.Field>
-              <Form.Field width={10}>
-                <label>PostbackUrl</label>
-                <Input
-                  className="labeled"
-                  placeholder="localhost:8090/Authorization/Authorize"
-                  value={(settings.digikey.oAuthPostbackUrl || "").replace("http://", "").replace("https://", "")}
-                  name="digikeyOAuthPostbackUrl"
-                  onChange={this.handleChange}
-                >
-                  <Label>http://</Label>
-                  <input />
-                </Input>
-              </Form.Field>
+              <Popup
+                content={<p>DigiKey's API Url. This will either be api.digikey.com (live) or sandbox-api.digikey.com (for testing)</p>}
+                trigger={
+                  <Form.Field width={10}>
+                    <label>ApiUrl</label>
+                    <Input
+                      className="labeled"
+                      placeholder="sandbox-api.digikey.com"
+                      value={(settings.digikey.apiUrl || "").replace("http://", "").replace("https://", "")}
+                      name="digikeyApiUrl"
+                      onChange={this.handleChange}
+                    >
+                      <Label>http://</Label>
+                      <input />
+                    </Input>
+                  </Form.Field>
+                }
+              />
+
+              <Popup
+                content={
+                  <p>
+                    Binner's postback url must be registered with your DigiKey Api account and be accessable through your router. Ensure your firewall rules
+                    allow incoming requests to Binner's port (default 8090) and is port forwarded to the correct machine on your network (localhost won't work,
+                    must be your public IP)
+                  </p>
+                }
+                trigger={
+                  <Form.Field width={10}>
+                    <label>PostbackUrl</label>
+                    <Input
+                      className="labeled"
+                      placeholder="localhost:8090/Authorization/Authorize"
+                      value={(settings.digikey.oAuthPostbackUrl || "").replace("http://", "").replace("https://", "")}
+                      name="digikeyOAuthPostbackUrl"
+                      onChange={this.handleChange}
+                    >
+                      <Label>http://</Label>
+                      <input />
+                    </Input>
+                  </Form.Field>
+                }
+              />
             </Segment>
 
             <Segment loading={loading} color="green" secondary>
               <Header dividing as="h3">
                 Mouser
               </Header>
+              <p>Mouser API Keys can be obtained at <a href="https://www.mouser.com/api-hub/" target="_blank" rel="noreferrer">https://www.mouser.com/api-hub/</a></p>
               <Form.Field width={10}>
                 <label>Search Api Key</label>
                 <Input
@@ -374,6 +428,7 @@ export class Settings extends Component {
               <Header dividing as="h3">
                 Octopart
               </Header>
+              <p>Octopart API Keys can be obtained at <a href="https://octopart.com/api/home" target="_blank" rel="noreferrer">https://octopart.com/api/home</a></p>
               <Form.Field width={10}>
                 <label>Api Key</label>
                 <Input className="labeled" placeholder="" value={settings.octopart.apiKey || ""} name="octopartApiKey" onChange={this.handleChange}></Input>
@@ -402,37 +457,57 @@ export class Settings extends Component {
             <p>
               <i>Configure your printer name as it shows up in your environment (Windows Printers or CUPS Printer Name)</i>
             </p>
-
-            <Form.Field width={10}>
-              <label>Printer Name</label>
-              <Input
-                className="labeled"
-                placeholder="DYMO LabelWriter 450 Twin Turbo"
-                value={settings.printer.printerName || ""}
-                name="printerPrinterName"
-                onChange={this.handleChange}
-              ></Input>
-            </Form.Field>
-            <Form.Field width={10}>
-              <label>Part Label Source</label>
-              <Input
-                className="labeled"
-                placeholder="Right"
-                value={settings.printer.partLabelSource || ""}
-                name="printerPartLabelSource"
-                onChange={this.handleChange}
-              ></Input>
-            </Form.Field>
-            <Form.Field width={10}>
-              <label>Part Label Name</label>
-              <Input
-                className="labeled"
-                placeholder="30346"
-                value={settings.printer.partLabelName || ""}
-                name="printerPartLabelName"
-                onChange={this.handleChange}
-              ></Input>
-            </Form.Field>
+            <Popup
+              content={<p>Your printer name as it appears in Windows, or CUPS (Unix).</p>}
+              trigger={
+                <Form.Field width={10}>
+                  <label>Printer Name</label>
+                  <Input
+                    className="labeled"
+                    placeholder="DYMO LabelWriter 450 Twin Turbo"
+                    value={settings.printer.printerName || ""}
+                    name="printerPrinterName"
+                    onChange={this.handleChange}
+                  ></Input>
+                </Form.Field>
+              }
+            />
+            <Popup
+              content={<p>The label paper source to use.</p>}
+              trigger={
+                <Form.Field width={10}>
+                  <label>Part Label Source</label>
+                  <Dropdown
+                    name="printerPartLabelSource"
+                    placeholder="Right"
+                    selection
+                    value={settings.printer.partLabelSource}
+                    options={labelSources}
+                    onChange={this.handleChange}
+                  />
+                </Form.Field>
+              }
+            />
+            <Popup
+              content={
+                <p>
+                  The name of the label model installed in your printer. This will be specific to your printer, and must be defined in your appsettings.json
+                  under <i>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</i>
+                </p>
+              }
+              trigger={
+                <Form.Field width={10}>
+                  <label>Part Label Name</label>
+                  <Input
+                    className="labeled"
+                    placeholder="30346"
+                    value={settings.printer.partLabelName || ""}
+                    name="printerPartLabelName"
+                    onChange={this.handleChange}
+                  ></Input>
+                </Form.Field>
+              }
+            />
 
             <Segment loading={loading} color="green" stacked secondary>
               <Header dividing as="h3">
@@ -448,7 +523,7 @@ export class Settings extends Component {
                 title="Line 1"
                 color="red"
                 fonts={fonts}
-                defaultFont={font}
+                font={font}
                 onChange={this.handleChange}
                 tertiary
               />
@@ -458,7 +533,7 @@ export class Settings extends Component {
                 title="Line 2"
                 color="red"
                 fonts={fonts}
-                defaultFont={font}
+                font={font}
                 onChange={this.handleChange}
                 tertiary
               />
@@ -468,7 +543,7 @@ export class Settings extends Component {
                 title="Line 3"
                 color="red"
                 fonts={fonts}
-                defaultFont={font}
+                font={font}
                 onChange={this.handleChange}
                 tertiary
               />
@@ -478,7 +553,7 @@ export class Settings extends Component {
                 title="Line 4"
                 color="red"
                 fonts={fonts}
-                defaultFont={font}
+                font={font}
                 onChange={this.handleChange}
                 tertiary
               />
@@ -488,7 +563,7 @@ export class Settings extends Component {
                 title="Identifier 1"
                 color="red"
                 fonts={fonts}
-                defaultFont={font}
+                font={font}
                 onChange={this.handleChange}
                 tertiary
               />
@@ -498,7 +573,7 @@ export class Settings extends Component {
                 title="Identifier 2"
                 color="red"
                 fonts={fonts}
-                defaultFont={font}
+                font={font}
                 onChange={this.handleChange}
                 tertiary
               />

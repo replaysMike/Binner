@@ -52,7 +52,7 @@ namespace Binner.Web.Controllers
                 // register new configuration
                 _container.RegisterInstance(newConfiguration);
 
-                return Ok();
+                return Ok(new OperationSuccessResponse());
             }
             catch (Exception ex)
             {

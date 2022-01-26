@@ -1,5 +1,5 @@
 let hasError = false;
-let noData = {};
+const noData = {};
 
 /**
  * Get the json response from a fetch operation

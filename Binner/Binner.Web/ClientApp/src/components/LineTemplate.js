@@ -1,5 +1,9 @@
 import React, { Component } from "react";
-import { Input, Checkbox, Form, Segment, Header, Dropdown } from "semantic-ui-react";
+import { Link } from "react-router-dom";
+import { Input, Checkbox, Form, Segment, Header, Dropdown, Popup } from "semantic-ui-react";
+import { createImportSpecifier } from "typescript";
+
+const TimeoutLength = 1500;
 
 export default class LineTemplate extends Component {
   constructor(props) {
@@ -23,10 +27,24 @@ export default class LineTemplate extends Component {
         }
       ]
     };
+    this.open = this.open.bind(this);
+    this.handleClose = this.handleClose.bind(this);
   }
 
+  open() {
+    this.setState({ isOpen: true });
+  }
+
+  handleClose = () => {
+    // delay the close by a set timeout, so links can be clicked
+    this.timeout = setTimeout(() => {
+      this.setState({ isOpen: false });
+      clearTimeout(this.timeout);
+    }, TimeoutLength);
+  };
+
   render() {
-    const { line, fonts, title, color, defaultFont } = this.props;
+    const { line, fonts, title, color, font } = this.props;
     const { positionOptions } = this.state;
 
     return (
@@ -35,26 +53,38 @@ export default class LineTemplate extends Component {
           {title}
         </Header>
         <Form.Group>
-          <Form.Field width={4}>
-            <label>Content</label>
-            <Input
-              name={this.props.name + "Content"}
-              className="labeled"
-              placeholder="{partNumber}"
-              value={line.content || ""}
-              onChange={this.props.onChange}
-            ></Input>
-          </Form.Field>
+          <Popup
+            disabled={false}
+            open={this.state.isOpen}
+            onOpen={this.open}
+            onClose={this.handleClose}
+            content={
+              <p>
+                Template can reference any part field, example: &#123;partNumber&#125;, &#123;description&#125;, &#123;manufacturer&#125;, &#123;location&#125;,
+                &#123;binNumber&#125;, &#123;cost&#125; etc. See{" "}
+                <a href="https://github.com/replaysMike/Binner/wiki/Printing-Configuration#partlabeltemplate-line-options" target="_blank" rel="noreferrer">
+                  Wiki
+                </a>{" "}
+                for all available tags.
+              </p>
+            }
+            trigger={
+              <Form.Field width={4}>
+                <label>Content</label>
+                <Input
+                  name={this.props.name + "Content"}
+                  className="labeled"
+                  placeholder="{partNumber}"
+                  value={line.content || ""}
+                  onChange={this.props.onChange}
+                />
+              </Form.Field>
+            }
+          />
+
           <Form.Field width={4}>
             <label>Font</label>
-            <Dropdown
-              name={this.props.name + "FontName"}
-              placeholder={defaultFont}
-              selection
-              value={line.fontName}
-              options={fonts}
-              onChange={this.props.onChange}
-            />
+            <Dropdown name={this.props.name + "FontName"} placeholder={font} selection value={line.fontName} options={fonts} onChange={this.props.onChange} />
           </Form.Field>
           <Form.Field width={2}>
             <label>Font Size</label>
@@ -77,36 +107,57 @@ export default class LineTemplate extends Component {
           </Form.Field>
         </Form.Group>
         <Form.Group>
-          <Form.Field width={3}>
-            <Checkbox
-              name={this.props.name + "AutoSize"}
-              label="Auto size text"
-              className="labeled"
-              placeholder="true"
-              checked={line.autoSize}
-              onChange={this.props.onChange}
-            />
-          </Form.Field>
-          <Form.Field width={3}>
-            <Checkbox
-              name={this.props.name + "UpperCase"}
-              label="UpperCase Text"
-              className="labeled"
-              placeholder="true"
-              checked={line.upperCaseText}
-              onChange={this.props.onChange}
-            />
-          </Form.Field>
-          <Form.Field width={3}>
-            <Checkbox
-              name={this.props.name + "Barcode"}
-              label="Barcode"
-              className="labeled"
-              placeholder="true"
-              checked={line.barcode}
-              onChange={this.props.onChange}
-            />
-          </Form.Field>
+          <Popup
+            content={<p>Text size will be automatically determined.</p>}
+            trigger={
+              <Form.Field width={3}>
+                <Checkbox
+                  name={this.props.name + "AutoSize"}
+                  label="Auto size text"
+                  className="labeled"
+                  checked={line.autoSize}
+                  onChange={this.props.onChange}
+                />
+              </Form.Field>
+            }
+          />
+
+          <Popup
+            content={<p>Render the text as all upper-case characters.</p>}
+            trigger={
+              <Form.Field width={3}>
+                <Checkbox
+                  name={this.props.name + "UpperCase"}
+                  label="UpperCase Text"
+                  className="labeled"
+                  checked={line.upperCase}
+                  onChange={this.props.onChange}
+                />
+              </Form.Field>
+            }
+          />
+          <Popup
+            content={<p>Render the text as all lower-case characters.</p>}
+            trigger={
+              <Form.Field width={3}>
+                <Checkbox
+                  name={this.props.name + "LowerCase"}
+                  label="LowerCase Text"
+                  className="labeled"
+                  checked={line.lowerCase}
+                  onChange={this.props.onChange}
+                />
+              </Form.Field>
+            }
+          />
+          <Popup
+            content={<p>Render the Content value encoded as a barcode.</p>}
+            trigger={
+              <Form.Field width={3}>
+                <Checkbox name={this.props.name + "Barcode"} label="Barcode" className="labeled" checked={line.barcode} onChange={this.props.onChange} />
+              </Form.Field>
+            }
+          />
         </Form.Group>
         <Form.Group>
           <Form.Field width={3}>
@@ -123,10 +174,15 @@ export default class LineTemplate extends Component {
             <label>Margin Top</label>
             <Input name={this.props.name + "MarginTop"} className="labeled" placeholder="0" value={line.marginTop || ""} onChange={this.props.onChange}></Input>
           </Form.Field>
-          <Form.Field width={3}>
-            <label>Rotate Degrees</label>
-            <Input name={this.props.name + "Rotate"} className="labeled" placeholder="0" value={line.rotate || ""} onChange={this.props.onChange}></Input>
-          </Form.Field>
+          <Popup
+            content={<p>Rotate the text in degrees. Example: 90</p>}
+            trigger={
+              <Form.Field width={3}>
+                <label>Rotate Degrees</label>
+                <Input name={this.props.name + "Rotate"} className="labeled" placeholder="0" value={line.rotate || ""} onChange={this.props.onChange}></Input>
+              </Form.Field>
+            }
+          />
         </Form.Group>
       </Segment>
     );
