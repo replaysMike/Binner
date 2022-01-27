@@ -1,9 +1,8 @@
-﻿using Binner.Common.IO;
+﻿using Binner.Common;
+using Binner.Common.IO;
 using Binner.Common.Models;
 using Binner.Model.Common;
-using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,10 +19,12 @@ namespace Binner.Web.Controllers
     {
         private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
         private readonly IStorageProvider _storageProvider;
+        private RequestContextAccessor _requestContext;
 
-        public ExportController(IStorageProvider storageProvider)
+        public ExportController(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
         {
             _storageProvider = storageProvider;
+            _requestContext = requestContextAccessor;
         }
 
         /// <summary>
@@ -37,34 +38,34 @@ namespace Binner.Web.Controllers
             switch (request.ExportFormat.ToLower())
             {
                 case "csv":
-                    return await ExportCsvAsync();
+                    return await ExportCsvAsync(_requestContext.GetUserContext());
                 case "excel":
-                    return await ExportExcelAsync();
+                    return await ExportExcelAsync(_requestContext.GetUserContext());
                 case "sql":
-                    return await ExportSqlAsync();
+                    return await ExportSqlAsync(_requestContext.GetUserContext());
                 default:
                     return BadRequest($"Unknown format '{request.ExportFormat}'");
             }
         }
 
-        private async Task<IActionResult> ExportCsvAsync()
+        private async Task<IActionResult> ExportCsvAsync(IUserContext userContext)
         {
             var exporter = new CsvDataExporter();
-            var streams = exporter.Export(await _storageProvider.GetDatabaseAsync());
+            var streams = exporter.Export(await _storageProvider.GetDatabaseAsync(userContext));
             return ExportToFile(streams);
         }
 
-        private async Task<IActionResult> ExportExcelAsync()
+        private async Task<IActionResult> ExportExcelAsync(IUserContext userContext)
         {
             var exporter = new ExcelDataExporter();
-            var streams = exporter.Export(await _storageProvider.GetDatabaseAsync());
+            var streams = exporter.Export(await _storageProvider.GetDatabaseAsync(userContext));
             return ExportToFile(streams);
         }
 
-        private async Task<IActionResult> ExportSqlAsync()
+        private async Task<IActionResult> ExportSqlAsync(IUserContext userContext)
         {
             var exporter = new SqlDataExporter();
-            var streams = exporter.Export(await _storageProvider.GetDatabaseAsync());
+            var streams = exporter.Export(await _storageProvider.GetDatabaseAsync(userContext));
             return ExportToFile(streams);
         }
 
