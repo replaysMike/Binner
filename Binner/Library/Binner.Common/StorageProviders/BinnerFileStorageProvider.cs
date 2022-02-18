@@ -59,7 +59,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<IBinnerDb> GetDatabaseAsync()
+        public async Task<IBinnerDb> GetDatabaseAsync(IUserContext userContext)
         {
             await _dataLock.WaitAsync();
             try

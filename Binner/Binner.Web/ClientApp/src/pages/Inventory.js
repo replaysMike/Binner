@@ -75,7 +75,7 @@ export class Inventory extends Component {
         manufacturer: '',
         manufacturerPartNumber: '',
         imageUrl: '',
-        projectId: viewPreferences.lastProjectId,
+        projectId: '',
         supplier: '',
         supplierPartNumber: ''
       },
@@ -317,6 +317,7 @@ export class Inventory extends Component {
   }
 
   async fetchProjects() {
+    const { part, viewPreferences } = this.state;
     this.setState({ loadingProjects: true });
     const response = await fetch('project/list?orderBy=DateCreatedUtc&direction=Descending&results=999');
     const data = await response.json();
@@ -328,7 +329,11 @@ export class Inventory extends Component {
         label: { ...(_.find(ProjectColors, c => c.value === item.color).name !== '' && { color: _.find(ProjectColors, c => c.value === item.color).name }), circular: true, content: item.parts, size: 'tiny' },
       };
     }), 'text');
-    this.setState({ projects, loadingProjects: false });
+    // ensure that the current part's projectId can't be set to an invalid project
+    if (!_.find(projects, p => p.value === viewPreferences.lastProjectId)) {
+      part.projectId = '';
+    }
+    this.setState({ projects, part, loadingProjects: false });
   }
 
   getMountingTypeById(mountingTypeId) {
@@ -933,9 +938,9 @@ export class Inventory extends Component {
           </Form.Field>
           <Segment loading={loadingPartMetadata} color='blue'>
             <Header dividing as='h3'>Part Metadata</Header>
-            {metadataParts.length > 0 &&
+            {metadataParts.length > 1 &&
               <Modal centered
-                trigger={<Button onClick={this.handleOpenModal}>Choose alternate part</Button>}
+                trigger={<Button onClick={this.handleOpenModal}>Choose alternate part ({metadataParts.length})</Button>}
                 open={partModalOpen}
                 onClose={this.handlePartModalClose}
               >
