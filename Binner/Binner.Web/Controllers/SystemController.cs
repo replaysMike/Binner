@@ -42,7 +42,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("settings")]
-        public IActionResult GetSettings(SettingsRequest request)
+        public IActionResult SaveSettings(SettingsRequest request)
         {
             try
             {

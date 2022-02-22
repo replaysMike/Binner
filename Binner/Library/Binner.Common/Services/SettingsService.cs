@@ -39,7 +39,7 @@ namespace Binner.Common.Services
                 throw new BinnerConfigurationException($"There is no section named '{sectionName}' in the configuration file '{filename}'!");
 
             var jsonOutput = JsonConvert.SerializeObject(json, serializerSettings);
-            using var file = File.Open(filename, FileMode.Open, FileAccess.Write, FileShare.Read);
+            using var file = File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.Read);
             var buffer = Encoding.Default.GetBytes(jsonOutput);
             file.Write(buffer, 0, buffer.Length);
             file.Close();
