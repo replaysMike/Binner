@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Binner.Common.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Common.IO.Printing
 {
@@ -66,5 +67,23 @@ namespace Binner.Common.IO.Printing
         /// Will show on previews and for printers that use color
         /// </summary>
         public string Color { get; set; }
+
+        public LabelLines Line { get; set; }
+
+        public LineConfiguration() { }
+
+        public LineConfiguration(LineConfiguration lineConfiguration, LabelLines line)
+        {
+            Label = lineConfiguration.Label;
+            Content = lineConfiguration.Content;
+            FontName = lineConfiguration.FontName;
+            AutoSize = lineConfiguration.AutoSize;
+            UpperCase = lineConfiguration.UpperCase;
+            LowerCase = lineConfiguration.LowerCase;
+            FontSize = lineConfiguration.FontSize;
+            Margin = lineConfiguration.Margin;
+            Color = lineConfiguration.Color;
+            Line = line;
+        }
     }
 }

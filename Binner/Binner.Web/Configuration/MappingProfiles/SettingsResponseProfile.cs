@@ -3,6 +3,7 @@ using Binner.Common.IO.Printing;
 using Binner.Common.Models.Configuration;
 using Binner.Common.Models.Responses;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Binner.Web.Configuration.MappingProfiles
 {
@@ -24,13 +25,41 @@ namespace Binner.Web.Configuration.MappingProfiles
                 .ForMember(x => x.CartApiKey, options => options.MapFrom(x => x.ApiKeys.CartApiKey))
                 .ReverseMap();
 
-            CreateMap<PrinterConfiguration, PrinterSettingsResponse>()
+            CreateMap<PrinterConfiguration, PrinterSettingsResponse>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
-                .ForMember(x => x.Lines, options => options.MapFrom(x => new List<LineConfiguration> { x.PartLabelTemplate.Line1, x.PartLabelTemplate.Line2, x.PartLabelTemplate.Line3, x.PartLabelTemplate.Line4 }))
-                .ForMember(x => x.Identifiers, options => options.MapFrom(x => new List<LineConfiguration> { x.PartLabelTemplate.Identifier, x.PartLabelTemplate.Identifier2 }))
-                .ReverseMap(); // this probably won't work here
+                // complex mapping situation
+                .ForMember(x => x.Lines, options => options.MapFrom(x => new List<LineConfiguration> {
+                        x.PartLabelTemplate.Line1,
+                        x.PartLabelTemplate.Line2,
+                        x.PartLabelTemplate.Line3,
+                        x.PartLabelTemplate.Line4
+                    })
+
+                )
+                .ForMember(x => x.Identifiers, options => options.MapFrom(x => new List<LineConfiguration> {
+                        x.PartLabelTemplate.Identifier,
+                        x.PartLabelTemplate.Identifier2
+                    })
+                );
+
+            CreateMap<PrinterSettingsResponse, PrinterConfiguration>(MemberList.None)
+                .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
+                .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
+                .ForMember(x => x.LabelDefinitions, options => options.Ignore())
+                // complex mapping situation
+                .ForMember(x => x.PartLabelTemplate, options => options.MapFrom(x => new PartLabelTemplate
+                {
+                    Line1 = x.Lines.Skip(0).FirstOrDefault(),
+                    Line2 = x.Lines.Skip(1).FirstOrDefault(),
+                    Line3 = x.Lines.Skip(2).FirstOrDefault(),
+                    Line4 = x.Lines.Skip(3).FirstOrDefault(),
+                    Identifier = x.Identifiers.Skip(0).FirstOrDefault(),
+                    Identifier2 = x.Identifiers.Skip(1).FirstOrDefault()
+                })
+            );
         }
     }
 }
