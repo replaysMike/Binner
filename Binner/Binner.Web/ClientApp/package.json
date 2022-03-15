@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@artsy/fresnel": "^3.2.1",
+    "@artsy/fresnel": "^3.4.0",
     "awesome-debounce-promise": "^2.1.0",
     "babel-eslint": "^10.0.3",
     "bootstrap": "^4.3.1",
