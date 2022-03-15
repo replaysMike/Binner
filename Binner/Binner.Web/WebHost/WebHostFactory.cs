@@ -32,6 +32,8 @@ namespace Binner.Web.WebHost
                     options.Listen(ipAddress, port.Value, c => {
                         if (certificate != null)
                             c.UseHttps(certificate);
+                        else
+                            c.UseHttps();
                     });
                 })
                 .UseEnvironment(environment)

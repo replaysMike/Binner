@@ -1,10 +1,14 @@
 ﻿using Binner.Web.Configuration;
 using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Topshelf;
@@ -70,7 +74,6 @@ namespace Binner.Web.ServiceHost
 
                 WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port, _config.Environment.ToString());
                 await WebHost.RunAsync(CancellationTokenSource.Token);
-
             }).ContinueWith(t =>
             {
                 if (t.Exception != null)
