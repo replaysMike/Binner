@@ -48,8 +48,9 @@ namespace Binner.Common.Integrations
             var uri = Url.Combine(_apiUrl, BasePath, $"/order/{orderId}?apiKey={_orderApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Get, uri);
             var response = await _client.SendAsync(requestMessage);
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                throw new MouserUnauthorizedException(response.ReasonPhrase);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) { 
+                return ApiResponse.Create($"Mouser Api returned Unauthorized access - check that your OrderApiKey is correctly configured.", nameof(MouserApi));
+            }
             if (response.IsSuccessStatusCode)
             {
                 var resultString = response.Content.ReadAsStringAsync().Result;
@@ -58,7 +59,7 @@ namespace Binner.Common.Integrations
                     new ApiResponse(results.Errors.Select(x => x.Message), nameof(MouserApi));
                 return new ApiResponse(results, nameof(MouserApi));
             }
-            return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
+            return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace Binner.Common.Integrations
                     throw new MouserErrorsException(results.Errors);
                 return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
             }
-            return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
+            return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
 
         public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType)

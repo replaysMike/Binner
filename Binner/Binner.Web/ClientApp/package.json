@@ -8,6 +8,7 @@
     "babel-eslint": "^10.0.3",
     "bootstrap": "^4.3.1",
     "buffer": "^6.0.3",
+    "fs": "^0.0.1-security",
     "jquery": "^3.4.1",
     "lodash": "^4.17.15",
     "merge": "^2.1.1",
@@ -19,9 +20,11 @@
     "react-router-bootstrap": "^0.24.4",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^5.0.0",
+    "react-toastify": "^8.2.0",
     "reactstrap": "^9.0.1",
     "rimraf": "^3.0.2",
     "semantic-ui-react": "^2.0.4",
+    "source-map-support": "^0.5.21",
     "underscore": "^1.13.2",
     "yarn": "^1.22.17"
   },
@@ -34,7 +37,8 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.28.0",
-    "typescript": "^3.5.2"
+    "typescript": "^3.5.2",
+    "webpack": "^5.70.0"
   },
   "eslintConfig": {
     "extends": "react-app"

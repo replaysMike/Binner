@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'underscore';
-import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader } from 'semantic-ui-react';
+import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Icon } from 'semantic-ui-react';
+import { toast } from "react-toastify";
 
 export class OrderImport extends Component {
   static displayName = OrderImport.name;
@@ -13,6 +14,7 @@ export class OrderImport extends Component {
       loading: false,
       metadataParts: [],
       results: {},
+      error: null,
       order: {
         orderId: '',
         supplier: '',
@@ -41,7 +43,7 @@ export class OrderImport extends Component {
 
   async onImportParts(e) {
     const { order, results } = this.state;
-    this.setState({ loading: true });
+    this.setState({ loading: true, error: null });
     const request = {
       orderId: order.orderId,
       supplier: order.supplier,
@@ -67,7 +69,11 @@ export class OrderImport extends Component {
     OrderImport.abortController.abort(); // Cancel the previous request
     OrderImport.abortController = new AbortController();
     const { order } = this.state;
-    this.setState({ loading: true });
+    if (!order.supplier) {
+      toast.error('You must choose a supplier');
+      return;
+    }
+    this.setState({ loading: true, error: null, results: {}, metadataParts: [] });
     const request = {
       orderId: order.orderId,
       supplier: order.supplier
@@ -89,11 +95,24 @@ export class OrderImport extends Component {
       }
 
       if (response.status === 200) {
-        const { response: data } = responseData;
-        data.parts.forEach((i) => {
-          i.selected = true;
-        });
-        this.setState({ results: data, loading: false });
+        if (responseData.errors && responseData.errors.length > 0){
+          // display error
+          const errorMessage = responseData.errors.join('\n');
+          this.setState({ error: errorMessage, loading: false });
+          toast.error(errorMessage);
+        }else {
+          const { response: data } = responseData;
+          data.parts.forEach((i) => {
+            i.selected = true;
+          });
+          this.setState({ results: data, loading: false });
+        }
+      } else {
+        // display error
+        console.log(response, responseData);
+        const errorMessage = 'Internal server error ocurred!';
+        this.setState({ error: errorMessage, loading: false });
+        toast.error(errorMessage);
       }
     } catch (ex) {
       if (ex.name === 'AbortError') {
@@ -226,19 +245,20 @@ export class OrderImport extends Component {
   }
 
   render() {
-    const { order, suppliers, results, loading } = this.state;
+    const { order, suppliers, results, loading, error } = this.state;
     return (
       <div>
         <h1>Order Import</h1>
         <Form onSubmit={this.onSubmit}>
           <Form.Group>
             <Form.Input label='Order Id' required placeholder='1023840' icon='search' focus value={order.orderId} onChange={this.handleChange} name='orderId' />
-            <Form.Dropdown label='Supplier' placeholder='Choose a Supplier' selection value={order.supplier} options={suppliers} onChange={this.handleChange} name='supplier' />
+            <Form.Dropdown label='Supplier' required placeholder='Choose a Supplier' selection value={order.supplier} options={suppliers} onChange={this.handleChange} name='supplier' />
           </Form.Group>
           <Button primary>Search</Button>
         </Form>
         <div style={{ marginTop: '20px' }}>
           <Segment style={{ minHeight: '50px' }}>
+            {error && (<Label color="red"><Icon name="warning sign" /> Error: {error}</Label>)}
             <Dimmer active={loading} inverted>
               <Loader inverted />
             </Dimmer>
