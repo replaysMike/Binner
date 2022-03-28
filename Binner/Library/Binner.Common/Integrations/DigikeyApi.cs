@@ -232,6 +232,11 @@ namespace Binner.Common.Integrations
                     }
                     return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
                 }
+                catch (UnauthorizedAccessException)
+                {
+                    // refresh token likely expired, need to re-authenticate
+                    throw new DigikeyUnauthorizedException(authenticationResponse);
+                }
                 catch (Exception)
                 {
                     throw;
@@ -447,7 +452,10 @@ namespace Binner.Common.Integrations
                         return await func(freshResponse);
                     }
                 }
-                throw new UnauthorizedAccessException("Unable to authenticate with Digikey!");
+                // user must authorize
+                // request a token if we don't already have one
+                var authRequest = CreateOAuthAuthorizationRequest();
+                return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             }
         }
 
@@ -489,8 +497,19 @@ namespace Binner.Common.Integrations
             // request a token if we don't already have one
             var scopes = "";
             var authUrl = _oAuth2Service.GenerateAuthUrl(scopes);
-            // OpenBrowser(authUrl);
             authRequest = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString());
+            ServerContext.Set(contextKey, authRequest);
+
+            return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
+        }
+
+        private OAuthAuthorization CreateOAuthAuthorizationRequest()
+        {
+            var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+            var contextKey = $"{nameof(DigikeyApi)}-{_httpContextAccessor.HttpContext.User.Identity.Name}";
+            var scopes = "";
+            var authUrl = _oAuth2Service.GenerateAuthUrl(scopes);
+            var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, referer);
             ServerContext.Set(contextKey, authRequest);
 
             return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);

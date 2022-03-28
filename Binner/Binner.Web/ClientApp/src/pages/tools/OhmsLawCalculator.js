@@ -150,8 +150,8 @@ export class OhmsLawCalculator extends Component {
               <Input label='W' name='inputPower' value={inputPower} onChange={this.handleChangeValue} />
             </Form.Field>
           </Segment>
-          <Segment textAlign='center'>
-            <Statistic.Group widths='two' textAlign='center'>
+          <Segment style={{textAlign: 'center'}}>
+            <Statistic.Group widths='two' style={{textAlign: 'center'}}>
               <Statistic>
                 <Statistic.Value>{output}</Statistic.Value>
                 <Statistic.Label>{outputUnits}</Statistic.Label>

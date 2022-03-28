@@ -15,6 +15,7 @@ using ApiClient.Constants;
 using ApiClient.Exception;
 using ApiClient.Models;
 using ApiClient.OAuth2.Models;
+using Binner.Common.Models.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -58,9 +59,9 @@ namespace ApiClient.OAuth2
         /// </summary>
         /// <param name="clientSettings">ApiClientSettings needed for creating a proper refresh token HTTP post call.</param>
         /// <returns>Returns OAuth2AccessToken</returns>
-        public static async Task<OAuth2AccessToken> RefreshTokenAsync(ApiClientSettings clientSettings)
+        public static async Task<OAuth2AccessToken> RefreshTokenAsync(DigikeyConfiguration configuration, ApiClientSettings clientSettings)
         {
-            var postUrl = DigiKeyUriConstants.TokenEndpoint;
+            var postUrl = new Uri(new Uri(configuration.ApiUrl), DigiKeyUriConstants.TokenRelativeEndpoint);
 
             var content = new FormUrlEncodedContent(new[]
             {

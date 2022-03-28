@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import { Route, Switch } from "react-router";
+import { Route, Routes } from "react-router";
 import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
-import { Inventory } from "./pages/Inventory";
-import { Search } from "./pages/Search";
+import Inventory from "./pages/Inventory";
+import Search from "./pages/Search";
 import { Datasheets } from "./pages/Datasheets";
-import { LowInventory } from "./pages/LowInventory";
+import LowInventory from "./pages/LowInventory";
 import { OrderImport } from "./pages/OrderImport";
 import { PartTypes } from "./pages/PartTypes";
 import { Projects } from "./pages/Projects";
@@ -50,30 +50,30 @@ export default class App extends Component {
     return (
       <div>
         <Layout history={this.history}>
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/inventory/add" component={Inventory} />
-            <Route exact path="/inventory/:partNumber" component={Inventory} />
-            <Route exact path="/inventory" component={Search} />
-            <Route path="/datasheets" component={Datasheets} />
-            <Route path="/lowstock" component={LowInventory} />
-            <Route path="/import" component={OrderImport} />
-            <Route path="/partTypes" component={PartTypes} />
-            <Route path="/projects" component={Projects} />
-            <Route path="/exportData" component={ExportData} />
-            <Route path="/print" component={PrintLabels} />
-            <Route exact path="/tools" component={Tools} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/tools/ohmslaw" component={OhmsLawCalculator} />
+          <Routes>
+            <Route exact path="/" element={<Home />} />
+            <Route exact path="/inventory/add" element={<Inventory />} />
+            <Route exact path="/inventory/:partNumber" element={<Inventory />} />
+            <Route exact path="/inventory" element={<Search />} />
+            <Route path="/datasheets" element={<Datasheets />} />
+            <Route path="/lowstock" element={<LowInventory />} />
+            <Route path="/import" element={<OrderImport />} />
+            <Route path="/partTypes" element={<PartTypes />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/exportData" element={<ExportData />} />
+            <Route path="/print" element={<PrintLabels />} />
+            <Route exact path="/tools" element={<Tools />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/tools/ohmslaw" element={<OhmsLawCalculator />} />
             <Route
               path="/tools/resistor"
-              component={ResistorColorCodeCalculator}
+              element={<ResistorColorCodeCalculator />}
             />
             <Route
               path="/tools/voltagedivider"
-              component={VoltageDividerCalculator}
+              element={<VoltageDividerCalculator />}
             />
-          </Switch>
+          </Routes>
         </Layout>
         <ErrorContext.Provider value={this.state}>
           <ErrorModal />

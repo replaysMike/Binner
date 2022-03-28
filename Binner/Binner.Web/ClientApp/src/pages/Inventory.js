@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
+import { useParams, useNavigate  } from "react-router-dom";
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader, Header, Confirm } from 'semantic-ui-react';
 import NumberPicker from '../components/NumberPicker';
 import { ProjectColors } from '../common/Types';
 
-export class Inventory extends Component {
+class Inventory extends Component {
   static displayName = Inventory.name;
   static abortController = new AbortController();
 
@@ -21,7 +22,7 @@ export class Inventory extends Component {
 
   constructor(props) {
     super(props);
-    const { partNumber } = props.match.params;
+    const { partNumber } = props.params;
     this.searchDebounced = AwesomeDebouncePromise(this.fetchPartMetadata.bind(this), 500);
     this.scannerDebounced = AwesomeDebouncePromise(this.barcodeInput.bind(this), 100);
     this.barcodeBuffer = '';
@@ -697,7 +698,7 @@ export class Inventory extends Component {
 
   async handleRecentPartClick(e, part) {
     this.setState({ partNumber: part.partNumber, part });
-    this.props.history.push(`/inventory/${part.partNumber}`);
+    this.props.history(`/inventory/${part.partNumber}`);
     await this.fetchPart(part.partNumber);
   }
 
@@ -750,7 +751,7 @@ export class Inventory extends Component {
     });
     const partsDeleted = _.without(parts, _.findWhere(parts, { partId: selectedPart.partId }));
     this.setState({ confirmDeleteIsOpen: false, parts: partsDeleted, selectedPart: null });
-    this.props.history.push(`/inventory`);
+    this.props.history(`/inventory`);
   }
 
   confirmDeleteOpen(e, part) {
@@ -863,7 +864,7 @@ export class Inventory extends Component {
       loadingPartMetadata, loadingPartTypes, loadingProjects, loadingRecent, saveMessage, scannedParts, highlightScannedPart
     } = this.state;
     const matchingPartsList = this.renderAllMatchingParts(part, metadataParts);
-    const title = this.props.match.params.partNumber ? 'Edit Inventory' : 'Add Inventory';
+    const title = this.props.params.partNumber ? "Edit Inventory" : "Add Inventory";
     return (
       <div>
         <Modal centered
@@ -1073,3 +1074,8 @@ export class Inventory extends Component {
     );
   }
 }
+
+// eslint-disable-next-line import/no-anonymous-default-export
+export default (props) => (
+  <Inventory {...props} params={useParams()} history={useNavigate()} />
+);

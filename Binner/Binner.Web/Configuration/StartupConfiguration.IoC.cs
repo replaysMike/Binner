@@ -105,12 +105,7 @@ namespace Binner.Web.Configuration
             container.Register<OAuth2Service>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                return new OAuth2Service(new ApiClient.Models.ApiClientSettings
-                {
-                    ClientId = config.Integrations.Digikey.ClientId,
-                    ClientSecret = config.Integrations.Digikey.ClientSecret,
-                    RedirectUri = config.Integrations.Digikey.oAuthPostbackUrl
-                });
+                return new OAuth2Service(config.Integrations.Digikey);
             }, new PerContainerLifetime());
             container.Register<OctopartApi>((serviceFactory) =>
             {

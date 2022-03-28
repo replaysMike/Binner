@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+import { useParams, useNavigate } from "react-router-dom";
 import PartsGrid from "../components/PartsGrid";
 
-export class LowInventory extends Component {
+class LowInventory extends Component {
   static displayName = LowInventory.name;
 
   constructor(props) {
@@ -50,7 +51,7 @@ export class LowInventory extends Component {
   }
 
   handlePartClick(e, part) {
-    this.props.history.push(`/inventory/${part.partNumber}`);
+    this.props.history(`/inventory/${part.partNumber}`);
   }
   
   render() {
@@ -69,3 +70,8 @@ export class LowInventory extends Component {
     );
   }
 }
+
+// eslint-disable-next-line import/no-anonymous-default-export
+export default (props) => (
+  <LowInventory {...props} params={useParams()} history={useNavigate()} location={window.location} />
+);

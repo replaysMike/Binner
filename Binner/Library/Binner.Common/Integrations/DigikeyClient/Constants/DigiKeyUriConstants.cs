@@ -25,6 +25,9 @@ namespace ApiClient.Constants
         public static readonly Uri TokenEndpoint = new Uri("https://sandbox-api.digikey.com/v1/oauth2/token");
         public static readonly Uri AuthorizationEndpoint = new Uri("https://sandbox-api.digikey.com/v1/oauth2/authorize");
 
+        public static readonly Uri TokenRelativeEndpoint = new Uri("/v1/oauth2/token", UriKind.Relative);
+        public static readonly Uri AuthorizationRelativeEndpoint = new Uri("/v1/oauth2/authorize", UriKind.Relative);
+
         // Production instance
         //public static readonly Uri BaseAddress = new Uri("https://api.digikey.com");
         //public static readonly Uri TokenEndpoint = new Uri("https://api.digikey.com/v1/oauth2/token");
