@@ -15,8 +15,11 @@ module.exports = function override(config, env) {
         new webpack.ProvidePlugin({
             process: 'process/browser',
             Buffer: ['buffer', 'Buffer'],
-        }),
+        })
     );
-
+    // fixes build issues with webpack5 and typescript
+    // https://github.com/microsoft/TypeScript/issues/39436
+    config.module.noParse = /typescript/;
+    config.ignoreWarnings = [/Failed to parse source map/];
     return config;
 }
