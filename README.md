@@ -56,7 +56,7 @@ To run as a console application:
 .\Binner.Web.exe
 ```
 
-Proceed to the web interface at http://localhost:8090 to start using Binner!
+Proceed to the web interface at https://localhost:8090 to start using Binner!
 
 ### Installation on Ubuntu
 
@@ -102,7 +102,7 @@ I welcome all who want to contribute to this project, and please suggest feature
 
 ## What if I want to use it but not bother to set it up myself?
 
-I will be launching a free online version at [Binner.io](http://binner.io) which will be available around Q1 2022. This service will have both free and paid subscriptions. Compared to other options out there it's incredibly inexpensive for makers!
+I will be launching a free online version at [Binner.io](http://binner.io) which will be available April 2022. This service will have both free and paid subscriptions. Compared to other options out there it's incredibly inexpensive for makers!
 
 ## Storage Provider
 
@@ -189,7 +189,7 @@ Integrations enable features such as automatic part metadata lookup, datasheet r
 Visit [https://developer.digikey.com/](https://developer.digikey.com/) and sign up for a free developer account. You will be asked to create an App which will come with a `ClientId` and `ClientSecret` and needs to be set in the `appsettings.json` under the DigiKey configuration section.
 
 *Creating an App*
-* The API uses oAuth with postbacks so they will want you to provide an `OAuth Callback`. This can be safely set to `http://localhost:8090/Authorization/Authorize`. If you are not familiar with oAuth, Digikey will call this URL when you successfully authenticate with DigiKey. It is not called by their servers, but rather by the web UI so it does not need to resolve to an external IP. It does need to be set exactly the same in Binner's `oAuthPostbackUrl` in `appsettings.json` otherwise the API calls will not work, as this value must match on both ends.
+* The API uses oAuth with postbacks so they will want you to provide an `OAuth Callback`. This can be safely set to `https://localhost:8090/Authorization/Authorize`. If you are not familiar with oAuth, Digikey will call this URL when you successfully authenticate with DigiKey. It is not called by their servers, but rather by the web UI so it does not need to resolve to an external IP. It does need to be set exactly the same in Binner's `oAuthPostbackUrl` in `appsettings.json` otherwise the API calls will not work, as this value must match on both ends.
 
 * You will want to enable API access for the `Product Information` and `Order Support` APIs.
 
