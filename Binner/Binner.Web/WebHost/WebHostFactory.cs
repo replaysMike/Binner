@@ -26,14 +26,13 @@ namespace Binner.Web.WebHost
                         options.ConfigureHttpsDefaults(opt =>
                         {
                             opt.ServerCertificate = certificate;
-                            opt.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+                            opt.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+                            opt.CheckCertificateRevocation = false;
+                            opt.AllowAnyClientCertificate();
                         });
                     }
                     options.Listen(ipAddress, port.Value, c => {
-                        if (certificate != null)
-                            c.UseHttps(certificate);
-                        else
-                            c.UseHttps();
+                        c.UseHttps();
                     });
                 })
                 .UseEnvironment(environment)

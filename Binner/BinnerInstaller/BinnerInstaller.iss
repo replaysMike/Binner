@@ -36,6 +36,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [CustomMessages]
 UninstallingService=Uninstalling existing {#MyAppName} service...
 InstallingService=Installing {#MyAppName} service...
+InstallingCertificates=Installing certificates...
 StartingApp=Starting {#MyAppName}...
 
 [Tasks]
@@ -93,6 +94,12 @@ begin
   if CurStep = ssPostInstall then
   begin
     Log('Post install');
+
+    // Install the certificate as trusted before launching apps
+    WizardForm.StatusLabel.Caption := CustomMessage('InstallingCertificates');
+    WizardForm.StatusLabel.Show();
+    Exec('powershell.exe', ExpandConstant('-ExecutionPolicy Bypass -Command Import-PfxCertificate -FilePath ""\""{app}\Certificates\Binner.pfx\"" -CertStoreLocation cert:\LocalMachine\Root -Password (ConvertTo-SecureString -String password -Force -AsPlainText)'), '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+
     if WizardIsTaskSelected('installservice') then
     begin
       WizardForm.StatusLabel.Caption := CustomMessage('InstallingService');

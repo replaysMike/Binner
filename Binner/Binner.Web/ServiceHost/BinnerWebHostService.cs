@@ -13,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Topshelf;
 using Topshelf.Runtime;
+using Binner.Common.IO;
+using System.Reflection;
 
 namespace Binner.Web.ServiceHost
 {
@@ -23,6 +25,7 @@ namespace Binner.Web.ServiceHost
     [DisplayName("Binner Web Service")]
     public class BinnerWebHostService : IHostService, IDisposable
     {
+        private const string CertificatePassword = "password";
         private bool _isDisposed;
         private readonly WebHostServiceConfiguration _config;
         private HostSettings _hostSettings;
@@ -72,7 +75,12 @@ namespace Binner.Web.ServiceHost
                 if (!string.IsNullOrEmpty(ipString) && ipString != "*")
                     IPAddress.TryParse(_config.IP, out ipAddress);
 
-                WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port, _config.Environment.ToString());
+                // use embedded certificate
+                var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
+                var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
+
+                Logger.LogInformation($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
+                WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port, _config.Environment.ToString(), certificate);
                 await WebHost.RunAsync(CancellationTokenSource.Token);
             }).ContinueWith(t =>
             {

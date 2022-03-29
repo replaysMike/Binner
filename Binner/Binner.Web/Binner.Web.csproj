@@ -48,11 +48,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Certificates\Binner.pfx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <_WebToolingArtifacts Remove="Properties\PublishProfiles\Win10x64FolderProfile.pubxml" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="binner128x128.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Certificates\Binner.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
