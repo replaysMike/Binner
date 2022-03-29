@@ -48,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Certificates\Binner.crt" />
     <None Remove="Certificates\Binner.pfx" />
   </ItemGroup>
 
@@ -57,6 +58,9 @@
 
   <ItemGroup>
     <Content Include="binner128x128.ico" />
+    <Content Include="Certificates\Binner.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

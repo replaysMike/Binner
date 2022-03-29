@@ -20,6 +20,9 @@ $mypwd = ConvertTo-SecureString -String $Password -Force -AsPlainText
 $Thumbprint = Get-ChildItem cert:\$IssuerStoreLocation\My | Where-Object {$_.FriendlyName -eq $FriendlyName} | Select-Object -ExpandProperty Thumbprint
 Get-ChildItem -Path cert:\$IssuerStoreLocation\My\"$Thumbprint" | Export-PfxCertificate -FilePath "$Path\$FilenameWithoutExtension.pfx" -Password $mypwd
 
+# export to crt
+Export-Certificate -Cert cert:\$IssuerStoreLocation\My\"$Thumbprint" -FilePath "$Path\$FilenameWithoutExtension.crt"
+
 # import to trusted root
 Import-PfxCertificate -FilePath "$Path\$FilenameWithoutExtension.pfx" -CertStoreLocation cert:\$IssuerStoreLocation\Root -Password $mypwd
 
