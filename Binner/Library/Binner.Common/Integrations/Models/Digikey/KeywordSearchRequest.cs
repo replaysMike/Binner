@@ -10,7 +10,7 @@ namespace Binner.Common.Integrations.Models.Digikey
         public Filters Filters { get; set; } = new Filters();
         public SortParameters Sort { get; set; } = new SortParameters();
         public int RequestedQuantity { get; set; }
-        public ICollection<SearchOptions> SearchOptions { get; set; } = new List<SearchOptions> { Digikey.SearchOptions.InStock };
+        public ICollection<SearchOptions> SearchOptions { get; set; } = new List<SearchOptions> { };
     }
 
     public enum SearchOptions
