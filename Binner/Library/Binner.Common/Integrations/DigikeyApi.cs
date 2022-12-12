@@ -373,8 +373,11 @@ namespace Binner.Common.Integrations
                     var memberInfos = typeof(Taxonomies).GetMember(taxonomy.ToString());
                     var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(Taxonomies));
                     var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
-                    var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
-                    // taxonomies.AddRange(alternateIds);
+                    if (valueAttributes.Length > 0)
+                    {
+                        var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
+                        // taxonomies.AddRange(alternateIds);
+                    }
                     switch (taxonomy)
                     {
                         case Taxonomies.Resistor:

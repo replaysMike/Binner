@@ -401,6 +401,10 @@ class Inventory extends Component {
       }
       // refresh recent parts list
       await this.fetchRecentRows();
+    } else if (response.status === 400){
+      // other error (invalid part type, mounting type, etc.)
+      saveMessage = `Failed to update, check Part Type and Mounting Type`;
+      this.setState({ saveMessage });
     }
 
   }
