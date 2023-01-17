@@ -5,6 +5,7 @@ using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +45,12 @@ namespace Binner.Web.WebHost
             // needed to load IP Rate limit configuration from appsettings.json
             //services.AddOptions();
 
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
+
             var configuration = StartupConfiguration.Configure(Container, services);
 
             services.AddControllersWithViews();
@@ -70,6 +77,8 @@ namespace Binner.Web.WebHost
             if (config == null) throw new InvalidOperationException("Could not retrieve WebHostServiceConfiguration, configuration file may be invalid!");
             Console.WriteLine($"ENVIRONMENT NAME: {config.Environment}");
 
+            app.UseForwardedHeaders();
+
             // add build version to the response headers
             app.UseVersionHeader();
 
@@ -82,7 +91,7 @@ namespace Binner.Web.WebHost
                 app.UseHsts();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseExceptionHandler(appError =>
             {
                 appError.Run(context =>
