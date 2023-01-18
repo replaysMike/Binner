@@ -270,13 +270,13 @@ export default class PartsGrid extends Component {
                       {renderChildren ? <span className='truncate small' title={p.description}>{p.description}</span> : null}
                     </Table.Cell>)}}</Media> }
                     {columns.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                      {renderChildren ? <Link to={`inventory?by=location&value=${p.location}`} onClick={this.handleSelfLink}><span className='truncate'>{p.location}</span></Link> : null}
+                      {renderChildren ? <Link to={`/inventory?by=location&value=${p.location}`} onClick={this.handleSelfLink}><span className='truncate'>{p.location}</span></Link> : null}
                     </Table.Cell>)}}</Media> }
                     {columns.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                      {renderChildren ? <Link to={`inventory?by=binNumber&value=${p.binNumber}`} onClick={this.handleSelfLink}>{p.binNumber}</Link> : null}
+                      {renderChildren ? <Link to={`/inventory?by=binNumber&value=${p.binNumber}`} onClick={this.handleSelfLink}>{p.binNumber}</Link> : null}
                     </Table.Cell>)}}</Media> }
                     {columns.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                      {renderChildren ? <Link to={`inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link> : null}
+                      {renderChildren ? <Link to={`/inventory?by=binNumber2&value=${p.binNumber2}`} onClick={this.handleSelfLink}>{p.binNumber2}</Link> : null}
                     </Table.Cell>)}}</Media> }
                     {columns.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
                       {renderChildren ? "$" + p.cost.toFixed(2) : null}
