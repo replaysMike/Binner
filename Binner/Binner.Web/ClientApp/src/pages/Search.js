@@ -1,54 +1,124 @@
-import React, { Component } from 'react';
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Input, Button, Icon } from 'semantic-ui-react';
 import { getQueryVariable } from '../common/query';
 import PartsGrid from '../components/PartsGrid';
 
-class Search extends Component {
-  static displayName = Search.name;
-  static abortController = new AbortController();
+export function Search (props) {
+  Search.abortController = new AbortController();
+  const [searchParams] = useSearchParams();
 
-  constructor(props) {
-    super(props);
-    this.searchDebounced = AwesomeDebouncePromise(this.search.bind(this), 1200);
-    this.state = {
-      parts: [],
-      selectedPart: null,
-      keyword: getQueryVariable(window.location.search, "keyword") || "",
-      by: getQueryVariable(window.location.search, "by") || "",
-      byValue: getQueryVariable(window.location.search, "value") || "",
-      page: 1,
-      records: 50,
-      column: null,
-      direction: null,
-      noRemainingData: false,
-      changeTracker: [],
-      lastSavedPartId: 0,
-      loading: true,
-      saveMessage: "",
-      confirmDeleteIsOpen: false,
+  const [parts, setParts] = useState([]);
+  const [selectedPart, setSelectedPart] = useState(null);
+  const [keyword, setKeyword] = useState(getQueryVariable(window.location.search, "keyword") || "");
+  const [by, setBy] = useState(getQueryVariable(window.location.search, "by") || "");
+  const [byValue, setByValue] = useState(getQueryVariable(window.location.search, "value") || "");
+  const [page, setPage] = useState(1);
+  const [records, setRecords] = useState(50);
+  const [column, setColumn] = useState(null);
+  const [direction, setDirection] = useState(null);
+  const [noRemainingData, setNoRemainingData] = useState(false);
+  const [changeTracker, setChangeTracker] = useState([]);
+  const [lastSavedPartId, setLastSavedPartId] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
+
+  const loadParts = async (page, reset = false, _by = null, _byValue = null) => {
+    let byParameter = _by;
+    let byValueParameter = _byValue;
+    if (byParameter === null)
+      byParameter = by;
+    if (byValueParameter === null)
+      byValueParameter = byValue;
+    let endOfData = false;
+    const response = await fetch(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}&by=${byParameter}&value=${byValueParameter}`);
+    const pageOfData = await response.json();
+    if (pageOfData && pageOfData.length === 0)
+      endOfData = true;
+    let newData = [];
+    if (reset)
+      newData = [...pageOfData];
+    else
+      newData = [...parts, ...pageOfData];
+      setParts(newData);
+      setPage(page);
+      setNoRemainingData(endOfData);
+      setLoading(false);
+  };
+
+  const search = async (keyword) => {
+    Search.abortController.abort(); // Cancel the previous request
+    Search.abortController = new AbortController();
+    
+    // if there's a keyword we should clear binning (because they use different endpoints)
+    setBy('');
+    setByValue('');
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`part/search?keywords=${keyword}`, {
+        signal: Search.abortController.signal
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        setParts(data || []);
+        setLoading(false);
+        setNoRemainingData(true);
+      }
+      else {
+        setParts([]);
+        setLoading(false);
+        setNoRemainingData(true);
+      }
+    } catch (ex) {
+      if (ex.name === 'AbortError') {
+        return; // Continuation logic has already been skipped, so return normally
+      }
+      throw ex;
+    }
+  };
+
+  const searchDebounced = AwesomeDebouncePromise(search, 400);
+
+  useEffect(() => {
+    const _keyword = searchParams.get("keyword");
+    const _by = searchParams.get("by");
+    const _byValue = searchParams.get("value");
+    if (_keyword !== keyword) {
+      if (_keyword && _keyword.length > 0) {
+        // if there's a keyword we should clear binning (because they use different endpoints)
+        setKeyword(_keyword);
+        setBy("");
+        setByValue("");
+        setPage(1);
+        search(_keyword);
+      } else if (_by && _by.length > 0) {
+        // likewise, clear keyword if we're in a bin search
+        setBy(_by);
+        setByValue(_byValue);
+        setKeyword("");
+        setPage(1);
+        loadParts(page, true, _by, _byValue);
+      } else {
+        setPage(1);
+        loadParts(page, true, "", "");
+      }
+    } else {
+      if (keyword && keyword.length > 0) search(keyword);
+      else loadParts(page);
+    }
+
+    return () => {
+      Search.abortController.abort();
     };
-    this.loadParts = this.loadParts.bind(this);
-    this.search = this.search.bind(this);
-    this.handleNextPage = this.handleNextPage.bind(this);
-    this.handleSearch = this.handleSearch.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handlePartClick = this.handlePartClick.bind(this);
-    this.removeFilter = this.removeFilter.bind(this);
-  }
+  }, [searchParams]);
 
-  async componentDidMount() {
-    if (this.state.keyword && this.state.keyword.length > 0) await this.search(this.state.keyword);
-    else await this.loadParts(this.state.page);
-  }
-
-  componentWillUnmount() {
-    Search.abortController.abort();
-  }
-
-  UNSAFE_componentWillReceiveProps(nextProps) {
+  /*UNSAFE_componentWillReceiveProps(nextProps) {
     // if the path changes due to a new search via query, reset the keyword and perform the search
     // the component will not be recreated when this happens, only during rerender
     if (nextProps.location.search !== window.location.search) {
@@ -69,82 +139,36 @@ class Search extends Component {
         this.loadParts(this.state.page, true, "", "");
       }
     }
-  }
+  }*/
 
-  async loadParts(page, reset = false, _by = null, _byValue = null) {
-    const { records, parts, by, byValue } = this.state;
-    let byParameter = _by;
-    let byValueParameter = _byValue;
-    if (byParameter === null)
-      byParameter = by;
-    if (byValueParameter === null)
-      byValueParameter = byValue;
-    let endOfData = false;
-    const response = await fetch(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}&by=${byParameter}&value=${byValueParameter}`);
-    const pageOfData = await response.json();
-    if (pageOfData && pageOfData.length === 0)
-      endOfData = true;
-    let newData = [];
-    if (reset)
-      newData = [...pageOfData];
-    else
-      newData = [...parts, ...pageOfData];
-    this.setState({ parts: newData, page, noRemainingData: endOfData, loading: false });
-  }
 
-  async search(keyword) {
-    Search.abortController.abort(); // Cancel the previous request
-    Search.abortController = new AbortController();
-    this.setState({by: '', byValue: ''}) // if there's a keyword we should clear binning (because they use different endpoints)
-    this.setState({ loading: true });
-    try {
-      const response = await fetch(`part/search?keywords=${keyword}`, {
-        signal: Search.abortController.signal
-      });
+  const handlePartClick = (e, part) => {
+    props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
+  };
 
-      if (response.status === 200) {
-        const data = await response.json();
-        this.setState({ parts: data || [], loading: false, noRemainingData: true });
-      }
-      else
-        this.setState({ parts: [], loading: false, noRemainingData: true });
-    } catch (ex) {
-      if (ex.name === 'AbortError') {
-        return; // Continuation logic has already been skipped, so return normally
-      }
-      throw ex;
-    }
-  }
-
-  handlePartClick(e, part) {
-    this.props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
-  }
-
-  handleNextPage() {
-    const { page, noRemainingData } = this.state;
+  const handleNextPage = () => {
     if (noRemainingData) return;
 
     const nextPage = page + 1;
-    this.loadParts(nextPage);
-  }
+    loadParts(nextPage);
+  };
 
-  handleSearch(e, control) {
+  const handleSearch = (e, control) => {
     switch (control.name) {
       case 'keyword':
         if (control.value && control.value.length > 0) {
-          this.searchDebounced(control.value);
+          searchDebounced(control.value);
         } else {
-          this.loadParts(this.state.page, true);
+          loadParts(page, true);
         }
         break;
       default:
           break;
     }
-    this.setState({ keyword: control.value });
-  }
+    setKeyword(control.value);
+  };
 
-  handleChange(e, control) {
-    const { parts, changeTracker } = this.state;
+  const handleChange = (e, control) => {
     const part = _.find(parts, { partId: control.data });
     let changes = [...changeTracker];
     if (part) {
@@ -152,28 +176,27 @@ class Search extends Component {
       if (_.where(changes, { partId: part.partId }).length === 0)
         changes.push({ partId: part.partId });
     }
-    this.setState({ parts, changeTracker: changes });
-  }
+    setParts(parts);
+    setChangeTracker(changes);
+  };
 
-  removeFilter(e) {
+  const removeFilter = (e) => {
     e.preventDefault();
-    this.setState({ by: '', byValue: '' });
-    this.props.history(`/inventory`);
-  }
+    setBy('');
+    setByValue('');
+    props.history(`/inventory`);
+  };
 
-  render() {
-    const { parts, loading, keyword, by, byValue } = this.state;
-    return (
-      <div>
-        <h1>Inventory</h1>
-        <Input placeholder='Search' icon='search' focus value={keyword} onChange={this.handleSearch} name='keyword' />
-        <div style={{ paddingTop: '10px', marginBottom: '10px' }}>
-          {by && <Button primary size='mini' onClick={this.removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
-        </div>
-        <PartsGrid parts={parts} loading={loading} loadPage={this.handleNextPage} noRemainingData={this.state.noRemainingData} onPartClick={this.handlePartClick} name='partsGrid' />
+  return (
+    <div>
+      <h1>Inventory</h1>
+      <Input placeholder='Search' icon='search' focus value={keyword} onChange={handleSearch} name='keyword' />
+      <div style={{ paddingTop: '10px', marginBottom: '10px' }}>
+        {by && <Button primary size='mini' onClick={removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
       </div>
-    );
-  }
+      <PartsGrid parts={parts} loading={loading} loadPage={handleNextPage} noRemainingData={noRemainingData} onPartClick={handlePartClick} name='partsGrid' />
+    </div>
+  );
 }
 
 // eslint-disable-next-line import/no-anonymous-default-export

@@ -254,8 +254,8 @@ export default class PartsGrid extends Component {
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {parts.map(p =>
-                  <Table.Row key={p.partId} onClick={e => this.handleLoadPartClick(e, p)}>
+                {parts.map((p, key) =>
+                  <Table.Row key={key} onClick={e => this.handleLoadPartClick(e, p)}>
                     {columns.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
                     {columns.quantity && <Table.Cell>
                       <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={this.handleChange} onClick={e => e.stopPropagation()} onBlur={this.saveColumn} />
