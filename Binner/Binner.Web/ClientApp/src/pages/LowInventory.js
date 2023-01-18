@@ -51,7 +51,7 @@ class LowInventory extends Component {
   }
 
   handlePartClick(e, part) {
-    this.props.history(`/inventory/${part.partNumber}`);
+    this.props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   }
   
   render() {

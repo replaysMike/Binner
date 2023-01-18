@@ -702,7 +702,7 @@ class Inventory extends Component {
 
   async handleRecentPartClick(e, part) {
     this.setState({ partNumber: part.partNumber, part });
-    this.props.history(`/inventory/${part.partNumber}`);
+    this.props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
     await this.fetchPart(part.partNumber);
   }
 
