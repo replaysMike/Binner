@@ -125,6 +125,10 @@ code {
     cursor: pointer;
 }
 
+.centered {
+    text-align: center;
+}
+
 .nav-item > .ui.mini.input {
     font-size: .7em !important;
     margin-top: 5px;

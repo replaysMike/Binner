@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container } from "reactstrap";
 import { Statistic, Segment, Icon } from "semantic-ui-react";
+import { fetchApi } from "../common/fetchApi";
 
 export function Home(props) {
   const [summary, setSummary] = useState({});
@@ -16,16 +16,14 @@ export function Home(props) {
       }
       Home.abortController = new AbortController();
       setLoading(true);
-      const response = await fetch(`part/summary`, {
-        signal: Home.abortController.signal
-      });
-      if (response.status === 200) {
-        const data = await response.json();
+      await fetchApi(`api/part/summary`, {
+        signal: Home.abortController.signal,
+      }).then((response) => {
+        const { data } = response;
         setSummary(data || {});
-      } else {
-        setSummary({});
-      }
-      setLoading(false);
+        setLoading(false);
+      });
+
       return async function cleanup() {
         await Home.abortController.abort();
       };
@@ -42,7 +40,7 @@ export function Home(props) {
 
   return (
     <div>
-      <h1>Welcome to Binner</h1>
+      <h1>Dashboard</h1>
       <p>Binner is an inventory management app for makers, hobbyists and professionals.</p>
       <Segment>
         <Statistic.Group widths="three">
@@ -111,7 +109,7 @@ export function Home(props) {
         </Statistic.Group>
       </Segment>
 
-      <h2>Dashboard</h2>
+      <h2>Your Overview</h2>
       <Segment inverted loading={loading} textAlign="center">
         <Statistic.Group widths="five">
           <Statistic color="red" inverted>
@@ -154,3 +152,4 @@ export function Home(props) {
     </div>
   );
 }
+Home.abortController = new AbortController();

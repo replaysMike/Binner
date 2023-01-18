@@ -1,5 +1,5 @@
 ﻿using Binner.Web.Configuration;
-using Binner.Web.ServiceHost;
+using Binner.Web.Middleware;
 using LightInject;
 using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;

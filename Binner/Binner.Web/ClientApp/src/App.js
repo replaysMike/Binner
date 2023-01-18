@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Route, Routes } from "react-router";
-import { Layout } from "./pages/Layout";
+import { Layout } from "./layouts/Layout";
 import { Home } from "./pages/Home";
 import Inventory from "./pages/Inventory";
 import Search from "./pages/Search";

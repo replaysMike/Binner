@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import _ from "underscore";
-import { Layout } from './Layout';
+import { Layout } from '../layouts/Layout';
 import {ErrorContext} from '../common/ErrorContext';
 import { DEFAULT_FONT } from '../common/Types';
 

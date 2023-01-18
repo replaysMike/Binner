@@ -4,7 +4,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Binner.Web.ServiceHost
+namespace Binner.Web.Middleware
 {
     /// <summary>
     /// Adds the application version to the response header
