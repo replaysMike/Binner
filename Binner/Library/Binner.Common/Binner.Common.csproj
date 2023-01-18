@@ -36,7 +36,7 @@
     <PackageReference Include="Binner.StorageProvider.Sqlite" Version="1.0.9" />
     <PackageReference Include="Binner.StorageProvider.SqlServer" Version="1.0.7" />
     <PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.10" />
-    <PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.7" />
+    <PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />
