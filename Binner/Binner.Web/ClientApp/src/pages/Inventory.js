@@ -24,6 +24,7 @@ class Inventory extends Component {
   constructor(props) {
     super(props);
     const { partNumber } = props.params;
+    this.maxRecentAddedParts = 10;
     this.searchDebounced = AwesomeDebouncePromise(this.fetchPartMetadata.bind(this), 500);
     this.scannerDebounced = AwesomeDebouncePromise(this.barcodeInput.bind(this), 100);
     this.barcodeBuffer = '';
@@ -253,10 +254,10 @@ class Inventory extends Component {
     Inventory.abortController = new AbortController();
     this.setState({ loadingPartMetadata: true });
     try {
-      const response = await fetch(`part?partNumber=${partNumber}`, {
+      const response = await fetchApi(`part?partNumber=${partNumber}`, {
         signal: Inventory.abortController.signal
       });
-      const data = await response.json();
+      const { data } = response;
       this.setState({ part: data, loadingPartMetadata: false });
     } catch (ex) {
       if (ex.name === 'AbortError') {
@@ -299,15 +300,15 @@ class Inventory extends Component {
 
   async fetchRecentRows() {
     this.setState({ loadingRecent: true });
-    const response = await fetch('part/list?orderBy=DateCreatedUtc&direction=Descending&results=10');
-    const data = await response.json();
+    const response = await fetchApi(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${this.maxRecentAddedParts}`);
+    const { data } = response;
     this.setState({ recentParts: data.items, loadingRecent: false });
   }
 
   async fetchPartTypes() {
     this.setState({ loadingPartTypes: true });
-    const response = await fetch('partType/list');
-    const data = await response.json();
+    const response = await fetchApi('partType/list');
+    const { data } = response;
     const partTypes = _.sortBy(data.map((item) => {
       return {
         key: item.partTypeId,
@@ -321,8 +322,8 @@ class Inventory extends Component {
   async fetchProjects() {
     const { part, viewPreferences } = this.state;
     this.setState({ loadingProjects: true });
-    const response = await fetch('project/list?orderBy=DateCreatedUtc&direction=Descending&results=999');
-    const data = await response.json();
+    const response = await fetchApi('project/list?orderBy=DateCreatedUtc&direction=Descending&results=99');
+    const { data } = response;
     const projects = _.sortBy(data.map((item) => {
       return {
         key: item.projectId,
@@ -498,7 +499,7 @@ class Inventory extends Component {
   printLabel(e) {
     e.preventDefault();
     const { part } = this.state;
-    fetch(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: 'POST' });
+    fetchApi(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: 'POST' });
   }
 
   setPartFromMetadata(metadataParts, suggestedPart) {

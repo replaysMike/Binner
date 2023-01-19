@@ -18,7 +18,7 @@ export function Search (props) {
   const [byValue, setByValue] = useState(getQueryVariable(window.location.search, "value") || "");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(10);
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
   const [changeTracker, setChangeTracker] = useState([]);
@@ -39,7 +39,6 @@ export function Search (props) {
       pageSizeParameter = pageSize;
 
     const response = await fetchApi(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSizeParameter}&page=${page}&by=${byParameter}&value=${byValueParameter}`);
-    console.log(response);
     const { data } = response;
     const pageOfData = data.items;
     const totalPages = data.totalItems / pageSizeParameter;

@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { createMedia } from "@artsy/fresnel";
-import { Table, Visibility, Input, Label, Button, Confirm, Modal, Header, Dropdown, Pagination } from 'semantic-ui-react';
+import { Table, Visibility, Input, Label, Button, Confirm, Modal, Header, Dropdown, Pagination, Popup } from 'semantic-ui-react';
 import _ from 'underscore';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -242,10 +242,20 @@ export default function PartsGrid(props) {
                   <Table.Row key={key} onClick={e => handleLoadPartClick(e, p)}>
                     {col.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
                     {col.quantity && <Table.Cell>
-                      <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} />
+                      <Popup 
+                        hideOnScroll
+                        position="bottom left"
+                        content={`The quantity of parts currently in stock.`}
+                        trigger={<Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} />}
+                      />                      
                     </Table.Cell>}
                     {col.lowstockthreshold && <Table.Cell>
-                      <Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} />
+                      <Popup 
+                        hideOnScroll
+                        position="bottom left"
+                        content={`Quantities below this value will indicate the part is low on stock.`}
+                        trigger={<Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} />}
+                      />                      
                     </Table.Cell>}
                     {col.manufacturerpartnumber && <Table.Cell>
                       {p.manufacturerPartNumber}
