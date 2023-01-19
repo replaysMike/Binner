@@ -4,7 +4,7 @@ import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown } fr
 import LineTemplate from "../components/LineTemplate";
 import { DEFAULT_FONT } from "../common/Types";
 import { HandleJsonResponse } from "../common/handleResponse.js";
-import { createImportSpecifier } from "typescript";
+import { fetchApi } from '../common/fetchApi';
 
 export class Settings extends Component {
   static displayName = Settings.name;

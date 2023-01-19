@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import _ from 'underscore';
 import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Icon } from 'semantic-ui-react';
 import { toast } from "react-toastify";
+import { fetchApi } from '../common/fetchApi';
 
 export class OrderImport extends Component {
   static displayName = OrderImport.name;
@@ -49,14 +50,13 @@ export class OrderImport extends Component {
       supplier: order.supplier,
       parts: _.where(results.parts, { selected: true })
     };
-    const response = await fetch('part/importparts', {
+    await fetchApi('part/importparts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(request),
     });
-    await response.json();
     // reset form
     this.setState({
       order: { orderId: '', supplier: order.supplier },

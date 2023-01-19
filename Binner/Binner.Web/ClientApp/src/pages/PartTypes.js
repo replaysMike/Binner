@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import _ from 'underscore';
 import { Table, Input, Button, Segment, Form, Icon, Dropdown } from 'semantic-ui-react';
+import { fetchApi } from '../common/fetchApi';
 
 export class PartTypes extends Component {
   static displayName = PartTypes.name;
@@ -46,8 +47,8 @@ export class PartTypes extends Component {
     const { partTypes } = this.state;
     this.setState({ loading: true });
     let endOfData = false;
-    const response = await fetch(`partType/list`);
-    const pageOfData = await response.json();
+    const response = await fetchApi(`partType/list`);
+    const pageOfData = response.data;
     if (pageOfData && pageOfData.length === 0)
       endOfData = true;
     let newData = [];
@@ -110,14 +111,14 @@ export class PartTypes extends Component {
       name: partType.name,
       parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
     };
-    const response = await fetch('partType', {
+    const response = await fetchApi('partType', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(request)
     });
-    if (response.status === 200) {
+    if (response.responseObject.status === 200) {
       // reset form
       this.setState({
         partType: {
@@ -132,7 +133,7 @@ export class PartTypes extends Component {
   }
 
   async onDelete(partType) {
-    await fetch('partType', {
+    await fetchApi('partType', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -163,15 +164,14 @@ export class PartTypes extends Component {
       name: partType.name,
       parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
     };
-    const response = await fetch('partType', {
+    const response = await fetchApi('partType', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(request)
     });
-    if (response.status === 200) {
-      await response.json();
+    if (response.responseObject.status === 200) {
       lastSavedPartTypeId = partType.partTypeId;
     }
     else

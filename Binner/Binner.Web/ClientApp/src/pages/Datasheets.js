@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Table, Form, Segment } from 'semantic-ui-react';
+import { fetchApi } from '../common/fetchApi';
 
 export class Datasheets extends Component {
   static displayName = Datasheets.name;
@@ -63,10 +64,10 @@ export class Datasheets extends Component {
     const { part } = this.state;
     this.setState({ loading: true });
     try {
-      const response = await fetch(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
+      const response = await fetchApi(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
         signal: Datasheets.abortController.signal
       });
-      const responseData = await response.json();
+      const responseData = response.data;
       if (responseData.requiresAuthentication) {
         // redirect for authentication
         window.open(responseData.redirectUrl, '_blank');
@@ -83,8 +84,8 @@ export class Datasheets extends Component {
   }
 
   async fetchPartTypes() {
-    const response = await fetch('partType/list');
-    const data = await response.json();
+    const response = await fetchApi('partType/list');
+    const { data } = response;
     const blankRow = { key: 999, value: null, text: '' };
     let partTypes = _.sortBy(data.map((item) => {
       return {

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import _ from 'underscore';
 import { Table, Visibility, Input, Label, Button, Segment, Form, TextArea, Icon } from 'semantic-ui-react';
 import { ProjectColors } from '../common/Types';
+import { fetchApi } from '../common/fetchApi';
 
 export class Projects extends Component {
   static displayName = Projects.name;
@@ -56,8 +57,8 @@ export class Projects extends Component {
     const { records, projects } = this.state;
     this.setState({ loading: true });
     let endOfData = false;
-    const response = await fetch(`project/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}`);
-    const pageOfData = await response.json();
+    const response = await fetchApi(`project/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}`);
+    const pageOfData = response.data;
     pageOfData.forEach(function (element) {
       element.loading = true;
     });
@@ -126,14 +127,14 @@ export class Projects extends Component {
       location: project.location,
       color: Number.parseInt(project.color) || 0
     };
-    const response = await fetch('project', {
+    const response = await fetchApi('project', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(request)
     });
-    if (response.status === 200) {
+    if (response.responseObject.status === 200) {
       // reset form
       this.setState({
         project: {
@@ -150,7 +151,7 @@ export class Projects extends Component {
   }
 
   async onDelete(project) {
-    await fetch('project', {
+    await fetchApi('project', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -183,15 +184,15 @@ export class Projects extends Component {
       location: project.location,
       color: project.color
     };
-    const response = await fetch('project', {
+    const response = await fetchApi('project', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(request)
     });
-    if (response.status === 200) {
-      const data = await response.json();
+    if (response.responseObject.status === 200) {
+      const { data } = response;
       lastSavedProjectId = data.projectId;
     }
     else
