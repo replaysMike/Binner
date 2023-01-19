@@ -5,6 +5,7 @@ import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Input, Button, Icon } from 'semantic-ui-react';
 import { getQueryVariable } from '../common/query';
 import PartsGrid from '../components/PartsGrid';
+import { fetchApi } from '../common/fetchApi';
 
 export function Search (props) {
   Search.abortController = new AbortController();
@@ -16,28 +17,32 @@ export function Search (props) {
   const [by, setBy] = useState(getQueryVariable(window.location.search, "by") || "");
   const [byValue, setByValue] = useState(getQueryVariable(window.location.search, "value") || "");
   const [page, setPage] = useState(1);
-  const [records, setRecords] = useState(50);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
-  const [noRemainingData, setNoRemainingData] = useState(false);
   const [changeTracker, setChangeTracker] = useState([]);
   const [lastSavedPartId, setLastSavedPartId] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState("");
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
 
-  const loadParts = async (page, reset = false, _by = null, _byValue = null) => {
+  const loadParts = async (page, reset = false, _by = null, _byValue = null, _pageSize = null) => {
     let byParameter = _by;
     let byValueParameter = _byValue;
+    let pageSizeParameter = _pageSize;
     if (byParameter === null)
       byParameter = by;
     if (byValueParameter === null)
       byValueParameter = byValue;
-    let endOfData = false;
-    const response = await fetch(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${records}&page=${page}&by=${byParameter}&value=${byValueParameter}`);
-    const pageOfData = await response.json();
-    if (pageOfData && pageOfData.length === 0)
-      endOfData = true;
+    if (pageSizeParameter === null)
+      pageSizeParameter = pageSize;
+
+    const response = await fetchApi(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSizeParameter}&page=${page}&by=${byParameter}&value=${byValueParameter}`);
+    console.log(response);
+    const { data } = response;
+    const pageOfData = data.items;
+    const totalPages = data.totalItems / pageSizeParameter;
     let newData = [];
     if (reset)
       newData = [...pageOfData];
@@ -45,7 +50,7 @@ export function Search (props) {
       newData = [...parts, ...pageOfData];
       setParts(newData);
       setPage(page);
-      setNoRemainingData(endOfData);
+      setTotalPages(totalPages);
       setLoading(false);
   };
 
@@ -68,12 +73,10 @@ export function Search (props) {
         const data = await response.json();
         setParts(data || []);
         setLoading(false);
-        setNoRemainingData(true);
       }
       else {
         setParts([]);
         setLoading(false);
-        setNoRemainingData(true);
       }
     } catch (ex) {
       if (ex.name === 'AbortError') {
@@ -147,8 +150,6 @@ export function Search (props) {
   };
 
   const handleNextPage = () => {
-    if (noRemainingData) return;
-
     const nextPage = page + 1;
     loadParts(nextPage);
   };
@@ -187,6 +188,11 @@ export function Search (props) {
     props.history(`/inventory`);
   };
 
+  const handlePageSizeChange = async (e, pageSize) => {
+    setPageSize(pageSize);
+    await loadParts(page, true, by, byValue, pageSize);
+  };
+
   return (
     <div>
       <h1>Inventory</h1>
@@ -194,7 +200,7 @@ export function Search (props) {
       <div style={{ paddingTop: '10px', marginBottom: '10px' }}>
         {by && <Button primary size='mini' onClick={removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
       </div>
-      <PartsGrid parts={parts} loading={loading} loadPage={handleNextPage} noRemainingData={noRemainingData} onPartClick={handlePartClick} name='partsGrid' />
+      <PartsGrid parts={parts} page={page} totalPages={totalPages} loading={loading} loadPage={handleNextPage} onPartClick={handlePartClick} onPageSizeChange={handlePageSizeChange} name='partsGrid' />
     </div>
   );
 }

@@ -156,6 +156,22 @@ code {
     font-size: 0.8em !important;
 }
 
+.ui.dropdown.small {
+    padding: 5px;
+    display: inline-block;
+    min-height: 35px;
+    min-width: 100px;
+}
+
+.ui.dropdown.small .text {
+    line-height: 1.5em;
+    padding-left: 10px;
+}
+
+.ui.dropdown.small.labeled {
+    margin-right: 5px;
+}
+
 /*undo bootstrap modal css*/
 .modal {
     height: unset !important;

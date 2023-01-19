@@ -369,18 +369,21 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext)
+        public async Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
             var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return _db.Parts
+                var totalItems = _db.Parts.Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
+                    .Count();
+                var parts = _db.Parts
                     .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
                     .OrderBy(request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToList();
+                return new PaginatedResponse<Part>(totalItems, request.Results, request.Page, parts);
             }
             finally
             {
@@ -388,19 +391,24 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
+        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
             var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return _db.Parts
+                var totalItems = _db.Parts
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst())?.ToString() == request.Value)
+                    .Count();
+                var parts = _db.Parts
                     .Where(x => x.UserId == userContext?.UserId)
                     .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst())?.ToString() == request.Value)
                     .OrderBy(request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToList();
+                return new PaginatedResponse<Part>(totalItems, request.Results, request.Page, parts);
             }
             finally
             {

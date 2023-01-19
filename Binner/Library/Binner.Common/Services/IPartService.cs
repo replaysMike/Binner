@@ -49,7 +49,7 @@ namespace Binner.Common.Services
         /// Get all parts
         /// </summary>
         /// <returns></returns>
-        Task<ICollection<Part>> GetPartsAsync(PaginatedRequest request);
+        Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request);
 
         /// <summary>
         /// Get parts based on a condition
@@ -125,6 +125,6 @@ namespace Binner.Common.Services
         /// Get count of all parts
         /// </summary>
         /// <returns></returns>
-        Task<ICollection<Part>> GetLowStockAsync(PaginatedRequest request);
+        Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request);
     }
 }
