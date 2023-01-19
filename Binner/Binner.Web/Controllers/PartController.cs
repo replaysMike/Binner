@@ -70,8 +70,8 @@ namespace Binner.Web.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetPartsAsync([FromQuery] PaginatedRequest request)
         {
-            var parts = await _partService.GetPartsAsync(request);
-            var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(parts);
+            var partsPage = await _partService.GetPartsAsync(request);
+            var partsResponse = Mapper.Map<ICollection<PartResponse>>(partsPage.Items);
             if (partsResponse.Any())
             {
                 var partTypes = await _partService.GetPartTypesAsync();
@@ -80,10 +80,10 @@ namespace Binner.Web.Controllers
                 {
                     part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
                     part.MountingType = ((MountingType)part.MountingTypeId).ToString();
-                    part.Keywords = string.Join(" ", parts.First(x => x.PartId == part.PartId).Keywords ?? new List<string>());
+                    part.Keywords = string.Join(" ", partsPage.Items.First(x => x.PartId == part.PartId).Keywords ?? new List<string>());
                 }
             }
-            return Ok(partsResponse);
+            return Ok(new PaginatedResponse<PartResponse>(partsPage.TotalItems, partsPage.PageSize, partsPage.PageNumber, partsResponse));
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace Binner.Web.Controllers
                 UniquePartsCount = uniquePartsCount,
                 PartsCount = partsCount,
                 PartsCost = partsCost,
-                LowStockCount = lowStockCount.Count,
+                LowStockCount = lowStockCount.Items.Count(),
                 ProjectsCount = projectsCount.Count,
             });
         }
@@ -310,8 +310,8 @@ namespace Binner.Web.Controllers
         [HttpGet("low")]
         public async Task<IActionResult> GetLowStockAsync([FromQuery] PaginatedRequest request)
         {
-            var lowStock = await _partService.GetLowStockAsync(request);
-            var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(lowStock);
+            var lowStockPage = await _partService.GetLowStockAsync(request);
+            var partsResponse = Mapper.Map<ICollection<PartResponse>>(lowStockPage.Items);
             if (partsResponse.Any())
             {
                 var partTypes = await _partService.GetPartTypesAsync();
@@ -323,7 +323,7 @@ namespace Binner.Web.Controllers
                     part.Keywords = partsResponse.First(x => x.PartId == part.PartId).Keywords;
                 }
             }
-            return Ok(partsResponse);
+            return Ok(new PaginatedResponse<PartResponse>(lowStockPage.TotalItems, lowStockPage.PageSize, lowStockPage.PageNumber, partsResponse));
         }
 
         /// <summary>

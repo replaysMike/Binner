@@ -7,6 +7,7 @@ import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader, Header, Confirm } from 'semantic-ui-react';
 import NumberPicker from '../components/NumberPicker';
 import { ProjectColors } from '../common/Types';
+import { fetchApi } from '../common/fetchApi';
 
 class Inventory extends Component {
   static displayName = Inventory.name;
@@ -300,7 +301,7 @@ class Inventory extends Component {
     this.setState({ loadingRecent: true });
     const response = await fetch('part/list?orderBy=DateCreatedUtc&direction=Descending&results=10');
     const data = await response.json();
-    this.setState({ recentParts: data, loadingRecent: false });
+    this.setState({ recentParts: data.items, loadingRecent: false });
   }
 
   async fetchPartTypes() {
