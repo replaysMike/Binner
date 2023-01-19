@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { useParams, useNavigate  } from "react-router-dom";
@@ -9,197 +9,145 @@ import NumberPicker from '../components/NumberPicker';
 import { ProjectColors } from '../common/Types';
 import { fetchApi } from '../common/fetchApi';
 
-class Inventory extends Component {
-  static displayName = Inventory.name;
-  static abortController = new AbortController();
-
-  static propTypes = {
-    partNumber: PropTypes.string
+export function Inventory(props) {
+  const maxRecentAddedParts = 10;
+  let barcodeBuffer = '';
+  const defaultViewPreferences = JSON.parse(localStorage.getItem('viewPreferences')) || {
+    helpDisabled:
+      false,
+    lastPartTypeId: 14, // IC
+    lastMountingTypeId: 1, // Through Hole
+    lastQuantity: 1,
+    lastProjectId: null,
+    lastLocation: '',
+    lastBinNumber: '',
+    lastBinNumber2: '',
+    lowStockThreshold: 10,
   };
 
-  static defaultProps = {
-    partNumber: ''
+  const [partNumber, setPartNumber] = useState(props.params.partNumber);
+  const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
+  const scannedPartsSerialized = JSON.parse(localStorage.getItem('scannedPartsSerialized')) || [];
+  const defaultPart = {
+    partId: 0,
+    partNumber,
+    allowPotentialDuplicate: false,
+    quantity: viewPreferences.lastQuantity + '',
+    lowStockThreshold: viewPreferences.lowStockThreshold + '',
+    partTypeId: viewPreferences.lastPartTypeId || 14,
+    mountingTypeId: viewPreferences.lastMountingTypeId || 1,
+    packageType: '',
+    keywords: '',
+    description: '',
+    datasheetUrl: '',
+    digiKeyPartNumber: '',
+    mouserPartNumber: '',
+    location: viewPreferences.lastLocation || '',
+    binNumber: viewPreferences.lastBinNumber || '',
+    binNumber2: viewPreferences.lastBinNumber2 || '',
+    cost: '',
+    lowestCostSupplier: '',
+    lowestCostSupplierUrl: '',
+    productUrl: '',
+    manufacturer: '',
+    manufacturerPartNumber: '',
+    imageUrl: '',
+    projectId: '',
+    supplier: '',
+    supplierPartNumber: ''
   };
+  const defaultMountingTypes = [
+    {
+      key: 999,
+      value: null,
+      text: '',
+    },
+    {
+      key: 1,
+      value: 1,
+      text: 'Through Hole',
+    },
+    {
+      key: 2,
+      value: 2,
+      text: 'Surface Mount',
+    },
+  ];
+  const [parts, setParts] = useState([]);
+  const [selectedPart, setSelectedPart] = useState(null);
+  const [recentParts, setRecentParts] = useState([]);
+  const [metadataParts, setMetadataParts] = useState([]);
+  const [duplicateParts, setDuplicateParts] = useState([]);
+  const [scannedParts, setScannedParts] = useState(scannedPartsSerialized);
+  const [highlightScannedPart, setHighlightScannedPart] = useState(null);
+  const [partModalOpen, setPartModalOpen] = useState(false);
+  const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(false);
+  const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
+  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState('Are you sure you want to delete this part?');
+  const [part, setPart] = useState(defaultPart);
+  const [partTypes, setPartTypes] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [mountingTypes, setMountingTypes] = useState(defaultMountingTypes);
+  const [loadingPartMetadata, setLoadingPartMetadata] = useState(true);
+  const [loadingPartTypes, setLoadingPartTypes] = useState(true);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [loadingRecent, setLoadingRecent] = useState(true);
+  const [saveMessage, setSaveMessage] = useState('');
+  const [isKeyboardListening, setIsKeyboardListening] = useState(true);
+  const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
+  const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
 
-  constructor(props) {
-    super(props);
-    const { partNumber } = props.params;
-    this.maxRecentAddedParts = 10;
-    this.searchDebounced = AwesomeDebouncePromise(this.fetchPartMetadata.bind(this), 500);
-    this.scannerDebounced = AwesomeDebouncePromise(this.barcodeInput.bind(this), 100);
-    this.barcodeBuffer = '';
-    const viewPreferences = JSON.parse(localStorage.getItem('viewPreferences')) || {
-      helpDisabled:
-        false,
-      lastPartTypeId: 14, // IC
-      lastMountingTypeId: 1, // Through Hole
-      lastQuantity: 1,
-      lastProjectId: null,
-      lastLocation: '',
-      lastBinNumber: '',
-      lastBinNumber2: '',
-      lowStockThreshold: 10,
-    };
-
-    const scannedPartsSerialized = JSON.parse(localStorage.getItem('scannedPartsSerialized')) || [];
-    this.state = {
-      partNumber,
-      recentParts: [],
-      metadataParts: [],
-      duplicateParts: [],
-      scannedParts: scannedPartsSerialized,
-      highlightScannedPart: null,
-      viewPreferences,
-      partModalOpen: false,
-      duplicatePartModalOpen: false,
-      confirmDeleteIsOpen: false,
-      confirmPartDeleteContent: 'Are you sure you want to delete this part?',
-      part: {
-        partId: 0,
-        partNumber,
-        allowPotentialDuplicate: false,
-        quantity: viewPreferences.lastQuantity + '',
-        lowStockThreshold: viewPreferences.lowStockThreshold + '',
-        partTypeId: viewPreferences.lastPartTypeId || 14,
-        mountingTypeId: viewPreferences.lastMountingTypeId || 1,
-        packageType: '',
-        keywords: '',
-        description: '',
-        datasheetUrl: '',
-        digiKeyPartNumber: '',
-        mouserPartNumber: '',
-        location: viewPreferences.lastLocation || '',
-        binNumber: viewPreferences.lastBinNumber || '',
-        binNumber2: viewPreferences.lastBinNumber2 || '',
-        cost: '',
-        lowestCostSupplier: '',
-        lowestCostSupplierUrl: '',
-        productUrl: '',
-        manufacturer: '',
-        manufacturerPartNumber: '',
-        imageUrl: '',
-        projectId: '',
-        supplier: '',
-        supplierPartNumber: ''
-      },
-      partTypes: [],
-      projects: [],
-      mountingTypes: [
-        {
-          key: 999,
-          value: null,
-          text: '',
-        },
-        {
-          key: 1,
-          value: 1,
-          text: 'Through Hole',
-        },
-        {
-          key: 2,
-          value: 2,
-          text: 'Surface Mount',
-        },
-      ],
-      loadingPartMetadata: false,
-      loadingPartTypes: true,
-      loadingProjects: true,
-      loadingRecent: true,
-      saveMessage: '',
-      isKeyboardListening: true,
-      showBarcodeBeingScanned: false,
-      bulkScanIsOpen: false
-    };
-
-    this.barcodeInput = this.barcodeInput.bind(this);
-    this.onKeydown = this.onKeydown.bind(this);
-    this.enableKeyboardListening = this.enableKeyboardListening.bind(this);
-    this.disableKeyboardListening = this.disableKeyboardListening.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleRecentPartClick = this.handleRecentPartClick.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
-    this.onSubmitScannedParts = this.onSubmitScannedParts.bind(this);
-    this.handleForceSubmit = this.handleForceSubmit.bind(this);
-    this.updateNumberPicker = this.updateNumberPicker.bind(this);
-    this.disableHelp = this.disableHelp.bind(this);
-    this.handleChooseAlternatePart = this.handleChooseAlternatePart.bind(this);
-    this.handleOpenModal = this.handleOpenModal.bind(this);
-    this.handleVisitLink = this.handleVisitLink.bind(this);
-    this.handlePartModalClose = this.handlePartModalClose.bind(this);
-    this.handleDuplicatePartModalClose = this.handleDuplicatePartModalClose.bind(this);
-    this.handleHighlightAndVisit = this.handleHighlightAndVisit.bind(this);
-    this.printLabel = this.printLabel.bind(this);
-    this.resetForm = this.resetForm.bind(this);
-    this.handleBulkBarcodeScan = this.handleBulkBarcodeScan.bind(this);
-    this.handleBulkScanClose = this.handleBulkScanClose.bind(this);
-    this.renderScannedParts = this.renderScannedParts.bind(this);
-    this.handleScannedPartChange = this.handleScannedPartChange.bind(this);
-    this.deleteScannedPart = this.deleteScannedPart.bind(this);
-    this.handleDeletePart = this.handleDeletePart.bind(this);
-    this.confirmDeleteOpen = this.confirmDeleteOpen.bind(this);
-    this.confirmDeleteClose = this.confirmDeleteClose.bind(this);
-    this.formatField = this.formatField.bind(this);
-  }
-
-  async componentDidMount() {
-    await this.fetchPartTypes();
-    await this.fetchProjects();
-    await this.fetchRecentRows();
-    if (this.state.partNumber) await this.fetchPart(this.state.partNumber);
-    this.addKeyboardHandler();
-  }
-
-  componentWillUnmount() {
-    this.removeKeyboardHandler();
-  }
-
-  addKeyboardHandler() {
-    if (document) document.addEventListener('keydown', this.onKeydown);
-  }
-
-  removeKeyboardHandler() {
-    if (document) document.removeEventListener('keydown');
-  }
-
-  enableKeyboardListening() {
-    this.setState({ isKeyboardListening: true });
-  }
-
-  disableKeyboardListening() {
-    this.setState({ isKeyboardListening: false });
-  }
-
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    // if the path changes do some necessary housekeeping
-    if (nextProps.location !== this.props.location) {
-      // reset the form if the URL has changed
-      this.resetForm();
-    }
-  }
-
-  // listens for document keydown events, used for barcode scanner input
-  onKeydown(e) {
-    const { isKeyboardListening } = this.state;
-    if (isKeyboardListening) {
-      let char = String.fromCharCode((96 <= e.keyCode && e.keyCode <= 105) ? e.keyCode - 48 : e.keyCode);
-      // map proper value when shift is used
-      if (e.shiftKey)
-        char = e.key;
-      // map numlock extra keys
-      if ((e.keyCode >= 186 && e.keyCode <= 192) || (e.keyCode >= 219 && e.keyCode <= 222))
-        char = e.key;
-      // console.log('key', e, char);
-      if (e.keyCode === 13 || e.keyCode === 32 || e.keyCode === 9 || (e.keyCode >= 48 && e.keyCode <= 90) || (e.keyCode >= 107 && e.keyCode <= 111) || (e.keyCode >= 186 && e.keyCode <= 222)) {
-        this.barcodeBuffer += char;
-        this.scannerDebounced(e, this.barcodeBuffer);
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchPartTypes();
+      await fetchProjects();
+      await fetchRecentRows();
+      if (partNumber) {
+        await fetchPart(partNumber);
+      } else {
+        setLoadingPartMetadata(false);
       }
+      addKeyboardHandler();
+    };
+    fetchData().catch(console.error);
+    return () => removeKeyboardHandler();
+  }, [partNumber]); //test
+
+  const fetchPartMetadata = async (input) => {
+    Inventory.abortController.abort(); // Cancel the previous request
+    Inventory.abortController = new AbortController();
+    setLoadingPartMetadata(true);
+    try {
+      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
+        signal: Inventory.abortController.signal
+      });
+      const responseData = response.data;
+      if (responseData.requiresAuthentication) {
+        // redirect for authentication
+        window.open(responseData.redirectUrl, '_blank');
+        return;
+      }
+      const data = responseData.response;
+      let metadataParts = [];
+      if (data && data.parts && data.parts.length > 0) {
+        metadataParts = data.parts;
+        const suggestedPart = data.parts[0];      
+        setPartFromMetadata(metadataParts, suggestedPart);
+      }
+      setMetadataParts(metadataParts);
+      setLoadingPartMetadata(false);
+    } catch (ex) {
+      console.error('Exception', ex);
+      if (ex.name === 'AbortError') {
+        return; // Continuation logic has already been skipped, so return normally
+      }
+      throw ex;
     }
-  }
+  };
 
   // debounced handler for processing barcode scanner input
-  barcodeInput(e, value) {
-    const { bulkScanIsOpen, scannedParts } = this.state;
-    this.barcodeBuffer = '';
+  const barcodeInput = (e, value) => {
+    barcodeBuffer = '';
     if (value.indexOf(String.fromCharCode(13), value.length - 2) >= 0) {
       const cleanPartNumber = value.replace(String.fromCharCode(13), '').trim();
       // if we have an ok string lets search for the part
@@ -218,24 +166,72 @@ class Inventory extends Component {
           if (existingPartNumber) {
             existingPartNumber.quantity++;
             localStorage.setItem('scannedPartsSerialized', JSON.stringify(scannedParts));
-            this.setState({ showBarcodeBeingScanned: false, highlightScannedPart: existingPartNumber, scannedParts });
+            setShowBarcodeBeingScanned(false);
+            setHighlightScannedPart(existingPartNumber);
+            setScannedParts(scannedParts);
           }
           else {
             const newScannedParts = [...scannedParts, scannedPart];
             localStorage.setItem('scannedPartsSerialized', JSON.stringify(newScannedParts));
-            this.setState({ showBarcodeBeingScanned: false, highlightScannedPart: scannedPart, scannedParts: newScannedParts });
+            setShowBarcodeBeingScanned(false);
+            setHighlightScannedPart(scannedPart);
+            setScannedParts(newScannedParts);
           }
         } else {
           // scan single part
-          this.handleChange(e, { name: 'partNumber', value: cleanPartNumber });
-          this.setState({ showBarcodeBeingScanned: false });
+          handleChange(e, { name: 'partNumber', value: cleanPartNumber });
+          setShowBarcodeBeingScanned(false);
         }
       }
     }
+  };
+
+  const scannerDebounced = AwesomeDebouncePromise(barcodeInput, 100);
+  const searchDebounced = AwesomeDebouncePromise(fetchPartMetadata, 500);
+
+  const addKeyboardHandler = () => {
+    if (document) document.addEventListener('keydown', onKeydown);
+  };
+
+  const removeKeyboardHandler = () => {
+    if (document) document.removeEventListener('keydown');
   }
 
-  formatField(e) {
-    const { part } = this.state;
+  const enableKeyboardListening = () => {
+    setIsKeyboardListening(true);
+  };
+
+  const disableKeyboardListening = () => {
+    setIsKeyboardListening(false);
+  }
+
+  /*UNSAFE_componentWillReceiveProps(nextProps) {
+    // if the path changes do some necessary housekeeping
+    if (nextProps.location !== props.location) {
+      // reset the form if the URL has changed
+      resetForm();
+    }
+  }*/
+
+  // listens for document keydown events, used for barcode scanner input
+  const onKeydown = (e) => {
+    if (isKeyboardListening) {
+      let char = String.fromCharCode((96 <= e.keyCode && e.keyCode <= 105) ? e.keyCode - 48 : e.keyCode);
+      // map proper value when shift is used
+      if (e.shiftKey)
+        char = e.key;
+      // map numlock extra keys
+      if ((e.keyCode >= 186 && e.keyCode <= 192) || (e.keyCode >= 219 && e.keyCode <= 222))
+        char = e.key;
+      // console.log('key', e, char);
+      if (e.keyCode === 13 || e.keyCode === 32 || e.keyCode === 9 || (e.keyCode >= 48 && e.keyCode <= 90) || (e.keyCode >= 107 && e.keyCode <= 111) || (e.keyCode >= 186 && e.keyCode <= 222)) {
+        barcodeBuffer += char;
+        scannerDebounced(e, barcodeBuffer);
+      }
+    }
+  };
+
+  const formatField = (e) => {
     switch(e.target.name){
       default:
         break;
@@ -245,68 +241,40 @@ class Inventory extends Component {
           part.cost = Number(0).toFixed(2);
         break;
     }
-    this.enableKeyboardListening(e);
-    this.setState({ part });
-  }
+    enableKeyboardListening(e);
+    setPart(part);
+  };
 
-  async fetchPart(partNumber) {
+  const fetchPart = async (partNumber) => {
     Inventory.abortController.abort(); // Cancel the previous request
     Inventory.abortController = new AbortController();
-    this.setState({ loadingPartMetadata: true });
+    setLoadingPartMetadata(true);
     try {
       const response = await fetchApi(`part?partNumber=${partNumber}`, {
         signal: Inventory.abortController.signal
       });
       const { data } = response;
-      this.setState({ part: data, loadingPartMetadata: false });
+      setPart(data);
     } catch (ex) {
+      console.error('Exception', ex);
       if (ex.name === 'AbortError') {
         return; // Continuation logic has already been skipped, so return normally
       }
       throw ex;
     }
-  }
+    setLoadingPartMetadata(false);
+  };
 
-  async fetchPartMetadata(input) {
-    Inventory.abortController.abort(); // Cancel the previous request
-    Inventory.abortController = new AbortController();
-    const { part } = this.state;
-    this.setState({ loadingPartMetadata: true });
-    try {
-      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
-        signal: Inventory.abortController.signal
-      });
-      const responseData = response.data;
-      if (responseData.requiresAuthentication) {
-        // redirect for authentication
-        window.open(responseData.redirectUrl, '_blank');
-        return;
-      }
-      const data = responseData.response;
-      let metadataParts = [];
-      if (data && data.parts && data.parts.length > 0) {
-        metadataParts = data.parts;
-        const suggestedPart = data.parts[0];
-        this.setPartFromMetadata(metadataParts, suggestedPart);
-      }
-      this.setState({ metadataParts, loadingPartMetadata: false });
-    } catch (ex) {
-      if (ex.name === 'AbortError') {
-        return; // Continuation logic has already been skipped, so return normally
-      }
-      throw ex;
-    }
-  }
-
-  async fetchRecentRows() {
-    this.setState({ loadingRecent: true });
-    const response = await fetchApi(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${this.maxRecentAddedParts}`);
+  const fetchRecentRows = async () => {
+    setLoadingRecent(true);
+    const response = await fetchApi(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${maxRecentAddedParts}`);
     const { data } = response;
-    this.setState({ recentParts: data.items, loadingRecent: false });
-  }
+    setRecentParts(data.items);
+    setLoadingRecent(false);
+  };
 
-  async fetchPartTypes() {
-    this.setState({ loadingPartTypes: true });
+  const fetchPartTypes = async () => {
+    setLoadingPartTypes(true);
     const response = await fetchApi('partType/list');
     const { data } = response;
     const partTypes = _.sortBy(data.map((item) => {
@@ -316,12 +284,12 @@ class Inventory extends Component {
         text: item.name,
       };
     }), 'text');
-    this.setState({ partTypes, loadingPartTypes: false });
-  }
+    setPartTypes(partTypes);
+    setLoadingPartTypes(false);
+  };
 
-  async fetchProjects() {
-    const { part, viewPreferences } = this.state;
-    this.setState({ loadingProjects: true });
+  const fetchProjects = async () => {
+    setLoadingProjects(true);
     const response = await fetchApi('project/list?orderBy=DateCreatedUtc&direction=Descending&results=99');
     const { data } = response;
     const projects = _.sortBy(data.map((item) => {
@@ -334,12 +302,13 @@ class Inventory extends Component {
     }), 'text');
     // ensure that the current part's projectId can't be set to an invalid project
     if (!_.find(projects, p => p.value === viewPreferences.lastProjectId)) {
-      part.projectId = '';
+      setPart({...part, projectId: ''});
     }
-    this.setState({ projects, part, loadingProjects: false });
-  }
+    setLoadingProjects(false);
+    setProjects(projects);
+  };
 
-  getMountingTypeById(mountingTypeId) {
+  const getMountingTypeById = (mountingTypeId) => {
     switch (mountingTypeId) {
       default:
       case 1:
@@ -347,30 +316,24 @@ class Inventory extends Component {
       case 2:
         return 'surface mount';
     }
-  }
+  };
 
   /**
    * Force a save of a possible duplicate part
    * @param {any} e
    */
-  handleForceSubmit(e) {
-    const { part } = this.state;
-    part.allowPotentialDuplicate = true;
-    this.setState({
-      duplicatePartModalOpen: false,
-      part
-    });
-    this.onSubmit(e);
-  }
+  const handleForceSubmit = (e) => {
+    setDuplicatePartModalOpen(false);
+    setPart({...part, allowPotentialDuplicate: true });
+    onSubmit(e);
+  };
 
   /**
    * Save the part
    * 
    * @param {any} e
    */
-  async onSubmit(e) {
-    const { part } = this.state;
-    
+  const onSubmit = async (e) => {   
     const isExisting = part.partId > 0;
 
     const request = {...part};
@@ -394,89 +357,60 @@ class Inventory extends Component {
     if (response.status === 409) {
       // possible duplicate
       const data = await response.json();
-      this.setState({ duplicateParts: data.parts, duplicatePartModalOpen: true });
+      setDuplicateParts(data.parts);
+      setDuplicatePartModalOpen(true);
     } else if (response.status === 200) {
       // reset form if it was a new part
       if (isExisting) {
         saveMessage = `Saved part ${request.partNumber}!`;
-        this.setState({ saveMessage });
+        setSaveMessage(saveMessage);
       } else {
         saveMessage = `Added part ${request.partNumber}!`;
-        this.resetForm(saveMessage);
+        resetForm(saveMessage);
       }
       // refresh recent parts list
-      await this.fetchRecentRows();
+      await fetchRecentRows();
     } else if (response.status === 400){
       // other error (invalid part type, mounting type, etc.)
       saveMessage = `Failed to update, check Part Type and Mounting Type`;
-      this.setState({ saveMessage });
+      setSaveMessage(saveMessage);
     }
 
-  }
+  };
 
-  resetForm(saveMessage = '') {
-    const { viewPreferences } = this.state;
-    this.setState({
-      saveMessage,
-      metadataParts: [],
-      duplicateParts: [],
-      part: {
-        allowPotentialDuplicate: false,
-        partId: 0,
-        partNumber: '',
-        quantity: viewPreferences.lastQuantity + '',
-        lowStockThreshold: viewPreferences.lowStockThreshold + '',
-        partTypeId: viewPreferences.lastPartTypeId,
-        mountingTypeId: viewPreferences.lastMountingTypeId,
-        packageType: '',
-        keywords: '',
-        description: '',
-        datasheetUrl: '',
-        digiKeyPartNumber: '',
-        mouserPartNumber: '',
-        location: viewPreferences.lastLocation,
-        binNumber: viewPreferences.lastBinNumber,
-        binNumber2: viewPreferences.lastBinNumber2,
-        cost: '',
-        lowestCostSupplier: '',
-        lowestCostSupplierUrl: '',
-        productUrl: '',
-        manufacturer: '',
-        manufacturerPartNumber: '',
-        imageUrl: '',
-        projectId: viewPreferences.lastProjectId,
-        supplier: '',
-        supplierPartNumber: '',
-      },
-    });
-  }
+  const resetForm = (saveMessage = '') => {
+    setSaveMessage(saveMessage);
+    setMetadataParts([]);
+    setDuplicateParts([]);
+    setPart(defaultPart);
+    setLoadingPartMetadata(false);
+    setLoadingPartTypes(false);
+    setLoadingProjects(false);
+  };
 
-  updateNumberPicker(e) {
-    const { part, viewPreferences } = this.state;
-    part.quantity = e.value + '';
+  const updateNumberPicker = (e) => {
     localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastQuantity: e.value }));
-    this.setState({ part });
-  }
+    setPart({...part, quantity: e.value.toString()});
+  };
 
-  handleChange(e, control) {
+  const handleChange= (e, control) => {
     e.preventDefault();
     e.stopPropagation();
-    const { part, viewPreferences } = this.state;
     part[control.name] = control.value;
     switch (control.name) {
       case 'partNumber':
         if (part.partNumber && part.partNumber.length > 0)
-          this.searchDebounced(part.partNumber);
+          searchDebounced(part.partNumber);
         break;
       case 'partTypeId':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastPartTypeId: control.value }));
         if (part.partNumber && part.partNumber.length > 0)
-          this.searchDebounced(part.partNumber);
+          searchDebounced(part.partNumber);
         break;
       case 'mountingTypeId':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastMountingTypeId: control.value }));
         if (part.partNumber && part.partNumber.length > 0)
-          this.searchDebounced(part.partNumber);
+          searchDebounced(part.partNumber);
         break;
       case 'lowStockThreshold':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lowStockThreshold: control.value }));
@@ -496,17 +430,16 @@ class Inventory extends Component {
       default:
           break;
     }
-    this.setState({ part });
-  }
+    setPart(part);
+  };
 
-  printLabel(e) {
+  const printLabel = async (e) => {
     e.preventDefault();
-    const { part } = this.state;
-    fetchApi(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: 'POST' });
-  }
+    await fetchApi(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: 'POST' });
+  };
 
-  setPartFromMetadata(metadataParts, suggestedPart) {
-    const { part } = this.state;
+  const setPartFromMetadata = (metadataParts, suggestedPart) => {
+    const entity = {...part};
     const mappedPart = {
       partNumber: suggestedPart.partNumber,
       partTypeId: suggestedPart.partTypeId,
@@ -524,73 +457,72 @@ class Inventory extends Component {
       imageUrl: suggestedPart.imageUrl,
       status: suggestedPart.status,
     };
-    part.supplier = mappedPart.supplier;
-    part.supplierPartNumber = mappedPart.supplierPartNumber;
+    entity.supplier = mappedPart.supplier;
+    entity.supplierPartNumber = mappedPart.supplierPartNumber;
     if (mappedPart.partTypeId)
-      part.partTypeId = mappedPart.partTypeId || '';
+    entity.partTypeId = mappedPart.partTypeId || '';
     if (mappedPart.mountingTypeId)
-      part.mountingTypeId = mappedPart.mountingTypeId || '';
-    part.packageType = mappedPart.packageType || '';
-    part.keywords = mappedPart.keywords || '';
-    part.description = mappedPart.description || '';
-    part.manufacturer = mappedPart.manufacturer || '';
-    part.manufacturerPartNumber = mappedPart.manufacturerPartNumber || '';
-    part.productUrl = mappedPart.productUrl || '';
-    part.imageUrl = mappedPart.imageUrl || '';
+    entity.mountingTypeId = mappedPart.mountingTypeId || '';
+    entity.packageType = mappedPart.packageType || '';
+    entity.keywords = mappedPart.keywords || '';
+    entity.description = mappedPart.description || '';
+    entity.manufacturer = mappedPart.manufacturer || '';
+    entity.manufacturerPartNumber = mappedPart.manufacturerPartNumber || '';
+    entity.productUrl = mappedPart.productUrl || '';
+    entity.imageUrl = mappedPart.imageUrl || '';
     if (mappedPart.datasheetUrls.length > 0) {
-      part.datasheetUrl = _.first(mappedPart.datasheetUrls) || '';
+      entity.datasheetUrl = _.first(mappedPart.datasheetUrls) || '';
     }
     if (mappedPart.supplier === 'DigiKey') {
-      part.digiKeyPartNumber = mappedPart.supplierPartNumber || '';
+      entity.digiKeyPartNumber = mappedPart.supplierPartNumber || '';
       const searchResult = _.find(metadataParts, e => { return e !== undefined && e.supplier === 'Mouser' && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber });
       if (searchResult) {
-        part.mouserPartNumber = searchResult.supplierPartNumber;
-        if (part.packageType.length === 0) part.packageType = searchResult.packageType;
-        if (part.datasheetUrl.length === 0) part.datasheetUrl = _.first(searchResult.datasheetUrls) || '';
-        if (part.imageUrl.length === 0) part.imageUrl = searchResult.imageUrl;
+        entity.mouserPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || '';
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
       }
     }
     if (mappedPart.supplier === 'Mouser') {
-      part.mouserPartNumber = mappedPart.supplierPartNumber || '';
+      entity.mouserPartNumber = mappedPart.supplierPartNumber || '';
       const searchResult = _.find(metadataParts, e => { return e !== undefined && e.supplier === 'DigiKey' && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber });
       if (searchResult) {
-        part.digiKeyPartNumber = searchResult.supplierPartNumber;
-        if (part.packageType.length === 0) part.packageType = searchResult.packageType;
-        if (part.datasheetUrl.length === 0) part.datasheetUrl = _.first(searchResult.datasheetUrls) || '';
-        if (part.imageUrl.length === 0) part.imageUrl = searchResult.imageUrl;
+        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || '';
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
       }
     }
 
     const lowestCostPart = _.first(_.sortBy(_.filter(metadataParts, (i) => i.cost > 0), 'cost'));
 
-    part.cost = lowestCostPart.cost;
-    part.lowestCostSupplier = lowestCostPart.supplier;
-    part.lowestCostSupplierUrl = lowestCostPart.productUrl;
-    this.setState({ part });
-  }
+    entity.cost = lowestCostPart.cost;
+    entity.lowestCostSupplier = lowestCostPart.supplier;
+    entity.lowestCostSupplierUrl = lowestCostPart.productUrl;
+    setPart(entity);
+  };
 
-  handleChooseAlternatePart(e, part) {
+  const handleChooseAlternatePart = (e, part) => {
     e.preventDefault();
-    const { metadataParts } = this.state;
-    this.setPartFromMetadata(metadataParts, part);
-    this.setState({ partModalOpen: false });
-  }
+    setPartFromMetadata(metadataParts, part);
+    setPartModalOpen(false);
+  };
 
-  handleOpenModal(e) {
+  const handleOpenModal = (e) => {
     e.preventDefault();
-    this.setState({ partModalOpen: true });
-  }
+    setPartModalOpen(true);
+  };
 
-  handleBulkBarcodeScan(e) {
+  const handleBulkBarcodeScan = (e) => {
     e.preventDefault();
-    this.setState({ bulkScanIsOpen: true });
-  }
+    setBulkScanIsOpen(true);
+  };
 
-  handleBulkScanClose() {
-    this.setState({ bulkScanIsOpen: false });
-  }
+  const handleBulkScanClose = () => {
+    setBulkScanIsOpen(false);
+  };
 
-  renderAllMatchingParts(part, metadataParts) {
+  const renderAllMatchingParts = (part, metadataParts) => {
     return (
       <Table compact celled selectable size='small' className='partstable'>
         <Table.Header>
@@ -609,7 +541,7 @@ class Inventory extends Component {
         </Table.Header>
         <Table.Body>
           {metadataParts.map((p, index) =>
-            <Table.Row key={index} onClick={e => this.handleChooseAlternatePart(e, p)}>
+            <Table.Row key={index} onClick={e => handleChooseAlternatePart(e, p)}>
               <Table.Cell>
                 {part.supplier === p.supplier && part.supplierPartNumber === p.supplierPartNumber ?
                   <Label ribbon>{p.manufacturerPartNumber}</Label>
@@ -620,21 +552,20 @@ class Inventory extends Component {
               <Table.Cell>{p.supplier}</Table.Cell>
               <Table.Cell>{p.supplierPartNumber}</Table.Cell>
               <Table.Cell>{p.packageType}</Table.Cell>
-              <Table.Cell>{this.getMountingTypeById(p.mountingTypeId)}</Table.Cell>
+              <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
               <Table.Cell>{p.cost}</Table.Cell>
               <Table.Cell><Image src={p.imageUrl} size='mini'></Image></Table.Cell>
               <Table.Cell>{p.datasheetUrls.map((d, dindex) =>
-                d && d.length > 0 && <Button key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</Button>
+                d && d.length > 0 && <Button key={dindex} onClick={e => handleHighlightAndVisit(e, d)}>View Datasheet</Button>
               )}</Table.Cell>
             </Table.Row>
           )}
         </Table.Body>
       </Table>
     );
-  }
+  };
 
-  renderDuplicateParts() {
-    const { duplicateParts } = this.state;
+  const renderDuplicateParts = () => {
     return (
       <Table compact celled selectable size='small' className='partstable'>
         <Table.Header>
@@ -663,32 +594,32 @@ class Inventory extends Component {
               <Table.Cell>{p.location}</Table.Cell>
               <Table.Cell>{p.binNumber}</Table.Cell>
               <Table.Cell>{p.binNumber2}</Table.Cell>
-              <Table.Cell>{this.getMountingTypeById(p.mountingTypeId)}</Table.Cell>
+              <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
               <Table.Cell><Image src={p.imageUrl} size='mini'></Image></Table.Cell>
-              <Table.Cell><Button onClick={e => this.handleHighlightAndVisit(e, p.datasheetUrl)}>View Datasheet</Button></Table.Cell>
+              <Table.Cell><Button onClick={e => handleHighlightAndVisit(e, p.datasheetUrl)}>View Datasheet</Button></Table.Cell>
             </Table.Row>
           )}
         </Table.Body>
       </Table>
     );
-  }
+  };
 
-  handlePartModalClose() {
-    this.setState({ partModalOpen: false });
-  }
+  const handlePartModalClose = () => {
+    setPartModalOpen(false);
+  };
 
-  handleDuplicatePartModalClose() {
-    this.setState({ duplicatePartModalOpen: false });
-  }
+  const handleDuplicatePartModalClose = () => {
+    setDuplicatePartModalOpen(false);
+  };
 
-  disableHelp() {
-    // const { viewPreferences } = this.state;
+  const disableHelp = () => {
+    // const { viewPreferences } = state;
     // const val = { ...viewPreferences, helpDisabled: true };
     // localStorage.setItem('viewPreferences', JSON.stringify(val));
-  }
+  };
 
-  handleHighlightAndVisit(e, url) {
-    this.handleVisitLink(e, url);
+  const handleHighlightAndVisit = (e, url) => {
+    handleVisitLink(e, url);
     // this handles highlighting of parent row
     const parentTable = ReactDOM.findDOMNode(e.target).parentNode.parentNode.parentNode;
     const targetNode = ReactDOM.findDOMNode(e.target).parentNode.parentNode;
@@ -697,22 +628,22 @@ class Inventory extends Component {
       if (row.classList.contains('positive')) row.classList.remove('positive');
     }
     targetNode.classList.toggle('positive');
-  }
+  };
 
-  handleVisitLink(e, url) {
+  const handleVisitLink = (e, url) => {
     e.preventDefault();
     e.stopPropagation();
     window.open(url, '_blank');
-  }
+  };
 
-  async handleRecentPartClick(e, part) {
-    this.setState({ partNumber: part.partNumber, part });
-    this.props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
-    await this.fetchPart(part.partNumber);
-  }
+  const handleRecentPartClick = async (e, part) => {
+    setPartNumber(part.partNumber);
+    setPart(part);
+    props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
+    await fetchPart(part.partNumber);
+  };
 
-  async onSubmitScannedParts(e) {
-    const { scannedParts } = this.state;
+  const onSubmitScannedParts = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     const request = {
@@ -726,30 +657,28 @@ class Inventory extends Component {
       body: JSON.stringify(request)
     });
     localStorage.setItem('scannedPartsSerialized', JSON.stringify([]));
-    this.setState({ bulkScanIsOpen: false, scannedParts: [] });
-  }
+    setBulkScanIsOpen(false);
+    setScannedParts([]);
+  };
 
-  handleScannedPartChange(e, control, scannedPart) {
+  const handleScannedPartChange = (e, control, scannedPart) => {
     e.preventDefault();
     e.stopPropagation();
-    const { scannedParts } = this.state;
     scannedPart[control.name] = control.value;
-    this.setState({ scannedParts });
-  }
+    setScannedParts(scannedParts);
+  };
 
-  deleteScannedPart(e, scannedPart) {
+  const deleteScannedPart = (e, scannedPart) => {
     e.preventDefault();
     e.stopPropagation();
-    const { scannedParts } = this.state;
     const scannedPartsDeleted = _.without(scannedParts, _.findWhere(scannedParts, { partNumber: scannedPart.partNumber }));
     localStorage.setItem('scannedPartsSerialized', JSON.stringify(scannedPartsDeleted));
-    this.setState({ scannedParts: scannedPartsDeleted });
-  }
+    setScannedParts(scannedPartsDeleted);
+  };
 
-  async handleDeletePart(e) {
+  const handleDeletePart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const { selectedPart, parts } = this.state;
     await fetchApi(`part`, {
       method: 'DELETE',
       headers: {
@@ -758,24 +687,28 @@ class Inventory extends Component {
       body: JSON.stringify({ partId: selectedPart.partId })
     });
     const partsDeleted = _.without(parts, _.findWhere(parts, { partId: selectedPart.partId }));
-    this.setState({ confirmDeleteIsOpen: false, parts: partsDeleted, selectedPart: null });
-    this.props.history(`/inventory`);
-  }
+    setConfirmDeleteIsOpen(false);
+    setParts(partsDeleted);
+    setSelectedPart(null);
+    props.history(`/inventory`);
+  };
 
-  confirmDeleteOpen(e, part) {
+  const confirmDeleteOpen = (e, part) => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ confirmDeleteIsOpen: true, selectedPart: part, confirmPartDeleteContent: `Are you sure you want to delete part ${part.partNumber}?` });
-  }
+    setConfirmDeleteIsOpen(true);
+    setSelectedPart(part);
+    setConfirmPartDeleteContent(`Are you sure you want to delete part ${part.partNumber}?`);
+  };
 
-  confirmDeleteClose(e) {
+  const confirmDeleteClose = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ confirmDeleteIsOpen: false, selectedPart: null });
-  }
+    setConfirmDeleteIsOpen(false);
+    setSelectedPart(null);
+  };
 
-  onScannedInputKeyDown(e, scannedPart) {
-    const { scannedParts } = this.state;
+  const onScannedInputKeyDown = (e, scannedPart) => {
     if (e.keyCode === 13) {
       // copy downward
       let beginCopy = false;
@@ -785,11 +718,11 @@ class Inventory extends Component {
           part[e.target.name] = scannedPart[e.target.name];
         }
       });
-      this.setState({ scannedParts });
+      setScannedParts(scannedParts);
     }
-  }
+  };
 
-  renderScannedParts(scannedParts, highlightScannedPart) {
+  const renderScannedParts = (scannedParts, highlightScannedPart) => {
     if (highlightScannedPart) {
       // reset the css highlight animation
       setTimeout(() => {
@@ -818,20 +751,20 @@ class Inventory extends Component {
             {scannedParts.map((p, index) =>
               <Table.Row key={index} className={(highlightScannedPart && p.partNumber === highlightScannedPart.partNumber ? `scannedPartAnimation ${Math.random()}` : '')}>
                 <Table.Cell collapsing><Label>{p.partNumber}</Label></Table.Cell>
-                <Table.Cell collapsing><Form.Input width={10} value={p.quantity} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='quantity' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} /></Table.Cell>
-                <Table.Cell collapsing><Form.Input width={16} placeholder='Home lab' value={p.location} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='location' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} onKeyDown={e => this.onScannedInputKeyDown(e, p)} /></Table.Cell>
-                <Table.Cell collapsing><Form.Input width={14} placeholder='' value={p.binNumber} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='binNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} onKeyDown={e => this.onScannedInputKeyDown(e, p)} /></Table.Cell>
-                <Table.Cell collapsing><Form.Input width={14} placeholder='' value={p.binNumber2} onChange={(e, c) => this.handleScannedPartChange(e, c, p)} name='binNumber2' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} onKeyDown={e => this.onScannedInputKeyDown(e, p)} /></Table.Cell>
-                <Table.Cell collapsing textAlign='center' verticalAlign='middle'><Button type='button' circular size='mini' icon='delete' title='Delete' onClick={e => this.deleteScannedPart(e, p)} /></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={10} value={p.quantity} onChange={(e, c) => handleScannedPartChange(e, c, p)} name='quantity' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} /></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={16} placeholder='Home lab' value={p.location} onChange={(e, c) => handleScannedPartChange(e, c, p)} name='location' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} onKeyDown={e => onScannedInputKeyDown(e, p)} /></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={14} placeholder='' value={p.binNumber} onChange={(e, c) => handleScannedPartChange(e, c, p)} name='binNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} onKeyDown={e => onScannedInputKeyDown(e, p)} /></Table.Cell>
+                <Table.Cell collapsing><Form.Input width={14} placeholder='' value={p.binNumber2} onChange={(e, c) => handleScannedPartChange(e, c, p)} name='binNumber2' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} onKeyDown={e => onScannedInputKeyDown(e, p)} /></Table.Cell>
+                <Table.Cell collapsing textAlign='center' verticalAlign='middle'><Button type='button' circular size='mini' icon='delete' title='Delete' onClick={e => deleteScannedPart(e, p)} /></Table.Cell>
               </Table.Row>
             )}
           </Table.Body>
         </Table>
       </Form>
     );
-  }
+  };
 
-  renderRecentParts(recentParts) {
+  const renderRecentParts = (recentParts) => {
     return (
       <Table compact celled selectable striped>
         <Table.Header>
@@ -847,7 +780,7 @@ class Inventory extends Component {
         </Table.Header>
         <Table.Body>
           {recentParts.map((p, index) =>
-            <Table.Row key={index} onClick={e => this.handleRecentPartClick(e, p)}>
+            <Table.Row key={index} onClick={e => handleRecentPartClick(e, p)}>
               <Table.Cell>
                 {index === 0 ?
                   <Label ribbon>{p.partNumber}</Label>
@@ -864,226 +797,230 @@ class Inventory extends Component {
         </Table.Body>
       </Table>
     );
-  }
+  };
 
-  render() {
-    const { part,
-      recentParts, metadataParts, partTypes, mountingTypes, projects, viewPreferences, partModalOpen, duplicatePartModalOpen,
-      loadingPartMetadata, loadingPartTypes, loadingProjects, loadingRecent, saveMessage, scannedParts, highlightScannedPart
-    } = this.state;
-    const matchingPartsList = this.renderAllMatchingParts(part, metadataParts);
-    const title = this.props.params.partNumber ? "Edit Inventory" : "Add Inventory";
-    return (
-      <div>
+  const matchingPartsList = renderAllMatchingParts(part, metadataParts);
+  const title = partNumber ? "Edit Inventory" : "Add Inventory";
+  return (
+    <div>
+      <Modal centered
+        open={duplicatePartModalOpen}
+        onClose={handleDuplicatePartModalClose}
+      >
+        <Modal.Header>Duplicate Part</Modal.Header>
+        <Modal.Content scrolling>
+          <Modal.Description>
+            <h3>There is a possible duplicate part already in your inventory.</h3>
+            {renderDuplicateParts()}
+          </Modal.Description>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={handleDuplicatePartModalClose}>Cancel</Button>
+          <Button primary onClick={handleForceSubmit}>Save Anyways</Button>
+        </Modal.Actions>
+      </Modal>
+      <Confirm open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDeletePart} content={confirmPartDeleteContent} />
+      <Form onSubmit={onSubmit}>
+        {part.partId > 0 &&
+          <Button animated='vertical' circular floated='right' size='mini' onClick={printLabel} style={{ marginTop: '5px'}}>
+            <Button.Content visible><Icon name='print' /></Button.Content>
+            <Button.Content hidden>Print</Button.Content>
+          </Button>
+        }
+        {part.partNumber && <Image src={'/part/preview?partNumber=' + part.partNumber} width={180} floated='right' style={{ marginTop: '0px' }} />}
+        <h1 style={{ display: 'inline-block', marginRight: '30px' }}>{title}</h1>
+        <div title='Bulk Barcode Scan' style={{ width: '132px', height: '30px', display: 'inline-block', cursor: 'pointer' }} onClick={handleBulkBarcodeScan}>
+          <div className='anim-box'>
+            <div className='scanner' />
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-lg'></div>
+            <div className='anim-item anim-item-lg'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-lg'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-md'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-md'></div>
+            <div className='anim-item anim-item-lg'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-lg'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-lg'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-lg'></div>
+            <div className='anim-item anim-item-sm'></div>
+            <div className='anim-item anim-item-md'></div>
+          </div>
+        </div>
+        <Form.Group>
+          <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={handleChange} name='partNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          <Form.Dropdown label='Part Type' placeholder='Part Type' loading={loadingPartTypes} search selection value={part.partTypeId || ''} options={partTypes} onChange={handleChange} name='partTypeId' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingTypeId || ''} options={mountingTypes} onChange={handleChange} name='mountingTypeId' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          <Form.Dropdown label='Project' placeholder='My Project' loading={loadingProjects} search selection value={part.projectId || ''} options={projects} onChange={handleChange} name='projectId' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+        </Form.Group>
+        <Form.Group>
+          <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity || ''} onChange={updateNumberPicker} name='quantity' autoComplete='off' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />} />
+          <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Location' placeholder='Home lab' value={part.location || ''} onChange={handleChange} name='location' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />} />
+          <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number' placeholder='IC Components 2' value={part.binNumber || ''} onChange={handleChange} name='binNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />} />
+          <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number 2' placeholder='14' value={part.binNumber2 || ''} onChange={handleChange} name='binNumber2' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />} />
+          <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold || ''} onChange={handleChange} name='lowStockThreshold' width={3} onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />} />
+        </Form.Group>
+        <Form.Field inline>
+          <Button type='submit' primary style={{ marginTop: '10px' }}><Icon name='save' />Save</Button>
+          {part.partId > 0 &&
+            <Button type='button' title='Delete' onClick={e => confirmDeleteOpen(e, part)}><Icon name='delete' />Delete</Button>
+          }
+          {saveMessage.length > 0 && <Label pointing='left'>{saveMessage}</Label>}
+        </Form.Field>
+        <Segment loading={loadingPartMetadata} color='blue'>
+          <Header dividing as='h3'>Part Metadata</Header>
+          {metadataParts.length > 1 &&
+            <Modal centered
+              trigger={<Button onClick={handleOpenModal}>Choose alternate part ({metadataParts.length})</Button>}
+              open={partModalOpen}
+              onClose={handlePartModalClose}
+            >
+              <Modal.Header>Matching Parts</Modal.Header>
+              <Modal.Content scrolling>
+                <Modal.Description>
+                  {matchingPartsList}
+                </Modal.Description>
+              </Modal.Content>
+            </Modal>
+          }
+          <Form.Group>
+            <Form.Field width={4}>
+              <label>Cost</label>
+              <Input label='$' placeholder='0.00' value={part.cost} type='text' onChange={handleChange} name='cost' onFocus={disableKeyboardListening} onBlur={formatField} />
+            </Form.Field>
+            <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer || ''} onChange={handleChange} name='manufacturer' width={4} onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+            <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber || ''} onChange={handleChange} name='manufacturerPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+            <Image src={part.imageUrl} size='tiny' />
+          </Form.Group>
+          <Form.Field width={10}>
+            <label>Keywords</label>
+            <Input icon='tags' iconPosition='left' label={{ tag: true, content: 'Add Keyword' }} labelPosition='right' placeholder='op amp' onChange={handleChange} value={part.keywords || ''} name='keywords' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          </Form.Field>
+          <Form.Field width={4}>
+            <label>Package Type</label>
+            <Input placeholder='DIP8' value={part.packageType || ''} onChange={handleChange} name='packageType' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          </Form.Field>
+          <Form.Field width={10} control={TextArea} label='Description' value={part.description || ''} onChange={handleChange} name='description' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          <Form.Field width={10}>
+            <label>Datasheet Url</label>
+            <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
+              <Label>http://</Label>
+              <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+              <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>View</Button>
+            </Input>
+          </Form.Field>
+          <Form.Field width={10}>
+            <label>Product Url</label>
+            <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
+              <Label>http://</Label>
+              <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+              <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>Visit</Button>
+            </Input>
+          </Form.Field>
+          <Form.Field width={4}>
+            <label>Lowest Cost Supplier</label>
+            <Input placeholder='DigiKey' value={part.lowestCostSupplier || ''} onChange={handleChange} name='lowestCostSupplier' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          </Form.Field>
+          <Form.Field width={10}>
+            <label>Lowest Cost Supplier Url</label>
+            <Input action className='labeled' placeholder='' value={(part.lowestCostSupplierUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='lowestCostSupplierUrl'>
+              <Label>http://</Label>
+              <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+              <Button onClick={e => handleVisitLink(e, part.lowestCostSupplierUrl)} disabled={!part.lowestCostSupplierUrl || part.lowestCostSupplierUrl.length === 0}>Visit</Button>
+            </Input>
+          </Form.Field>
+          <Form.Field width={4}>
+            <label>DigiKey Part Number</label>
+            <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          </Form.Field>
+          <Form.Field width={4}>
+            <label>Mouser Part Number</label>
+            <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+          </Form.Field>
+        </Segment>
         <Modal centered
-          open={duplicatePartModalOpen}
-          onClose={this.handleDuplicatePartModalClose}
+          open={bulkScanIsOpen}
+          onClose={handleBulkScanClose}
         >
-          <Modal.Header>Duplicate Part</Modal.Header>
-          <Modal.Content scrolling>
-            <Modal.Description>
-              <h3>There is a possible duplicate part already in your inventory.</h3>
-              {this.renderDuplicateParts()}
-            </Modal.Description>
+          <Modal.Header>Bulk Scan</Modal.Header>
+          <Modal.Content>
+            <div style={{ width: '200px', height: '100px', margin: 'auto' }}>
+              <div className='anim-box'>
+                <div className='scanner animated' />
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-md'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-md'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-md'></div>
+                <div className='anim-item anim-item-md'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-md'></div>
+                <div className='anim-item anim-item-lg'></div>
+                <div className='anim-item anim-item-sm'></div>
+                <div className='anim-item anim-item-md'></div>
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              Start scanning parts...
+              {renderScannedParts(scannedParts, highlightScannedPart)}
+            </div>
           </Modal.Content>
           <Modal.Actions>
-            <Button onClick={this.handleDuplicatePartModalClose}>Cancel</Button>
-            <Button primary onClick={this.handleForceSubmit}>Save Anyways</Button>
+            <Button onClick={() => setBulkScanIsOpen(false)}>Cancel</Button>
+            <Button primary onClick={onSubmitScannedParts}>Save</Button>
           </Modal.Actions>
         </Modal>
-        <Confirm open={this.state.confirmDeleteIsOpen} onCancel={this.confirmDeleteClose} onConfirm={this.handleDeletePart} content={this.state.confirmPartDeleteContent} />
-        <Form onSubmit={this.onSubmit}>
-          {part.partId > 0 &&
-            <Button animated='vertical' circular floated='right' size='mini' onClick={this.printLabel} style={{ marginTop: '5px'}}>
-              <Button.Content visible><Icon name='print' /></Button.Content>
-              <Button.Content hidden>Print</Button.Content>
-            </Button>
-          }
-          {part.partNumber && <Image src={'/part/preview?partNumber=' + part.partNumber} width={180} floated='right' style={{ marginTop: '0px' }} />}
-          <h1 style={{ display: 'inline-block', marginRight: '30px' }}>{title}</h1>
-          <div title='Bulk Barcode Scan' style={{ width: '132px', height: '30px', display: 'inline-block', cursor: 'pointer' }} onClick={this.handleBulkBarcodeScan}>
-            <div className='anim-box'>
-              <div className='scanner' />
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-lg'></div>
-              <div className='anim-item anim-item-lg'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-lg'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-md'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-md'></div>
-              <div className='anim-item anim-item-lg'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-lg'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-lg'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-lg'></div>
-              <div className='anim-item anim-item-sm'></div>
-              <div className='anim-item anim-item-md'></div>
-            </div>
-          </div>
-          <Form.Group>
-            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber || ''} onChange={this.handleChange} name='partNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            <Form.Dropdown label='Part Type' placeholder='Part Type' loading={loadingPartTypes} search selection value={part.partTypeId || ''} options={partTypes} onChange={this.handleChange} name='partTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingTypeId || ''} options={mountingTypes} onChange={this.handleChange} name='mountingTypeId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            <Form.Dropdown label='Project' placeholder='My Project' loading={loadingProjects} search selection value={part.projectId || ''} options={projects} onChange={this.handleChange} name='projectId' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-          </Form.Group>
-          <Form.Group>
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Use the mousewheel and CTRL/ALT to change step size' trigger={<Form.Field control={NumberPicker} label='Quantity' placeholder='10' min={0} value={part.quantity || ''} onChange={this.updateNumberPicker} name='quantity' autoComplete='off' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Location' placeholder='Home lab' value={part.location || ''} onChange={this.handleChange} name='location' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number' placeholder='IC Components 2' value={part.binNumber || ''} onChange={this.handleChange} name='binNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='A custom value for identifying the parts location' trigger={<Form.Input label='Bin Number 2' placeholder='14' value={part.binNumber2 || ''} onChange={this.handleChange} name='binNumber2' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
-            <Popup hideOnScroll disabled={viewPreferences.helpDisabled} onOpen={this.disableHelp} content='Alert when the quantity gets below this value' trigger={<Form.Input label='Low Stock' placeholder='10' value={part.lowStockThreshold || ''} onChange={this.handleChange} name='lowStockThreshold' width={3} onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />} />
-          </Form.Group>
-          <Form.Field inline>
-            <Button type='submit' primary style={{ marginTop: '10px' }}><Icon name='save' />Save</Button>
-            {part.partId > 0 &&
-              <Button type='button' title='Delete' onClick={e => this.confirmDeleteOpen(e, part)}><Icon name='delete' />Delete</Button>
-            }
-            {saveMessage.length > 0 && <Label pointing='left'>{saveMessage}</Label>}
-          </Form.Field>
-          <Segment loading={loadingPartMetadata} color='blue'>
-            <Header dividing as='h3'>Part Metadata</Header>
-            {metadataParts.length > 1 &&
-              <Modal centered
-                trigger={<Button onClick={this.handleOpenModal}>Choose alternate part ({metadataParts.length})</Button>}
-                open={partModalOpen}
-                onClose={this.handlePartModalClose}
-              >
-                <Modal.Header>Matching Parts</Modal.Header>
-                <Modal.Content scrolling>
-                  <Modal.Description>
-                    {matchingPartsList}
-                  </Modal.Description>
-                </Modal.Content>
-              </Modal>
-            }
-            <Form.Group>
-              <Form.Field width={4}>
-                <label>Cost</label>
-                <Input label='$' placeholder='0.00' value={part.cost} type='text' onChange={this.handleChange} name='cost' onFocus={this.disableKeyboardListening} onBlur={this.formatField} />
-              </Form.Field>
-              <Form.Input label='Manufacturer' placeholder='Texas Instruments' value={part.manufacturer || ''} onChange={this.handleChange} name='manufacturer' width={4} onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-              <Form.Input label='Manufacturer Part' placeholder='LM358' value={part.manufacturerPartNumber || ''} onChange={this.handleChange} name='manufacturerPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-              <Image src={part.imageUrl} size='tiny' />
-            </Form.Group>
-            <Form.Field width={10}>
-              <label>Keywords</label>
-              <Input icon='tags' iconPosition='left' label={{ tag: true, content: 'Add Keyword' }} labelPosition='right' placeholder='op amp' onChange={this.handleChange} value={part.keywords || ''} name='keywords' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            </Form.Field>
-            <Form.Field width={4}>
-              <label>Package Type</label>
-              <Input placeholder='DIP8' value={part.packageType || ''} onChange={this.handleChange} name='packageType' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            </Form.Field>
-            <Form.Field width={10} control={TextArea} label='Description' value={part.description || ''} onChange={this.handleChange} name='description' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            <Form.Field width={10}>
-              <label>Datasheet Url</label>
-              <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='datasheetUrl'>
-                <Label>http://</Label>
-                <input onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-                <Button onClick={e => this.handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>View</Button>
-              </Input>
-            </Form.Field>
-            <Form.Field width={10}>
-              <label>Product Url</label>
-              <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='productUrl'>
-                <Label>http://</Label>
-                <input onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-                <Button onClick={e => this.handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>Visit</Button>
-              </Input>
-            </Form.Field>
-            <Form.Field width={4}>
-              <label>Lowest Cost Supplier</label>
-              <Input placeholder='DigiKey' value={part.lowestCostSupplier || ''} onChange={this.handleChange} name='lowestCostSupplier' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            </Form.Field>
-            <Form.Field width={10}>
-              <label>Lowest Cost Supplier Url</label>
-              <Input action className='labeled' placeholder='' value={(part.lowestCostSupplierUrl || '').replace('http://', '').replace('https://', '')} onChange={this.handleChange} name='lowestCostSupplierUrl'>
-                <Label>http://</Label>
-                <input onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-                <Button onClick={e => this.handleVisitLink(e, part.lowestCostSupplierUrl)} disabled={!part.lowestCostSupplierUrl || part.lowestCostSupplierUrl.length === 0}>Visit</Button>
-              </Input>
-            </Form.Field>
-            <Form.Field width={4}>
-              <label>DigiKey Part Number</label>
-              <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={this.handleChange} name='digiKeyPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            </Form.Field>
-            <Form.Field width={4}>
-              <label>Mouser Part Number</label>
-              <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={this.handleChange} name='mouserPartNumber' onFocus={this.disableKeyboardListening} onBlur={this.enableKeyboardListening} />
-            </Form.Field>
-          </Segment>
-          <Modal centered
-            open={this.state.bulkScanIsOpen}
-            onClose={this.handleBulkScanClose}
-          >
-            <Modal.Header>Bulk Scan</Modal.Header>
-            <Modal.Content>
-              <div style={{ width: '200px', height: '100px', margin: 'auto' }}>
-                <div className='anim-box'>
-                  <div className='scanner animated' />
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-md'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-md'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-md'></div>
-                  <div className='anim-item anim-item-md'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-md'></div>
-                  <div className='anim-item anim-item-lg'></div>
-                  <div className='anim-item anim-item-sm'></div>
-                  <div className='anim-item anim-item-md'></div>
-                </div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                Start scanning parts...
-                {this.renderScannedParts(scannedParts, highlightScannedPart)}
-              </div>
-            </Modal.Content>
-            <Modal.Actions>
-              <Button onClick={() => this.setState({ bulkScanIsOpen: false })}>Cancel</Button>
-              <Button primary onClick={this.onSubmitScannedParts}>Save</Button>
-            </Modal.Actions>
-          </Modal>
-        </Form>
-        <br />
-        <div style={{ marginTop: '20px' }}>
-          <Segment style={{ minHeight: '50px' }} color='teal'>
-            <Header dividing as='h3'>Recently Added</Header>
-            <Dimmer active={loadingRecent} inverted>
-              <Loader inverted />
-            </Dimmer>
-            {!loadingRecent && recentParts && this.renderRecentParts(recentParts)}
-          </Segment>
-        </div>
+      </Form>
+      <br />
+      <div style={{ marginTop: '20px' }}>
+        <Segment style={{ minHeight: '50px' }} color='teal'>
+          <Header dividing as='h3'>Recently Added</Header>
+          <Dimmer active={loadingRecent} inverted>
+            <Loader inverted />
+          </Dimmer>
+          {!loadingRecent && recentParts && renderRecentParts(recentParts)}
+        </Segment>
       </div>
-    );
-  }
+    </div>
+  );
 }
+
+Inventory.abortController = new AbortController();
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default (props) => (
   <Inventory {...props} params={useParams()} history={useNavigate()} />
 );
+
+Inventory.propTypes = {
+  partNumber: PropTypes.string
+};
+
+Inventory.defaultProps = {
+  partNumber: ''
+};
