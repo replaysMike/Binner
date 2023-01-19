@@ -142,9 +142,9 @@ class Inventory extends Component {
   }
 
   async componentDidMount() {
-    this.fetchPartTypes();
-    this.fetchProjects();
-    this.fetchRecentRows();
+    await this.fetchPartTypes();
+    await this.fetchProjects();
+    await this.fetchRecentRows();
     if (this.state.partNumber) await this.fetchPart(this.state.partNumber);
     this.addKeyboardHandler();
   }
@@ -273,16 +273,16 @@ class Inventory extends Component {
     const { part } = this.state;
     this.setState({ loadingPartMetadata: true });
     try {
-      const response = await fetch(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
+      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
         signal: Inventory.abortController.signal
       });
-      const responseData = await response.json();
+      const responseData = response.data;
       if (responseData.requiresAuthentication) {
         // redirect for authentication
         window.open(responseData.redirectUrl, '_blank');
         return;
       }
-      const { response: data } = responseData;
+      const data = responseData.response;
       let metadataParts = [];
       if (data && data.parts && data.parts.length > 0) {
         metadataParts = data.parts;
@@ -370,13 +370,16 @@ class Inventory extends Component {
    */
   async onSubmit(e) {
     const { part } = this.state;
+    
     const isExisting = part.partId > 0;
-    part.partTypeId = part.partTypeId + '';
-    part.mountingTypeId = part.mountingTypeId + '';
-    part.quantity = Number.parseInt(part.quantity) || 0;
-    part.lowStockThreshold = Number.parseInt(part.lowStockThreshold) || 0;
-    part.cost = Number.parseFloat(part.cost) || 0.00;
-    part.projectId = Number.parseInt(part.projectId) || null;
+
+    const request = {...part};
+    request.partTypeId = part.partTypeId.toString();
+    request.mountingTypeId = part.mountingTypeId.toString();
+    request.quantity = Number.parseInt(part.quantity) || 0;
+    request.lowStockThreshold = Number.parseInt(part.lowStockThreshold) || 0;
+    request.cost = Number.parseFloat(part.cost) || 0.00;
+    request.projectId = Number.parseInt(part.projectId) || null;
 
     const saveMethod = isExisting ? 'PUT' : 'POST';
     const response = await fetch('part', {
@@ -384,7 +387,7 @@ class Inventory extends Component {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(part)
+      body: JSON.stringify(request)
     });
 
     let saveMessage = '';
@@ -395,10 +398,10 @@ class Inventory extends Component {
     } else if (response.status === 200) {
       // reset form if it was a new part
       if (isExisting) {
-        saveMessage = `Saved part ${part.partNumber}!`;
+        saveMessage = `Saved part ${request.partNumber}!`;
         this.setState({ saveMessage });
       } else {
-        saveMessage = `Added part ${part.partNumber}!`;
+        saveMessage = `Added part ${request.partNumber}!`;
         this.resetForm(saveMessage);
       }
       // refresh recent parts list
@@ -712,11 +715,10 @@ class Inventory extends Component {
     const { scannedParts } = this.state;
     e.preventDefault();
     e.stopPropagation();
-    console.log('onSubmitScannedParts');
     const request = {
       parts: scannedParts
     };
-    await fetch('part/bulk', {
+    await fetchApi('part/bulk', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -748,7 +750,7 @@ class Inventory extends Component {
     e.preventDefault();
     e.stopPropagation();
     const { selectedPart, parts } = this.state;
-    await fetch(`part`, {
+    await fetchApi(`part`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
