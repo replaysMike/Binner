@@ -12,20 +12,13 @@ export function Search (props) {
   const [searchParams] = useSearchParams();
 
   const [parts, setParts] = useState([]);
-  const [selectedPart, setSelectedPart] = useState(null);
   const [keyword, setKeyword] = useState(getQueryVariable(window.location.search, "keyword") || "");
   const [by, setBy] = useState(getQueryVariable(window.location.search, "by") || "");
   const [byValue, setByValue] = useState(getQueryVariable(window.location.search, "value") || "");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [column, setColumn] = useState(null);
-  const [direction, setDirection] = useState(null);
-  const [changeTracker, setChangeTracker] = useState([]);
-  const [lastSavedPartId, setLastSavedPartId] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [saveMessage, setSaveMessage] = useState("");
-  const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
 
   const loadParts = async (page, reset = false, _by = null, _byValue = null, _pageSize = null) => {
     let byParameter = _by;
@@ -120,30 +113,6 @@ export function Search (props) {
     };
   }, [searchParams]);
 
-  /*UNSAFE_componentWillReceiveProps(nextProps) {
-    // if the path changes due to a new search via query, reset the keyword and perform the search
-    // the component will not be recreated when this happens, only during rerender
-    if (nextProps.location.search !== window.location.search) {
-      const keyword = getQueryVariable(nextProps.location.search, "keyword") || "";
-      const by = getQueryVariable(nextProps.location.search, "by") || "";
-      const byValue = getQueryVariable(nextProps.location.search, "value") || "";
-
-      if (keyword && keyword.length > 0) {
-        // if there's a keyword we should clear binning (because they use different endpoints)
-        this.setState({ keyword, by: "", byValue: "", page: 1 });
-        this.search(keyword);
-      } else if (by && by.length > 0) {
-        // likewise, clear keyword if we're in a bin search
-        this.setState({ by, byValue, keyword: "", page: 1 });
-        this.loadParts(this.state.page, true, by, byValue);
-      } else {
-        this.setState({ page: 1 });
-        this.loadParts(this.state.page, true, "", "");
-      }
-    }
-  }*/
-
-
   const handlePartClick = (e, part) => {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
@@ -166,18 +135,6 @@ export function Search (props) {
           break;
     }
     setKeyword(control.value);
-  };
-
-  const handleChange = (e, control) => {
-    const part = _.find(parts, { partId: control.data });
-    let changes = [...changeTracker];
-    if (part) {
-      part[control.name] = control.value;
-      if (_.where(changes, { partId: part.partId }).length === 0)
-        changes.push({ partId: part.partId });
-    }
-    setParts(parts);
-    setChangeTracker(changes);
   };
 
   const removeFilter = (e) => {
