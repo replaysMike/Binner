@@ -396,21 +396,22 @@ export function Inventory(props) {
   const handleChange= (e, control) => {
     e.preventDefault();
     e.stopPropagation();
-    part[control.name] = control.value;
+    const updatedPart = {...part};
+    updatedPart[control.name] = control.value;
     switch (control.name) {
       case 'partNumber':
-        if (part.partNumber && part.partNumber.length > 0)
-          searchDebounced(part.partNumber);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0)
+          searchDebounced(updatedPart.partNumber);
         break;
       case 'partTypeId':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastPartTypeId: control.value }));
-        if (part.partNumber && part.partNumber.length > 0)
-          searchDebounced(part.partNumber);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0)
+          searchDebounced(updatedPart.partNumber);
         break;
       case 'mountingTypeId':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lastMountingTypeId: control.value }));
-        if (part.partNumber && part.partNumber.length > 0)
-          searchDebounced(part.partNumber);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0)
+          searchDebounced(updatedPart.partNumber);
         break;
       case 'lowStockThreshold':
         localStorage.setItem('viewPreferences', JSON.stringify({ ...viewPreferences, lowStockThreshold: control.value }));
@@ -430,7 +431,7 @@ export function Inventory(props) {
       default:
           break;
     }
-    setPart(part);
+    setPart({...updatedPart});
   };
 
   const printLabel = async (e) => {
