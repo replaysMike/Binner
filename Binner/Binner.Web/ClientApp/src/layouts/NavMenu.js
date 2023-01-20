@@ -35,9 +35,7 @@ export function NavMenu(props) {
     <header>
       <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
         <Container className={"binner-container"}>
-          <NavbarBrand tag={Link} to="/">
-            Binner
-          </NavbarBrand>
+          <NavbarBrand tag={Link} to="/" />
           <NavbarToggler onClick={toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>
             <Form onSubmit={onSubmit}>

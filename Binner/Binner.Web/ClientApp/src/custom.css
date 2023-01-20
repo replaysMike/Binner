@@ -26,6 +26,22 @@ code {
   color: #E01A76;
 }
 
+.header .navbar-light .navbar-brand {
+    display: block;
+    width: 200px;
+    height: 54px;
+    background-size: 200px 54px;
+    background-image: url('../public/image/logo-dark-200x54.png');
+}
+
+.header .navbar-dark .navbar-brand {
+    display: block;
+    width: 200px;
+    height: 54px;
+    background-size: 200px 54px;
+    background-image: url('../public/image/logo-light-200x54.png');
+}
+
 .footer {
     height: 50px;
     width: 100%;
