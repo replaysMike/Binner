@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { useParams, useNavigate  } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams  } from "react-router-dom";
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader, Header, Confirm } from 'semantic-ui-react';
@@ -11,6 +11,7 @@ import { fetchApi } from '../common/fetchApi';
 
 export function Inventory(props) {
   const maxRecentAddedParts = 10;
+  const [searchParams] = useSearchParams();
   let barcodeBuffer = '';
   const defaultViewPreferences = JSON.parse(localStorage.getItem('viewPreferences')) || {
     helpDisabled:
@@ -30,7 +31,7 @@ export function Inventory(props) {
   const scannedPartsSerialized = JSON.parse(localStorage.getItem('scannedPartsSerialized')) || [];
   const defaultPart = {
     partId: 0,
-    partNumber,
+    partNumber: '',
     allowPotentialDuplicate: false,
     quantity: viewPreferences.lastQuantity + '',
     lowStockThreshold: viewPreferences.lowStockThreshold + '',
@@ -98,20 +99,21 @@ export function Inventory(props) {
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
 
   useEffect(() => {
+    const partNumberStr = props.params.partNumber;
     const fetchData = async () => {
       await fetchPartTypes();
       await fetchProjects();
       await fetchRecentRows();
-      if (partNumber) {
-        await fetchPart(partNumber);
+      if (partNumberStr) {
+        await fetchPart(partNumberStr);
       } else {
-        setLoadingPartMetadata(false);
+        resetForm();
       }
       addKeyboardHandler();
     };
     fetchData().catch(console.error);
     return () => removeKeyboardHandler();
-  }, [partNumber]); //test
+  }, [props.params.partNumber]); //test
 
   const fetchPartMetadata = async (input) => {
     Inventory.abortController.abort(); // Cancel the previous request
@@ -223,7 +225,6 @@ export function Inventory(props) {
       // map numlock extra keys
       if ((e.keyCode >= 186 && e.keyCode <= 192) || (e.keyCode >= 219 && e.keyCode <= 222))
         char = e.key;
-      // console.log('key', e, char);
       if (e.keyCode === 13 || e.keyCode === 32 || e.keyCode === 9 || (e.keyCode >= 48 && e.keyCode <= 90) || (e.keyCode >= 107 && e.keyCode <= 111) || (e.keyCode >= 186 && e.keyCode <= 222)) {
         barcodeBuffer += char;
         scannerDebounced(e, barcodeBuffer);
@@ -379,6 +380,7 @@ export function Inventory(props) {
   };
 
   const resetForm = (saveMessage = '') => {
+    setPartNumber('');
     setSaveMessage(saveMessage);
     setMetadataParts([]);
     setDuplicateParts([]);
