@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 export function Layout(props) {
   return (
     <div className="centered" style={{marginBottom: '50px'}}>
-      <ToastContainer newestOnTop={true} autoClose={1500} />
+      <ToastContainer newestOnTop={true} autoClose={2500} />
       <Container>
       <Header />
         <div style={{textAlign: 'left'}}>

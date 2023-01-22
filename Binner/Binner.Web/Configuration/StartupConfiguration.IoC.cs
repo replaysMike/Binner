@@ -1,5 +1,6 @@
 ﻿using ApiClient.OAuth2;
 using Binner.Common;
+using Binner.Common.Configuration;
 using Binner.Common.Integrations;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
@@ -68,9 +69,13 @@ namespace Binner.Web.Configuration
                 config.AddProfile(profile);
             });
             // register automapper
-            var config = new AutoMapper.MapperConfiguration(cfg => cfg.AddMaps(Assembly.GetEntryAssembly()));
+            var config = new AutoMapper.MapperConfiguration(cfg =>
+            {
+                cfg.AddMaps(Assembly.Load("Binner.Common"));
+            });
             config.AssertConfigurationIsValid();
-            container.RegisterInstance(config.CreateMapper());
+            var mapper = config.CreateMapper();
+            container.RegisterInstance(mapper);
         }
 
         private static void RegisterPrinterService(IServiceContainer container)
@@ -98,41 +103,14 @@ namespace Binner.Web.Configuration
             container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
             container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
             container.Register<ISettingsService, SettingsService>(new PerContainerLifetime());
+            container.Register<ISwarmService, SwarmService>(new PerContainerLifetime());
         }
 
         private static void RegisterApiIntegrations(IServiceContainer container)
         {
-            container.Register<OAuth2Service>((serviceFactory) =>
-            {
-                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                return new OAuth2Service(config.Integrations.Digikey);
-            }, new PerContainerLifetime());
-            container.Register<OctopartApi>((serviceFactory) =>
-            {
-                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
-                return new OctopartApi(config.Integrations.Octopart.ApiKey, config.Integrations.Octopart.ApiUrl, httpContextAccessor);
-            }, new PerContainerLifetime());
-            container.Register<DigikeyApi>((serviceFactory) =>
-            {
-                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                var oAuth2Service = serviceFactory.GetInstance<OAuth2Service>();
-                var credentialService = serviceFactory.GetInstance<ICredentialService>();
-                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
-                return new DigikeyApi(oAuth2Service, config.Integrations.Digikey.ApiUrl, credentialService, httpContextAccessor);
-            }, new PerContainerLifetime());
-            container.Register<MouserApi>((serviceFactory) =>
-            {
-                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
-                return new MouserApi(config.Integrations.Mouser.ApiKeys.SearchApiKey, config.Integrations.Mouser.ApiKeys.OrderApiKey, config.Integrations.Mouser.ApiKeys.CartApiKey, config.Integrations.Mouser.ApiUrl, httpContextAccessor);
-            }, new PerContainerLifetime());
-            container.Register<AliExpressApi>((serviceFactory) =>
-            {
-                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                var httpContextAccessor = serviceFactory.GetInstance<IHttpContextAccessor>();
-                return new AliExpressApi(config.Integrations.AliExpress.ApiKey, config.Integrations.AliExpress.ApiUrl, httpContextAccessor);
-            }, new PerContainerLifetime());
+            // register integration apis    
+            container.Register<IIntegrationApiFactory, IntegrationApiFactory>();
+            container.Register<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>();
         }
     }
 }

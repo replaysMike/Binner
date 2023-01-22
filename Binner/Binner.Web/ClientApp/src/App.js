@@ -1,6 +1,19 @@
 import React, { Component } from "react";
 import { Route, Routes } from "react-router";
+import { createBrowserHistory as createHistory } from "history";
+import { ErrorContext } from "./common/ErrorContext";
+
+// layouts
 import { Layout } from "./layouts/Layout";
+
+// components
+import ErrorModal from "./components/ErrorModal";
+
+// styles
+import "./custom.css";
+import './bootstrap.css'; /* needed for the carousel control */
+
+// pages
 import { Home } from "./pages/Home";
 import Inventory from "./pages/Inventory";
 import Search from "./pages/Search";
@@ -16,10 +29,6 @@ import { Settings } from "./pages/Settings";
 import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
 import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalculator";
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
-import { createBrowserHistory as createHistory } from "history";
-import "./custom.css";
-import ErrorModal from "./components/ErrorModal";
-import { ErrorContext } from "./common/ErrorContext";
 
 export default class App extends Component {
   static displayName = App.name;

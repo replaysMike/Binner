@@ -39,6 +39,12 @@ namespace Binner.Common.Services
         Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords);
 
         /// <summary>
+        /// List all DigiKey categories
+        /// </summary>
+        /// <returns></returns>
+        Task<IServiceResult<Integrations.Models.DigiKey.CategoriesResponse>> GetCategoriesAsync();
+
+        /// <summary>
         /// Get a part by part number
         /// </summary>
         /// <param name="partNumber"></param>
@@ -90,6 +96,21 @@ namespace Binner.Common.Services
         Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
 
         /// <summary>
+        /// Determine the part type
+        /// </summary>
+        /// <param name="part"></param>
+        /// <returns></returns>
+        Task<string> DeterminePartTypeAsync(CommonPart part);
+
+        /// <summary>
+        /// Determine the part type
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="partTypes"></param>
+        /// <returns></returns>
+        string DeterminePartType(CommonPart part, ICollection<PartType> partTypes);
+
+        /// <summary>
         /// Get an external order
         /// </summary>
         /// <param name="orderId"></param>
@@ -110,6 +131,12 @@ namespace Binner.Common.Services
         Task<long> GetUniquePartsCountAsync();
 
         /// <summary>
+        /// Get maximum number of parts allowed for the current user
+        /// </summary>
+        /// <returns></returns>
+        public long GetUniquePartsMax();
+
+        /// <summary>
         /// Get count/quantity of all parts
         /// </summary>
         /// <returns></returns>
@@ -128,3 +155,4 @@ namespace Binner.Common.Services
         Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request);
     }
 }
+ 

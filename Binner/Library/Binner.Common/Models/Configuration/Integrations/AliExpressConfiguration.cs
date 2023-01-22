@@ -1,4 +1,4 @@
-﻿namespace Binner.Common.Models.Configuration
+﻿namespace Binner.Common.Models.Configuration.Integrations
 {
     public class AliExpressConfiguration
     {

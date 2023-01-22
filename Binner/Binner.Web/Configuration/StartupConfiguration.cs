@@ -1,4 +1,5 @@
 ﻿using Binner.Common;
+using Binner.Common.Configuration;
 using Binner.Common.StorageProviders;
 using LightInject;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,7 @@ namespace Binner.Web.Configuration
             if (configuration == null) throw new InvalidOperationException($"Could not load configuration from {configFile}");
             var serviceConfiguration = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
             if (serviceConfiguration == null) throw new InvalidOperationException($"Could not load WebHostServiceConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
+            var integrationConfiguration = serviceConfiguration.Integrations;
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
             if (serviceConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             var binnerConfig = new BinnerFileStorageConfiguration(storageProviderConfiguration.ProviderConfiguration);
@@ -35,6 +37,8 @@ namespace Binner.Web.Configuration
             // register traditional configuration with LightInject
             services.AddSingleton(serviceConfiguration);
             container.RegisterInstance(serviceConfiguration);
+            services.AddSingleton(integrationConfiguration);
+            container.RegisterInstance(integrationConfiguration);
             services.AddSingleton(storageProviderConfiguration);
             container.RegisterInstance(storageProviderConfiguration);
             services.AddSingleton(binnerConfig);

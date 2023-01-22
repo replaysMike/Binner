@@ -2,6 +2,8 @@
 {
     public class MouserConfigurationResponse
     {
+        public bool Enabled { get; set; }
+
         /// <summary>
         /// Path to the Mouser Api
         /// </summary>

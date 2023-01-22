@@ -105,12 +105,12 @@ namespace Binner.Common.Models
         /// <summary>
         /// Api Specific product data
         /// </summary>
-        public Integrations Integrations { get; set; }
+        public ApiIntegrations Integrations { get; set; }
     }
 
-    public class Integrations
+    public class ApiIntegrations
     {
-        public Common.Integrations.Models.Digikey.Product Digikey { get; set; }
+        public Common.Integrations.Models.DigiKey.Product Digikey { get; set; }
         public Common.Integrations.Models.Mouser.MouserPart Mouser { get; set; }
         public object AliExpress { get; set; }
     }

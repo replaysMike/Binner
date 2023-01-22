@@ -23,7 +23,8 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
-        public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
+        public bool IsSearchPartsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
+        public bool IsUserConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
 
         public Task<IApiResponse> GetDatasheetsAsync(string partNumber)
         {

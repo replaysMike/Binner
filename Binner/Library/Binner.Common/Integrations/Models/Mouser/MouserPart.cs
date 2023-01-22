@@ -55,11 +55,11 @@ namespace Binner.Common.Integrations.Models.Mouser
         public long Quantity { get; set; }
         public string Price { get; set; }
         public string Currency { get; set; }
-        public decimal Cost
+        public double Cost
         {
             get
             {
-                return decimal.Parse(Price.Replace("$", ""));
+                return double.Parse(Price.Replace("$", ""));
             }
         }
     }

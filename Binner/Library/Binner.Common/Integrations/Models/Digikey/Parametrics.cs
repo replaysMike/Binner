@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Binner.Common.Integrations.Models.Digikey
+namespace Binner.Common.Integrations.Models.DigiKey
 {
     public enum Parametrics
     {

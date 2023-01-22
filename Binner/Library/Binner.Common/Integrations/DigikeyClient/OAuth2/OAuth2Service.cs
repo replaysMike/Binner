@@ -12,9 +12,10 @@
 //-----------------------------------------------------------------------
 
 using ApiClient.Constants;
-using ApiClient.Models;
 using ApiClient.OAuth2.Models;
-using Binner.Common.Models.Configuration;
+using Azure.Core;
+using Binner.Common.Integrations;
+using Binner.Common.Models.Configuration.Integrations;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -31,18 +32,15 @@ namespace ApiClient.OAuth2
     /// </summary>
     public class OAuth2Service
     {
-        public ApiClientSettings ClientSettings { get; set; } = new ApiClientSettings();
         private readonly DigikeyConfiguration _configuration;
+        private readonly AccessTokens _accessTokens;
+
+        public AccessTokens AccessTokens => _accessTokens;
 
         public OAuth2Service(DigikeyConfiguration configuration)
         {
-            ClientSettings = new ApiClient.Models.ApiClientSettings
-            {
-                ClientId = configuration.ClientId,
-                ClientSecret = configuration.ClientSecret,
-                RedirectUri = configuration.oAuthPostbackUrl
-            };
             _configuration = configuration;
+            _accessTokens = new AccessTokens();
         }
 
         /// <summary>
@@ -51,13 +49,13 @@ namespace ApiClient.OAuth2
         /// <param name="scopes">This is current not used and should be "".</param>
         /// <param name="state">This is not currently used.</param>
         /// <returns>String which is the oauth2 authorization url.</returns>
-        public string GenerateAuthUrl(string scopes = "", string state = null)
+        public string GenerateAuthUrl(string scopes = "", string? state = null)
         {
             var url = string.Format("{0}?client_id={1}&scope={2}&redirect_uri={3}&response_type={4}",
                                     new Uri(new Uri(_configuration.ApiUrl), DigiKeyUriConstants.AuthorizationRelativeEndpoint).ToString(),
-                                    ClientSettings.ClientId,
+                                    _configuration.ClientId,
                                     scopes,
-                                    ClientSettings.RedirectUri,
+                                    _configuration.oAuthPostbackUrl,
                                     OAuth2Constants.ResponseTypes.CodeResponse);
 
             if (!string.IsNullOrWhiteSpace(state))
@@ -69,7 +67,7 @@ namespace ApiClient.OAuth2
         }
 
         /// <summary>
-        ///     Finishes authorization by passing the authorization code to the Token endpoint
+        /// Finishes authorization by passing the authorization code to the Token endpoint
         /// </summary>
         /// <param name="code">Code value returned by the RedirectUri callback</param>
         /// <returns>Returns OAuth2AccessToken</returns>
@@ -129,9 +127,9 @@ namespace ApiClient.OAuth2
         /// <returns>Returns OAuth2AccessToken</returns>
         public async Task<OAuth2AccessToken> RefreshTokenAsync()
         {
-            return await OAuth2Helpers.RefreshTokenAsync(_configuration, ClientSettings);
+            return await OAuth2Helpers.RefreshTokenAsync(_configuration, _accessTokens);
         }
 
-        
+
     }
 }

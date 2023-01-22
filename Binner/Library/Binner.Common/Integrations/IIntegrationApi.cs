@@ -6,8 +6,13 @@
     public interface IIntegrationApi
     {
         /// <summary>
+        /// True if the Api is configured/enabled for searching parts
+        /// </summary>
+        bool IsSearchPartsConfigured { get; }
+
+        /// <summary>
         /// True if the Api is configured/enabled
         /// </summary>
-        bool IsConfigured { get; }
+        bool IsUserConfigured { get; }
     }
 }

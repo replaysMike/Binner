@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Binner.Common.Integrations.Models.Digikey
+namespace Binner.Common.Integrations.Models.DigiKey
 {
     public class OrderSearchResponse
     {
@@ -53,8 +53,8 @@ namespace Binner.Common.Integrations.Models.Digikey
         public string ProductDescription { get; set; }
         public int Quantity { get; set; }
         public string CustomerReference { get; set; }
-        public decimal UnitPrice { get; set; }
-        public decimal TotalPrice { get; set; }
+        public double UnitPrice { get; set; }
+        public double TotalPrice { get; set; }
         public int QuantityBackorder { get; set; }
         public int QuantityShipped { get; set; }
         public int InvoiceId { get; set; }

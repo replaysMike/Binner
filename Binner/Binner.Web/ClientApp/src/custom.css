@@ -188,6 +188,23 @@ code {
     margin-right: 5px;
 }
 
+.partLocation {
+    text-align: center; 
+}
+
+.partLocation h1 {
+    font-size: 4em;
+}
+
+.partLocation.small h1 {
+    font-size: 2em!important;
+}
+
+.partLocation.small {
+    padding: 4px;
+    margin-top: 2px !important;
+}
+
 /*undo bootstrap modal css*/
 .modal {
     height: unset !important;

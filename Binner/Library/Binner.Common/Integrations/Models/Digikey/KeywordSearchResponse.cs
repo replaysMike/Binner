@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Binner.Common.Integrations.Models.Digikey
+namespace Binner.Common.Integrations.Models.DigiKey
 {
     public class KeywordSearchResponse
     {
@@ -16,43 +16,66 @@ namespace Binner.Common.Integrations.Models.Digikey
 
     public class Product
     {
-        public string DigiKeyPartNumber { get; set; }
+        public string DigiKeyPartNumber { get; set; } = null!;
         public int QuantityAvailable { get; set; }
-        public string ManufacturerPartNumber { get; set; }
-        public Manufacturer Manufacturer { get; set; } = new Manufacturer();
-        public string ProductDescription { get; set; }
-        public string DetailedDescription { get; set; }
+        public string ManufacturerPartNumber { get; set; } = null!;
+        public Manufacturer? Manufacturer { get; set; }
+        public string? ProductDescription { get; set; }
+        public string? DetailedDescription { get; set; }
         public int MinimumOrderQuantity { get; set; }
         public bool NonStock { get; set; }
         public int QuantityOnOrder { get; set; }
         public int ManufacturerPublicQuantity { get; set; }
-        public decimal UnitPrice { get; set; }
-        public string ProductUrl { get; set; }
-        public string ProductStatus { get; set; }
-        public string PrimaryDatasheet { get; set; }
-        public string PrimaryPhoto { get; set; }
-        public string RoHSStatus { get; set; }
-        public string LeadStatus { get; set; }
-        public string TariffDescription { get; set; }
-        public Series Series { get; set; } = new Series();
+        public double UnitPrice { get; set; }
+        public string? ProductUrl { get; set; }
+        public string? ProductStatus { get; set; }
+        public string? PrimaryDatasheet { get; set; }
+        public string? PrimaryPhoto { get; set; }
+        public string? PrimaryVideo { get; set; }
+        public string? RoHSStatus { get; set; }
+        public string? LeadStatus { get; set; }
+        public string? TariffDescription { get; set; } = null!;
+        public Family? Family { get; set; }
+        public Category? Category { get; set; }
+        public Series? Series { get; set; }
+        public Packaging? Packaging { get; set; }
         public ICollection<ParameterObject> Parameters { get; set; } = new List<ParameterObject>();
-        // todo: AlternatePackaging
+
+        public ICollection<AlternatePackaging> AlternatePackaging { get; set; } = new List<AlternatePackaging>();
+
         public override string ToString()
         {
             return $"{DigiKeyPartNumber} {ProductDescription} | x{QuantityAvailable} {UnitPrice}";
         }
     }
 
-    public class Manufacturer
+    public class Category : ParameterObject
     {
-        public int ParameterId { get; set; }
-        public string ValueId { get; set; }
-        public string Parameter { get; set; }
-        public string Value { get; set; }
-        public override string ToString()
-        {
-            return $"{Parameter} = {Value}";
-        }
+    }
+
+    public class Family : ParameterObject
+    {
+    }
+
+    public class AlternatePackaging : Product
+    {
+        public int MaxQuantityForDistribution { get; set; }
+        public bool BackOrderNotAllowed { get; set; }
+        public bool DKPlusRestriction { get; set; }
+        public bool Marketplace { get; set; }
+        public bool SupplierDirectShip { get; set; }
+        public string PimProductName { get; set; } = null!;
+        public string Supplier { get; set; } = null!;
+        public int SupplierId { get; set; }
+        public bool IsNcnr { get; set; }
+    }
+
+    public class Packaging : ParameterObject
+    {
+    }
+
+    public class Manufacturer : ParameterObject
+    {
     }
 
     public class StandardPricing
@@ -66,24 +89,16 @@ namespace Binner.Common.Integrations.Models.Digikey
         }
     }
 
-    public class Series
+    public class Series : ParameterObject
     {
-        public int ParameterId { get; set; }
-        public string ValueId { get; set; }
-        public string Parameter { get; set; }
-        public string Value { get; set; }
-        public override string ToString()
-        {
-            return $"{Parameter} = {Value}";
-        }
     }
 
     public class ParameterObject
     {
         public int ParameterId { get; set; }
-        public string ValueId { get; set; }
-        public string Parameter { get; set; }
-        public string Value { get; set; }
+        public string ValueId { get; set; } = null!;
+        public string Parameter { get; set; } = null!;
+        public string? Value { get; set; }
         public override string ToString()
         {
             return $"{Parameter} = {Value}";

@@ -1,7 +1,9 @@
-﻿namespace Binner.Common.Models.Configuration
+﻿namespace Binner.Common.Models.Configuration.Integrations
 {
     public class MouserConfiguration
     {
+        public bool Enabled { get; set; } = true;
+
         /// <summary>
         /// Mouser Api Keys
         /// </summary>
