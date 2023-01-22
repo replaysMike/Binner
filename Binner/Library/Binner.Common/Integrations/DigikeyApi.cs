@@ -2,6 +2,8 @@
 using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Digikey;
+using Binner.Common.Integrations.Models.DigiKey;
+using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Services;
 using Binner.Model.Common;
 using Microsoft.AspNetCore.Http;
@@ -10,10 +12,9 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -37,10 +38,11 @@ namespace Binner.Common.Integrations
         #endregion
 
         // the full url to the Api
-        private readonly string _apiUrl;
+        private readonly DigikeyConfiguration _configuration;
         private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly RequestContextAccessor _requestContext;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
@@ -50,16 +52,32 @@ namespace Binner.Common.Integrations
             Converters = new List<JsonConverter> { new StringEnumConverter() }
         };
 
-        public bool IsConfigured => !string.IsNullOrEmpty(_oAuth2Service.ClientSettings.ClientId) 
-            && !string.IsNullOrEmpty(_oAuth2Service.ClientSettings.ClientSecret) && !string.IsNullOrEmpty(_apiUrl);
+        /// <summary>
+        /// Get the OAuth2 service associated with this api
+        /// </summary>
+        public OAuth2Service OAuth2Service => _oAuth2Service;
 
-        public DigikeyApi(OAuth2Service oAuth2Service, string apiUrl, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor)
+        /// <summary>
+        /// Returns true if the Api is properly configured
+        /// </summary>
+        public bool IsSearchPartsConfigured => _configuration.Enabled
+            && !string.IsNullOrEmpty(_configuration.ClientId)
+            && !string.IsNullOrEmpty(_configuration.ClientSecret)
+            && !string.IsNullOrEmpty(_configuration.ApiUrl);
+
+        public bool IsUserConfigured => _configuration.Enabled
+            && !string.IsNullOrEmpty(_configuration.ClientId)
+            && !string.IsNullOrEmpty(_configuration.ClientSecret)
+            && !string.IsNullOrEmpty(_configuration.ApiUrl);
+
+        public DigikeyApi(DigikeyConfiguration configuration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext)
         {
-            _oAuth2Service = oAuth2Service;
-            _apiUrl = apiUrl;
+            _configuration = configuration;
+            _oAuth2Service = new OAuth2Service(configuration);
             _credentialService = credentialService;
             _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
+            _requestContext = requestContext;
         }
 
         public enum MountingTypes
@@ -79,7 +97,7 @@ namespace Binner.Common.Integrations
                 try
                 {
                     // set what fields we want from the API
-                    var uri = Url.Combine(_apiUrl, "OrderDetails/v3/Status/", orderId);
+                    var uri = Url.Combine(_configuration.ApiUrl, "OrderDetails/v3/Status/", orderId);
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
@@ -115,7 +133,7 @@ namespace Binner.Common.Integrations
                 try
                 {
                     // set what fields we want from the API
-                    var uri = Url.Combine(_apiUrl, "Search/v3/Products/", digikeyPartNumber);
+                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Products/", digikeyPartNumber);
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
@@ -151,7 +169,7 @@ namespace Binner.Common.Integrations
                 try
                 {
                     // set what fields we want from the API
-                    var uri = Url.Combine(_apiUrl, "Barcoding/v3/ProductBarcodes/", barcode);
+                    var uri = Url.Combine(_configuration.ApiUrl, "Barcoding/v3/ProductBarcodes/", barcode);
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
@@ -172,8 +190,40 @@ namespace Binner.Common.Integrations
             });
         }
 
-        public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "")
+        public async Task<IApiResponse> GetCategoriesAsync()
         {
+            var authResponse = await AuthorizeAsync();
+            if (authResponse == null || !authResponse.IsAuthorized)
+                return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+            return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
+            {
+                try
+                {
+                    // set what fields we want from the API
+                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Categories");
+                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
+                    // perform a keywords API search
+                    var response = await _client.SendAsync(requestMessage);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        throw new DigikeyUnauthorizedException(authenticationResponse);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var resultString = response.Content.ReadAsStringAsync().Result;
+                        var results = JsonConvert.DeserializeObject<CategoriesResponse>(resultString, _serializerSettings);
+                        return new ApiResponse(results, nameof(DigikeyApi));
+                    }
+                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            });
+        }
+
+        public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "", int recordCount = 25)
+        {
+            if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var authResponse = await AuthorizeAsync();
             if (authResponse == null || !authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
@@ -195,28 +245,50 @@ namespace Binner.Common.Integrations
                 }
             }
 
-            return await WrapApiRequestAsync(authResponse, async(authenticationResponse) =>
+            return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 try
                 {
                     // set what fields we want from the API
-                    var includes = new List<string> { "DigiKeyPartNumber", "QuantityAvailable", "Manufacturer", "ManufacturerPartNumber", "PrimaryDatasheet", "ProductDescription", "DetailedDescription", "MinimumOrderQuantity", "NonStock", "UnitPrice", "ProductStatus", "ProductUrl", "Parameters" };
+                    var includes = new List<string> {
+                        "DigiKeyPartNumber",
+                        "QuantityAvailable",
+                        "Manufacturer",
+                        "ManufacturerPartNumber",
+                        "PrimaryDatasheet",
+                        "ProductDescription",
+                        "DetailedDescription",
+                        "MinimumOrderQuantity",
+                        "NonStock",
+                        "UnitPrice",
+                        "ProductStatus",
+                        "ProductUrl",
+                        "PrimaryPhoto",
+                        "PrimaryVideo",
+                        "Packaging",
+                        "AlternatePackaging",
+                        "Family",
+                        "Category",
+                        "Parameters"
+                        };
                     var values = new Dictionary<string, string>
                     {
                         { "Includes", $"Products({string.Join(",", includes)})" },
                     };
-                    var uri = Url.Combine(_apiUrl, "/Search/v3/Products", $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
+                    var uri = Url.Combine(_configuration.ApiUrl, "/Search/v3/Products", $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
                     var taxonomies = MapTaxonomies(partType, packageTypeEnum);
                     var parametricFilters = MapParametricFilters(keywords, packageTypeEnum, taxonomies);
                     var request = new KeywordSearchRequest
                     {
                         Keywords = string.Join(" ", keywords),
+                        RecordCount = recordCount,
                         Filters = new Filters
                         {
                             TaxonomyIds = taxonomies.Select(x => (int)x).ToList(),
                             ParametricFilters = parametricFilters
-                        }
+                        },
+                        SearchOptions = new List<SearchOptions> { }
                     };
                     var json = JsonConvert.SerializeObject(request, _serializerSettings);
                     requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -373,11 +445,8 @@ namespace Binner.Common.Integrations
                     var memberInfos = typeof(Taxonomies).GetMember(taxonomy.ToString());
                     var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(Taxonomies));
                     var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
-                    if (valueAttributes.Length > 0)
-                    {
-                        var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
-                        // taxonomies.AddRange(alternateIds);
-                    }
+                    var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
+                    // taxonomies.AddRange(alternateIds);
                     switch (taxonomy)
                     {
                         case Taxonomies.Resistor:
@@ -416,24 +485,24 @@ namespace Binner.Common.Integrations
             catch (DigikeyUnauthorizedException ex)
             {
                 // get refresh token, retry
-                _oAuth2Service.ClientSettings.RefreshToken = ex.Authorization.RefreshToken;
+                _oAuth2Service.AccessTokens.RefreshToken = ex.Authorization.RefreshToken;
                 var token = await _oAuth2Service.RefreshTokenAsync();
-                var refreshTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString())
+                var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+                var refreshTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId, referer)
                 {
                     AccessToken = token.AccessToken,
                     RefreshToken = token.RefreshToken,
                     CreatedUtc = DateTime.UtcNow,
                     ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(token.ExpiresIn)),
                     AuthorizationReceived = true,
+                    UserId = _requestContext.GetUserContext().UserId
                 };
-                var contextKey = $"{nameof(DigikeyApi)}-{_httpContextAccessor.HttpContext.User.Identity.Name}";
-                ServerContext.Set(contextKey, refreshTokenResponse);
                 if (refreshTokenResponse.IsAuthorized)
                 {
                     // save the credential
                     await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
                     {
-                        Provider = contextKey,
+                        Provider = nameof(DigikeyApi),
                         AccessToken = refreshTokenResponse.AccessToken,
                         RefreshToken = refreshTokenResponse.RefreshToken,
                         DateCreatedUtc = refreshTokenResponse.CreatedUtc,
@@ -457,63 +526,60 @@ namespace Binner.Common.Integrations
                 }
                 // user must authorize
                 // request a token if we don't already have one
-                var authRequest = CreateOAuthAuthorizationRequest();
+                var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext().UserId);
                 return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             }
         }
 
         private async Task ForgetAuthenticationTokens()
         {
-            ServerContext.Remove<OAuthAuthorization>(nameof(OAuthAuthorization));
+            var user = _requestContext.GetUserContext();
             await _credentialService.RemoveOAuthCredentialAsync(nameof(DigikeyApi));
         }
 
         private async Task<OAuthAuthorization> AuthorizeAsync()
         {
-            var contextKey = $"{nameof(DigikeyApi)}-{_httpContextAccessor.HttpContext.User.Identity.Name}";
-            // check if we have an in-memory auth credential
-            var getAuth = ServerContext.Get<OAuthAuthorization>(contextKey);
-            if (getAuth != null && getAuth.IsAuthorized)
-                return getAuth;
+            var user = _requestContext.GetUserContext();
+            if (user == null || user.UserId <= 0)
+                throw new AuthenticationException("User is not authenticated!");
 
-            // check if we have a saved to disk auth credential
-            OAuthAuthorization authRequest;
-            var credential = await _credentialService.GetOAuthCredentialAsync(contextKey);
+            // check if we have saved an existing auth credential in the database
+            var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
             if (credential != null)
             {
                 // reuse a saved oAuth credential
-                authRequest = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString())
+                var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+                var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId, referer)
                 {
                     AccessToken = credential.AccessToken,
                     RefreshToken = credential.RefreshToken,
                     CreatedUtc = credential.DateCreatedUtc,
                     ExpiresUtc = credential.DateExpiresUtc,
                     AuthorizationReceived = true,
+                    UserId = user.UserId
                 };
-                // also store it in memory
-                ServerContext.Set(contextKey, authRequest);
-                return authRequest;
 
+                return authRequest;
             }
 
             // user must authorize
             // request a token if we don't already have one
-            var scopes = "";
-            var authUrl = _oAuth2Service.GenerateAuthUrl(scopes);
-            authRequest = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString());
-            ServerContext.Set(contextKey, authRequest);
-
-            return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
+            return await CreateOAuthAuthorizationRequestAsync(user.UserId);
         }
 
-        private OAuthAuthorization CreateOAuthAuthorizationRequest()
+        private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(int userId)
         {
             var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
-            var contextKey = $"{nameof(DigikeyApi)}-{_httpContextAccessor.HttpContext.User.Identity.Name}";
+            var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId, referer)
+            {
+                UserId = userId
+            };
+            authRequest = await _credentialService.CreateOAuthRequestAsync(authRequest);
+            // no scopes necessary
             var scopes = "";
-            var authUrl = _oAuth2Service.GenerateAuthUrl(scopes);
-            var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _oAuth2Service.ClientSettings.ClientId, referer);
-            ServerContext.Set(contextKey, authRequest);
+            // state will be send as the RequestId
+            var state = authRequest.Id.ToString();
+            var authUrl = _oAuth2Service.GenerateAuthUrl(scopes, state);
 
             return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
         }
@@ -527,24 +593,6 @@ namespace Binner.Common.Integrations
             message.Headers.Add("X-DIGIKEY-Locale-Language", "en");
             message.Headers.Add("X-DIGIKEY-Locale-Currency", "CAD");
             return message;
-        }
-
-        private void OpenBrowser(string url)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Process.Start(new ProcessStartInfo("cmd", $"/c start {url.Replace("&", "^&")}")); // Works ok on windows and escape need for cmd.exe
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                Process.Start("xdg-open", url);  // Works ok on linux
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                Process.Start("open", url); // Not tested
-            }
-            else
-                throw new InvalidOperationException("Failed to launch default web browser - I don't know how to do this on your platform!");
         }
 
         private Tolerances GetTolerance(string perc)
@@ -670,7 +718,7 @@ namespace Binner.Common.Integrations
         private T GetEnumByDescription<T>(string description)
         {
             var type = typeof(T).GetExtendedType();
-            foreach(var val in type.EnumValues)
+            foreach (var val in type.EnumValues)
             {
                 var memberInfos = type.Type.GetMember(val.Value);
                 var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == type.Type);

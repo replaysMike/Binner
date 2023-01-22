@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Binner.Common.Integrations.Models.Digikey
+﻿namespace Binner.Common.Integrations.Models.DigiKey
 {
     public class ProductBarcodeResponse
     {

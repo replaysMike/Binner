@@ -1,4 +1,5 @@
 ﻿using AnyMapper;
+using Binner.Common.Configuration;
 using Binner.Common.Models;
 using Binner.Common.Services;
 using Binner.Model.Common;

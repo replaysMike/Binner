@@ -1,7 +1,9 @@
-﻿namespace Binner.Common.Models.Configuration
+﻿namespace Binner.Common.Models.Configuration.Integrations
 {
     public class OctopartConfiguration
     {
+        public bool Enabled { get; set; } = false;
+
         public string ApiKey { get; set; }
 
         /// <summary>

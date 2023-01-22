@@ -15,6 +15,7 @@ using Topshelf;
 using Topshelf.Runtime;
 using Binner.Common.IO;
 using System.Reflection;
+using Binner.Common.Configuration;
 
 namespace Binner.Web.ServiceHost
 {

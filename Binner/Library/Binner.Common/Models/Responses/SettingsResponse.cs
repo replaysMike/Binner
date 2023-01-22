@@ -1,4 +1,4 @@
-﻿using Binner.Common.Models.Configuration;
+﻿using Binner.Common.Models.Configuration.Integrations;
 
 namespace Binner.Common.Models.Responses
 {
@@ -7,18 +7,26 @@ namespace Binner.Common.Models.Responses
         /// <summary>
         /// Octopart config
         /// </summary>
-        public OctopartConfiguration Octopart { get; set; } = new OctopartConfiguration();
+        public OctopartUserConfiguration Octopart { get; set; } = new OctopartUserConfiguration();
 
         /// <summary>
         /// Digikey config
         /// </summary>
-        public DigikeyConfiguration Digikey { get; set; } = new DigikeyConfiguration();
+        public DigiKeyUserConfiguration Digikey { get; set; } = new DigiKeyUserConfiguration();
 
         /// <summary>
         /// Mouser config
         /// </summary>
-        public MouserConfigurationResponse Mouser { get; set; } = new MouserConfigurationResponse();
+        public MouserUserConfiguration Mouser { get; set; } = new MouserUserConfiguration();
 
+        /// <summary>
+        /// Binner config
+        /// </summary>
+        public SwarmUserConfiguration Binner { get; set; } = new SwarmUserConfiguration();
+
+        /// <summary>
+        /// Printer config
+        /// </summary>
         public PrinterSettingsResponse Printer { get; set; } = new PrinterSettingsResponse();
     }
 }

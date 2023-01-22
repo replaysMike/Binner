@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Binner.Common.Integrations.Models.Digikey
+namespace Binner.Common.Integrations.Models.DigiKey
 {
     public class KeywordSearchRequest
     {
@@ -10,7 +10,7 @@ namespace Binner.Common.Integrations.Models.Digikey
         public Filters Filters { get; set; } = new Filters();
         public SortParameters Sort { get; set; } = new SortParameters();
         public int RequestedQuantity { get; set; }
-        public ICollection<SearchOptions> SearchOptions { get; set; } = new List<SearchOptions> { };
+        public ICollection<SearchOptions> SearchOptions { get; set; } = new List<SearchOptions> { DigiKey.SearchOptions.InStock };
     }
 
     public enum SearchOptions

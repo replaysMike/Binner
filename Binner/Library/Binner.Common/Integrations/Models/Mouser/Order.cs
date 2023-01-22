@@ -6,15 +6,15 @@ namespace Binner.Common.Integrations.Models.Mouser
     {
         public ICollection<OrderLine> OrderLines { get; set; } = new List<OrderLine>();
         public string CurrencyCode { get; set; }
-        public decimal MerchandiseTotal { get; set; }
-        public decimal OrderTotal { get; set; }
+        public double MerchandiseTotal { get; set; }
+        public double OrderTotal { get; set; }
         public string OrderType { get; set; }
         public string CartGUID { get; set; }
         public OrderAddressType BillingAddress { get; set; }
         public OrderAddressType ShippingAddress { get; set; }
         public OrderShipping ShippingMethod { get; set; }
         public OrderPayment PaymentMethod { get; set; }
-        public decimal TaxAmount { get; set; }
+        public double TaxAmount { get; set; }
         public string OrderID { get; set; }
         public string TaxCertificateId { get; set; }
         public ICollection<ErrorEntity> Errors { get; set; } = new List<ErrorEntity>();
@@ -33,8 +33,8 @@ namespace Binner.Common.Integrations.Models.Mouser
         public string MfrPartNumber { get; set; }
         public string Description { get; set; }
         public string CartItemCustPartNumber { get; set; }
-        public decimal UnitPrice { get; set; }
-        public decimal ExtendedPrice { get; set; }
+        public double UnitPrice { get; set; }
+        public double ExtendedPrice { get; set; }
         public string LifeCycle { get; set; }
         public string Manufacturer { get; set; }
         public int SalesMultipleQty { get; set; }
@@ -84,8 +84,8 @@ namespace Binner.Common.Integrations.Models.Mouser
         public int SecondaryCode { get; set; }
         public string PrimaryMethod { get; set; }
         public string SecondaryMethod { get; set; }
-        public decimal? PrimaryShippingRate { get; set; }
-        public decimal? SecondaryShippingRate { get; set; }
+        public double? PrimaryShippingRate { get; set; }
+        public double? SecondaryShippingRate { get; set; }
         public string PrimaryFreightCollectAccount { get; set; }
         public string SecondaryFreightCollectAccount { get; set; }
     }

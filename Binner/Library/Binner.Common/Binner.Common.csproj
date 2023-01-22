@@ -32,11 +32,12 @@
     <PackageReference Include="AnyBarcode" Version="1.0.11" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AnySerializer" Version="1.1.46" />
-    <PackageReference Include="Binner.Model.Common" Version="1.0.17" />
-    <PackageReference Include="Binner.StorageProvider.Sqlite" Version="1.0.11" />
-    <PackageReference Include="Binner.StorageProvider.SqlServer" Version="1.0.9" />
-    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.12" />
-    <PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.12" />
+    <PackageReference Include="AutoMapper" Version="11.0.0" />
+    <PackageReference Include="Binner.Model.Common" Version="1.0.18" />
+    <!--<PackageReference Include="Binner.StorageProvider.Sqlite" Version="1.0.11" />
+    <PackageReference Include="Binner.StorageProvider.SqlServer" Version="1.0.9" />-->
+    <!--<PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.12" />-->
+    <!--<PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.12" />-->
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />
@@ -57,6 +58,13 @@
 
   <ItemGroup>
     <Folder Include="Integrations\DigikeyClient\Core\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql.csproj" />
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql.csproj" />
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite.csproj" />
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>

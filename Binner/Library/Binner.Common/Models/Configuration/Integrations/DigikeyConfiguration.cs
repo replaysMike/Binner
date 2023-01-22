@@ -1,10 +1,12 @@
-﻿namespace Binner.Common.Models.Configuration
+﻿namespace Binner.Common.Models.Configuration.Integrations
 {
     /// <summary>
     /// Digikey APi configuration settings
     /// </summary>
     public class DigikeyConfiguration
     {
+        public bool Enabled { get; set; } = true;
+
         /// <summary>
         /// Digikey Client Id
         /// </summary>

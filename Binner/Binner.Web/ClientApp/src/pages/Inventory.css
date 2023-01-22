@@ -1,0 +1,50 @@
+.carousel-control-next-icon {
+	background-color: rgb(255,255,255,0.15);
+	border-radius: 80px;
+	padding: 5px;
+	filter: invert(1) !important;
+	background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27%23fff%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath d=%27M2.75 0l-1.5 1.5L3.75 4l-2.5 2.5L2.75 8l4-4-4-4z%27/%3e%3c/svg%3e") !important;
+}
+
+.carousel-control-prev-icon {
+	background-color: rgb(255,255,255,0.15);
+	border-radius: 80px;
+	padding: 5px;
+	color: #000;
+	filter: invert(1) !important;
+	background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27%23fff%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath d=%27M5.25 0l-4 4 4 4 1.5-1.5L4.25 4l2.5-2.5L5.25 0z%27/%3e%3c/svg%3e") !important;   
+}
+
+.card .content {
+	padding: 8px;
+}
+
+.card .header {
+	font-size: 1.1em;
+	font-weight: 500;
+	line-height: 1.2;
+	margin-top: 0;
+	margin-bottom: 0.2rem;
+}
+
+.card .meta {
+	font-size: 0.7em !important;
+	margin-bottom: 0.6rem;
+}
+
+.card .description {
+	font-size: 0.8em;
+}
+
+.card > .placeholder img {
+	width: 245px;
+	height: 245px;
+}
+
+.ui.menu.menu-meta {
+	
+}
+
+.ui.menu.menu-meta .item {
+	padding: 0.66em;
+}

@@ -1,7 +1,12 @@
-﻿namespace Binner.Common.Models.Configuration
+﻿namespace Binner.Common.Models.Configuration.Integrations
 {
     public class IntegrationConfiguration
     {
+        /// <summary>
+        /// Binner Swarm config
+        /// </summary>
+        public SwarmConfiguration Swarm { get; set; } = new SwarmConfiguration();
+
         /// <summary>
         /// Octopart config
         /// </summary>

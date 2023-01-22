@@ -1,4 +1,5 @@
 ﻿using AnyMapper;
+using Binner.Common.Configuration;
 using Binner.Common.IO.Printing;
 using Binner.Common.Models;
 using Binner.Common.Models.Responses;
@@ -194,7 +195,7 @@ namespace Binner.Web.Controllers
                             mappedPart.LowStockThreshold = 10;
                             mappedPart.ProductUrl = entry.ProductUrl;
                             mappedPart.PackageType = entry.PackageType;
-                            mappedPart.Cost = entry.Cost;
+                            mappedPart.Cost = (decimal)entry.Cost;
                             isMapped = true;
                         }
                     }
@@ -222,7 +223,7 @@ namespace Binner.Web.Controllers
                             mappedPart.LowStockThreshold = 10;
                             mappedPart.ProductUrl = metadata.ProductUrl;
                             mappedPart.PackageType = metadata.PackageType;
-                            mappedPart.Cost = metadata.Cost;
+                            mappedPart.Cost = (decimal)metadata.Cost;
                         }
                         else
                         {
@@ -386,7 +387,7 @@ namespace Binner.Web.Controllers
                 {
                     var existingPart = existingParts.First();
                     // update quantity
-                    existingPart.Quantity += commonPart.Quantity;
+                    existingPart.Quantity += commonPart.QuantityAvailable;
                     existingPart = await _partService.UpdatePartAsync(existingPart);
                     parts.Add(Mapper.Map<Part, PartResponse>(existingPart));
                 }

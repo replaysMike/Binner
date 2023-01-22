@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Binner.Common.Integrations.Models.Digikey
+namespace Binner.Common.Integrations.Models.DigiKey
 {
     /// <summary>
     /// Digikey categories

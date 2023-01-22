@@ -1,4 +1,5 @@
-﻿
+﻿import { MD5 as encryptMD5 } from "crypto-js";
+
 /**
  * Encode a number to resistance value
  * @param {any} number the ohms value
@@ -29,4 +30,42 @@ export const decodeResistance = (str) => {
     return (Number.parseInt(str.replace('g', '')) * 1000 * 1000 * 1000);
   }
   return Number.parseInt(str);
+};
+
+/**
+ * Format a number with local currency format
+ * @param {number} number Number to format
+ * @param {number} maxDecimals The maximum number of decimals to return
+ * @returns formatted number string
+ */
+export const formatCurrency = (number, maxDecimals = 5) => {
+  return number.toLocaleString('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: maxDecimals});
+}
+
+/**
+ * Format a number with thousand separators
+ * @param {number} number Number to format
+ * @returns formatted number string
+ */
+export const formatNumber = (number) => {
+  // return number.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+  return number.toLocaleString();
+}
+
+/**
+ * Compute an MD5 value
+ * @param {string} val value to encode
+ * @returns hash value
+ */
+export const MD5 = (val) => {
+  return encryptMD5(val);
+};
+
+/**
+ * Escapes a string as a regex
+ * @param {string} string string expression to escape
+ * @returns 
+ */
+export const escapeRegex = (string) => {
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };

@@ -1,4 +1,5 @@
-﻿using Binner.Web.Configuration;
+﻿using Binner.Common.Configuration;
+using Binner.Web.Configuration;
 using Binner.Web.Middleware;
 using LightInject;
 using LightInject.Microsoft.DependencyInjection;
@@ -82,7 +83,7 @@ namespace Binner.Web.WebHost
             // add build version to the response headers
             app.UseVersionHeader();
 
-            if (config.Environment == Web.Configuration.Environments.Development)
+            if (config.Environment == Environments.Development)
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -126,7 +127,7 @@ namespace Binner.Web.WebHost
             {
                 spa.Options.SourcePath = "ClientApp";
 
-                if (config.Environment == Web.Configuration.Environments.Development)
+                if (config.Environment == Environments.Development)
                 {
                     Console.WriteLine("Starting react dev server...");
                     spa.UseReactDevelopmentServer(npmScript: "start-vs");

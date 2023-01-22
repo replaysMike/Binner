@@ -1,6 +1,7 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Mouser;
+using Binner.Common.Models.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -17,10 +18,7 @@ namespace Binner.Common.Integrations
     public class MouserApi : IIntegrationApi
     {
         private const string BasePath = "/api/v1";
-        private readonly string _searchApiKey;
-        private readonly string _orderApiKey;
-        private readonly string _cartApiKey;
-        private readonly string _apiUrl;
+        private readonly MouserConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -31,26 +29,36 @@ namespace Binner.Common.Integrations
             Converters = new List<JsonConverter> { new StringEnumConverter() }
         };
 
-        public bool IsConfigured => !string.IsNullOrEmpty(_searchApiKey) && !string.IsNullOrEmpty(_apiUrl);
+        public bool IsSearchPartsConfigured => _configuration.Enabled
+            && !string.IsNullOrEmpty(_configuration.ApiKeys.SearchApiKey)
+            && !string.IsNullOrEmpty(_configuration.ApiUrl);
 
-        public MouserApi(string searchApiKey, string orderApiKey, string cartApiKey, string apiUrl, IHttpContextAccessor httpContextAccessor)
+        public bool IsUserConfigured => _configuration.Enabled
+            && !string.IsNullOrEmpty(_configuration.ApiUrl)
+            && !string.IsNullOrEmpty(_configuration.ApiKeys.SearchApiKey);
+
+        public bool IsUserOrderConfigured => _configuration.Enabled
+            && !string.IsNullOrEmpty(_configuration.ApiUrl)
+            && !string.IsNullOrEmpty(_configuration.ApiKeys.OrderApiKey);
+
+        public bool IsUserCartConfigured => _configuration.Enabled
+            && !string.IsNullOrEmpty(_configuration.ApiUrl)
+            && !string.IsNullOrEmpty(_configuration.ApiKeys.CartApiKey);
+
+        public MouserApi(MouserConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            _searchApiKey = searchApiKey;
-            _orderApiKey = orderApiKey;
-            _cartApiKey = cartApiKey;
-            _apiUrl = apiUrl;
+            _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }
 
         public async Task<IApiResponse> GetOrderAsync(string orderId)
         {
-            var uri = Url.Combine(_apiUrl, BasePath, $"/order/{orderId}?apiKey={_orderApiKey}");
+            var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/order/{orderId}?apiKey={_configuration.ApiKeys.OrderApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Get, uri);
             var response = await _client.SendAsync(requestMessage);
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) { 
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 return ApiResponse.Create($"Mouser Api returned Unauthorized access - check that your OrderApiKey is correctly configured.", nameof(MouserApi));
-            }
             if (response.IsSuccessStatusCode)
             {
                 var resultString = response.Content.ReadAsStringAsync().Result;
@@ -69,7 +77,7 @@ namespace Binner.Common.Integrations
         /// <returns></returns>
         public async Task<IApiResponse> GetProductDetailsAsync(string partNumber)
         {
-            var uri = Url.Combine(_apiUrl, BasePath, $"/search/partnumber?apiKey={_searchApiKey}");
+            var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/partnumber?apiKey={_configuration.ApiKeys.SearchApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new
             {
@@ -96,14 +104,16 @@ namespace Binner.Common.Integrations
             return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
 
-        public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType)
+        public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25)
         {
-            var uri = Url.Combine(_apiUrl, BasePath, $"/search/keyword?apiKey={_searchApiKey}");
+            if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
+            var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/keyword?apiKey={_configuration.ApiKeys.SearchApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new
             {
                 SearchByKeywordRequest = new SearchByKeywordRequest
                 {
+                    Records = recordCount,
                     Keyword = keyword,
                     SearchOptions = SearchOptions.InStock
                 }
@@ -120,7 +130,7 @@ namespace Binner.Common.Integrations
                 var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
                 if (results.Errors.Any())
                     throw new MouserErrorsException(results.Errors);
-                return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
+                return new ApiResponse(results, nameof(MouserApi));
             }
             return null;
         }
@@ -140,7 +150,6 @@ namespace Binner.Common.Integrations
             Errors = errors;
         }
     }
-
 
     public class MouserUnauthorizedException : Exception
     {

@@ -1,17 +1,55 @@
-﻿using Binner.Model.Common;
+﻿using Binner.Common.Integrations.Models.Digikey;
+using Binner.Model.Common;
+using System;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services
 {
     public class CredentialService : ICredentialService
     {
-        private IStorageProvider _storageProvider;
-        private RequestContextAccessor _requestContext;
+        private readonly IStorageProvider _storageProvider;
+        private readonly RequestContextAccessor _requestContext;
 
         public CredentialService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
         {
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;
+        }
+
+        public string CreateContextKey(string providerName, int userId)
+            => $"{providerName}-{userId}";
+
+        /// <summary>
+        /// Create an (pending) oAuth request
+        /// </summary>
+        /// <param name="authRequest"></param>
+        /// <returns></returns>
+        public async Task<OAuthAuthorization> CreateOAuthRequestAsync(OAuthAuthorization authRequest)
+        {
+            //return await _storageProvider.CreateOAuthRequestAsync(authRequest, _requestContext.GetUserContext());
+            return null;
+        }
+
+        /// <summary>
+        /// Update a oAuth request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest)
+        {
+            //return await _storageProvider.UpdateOAuthRequestAsync(authRequest, _requestContext.GetUserContext());
+            return null;
+        }
+
+        /// <summary>
+        /// Get an existing (pending) oAuth request
+        /// </summary>
+        /// <param name="requestId">The request Id initiated the request</param>
+        /// <returns></returns>
+        public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId)
+        {
+            //return await _storageProvider.GetOAuthRequestAsync(requestId, _requestContext.GetUserContext());
+            return null;
         }
 
         /// <summary>
