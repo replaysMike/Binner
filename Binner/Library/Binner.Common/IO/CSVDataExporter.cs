@@ -1,4 +1,5 @@
-﻿using Binner.Model.Common;
+﻿using Binner.Model;
+using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -27,9 +28,20 @@ namespace Binner.Common.IO
                 var stream = new MemoryStream();
                 using (var writer = new StreamWriter(stream, Encoding.UTF8, 4096, true))
                 {
-                    foreach (DataRow row in dataTable.Rows) {
+                    // write CSV header
+                    var headerValues = new List<string>();
+                    foreach (DataColumn col in dataTable.Columns)
+                    {
+                        headerValues.Add($"{col.ColumnName}");
+                    }
+                    writer.Write($"#{string.Join(delimiter, headerValues)}{lineBreak}");
+
+                    // write data
+                    foreach (DataRow row in dataTable.Rows)
+                    {
                         var rowValues = new List<string>();
-                        foreach (DataColumn col in dataTable.Columns) {
+                        foreach (DataColumn col in dataTable.Columns)
+                        {
                             rowValues.Add($"{EscapeValue(row[col], col.DataType)}");
                         }
                         writer.Write($"{string.Join(delimiter, rowValues)}{lineBreak}");
