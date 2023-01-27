@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
-import { Label, Button, Icon, Image, Table, Modal } from "semantic-ui-react";
+import { Label, Button, Icon, Image, Table, Modal, Popup } from "semantic-ui-react";
 import _ from "underscore";
 import { formatCurrency, formatNumber } from "../common/Utils";
 
@@ -69,7 +69,7 @@ export function ChooseAlternatePartModal(props) {
         <Table.Header>
           <Table.Row>
 						<Table.HeaderCell>Family</Table.HeaderCell>
-            <Table.HeaderCell>Part</Table.HeaderCell>
+            <Table.HeaderCell>Mfr Part</Table.HeaderCell>
             <Table.HeaderCell>Manufacturer</Table.HeaderCell>
             <Table.HeaderCell>Part Type</Table.HeaderCell>
             <Table.HeaderCell>Source</Table.HeaderCell>
@@ -83,40 +83,47 @@ export function ChooseAlternatePartModal(props) {
         </Table.Header>
         <Table.Body>
           {metadataParts && metadataParts.map((p, index) => (
-            <Table.Row key={index} onClick={(e) => handleChooseAlternatePart(e, p)}>
-              <Table.Cell>
-                {part.partNumber === p.basePartNumber ? (
-                  <Label ribbon color={getColorBySource(p)}>{p.basePartNumber}</Label>
-                ) : (
-                  p.basePartNumber
-                )}
-              </Table.Cell>
-							<Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-              <Table.Cell>{p.manufacturer}</Table.Cell>
-              <Table.Cell>{p.partType}</Table.Cell>
-              <Table.Cell>{p.supplier}</Table.Cell>
-              <Table.Cell>{p.packageType}</Table.Cell>
-              <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
-              <Table.Cell>{formatNumber(p.quantityAvailable)}</Table.Cell>
-              <Table.Cell>{formatCurrency(p.cost)}</Table.Cell>
-              <Table.Cell>
-                <Image src={p.imageUrl} size="mini"></Image>
-              </Table.Cell>
-              <Table.Cell>
-                {p.datasheetUrls.map(
-                  (d, dindex) =>
-                    d &&
-                    d.length > 0 && (
-                      <p key={dindex}>
-												<Button size="mini" title="View Datasheet" onClick={(e) => handleHighlightAndVisit(e, d)}>
-													<Icon name="file pdf" />
-													View Datasheet
-												</Button>
-											</p>
-                    )
-                )}
-              </Table.Cell>
-            </Table.Row>
+            <Popup 
+              key={index}
+              wide='very'
+              flowing
+              content={<div className="part-metadata-info"><h1>{p.manufacturer}</h1> <h2>{p.manufacturerPartNumber}</h2><br/>{p.description}<br/><b>Keywords:</b> <i>{p.keywords.join(' ')}</i><br/><b>Status:</b> {p.status === 'Inactive' ? <span className="inactive">Inactive</span> : p.status}</div>}
+              position='top center'
+              trigger={<Table.Row key={index} onClick={(e) => handleChooseAlternatePart(e, p)}>
+                <Table.Cell>
+                  {part.partNumber === p.basePartNumber ? (
+                    <Label ribbon color={getColorBySource(p)}>{p.basePartNumber}</Label>
+                  ) : (
+                    p.basePartNumber
+                  )}
+                </Table.Cell>
+                <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
+                <Table.Cell>{p.manufacturer}</Table.Cell>
+                <Table.Cell>{p.partType}</Table.Cell>
+                <Table.Cell>{p.supplier}</Table.Cell>
+                <Table.Cell>{p.packageType}</Table.Cell>
+                <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
+                <Table.Cell>{formatNumber(p.quantityAvailable)}</Table.Cell>
+                <Table.Cell>{formatCurrency(p.cost)}</Table.Cell>
+                <Table.Cell>
+                  <Image src={p.imageUrl} size="mini"></Image>
+                </Table.Cell>
+                <Table.Cell>
+                  {p.datasheetUrls.map(
+                    (d, dindex) =>
+                      d &&
+                      d.length > 0 && (
+                        <p key={dindex}>
+                          <Button size="mini" title="View Datasheet" onClick={(e) => handleHighlightAndVisit(e, d)}>
+                            <Icon name="file pdf" />
+                            View Datasheet
+                          </Button>
+                        </p>
+                      )
+                  )}
+                </Table.Cell>
+              </Table.Row>}
+            />            
           ))}
         </Table.Body>
       </Table>

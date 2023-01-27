@@ -24,7 +24,6 @@ import {
   Card,
   Menu,
   Placeholder,
-  Statistic
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
@@ -33,9 +32,10 @@ import { ProjectColors } from "../common/Types";
 import { fetchApi } from "../common/fetchApi";
 import { formatCurrency, formatNumber } from "../common/Utils";
 import { toast } from "react-toastify";
+import { getPartTypeId } from "../common/partTypes";
 import "./Inventory.css";
 
-const ProductImageIntervalMs = 10000;
+const ProductImageIntervalMs = 10 * 1000;
 
 export function Inventory(props) {
   const maxRecentAddedParts = 10;
@@ -53,7 +53,6 @@ export function Inventory(props) {
     lowStockThreshold: 10
   };
 
-  const [partNumber, setPartNumber] = useState(props.params.partNumber);
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
   const [infoResponse, setInfoResponse] = useState([]);
   const [datasheetTitle, setDatasheetTitle] = useState('');
@@ -63,7 +62,7 @@ export function Inventory(props) {
   const scannedPartsSerialized = JSON.parse(localStorage.getItem("scannedPartsSerialized")) || [];
   const defaultPart = {
     partId: 0,
-    partNumber: "",
+    partNumber: props.params.partNumber || "",
     allowPotentialDuplicate: false,
     quantity: viewPreferences.lastQuantity + "",
     lowStockThreshold: viewPreferences.lowStockThreshold + "",
@@ -150,12 +149,12 @@ export function Inventory(props) {
   }, [props.params.partNumber]); //test
 
   const fetchPartMetadata = async (input) => {
-    Inventory.abortController.abort(); // Cancel the previous request
-    Inventory.abortController = new AbortController();
+    Inventory.infoAbortController.abort();
+    Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
     try {
       const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
-        signal: Inventory.abortController.signal
+        signal: Inventory.infoAbortController.signal
       });
       const data = response.data;
       if (data.requiresAuthentication) {
@@ -175,7 +174,7 @@ export function Inventory(props) {
 
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
-        if (!partNumber)
+        if (!part.partNumber)
           setPartFromMetadata(metadataParts, suggestedPart);
       }
       setInfoResponse(infoResponse);
@@ -295,12 +294,12 @@ export function Inventory(props) {
   };
 
   const fetchPart = async (partNumber) => {
-    Inventory.abortController.abort(); // Cancel the previous request
-    Inventory.abortController = new AbortController();
+    Inventory.partAbortController.abort();
+    Inventory.partAbortController = new AbortController();
     setLoadingPartMetadata(true);
     try {
       const response = await fetchApi(`part?partNumber=${partNumber}`, {
-        signal: Inventory.abortController.signal
+        signal: Inventory.partAbortController.signal
       });
       const { data } = response;
       setPart(data);
@@ -442,7 +441,6 @@ export function Inventory(props) {
 
   const resetForm = (saveMessage = "", clearAll = false) => {
     setIsDirty(false);
-    setPartNumber("");
     setSaveMessage(saveMessage);
     setMetadataParts([]);
     setDuplicateParts([]);
@@ -541,8 +539,8 @@ export function Inventory(props) {
   const setPartFromMetadata = (metadataParts, suggestedPart) => {
     const entity = { ...part };
     const mappedPart = {
-      partNumber: suggestedPart.partNumber,
-      partTypeId: suggestedPart.partTypeId,
+      partNumber: suggestedPart.basePartNumber,
+      partTypeId: getPartTypeId(suggestedPart.partType, partTypes),
       mountingTypeId: suggestedPart.mountingTypeId,
       packageType: suggestedPart.packageType,
       keywords: suggestedPart.keywords && suggestedPart.keywords.join(" ").toLowerCase(),
@@ -557,11 +555,13 @@ export function Inventory(props) {
       imageUrl: suggestedPart.imageUrl,
       status: suggestedPart.status
     };
+    entity.partNumber = mappedPart.partNumber;
     entity.supplier = mappedPart.supplier;
     entity.supplierPartNumber = mappedPart.supplierPartNumber;
     if (mappedPart.partTypeId) entity.partTypeId = mappedPart.partTypeId || "";
     if (mappedPart.mountingTypeId) entity.mountingTypeId = mappedPart.mountingTypeId || "";
     entity.packageType = mappedPart.packageType || "";
+    entity.cost = mappedPart.cost || 0.00;
     entity.keywords = mappedPart.keywords || "";
     entity.description = mappedPart.description || "";
     entity.manufacturer = mappedPart.manufacturer || "";
@@ -603,14 +603,12 @@ export function Inventory(props) {
       )
     );
 
-    entity.cost = lowestCostPart.cost;
     entity.lowestCostSupplier = lowestCostPart.supplier;
     entity.lowestCostSupplierUrl = lowestCostPart.productUrl;
     setPart(entity);
   };
 
   const handleChooseAlternatePart = (e, part) => {
-    e.preventDefault();
     setPartFromMetadata(metadataParts, part);
     setPartModalOpen(false);
   };
@@ -648,36 +646,42 @@ export function Inventory(props) {
         </Table.Header>
         <Table.Body>
           {metadataParts.map((p, index) => (
-            <Table.Row key={index} onClick={(e) => handleChooseAlternatePart(e, p)}>
-              <Table.Cell>
-                {part.supplier === p.supplier && part.supplierPartNumber === p.supplierPartNumber ? (
-                  <Label ribbon>{p.manufacturerPartNumber}</Label>
-                ) : (
-                  p.manufacturerPartNumber
-                )}
-              </Table.Cell>
-              <Table.Cell>{p.manufacturer}</Table.Cell>
-              <Table.Cell>{p.partType}</Table.Cell>
-              <Table.Cell>{p.supplier}</Table.Cell>
-              <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-              <Table.Cell>{p.packageType}</Table.Cell>
-              <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
-              <Table.Cell>{p.cost}</Table.Cell>
-              <Table.Cell>
-                <Image src={p.imageUrl} size="mini"></Image>
-              </Table.Cell>
-              <Table.Cell>
-                {p.datasheetUrls.map(
-                  (d, dindex) =>
-                    d &&
-                    d.length > 0 && (
-                      <Button key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)}>
-                        View Datasheet
-                      </Button>
-                    )
-                )}
-              </Table.Cell>
-            </Table.Row>
+            <Popup 
+              key={index}
+              content="This is a test"
+              trigger={
+              <Table.Row  onClick={(e) => handleChooseAlternatePart(e, p)}>
+                <Table.Cell>
+                  {part.supplier === p.supplier && part.supplierPartNumber === p.supplierPartNumber ? (
+                    <Label ribbon>{p.manufacturerPartNumber}</Label>
+                  ) : (
+                    p.manufacturerPartNumber
+                  )}
+                </Table.Cell>
+                <Table.Cell>{p.manufacturer}</Table.Cell>
+                <Table.Cell>{p.partType}</Table.Cell>
+                <Table.Cell>{p.supplier}</Table.Cell>
+                <Table.Cell>{p.supplierPartNumber}</Table.Cell>
+                <Table.Cell>{p.packageType}</Table.Cell>
+                <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
+                <Table.Cell>{p.cost}</Table.Cell>
+                <Table.Cell>
+                  <Image src={p.imageUrl} size="mini"></Image>
+                </Table.Cell>
+                <Table.Cell>
+                  {p.datasheetUrls.map(
+                    (d, dindex) =>
+                      d &&
+                      d.length > 0 && (
+                        <Button key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)}>
+                          View Datasheet
+                        </Button>
+                      )
+                  )}
+                </Table.Cell>
+              </Table.Row>
+            } />
+            
           ))}
         </Table.Body>
       </Table>
@@ -760,7 +764,6 @@ export function Inventory(props) {
   };
 
   const handleRecentPartClick = async (e, part) => {
-    setPartNumber(part.partNumber);
     setPart(part);
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
     await fetchPart(part.partNumber);
@@ -991,7 +994,7 @@ export function Inventory(props) {
   };
 
   const matchingPartsList = renderAllMatchingParts(part, metadataParts);
-  const title = partNumber ? "Edit Inventory" : "Add Inventory";
+  const title = (part.partId > 0 || props.params.partNumber) ? "Edit Inventory" : "Add Inventory";
   
   /* RENDER */
 
@@ -1054,7 +1057,7 @@ export function Inventory(props) {
 
         <Grid celled className="inventory-container">
           <Grid.Row>
-            <Grid.Column width={11} className="left-column">
+            <Grid.Column width={12} className="left-column">
 
               {/** LEFT COLUMN */}
 
@@ -1168,6 +1171,7 @@ export function Inventory(props) {
                         name="location"
                         onFocus={disableKeyboardListening}
                         onBlur={enableKeyboardListening}
+                        width={5}
                       />
                     }
                   />
@@ -1185,6 +1189,7 @@ export function Inventory(props) {
                         name="binNumber"
                         onFocus={disableKeyboardListening}
                         onBlur={enableKeyboardListening}
+                        width={4}
                       />
                     }
                   />
@@ -1202,6 +1207,7 @@ export function Inventory(props) {
                         name="binNumber2"
                         onFocus={disableKeyboardListening}
                         onBlur={enableKeyboardListening}
+                        width={4}
                       />
                     }
                   />
@@ -1210,7 +1216,7 @@ export function Inventory(props) {
                 
               <Form.Field inline>
                 <Button.Group>
-                  <Button type="submit" primary style={{ width: "200px" }}>
+                  <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
                     <Icon name="save" />
                     Save
                   </Button>
@@ -1240,13 +1246,13 @@ export function Inventory(props) {
                       <Popup
                       hideOnScroll
                       disabled={viewPreferences.helpDisabled}
-                      onOpen={this.disableHelp}
+                      onOpen={disableHelp}
                       content="Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available."
                       trigger={
                         <Button secondary><Icon name="external alternate" color="blue" />Choose alternate part ({formatNumber(metadataParts.length)})</Button>
                       }
                     />                      
-                    } part={part} metadataParts={metadataParts} onPartChosen={this.handleChooseAlternatePart} />
+                    } part={part} metadataParts={metadataParts} onPartChosen={handleChooseAlternatePart} />
                   )}
 
                 <Form.Group>
@@ -1331,11 +1337,11 @@ export function Inventory(props) {
                   <Table compact celled sortable selectable striped unstackable size="small">
                     <Table.Header>
                       <Table.Row>
-                        <Table.HeaderCell>Supplier</Table.HeaderCell>
-                        <Table.HeaderCell>Supplier Part Number</Table.HeaderCell>
-                        <Table.HeaderCell>Cost</Table.HeaderCell>
-                        <Table.HeaderCell>Quantity Available</Table.HeaderCell>
-                        <Table.HeaderCell>Minimum Order Quantity</Table.HeaderCell>
+                        <Table.HeaderCell textAlign="center">Supplier</Table.HeaderCell>
+                        <Table.HeaderCell textAlign="center">Supplier Part Number</Table.HeaderCell>
+                        <Table.HeaderCell textAlign="center">Cost</Table.HeaderCell>
+                        <Table.HeaderCell textAlign="center">Quantity Available</Table.HeaderCell>
+                        <Table.HeaderCell textAlign="center">Minimum Order Quantity</Table.HeaderCell>
                         <Table.HeaderCell></Table.HeaderCell>
                         <Table.HeaderCell></Table.HeaderCell>
                       </Table.Row>
@@ -1343,12 +1349,12 @@ export function Inventory(props) {
                     <Table.Body>
                       {part && metadataParts && _.filter(metadataParts, p => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
                         <Table.Row key={supplierKey}>
-                          <Table.Cell>{supplier.supplier}</Table.Cell>
-                          <Table.Cell>{supplier.supplierPartNumber}</Table.Cell>
-                          <Table.Cell>{formatCurrency(supplier.cost)}</Table.Cell>
-                          <Table.Cell>{formatNumber(supplier.quantityAvailable)}</Table.Cell>
-                          <Table.Cell>{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell textAlign="center">{supplier.supplier}</Table.Cell>
+                          <Table.Cell textAlign="center">{supplier.supplierPartNumber}</Table.Cell>
+                          <Table.Cell textAlign="center">{formatCurrency(supplier.cost)}</Table.Cell>
+                          <Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
+                          <Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
+                          <Table.Cell textAlign="center">
                             {supplier.imageUrl && (
                               <img
                                 src={supplier.imageUrl}
@@ -1357,20 +1363,20 @@ export function Inventory(props) {
                               />
                             )}
                           </Table.Cell>
-                          <Table.Cell><a href={supplier.productUrl} target="_blank" rel="noreferrer">Visit</a></Table.Cell>
+                          <Table.Cell textAlign="center"><a href={supplier.productUrl} target="_blank" rel="noreferrer">Visit</a></Table.Cell>
                         </Table.Row>
                       ))}
                     </Table.Body>
                   </Table>
 
-                </Segment>
+              </Segment>
             </Grid.Column>
 
-            <Grid.Column width={4} className="centered right-column">
+            <Grid.Column width={4} className="right-column">
               
               {/** RIGHT COLUMN */}
 
-              <Menu className="menu-meta">
+              <Menu>
                 <Menu.Item onClick={(e) => visitAnchor(e, '#datasheets')}>Datasheets</Menu.Item>
                 <Menu.Item onClick={(e) => visitAnchor(e, '#pinout')}>Pinout</Menu.Item>
                 <Menu.Item onClick={(e) => visitAnchor(e, '#circuits')}>Circuits</Menu.Item>
@@ -1379,7 +1385,7 @@ export function Inventory(props) {
               { /* Product Images Carousel */ }
               
               <Card color="blue">
-                {infoResponse && infoResponse.productImages ? (
+                {infoResponse && infoResponse.productImages && infoResponse.productImages.length > 0 ? (
                   <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered">
                   {infoResponse.productImages.map((productImage, imageKey) => (
                     <Carousel.Item key={imageKey}>
@@ -1401,49 +1407,9 @@ export function Inventory(props) {
                 </Card.Content>
               </Card>
 
-              { /* Locate / Location */ }
-
-                <div style={{margin: 0, padding: 0, fontWeight: 400}}>{part.location}</div>
-                <Segment inverted textAlign="center" className="small partLocation">
-                  <Statistic.Group widths="four">
-                    <Statistic color="red" inverted className="small">
-                      <Statistic.Value className="small">
-                        {part.binNumber}
-                      </Statistic.Value>
-                      <Statistic.Label className="small">Case Number</Statistic.Label>
-                    </Statistic>
-                    <Statistic inverted>
-                      <Statistic.Value className="locate" title="Locate Bin">
-                        <Icon name="bullseye" size="mini" />
-                      </Statistic.Value>
-                      <Statistic.Label className="small">
-                        Locate                         
-                        <Popup
-                          hoverable
-                          hideOnScroll
-                          disabled={viewPreferences.helpDisabled}
-                          onOpen={disableHelp}
-                          content={(<div>With a supported electronic <a href="/binnerbin">Binner Bin</a> this button will light up which bin the part is located in!</div>)}
-                          trigger={
-                            <Icon name="info circle" color="blue" style={{marginLeft: '4px'}} />
-                          }
-                        />
-                        
-                      </Statistic.Label>
-                    </Statistic>
-                    <Statistic color="blue" inverted className="small">
-                      <Statistic.Value className="small">
-                        {part.binNumber2}
-                      </Statistic.Value>
-                      <Statistic.Label className="small">Bin Number</Statistic.Label>
-                    </Statistic>
-                  </Statistic.Group>
-                </Segment>
-
-
                 { /* DATASHEETS */ }
                 <Card id="datasheets" color="green">
-                  {infoResponse && infoResponse.datasheets ? (
+                  {infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0 ? (
                   <div>
                     <Carousel variant="dark" interval={null} style={{cursor: 'pointer'}} onSelect={onCurrentDatasheetChanged}>
                     {infoResponse.datasheets.map((datasheet, datasheetKey) => (
@@ -1476,7 +1442,7 @@ export function Inventory(props) {
                 { /* PINOUT */ }
 
                 <Card id="pinout" color="purple">
-                  {infoResponse && infoResponse.pinouts ? (
+                  {infoResponse && infoResponse.pinouts && infoResponse.pinouts.length > 0 ? (
                     <div>
                       <Carousel variant="dark" interval={null} style={{cursor: 'pointer'}}>
                         {infoResponse.pinouts.map((pinout, datasheetKey) => (
@@ -1502,7 +1468,7 @@ export function Inventory(props) {
                 { /* CIRCUITS */}
 
                 <Card id="circuits" color="violet">
-                  {infoResponse && infoResponse.circuits ? (
+                  {infoResponse && infoResponse.circuits && infoResponse.circuits.length > 0 ? (
                     <div>
                       <Carousel variant="dark" interval={null} style={{cursor: 'pointer'}}>
                         {infoResponse.circuits.map((circuit, datasheetKey) => (
@@ -1598,7 +1564,8 @@ export function Inventory(props) {
   );
 }
 
-Inventory.abortController = new AbortController();
+Inventory.partAbortController = new AbortController();
+Inventory.infoAbortController = new AbortController();
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default (props) => <Inventory {...props} params={useParams()} history={useNavigate()} />;
