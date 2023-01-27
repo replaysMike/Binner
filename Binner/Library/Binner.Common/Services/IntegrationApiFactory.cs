@@ -1,11 +1,9 @@
-﻿using Binner.Common.Integrations;
-using Binner.Common.Models.Configuration;
+﻿using Binner.Common.Configuration;
+using Binner.Common.Integrations;
 using Binner.Common.Models.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services
@@ -17,14 +15,16 @@ namespace Binner.Common.Services
         private readonly RequestContextAccessor _requestContext;
         private readonly ICredentialService _credentialService;
         private readonly IntegrationConfiguration _integrationConfiguration;
+        private readonly WebHostServiceConfiguration _webHostServiceConfiguration;
 
-        public IntegrationApiFactory(IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext, ICredentialService credentialService, IntegrationConfiguration integrationConfiguration)
+        public IntegrationApiFactory(IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext, ICredentialService credentialService, IntegrationConfiguration integrationConfiguration, WebHostServiceConfiguration webHostServiceConfiguration)
         {
             _credentialProvider = credentialProvider;
             _httpContextAccessor = httpContextAccessor;
             _requestContext = requestContext;
             _credentialService = credentialService;
             _integrationConfiguration = integrationConfiguration;
+            _webHostServiceConfiguration = webHostServiceConfiguration;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Binner.Common.Services
         {
             var apiType = typeof(T);
 
-            if (apiType == typeof(SwarmApi))
+            if (apiType == typeof(Integrations.SwarmApi))
             {
                 var result = CreateGlobalSwarmApi();
                 var resultTyped = result as T;
@@ -90,36 +90,62 @@ namespace Binner.Common.Services
                     .Where(x => x.UserId.Equals(userId))
                     .FirstOrDefaultAsync()
                     ?? new Data.DataModel.UserIntegrationConfiguration();*/
-                var userIntegrationConfiguration = new UserIntegrationConfiguration(); // todo: finish
+                // todo: temporary until we move integration configuration to the UI
+                var userIntegrationConfiguration = new UserIntegrationConfiguration
+                {
+                    SwarmEnabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
+                    SwarmApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
+                    SwarmApiUrl = _webHostServiceConfiguration.Integrations.Swarm.ApiUrl,
+
+                    DigiKeyEnabled = _webHostServiceConfiguration.Integrations.Digikey.Enabled,
+                    
+                    MouserEnabled = _webHostServiceConfiguration.Integrations.Mouser.Enabled,
+                    MouserCartApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.CartApiKey,
+                    MouserOrderApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.OrderApiKey,
+                    
+                    OctopartEnabled = _webHostServiceConfiguration.Integrations.Octopart.Enabled,
+                    OctopartApiKey = _webHostServiceConfiguration.Integrations.Octopart.ApiKey,
+                    OctopartApiUrl = _webHostServiceConfiguration.Integrations.Octopart.ApiUrl,
+                };
 
                 // build the credentials list
                 var credentials = new List<ApiCredential>();
 
                 // add user defined credentials
-                var swarmConfiguration = new Dictionary<string, object?>();
-                swarmConfiguration.Add("Enabled", userIntegrationConfiguration.SwarmEnabled);
+                var swarmConfiguration = new Dictionary<string, object?>
+                {
+                    { "Enabled", userIntegrationConfiguration.SwarmEnabled },
+                    { "ApiKey", userIntegrationConfiguration.SwarmApiKey },
+                    { "ApiUrl", userIntegrationConfiguration.SwarmApiUrl },
+                };
                 credentials.Add(new ApiCredential(userId, swarmConfiguration, nameof(SwarmApi)));
 
-                var digikeyConfiguration = new Dictionary<string, object?>();
-                digikeyConfiguration.Add("Enabled", userIntegrationConfiguration.DigiKeyEnabled);
+                var digikeyConfiguration = new Dictionary<string, object?>
+                {
+                    { "Enabled", userIntegrationConfiguration.DigiKeyEnabled }
+                };
                 credentials.Add(new ApiCredential(userId, digikeyConfiguration, nameof(DigikeyApi)));
 
-                var mouserConfiguration = new Dictionary<string, object?>();
-                mouserConfiguration.Add("Enabled", userIntegrationConfiguration.MouserEnabled);
-                mouserConfiguration.Add("CartApiKey", userIntegrationConfiguration.MouserCartApiKey);
-                mouserConfiguration.Add("OrderApiKey", userIntegrationConfiguration.MouserOrderApiKey);
+                var mouserConfiguration = new Dictionary<string, object?>
+                {
+                    { "Enabled", userIntegrationConfiguration.MouserEnabled },
+                    { "CartApiKey", userIntegrationConfiguration.MouserCartApiKey },
+                    { "OrderApiKey", userIntegrationConfiguration.MouserOrderApiKey }
+                };
                 credentials.Add(new ApiCredential(userId, mouserConfiguration, nameof(MouserApi)));
 
-                var octopartConfiguration = new Dictionary<string, object?>();
-                octopartConfiguration.Add("Enabled", userIntegrationConfiguration.OctopartEnabled);
-                octopartConfiguration.Add("ApiKey", userIntegrationConfiguration.OctopartApiKey);
-                octopartConfiguration.Add("ApiUrl", userIntegrationConfiguration.OctopartApiUrl);
+                var octopartConfiguration = new Dictionary<string, object?>
+                {
+                    { "Enabled", userIntegrationConfiguration.OctopartEnabled },
+                    { "ApiKey", userIntegrationConfiguration.OctopartApiKey },
+                    { "ApiUrl", userIntegrationConfiguration.OctopartApiUrl }
+                };
                 credentials.Add(new ApiCredential(userId, octopartConfiguration, nameof(OctopartApi)));
 
                 return new ApiCredentialConfiguration(userId, credentials);
             };
 
-            if (apiType == typeof(SwarmApi))
+            if (apiType == typeof(Integrations.SwarmApi))
             {
                 var result = await CreateSwarmApiAsync(credentialKey, getCredentialsMethod);
                 var resultTyped = result as T;
@@ -150,26 +176,30 @@ namespace Binner.Common.Services
             throw new NotImplementedException($"Unhandled type '{apiType.Name}'");
         }
 
-        private SwarmApi CreateGlobalSwarmApi()
+        private Integrations.SwarmApi CreateGlobalSwarmApi()
         {
             var configuration = new SwarmConfiguration
             {
                 // system settings
                 Enabled = _integrationConfiguration.Swarm.Enabled,
+                ApiKey = _integrationConfiguration.Swarm.ApiKey,
+                ApiUrl = _integrationConfiguration.Swarm.ApiUrl,
             };
-            var api = new SwarmApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new Integrations.SwarmApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
             return api;
         }
 
-        private async Task<SwarmApi> CreateSwarmApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod)
+        private async Task<Integrations.SwarmApi> CreateSwarmApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod)
         {
             var credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(SwarmApi), getCredentialsMethod);
             var configuration = new SwarmConfiguration
             {
                 // user can disable the api
                 Enabled = _integrationConfiguration.Swarm.Enabled && credentials.GetCredentialBool("Enabled"),
+                ApiKey= _integrationConfiguration.Swarm.ApiKey,
+                ApiUrl = _integrationConfiguration.Swarm.ApiUrl,
             };
-            var api = new SwarmApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new Integrations.SwarmApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
             return api;
         }
 

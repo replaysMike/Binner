@@ -23,6 +23,16 @@ namespace Binner.Common.Models.Configuration.Integrations
         public bool SwarmEnabled { get; set; } = true;
 
         /// <summary>
+        /// Swarm api key
+        /// </summary>
+        public string? SwarmApiKey { get; set; }
+
+        /// <summary>
+        /// Swarm api url
+        /// </summary>
+        public string? SwarmApiUrl { get; set; }
+
+        /// <summary>
         /// Digikey api enabled
         /// </summary>
         public bool DigiKeyEnabled { get; set; } = true;

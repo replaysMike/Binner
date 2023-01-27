@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
@@ -114,9 +113,9 @@ namespace Binner.Common.Services
         public async Task<IServiceResult<CategoriesResponse>> GetCategoriesAsync()
         {
             var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
             if (!digikeyApi.IsUserConfigured)
-                return ServiceResult<CategoriesResponse>.Create("Api is not enabled.", nameof(DigikeyApi));
+                return ServiceResult<CategoriesResponse>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             var apiResponse = await digikeyApi.GetCategoriesAsync();
             if (apiResponse.RequiresAuthentication)
@@ -150,9 +149,9 @@ namespace Binner.Common.Services
         private async Task<IServiceResult<ExternalOrderResponse>> GetExternalDigikeyOrderAsync(string orderId)
         {
             var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
             if (!digikeyApi.IsUserConfigured)
-                return ServiceResult<ExternalOrderResponse>.Create("Api is not enabled.", nameof(DigikeyApi));
+                return ServiceResult<ExternalOrderResponse>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             var apiResponse = await digikeyApi.GetOrderAsync(orderId);
             if (apiResponse.RequiresAuthentication)
@@ -238,9 +237,9 @@ namespace Binner.Common.Services
         private async Task<IServiceResult<ExternalOrderResponse>> GetExternalMouserOrderAsync(string orderId)
         {
             var user = _requestContext.GetUserContext();
-            var mouserApi = await _integrationApiFactory.CreateAsync<MouserApi>(user.UserId);
+            var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user.UserId);
             if (!mouserApi.IsUserOrderConfigured)
-                return ServiceResult<ExternalOrderResponse>.Create("Mouser Ordering Api is not enabled. Please configure your Mouser API settings and add an Ordering Api key.", nameof(MouserApi));
+                return ServiceResult<ExternalOrderResponse>.Create("Mouser Ordering Api is not enabled. Please configure your Mouser API settings and add an Ordering Api key.", nameof(Integrations.MouserApi));
 
             var apiResponse = await mouserApi.GetOrderAsync(orderId);
             if (apiResponse.RequiresAuthentication)
@@ -304,9 +303,9 @@ namespace Binner.Common.Services
         public async Task<IServiceResult<PartResults>> GetBarcodeInfoAsync(string barcode)
         {
             var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
             if (!digikeyApi.IsUserConfigured)
-                return ServiceResult<PartResults>.Create("Api is not enabled.", nameof(DigikeyApi));
+                return ServiceResult<PartResults>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             // currently only supports DigiKey, as Mouser barcodes are part numbers
             var response = new PartResults();
@@ -405,14 +404,14 @@ namespace Binner.Common.Services
             var totalImages = 0;
             var user = _requestContext.GetUserContext();
             //var context = await _contextFactory.CreateDbContextAsync();
-            var swarmApi = await _integrationApiFactory.CreateAsync<SwarmApi>(user.UserId);
-            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user.UserId);
-            var mouserApi = await _integrationApiFactory.CreateAsync<MouserApi>(user.UserId);
-            var octopartApi = await _integrationApiFactory.CreateAsync<OctopartApi>(user.UserId);
+            var swarmApi = await _integrationApiFactory.CreateAsync<Integrations.SwarmApi>(user?.UserId ?? 0);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
+            var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
+            var octopartApi = await _integrationApiFactory.CreateAsync<Integrations.OctopartApi>(user?.UserId ?? 0);
 
             var datasheets = new List<string>();
             var response = new PartResults();
-            var swarmResponse = new SearchPartsResponse();
+            var swarmResponse = new SwarmApi.Response.SearchPartResponse();
             var digikeyResponse = new KeywordSearchResponse();
             var mouserResponse = new SearchResultsResponse();
             var searchKeywords = partNumber;
@@ -448,8 +447,13 @@ namespace Binner.Common.Services
             }
             if (swarmApi.IsSearchPartsConfigured)
             {
-                // use internal swarm service to avoid network request overhead
-                swarmResponse = await _swarmService.SearchPartsAsync(new SearchPartsRequest(partNumber, partType, mountingType));
+                var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
+                if (apiResponse != null)
+                {
+                    if (apiResponse.Errors?.Any() == true)
+                        return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    swarmResponse = (SwarmApi.Response.SearchPartResponse)apiResponse.Response;
+                }
             }
 
             // todo: cache part types (I think we already have it somewhere)
@@ -479,11 +483,121 @@ namespace Binner.Common.Services
 
             return ServiceResult<PartResults>.Create(response);
 
-            void ProcessSwarmResponse(string partNumber, PartResults response, SearchPartsResponse swarmResponse, ICollection<PartType> partTypes, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
+            void ProcessSwarmResponse(string partNumber, PartResults response, SwarmApi.Response.SearchPartResponse swarmResponse, ICollection<PartType> partTypes, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
             {
                 var imagesAdded = 0;
-                foreach (var part in swarmResponse.Parts)
+                foreach (var swarmPart in swarmResponse.Parts)
                 {
+                    var part = new PartNumber
+                    {
+                        AlternateDescription = swarmPart.AlternateDescription,
+                        AlternateNames = swarmPart.AlternateNames,
+                        CreatedFromSupplierId = swarmPart.CreatedFromSupplierId,
+                        DateCreatedUtc = swarmPart.DateCreatedUtc,
+                        DatePrunedUtc = swarmPart.DatePrunedUtc,
+                        DefaultImageId = swarmPart.DefaultImageId,
+                        DefaultImageResourcePath = swarmPart.DefaultImageResourcePath,
+                        DefaultImageResourceSourceUrl = swarmPart.DefaultImageResourceSourceUrl,
+                        Description = swarmPart.Description,
+                        Name = swarmPart.Name,
+                        PartNumberId = swarmPart.PartNumberId,
+                        PartTypeId = swarmPart.PartTypeId,
+                        PrimaryDatasheetId = swarmPart.PrimaryDatasheetId,
+                        ResourceId = swarmPart.ResourceId,
+                        Source = (DataSource)(int)swarmPart.Source,
+                        SwarmPartNumberId = swarmPart.SwarmPartNumberId,
+                        PartNumberManufacturers = swarmPart.PartNumberManufacturers.Select(x => new PartNumberManufacturer
+                        {
+                            AlternateDescription = x.AlternateDescription,
+                            AlternateNames = x.AlternateNames,
+                            CreatedFromSupplierId = x.CreatedFromSupplierId,
+                            Datasheets = x.Datasheets.Select(d => new DatasheetBasic
+                            {
+                                BasePartNumber = d.BasePartNumber,
+                                DatasheetId = d.DatasheetId,
+                                DocumentType = (PdfDocumentTypes)(int)d.DocumentType,
+                                ImageCount = d.ImageCount,
+                                ManufacturerName = d.ManufacturerName,
+                                OriginalUrl = d.OriginalUrl,
+                                PageCount = d.PageCount,
+                                ProductUrl = d.ProductUrl,
+                                ResourceId = d.ResourceId,
+                                ResourcePath = d.ResourcePath,
+                                ResourceSourceUrl = d.ResourceSourceUrl,
+                                ShortDescription = d.ShortDescription,
+                                Title = d.Title
+                            }).ToList(),
+                            DateCreatedUtc = x.DateCreatedUtc,
+                            DatePrunedUtc = x.DatePrunedUtc,
+                            DefaultPartNumberManufacturerImageMetadataId = x.DefaultPartNumberManufacturerImageMetadataId,
+                            //Description = x.Description,
+                            ImageMetadata = x.ImageMetadata.Select(i => new PartNumberManufacturerImageMetadata
+                            {
+                                CreatedFromSupplierId = i.CreatedFromSupplierId,
+                                ImageId = i.ImageId,
+                                ImageType = (ImageTypes)(int)i.ImageType,
+                                IsDefault = i.IsDefault,
+                                OriginalUrl = i.OriginalUrl,
+                                PartNumberManufacturerId = i.PartNumberManufacturerId,
+                                PartNumberManufacturerImageMetadataId = i.PartNumberManufacturerImageMetadataId,
+                                ResourcePath = i.ResourcePath,
+                                ResourceSourceUrl = i.ResourceSourceUrl
+                            }).ToList(),
+                            IsObsolete = x.IsObsolete,
+                            Keywords = x.Keywords.Select(k => new Keyword
+                            {
+                                KeywordId = k.KeywordId,
+                                Name = k.Name
+                            }).ToList(),
+                            ManufacturerId = x.ManufacturerId,
+                            ManufacturerName = x.ManufacturerName,
+                            Name = x.Name,
+                            Package = x.Package.Select(p => new Package
+                            {
+                                Name = p.Name,
+                                PackageId = p.PackageId,
+                                PinCount = p.PinCount,
+                                SizeDepthMm = p.SizeDepthMm,
+                                SizeHeightMm = p.SizeHeightMm,
+                                SizeWidthMm = p.SizeWidthMm
+                            }).ToList(),
+                            Parametrics = x.Parametrics.Select(p => new PartNumberManufacturerParametric
+                            {
+                                Name = p.Name,
+                                ParametricType = (ParametricTypes)(int)p.ParametricType,
+                                PartNumberManufacturerId = p.PartNumberManufacturerId,
+                                PartNumberManufacturerParametricId = p.PartNumberManufacturerParametricId,
+                                Units = (ParametricUnits?)(int?)p.Units,
+                                ValueAsBool = p.ValueAsBool,
+                                ValueAsDouble = p.ValueAsDouble,
+                                ValueAsString = p.ValueAsString
+                            }).ToList(),
+                            PartNumberId = x.PartNumberId,
+                            PartNumberManufacturerId = x.PartNumberManufacturerId,
+                            PartTypeId = x.PartTypeId,
+                            PrimaryDatasheetId = x.PrimaryDatasheetId,
+                            Source = (DataSource)(int)x.Source,
+                            Suppliers = x.Suppliers.Select(s => new PartNumberManufacturerSupplierBasic
+                            {
+                                Cost = s.Cost,
+                                Currency = s.Currency,
+                                DateCreatedUtc = s.DateCreatedUtc,
+                                FactoryLeadTime = s.FactoryLeadTime,
+                                FactoryStockAvailable = s.FactoryStockAvailable,
+                                MinimumOrderQuantity = s.MinimumOrderQuantity,
+                                Packaging = s.Packaging,
+                                PartNumberManufacturerId = s.PartNumberManufacturerId,
+                                PartNumberManufacturerSupplierId = s.PartNumberManufacturerSupplierId,
+                                ProductUrl = s.ProductUrl,
+                                QuantityAvailable = s.QuantityAvailable,
+                                StockLastUpdatedUtc = s.StockLastUpdatedUtc,
+                                SupplierId = s.SupplierId,
+                                SupplierName = s.SupplierName,
+                                SupplierPartNumber = s.SupplierPartNumber
+                            }).ToList(),
+                            SwarmPartNumberId = x.SwarmPartNumberId
+                        }).ToList()
+                    };
                     var defaultImageUrl = GetDefaultImageUrl(part);
                     if (defaultImageUrl != null)
                         productImageUrls.Add(new NameValuePair<string>(part.Name, defaultImageUrl));
@@ -587,9 +701,9 @@ namespace Binner.Common.Services
                 }
             }
 
-            async Task ProcessDigikeyResponseAsync(string partNumber, PartResults response, KeywordSearchResponse digikeyResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
+            Task ProcessDigikeyResponseAsync(string partNumber, PartResults response, KeywordSearchResponse digikeyResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
             {
-                if (digikeyResponse == null || digikeyResponse.Products == null) return;
+                if (digikeyResponse == null || digikeyResponse.Products == null) return Task.CompletedTask;
                 var imagesAdded = 0;
                 var digiKeyDatasheetUrls = digikeyResponse.Products
                     .Where(x => !string.IsNullOrEmpty(x.PrimaryDatasheet))
@@ -686,12 +800,14 @@ namespace Binner.Common.Services
                         //FactoryStockAvailable = factoryStockAvailable,
                         //FactoryLeadTime = part.LeadTime
                     });
+
                 }
+                return Task.CompletedTask;
             }
 
-            async Task ProcessMouserResponseAsync(string partNumber, PartResults response, SearchResultsResponse mouserResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
+            Task ProcessMouserResponseAsync(string partNumber, PartResults response, SearchResultsResponse mouserResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
             {
-                if (mouserResponse == null || mouserResponse.SearchResults == null) return;
+                if (mouserResponse == null || mouserResponse.SearchResults == null) return Task.CompletedTask;
                 var imagesAdded = 0;
                 var mouserDatasheetUrls = mouserResponse.SearchResults.Parts
                     .Select(x => x.DataSheetUrl)
@@ -766,6 +882,7 @@ namespace Binner.Common.Services
                         FactoryLeadTime = part.LeadTime
                     });
                 }
+                return Task.CompletedTask;
             }
 
             void SetPartTypesAndKeywords(PartResults response, ICollection<PartType> partTypes)
