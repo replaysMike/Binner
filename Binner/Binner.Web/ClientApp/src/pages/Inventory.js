@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import _ from "underscore";
-import AwesomeDebouncePromise from "awesome-debounce-promise";
+import debounce from 'lodash.debounce';
 import {
   Icon,
   Input,
@@ -125,6 +125,7 @@ export function Inventory(props) {
   const [loadingPartTypes, setLoadingPartTypes] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
+  const [partMetadataIsSubscribed, setPartMetadataIsSubscribed] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
@@ -133,6 +134,7 @@ export function Inventory(props) {
   useEffect(() => {
     const partNumberStr = props.params.partNumber;
     const fetchData = async () => {
+      setPartMetadataIsSubscribed(false);
       await fetchPartTypes();
       await fetchProjects();
       await fetchRecentRows();
@@ -145,13 +147,18 @@ export function Inventory(props) {
       addKeyboardHandler();
     };
     fetchData().catch(console.error);
-    return () => removeKeyboardHandler();
+    return () => {
+      removeKeyboardHandler();
+      scannerDebounced.cancel();
+      searchDebounced.cancel();
+    }
   }, [props.params.partNumber]); //test
 
   const fetchPartMetadata = async (input) => {
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
+    setPartMetadataIsSubscribed(false);
     try {
       const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
         signal: Inventory.infoAbortController.signal
@@ -175,12 +182,15 @@ export function Inventory(props) {
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
         if (!part.partNumber)
-          setPartFromMetadata(metadataParts, suggestedPart);
+          setPartFromMetadata(metadataParts, suggestedPart, partTypes);
+      } else {
+        // no part metadata available
+        setPartMetadataIsSubscribed(true);
       }
+
       setInfoResponse(infoResponse);
       setMetadataParts(metadataParts);
       setLoadingPartMetadata(false);
-
 
     } catch (ex) {
       console.error("Exception", ex);
@@ -231,8 +241,8 @@ export function Inventory(props) {
     }
   };
 
-  const scannerDebounced = AwesomeDebouncePromise(barcodeInput, 100);
-  const searchDebounced = AwesomeDebouncePromise(fetchPartMetadata, 500);
+  const scannerDebounced = useMemo((() => debounce(barcodeInput, 100)), []);
+  const searchDebounced = useMemo((() => debounce(fetchPartMetadata, 1000)), [partTypes]);
 
   const addKeyboardHandler = () => {
     if (document) document.addEventListener("keydown", onKeydown);
@@ -495,6 +505,7 @@ export function Inventory(props) {
   const handleChange = (e, control) => {
     e.preventDefault();
     e.stopPropagation();
+    setPartMetadataIsSubscribed(false);
     const updatedPart = { ...part };
     updatedPart[control.name] = control.value;
     switch (control.name) {
@@ -536,7 +547,7 @@ export function Inventory(props) {
     await fetchApi(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: "POST" });
   };
 
-  const setPartFromMetadata = (metadataParts, suggestedPart) => {
+  const setPartFromMetadata = (metadataParts, suggestedPart, partTypes) => {
     const entity = { ...part };
     const mappedPart = {
       partNumber: suggestedPart.basePartNumber,
@@ -608,8 +619,8 @@ export function Inventory(props) {
     setPart(entity);
   };
 
-  const handleChooseAlternatePart = (e, part) => {
-    setPartFromMetadata(metadataParts, part);
+  const handleChooseAlternatePart = (e, part, partTypes) => {
+    setPartFromMetadata(metadataParts, part, partTypes);
     setPartModalOpen(false);
   };
 
@@ -650,7 +661,7 @@ export function Inventory(props) {
               key={index}
               content="This is a test"
               trigger={
-              <Table.Row  onClick={(e) => handleChooseAlternatePart(e, p)}>
+              <Table.Row  onClick={(e) => handleChooseAlternatePart(e, p, partTypes)}>
                 <Table.Cell>
                   {part.supplier === p.supplier && part.supplierPartNumber === p.supplierPartNumber ? (
                     <Label ribbon>{p.manufacturerPartNumber}</Label>
@@ -1055,6 +1066,10 @@ export function Inventory(props) {
           </div>
         </div>
 
+        {partMetadataIsSubscribed &&
+          <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}><Icon name="close" /> No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when the part is indexed.</div>
+        }
+
         <Grid celled className="inventory-container">
           <Grid.Row>
             <Grid.Column width={12} className="left-column">
@@ -1252,7 +1267,7 @@ export function Inventory(props) {
                         <Button secondary><Icon name="external alternate" color="blue" />Choose alternate part ({formatNumber(metadataParts.length)})</Button>
                       }
                     />                      
-                    } part={part} metadataParts={metadataParts} onPartChosen={handleChooseAlternatePart} />
+                    } part={part} metadataParts={metadataParts} onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)} />
                   )}
 
                 <Form.Group>
@@ -1403,6 +1418,7 @@ export function Inventory(props) {
                 )}
 
                 <Card.Content>
+                  <Loader active={loadingPartMetadata} inline size='small' as='i' style={{float: 'right'}} />
                   <Header as='h4'><Icon name='images' />Product Images</Header>
                 </Card.Content>
               </Card>
