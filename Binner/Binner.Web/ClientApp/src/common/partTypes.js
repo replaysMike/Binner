@@ -8,7 +8,7 @@ import _ from "underscore";
  */
 export const getPartTypeId = (partType, partTypes) => {
 	const item = _.find(partTypes, i => i.text === partType);
-	if (item !== null)
+	if (item)
 		return item.value;
 	return null;
 };
