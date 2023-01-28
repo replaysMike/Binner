@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@artsy/fresnel": "^6.1.0",
-    "@types/node": "^17.0.45",
+    "@types/node": "^18.11.18",
     "awesome-debounce-promise": "^2.1.0",
     "axios": "^1.2.5",
     "babel-eslint": "^10.0.3",
