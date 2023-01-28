@@ -17,14 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Common.Tests", "Test
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{AEDE65C0-249F-42B0-8C80-49422C006CC2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.MySql", "..\..\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql.csproj", "{2EE6F1FA-CD5F-45FF-B7F7-8E4558F4A9C4}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.Postgresql", "..\..\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql.csproj", "{579DFFEF-443C-488E-97F3-457CB39923E2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.Sqlite", "..\..\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite.csproj", "{1238F2F7-9EE3-43FF-A662-EAAF32036E5F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.SqlServer", "..\..\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer.csproj", "{7D73760F-D0D4-4CA8-B292-26EE65E0DC7E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,22 +39,6 @@ Global
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2EE6F1FA-CD5F-45FF-B7F7-8E4558F4A9C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EE6F1FA-CD5F-45FF-B7F7-8E4558F4A9C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2EE6F1FA-CD5F-45FF-B7F7-8E4558F4A9C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2EE6F1FA-CD5F-45FF-B7F7-8E4558F4A9C4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{579DFFEF-443C-488E-97F3-457CB39923E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{579DFFEF-443C-488E-97F3-457CB39923E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{579DFFEF-443C-488E-97F3-457CB39923E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{579DFFEF-443C-488E-97F3-457CB39923E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1238F2F7-9EE3-43FF-A662-EAAF32036E5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1238F2F7-9EE3-43FF-A662-EAAF32036E5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1238F2F7-9EE3-43FF-A662-EAAF32036E5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1238F2F7-9EE3-43FF-A662-EAAF32036E5F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D73760F-D0D4-4CA8-B292-26EE65E0DC7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D73760F-D0D4-4CA8-B292-26EE65E0DC7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D73760F-D0D4-4CA8-B292-26EE65E0DC7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D73760F-D0D4-4CA8-B292-26EE65E0DC7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,10 +48,6 @@ Global
 		{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9} = {2D9C4743-1B04-41B1-A12F-4CCF6F5BAB3E}
 		{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7} = {3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9} = {3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}
-		{2EE6F1FA-CD5F-45FF-B7F7-8E4558F4A9C4} = {AEDE65C0-249F-42B0-8C80-49422C006CC2}
-		{579DFFEF-443C-488E-97F3-457CB39923E2} = {AEDE65C0-249F-42B0-8C80-49422C006CC2}
-		{1238F2F7-9EE3-43FF-A662-EAAF32036E5F} = {AEDE65C0-249F-42B0-8C80-49422C006CC2}
-		{7D73760F-D0D4-4CA8-B292-26EE65E0DC7E} = {AEDE65C0-249F-42B0-8C80-49422C006CC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {413F8D19-37B6-4A57-858F-DD8AFF2DAE96}
