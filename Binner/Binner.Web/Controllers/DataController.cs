@@ -1,9 +1,7 @@
 ﻿using Binner.Common;
 using Binner.Common.IO;
 using Binner.Common.Models;
-using Binner.Model;
 using Binner.Model.Common;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class DataController : ControllerBase

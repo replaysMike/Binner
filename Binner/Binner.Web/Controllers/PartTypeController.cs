@@ -3,7 +3,6 @@ using Binner.Common.Configuration;
 using Binner.Common.Models;
 using Binner.Common.Services;
 using Binner.Model.Common;
-using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;

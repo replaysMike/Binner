@@ -58,7 +58,7 @@ export const ExportData = (props) => {
     axios
       .request({
         method: "get",
-        url: `api/data/export?exportFormat=${exportFormat}`,
+        url: `data/export?exportFormat=${exportFormat}`,
         headers: { Authorization: `Bearer ${getAuthToken()}` },
         responseType: "blob"
       })
@@ -95,7 +95,7 @@ export const ExportData = (props) => {
       axios
         .request({
           method: "post",
-          url: "api/data/import",
+          url: "data/import",
           data: formData,
           headers: { Authorization: `Bearer ${getAuthToken()}` }
         })
