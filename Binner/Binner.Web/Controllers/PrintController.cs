@@ -1,16 +1,13 @@
 ﻿using Binner.Common.Configuration;
-using Binner.Common.IO;
 using Binner.Common.IO.Printing;
 using Binner.Common.Models;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
-using Binner.Web.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using System;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;

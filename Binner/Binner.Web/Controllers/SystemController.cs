@@ -3,7 +3,6 @@ using Binner.Common.IO.Printing;
 using Binner.Common.Models.Requests;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
-using Binner.Web.Configuration;
 using LightInject;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
