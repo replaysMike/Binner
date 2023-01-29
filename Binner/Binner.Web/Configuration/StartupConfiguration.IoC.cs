@@ -24,8 +24,6 @@ namespace Binner.Web.Configuration
             // allow the container to be injected
             services.AddSingleton<IServiceContainer, ServiceContainer>();
             services.AddSingleton(container);
-
-            services.AddTransient<IWebHostFactory, WebHostFactory>();
             container.RegisterInstance(container);
 
             // register printer configuration
@@ -56,9 +54,6 @@ namespace Binner.Web.Configuration
 
             // the main server app
             container.Register<BinnerWebHostService>(new PerContainerLifetime());
-
-            // register the CertificateProvider for providing access to the server certificate
-            var config = container.GetInstance<WebHostServiceConfiguration>();
         }
 
         private static void RegisterMappingProfiles(IServiceContainer container)

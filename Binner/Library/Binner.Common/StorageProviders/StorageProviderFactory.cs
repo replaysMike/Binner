@@ -23,6 +23,7 @@ namespace Binner.Common.StorageProviders
 
         public IStorageProvider Create(string providerName, IDictionary<string, string> config)
         {
+            Console.WriteLine($"StorageProviderFactory creating {providerName}");
             var providerNameLowerCase = providerName.ToLower();
             if (Providers.ContainsKey(providerNameLowerCase))
             {

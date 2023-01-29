@@ -16,6 +16,15 @@ using Topshelf.Runtime;
 using Binner.Common.IO;
 using System.Reflection;
 using Binner.Common.Configuration;
+using Binner.Common.Extensions;
+using NLog;
+using Microsoft.Extensions.Hosting;
+using NLog.Web;
+using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
+using Binner.Common;
+using TypeSupport.Extensions;
+using Binner.Model.Common;
 
 namespace Binner.Web.ServiceHost
 {
@@ -23,74 +32,99 @@ namespace Binner.Web.ServiceHost
     /// The host for the web service
     /// </summary>
     [Description("Hosts the Binner Web Service")]
-    [DisplayName("Binner Web Service")]
+    [DisplayName("Binner")]
     public class BinnerWebHostService : IHostService, IDisposable
     {
+        const string ConfigFile = "appsettings.json";
         private const string CertificatePassword = "password";
         private bool _isDisposed;
-        private readonly WebHostServiceConfiguration _config;
-        private HostSettings _hostSettings;
-        public static CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
-        /// <summary>
-        /// The logging facility used by the service.
-        /// </summary>
-        public ILogger<BinnerWebHostService> Logger { get; }
-        public IServiceProvider ServiceProvider { get; }
-        public IWebHostFactory WebHostFactory { get; }
-        public IWebHost WebHost { get; private set; }
-        public static HostControl Host { get; private set; }
-
-        public BinnerWebHostService(HostSettings hostSettings, WebHostServiceConfiguration config, IWebHostFactory webHostFactory,
-            ILogger<BinnerWebHostService> logger, IServiceProvider serviceProvider)
-        {
-            _hostSettings = hostSettings;
-            _config = config ?? throw new ArgumentNullException(nameof(config));
-            WebHostFactory = webHostFactory ?? throw new ArgumentNullException(nameof(webHostFactory));
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
+        private ILogger<BinnerWebHostService> _logger;
+        private WebHostServiceConfiguration _config;
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private IWebHost _webHost;
 
         public bool Start(HostControl hostControl)
         {
-            Host = hostControl;
-            InitializeWebHost();
+
+            Task.Run(() => InitializeWebHostAsync()).ContinueWith(t =>
+            {
+                if (t.Exception != null)
+                {
+                    if (t.Exception.InnerException is IOException && t.Exception.InnerException.Message.Contains("already in use"))
+                        _logger.LogError($"Error: {typeof(BinnerWebHostService).GetDisplayName()} cannot bind to port {_config.Port}. Please check that the service is not already running.");
+                    else if (t.Exception.InnerException is TaskCanceledException)
+                    {
+                        // do nothing
+                    }
+                    else
+                        _logger.LogError(t.Exception, $"{typeof(BinnerWebHostService).GetDisplayName()} had an error starting up!");
+                    ShutdownWebHost();
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted); ;
             return true;
         }
 
         public bool Stop(HostControl hostControl)
         {
-            Host = hostControl;
             ShutdownWebHost();
             return true;
         }
 
-        private void InitializeWebHost()
+        private async Task InitializeWebHostAsync()
         {
-            // run without awaiting to avoid service startup delays
-            Task.Run(async () =>
-            {
-                // parse the requested IP from the config
-                var ipAddress = IPAddress.Any;
-                var ipString = _config.IP;
-                if (!string.IsNullOrEmpty(ipString) && ipString != "*")
-                    IPAddress.TryParse(_config.IP, out ipAddress);
+            // run without awaiting to avoid service startup delays, and allow the service to shutdown cleanly
+            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            var configFile = Path.Combine(configPath, ConfigFile);
+            var configuration = Config.GetConfiguration(configFile);
+            _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
 
-                // use embedded certificate
-                var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
-                var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
+            // parse the requested IP from the config
+            var ipAddress = IPAddress.Any;
+            var ipString = _config.IP;
+            if (!string.IsNullOrEmpty(ipString) && ipString != "*")
+                IPAddress.TryParse(_config.IP, out ipAddress);
 
-                Logger.LogInformation($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
-                WebHost = WebHostFactory.CreateHttps(ipAddress, _config.Port, _config.Environment.ToString(), certificate);
-                await WebHost.RunAsync(CancellationTokenSource.Token);
-            }).ContinueWith(t =>
+            // use embedded certificate
+            var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
+            var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
+
+            var host = Microsoft.AspNetCore.WebHost
+            .CreateDefaultBuilder()
+            .ConfigureKestrel(options =>
             {
-                if (t.Exception != null)
+                if (certificate != null)
                 {
-                    Logger.LogError(t.Exception, $"{_hostSettings.ServiceName} had an error starting up!");
-                    Stop(null);
+                    options.ConfigureHttpsDefaults(opt =>
+                    {
+                        opt.ServerCertificate = certificate;
+                        opt.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+                        opt.CheckCertificateRevocation = false;
+                        opt.AllowAnyClientCertificate();
+                    });
                 }
-            }, TaskContinuationOptions.OnlyOnFaulted);
+                options.Listen(ipAddress, _config.Port, c =>
+                {
+                    c.UseHttps();
+                });
+            })
+            .UseEnvironment(_config.Environment.ToString())
+            .UseStartup<Startup>()
+            .ConfigureLogging(logging =>
+            {
+                logging.AddNLogWeb();
+            })
+            .UseNLog();
+            _webHost = host.Build();
+            _logger = _webHost.Services.GetRequiredService<ILogger<BinnerWebHostService>>();
+            _logger.LogInformation($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
+
+            await _webHost.RunAsync(_cancellationTokenSource.Token);
+
+            // stop the service
+            _logger.LogInformation($"WebHost stopped!");
+            // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
+            _webHost.Services.GetRequiredService<IStorageProvider>()
+                ?.Dispose();
         }
 
         /// <summary>
@@ -98,7 +132,15 @@ namespace Binner.Web.ServiceHost
         /// </summary>
         private void ShutdownWebHost()
         {
-            Dispose();
+            try
+            {
+                _cancellationTokenSource.Cancel();
+                Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to shutdown WebHost!");
+            }
         }
 
 
@@ -115,8 +157,7 @@ namespace Binner.Web.ServiceHost
 
             if (isDisposing)
             {
-                WebHost?.Dispose();
-                WebHost = null;
+                _webHost?.Dispose();
             }
             _isDisposed = true;
         }

@@ -21,19 +21,21 @@ namespace Binner.Common.StorageProviders
     {
         public const string ProviderName = "Binner";
 
-        private SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
         private bool _isDisposed = false;
+        private readonly SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
         private readonly BinnerFileStorageConfiguration _config;
-        private IBinnerDb _db;
+        private readonly SerializerProvider _serializer = new SerializerProvider();
         private PrimaryKeyTracker _primaryKeyTracker;
+        private IBinnerDb _db;
         private SerializerOptions _serializationOptions = SerializerOptions.EmbedTypes;
-        private SerializerProvider _serializer = new SerializerProvider();
         private bool _isDirty;
-        private ManualResetEvent _quitEvent = new ManualResetEvent(false);
+        private readonly ManualResetEvent _quitEvent = new ManualResetEvent(false);
         private Thread _ioThread;
+        private readonly Guid _instance = Guid.NewGuid();
 
         public BinnerFileStorageProvider(IDictionary<string, string> config)
         {
+            Console.WriteLine($"BinnerFileStorageProvider constructor {_instance}");
             _config = new BinnerFileStorageConfiguration(config);
             ValidateBinnerConfiguration(_config);
             Task.Run(async () =>
@@ -706,24 +708,38 @@ namespace Binner.Common.StorageProviders
             IBinnerDb db;
             // Support database loading by version number
 #if (NET462 || NET471)
-            switch (version.Version)
+            try
             {
-                case BinnerDbV1.VersionNumber:
-                    // Version 1
-                    db = _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported database version: {version}");
+                switch (version.Version)
+                {
+                    case BinnerDbV1.VersionNumber:
+                        // Version 1
+                        db = _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported database version: {version}");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new BinnerConfigurationException($"Failed to load Binner file database (Net Framework)!", ex);
             }
 #else
-            db = version.Version switch
+            try
             {
-                // Version 1
-                BinnerDbV1.VersionNumber => _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions),
-                _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
-            };
+                db = version.Version switch
+                {
+                    // Version 1
+                    BinnerDbV1.VersionNumber => _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions),
+                    _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
+                };
 #endif
-            return db;
+                return db;
+            }
+            catch (Exception ex)
+            {
+                throw new BinnerConfigurationException($"Failed to load Binner file database!", ex);
+            }
         }
 
         /// <summary>
@@ -857,6 +873,7 @@ namespace Binner.Common.StorageProviders
 
         private void SaveDataThread()
         {
+            Console.WriteLine("SaveDataThread created!");
             while (!_quitEvent.WaitOne(500))
             {
                 if (_isDirty)
@@ -884,8 +901,10 @@ namespace Binner.Common.StorageProviders
 
         protected virtual void Dispose(bool isDisposing)
         {
+            Console.WriteLine($"BinnerFileStorageProvider disposing {_instance}!");
             if (_isDisposed)
                 return;
+            _isDisposed = true;
             if (isDisposing)
             {
                 // obtain the lock before removing it
@@ -904,17 +923,18 @@ namespace Binner.Common.StorageProviders
 
                     _ioThread = null;
                     _quitEvent.Dispose();
-                    _quitEvent = null;
                     _db = null;
                 }
                 finally
                 {
                     _dataLock.Release();
-                    _dataLock.Dispose();
-                    _dataLock = null;
+                    try
+                    {
+                        _dataLock?.Dispose();
+                    }
+                    catch (Exception) { }
                 }
             }
-            _isDisposed = true;
         }
     }
 }

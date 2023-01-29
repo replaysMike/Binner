@@ -1,5 +1,4 @@
-﻿using System;
-using Topshelf;
+﻿using Topshelf;
 
 namespace Binner.Web.ServiceHost
 {
@@ -8,6 +7,5 @@ namespace Binner.Web.ServiceHost
     /// </summary>
     public interface IHostService : ServiceControl
     {
-        IServiceProvider ServiceProvider { get; }
     }
 }
