@@ -51,7 +51,7 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: http://localhost:8090; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall shellexec skipifsilent runhidden
+Filename: https://localhost:8090; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall shellexec skipifsilent runhidden
 
 [UninstallRun]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "uninstall -servicename {#MyAppName}"; RunOnceId: "{#MyAppName}"; Flags: runascurrentuser runhidden
