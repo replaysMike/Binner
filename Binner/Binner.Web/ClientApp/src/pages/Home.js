@@ -16,7 +16,7 @@ export function Home(props) {
       }
       Home.abortController = new AbortController();
       setLoading(true);
-      await fetchApi(`api/part/summary`, {
+      await fetchApi(`part/summary`, {
         signal: Home.abortController.signal,
       }).then((response) => {
         const { data } = response;
