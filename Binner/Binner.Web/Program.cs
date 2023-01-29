@@ -1,76 +1,72 @@
-using Binner.Model.Common;
-using Binner.Web.Configuration;
+﻿using Binner.Common.Extensions;
 using Binner.Web.ServiceHost;
-using LightInject;
-using LightInject.Microsoft.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
+using Topshelf;
+using Topshelf.Runtime;
 
-namespace Binner.Web
+PrintHeader();
+
+const string LogManagerConfigFile = "nlog.config"; // TODO: Inject from appsettings
+var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
+var logger = NLog.Web.NLogBuilder.ConfigureNLog(logFile).GetCurrentClassLogger();
+var displayName = typeof(BinnerWebHostService).GetDisplayName();
+var serviceName = displayName.Replace(" ", "");
+var serviceDescription = typeof(BinnerWebHostService).GetDescription();
+
+// create a service using TopShelf
+var rc = HostFactory.Run(x =>
 {
-    public class Program
+    x.Service<BinnerWebHostService>(s =>
     {
-        private const string LogManagerConfigFile = "nlog.config"; // TODO: Inject from appsettings
-        private static string _logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
-        private static NLog.Logger _logger;
+        s.ConstructUsing(name => new BinnerWebHostService());
+        s.WhenStarted((tc, hostControl) => tc.Start(hostControl));
+        s.WhenStopped((tc, hostControl) => tc.Stop(hostControl));
+    });
+    x.RunAsLocalSystem();
 
-        static void Main(string[] args)
-        {
-            if (File.Exists(_logFile))
-                _logger = NLog.Web.NLogBuilder.ConfigureNLog(_logFile).GetCurrentClassLogger();
-            try
-            {
-                try
-                {
-                    var version = Assembly.GetExecutingAssembly().GetName().Version;
-                    _logger.Info($"Binner Version {version}");
-                }
-                catch (Exception) { }
-                using (var container = new ServiceContainer(new ContainerOptions { EnablePropertyInjection = false }))
-                {
-                    var provider = ConfigureServices(container);
-                    // run the service
-                    ServiceHostProvider
-                        .ConfigureService<BinnerWebHostService>(container, provider)
-                        .Run();
+    x.SetDescription(serviceDescription);
+    x.SetDisplayName(displayName);
+    x.SetServiceName(serviceName);
+    x.BeforeInstall(() => logger.Info($"Installing service {serviceName}..."));
+    x.BeforeUninstall(() => logger.Info($"Uninstalling service {serviceName}..."));
+    x.AfterInstall(() => logger.Info($"{serviceName} service installed."));
+    x.AfterUninstall(() => logger.Info($"{serviceName} service uninstalled."));
+    x.OnException((ex) => logger.Error(ex, $"{serviceName} exception thrown: {ex.Message}"));
+    x.UnhandledExceptionPolicy = UnhandledExceptionPolicyCode.LogErrorAndStopService;
+});
 
-                    // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
-                    container
-                        .GetInstance<IStorageProvider>()
-                        ?.Dispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger?.Error(ex, "Main exception");
-                throw;
-            }
-            finally
-            {
-                NLog.LogManager.Shutdown();
-            }
-        }
+var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());
+Environment.ExitCode = exitCode;
 
-        /// <summary>
-        /// Creating a service provider is required purely for use by the KMSHostService.
-        /// Any web services it launches will be responsible for initializing their own provider
-        /// </summary>
-        /// <param name="container"></param>
-        /// <returns></returns>
-        static IServiceProvider ConfigureServices(IServiceContainer container)
-        {
-            var services = new ServiceCollection();
-            StartupConfiguration.Configure(container, services);
-            StartupConfiguration.ConfigureIoC(container, services);
-            StartupConfiguration.ConfigureLogging(container, services);
-            var provider = container.CreateServiceProvider(services);
-            container.RegisterInstance(provider);
-            container.ScopeManagerProvider = new PerLogicalCallContextScopeManagerProvider();
-            container.BeginScope();
+static void PrintHeader()
+{
+    var version = Assembly.GetExecutingAssembly().GetName().Version;
+    Console.OutputEncoding = Encoding.Unicode;
+    Console.ForegroundColor = ConsoleColor.Green;
+    var bar = "─";
+    var banner = $"      Binner {version}      ";
 
-            return provider;
-        }
-    }
+    Console.Write("╭");
+    for (var i = 0; i < banner.Length; i++)
+        Console.Write(bar);
+    Console.WriteLine("╮");
+
+    Console.Write($"│");
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.Write(banner);
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine($"│");
+
+    Console.Write("╰");
+    for (var i = 0; i < banner.Length; i++)
+        Console.Write(bar);
+    Console.WriteLine("╯");
+    Console.ForegroundColor = ConsoleColor.DarkGray;
+    Console.Write($"O/S: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
+    Console.WriteLine($"  Runtime: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Gray;
 }

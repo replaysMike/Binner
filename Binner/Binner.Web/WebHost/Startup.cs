@@ -43,9 +43,6 @@ namespace Binner.Web.WebHost
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            // needed to load IP Rate limit configuration from appsettings.json
-            //services.AddOptions();
-
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders =
@@ -63,7 +60,6 @@ namespace Binner.Web.WebHost
             });
 
             StartupConfiguration.ConfigureIoC(Container, services);
-            StartupConfiguration.ConfigureLogging(Container, services);
             var provider = Container.CreateServiceProvider(services);
 
             Container.ScopeManagerProvider = new PerLogicalCallContextScopeManagerProvider();
