@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Binner.Common.Configuration;
 using Binner.Common.IO.Printing;
 using Binner.Common.Models;
 using Binner.Common.Models.Configuration;
 using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Models.Requests;
+using Binner.Common.Models.Responses;
 using System.Linq;
 
 namespace Binner.Common.MappingProfiles
@@ -12,7 +14,17 @@ namespace Binner.Common.MappingProfiles
     {
         public SettingsRequestProfile()
         {
+            CreateMap<WebHostServiceConfiguration, SettingsRequest>()
+                .ForMember(x => x.Binner, options => options.MapFrom(x => x.Integrations.Swarm))
+                .ForMember(x => x.Digikey, options => options.MapFrom(x => x.Integrations.Digikey))
+                .ForMember(x => x.Mouser, options => options.MapFrom(x => x.Integrations.Mouser))
+                .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Octopart))
+                .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
+                .ReverseMap();
+
             CreateMap<SettingsRequest, UserIntegrationConfiguration>(MemberList.None)
+                .ForMember(x => x.DigiKeyEnabled, options => options.MapFrom(x => x.Digikey.Enabled))
+                .ForMember(x => x.DigiKeyEnabled, options => options.MapFrom(x => x.Digikey.Enabled))
                 .ForMember(x => x.DigiKeyEnabled, options => options.MapFrom(x => x.Digikey.Enabled))
                 .ForMember(x => x.MouserEnabled, options => options.MapFrom(x => x.Mouser.Enabled))
                 .ForMember(x => x.MouserCartApiKey, options => options.MapFrom(x => x.Mouser.CartApiKey))
