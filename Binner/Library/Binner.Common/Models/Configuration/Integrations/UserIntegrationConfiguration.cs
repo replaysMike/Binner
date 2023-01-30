@@ -33,9 +33,30 @@ namespace Binner.Common.Models.Configuration.Integrations
         public string? SwarmApiUrl { get; set; }
 
         /// <summary>
-        /// Digikey api enabled
+        /// DigiKey api enabled
         /// </summary>
         public bool DigiKeyEnabled { get; set; } = true;
+
+        /// <summary>
+        /// DigiKey client Id
+        /// </summary>
+        public string DigiKeyClientId { get; set; }
+
+
+        /// <summary>
+        /// DigiKey client secret
+        /// </summary>
+        public string DigiKeyClientSecret { get; set; }
+
+        /// <summary>
+        /// Path to oAuth postback Url
+        /// </summary>
+        public string DigiKeyOAuthPostbackUrl { get; set; } = "https://localhost:8090/Authorization/Authorize";
+
+        /// <summary>
+        /// DigiKey api url
+        /// </summary>
+        public string DigiKeyApiUrl { get; set; } = "https://sandbox-api.digikey.com";
 
         /// <summary>
         /// Mouser api enabled
@@ -51,6 +72,16 @@ namespace Binner.Common.Models.Configuration.Integrations
         /// The Api key for cart management
         /// </summary>
         public string? MouserCartApiKey { get; set; }
+
+        /// <summary>
+        /// The Api key for part search
+        /// </summary>
+        public string? MouserSearchApiKey { get; set; }
+
+        /// <summary>
+        /// Mouser api url
+        /// </summary>
+        public string MouserApiUrl { get; set; } = "https://api.mouser.com";
 
         /// <summary>
         /// Octopart api enabled
