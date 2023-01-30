@@ -91,14 +91,22 @@ namespace Binner.Common.MappingProfiles
 
             CreateMap<SwarmConfiguration, SwarmUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
+                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.ApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
                 .ReverseMap();
             CreateMap<DigikeyConfiguration, DigiKeyUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
+                .ForMember(x => x.ClientId, options => options.MapFrom(x => x.ClientId))
+                .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.ClientSecret))
+                .ForMember(x => x.oAuthPostbackUrl, options => options.MapFrom(x => x.oAuthPostbackUrl))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
                 .ReverseMap();
             CreateMap<MouserConfiguration, MouserUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
                 .ForMember(x => x.OrderApiKey, options => options.MapFrom(x => x.ApiKeys.OrderApiKey))
                 .ForMember(x => x.CartApiKey, options => options.MapFrom(x => x.ApiKeys.CartApiKey))
+                .ForMember(x => x.SearchApiKey, options => options.MapFrom(x => x.ApiKeys.SearchApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
                 .ReverseMap();
             CreateMap<OctopartConfiguration, OctopartUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
@@ -108,16 +116,24 @@ namespace Binner.Common.MappingProfiles
 
             CreateMap<UserIntegrationConfiguration, SwarmUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.SwarmEnabled))
+                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.SwarmApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.SwarmApiUrl))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, DigiKeyUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.DigiKeyEnabled))
+                .ForMember(x => x.ClientId, options => options.MapFrom(x => x.DigiKeyClientId))
+                .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.DigiKeyClientSecret))
+                .ForMember(x => x.oAuthPostbackUrl, options => options.MapFrom(x => x.DigiKeyOAuthPostbackUrl))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.DigiKeyApiUrl))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, MouserUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.MouserEnabled))
                 .ForMember(x => x.CartApiKey, options => options.MapFrom(x => x.MouserCartApiKey))
                 .ForMember(x => x.OrderApiKey, options => options.MapFrom(x => x.MouserOrderApiKey))
+                .ForMember(x => x.SearchApiKey, options => options.MapFrom(x => x.MouserSearchApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.MouserApiUrl))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, OctopartConfiguration>()
