@@ -1,7 +1,6 @@
 ﻿using AnyMapper;
 using AnySerializer;
 using Binner.Common.Extensions;
-using Binner.Common.Models;
 using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
@@ -565,6 +564,88 @@ namespace Binner.Common.StorageProviders
             }
         }
 
+        public async Task<StoredFile> AddStoredFileAsync(StoredFile storedFile, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                storedFile.UserId = userContext?.UserId;
+                storedFile.StoredFileId = _primaryKeyTracker.GetNextKey<StoredFile>();
+                _db.StoredFiles.Add(storedFile);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return storedFile;
+        }
+
+        public async Task<StoredFile> GetStoredFileAsync(long storedFileId, IUserContext userContext)
+        {
+            if (storedFileId <= 0) throw new ArgumentException(nameof(storedFileId));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<StoredFile> GetStoredFileAsync(string filename, IUserContext userContext)
+        {
+            if (string.IsNullOrEmpty(filename)) throw new ArgumentException(nameof(filename));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(long partId, StoredFileType? fileType, IUserContext userContext)
+        {
+            if (partId <= 0) throw new ArgumentException(nameof(partId));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return _db.StoredFiles
+                    .Where(x => x.PartId.Equals(partId))
+                    .Where(x => fileType == null || x.StoredFileType.Equals(fileType))
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(PaginatedRequest request, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
+            try
+            {
+                return _db.StoredFiles
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .OrderBy(request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToList();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
         private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType, IUserContext userContext)
         {
             var matches = new List<SearchResult<Part>>();
@@ -674,6 +755,7 @@ namespace Binner.Common.StorageProviders
                             { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() + 1, 1) },
                             { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() + 1, 1) },
                             { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault() + 1, 1) },
+                            { typeof(StoredFile).Name, Math.Max(_db.StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() + 1, 1) },
                         });
                     }
                 }
@@ -809,8 +891,10 @@ namespace Binner.Common.StorageProviders
                 { typeof(Part).Name, 1 },
                 { typeof(PartType).Name, 1 },
                 { typeof(Project).Name, 1 },
+                { typeof(StoredFile).Name, 1 },
             });
 
+            // seed data
             var initialPartTypes = new List<PartType>();
             var defaultPartTypes = typeof(SystemDefaults.DefaultPartTypes).GetExtendedType();
             foreach (var partType in defaultPartTypes.EnumValues)
@@ -842,7 +926,8 @@ namespace Binner.Common.StorageProviders
                 PartTypes = initialPartTypes,
                 Parts = new List<Part>(),
                 Projects = new List<Project>(),
-                OAuthCredentials = new List<OAuthCredential>()
+                OAuthCredentials = new List<OAuthCredential>(),
+                StoredFiles = new List<StoredFile>()
             };
         }
 
