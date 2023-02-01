@@ -99,6 +99,7 @@ namespace Binner.Web.Configuration
             container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
             container.Register<ISettingsService, SettingsService>(new PerContainerLifetime());
             container.Register<ISwarmService, SwarmService>(new PerContainerLifetime());
+            container.Register<IStoredFileService, StoredFileService>(new PerContainerLifetime());
         }
 
         private static void RegisterApiIntegrations(IServiceContainer container)

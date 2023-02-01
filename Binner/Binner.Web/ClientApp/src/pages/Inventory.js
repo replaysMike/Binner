@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import _ from "underscore";
-import debounce from 'lodash.debounce';
+import debounce from "lodash.debounce";
 import {
   Icon,
   Input,
@@ -23,16 +23,20 @@ import {
   Grid,
   Card,
   Menu,
-  Placeholder,
+  Placeholder
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
+import Dropzone from "../components/Dropzone";
 import { ProjectColors } from "../common/Types";
 import { fetchApi } from "../common/fetchApi";
 import { formatCurrency, formatNumber } from "../common/Utils";
 import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
+import axios from "axios";
+import { StoredFileType } from "../common/StoredFileType";
+import { GetTypeName, GetTypeValue } from "../common/Types";
 import "./Inventory.css";
 
 const ProductImageIntervalMs = 10 * 1000;
@@ -55,10 +59,10 @@ export function Inventory(props) {
 
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
   const [infoResponse, setInfoResponse] = useState([]);
-  const [datasheetTitle, setDatasheetTitle] = useState('');
-  const [datasheetPartName, setDatasheetPartName] = useState('');
-  const [datasheetDescription, setDatasheetDescription] = useState('');
-  const [datasheetManufacturer, setDatasheetManufacturer] = useState('');
+  const [datasheetTitle, setDatasheetTitle] = useState("");
+  const [datasheetPartName, setDatasheetPartName] = useState("");
+  const [datasheetDescription, setDatasheetDescription] = useState("");
+  const [datasheetManufacturer, setDatasheetManufacturer] = useState("");
   const scannedPartsSerialized = JSON.parse(localStorage.getItem("scannedPartsSerialized")) || [];
   const defaultPart = {
     partId: 0,
@@ -86,7 +90,8 @@ export function Inventory(props) {
     imageUrl: "",
     projectId: "",
     supplier: "",
-    supplierPartNumber: ""
+    supplierPartNumber: "",
+    storedFiles: []
   };
   const defaultMountingTypes = [
     {
@@ -108,6 +113,7 @@ export function Inventory(props) {
   const [parts, setParts] = useState([]);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedPart, setSelectedPart] = useState(null);
+  const [selectedLocalFile, setSelectedLocalFile] = useState(null);
   const [recentParts, setRecentParts] = useState([]);
   const [metadataParts, setMetadataParts] = useState([]);
   const [duplicateParts, setDuplicateParts] = useState([]);
@@ -117,6 +123,8 @@ export function Inventory(props) {
   const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete this part?");
+  const [confirmLocalFileDeleteContent, setConfirmLocalFileDeleteContent] = useState("Are you sure you want to delete this local file?");
+  const [confirmDeleteLocalFileIsOpen, setConfirmDeleteLocalFileIsOpen] = useState(false);
   const [part, setPart] = useState(defaultPart);
   const [partTypes, setPartTypes] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -130,6 +138,10 @@ export function Inventory(props) {
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
+  const [error, setError] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [dragOverClass, setDragOverClass] = useState("");
 
   useEffect(() => {
     const partNumberStr = props.params.partNumber;
@@ -139,8 +151,8 @@ export function Inventory(props) {
       await fetchProjects();
       await fetchRecentRows();
       if (partNumberStr) {
-        await fetchPart(partNumberStr);
-        await fetchPartMetadata(partNumberStr);
+        var part = await fetchPart(partNumberStr);
+        await fetchPartMetadata(partNumberStr, part);
       } else {
         resetForm();
       }
@@ -151,10 +163,10 @@ export function Inventory(props) {
       removeKeyboardHandler();
       scannerDebounced.cancel();
       searchDebounced.cancel();
-    }
+    };
   }, [props.params.partNumber]); //test
 
-  const fetchPartMetadata = async (input) => {
+  const fetchPartMetadata = async (input, part) => {
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
@@ -169,29 +181,26 @@ export function Inventory(props) {
         window.open(data.redirectUrl, "_blank");
         return;
       }
-           
+
       let metadataParts = [];
-      const infoResponse = data.response;
+      const infoResponse = mergeInfoResponse(data.response, part.storedFiles);
       if (infoResponse && infoResponse.parts && infoResponse.parts.length > 0) {
         metadataParts = infoResponse.parts;
 
-        // set the first datasheet meta display, because the carousel component doesnt fire the first event
-        if (infoResponse.datasheets && infoResponse.datasheets.length > 0)
-          setDatasheetMeta(infoResponse.datasheets[0]);
-
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
-        if (!part.partNumber)
-          setPartFromMetadata(metadataParts, suggestedPart, partTypes);
+        if (!part.partNumber) setPartFromMetadata(metadataParts, suggestedPart, partTypes);
       } else {
         // no part metadata available
         setPartMetadataIsSubscribed(true);
       }
 
+      // set the first datasheet meta display, because the carousel component doesnt fire the first event
+      if (infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0) setDatasheetMeta(infoResponse.datasheets[0]);
+
       setInfoResponse(infoResponse);
       setMetadataParts(metadataParts);
       setLoadingPartMetadata(false);
-
     } catch (ex) {
       console.error("Exception", ex);
       if (ex.name === "AbortError") {
@@ -241,8 +250,132 @@ export function Inventory(props) {
     }
   };
 
-  const scannerDebounced = useMemo((() => debounce(barcodeInput, 100)), []);
-  const searchDebounced = useMemo((() => debounce(fetchPartMetadata, 1000)), [partTypes]);
+  const scannerDebounced = useMemo(() => debounce(barcodeInput, 100), []);
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [partTypes]);
+
+  const onUploadSubmit = async (uploadFiles, type) => {
+    setUploading(true);
+    if (!part.partId) {
+      toast.warn("Files can't be uploaded until the part is saved.");
+      return;
+    }
+    if (uploadFiles && uploadFiles.length > 0) {
+      const requestData = new FormData();
+      requestData.append("partId", part.partId);
+      requestData.append("storedFileType", GetTypeValue(StoredFileType, type));
+      for (let i = 0; i < uploadFiles.length; i++) 
+        requestData.append("files", uploadFiles[i], uploadFiles[i].name);
+
+      axios
+        .request({
+          method: "post",
+          url: `storedFile`,
+          data: requestData
+        })
+        .then((response) => {
+          const { data } = response;
+          let errorMessage;
+          toast.dismiss();
+          if (data.errors && data.errors.length > 0) {
+            errorMessage = data.errors.map((err, key) => <li key={key}>{err.message}</li>);
+            toast.error(`Failed to upload file!`, { autoClose: 10000 });
+            setError(<ul className="errors">{errorMessage}</ul>);
+          } else {
+            // success uploading
+            if (uploadFiles.length === 1)
+              toast.success(`File uploaded.`);
+            else 
+              toast.success(`${uploadFiles.length} files uploaded.`);
+
+            // add it to the local data
+            var typeValue = GetTypeValue(StoredFileType, type);
+            var i = 0;
+            switch(typeValue){
+              case StoredFileType.ProductImage:
+                const productImages = [...infoResponse.productImages];
+                for(i = 0; i < data.length; i++){
+                  productImages.unshift({ 
+                    name: data[i].originalFileName,
+                    value: `/storedFile/preview?fileName=${data[i].fileName}`,
+                    id: data[i].storedFileId 
+                  });
+                }
+                setInfoResponse({...infoResponse, productImages });
+                break;
+              case StoredFileType.Datasheet:
+                const datasheets = [...infoResponse.datasheets];
+                for(i = 0; i < data.length; i++){
+                  const datasheet = { 
+                    name: data[i].originalFileName,
+                    value: {
+                      datasheetUrl: `/storedFile/local?fileName=${data[i].fileName}`,
+                      description: data[i].originalFileName,
+                      imageUrl: `/storedFile/preview?fileName=${data[i].fileName}`,
+                      manufacturer: '',
+                      title: data[i].originalFileName,
+                    },
+                    id: data[i].storedFileId 
+                  };
+                  datasheets.unshift(datasheet);
+                  setDatasheetMeta(datasheet);
+                }
+                setInfoResponse({...infoResponse, datasheets });
+                break;
+              case StoredFileType.Pinout:
+                const pinoutImages = [...infoResponse.pinoutImages];
+                for(i = 0; i < data.length; i++){
+                  pinoutImages.unshift({ 
+                    name: data[i].originalFileName,
+                    value: `/storedFile/preview?fileName=${data[i].fileName}`,
+                    id: data[i].storedFileId 
+                  });
+                }
+                setInfoResponse({...infoResponse, pinoutImages });
+                break;
+              case StoredFileType.ReferenceDesign:
+                const circuitImages = [...infoResponse.circuitImages ];
+                for(i = 0; i < data.length; i++){
+                  circuitImages.unshift({ 
+                    name: data[i].originalFileName,
+                    value: `/storedFile/preview?fileName=${data[i].fileName}`,
+                    id: data[i].storedFileId 
+                  });
+                }
+                setInfoResponse({...infoResponse, circuitImages });
+                break;
+              default:
+            }
+
+            setError(null);
+            setIsDirty(false);
+          }
+          setUploading(false);
+          setFiles([]);
+        })
+        .catch((error) => {
+          toast.dismiss();
+          console.error("error", error);
+          if (error.code === "ERR_NETWORK") {
+            const msg = "Unable to upload. Check that the file is not locked or deleted.";
+						toast.error(msg, { autoClose: 10000 });
+						setError(msg);
+          } else {
+            toast.error(`Import upload failed!`);
+            setError(error.message);
+          }
+          setIsDirty(false);
+          setUploading(false);
+          setFiles([]);
+        });
+    } else {
+      toast.error("No files selected for upload!");
+    }
+  };
+
+  const onUploadError = (errors) => {
+    for(let i = 0; i < errors.length; i++)
+      toast.error(errors[i], { autoClose: 10000 });
+  };
 
   const addKeyboardHandler = () => {
     if (document) document.addEventListener("keydown", onKeydown);
@@ -313,14 +446,16 @@ export function Inventory(props) {
       });
       const { data } = response;
       setPart(data);
+      setLoadingPartMetadata(false);
+      return data;
     } catch (ex) {
       console.error("Exception", ex);
+      setLoadingPartMetadata(false);
       if (ex.name === "AbortError") {
         return; // Continuation logic has already been skipped, so return normally
       }
       throw ex;
     }
-    setLoadingPartMetadata(false);
   };
 
   const fetchRecentRows = async () => {
@@ -385,6 +520,44 @@ export function Inventory(props) {
       case 2:
         return "surface mount";
     }
+  };
+
+  const mergeInfoResponse = (infoResponse, storedFiles) => {
+    var storedProductImages = _.filter(storedFiles, x => x.storedFileType === StoredFileType.ProductImage);
+    var storedDatasheets = _.filter(storedFiles, x => x.storedFileType === StoredFileType.Datasheet);
+    var storedPinouts = _.filter(storedFiles, x => x.storedFileType === StoredFileType.Pinout);
+    var storedReferenceDesigns = _.filter(storedFiles, x => x.storedFileType === StoredFileType.ReferenceDesign);
+    if (storedProductImages && storedProductImages.length > 0)
+      infoResponse.productImages.unshift(...storedProductImages.map(pi => ({
+        name: pi.originalFileName,
+        value: `/storedFile/preview?fileName=${pi.fileName}`,
+        id: pi.storedFileId
+      })));
+    if (storedDatasheets && storedDatasheets.length > 0)
+      infoResponse.datasheets.unshift(...storedDatasheets.map(pi => ({
+        name: pi.originalFileName,
+        value: {
+          datasheetUrl: `/storedFile/local?fileName=${pi.fileName}`,
+          description: pi.originalFileName,
+          imageUrl: `/storedFile/preview?fileName=${pi.fileName}`,
+          manufacturer: '',
+          title: pi.originalFileName,
+        },
+        id: pi.storedFileId
+      })));
+    if (storedPinouts && storedPinouts.length > 0)
+      infoResponse.pinoutImages.unshift(...storedPinouts.map(pi => ({
+        name: pi.originalFileName,
+        value: `/storedFile/preview?fileName=${pi.fileName}`,
+        id: pi.storedFileId
+      })));
+    if (storedReferenceDesigns && storedReferenceDesigns.length > 0)
+      infoResponse.circuitImages.unshift(...storedReferenceDesigns.map(pi => ({
+        name: pi.originalFileName,
+        value: `/storedFile/preview?fileName=${pi.fileName}`,
+        id: pi.storedFileId
+      })));
+    return infoResponse;
   };
 
   /**
@@ -572,7 +745,7 @@ export function Inventory(props) {
     if (mappedPart.partTypeId) entity.partTypeId = mappedPart.partTypeId || "";
     if (mappedPart.mountingTypeId) entity.mountingTypeId = mappedPart.mountingTypeId || "";
     entity.packageType = mappedPart.packageType || "";
-    entity.cost = mappedPart.cost || 0.00;
+    entity.cost = mappedPart.cost || 0.0;
     entity.keywords = mappedPart.keywords || "";
     entity.description = mappedPart.description || "";
     entity.manufacturer = mappedPart.manufacturer || "";
@@ -657,42 +830,42 @@ export function Inventory(props) {
         </Table.Header>
         <Table.Body>
           {metadataParts.map((p, index) => (
-            <Popup 
+            <Popup
               key={index}
               content="This is a test"
               trigger={
-              <Table.Row  onClick={(e) => handleChooseAlternatePart(e, p, partTypes)}>
-                <Table.Cell>
-                  {part.supplier === p.supplier && part.supplierPartNumber === p.supplierPartNumber ? (
-                    <Label ribbon>{p.manufacturerPartNumber}</Label>
-                  ) : (
-                    p.manufacturerPartNumber
-                  )}
-                </Table.Cell>
-                <Table.Cell>{p.manufacturer}</Table.Cell>
-                <Table.Cell>{p.partType}</Table.Cell>
-                <Table.Cell>{p.supplier}</Table.Cell>
-                <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-                <Table.Cell>{p.packageType}</Table.Cell>
-                <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
-                <Table.Cell>{p.cost}</Table.Cell>
-                <Table.Cell>
-                  <Image src={p.imageUrl} size="mini"></Image>
-                </Table.Cell>
-                <Table.Cell>
-                  {p.datasheetUrls.map(
-                    (d, dindex) =>
-                      d &&
-                      d.length > 0 && (
-                        <Button key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)}>
-                          View Datasheet
-                        </Button>
-                      )
-                  )}
-                </Table.Cell>
-              </Table.Row>
-            } />
-            
+                <Table.Row onClick={(e) => handleChooseAlternatePart(e, p, partTypes)}>
+                  <Table.Cell>
+                    {part.supplier === p.supplier && part.supplierPartNumber === p.supplierPartNumber ? (
+                      <Label ribbon>{p.manufacturerPartNumber}</Label>
+                    ) : (
+                      p.manufacturerPartNumber
+                    )}
+                  </Table.Cell>
+                  <Table.Cell>{p.manufacturer}</Table.Cell>
+                  <Table.Cell>{p.partType}</Table.Cell>
+                  <Table.Cell>{p.supplier}</Table.Cell>
+                  <Table.Cell>{p.supplierPartNumber}</Table.Cell>
+                  <Table.Cell>{p.packageType}</Table.Cell>
+                  <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
+                  <Table.Cell>{p.cost}</Table.Cell>
+                  <Table.Cell>
+                    <Image src={p.imageUrl} size="mini"></Image>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {p.datasheetUrls.map(
+                      (d, dindex) =>
+                        d &&
+                        d.length > 0 && (
+                          <Button key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)}>
+                            View Datasheet
+                          </Button>
+                        )
+                    )}
+                  </Table.Cell>
+                </Table.Row>
+              }
+            />
           ))}
         </Table.Body>
       </Table>
@@ -831,12 +1004,49 @@ export function Inventory(props) {
     props.history(`/inventory`);
   };
 
+  const handleDeleteLocalFile = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await fetchApi(`storedfile`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ storedFileId: selectedLocalFile.localFile.id })
+    });
+    var itemsExceptDeleted;
+    switch(selectedLocalFile.type){
+      case 'productImages':
+        itemsExceptDeleted = _.without(infoResponse.productImages, _.findWhere(infoResponse.productImages, { id: selectedLocalFile.localFile.id }));
+        setInfoResponse({...infoResponse, productImages: itemsExceptDeleted});
+        break;
+      case 'datasheets':
+        itemsExceptDeleted = _.without(infoResponse.datasheets, _.findWhere(infoResponse.datasheets, { id: selectedLocalFile.localFile.id }));
+        setInfoResponse({...infoResponse, datasheets: itemsExceptDeleted});
+        if (itemsExceptDeleted.length > 0)
+          setDatasheetMeta(itemsExceptDeleted[0]);
+        break;
+      case 'pinoutImages':
+        itemsExceptDeleted = _.without(infoResponse.pinoutImages, _.findWhere(infoResponse.pinoutImages, { id: selectedLocalFile.localFile.id }));
+        setInfoResponse({...infoResponse, pinoutImages: itemsExceptDeleted});
+          break;
+      case 'circuitImages':
+        itemsExceptDeleted = _.without(infoResponse.circuitImages, _.findWhere(infoResponse.circuitImages, { id: selectedLocalFile.localFile.id }));
+        setInfoResponse({...infoResponse, circuitImages: itemsExceptDeleted});
+        break;
+      default:
+    }
+
+    setConfirmDeleteLocalFileIsOpen(false);
+    setSelectedLocalFile(null);
+  };
+
   const confirmDeleteOpen = (e, part) => {
     e.preventDefault();
     e.stopPropagation();
     setConfirmDeleteIsOpen(true);
     setSelectedPart(part);
-    setConfirmPartDeleteContent(`Are you sure you want to delete part ${part.partNumber}?`);
+    setConfirmPartDeleteContent(<p>Are you sure you want to delete part <b>{part.partNumber}</b>?<br/><br/>This action is <i>permanent and cannot be recovered</i>.</p>);
   };
 
   const confirmDeleteClose = (e) => {
@@ -844,6 +1054,21 @@ export function Inventory(props) {
     e.stopPropagation();
     setConfirmDeleteIsOpen(false);
     setSelectedPart(null);
+  };
+
+  const confirmDeleteLocalFileOpen = (e, localFile, type) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteLocalFileIsOpen(true);
+    setSelectedLocalFile({ localFile, type });
+    setConfirmLocalFileDeleteContent(<p>Are you sure you want to delete this local file named <b>{localFile.name}</b>?<br/><br/>This action is <i>permanent and cannot be recovered</i>.</p>);
+  };
+
+  const confirmDeleteLocalFileClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteLocalFileIsOpen(false);
+    setSelectedLocalFile(null);
   };
 
   const onScannedInputKeyDown = (e, scannedPart) => {
@@ -864,7 +1089,7 @@ export function Inventory(props) {
     e.preventDefault();
     var redirectToURL = document.URL.replace(/#.*$/, "");
 
-    redirectToURL = redirectToURL + anchor
+    redirectToURL = redirectToURL + anchor;
     window.location.href = redirectToURL;
   };
 
@@ -877,7 +1102,7 @@ export function Inventory(props) {
     setDatasheetPartName(partName);
     setDatasheetManufacturer(manufacturer);
     setDatasheetDescription(description);
-};
+  };
 
   const onCurrentDatasheetChanged = (activeIndex, control) => {
     setDatasheetMeta(infoResponse.datasheets[activeIndex]);
@@ -895,7 +1120,7 @@ export function Inventory(props) {
       }, 750);
     }
     return (
-      <Form>
+      <Form className="notdroptarget">
         <Table compact celled striped size="small">
           <Table.Header>
             <Table.Row>
@@ -1005,8 +1230,8 @@ export function Inventory(props) {
   };
 
   const matchingPartsList = renderAllMatchingParts(part, metadataParts);
-  const title = (part.partId > 0 || props.params.partNumber) ? "Edit Inventory" : "Add Inventory";
-  
+  const title = part.partId > 0 || props.params.partNumber ? "Edit Inventory" : "Add Inventory";
+
   /* RENDER */
 
   return (
@@ -1026,7 +1251,8 @@ export function Inventory(props) {
           </Button>
         </Modal.Actions>
       </Modal>
-      <Confirm open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDeletePart} content={confirmPartDeleteContent} />
+      <Confirm className="confirm" header='Delete Part' open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDeletePart} content={confirmPartDeleteContent} />
+      <Confirm className="confirm" header='Delete File' open={confirmDeleteLocalFileIsOpen} onCancel={confirmDeleteLocalFileClose} onConfirm={handleDeleteLocalFile} content={confirmLocalFileDeleteContent} />
 
       {/* FORM START */}
 
@@ -1066,14 +1292,16 @@ export function Inventory(props) {
           </div>
         </div>
 
-        {partMetadataIsSubscribed &&
-          <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}><Icon name="close" /> No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when the part is indexed.</div>
-        }
+        {partMetadataIsSubscribed && (
+          <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
+            <Icon name="close" /> No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when
+            the part is indexed.
+          </div>
+        )}
 
         <Grid celled className="inventory-container">
           <Grid.Row>
             <Grid.Column width={12} className="left-column">
-
               {/** LEFT COLUMN */}
 
               <Form.Group>
@@ -1115,7 +1343,7 @@ export function Inventory(props) {
                   onBlur={enableKeyboardListening}
                 />
               </Form.Group>
-              <Form.Group>             
+              <Form.Group>
                 <Popup
                   hideOnScroll
                   disabled={viewPreferences.helpDisabled}
@@ -1167,7 +1395,6 @@ export function Inventory(props) {
                   onFocus={disableKeyboardListening}
                   onBlur={enableKeyboardListening}
                 />
-
               </Form.Group>
 
               <Segment secondary>
@@ -1226,9 +1453,9 @@ export function Inventory(props) {
                       />
                     }
                   />
-                </Form.Group>              
+                </Form.Group>
               </Segment>
-                
+
               <Form.Field inline>
                 <Button.Group>
                   <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
@@ -1249,26 +1476,34 @@ export function Inventory(props) {
                 {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
               </Form.Field>
 
-              { /* PART METADATA */ }
+              {/* PART METADATA */}
 
               <Segment loading={loadingPartMetadata} color="blue">
                 <Header dividing as="h3">
                   Part Metadata
                 </Header>
-                
+
                 {metadataParts && metadataParts.length > 0 && (
-                    <ChooseAlternatePartModal trigger={
+                  <ChooseAlternatePartModal
+                    trigger={
                       <Popup
-                      hideOnScroll
-                      disabled={viewPreferences.helpDisabled}
-                      onOpen={disableHelp}
-                      content="Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available."
-                      trigger={
-                        <Button secondary><Icon name="external alternate" color="blue" />Choose alternate part ({formatNumber(metadataParts.length)})</Button>
-                      }
-                    />                      
-                    } part={part} metadataParts={metadataParts} onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)} />
-                  )}
+                        hideOnScroll
+                        disabled={viewPreferences.helpDisabled}
+                        onOpen={disableHelp}
+                        content="Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available."
+                        trigger={
+                          <Button secondary>
+                            <Icon name="external alternate" color="blue" />
+                            Choose alternate part ({formatNumber(metadataParts.length)})
+                          </Button>
+                        }
+                      />
+                    }
+                    part={part}
+                    metadataParts={metadataParts}
+                    onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)}
+                  />
+                )}
 
                 <Form.Group>
                   <Form.Field width={4}>
@@ -1346,23 +1581,25 @@ export function Inventory(props) {
               {/* Suppliers */}
 
               <Segment loading={loadingPartMetadata} color="violet">
-                  <Header dividing as="h3">
-                    Suppliers
-                  </Header>
-                  <Table compact celled sortable selectable striped unstackable size="small">
-                    <Table.Header>
-                      <Table.Row>
-                        <Table.HeaderCell textAlign="center">Supplier</Table.HeaderCell>
-                        <Table.HeaderCell textAlign="center">Supplier Part Number</Table.HeaderCell>
-                        <Table.HeaderCell textAlign="center">Cost</Table.HeaderCell>
-                        <Table.HeaderCell textAlign="center">Quantity Available</Table.HeaderCell>
-                        <Table.HeaderCell textAlign="center">Minimum Order Quantity</Table.HeaderCell>
-                        <Table.HeaderCell></Table.HeaderCell>
-                        <Table.HeaderCell></Table.HeaderCell>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {part && metadataParts && _.filter(metadataParts, p => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
+                <Header dividing as="h3">
+                  Suppliers
+                </Header>
+                <Table compact celled sortable selectable striped unstackable size="small">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.HeaderCell textAlign="center">Supplier</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">Supplier Part Number</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">Cost</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">Quantity Available</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">Minimum Order Quantity</Table.HeaderCell>
+                      <Table.HeaderCell></Table.HeaderCell>
+                      <Table.HeaderCell></Table.HeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {part &&
+                      metadataParts &&
+                      _.filter(metadataParts, (p) => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
                         <Table.Row key={supplierKey}>
                           <Table.Cell textAlign="center">{supplier.supplier}</Table.Cell>
                           <Table.Cell textAlign="center">{supplier.supplierPartNumber}</Table.Cell>
@@ -1370,145 +1607,189 @@ export function Inventory(props) {
                           <Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
                           <Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
                           <Table.Cell textAlign="center">
-                            {supplier.imageUrl && (
-                              <img
-                                src={supplier.imageUrl}
-                                alt={supplier.supplierPartNumber}
-                                className="product productshot"
-                              />
-                            )}
+                            {supplier.imageUrl && <img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />}
                           </Table.Cell>
-                          <Table.Cell textAlign="center"><a href={supplier.productUrl} target="_blank" rel="noreferrer">Visit</a></Table.Cell>
+                          <Table.Cell textAlign="center">
+                            <a href={supplier.productUrl} target="_blank" rel="noreferrer">
+                              Visit
+                            </a>
+                          </Table.Cell>
                         </Table.Row>
                       ))}
-                    </Table.Body>
-                  </Table>
-
+                  </Table.Body>
+                </Table>
               </Segment>
             </Grid.Column>
 
             <Grid.Column width={4} className="right-column">
-              
               {/** RIGHT COLUMN */}
 
               <Menu>
-                <Menu.Item onClick={(e) => visitAnchor(e, '#datasheets')}>Datasheets</Menu.Item>
-                <Menu.Item onClick={(e) => visitAnchor(e, '#pinout')}>Pinout</Menu.Item>
-                <Menu.Item onClick={(e) => visitAnchor(e, '#circuits')}>Circuits</Menu.Item>
+                <Menu.Item onClick={(e) => visitAnchor(e, "#datasheets")}>Datasheets</Menu.Item>
+                <Menu.Item onClick={(e) => visitAnchor(e, "#pinout")}>Pinout</Menu.Item>
+                <Menu.Item onClick={(e) => visitAnchor(e, "#circuits")}>Circuits</Menu.Item>
               </Menu>
 
-              { /* Product Images Carousel */ }
-              
-              <Card color="blue">
-                {infoResponse && infoResponse.productImages && infoResponse.productImages.length > 0 ? (
-                  <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered">
-                  {infoResponse.productImages.map((productImage, imageKey) => (
-                    <Carousel.Item key={imageKey}>
-                      <Image src={productImage.value} size="large" />
-                      <Carousel.Caption>
-                        <h5>{productImage.name}</h5>
-                      </Carousel.Caption>
-                    </Carousel.Item>
-                  ))}
-                  </Carousel> 
-                ) : (
-                  <Placeholder>
-                    <img src='/image/microchip.png' className="square" alt="" />
-                  </Placeholder>
-                )}
-
-                <Card.Content>
-                  <Loader active={loadingPartMetadata} inline size='small' as='i' style={{float: 'right'}} />
-                  <Header as='h4'><Icon name='images' />Product Images</Header>
-                </Card.Content>
-              </Card>
-
-                { /* DATASHEETS */ }
-                <Card id="datasheets" color="green">
-                  {infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0 ? (
-                  <div>
-                    <Carousel variant="dark" interval={null} style={{cursor: 'pointer'}} onSelect={onCurrentDatasheetChanged}>
-                    {infoResponse.datasheets.map((datasheet, datasheetKey) => (
-                      <Carousel.Item key={datasheetKey} onClick={(e)=> handleVisitLink(e, datasheet.value.datasheetUrl)} data={datasheet}>
-                        <Image src={datasheet.value.imageUrl} size="large" />
-                      </Carousel.Item>
-                    ))}
+              {/* Product Images Carousel */}
+              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.ProductImage)}>
+                <Card color="blue">
+                  {infoResponse && infoResponse.productImages && infoResponse.productImages.length > 0 ? (
+                    <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered">
+                      {infoResponse.productImages.map((productImage, imageKey) => (
+                        <Carousel.Item key={imageKey}>
+                          <Image src={productImage.value} size="large" />
+                          {productImage.id && 
+                            <Popup 
+                              position='top left'
+                              content="Delete this local file"
+                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, productImage, 'productImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                            />
+                          }
+                          <Carousel.Caption>
+                            <h5>{productImage.name}</h5>
+                          </Carousel.Caption>
+                        </Carousel.Item>
+                      ))}
                     </Carousel>
-                    <Card.Content style={{textAlign: 'left'}}>
-                      <Card.Header>{datasheetTitle}</Card.Header>
-                      <Card.Meta>{datasheetPartName}, {datasheetManufacturer}</Card.Meta>
-                      <Card.Description>{datasheetDescription}</Card.Description>
-                    </Card.Content>
-                  </div>
                   ) : (
                     <Placeholder>
-                      <img src='/image/datasheet.png' className="square" alt="" />
+                      <img src="/image/microchip.png" className="square" alt="" />
+                    </Placeholder>
+                  )}
+
+                  <Card.Content>
+                    <Loader active={loadingPartMetadata} inline size="small" as="i" style={{ float: "right" }} />
+                    <Header as="h4">
+                      <Icon name="images" />
+                      Product Images
+                    </Header>
+                  </Card.Content>
+                </Card>
+              </Dropzone>
+
+              {/* DATASHEETS */}
+              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.Datasheet)}>
+                <Card id="datasheets" color="green">
+                  {infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0 ? (
+                    <div>
+                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }} onSelect={onCurrentDatasheetChanged}>
+                        {infoResponse.datasheets.map((datasheet, datasheetKey) => (
+                          <Carousel.Item key={datasheetKey} onClick={(e) => handleVisitLink(e, datasheet.value.datasheetUrl)} data={datasheet}>
+                            <Image src={datasheet.value.imageUrl} size="large" />
+                            {datasheet.id && 
+                              <Popup 
+                                position='top left'
+                                content="Delete this local file"
+                                trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, datasheet, 'datasheets')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                              />
+                            }
+                          </Carousel.Item>
+                        ))}
+                      </Carousel>
+                      <Card.Content style={{ textAlign: "left" }}>
+                        <Card.Header>{datasheetTitle}</Card.Header>
+                        <Card.Meta>
+                          {datasheetPartName}, {datasheetManufacturer}
+                        </Card.Meta>
+                        <Card.Description>{datasheetDescription}</Card.Description>
+                      </Card.Content>
+                    </div>
+                  ) : (
+                    <Placeholder>
+                      <img src="/image/datasheet.png" className="square" alt="" />
                       <Placeholder.Header>
-                        <Placeholder.Line length='very long' />
-                        <Placeholder.Line length='medium' />
-                        <Placeholder.Line length='short' />
+                        <Placeholder.Line length="very long" />
+                        <Placeholder.Line length="medium" />
+                        <Placeholder.Line length="short" />
                       </Placeholder.Header>
                     </Placeholder>
                   )}
                   <Card.Content extra>
-                    <Header as='h4'><Icon name='file pdf' />Datasheets</Header>
+                      <Header as="h4">
+                        <Icon name="file pdf" />
+                        Datasheets
+                      </Header>
                   </Card.Content>
                 </Card>
+              </Dropzone>
 
-                { /* PINOUT */ }
+              {/* PINOUT */}
 
+              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.Pinout)}>
                 <Card id="pinout" color="purple">
-                  {infoResponse && infoResponse.pinouts && infoResponse.pinouts.length > 0 ? (
+                  {infoResponse && infoResponse.pinoutImages && infoResponse.pinoutImages.length > 0 ? (
                     <div>
-                      <Carousel variant="dark" interval={null} style={{cursor: 'pointer'}}>
-                        {infoResponse.pinouts.map((pinout, datasheetKey) => (
-                        <Carousel.Item key={datasheetKey}  onClick={(e)=> handleVisitLink(e, pinout.value.datasheetUrl)}>
-                          <Image src={pinout.value.imageUrl} size="large" />
+                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
+                        {infoResponse.pinoutImages.map((pinout, pinoutKey) => (
+                          <Carousel.Item key={pinoutKey}>
+                          <Image src={pinout.value} size="large" />
+                          {pinout.id && 
+                            <Popup 
+                              position='top left'
+                              content="Delete this local file"
+                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, pinout, 'pinoutImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                            />
+                          }
                           <Carousel.Caption>
-                            <h5>{pinout.value.title}</h5>
+                            <h5>{pinout.name}</h5>
                           </Carousel.Caption>
                         </Carousel.Item>
-                      ))}
+                        ))}
                       </Carousel>
                     </div>
                   ) : (
                     <Placeholder>
-                      <img src='/image/pinout.png' className="square" alt="" />
+                      <img src="/image/pinout.png" className="square" alt="" />
                     </Placeholder>
                   )}
                   <Card.Content extra>
-                    <Header as='h4'><Icon name='pin' />Pinout</Header>
+                    <Header as="h4">
+                      <Icon name="pin" />
+                      Pinout
+                    </Header>
                   </Card.Content>
                 </Card>
+              </Dropzone>
 
-                { /* CIRCUITS */}
+              {/* CIRCUITS */}
 
+              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.ReferenceDesign)}>
                 <Card id="circuits" color="violet">
-                  {infoResponse && infoResponse.circuits && infoResponse.circuits.length > 0 ? (
+                  {infoResponse && infoResponse.circuitImages && infoResponse.circuitImages.length > 0 ? (
                     <div>
-                      <Carousel variant="dark" interval={null} style={{cursor: 'pointer'}}>
-                        {infoResponse.circuits.map((circuit, datasheetKey) => (
-                        <Carousel.Item key={datasheetKey}  onClick={(e)=> handleVisitLink(e, circuit.value.datasheetUrl)}>
-                          <Image src={circuit.value.imageUrl} size="large" />
+                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
+                        {infoResponse.circuitImages.map((circuit, circuitKey) => (
+                          <Carousel.Item key={circuitKey}>
+                          <Image src={circuit.value} size="large" />
+                          {circuit.id && 
+                            <Popup 
+                              position='top left'
+                              content="Delete this local file"
+                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, circuit, 'circuitImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                            />
+                          }
                           <Carousel.Caption>
-                            <h5>{circuit.value.title}</h5>
+                            <h5>{circuit.name}</h5>
                           </Carousel.Caption>
                         </Carousel.Item>
-                      ))}
+                        ))}
                       </Carousel>
                     </div>
                   ) : (
                     <Placeholder>
-                      <img src='/image/referencedesign.png' className="square" alt="" />
+                      <img src="/image/referencedesign.png" className="square" alt="" />
                     </Placeholder>
                   )}
                   <Card.Content extra>
-                    <Header as='h4'><Icon name='microchip' />Reference Designs</Header>
+                    <Header as="h4">
+                      <Icon name="microchip" />
+                      Reference Designs
+                    </Header>
                   </Card.Content>
-                </Card>       
+                </Card>
+              </Dropzone>
 
-                {/* END LEFT COLUMN */}
-
+              {/* END LEFT COLUMN */}
             </Grid.Column>
           </Grid.Row>
         </Grid>

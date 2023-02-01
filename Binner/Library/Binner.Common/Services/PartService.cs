@@ -3,8 +3,6 @@ using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
 using Binner.Common.Models.Responses;
-using Binner.Common.Models.Swarm.Requests;
-using Binner.Common.Models.Swarm.Responses;
 using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
@@ -66,6 +64,20 @@ namespace Binner.Common.Services
         public async Task<Part> GetPartAsync(string partNumber)
         {
             return await _storageProvider.GetPartAsync(partNumber, _requestContext.GetUserContext());
+        }
+
+        public async Task<(Part Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber)
+        {
+            var userContext = _requestContext.GetUserContext();
+            var partEntity = await _storageProvider.GetPartAsync(partNumber, userContext);
+            var storedFiles = new List<StoredFile>();
+            if (partEntity != null)
+            {
+                var files = await _storageProvider.GetStoredFilesAsync(partEntity.PartId, null, userContext);
+                if (files.Any())
+                    storedFiles.AddRange(files.OrderByDescending(x => x.DateCreatedUtc));
+            }
+            return (partEntity, storedFiles);
         }
 
         public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request)

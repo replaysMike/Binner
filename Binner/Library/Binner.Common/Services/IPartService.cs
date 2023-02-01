@@ -52,6 +52,13 @@ namespace Binner.Common.Services
         Task<Part> GetPartAsync(string partNumber);
 
         /// <summary>
+        /// Get a part with its associated stored files
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        Task<(Part Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber);
+
+        /// <summary>
         /// Get all parts
         /// </summary>
         /// <returns></returns>
