@@ -224,7 +224,7 @@ namespace Binner.Common.IO.Printing
             // autowrap line 2
             do
             {
-                len = TextMeasurer.Measure(line1, new SixLabors.Fonts.TextOptions(fontFirstLine));
+                len = TextMeasurer.Measure(line1, new TextOptions(fontFirstLine));
                 if (len.Width > paperRect.Width - margins.Right - margins.Left)
                     line1 = line1.Substring(0, line1.Length - 1);
             } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -234,7 +234,7 @@ namespace Binner.Common.IO.Printing
                 line2 = description.Substring(line1.Length, description.Length - line1.Length).Trim();
                 do
                 {
-                    len = TextMeasurer.Measure(line2, new SixLabors.Fonts.TextOptions(fontSecondLine));
+                    len = TextMeasurer.Measure(line2, new TextOptions(fontSecondLine));
                     if (len.Width > paperRect.Width - margins.Right - margins.Left)
                         line2 = line2.Substring(0, line2.Length - 1);
                 } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -250,8 +250,8 @@ namespace Binner.Common.IO.Printing
                 return new PointF(0, lineOffset.Y);
             var font = CreateFont(template, text, paperRect);
             var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
-            var rendererOptions = new SixLabors.Fonts.TextOptions(font) { Dpi = Dpi };
-            var textBounds = TextMeasurer.Measure(text, rendererOptions);
+            var textOptions = new TextOptions(font) { Dpi = Dpi };
+            var textBounds = TextMeasurer.Measure(text, textOptions);
             var x = 0f;
             var y = lineOffset.Y;
             x += template.Margin.Left;
@@ -264,20 +264,21 @@ namespace Binner.Common.IO.Printing
             }
             else
             {
-                switch (template.Position)
-                {
-                    case LabelPosition.Right:
-                        x += (margins.Left + paperRect.Width - margins.Right) - textBounds.Width + labelProperties.LeftMargin;
-                        break;
-                    case LabelPosition.Left:
-                        x += margins.Left + labelProperties.LeftMargin;
-                        break;
-                    case LabelPosition.Center:
-                        x += (margins.Left + paperRect.Width - margins.Right) / 2 - textBounds.Width / 2 + labelProperties.LeftMargin;
-                        break;
-                }
+                
                 if (template.Rotate > 0)
                 {
+                    switch (template.Position)
+                    {
+                        case LabelPosition.Right:
+                            x += (margins.Left + paperRect.Width - margins.Right) - (textBounds.Height + labelProperties.LeftMargin) - 25;
+                            break;
+                        case LabelPosition.Left:
+                            x += margins.Left + labelProperties.LeftMargin;
+                            break;
+                        case LabelPosition.Center:
+                            x += (margins.Left + paperRect.Width - margins.Right) / 2 - (textBounds.Height / 2 + labelProperties.LeftMargin);
+                            break;
+                    }
                     // rotated labels will start at the top of the label
                     y = _labelStart[template.Label - 1].Y + template.Margin.Top;
 
@@ -290,14 +291,36 @@ namespace Binner.Common.IO.Printing
                     {
                         Transform = builder.BuildMatrix(Rectangle.Round(new RectangleF(textBounds.X, textBounds.Y, textBounds.Width, textBounds.Height)))
                     };
-                    image.Mutate(c => c.DrawText(drawingOptions, text, font, fontColor, new PointF(0, 0)));
+                    var textOptions2 = new TextOptions(font)
+                    {
+                        Origin = new PointF(0, 0),
+                        Dpi = Dpi,
+                        KerningMode = KerningMode.Normal,
+                    };
+                    image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), Pens.Solid(fontColor, 1)));
                 }
                 else
                 {
-                    var drawingOptions = new DrawingOptions
+                    switch (template.Position)
                     {
+                        case LabelPosition.Right:
+                            x += (margins.Left + paperRect.Width - margins.Right) - (textBounds.Width + labelProperties.LeftMargin);
+                            break;
+                        case LabelPosition.Left:
+                            x += margins.Left + labelProperties.LeftMargin;
+                            break;
+                        case LabelPosition.Center:
+                            x += (margins.Left + paperRect.Width - margins.Right) / 2 - (textBounds.Width / 2 + labelProperties.LeftMargin);
+                            break;
+                    }
+                    var drawingOptions = new DrawingOptions();
+                    var textOptions2 = new TextOptions(font)
+                    {
+                        Origin = new PointF(x, y),
+                        Dpi = Dpi,
+                        KerningMode = KerningMode.Normal
                     };
-                    image.Mutate(c => c.DrawText(drawingOptions, text, font, fontColor, new PointF(x, y)));
+                    image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), Pens.Solid(fontColor, 1)));
                 }
             }
             // return the new drawing cursor position
@@ -309,10 +332,10 @@ namespace Binner.Common.IO.Printing
             Font font;
             var fontFamily = GetOrCreateFontFamily(template.FontName ?? DefaultFontName);
             if (template.AutoSize)
-                font = AutosizeFont(fontFamily, template.FontSize, lineValue, paperRect.Width);
+                font = AutosizeFont(fontFamily, template.FontSize - 1, lineValue, paperRect.Width);
             else
             {
-                font = new Font(fontFamily, template.FontSize);
+                font = new Font(fontFamily, template.FontSize - 1);
             }
             return font;
         }
@@ -387,11 +410,11 @@ namespace Binner.Common.IO.Printing
             do
             {
                 var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
-                var rendererOptions = new SixLabors.Fonts.TextOptions(testFont)
+                var textOptions = new TextOptions(testFont)
                 {
                     Dpi = Dpi
                 };
-                len = TextMeasurer.Measure(text, rendererOptions);
+                len = TextMeasurer.Measure(text, textOptions);
                 if (len.Width > maxWidth)
                     newFontSize -= 0.5f;
             } while (len.Width > maxWidth);
