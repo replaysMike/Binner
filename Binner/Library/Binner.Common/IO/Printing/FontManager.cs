@@ -34,7 +34,7 @@ namespace Binner.Common.IO.Printing
                     {
                         try
                         {
-                            _fontCollection.Value.Install(fontFile);
+                            _fontCollection.Value.Add(fontFile);
                         }
                         catch (Exception)
                         {

@@ -3,14 +3,14 @@
 namespace Binner.Common.Models
 {
     /// <summary>
-    /// A user uploaded file
+    /// A user defined project
     /// </summary>
-    public class StoredFileResponse
+    public class ProjectResponse
     {
         /// <summary>
         /// Primary key
         /// </summary>
-        public long StoredFileId { get; set; }
+        public long ProjectId { get; set; }
 
         /// <summary>
         /// Project name

@@ -57,7 +57,7 @@ namespace Binner.Common.IO
                 for (var i = 0; i < table.Columns.Count; i++)
                     sheet.AutoSizeColumn(i);
             }
-            workbook.Write(stream);
+            workbook.Write(stream, true);
             var bytes = stream.ToArray();
             stream.Dispose();
             streams.Add(new StreamName("BinnerParts", "xlsx"), new MemoryStream(bytes, false));

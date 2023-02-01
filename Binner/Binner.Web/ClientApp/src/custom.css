@@ -188,6 +188,38 @@ code {
     margin-right: 5px;
 }
 
+.dropzone {
+    transition: outline-color .3s ease-in-out;
+    outline: 4px dashed transparent;
+    outline-offset: 4px;
+}
+
+.dropzone:hover {
+    
+}
+
+.notdroptarget {
+    outline: 4px dashed #125CDC;
+    cursor: not-allowed !important;
+}
+
+.droptarget {
+    outline: 4px dashed #125CDC;
+}
+
+.droptarget-error {
+    outline: 4px dashed #cc0000;
+}
+
+.confirm p {
+    text-align: center;
+    padding: 40px 10px;
+}
+
+.confirm b {
+    font-weight: 600;
+}
+
 .partLocation {
     text-align: center; 
 }

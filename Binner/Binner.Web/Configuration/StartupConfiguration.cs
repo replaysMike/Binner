@@ -33,6 +33,7 @@ namespace Binner.Web.Configuration
 
             // support IOptions<> MS dependency injection
             services.Configure<WebHostServiceConfiguration>(options => configuration.GetSection(nameof(WebHostServiceConfiguration)).Bind(options));
+            services.Configure<StorageProviderConfiguration>(options => configuration.GetSection(nameof(StorageProviderConfiguration)).Bind(options));
 
             // register traditional configuration with LightInject
             services.AddSingleton(serviceConfiguration);
