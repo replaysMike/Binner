@@ -22,10 +22,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AnyBarcode" Version="1.0.11" />
+    <PackageReference Include="AnyBarcode" Version="1.0.12" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
-    <PackageReference Include="Binner.Model.Common" Version="1.0.18" />
+    <PackageReference Include="Binner.Model.Common" Version="1.0.22" />
     <PackageReference Include="LightInject" Version="6.4.0" />
     <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1" />
@@ -50,6 +50,7 @@
   <ItemGroup>
     <None Remove="Certificates\Binner.crt" />
     <None Remove="Certificates\Binner.pfx" />
+    <None Remove="Resources\datasheet.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,6 +68,9 @@
     <EmbeddedResource Include="Certificates\Binner.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Resources\datasheet.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

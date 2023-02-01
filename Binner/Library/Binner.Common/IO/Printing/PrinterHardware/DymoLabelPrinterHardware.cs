@@ -57,7 +57,7 @@ namespace Binner.Common.IO.Printing
                     {
                         try
                         {
-                            _fontCollection.Value.Install(fontFile);
+                            _fontCollection.Value.Add(fontFile);
                         }
                         catch (Exception)
                         {
@@ -66,7 +66,7 @@ namespace Binner.Common.IO.Printing
                     }
                 }
             }
-            _fontFamily = _fontCollection.Value.Find(DefaultFontName);
+            _fontFamily = _fontCollection.Value.Get(DefaultFontName);
         }
 
         public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
@@ -224,7 +224,7 @@ namespace Binner.Common.IO.Printing
             // autowrap line 2
             do
             {
-                len = TextMeasurer.Measure(line1, new RendererOptions(fontFirstLine));
+                len = TextMeasurer.Measure(line1, new SixLabors.Fonts.TextOptions(fontFirstLine));
                 if (len.Width > paperRect.Width - margins.Right - margins.Left)
                     line1 = line1.Substring(0, line1.Length - 1);
             } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -234,7 +234,7 @@ namespace Binner.Common.IO.Printing
                 line2 = description.Substring(line1.Length, description.Length - line1.Length).Trim();
                 do
                 {
-                    len = TextMeasurer.Measure(line2, new RendererOptions(fontSecondLine));
+                    len = TextMeasurer.Measure(line2, new SixLabors.Fonts.TextOptions(fontSecondLine));
                     if (len.Width > paperRect.Width - margins.Right - margins.Left)
                         line2 = line2.Substring(0, line2.Length - 1);
                 } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -250,7 +250,7 @@ namespace Binner.Common.IO.Printing
                 return new PointF(0, lineOffset.Y);
             var font = CreateFont(template, text, paperRect);
             var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
-            var rendererOptions = new RendererOptions(font, Dpi);
+            var rendererOptions = new SixLabors.Fonts.TextOptions(font) { Dpi = Dpi };
             var textBounds = TextMeasurer.Measure(text, rendererOptions);
             var x = 0f;
             var y = lineOffset.Y;
@@ -288,12 +288,6 @@ namespace Binner.Common.IO.Printing
                         .AppendTranslation(new PointF(x, y));
                     var drawingOptions = new DrawingOptions
                     {
-                        TextOptions = new TextOptions
-                        {
-                            ApplyKerning = true,
-                            DpiX = Dpi,
-                            DpiY = Dpi
-                        },
                         Transform = builder.BuildMatrix(Rectangle.Round(new RectangleF(textBounds.X, textBounds.Y, textBounds.Width, textBounds.Height)))
                     };
                     image.Mutate(c => c.DrawText(drawingOptions, text, font, fontColor, new PointF(0, 0)));
@@ -302,12 +296,6 @@ namespace Binner.Common.IO.Printing
                 {
                     var drawingOptions = new DrawingOptions
                     {
-                        TextOptions = new TextOptions
-                        {
-                            ApplyKerning = true,
-                            DpiX = Dpi,
-                            DpiY = Dpi
-                        },
                     };
                     image.Mutate(c => c.DrawText(drawingOptions, text, font, fontColor, new PointF(x, y)));
                 }
@@ -332,14 +320,14 @@ namespace Binner.Common.IO.Printing
         private FontFamily GetOrCreateFontFamily(string fontName)
         {
             FontFamily fontFamily;
-            if (_fontCollection.Value.TryFind(fontName, out fontFamily))
+            if (_fontCollection.Value.TryGet(fontName, out fontFamily))
             {
                 return fontFamily;
             }
             else
             {
                 // try to load it from system fonts
-                if (SystemFonts.TryFind(fontName, out fontFamily))
+                if (SystemFonts.TryGet(fontName, out fontFamily))
                 {
                     return fontFamily;
                 }
@@ -399,10 +387,9 @@ namespace Binner.Common.IO.Printing
             do
             {
                 var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
-                var rendererOptions = new RendererOptions(testFont)
+                var rendererOptions = new SixLabors.Fonts.TextOptions(testFont)
                 {
-                    DpiX = Dpi,
-                    DpiY = Dpi
+                    Dpi = Dpi
                 };
                 len = TextMeasurer.Measure(text, rendererOptions);
                 if (len.Width > maxWidth)

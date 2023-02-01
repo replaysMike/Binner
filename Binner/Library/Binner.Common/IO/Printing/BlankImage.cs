@@ -13,7 +13,7 @@ namespace Binner.Common.IO.Printing
     {
         public Image<Rgba32> Image { get; private set; }
 
-        public BlankImage(int width = 500, int height = 50, Color? color = null, string text = null, FontFamily fontFamily = null)
+        public BlankImage(int width = 500, int height = 50, Color? color = null, string text = null, FontFamily? fontFamily = null)
         {
             Image = new Image<Rgba32>(width, height);
             if (color is null)
@@ -23,8 +23,8 @@ namespace Binner.Common.IO.Printing
             Image.Mutate(c => c.Fill(color.Value));
             if (text != null && fontFamily != null)
             {
-                var font = new Font(fontFamily, 30);
-                var len = TextMeasurer.Measure(text, new RendererOptions(font));
+                var font = new Font(fontFamily.Value, 30);
+                var len = TextMeasurer.Measure(text, new SixLabors.Fonts.TextOptions(font));
                 Image.Mutate(c => c.DrawText(text, font, Color.Black, new PointF((width / 2f) - (len.Width / 2f), (height / 2f) - (len.Height / 2f))));
             }
         }

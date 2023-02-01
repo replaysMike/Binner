@@ -2,6 +2,7 @@
 using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Model.Common;
+using NPOI.HSSF.Record;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,9 +33,10 @@ namespace Binner.Common.StorageProviders
         private Thread _ioThread;
         private readonly Guid _instance = Guid.NewGuid();
 
+        public BinnerDbVersion Version { get; private set; }
+
         public BinnerFileStorageProvider(IDictionary<string, string> config)
         {
-            Console.WriteLine($"BinnerFileStorageProvider constructor {_instance}");
             _config = new BinnerFileStorageConfiguration(config);
             ValidateBinnerConfiguration(_config);
             Task.Run(async () =>
@@ -571,7 +573,8 @@ namespace Binner.Common.StorageProviders
             {
                 storedFile.UserId = userContext?.UserId;
                 storedFile.StoredFileId = _primaryKeyTracker.GetNextKey<StoredFile>();
-                _db.StoredFiles.Add(storedFile);
+
+                (_db as BinnerDbV2).StoredFiles.Add(storedFile);
                 _isDirty = true;
             }
             finally
@@ -587,7 +590,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return (_db as BinnerDbV2).StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
             }
             finally
             {
@@ -601,7 +604,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return (_db as BinnerDbV2).StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
             }
             finally
             {
@@ -615,7 +618,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.StoredFiles
+                return (_db as BinnerDbV2).StoredFiles
                     .Where(x => x.PartId.Equals(partId))
                     .Where(x => fileType == null || x.StoredFileType.Equals(fileType))
                     .Where(x => x.UserId == userContext?.UserId)
@@ -633,7 +636,7 @@ namespace Binner.Common.StorageProviders
             var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return _db.StoredFiles
+                return (_db as BinnerDbV2).StoredFiles
                     .Where(x => x.UserId == userContext?.UserId)
                     .OrderBy(request.OrderBy, request.Direction)
                     .Skip(pageRecords)
@@ -644,6 +647,48 @@ namespace Binner.Common.StorageProviders
             {
                 _dataLock.Release();
             }
+        }
+
+        public async Task<bool> DeleteStoredFileAsync(StoredFile storedFile, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                storedFile.UserId = userContext?.UserId;
+                var itemRemoved = (_db as BinnerDbV2).StoredFiles.Remove(storedFile);
+                if (itemRemoved)
+                {
+                    var nextStoredFileId = (_db as BinnerDbV2).StoredFiles.OrderByDescending(x => x.StoredFileId)
+                        .Select(x => x.StoredFileId)
+                        .FirstOrDefault() + 1;
+                    _primaryKeyTracker.SetNextKey<StoredFile>(nextStoredFileId);
+                    _isDirty = true;
+                }
+                return itemRemoved;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile, IUserContext userContext)
+        {
+            if (storedFile == null) throw new ArgumentNullException(nameof(storedFile));
+            await _dataLock.WaitAsync();
+            try
+            {
+                storedFile.UserId = userContext?.UserId;
+                var existingStoredFile = (_db as BinnerDbV2).StoredFiles.Where(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
+                existingStoredFile = Mapper.Map<StoredFile, StoredFile>(storedFile, existingStoredFile, x => x.StoredFileId);
+                existingStoredFile.StoredFileId = storedFile.StoredFileId;
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return storedFile;
         }
 
         private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType, IUserContext userContext)
@@ -737,13 +782,13 @@ namespace Binner.Common.StorageProviders
                 {
                     using (var stream = File.OpenRead(_config.Filename))
                     {
-                        var dbVersion = ReadDbVersion(stream);
+                        Version = ReadDbVersion(stream);
 
                         // copy the rest of the bytes
                         var bytes = new byte[stream.Length - stream.Position];
                         stream.Read(bytes, 0, bytes.Length);
 
-                        _db = LoadDatabaseByVersion(dbVersion, bytes);
+                        _db = LoadDatabaseByVersion(Version, bytes);
                         bytes = null;
 
                         // could make this non-fatal
@@ -755,7 +800,7 @@ namespace Binner.Common.StorageProviders
                             { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() + 1, 1) },
                             { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() + 1, 1) },
                             { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault() + 1, 1) },
-                            { typeof(StoredFile).Name, Math.Max(_db.StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() + 1, 1) },
+                            { typeof(StoredFile).Name, Math.Max((_db as BinnerDbV2).StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() + 1, 1) },
                         });
                     }
                 }
@@ -789,33 +834,16 @@ namespace Binner.Common.StorageProviders
         {
             IBinnerDb db;
             // Support database loading by version number
-#if (NET462 || NET471)
-            try
-            {
-                switch (version.Version)
-                {
-                    case BinnerDbV1.VersionNumber:
-                        // Version 1
-                        db = _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unsupported database version: {version}");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new BinnerConfigurationException($"Failed to load Binner file database (Net Framework)!", ex);
-            }
-#else
             try
             {
                 db = version.Version switch
                 {
                     // Version 1
-                    BinnerDbV1.VersionNumber => _serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions),
+                    BinnerDbV1.VersionNumber => new BinnerDbV2(_serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    // Version 2
+                    BinnerDbV2.VersionNumber => _serializer.Deserialize<BinnerDbV2>(bytes, _serializationOptions),
                     _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
                 };
-#endif
                 return db;
             }
             catch (Exception ex)
@@ -835,7 +863,7 @@ namespace Binner.Common.StorageProviders
                 await _dataLock.WaitAsync();
             try
             {
-                var db = _db as BinnerDbV1;
+                var db = _db as BinnerDbV2;
                 db.FirstPartId = db.Parts
                     .OrderBy(x => x.PartId)
                     .Select(x => x.PartId)
@@ -847,7 +875,7 @@ namespace Binner.Common.StorageProviders
                 db.Count = db.Parts.Count;
                 db.Checksum = BuildChecksum(db);
                 using var stream = new MemoryStream();
-                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV1.VersionNumber, BinnerDbV1.VersionCreated));
+                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV2.VersionNumber, BinnerDbV2.VersionCreated));
                 var serializedBytes = _serializer.Serialize(db, _serializationOptions);
                 stream.Write(serializedBytes, 0, serializedBytes.Length);
                 Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
@@ -916,7 +944,7 @@ namespace Binner.Common.StorageProviders
                 });
             }
 
-            return new BinnerDbV1
+            return new BinnerDbV2
             {
                 Count = 0,
                 FirstPartId = 0,
@@ -927,7 +955,7 @@ namespace Binner.Common.StorageProviders
                 Parts = new List<Part>(),
                 Projects = new List<Project>(),
                 OAuthCredentials = new List<OAuthCredential>(),
-                StoredFiles = new List<StoredFile>()
+                StoredFiles= new List<StoredFile>()
             };
         }
 
@@ -958,7 +986,6 @@ namespace Binner.Common.StorageProviders
 
         private void SaveDataThread()
         {
-            Console.WriteLine("SaveDataThread created!");
             while (!_quitEvent.WaitOne(500))
             {
                 if (_isDirty)
@@ -986,7 +1013,6 @@ namespace Binner.Common.StorageProviders
 
         protected virtual void Dispose(bool isDisposing)
         {
-            Console.WriteLine($"BinnerFileStorageProvider disposing {_instance}!");
             if (_isDisposed)
                 return;
             _isDisposed = true;

@@ -53,12 +53,13 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetPartRequest request)
         {
-            var part = await _partService.GetPartAsync(request.PartNumber);
-            if (part == null) return NotFound();
-            var partResponse = Mapper.Map<Part, PartResponse>(part);
+            var response = await _partService.GetPartWithStoredFilesAsync(request.PartNumber);
+            if (response.Part == null) return NotFound();
+            var partResponse = Mapper.Map<Part, PartStoredFilesResponse>(response.Part);
+            partResponse.StoredFiles = response.StoredFiles;
             var partTypes = await _partService.GetPartTypesAsync();
-            partResponse.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
-            partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
+            partResponse.PartType = partTypes.Where(x => x.PartTypeId == response.Part.PartTypeId).Select(x => x.Name).FirstOrDefault();
+            partResponse.Keywords = string.Join(" ", response.Part.Keywords ?? new List<string>());
             return Ok(partResponse);
         }
 
