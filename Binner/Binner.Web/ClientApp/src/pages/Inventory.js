@@ -23,7 +23,8 @@ import {
   Grid,
   Card,
   Menu,
-  Placeholder
+  Placeholder,
+  Breadcrumb
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
@@ -612,6 +613,7 @@ export function Inventory(props) {
         resetForm(saveMessage);
         toast.success(saveMessage);
       }
+      setIsDirty(false);
       // refresh recent parts list
       await fetchRecentRows();
     } else if (response.status === 400) {

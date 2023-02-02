@@ -188,6 +188,29 @@ code {
     margin-right: 5px;
 }
 
+.ui.breadcrumb {
+    margin-bottom: 10px;
+}
+
+.clickablerow {
+    cursor: pointer;
+}
+
+.ui.input.inline-editable>input {
+    padding: 4px !important;
+}
+
+.ui.input.inline-editable>input:hover {
+    outline: 1px solid #ddd;
+    outline-offset: 2px;
+}
+
+.ui.input.inline-editable>input:focus {
+    outline: 1px solid #aaa;
+    outline-offset: 2px;
+    background-color: #fff !important;
+}
+
 .dropzone {
     transition: outline-color .3s ease-in-out;
     outline: 4px dashed transparent;
