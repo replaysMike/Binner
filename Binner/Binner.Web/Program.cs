@@ -2,11 +2,9 @@
 using Binner.Common.Extensions;
 using Binner.Common.StorageProviders;
 using Binner.Web.ServiceHost;
-using LightInject;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Data.Common;
 using System.IO;
 using System.Reflection;
 using System.Text;

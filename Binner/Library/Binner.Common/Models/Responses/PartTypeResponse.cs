@@ -22,6 +22,8 @@ namespace Binner.Common.Models
         /// </summary>
         public long? ParentPartTypeId { get; set; }
 
+        public string? ParentPartType { get; set; }
+
         /// <summary>
         /// The number of parts assigned to the project
         /// </summary>

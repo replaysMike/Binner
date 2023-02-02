@@ -179,7 +179,7 @@ namespace Binner.Common.StorageProviders
                     existingPartType = new PartType
                     {
                         Name = partType.Name,
-                        ParentPartTypeId = null,
+                        ParentPartTypeId = partType.ParentPartTypeId,
                         PartTypeId = _primaryKeyTracker.GetNextKey<PartType>(),
                         UserId = partType.UserId,
                     };

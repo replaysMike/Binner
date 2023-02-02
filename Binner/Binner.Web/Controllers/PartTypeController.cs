@@ -1,12 +1,15 @@
 ﻿using AnyMapper;
 using Binner.Common.Configuration;
 using Binner.Common.Models;
+using Binner.Common.Models.Responses;
 using Binner.Common.Services;
 using Binner.Model.Common;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -31,25 +34,60 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Get a list of part types
+        /// Get a list of all part types
         /// </summary>
-        /// <param name="request"></param>
         /// <returns></returns>
-        [HttpGet("list")]
-        public async Task<IActionResult> GetPartTypesAsync()
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllPartTypesAsync()
         {
             var partTypes = await _partService.GetPartTypesAsync();
             var partTypesResponse = Mapper.Map<ICollection<PartType>, ICollection<PartTypeResponse>>(partTypes);
             foreach (var partType in partTypesResponse)
             {
-                var partsForPartType = await _partService.GetPartsAsync(x => x.PartTypeId == partType.PartTypeId);
-                partType.Parts = partsForPartType.Count;
+                // todo: extend part service to support this more efficiently
+                partType.ParentPartType = partTypes
+                    .Where(x => x.ParentPartTypeId == partType.ParentPartTypeId)
+                    .Select(x => x.Name)
+                    .FirstOrDefault();
             }
             return Ok(partTypesResponse);
         }
 
         /// <summary>
-        /// Create a new project
+        /// Get a list of part types
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("list")]
+        public async Task<IActionResult> GetPartTypesAsync([FromQuery] string? parent)
+        {
+            var partTypes = await _partService.GetPartTypesAsync();
+
+            PartType? parentPartType = null;
+            if (!string.IsNullOrEmpty(parent))
+            {
+                parentPartType = partTypes.FirstOrDefault(x => x.Name.Equals(parent, StringComparison.InvariantCultureIgnoreCase));
+                if (parentPartType == null)
+                    return NotFound();
+            }
+
+            var partTypesFiltered = partTypes
+                .Where(x => x.ParentPartTypeId == parentPartType?.PartTypeId)
+                .ToList();
+
+            var partTypesResponse = Mapper.Map<ICollection<PartType>, ICollection<PartTypeResponse>>(partTypesFiltered);
+            foreach (var partType in partTypesResponse)
+            {
+                // todo: extend part service to support this more efficiently
+                var partsForPartType = await _partService.GetPartsAsync(x => x.PartTypeId == partType.PartTypeId);
+                partType.Parts = partsForPartType.Count;
+                partType.ParentPartType = parentPartType?.Name;
+            }
+            return Ok(partTypesResponse);
+        }
+
+        /// <summary>
+        /// Create a new part type
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -59,11 +97,20 @@ namespace Binner.Web.Controllers
             var mappedPartType = Mapper.Map<CreatePartTypeRequest, PartType>(request);
             mappedPartType.DateCreatedUtc = DateTime.UtcNow;
             var partType = await _partTypeService.AddPartTypeAsync(mappedPartType);
-            return Ok(partType);
+
+            var partTypeResponse = Mapper.Map<PartType, PartTypeResponse>(partType);
+            if (partType.ParentPartTypeId != null)
+            {
+                // todo: extend part service to support this more efficiently
+                var partTypes = await _partService.GetPartTypesAsync();
+                partTypeResponse.ParentPartType = partTypes.Where(x => x.PartTypeId == partType.ParentPartTypeId).Select(x => x.Name).FirstOrDefault();
+            }
+
+            return Ok(partTypeResponse);
         }
 
         /// <summary>
-        /// Update an existing project
+        /// Update an existing part type
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -76,18 +123,25 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Delete an existing project
+        /// Delete an existing part type
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> DeletePartAsync(DeletePartTypeRequest request)
+        public async Task<IActionResult> DeletePartTypeAsync(DeletePartTypeRequest request)
         {
-            var isDeleted = await _partTypeService.DeletePartTypeAsync(new PartType
+            try
             {
-                PartTypeId = request.PartTypeId
-            });
-            return Ok(isDeleted);
+                var isDeleted = await _partTypeService.DeletePartTypeAsync(new PartType
+                {
+                    PartTypeId = request.PartTypeId
+                });
+                return Ok(isDeleted);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Cannot delete. ", ex));
+            }
         }
     }
 }

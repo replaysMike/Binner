@@ -1,248 +1,325 @@
-import React, { Component } from 'react';
-import _ from 'underscore';
-import { Table, Input, Button, Segment, Form, Icon, Dropdown } from 'semantic-ui-react';
-import { fetchApi } from '../common/fetchApi';
+import React, { useState, useEffect, useCallback } from "react";
+import _ from "underscore";
+import { Table, Input, Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup } from "semantic-ui-react";
+import { fetchApi } from "../common/fetchApi";
+import { toast } from "react-toastify";
 
-export class PartTypes extends Component {
-  static displayName = PartTypes.name;
+export function PartTypes(props) {
+  const defaultPartType = {
+    partTypeId: 0,
+    name: "",
+    parentPartTypeId: "",
+    loading: false
+  };
+  const [parentPartType, setParentPartType] = useState(null);
+  const [partTypeOptions, setPartTypeOptions] = useState([]);
+  const [partTypes, setPartTypes] = useState([]);
+  const [partType, setPartType] = useState(defaultPartType);
+  const [changeTracker, setChangeTracker] = useState([]);
+  const [lastSavedPartTypeId, setLastSavedPartTypeId] = useState(0);
+  const [addVisible, setAddVisible] = useState(false);
+  const [column, setColumn] = useState(null);
+  const [direction, setDirection] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingAllPartTypes, setLoadingAllPartTypes] = useState(false);
+  const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
+  const [selectedPartType, setSelectedPartType] = useState(null);
+  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete this part?");
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      partTypes: [],
-      partType: {
-        partTypeId: 0,
-        name: '',
-        parentPartTypeId: '',
-        loading: false,
-      },
-      partTypeOptions: [],
-      changeTracker: [],
-      lastSavedPartTypeId: 0,
-      addVisible: false,
-      page: 1,
-      records: 10,
-      column: null,
-      direction: null,
-      noRemainingData: false,
-      lastSavedProjectId: 0,
-      loading: true
-    };
+  const loadPartTypes = useCallback((parentPartType = "") => {
+    setLoading(true);
+    if (parentPartType === undefined || parentPartType === null)
+      parentPartType = "";
+    fetchApi(`partType/list?parent=${parentPartType}`).then((response) => {
+      const { data } = response;
 
-    this.handleChange = this.handleChange.bind(this);
-    this.handleInlineChange = this.handleInlineChange.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
-    this.handleSort = this.handleSort.bind(this);
-    this.handleShowAdd = this.handleShowAdd.bind(this);
-    this.handleDelete = this.handleDelete.bind(this);
-    this.save = this.save.bind(this);
-    this.saveColumn = this.saveColumn.bind(this);
-  }
-
-  async componentDidMount() {
-    await this.loadPartTypes(this.state.page);
-  }
-
-  async loadPartTypes(page, reset = false) {
-    const { partTypes } = this.state;
-    this.setState({ loading: true });
-    let endOfData = false;
-    const response = await fetchApi(`partType/list`);
-    const pageOfData = response.data;
-    if (pageOfData && pageOfData.length === 0)
-      endOfData = true;
-    let newData = [];
-    if (reset)
-      newData = [...pageOfData];
-    else
-      newData = [...partTypes, ...pageOfData];
-
-    const blankRow = { key: 999, value: null, text: '' };
-    const partTypeOptions = _.map(newData, function (item) {
-      return {
-        key: item.partTypeId,
-        value: item.partTypeId,
-        text: item.name
-      };
+      setPartTypes(data);
+      //setPartTypes([]);
+      setLoading(false);
     });
-    partTypeOptions.unshift(blankRow);
-    this.setState({ partTypes: newData, page, noRemainingData: endOfData, partTypeOptions, loading: false });
-  }
+  }, []);
 
-  handleSort = (clickedColumn) => () => {
-    const { column, partTypes, direction } = this.state
+  useEffect(() => {
+    loadPartTypes();
+  }, [loadPartTypes]);
 
+  const handleSort = (clickedColumn) => () => {
     if (column !== clickedColumn) {
-      this.setState({
-        column: clickedColumn,
-        partTypes: _.sortBy(partTypes, [clickedColumn]),
-        direction: 'ascending',
-      })
+      setColumn(clickedColumn);
+      setPartTypes(_.sortBy(partTypes, [clickedColumn]));
+      setDirection("ascending");
     } else {
-      this.setState({
-        partTypes: partTypes.reverse(),
-        direction: direction === 'ascending' ? 'descending' : 'ascending',
-      })
+      setPartTypes(partTypes.reverse());
+      setDirection(direction === "ascending" ? "descending" : "ascending");
     }
-  }
+  };
 
-  handleChange(e, control) {
-    const { partType } = this.state;
+  const loadAllPartTypes = () => {
+    setLoadingAllPartTypes(true);
+    fetchApi(`partType/all`).then((response) => {
+      const { data } = response;
+
+      setPartTypeOptions(data.map((i, key) => ({
+        key: key,
+        value: i.partTypeId,
+        content: <Header icon='microchip' content={i.name} subheader={i.parentPartType} />,
+        text: i.name
+      })));
+      setLoadingAllPartTypes(false);
+    });
+  };
+
+  const handleChange = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
     partType[control.name] = control.value;
-    this.setState({ partType });
-  }
+    const newPartType = { ...partType };
+    setPartType(newPartType);
+  };
 
-  async handleInlineChange(e, control, partType) {
-    const { partTypes, changeTracker } = this.state;
+  const handleInlineChange = async (e, control, partType) => {
+    e.preventDefault();
+    e.stopPropagation();
     partType[control.name] = control.value;
     let changes = [...changeTracker];
-    if (_.where(changes, { partTypeId: partType.partTypeId }).length === 0)
+    if (_.where(changes, { partTypeId: partType.partTypeId }).length === 0) {
       changes.push({ partTypeId: partType.partTypeId });
-    this.setState({ partTypes, changeTracker: changes });
-  }
+    }
+    setPartTypes(partTypes);
+    setChangeTracker(changes);
+  };
 
   /**
    * Save new project
    * @param {any} e
    */
-  async onSubmit(e) {
-    const { partType } = this.state;
+  const onSubmit = async (e) => {
     const request = {
       name: partType.name,
       parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
     };
-    const response = await fetchApi('partType', {
-      method: 'POST',
+    const response = await fetchApi("partType", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
     if (response.responseObject.status === 200) {
       // reset form
-      this.setState({
-        partType: {
-          name: '',
-          parentPartTypeId: '',
-          loading: false,
-        },
-        addVisible: false
-      });
-      await this.loadPartTypes(this.state.page, true);
+      setPartType(defaultPartType);
+      setAddVisible(false);
+      toast.success(`Added part type '${response.data.name}'`);
+      loadPartTypes(response.data.parentPartType);
+    } else {
+      toast.error(`Failed to add part type '${partType.name}'`);
     }
-  }
+  };
 
-  async onDelete(partType) {
-    await fetchApi('partType', {
-      method: 'DELETE',
+  const onDelete = async (partType) => {
+    const response = await fetchApi("partType", {
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ partTypeId: partType.partTypeId })
     });
-    await this.loadPartTypes(this.state.page, true);
+
+    if (response.responseObject.status === 200){
+      const isSuccess = response.data;
+      if (isSuccess){
+        const partTypesDeleted = _.without(partTypes, _.findWhere(partTypes, { partTypeId: selectedPartType.partTypeId }));
+        setPartTypes(partTypesDeleted);
+        if (parentPartType)
+          loadPartTypes(parentPartType.name);
+        else
+          loadPartTypes();
+        toast.success(`Deleted part type '${partType.name}'`);
+      }else {
+        toast.error(`Failed to delete part type '${partType.name}'`);
+      }
+      setConfirmDeleteIsOpen(false);
+      setSelectedPartType(null);
   }
 
-  async saveColumn(e) {
-    const { partTypes, changeTracker } = this.state;
+  };
+
+  const saveColumn = async (e) => {
     changeTracker.forEach(async (val) => {
       const partType = _.where(partTypes, { partTypeId: val.partTypeId }) || [];
-      if (partType.length > 0)
-        await this.save(partType[0]);
+      if (partType.length > 0) await save(partType[0]);
     });
-    this.setState({ partTypes, changeTracker: [] });
-  }
+    setPartTypes(partTypes);
+    setChangeTracker([]);
+  };
 
-  async save(partType) {
-    const { partTypes } = this.state;
+  const save = async (partType) => {
     const p = _.where(partTypes, { partTypeId: partType.partTypeId });
     p.loading = false;
-    this.setState({ partTypes });
+    setPartTypes(partTypes);
     let lastSavedPartTypeId = 0;
     const request = {
       partTypeId: Number.parseInt(partType.partTypeId),
       name: partType.name,
       parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
     };
-    const response = await fetchApi('partType', {
-      method: 'PUT',
+    const response = await fetchApi("partType", {
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
     if (response.responseObject.status === 200) {
       lastSavedPartTypeId = partType.partTypeId;
+      toast.success(`Saved part type '${response.data.name}'`);
+    } else {
+      toast.error("failed to save partType");
     }
-    else
-      console.log('failed to save partType');
     p.loading = false;
-    this.setState({ partTypes, lastSavedPartTypeId });
-  }
+    setPartTypes(partTypes);
+    setLastSavedPartTypeId(lastSavedPartTypeId);
+  };
 
-  handleShowAdd(e) {
-    this.setState({ addVisible: !this.state.addVisible });
-  }
+  const handleShowAdd = (e) => {
+    if(!addVisible){
+      loadAllPartTypes();
+      if (parentPartType)
+        setPartType({...partType, parentPartTypeId: parentPartType.partTypeId });
+    }
+    setAddVisible(!addVisible);
+  };
 
-  async handleDelete(e, partType) {
-    await this.onDelete(partType);
-  }
+  const handleDelete = async (e) => {
+    await onDelete(selectedPartType);
+  };
 
-  renderPartTypes(partTypes, column, direction) {
-    const { partType, addVisible, partTypeOptions, loading } = this.state;
-    return (
+  const handleEditRow = (e, p) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // prevent handling of click if target is the input text box
+    if (e.target.type === 'text')
+      return;
+    setParentPartType(p);
+    loadPartTypes(p.name);
+  };
+
+  const handleUnsetParentPartType = (e) => {
+    e.preventDefault(); 
+    setParentPartType(null); 
+    setAddVisible(false);
+    loadPartTypes();
+  };
+
+  const confirmDeleteOpen = (e, partType) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteIsOpen(true);
+    setSelectedPartType(partType);
+    setConfirmPartDeleteContent(<p>Are you sure you want to delete part type <b>{partType.name}</b>?<br/><br/>This action is <i>permanent and cannot be recovered</i>.</p>);
+  };
+
+  const confirmDeleteClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteIsOpen(false);
+    setSelectedPartType(null);
+  };
+
+  return (
+    <div>
+      <h1>Part Types</h1>
+      <Breadcrumb>
+        <Breadcrumb.Section href="/">Home</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        {parentPartType 
+          ? <React.Fragment>
+            <Breadcrumb.Section href="/partTypes" onClick={handleUnsetParentPartType}>Part Types</Breadcrumb.Section>
+            <Breadcrumb.Divider />
+            <Breadcrumb.Section active>{parentPartType.name}</Breadcrumb.Section>
+            </React.Fragment> 
+          : <Breadcrumb.Section active>Part Types</Breadcrumb.Section>}
+      </Breadcrumb>
+      <p>
+        Part Types allow you to separate your parts by type. <i>Parent</i> types allow for unlimited part type hierarchy.
+        <br />
+        For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.
+      </p>
+      <Confirm className="confirm" header='Delete Part' open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDelete} content={confirmPartDeleteContent} />
+
       <Segment loading={loading}>
-        <div style={{ minHeight: '35px' }}>
-          <Button onClick={this.handleShowAdd} icon size='mini' floated='right'><Icon name='file' /> Add Part Type</Button>
+        <div style={{ minHeight: "35px" }}>
+        {parentPartType && <Button size="mini" onClick={handleUnsetParentPartType}><Icon name="arrow alternate circle left"/> Back</Button>}
+          <Button onClick={handleShowAdd} icon size="mini" floated="right">
+            <Icon name="file" /> Add Part Type
+          </Button>
         </div>
         <div>
-          {addVisible &&
+          {addVisible && (
             <Segment>
-              <Form onSubmit={this.onSubmit}>
-              <Form.Input width={6} label='Name' required placeholder='Resistors' focus value={partType.name} onChange={this.handleChange} name='name' />
-              <Form.Dropdown width={4} label='Parent' selection value={partType.parentPartTypeId} options={partTypeOptions} onChange={this.handleChange} name='color' />
-                <Button primary type='submit' icon><Icon name='save' /> Save</Button>
+              <Form onSubmit={onSubmit}>
+                <Form.Input width={6} label="Name" required placeholder="Resistors" focus value={partType.name} onChange={handleChange} name="name" />
+                <Form.Dropdown
+                  width={6}
+                  label="Parent"
+                  selection
+                  fluid
+                  value={partType.parentPartTypeId}
+                  options={partTypeOptions}
+                  onChange={handleChange}
+                  name="parentPartTypeId"
+                />
+                <Button primary type="submit" icon>
+                  <Icon name="save" /> Save
+                </Button>
               </Form>
             </Segment>
-          }
+          )}
         </div>
-        <Table compact celled sortable selectable striped size='small'>
+        <Table compact celled sortable selectable striped size="small">
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={this.handleSort('name')}>Part Type</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'parentPartTypeId' ? direction : null} onClick={this.handleSort('location')}>Parent</Table.HeaderCell>
-              <Table.HeaderCell sorted={column === 'parts' ? direction : null} onClick={this.handleSort('parts')}>Parts</Table.HeaderCell>
-              <Table.HeaderCell></Table.HeaderCell>
+              <Table.HeaderCell sorted={column === "name" ? direction : null} onClick={handleSort("name")}>
+                Part Type
+              </Table.HeaderCell>
+              <Table.HeaderCell width={3} sorted={column === "parentPartTypeId" ? direction : null} onClick={handleSort("location")}>
+                Parent
+              </Table.HeaderCell>
+              <Table.HeaderCell sorted={column === "parts" ? direction : null} onClick={handleSort("parts")}>
+                Parts Count
+              </Table.HeaderCell>
+              <Table.HeaderCell width={3}></Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {partTypes.map(p =>
-              <Table.Row key={p.partTypeId} onClick={this.handleClick}>
-                <Table.Cell><Input labelPosition='left' type='text' transparent name='name' onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
-                <Table.Cell><Dropdown width={4} label='Parent' selection name='parentPartTypeId' value={p.parentPartTypeId} options={partTypeOptions} onBlur={this.saveColumn} onChange={(e, control) => this.handleInlineChange(e, control, p)} /></Table.Cell>
+            {partTypes.map((p) => (
+              <Table.Row key={p.partTypeId} onClick={(e) => handleEditRow(e, p)} className="clickablerow">
+                <Table.Cell>
+                  <Popup 
+                    content="Edit the part type name"
+                    trigger={<Input
+                      labelPosition="left"
+                      type="text"
+                      transparent
+                      name="name"
+                      className="inline-editable"
+                      onBlur={saveColumn}
+                      onChange={(e, control) => handleInlineChange(e, control, p)}
+                      value={p.name || ""}
+                      fluid
+                    />}
+                  />                  
+                </Table.Cell>
+                <Table.Cell>{p.parentPartType}</Table.Cell>
                 <Table.Cell>{p.parts}</Table.Cell>
-                <Table.Cell textAlign='center'><Button icon='delete' size='tiny' onClick={e => this.handleDelete(e, p)} /></Table.Cell>
+                <Table.Cell textAlign="center">
+                  {!p.isSystem ? <Button icon="delete" size="tiny" onClick={(e) => confirmDeleteOpen(e, p)} /> : "System Type"}
+                </Table.Cell>
               </Table.Row>
-            )}
+            ))}
           </Table.Body>
         </Table>
       </Segment>
-    );
-  }
-
-  render() {
-    const { partTypes, column, direction } = this.state;
-    let contents = this.renderPartTypes(partTypes, column, direction);
-
-    return (
-      <div>
-        <h1>Part Types</h1>
-        <p>
-          Part Types allow you to separate your parts by type. <i>Parent</i> types allow for unlimited part type hierarchy.<br/>
-          For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.
-        </p>
-        {contents}
-      </div>
-    );
-  }
+    </div>
+  );
 }
