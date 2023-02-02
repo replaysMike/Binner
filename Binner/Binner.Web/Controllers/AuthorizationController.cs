@@ -41,12 +41,12 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> AuthorizeAsync([FromQuery]string code, [FromQuery]string scope, [FromQuery]string state)
         {
-            var contextKey = $"{nameof(DigikeyApi)}-{User.Identity.Name}";
+            var contextKey = $"{nameof(DigikeyApi)}-{User.Identity?.Name}";
             var authRequest = ServerContext.Get<OAuthAuthorization>(contextKey);
             if (authRequest == null)
             {
                 // try get next integration
-                contextKey = $"{nameof(MouserApi)}-{User.Identity.Name}";
+                contextKey = $"{nameof(MouserApi)}-{User.Identity?.Name}";
                 authRequest = ServerContext.Get<OAuthAuthorization>(contextKey);
             }
             if (authRequest != null)

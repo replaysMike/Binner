@@ -27,7 +27,7 @@ var rc = HostFactory.Run(x =>
 {
     x.AddCommandLineSwitch("dbinfo", v => PrintDbInfo());
     x.ApplyCommandLine();
-    
+
     x.Service<BinnerWebHostService>(s =>
     {
         s.ConstructUsing(name => new BinnerWebHostService());
@@ -66,7 +66,7 @@ void PrintHeader()
         Console.Write($"O/S: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
         Console.WriteLine($"  Runtime: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine($"Uri: {new Uri($"https://localhost:{config.Port}")}");
+        Console.WriteLine($"Uri: {new Uri($"https://localhost:{config?.Port}")}");
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine();
     }
@@ -101,36 +101,39 @@ bool PrintDbInfo()
     PrintBox("   Binner database information   ", ConsoleColor.Blue, ConsoleColor.Yellow);
 
     var storageConfig = builder.Configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
-    Console.WriteLine($" Provider: {storageConfig.Provider}");
-    Console.WriteLine($" Configuration:");
+    if (storageConfig != null)
+    {
+        Console.WriteLine($" Provider: {storageConfig.Provider}");
+        Console.WriteLine($" Configuration:");
 
-    Console.ForegroundColor = ConsoleColor.DarkGray;
-    foreach (var value in storageConfig.ProviderConfiguration)
-    {
-        Console.WriteLine($"   {value.Key}: {value.Value}");
-    }
-    Console.WriteLine($"   User File Uploads Path: {storageConfig.UserUploadedFilesPath}");
-    Console.ForegroundColor = ConsoleColor.Gray;
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        foreach (var value in storageConfig.ProviderConfiguration)
+        {
+            Console.WriteLine($"   {value.Key}: {value.Value}");
+        }
+        Console.WriteLine($"   User File Uploads Path: {storageConfig.UserUploadedFilesPath}");
+        Console.ForegroundColor = ConsoleColor.Gray;
 
-    Console.WriteLine($" Provider Information:");
-    Console.ForegroundColor = ConsoleColor.DarkGray;
-    if (storageConfig.Provider == BinnerFileStorageProvider.ProviderName)
-    {
-        var fsProvider = new BinnerFileStorageProvider(storageConfig.ProviderConfiguration);
-        Console.WriteLine($"   Db Created: {fsProvider.Version.Created}");
-        Console.WriteLine($"   Db Version: {fsProvider.Version.Version}");
-    }
-    else
-    {
+        Console.WriteLine($" Provider Information:");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        if (storageConfig.Provider == BinnerFileStorageProvider.ProviderName)
+        {
+            var fsProvider = new BinnerFileStorageProvider(storageConfig.ProviderConfiguration);
+            Console.WriteLine($"   Db Created: {fsProvider.Version.Created}");
+            Console.WriteLine($"   Db Version: {fsProvider.Version.Version}");
+        }
+        else
+        {
+        }
     }
     Console.ForegroundColor = ConsoleColor.Gray;
 
     Console.WriteLine($" Server:");
     Console.ForegroundColor = ConsoleColor.DarkGray;
-    Console.WriteLine($"   Environment: {config.Environment}");
-    Console.WriteLine($"   IP: {config.IP}");
-    Console.WriteLine($"   Port: {config.Port}");
-    Console.WriteLine($"   Uri: {new Uri($"https://localhost:{config.Port}")}");
+    Console.WriteLine($"   Environment: {config?.Environment}");
+    Console.WriteLine($"   IP: {config?.IP}");
+    Console.WriteLine($"   Port: {config?.Port}");
+    Console.WriteLine($"   Uri: {new Uri($"https://localhost:{config?.Port}")}");
 
     Environment.Exit(-1);
 

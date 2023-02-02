@@ -1,30 +1,26 @@
-﻿using Binner.Web.Configuration;
+﻿using Binner.Common;
+using Binner.Common.Configuration;
+using Binner.Common.Extensions;
+using Binner.Common.IO;
+using Binner.Model.Common;
 using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Topshelf;
-using Topshelf.Runtime;
-using Binner.Common.IO;
-using System.Reflection;
-using Binner.Common.Configuration;
-using Binner.Common.Extensions;
-using NLog;
-using Microsoft.Extensions.Hosting;
-using NLog.Web;
-using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics;
-using Binner.Common;
-using TypeSupport.Extensions;
-using Binner.Model.Common;
 
 namespace Binner.Web.ServiceHost
 {
@@ -38,10 +34,10 @@ namespace Binner.Web.ServiceHost
         const string ConfigFile = "appsettings.json";
         private const string CertificatePassword = "password";
         private bool _isDisposed;
-        private ILogger<BinnerWebHostService> _logger;
-        private WebHostServiceConfiguration _config;
+        private ILogger<BinnerWebHostService>? _logger;
+        private WebHostServiceConfiguration? _config;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private IWebHost _webHost;
+        private IWebHost? _webHost;
 
         public bool Start(HostControl hostControl)
         {
@@ -51,13 +47,13 @@ namespace Binner.Web.ServiceHost
                 if (t.Exception != null)
                 {
                     if (t.Exception.InnerException is IOException && t.Exception.InnerException.Message.Contains("already in use"))
-                        _logger.LogError($"Error: {typeof(BinnerWebHostService).GetDisplayName()} cannot bind to port {_config.Port}. Please check that the service is not already running.");
+                        _logger?.LogError($"Error: {typeof(BinnerWebHostService).GetDisplayName()} cannot bind to port {_config?.Port}. Please check that the service is not already running.");
                     else if (t.Exception.InnerException is TaskCanceledException)
                     {
                         // do nothing
                     }
                     else
-                        _logger.LogError(t.Exception, $"{typeof(BinnerWebHostService).GetDisplayName()} had an error starting up!");
+                        _logger?.LogError(t.Exception, $"{typeof(BinnerWebHostService).GetDisplayName()} had an error starting up!");
                     ShutdownWebHost();
                 }
             }, TaskContinuationOptions.OnlyOnFaulted); ;
@@ -73,16 +69,18 @@ namespace Binner.Web.ServiceHost
         private async Task InitializeWebHostAsync()
         {
             // run without awaiting to avoid service startup delays, and allow the service to shutdown cleanly
-            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName) ?? throw new BinnerConfigurationException($"Could not determine path of current process!");
             var configFile = Path.Combine(configPath, ConfigFile);
             var configuration = Config.GetConfiguration(configFile);
-            _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
+            _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>() ?? throw new BinnerConfigurationException($"Missing WebHostServiceConfiguration in {ConfigFile}!");
 
             // parse the requested IP from the config
             var ipAddress = IPAddress.Any;
             var ipString = _config.IP;
             if (!string.IsNullOrEmpty(ipString) && ipString != "*")
                 IPAddress.TryParse(_config.IP, out ipAddress);
+
+            if (ipAddress == null) throw new Exception("Could not determine IP Address to bind to.");
 
             // use embedded certificate
             var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
@@ -139,7 +137,7 @@ namespace Binner.Web.ServiceHost
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to shutdown WebHost!");
+                _logger?.LogError(ex, "Failed to shutdown WebHost!");
             }
         }
 

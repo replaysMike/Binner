@@ -156,8 +156,9 @@ namespace Binner.Web.Controllers
         {
             var updatedParts = new List<Part>();
             var mappedParts = Mapper.Map<ICollection<PartBase>, ICollection<Part>>(request.Parts);
+
             var partTypes = await _partTypeService.GetPartTypesAsync();
-            var defaultPartType = partTypes.Where(x => x.Name.Equals("Other", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ?? partTypes.FirstOrDefault();
+            var defaultPartType = partTypes.Where(x => x.Name.Equals("Other", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ?? partTypes.First();
             foreach (var mappedPart in mappedParts)
             {
                 // does it already exist?
@@ -174,7 +175,8 @@ namespace Binner.Web.Controllers
                     var isMapped = false;
                     // if it's numeric only, try getting barcode information
                     var isNumber = new Regex(@"^\d+$");
-                    if (isNumber.Match(mappedPart.PartNumber).Success)
+                    var partNumber = mappedPart.PartNumber ?? string.Empty;
+                    if (isNumber.Match(partNumber).Success)
                     {
                         var barcodeResult = await _partService.GetBarcodeInfoAsync(mappedPart.PartNumber);
                         if (barcodeResult.Response.Parts.Any())
@@ -274,7 +276,7 @@ namespace Binner.Web.Controllers
             {
                 part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
                 part.MountingType = ((MountingType)part.MountingTypeId).ToString();
-                part.Keywords = string.Join(" ", partsOrdered.First(x => x.PartId == part.PartId).Keywords);
+                part.Keywords = string.Join(" ", partsOrdered.First(x => x.PartId == part.PartId)?.Keywords ?? new List<string>());
             }
 
             return Ok(partsResponse);
@@ -382,6 +384,8 @@ namespace Binner.Web.Controllers
             var parts = new List<PartResponse>();
             foreach (var commonPart in request.Parts)
             {
+                if (commonPart == null)
+                    continue;
                 var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == commonPart.ManufacturerPartNumber);
                 if (existingParts.Any())
                 {
@@ -395,9 +399,9 @@ namespace Binner.Web.Controllers
                 {
                     // create new part
                     var part = Mapper.Map<CommonPart, Part>(commonPart);
-                    if (commonPart.Supplier.Equals("digikey", StringComparison.InvariantCultureIgnoreCase))
+                    if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
-                    if (commonPart.Supplier.Equals("mouser", StringComparison.InvariantCultureIgnoreCase))
+                    if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.MouserPartNumber = commonPart.SupplierPartNumber;
                     part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
                     part.PartNumber = commonPart.ManufacturerPartNumber;
@@ -497,7 +501,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <param name="part"></param>
         /// <returns></returns>
-        private async Task<IActionResult> CheckForDuplicateAsync(CreatePartRequest request, Part part)
+        private async Task<IActionResult?> CheckForDuplicateAsync(CreatePartRequest request, Part part)
         {
             if (request is IPreventDuplicateResource && !((IPreventDuplicateResource)request).AllowPotentialDuplicate)
             {
@@ -525,7 +529,7 @@ namespace Binner.Web.Controllers
         /// <returns></returns>
         private async Task<PartType> GetPartTypeAsync(string partType)
         {
-            PartType result = null;
+            PartType result;
             if (int.TryParse(partType, out int partTypeId))
             {
                 // numeric format

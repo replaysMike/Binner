@@ -66,7 +66,7 @@ namespace Binner.Web.Controllers
             PartType? parentPartType = null;
             if (!string.IsNullOrEmpty(parent))
             {
-                parentPartType = partTypes.FirstOrDefault(x => x.Name.Equals(parent, StringComparison.InvariantCultureIgnoreCase));
+                parentPartType = partTypes.FirstOrDefault(x => x.Name?.Equals(parent, StringComparison.InvariantCultureIgnoreCase) == true);
                 if (parentPartType == null)
                     return NotFound();
             }

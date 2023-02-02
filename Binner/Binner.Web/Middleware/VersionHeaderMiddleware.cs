@@ -17,7 +17,8 @@ namespace Binner.Web.Middleware
         public VersionHeaderMiddleware(RequestDelegate next)
         {
             _next = next;
-            _buildVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var assembly = Assembly.GetExecutingAssembly();
+            _buildVersion = assembly?.GetName()?.Version ?? new Version();
         }
 
         public async Task Invoke(HttpContext context)

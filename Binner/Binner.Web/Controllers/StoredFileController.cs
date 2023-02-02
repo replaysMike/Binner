@@ -67,6 +67,8 @@ namespace Binner.Web.Controllers
 
             // read the file contents
             new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType);
+            if (contentType == null) return NotFound();
+
             var path = _storedFileService.GetStoredFilePath(storedFile.StoredFileType);
             var pathToFile = Path.Combine(path, fileName);
             if (System.IO.File.Exists(pathToFile))
@@ -91,6 +93,8 @@ namespace Binner.Web.Controllers
 
             // read the file contents
             new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType);
+            if (contentType == null) return NotFound();
+
             switch (contentType)
             {
                 case "application/pdf":

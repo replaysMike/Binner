@@ -54,7 +54,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: https://localhost:8090; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall shellexec skipifsilent runhidden
 
 [UninstallRun]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "uninstall -servicename {#MyAppName}"; RunOnceId: "{#MyAppName}"; Flags: runascurrentuser runhidden
+Filename: "{app}\{#MyAppExeName}"; Parameters: "uninstall"; RunOnceId: "{#MyAppName}"; Flags: runascurrentuser runhidden
 
 [Code]
 type
@@ -104,7 +104,7 @@ begin
     begin
       WizardForm.StatusLabel.Caption := CustomMessage('InstallingService');
       WizardForm.StatusLabel.Show();
-      Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('install start -servicename {#MyAppName} -displayname {#MyAppName} -description {#MyAppName} --autostart'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('install start --autostart'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     end
     else
     begin
@@ -179,7 +179,7 @@ begin
     Log('Uninstalling existing service');
     WizardForm.PreparingLabel.Caption := CustomMessage('UninstallingService');
     WizardForm.PreparingLabel.Show();
-    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('stop -servicename {#MyAppName}'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('uninstall -servicename {#MyAppName}'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('stop'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('uninstall'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   end;
 end;

@@ -82,7 +82,7 @@ namespace Binner.Common.Services
         {
             var apiType = typeof(T);
             var credentialKey = ApiCredentialKey.Create(userId);
-            var getCredentialsMethod = async () =>
+            var getCredentialsMethod = () =>
             {
                 // create a db context
                 //using var context = await _contextFactory.CreateDbContextAsync();
@@ -142,7 +142,7 @@ namespace Binner.Common.Services
                 };
                 credentials.Add(new ApiCredential(userId, octopartConfiguration, nameof(OctopartApi)));
 
-                return new ApiCredentialConfiguration(userId, credentials);
+                return Task.FromResult(new ApiCredentialConfiguration(userId, credentials));
             };
 
             if (apiType == typeof(Integrations.SwarmApi))

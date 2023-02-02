@@ -18,7 +18,7 @@ namespace Binner.Web.Configuration
         {
             //var configPath = AppDomain.CurrentDomain.BaseDirectory;
             //var configPath = Environment.CurrentDirectory;
-            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName) ?? throw new BinnerConfigurationException($"Could not determine path of current process!");
             var configFile = Path.Combine(configPath, ConfigFile);
             Console.WriteLine($".Net Core bundle path: {AppContext.BaseDirectory}");
             Console.WriteLine($"Config file location: {configFile}");
@@ -28,7 +28,7 @@ namespace Binner.Web.Configuration
             if (serviceConfiguration == null) throw new InvalidOperationException($"Could not load WebHostServiceConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             var integrationConfiguration = serviceConfiguration.Integrations;
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
-            if (serviceConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
+            if (storageProviderConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             var binnerConfig = new BinnerFileStorageConfiguration(storageProviderConfiguration.ProviderConfiguration);
 
             // support IOptions<> MS dependency injection
