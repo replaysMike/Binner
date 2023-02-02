@@ -104,13 +104,22 @@ begin
     begin
       WizardForm.StatusLabel.Caption := CustomMessage('InstallingService');
       WizardForm.StatusLabel.Show();
-      Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('install start -servicename {#MyAppName} -displayname {#MyAppName} -description {#MyAppName} --autostart'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Log('Installing service...');
+      Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('install --autostart'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Log(ExpandConstant('Service installed with code ' + IntToStr(ResultCode)));
+      Log('Starting service...');
+      WizardForm.StatusLabel.Caption := CustomMessage('StartingApp');
+      WizardForm.StatusLabel.Show();
+      Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('start'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Log(ExpandConstant('Service started with code ' + IntToStr(ResultCode)));
     end
     else
     begin
+      Log('Running Binner in console');
       WizardForm.StatusLabel.Caption := CustomMessage('StartingApp');
       WizardForm.StatusLabel.Show();
       Exec(ExpandConstant('{app}\{#MyAppExeName}'), '', '', SW_SHOW, ewNoWait, ResultCode);
+      Log(ExpandConstant('Application run with code ' + IntToStr(ResultCode)));
     end;
   end;
 end;
@@ -174,12 +183,17 @@ begin
   // uninstall the service if it's already installed
   ServiceInstalled := IsServiceInstalled(ExpandConstant('{#MyAppName}'));
   ServiceRunning := IsServiceRunning(ExpandConstant('{#MyAppName}'));
-  if ServiceInstalled then
-  begin
-    Log('Uninstalling existing service');
+  if ServiceInstalled then begin
+    Log('Will uninstall existing service...');
     WizardForm.PreparingLabel.Caption := CustomMessage('UninstallingService');
     WizardForm.PreparingLabel.Show();
-    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('stop -servicename {#MyAppName}'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('uninstall -servicename {#MyAppName}'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    if ServiceRunning then begin
+      Log('Stopping running service...');
+      Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('stop'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Log(ExpandConstant('Service stopped with code ' + IntToStr(ResultCode)));
+    end;
+    Log('Uninstalling service...');
+    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('uninstall'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Log(ExpandConstant('Service uninstalled with code ' + IntToStr(ResultCode)));
   end;
 end;
