@@ -2,6 +2,7 @@
 using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Model.Common;
+using Microsoft.Data.SqlClient;
 using NPOI.HSSF.Record;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace Binner.Common.StorageProviders
         private Thread _ioThread;
         private readonly Guid _instance = Guid.NewGuid();
 
-        public BinnerDbVersion Version { get; private set; }
+        public BinnerDbVersion Version { get; private set; } = new BinnerDbVersion();
 
         public BinnerFileStorageProvider(IDictionary<string, string> config)
         {
@@ -73,6 +74,11 @@ namespace Binner.Common.StorageProviders
             {
                 _dataLock.Release();
             }
+        }
+
+        public Task<ConnectionResponse> TestConnectionAsync()
+        {
+            return Task.FromResult(new ConnectionResponse { IsSuccess = true, DatabaseExists = File.Exists(_config.Filename), Errors = new List<string>() });
         }
 
         public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName, IUserContext userContext)
