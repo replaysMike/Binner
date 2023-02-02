@@ -30,10 +30,11 @@ Binner is a free open-source parts inventory tracking system you can run locally
 ## Planned Upcoming Features for 2023
 - [x] Dedicated datasheet repository (Q1)
 - [x] Schematics repository for example circuits per part (Q1)
-- [ ] Local upload of datasheets/images
+- [x] Local upload of datasheets/images
+- [ ] Integration of Arrow's API for orders and parts (Q1)
 - [ ] Multiple language support (Q1)
 - [ ] Auto update (Q1)
-- [ ] Full BOM / PCB management (Q2)
+- [ ] Full BOM / PCB management (Q1)
 - [ ] Electronic bins support (Q2)
 - [ ] Maybe a parts marketplace? with lasers?
 
@@ -106,7 +107,7 @@ I welcome all who want to contribute to this project, and please suggest feature
 
 ## What if I want to use it but not bother to set it up myself?
 
-I will be launching a free online version at [Binner.io](http://binner.io) which will be available April 2022. This service will have both free and paid subscriptions. Compared to other options out there it's incredibly inexpensive for makers!
+A free online version of Binner is available at [Binner.io](http://binner.io). This service offers both free and paid subscriptions based on inventory size requirements and extra features. Compared to other options out there it's incredibly useful for makers, and it helps me keep this project alive!
 
 ## Storage Provider
 
