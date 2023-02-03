@@ -112,6 +112,7 @@ export function Inventory(props) {
     }
   ];
   const [parts, setParts] = useState([]);
+  const [part, setPart] = useState(defaultPart);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedPart, setSelectedPart] = useState(null);
   const [selectedLocalFile, setSelectedLocalFile] = useState(null);
@@ -126,7 +127,6 @@ export function Inventory(props) {
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete this part?");
   const [confirmLocalFileDeleteContent, setConfirmLocalFileDeleteContent] = useState("Are you sure you want to delete this local file?");
   const [confirmDeleteLocalFileIsOpen, setConfirmDeleteLocalFileIsOpen] = useState(false);
-  const [part, setPart] = useState(defaultPart);
   const [partTypes, setPartTypes] = useState([]);
   const [projects, setProjects] = useState([]);
   const [mountingTypes, setMountingTypes] = useState(defaultMountingTypes);
@@ -152,8 +152,8 @@ export function Inventory(props) {
       await fetchProjects();
       await fetchRecentRows();
       if (partNumberStr) {
-        var part = await fetchPart(partNumberStr);
-        await fetchPartMetadata(partNumberStr, part);
+        var loadedPart = await fetchPart(partNumberStr);
+        await fetchPartMetadata(partNumberStr, loadedPart || part);
       } else {
         resetForm();
       }
@@ -252,7 +252,7 @@ export function Inventory(props) {
   };
 
   const scannerDebounced = useMemo(() => debounce(barcodeInput, 100), []);
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [partTypes]);
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [partTypes, part]);
 
   const onUploadSubmit = async (uploadFiles, type) => {
     setUploading(true);
@@ -469,7 +469,7 @@ export function Inventory(props) {
 
   const fetchPartTypes = async () => {
     setLoadingPartTypes(true);
-    const response = await fetchApi("partType/list");
+    const response = await fetchApi("partType/all");
     const { data } = response;
     const partTypes = _.sortBy(
       data.map((item) => {
@@ -685,15 +685,15 @@ export function Inventory(props) {
     updatedPart[control.name] = control.value;
     switch (control.name) {
       case "partNumber":
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart);
         break;
       case "partTypeId":
         localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastPartTypeId: control.value }));
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart);
         break;
       case "mountingTypeId":
         localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastMountingTypeId: control.value }));
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart);
         break;
       case "lowStockThreshold":
         localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lowStockThreshold: control.value }));
@@ -1235,7 +1235,6 @@ export function Inventory(props) {
   const title = part.partId > 0 || props.params.partNumber ? "Edit Inventory" : "Add Inventory";
 
   /* RENDER */
-
   return (
     <div>
       <Modal centered open={duplicatePartModalOpen} onClose={handleDuplicatePartModalClose}>
