@@ -1,9 +1,7 @@
-﻿using Azure;
+﻿using Binner.Common;
 using Binner.Common.Configuration;
 using Binner.Common.Extensions;
-using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.StorageProviders;
-using Binner.Model.Common;
 using Binner.Web.ServiceHost;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -12,12 +10,29 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Topshelf;
 using Topshelf.Runtime;
 
-var builder = WebApplication.CreateBuilder();
-var config = builder.Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
+WebApplicationBuilder builder;
+WebHostServiceConfiguration? config;
+try
+{
+    builder = WebApplication.CreateBuilder();
+    config = builder.Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
+    if (config == null)
+    {
+        PrintError($"Could not read the {nameof(WebHostServiceConfiguration)} section of your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
+        Environment.Exit(ExitCodes.InvalidConfig);
+        return;
+    }
+}
+catch (Exception ex)
+{
+    PrintError($"Could not read your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
+    PrintError($"{ex.GetType().Name}:\n    {ex.GetBaseException().Message}", "EXCEPTION:");
+    Environment.Exit(ExitCodes.InvalidConfig);
+    return;
+}
 PrintHeader();
 
 const string LogManagerConfigFile = "nlog.config"; // TODO: Inject from appsettings
@@ -32,7 +47,7 @@ var rc = HostFactory.Run(x =>
 {
     x.AddCommandLineSwitch("dbinfo", v => PrintDbInfo());
     x.ApplyCommandLine();
-    
+
     x.Service<BinnerWebHostService>(s =>
     {
         s.ConstructUsing(name => new BinnerWebHostService());
@@ -50,7 +65,7 @@ var rc = HostFactory.Run(x =>
     x.AfterUninstall(() => logger.Info($"{serviceName} service uninstalled."));
     x.OnException((ex) => logger.Error(ex, $"{serviceName} exception thrown: {ex.Message}"));
 
-    x.SetHelpTextPrefix("\nCustom commands: \n\n  Binner.Web.exe [-switch]\n\n    dbinfo              Shows database configuration diagnostics info\n\n"); 
+    x.SetHelpTextPrefix("\nCustom commands: \n\n  Binner.Web.exe [-switch]\n\n    dbinfo              Shows database configuration diagnostics info\n\n");
 
     x.UnhandledExceptionPolicy = UnhandledExceptionPolicyCode.LogErrorAndStopService;
 });
@@ -108,6 +123,11 @@ bool PrintDbInfo()
     PrintBox("   Binner database information   ", ConsoleColor.Blue, ConsoleColor.Yellow);
     Console.ForegroundColor = ConsoleColor.Gray;
     var storageConfig = builder.Configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
+    if (config == null)
+    {
+        PrintError($"Could not read the {nameof(StorageProviderConfiguration)} section of your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
+        Environment.Exit(ExitCodes.InvalidConfig);
+    }
 
     PrintLabel("Provider", ConsoleColor.White);
     PrintValue(storageConfig.Provider, ConsoleColor.Cyan);
@@ -181,7 +201,7 @@ bool PrintDbInfo()
 
     PrintLabel("Integrations", ConsoleColor.White);
     Console.WriteLine();
-    
+
     PrintLabel("   Swarm");
     Console.WriteLine();
     PrintLabel("      Enabled");
@@ -203,7 +223,7 @@ bool PrintDbInfo()
     PrintValue(config.Integrations.Octopart.Enabled);
 
     Console.ForegroundColor = ConsoleColor.Gray;
-    Environment.Exit(-1);
+    Environment.Exit(ExitCodes.Success);
 
     return false;
 }
@@ -240,4 +260,13 @@ void PrintFailed()
     Console.ForegroundColor = ConsoleColor.White;
     Console.WriteLine("]");
     Console.ForegroundColor = ConsoleColor.Gray;
+}
+
+void PrintError(string errorMessage, string label = "ERROR:")
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine(label);
+    Console.ForegroundColor = ConsoleColor.Gray;
+    Console.WriteLine($"  {errorMessage}");
+    Console.WriteLine();
 }
