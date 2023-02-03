@@ -28,6 +28,7 @@ import {
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
+import { Download } from "../components/Download";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
 import Dropzone from "../components/Dropzone";
 import { ProjectColors } from "../common/Types";
@@ -58,6 +59,8 @@ export function Inventory(props) {
     lowStockThreshold: 10
   };
 
+  const [contentViewerActive, setContentViewerActive] = useState(false);
+  const [contentViewerImageObject, setContentViewerImageObject] = useState(null);
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
   const [infoResponse, setInfoResponse] = useState([]);
   const [datasheetTitle, setDatasheetTitle] = useState("");
@@ -1110,6 +1113,45 @@ export function Inventory(props) {
     setDatasheetMeta(infoResponse.datasheets[activeIndex]);
   };
 
+  const onCurrentProductImageChanged = (activeIndex, control) => {
+    
+  };
+
+  const onCurrentPinoutImageChanged = (activeIndex, control) => {
+    
+  };
+
+  const onCurrentCircuitImageChanged = (activeIndex, control) => {
+    
+  };
+
+  const handleOpenImage = (e, imageObject) => {
+    e.preventDefault();
+    setContentViewerActive(true);
+    setContentViewerImageObject(imageObject);
+  };
+
+  const handleToggleContentViewerActive = (e) => {
+    setContentViewerActive(!contentViewerActive);
+  };
+
+  const handleImageDownload = (e, imageObject) => {
+    var re = /(?:\.([^.]+))?$/;
+    var originalExtension = re.exec(imageObject.value)[1];
+    var nameExtension = re.exec(imageObject.name)[1];
+    var href = imageObject.value;
+    var downloadName = nameExtension ? imageObject.name : `${imageObject.name}.${originalExtension}`;
+    var anchor = document.createElement('a');
+    anchor.style.display = 'none';
+    anchor.href = href;
+    anchor.download = downloadName;
+    anchor.target = "_blank";
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    setTimeout(() => anchor.parentNode.removeChild(anchor), 10); 
+  };
+
   const renderScannedParts = (scannedParts, highlightScannedPart) => {
     if (highlightScannedPart) {
       // reset the css highlight animation
@@ -1237,6 +1279,14 @@ export function Inventory(props) {
   /* RENDER */
   return (
     <div>
+      <Dimmer active={contentViewerActive} onClickOutside={handleToggleContentViewerActive} page>
+        {contentViewerImageObject && 
+          <React.Fragment>
+            <Image src={contentViewerImageObject.value} />
+            <Button secondary type="button" onClick={(e) => handleImageDownload(e, contentViewerImageObject)} style={{marginTop: '20px'}}><Icon name="image"/> Download</Button>
+          </React.Fragment>
+        }
+      </Dimmer>
       <Modal centered open={duplicatePartModalOpen} onClose={handleDuplicatePartModalClose}>
         <Modal.Header>Duplicate Part</Modal.Header>
         <Modal.Content scrolling>
@@ -1635,9 +1685,9 @@ export function Inventory(props) {
               <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.ProductImage)}>
                 <Card color="blue">
                   {infoResponse && infoResponse.productImages && infoResponse.productImages.length > 0 ? (
-                    <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered">
+                    <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered" style={{ cursor: "pointer" }} onSelect={onCurrentProductImageChanged}>
                       {infoResponse.productImages.map((productImage, imageKey) => (
-                        <Carousel.Item key={imageKey}>
+                        <Carousel.Item key={imageKey} onClick={(e) => handleOpenImage(e, productImage)} data={productImage}>
                           <Image src={productImage.value} size="large" />
                           {productImage.id && 
                             <Popup 
@@ -1720,19 +1770,19 @@ export function Inventory(props) {
                 <Card id="pinout" color="purple">
                   {infoResponse && infoResponse.pinoutImages && infoResponse.pinoutImages.length > 0 ? (
                     <div>
-                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
-                        {infoResponse.pinoutImages.map((pinout, pinoutKey) => (
-                          <Carousel.Item key={pinoutKey}>
-                          <Image src={pinout.value} size="large" />
-                          {pinout.id && 
+                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }} onSelect={onCurrentPinoutImageChanged}>
+                        {infoResponse.pinoutImages.map((pinoutImage, pinoutKey) => (
+                          <Carousel.Item key={pinoutKey} onClick={(e) => handleOpenImage(e, pinoutImage)} data={pinoutImage}>
+                          <Image src={pinoutImage.value} size="large" />
+                          {pinoutImage.id && 
                             <Popup 
                               position='top left'
                               content="Delete this local file"
-                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, pinout, 'pinoutImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, pinoutImage, 'pinoutImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
                             />
                           }
                           <Carousel.Caption>
-                            <h5>{pinout.name}</h5>
+                            <h5>{pinoutImage.name}</h5>
                           </Carousel.Caption>
                         </Carousel.Item>
                         ))}
@@ -1758,19 +1808,19 @@ export function Inventory(props) {
                 <Card id="circuits" color="violet">
                   {infoResponse && infoResponse.circuitImages && infoResponse.circuitImages.length > 0 ? (
                     <div>
-                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
-                        {infoResponse.circuitImages.map((circuit, circuitKey) => (
-                          <Carousel.Item key={circuitKey}>
-                          <Image src={circuit.value} size="large" />
-                          {circuit.id && 
+                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }} onSelect={onCurrentCircuitImageChanged}>
+                        {infoResponse.circuitImages.map((circuitImage, circuitKey) => (
+                          <Carousel.Item key={circuitKey} onClick={(e) => handleOpenImage(e, circuitImage)} data={circuitImage}>
+                          <Image src={circuitImage.value} size="large" />
+                          {circuitImage.id && 
                             <Popup 
                               position='top left'
                               content="Delete this local file"
-                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, circuit, 'circuitImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, circuitImage, 'circuitImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
                             />
                           }
                           <Carousel.Caption>
-                            <h5>{circuit.name}</h5>
+                            <h5>{circuitImage.name}</h5>
                           </Carousel.Caption>
                         </Carousel.Item>
                         ))}
