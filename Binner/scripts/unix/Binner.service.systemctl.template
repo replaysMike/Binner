@@ -2,6 +2,7 @@
 Description=Binner
 
 [Service]
+WorkingDirectory=@INSTALLPATH@
 ExecStart=@INSTALLPATH@/Binner.Web
 
 [Install]
