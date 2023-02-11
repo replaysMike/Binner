@@ -8,6 +8,6 @@ namespace Binner.Common.Models.Responses
         /// <summary>
         /// List of user uploaded files
         /// </summary>
-        public ICollection<StoredFile> StoredFiles { get; set; }
+        public ICollection<StoredFile>? StoredFiles { get; set; }
     }
 }

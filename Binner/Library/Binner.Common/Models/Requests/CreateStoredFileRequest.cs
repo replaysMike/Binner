@@ -9,12 +9,12 @@ namespace Binner.Common.Models
         /// <summary>
         /// Filename of the file
         /// </summary>
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
 
         /// <summary>
         /// Original uploaded filename
         /// </summary>
-        public string OriginalFileName { get; set; }
+        public string? OriginalFileName { get; set; }
 
         /// <summary>
         /// Stored file type

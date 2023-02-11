@@ -7,7 +7,7 @@ namespace Binner.Common.Integrations.Models
         /// <summary>
         /// Response from Api
         /// </summary>
-        object Response { get; set; }
+        object? Response { get; set; }
 
         /// <summary>
         /// Name of api
@@ -22,7 +22,7 @@ namespace Binner.Common.Integrations.Models
         /// <summary>
         /// A redirect Url location if requires authentication
         /// </summary>
-        string RedirectUrl { get; set; }
+        string? RedirectUrl { get; set; }
 
         /// <summary>
         /// Errors

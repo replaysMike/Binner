@@ -13,7 +13,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Label model number of label being printed
         /// </summary>
-        public string LabelName { get; set; }
+        public string? LabelName { get; set; }
 
         /// <summary>
         /// Printer paper source to use

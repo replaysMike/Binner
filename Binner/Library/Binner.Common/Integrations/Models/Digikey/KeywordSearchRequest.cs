@@ -4,7 +4,7 @@ namespace Binner.Common.Integrations.Models.DigiKey
 {
     public class KeywordSearchRequest
     {
-        public string Keywords { get; set; }
+        public string? Keywords { get; set; }
         public int RecordCount { get; set; } = 25;
         public int RecordStartPosition { get; set; } = 0;
         public Filters Filters { get; set; } = new Filters();
@@ -28,15 +28,15 @@ namespace Binner.Common.Integrations.Models.DigiKey
 
     public class Filters
     {
-        public ICollection<int> TaxonomyIds { get; set; }
-        public ICollection<int> ManufacturerIds { get; set; }
+        public ICollection<int>? TaxonomyIds { get; set; }
+        public ICollection<int>? ManufacturerIds { get; set; }
         public ICollection<ParametricFilter> ParametricFilters { get; set; } = new List<ParametricFilter>();
     }
 
     public class ParametricFilter 
     {
         public int ParameterId { get; set; }    
-        public string ValueId { get; set; }
+        public string? ValueId { get; set; }
     }
 
     public class SortParameters

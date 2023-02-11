@@ -28,7 +28,7 @@ namespace ApiClient.OAuth2
         public static bool IsTokenStale(string content)
         {
             var errors = JsonConvert.DeserializeObject<OAuth2Error>(content);
-            return errors.HttpMessage.ToLower().Contains("unauthorized");
+            return errors?.HttpMessage?.ToLower().Contains("unauthorized") ?? false;
         }
 
         /// <summary>
@@ -53,10 +53,10 @@ namespace ApiClient.OAuth2
 
             var content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>(OAuth2Constants.GrantType, OAuth2Constants.GrantTypes.RefreshToken),
-                new KeyValuePair<string, string>(OAuth2Constants.ClientId, configuration.ClientId),
-                new KeyValuePair<string, string>(OAuth2Constants.ClientSecret, configuration.ClientSecret),
-                new KeyValuePair<string, string>(OAuth2Constants.GrantTypes.RefreshToken, accessTokens.RefreshToken),
+                new KeyValuePair<string, string?>(OAuth2Constants.GrantType, OAuth2Constants.GrantTypes.RefreshToken),
+                new KeyValuePair<string, string?>(OAuth2Constants.ClientId, configuration.ClientId),
+                new KeyValuePair<string, string?>(OAuth2Constants.ClientSecret, configuration.ClientSecret),
+                new KeyValuePair<string, string?>(OAuth2Constants.GrantTypes.RefreshToken, accessTokens.RefreshToken),
             });
 
             var httpClient = new HttpClient();
@@ -64,7 +64,8 @@ namespace ApiClient.OAuth2
             var response = await httpClient.PostAsync(postUrl, content);
             var responseString = await response.Content.ReadAsStringAsync();
 
-            var oAuth2AccessTokenResponse = OAuth2Helpers.ParseOAuth2AccessTokenResponse(responseString);
+            var oAuth2AccessTokenResponse = OAuth2Helpers.ParseOAuth2AccessTokenResponse(responseString) ??
+                                            throw new System.Exception($"Failed to parse OAuth2 Access Token");
 
             accessTokens.UpdateAndSave(oAuth2AccessTokenResponse);
 
@@ -77,7 +78,7 @@ namespace ApiClient.OAuth2
         /// <param name="response">The response.</param>
         /// <returns>instance of OAuth2AccessToken</returns>
         /// <exception cref="ApiException">ull)</exception>
-        public static OAuth2AccessToken ParseOAuth2AccessTokenResponse(string response)
+        public static OAuth2AccessToken? ParseOAuth2AccessTokenResponse(string response)
         {
             try
             {

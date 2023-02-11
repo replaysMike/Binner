@@ -5,7 +5,7 @@ namespace Binner.Common
 {
     public static class Config
     {
-        public static IConfigurationRoot GetConfiguration(string appSettingsJson, string path = null)
+        public static IConfigurationRoot GetConfiguration(string appSettingsJson, string? path = null)
         {
             if (string.IsNullOrEmpty(path))
                 path = Directory.GetCurrentDirectory();

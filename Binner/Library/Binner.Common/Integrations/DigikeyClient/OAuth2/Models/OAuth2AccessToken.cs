@@ -23,41 +23,41 @@ namespace ApiClient.OAuth2.Models
     {
         /// <summary>Gets or sets the access token.</summary>
         [JsonProperty(PropertyName = "access_token")]
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         /// <summary>Gets or sets the error.</summary>
         [JsonProperty(PropertyName = "error")]
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         public bool IsError => Error.IsPresent() || ErrorMessage.IsPresent() || ErrorDescription.IsPresent() || ErrorDetails.IsPresent();
 
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
 
         /// <summary>Gets or sets the error description.</summary>
         [JsonProperty(PropertyName = "error_description")]
-        public string ErrorDescription { get; set; }
+        public string? ErrorDescription { get; set; }
 
-        public string ErrorDetails { get; set; }
+        public string? ErrorDetails { get; set; }
 
-        public string RequestId { get; set; }
+        public string? RequestId { get; set; }
 
         public IEnumerable<string> ValidationErrors { get; set; } = new List<string>();
 
-        public string ErrorResponseVersion { get; set; }
+        public string? ErrorResponseVersion { get; set; }
 
         public int StatusCode { get; set; }
 
         /// <summary>Gets or sets the id token.</summary>
         [JsonProperty(PropertyName = "id_token")]
-        public string IdToken { get; set; }
+        public string? IdToken { get; set; }
 
         /// <summary>Gets or sets the refresh token.</summary>
         [JsonProperty(PropertyName = "refresh_token")]
-        public string RefreshToken { get; set; }
+        public string? RefreshToken { get; set; }
 
         /// <summary>Gets or sets the token type.</summary>
         [JsonProperty(PropertyName = "token_type")]
-        public string TokenType { get; set; }
+        public string? TokenType { get; set; }
 
         /// <summary>Gets or sets the expiration in seconds from now.</summary>
         [JsonProperty(PropertyName = "expires_in")]

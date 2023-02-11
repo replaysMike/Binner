@@ -19,18 +19,18 @@ namespace Binner.Common.StorageProviders
     public class BinnerFileStorageProvider : IStorageProvider
     {
         public const string ProviderName = "Binner";
+        private const SerializerOptions SerializationOptions = SerializerOptions.EmbedTypes;
 
         private bool _isDisposed = false;
-        private readonly SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _dataLock = new(1, 1);
         private readonly BinnerFileStorageConfiguration _config;
-        private readonly SerializerProvider _serializer = new SerializerProvider();
-        private PrimaryKeyTracker _primaryKeyTracker;
-        private IBinnerDb _db;
-        private SerializerOptions _serializationOptions = SerializerOptions.EmbedTypes;
-        private bool _isDirty;
-        private readonly ManualResetEvent _quitEvent = new ManualResetEvent(false);
-        private Thread _ioThread;
+        private readonly SerializerProvider _serializer = new();
+        private readonly ManualResetEvent _quitEvent = new(false);
         private readonly Guid _instance = Guid.NewGuid();
+        private PrimaryKeyTracker _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>());
+        private IBinnerDb _db = new BinnerDbV3();
+        private bool _isDirty;
+        private Thread _ioThread = new Thread(new ThreadStart(() => { }));
 
         public BinnerDbVersion Version { get; private set; } = new BinnerDbVersion();
 
@@ -79,12 +79,14 @@ namespace Binner.Common.StorageProviders
             return Task.FromResult(new ConnectionResponse { IsSuccess = true, DatabaseExists = File.Exists(_config.Filename), Errors = new List<string>() });
         }
 
-        public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName, IUserContext userContext)
+        public async Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
             try
             {
-                return _db.OAuthCredentials.Where(x => x.Provider == providerName && x.UserId == userContext?.UserId).FirstOrDefault();
+                return _db.OAuthCredentials
+                    .Where(x => x.Provider == providerName && x.UserId == userContext?.UserId)
+                    .FirstOrDefault();
             }
             finally
             {
@@ -158,9 +160,12 @@ namespace Binner.Common.StorageProviders
             {
                 part.UserId = userContext?.UserId;
                 var existingPart = GetPartInternal(part.PartId, userContext);
-                existingPart = Mapper.Map<Part, Part>(part, existingPart, x => x.PartId);
-                existingPart.PartId = part.PartId;
-                _isDirty = true;
+                if (existingPart != null)
+                {
+                    existingPart = Mapper.Map<Part, Part>(part, existingPart, x => x.PartId);
+                    existingPart.PartId = part.PartId;
+                    _isDirty = true;
+                }
             }
             finally
             {
@@ -169,15 +174,14 @@ namespace Binner.Common.StorageProviders
             return part;
         }
 
-        public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext)
+        public async Task<PartType?> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
             try
             {
                 partType.UserId = userContext?.UserId;
                 var existingPartType = _db.PartTypes
-                    .Where(x => x.Name.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase) && x.UserId == partType.UserId)
-                    .FirstOrDefault();
+                    .FirstOrDefault(x => x.Name?.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase) == true && x.UserId == partType.UserId);
                 if (existingPartType == null)
                 {
                     existingPartType = new PartType
@@ -213,7 +217,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<PartType> GetPartTypeAsync(long partTypeId, IUserContext userContext)
+        public async Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -226,7 +230,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        private PartType GetPartTypeInternal(long partTypeId, IUserContext userContext)
+        private PartType? GetPartTypeInternal(long partTypeId, IUserContext? userContext)
         {
             return _db.PartTypes
                 .Where(x => x.PartTypeId == partTypeId && x.UserId == userContext?.UserId)
@@ -241,9 +245,12 @@ namespace Binner.Common.StorageProviders
             {
                 partType.UserId = userContext?.UserId;
                 var existingPartType = GetPartTypeInternal(partType.PartTypeId, userContext);
-                existingPartType = Mapper.Map<PartType, PartType>(partType, existingPartType, x => x.PartTypeId);
-                existingPartType.PartTypeId = partType.PartTypeId;
-                _isDirty = true;
+                if (existingPartType != null)
+                {
+                    existingPartType = Mapper.Map<PartType, PartType>(partType, existingPartType, x => x.PartTypeId);
+                    existingPartType.PartTypeId = partType.PartTypeId;
+                    _isDirty = true;
+                }
             }
             finally
             {
@@ -301,7 +308,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<Part> GetPartAsync(long partId, IUserContext userContext)
+        public async Task<Part?> GetPartAsync(long partId, IUserContext userContext)
         {
             if (partId <= 0) throw new ArgumentException(nameof(partId));
             await _dataLock.WaitAsync();
@@ -315,18 +322,19 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        private Part GetPartInternal(long partId, IUserContext userContext)
+        private Part? GetPartInternal(long partId, IUserContext? userContext)
         {
-            return _db.Parts.Where(x => x.PartId == partId && x.UserId == userContext?.UserId).FirstOrDefault();
+            return _db.Parts.Where(x => x.PartId == partId && x.UserId == userContext?.UserId)
+                .FirstOrDefault();
         }
 
-        public async Task<Part> GetPartAsync(string partNumber, IUserContext userContext)
+        public async Task<Part?> GetPartAsync(string partNumber, IUserContext userContext)
         {
             if (string.IsNullOrEmpty(partNumber)) throw new ArgumentNullException(nameof(partNumber));
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Parts.Where(x => x.PartNumber.Equals(partNumber, StringComparison.InvariantCultureIgnoreCase) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return _db.Parts.FirstOrDefault(x => x.PartNumber?.Equals(partNumber, StringComparison.InvariantCultureIgnoreCase) == true && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -436,7 +444,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<Project> GetProjectAsync(long projectId, IUserContext userContext)
+        public async Task<Project?> GetProjectAsync(long projectId, IUserContext userContext)
         {
             if (projectId <= 0) throw new ArgumentException(nameof(projectId));
             await _dataLock.WaitAsync();
@@ -450,18 +458,22 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public Project GetProjectInternal(long projectId, IUserContext userContext)
+        public Project? GetProjectInternal(long projectId, IUserContext userContext)
         {
-            return _db.Projects.Where(x => x.ProjectId.Equals(projectId) && x.UserId == userContext?.UserId).FirstOrDefault();
+            return _db.Projects
+                .Where(x => x.ProjectId.Equals(projectId) && x.UserId == userContext?.UserId)
+                .FirstOrDefault();
         }
 
-        public async Task<Project> GetProjectAsync(string projectName, IUserContext userContext)
+        public async Task<Project?> GetProjectAsync(string projectName, IUserContext userContext)
         {
             if (string.IsNullOrEmpty(projectName)) throw new ArgumentNullException(nameof(projectName));
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Projects.Where(x => x.Name.Equals(projectName, StringComparison.InvariantCultureIgnoreCase) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return _db.Projects
+                    .Where(x => x.Name.Equals(projectName, StringComparison.InvariantCultureIgnoreCase) && x.UserId == userContext?.UserId)
+                    .FirstOrDefault();
             }
             finally
             {
@@ -578,7 +590,7 @@ namespace Binner.Common.StorageProviders
                 storedFile.UserId = userContext?.UserId;
                 storedFile.StoredFileId = _primaryKeyTracker.GetNextKey<StoredFile>();
 
-                (_db as BinnerDbV3).StoredFiles.Add(storedFile);
+                (_db as BinnerDbV3)?.StoredFiles.Add(storedFile);
                 _isDirty = true;
             }
             finally
@@ -588,13 +600,13 @@ namespace Binner.Common.StorageProviders
             return storedFile;
         }
 
-        public async Task<StoredFile> GetStoredFileAsync(long storedFileId, IUserContext userContext)
+        public async Task<StoredFile?> GetStoredFileAsync(long storedFileId, IUserContext userContext)
         {
             if (storedFileId <= 0) throw new ArgumentException(nameof(storedFileId));
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV3).StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return (_db as BinnerDbV3)?.StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
             }
             finally
             {
@@ -602,13 +614,13 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<StoredFile> GetStoredFileAsync(string filename, IUserContext userContext)
+        public async Task<StoredFile?> GetStoredFileAsync(string filename, IUserContext userContext)
         {
             if (string.IsNullOrEmpty(filename)) throw new ArgumentException(nameof(filename));
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV3).StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return (_db as BinnerDbV3)?.StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
             }
             finally
             {
@@ -622,11 +634,11 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV3).StoredFiles
+                return (_db as BinnerDbV3)?.StoredFiles
                     .Where(x => x.PartId.Equals(partId))
                     .Where(x => fileType == null || x.StoredFileType.Equals(fileType))
                     .Where(x => x.UserId == userContext?.UserId)
-                    .ToList();
+                    .ToList() ?? new List<StoredFile>();
             }
             finally
             {
@@ -640,12 +652,12 @@ namespace Binner.Common.StorageProviders
             var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return (_db as BinnerDbV3).StoredFiles
+                return (_db as BinnerDbV3)?.StoredFiles
                     .Where(x => x.UserId == userContext?.UserId)
                     .OrderBy(request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
-                    .ToList();
+                    .ToList() ?? new List<StoredFile>();
             }
             finally
             {
@@ -659,16 +671,17 @@ namespace Binner.Common.StorageProviders
             try
             {
                 storedFile.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV3).StoredFiles.Remove(storedFile);
-                if (itemRemoved)
+                var itemRemoved = (_db as BinnerDbV3)?.StoredFiles.Remove(storedFile);
+                if (itemRemoved == true)
                 {
-                    var nextStoredFileId = (_db as BinnerDbV3).StoredFiles.OrderByDescending(x => x.StoredFileId)
+                    var nextStoredFileId = ((_db as BinnerDbV3)?.StoredFiles.OrderByDescending(x => x.StoredFileId)
                         .Select(x => x.StoredFileId)
-                        .FirstOrDefault() + 1;
+                        .FirstOrDefault() ?? 0);
+                    nextStoredFileId++;
                     _primaryKeyTracker.SetNextKey<StoredFile>(nextStoredFileId);
                     _isDirty = true;
                 }
-                return itemRemoved;
+                return itemRemoved == true;
             }
             finally
             {
@@ -683,10 +696,14 @@ namespace Binner.Common.StorageProviders
             try
             {
                 storedFile.UserId = userContext?.UserId;
-                var existingStoredFile = (_db as BinnerDbV3).StoredFiles.Where(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
-                existingStoredFile = Mapper.Map<StoredFile, StoredFile>(storedFile, existingStoredFile, x => x.StoredFileId);
-                existingStoredFile.StoredFileId = storedFile.StoredFileId;
-                _isDirty = true;
+                var existingStoredFile = ((_db as BinnerDbV3)?.StoredFiles)
+                    .FirstOrDefault(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId);
+                if (existingStoredFile != null)
+                {
+                    existingStoredFile = Mapper.Map<StoredFile, StoredFile>(storedFile, existingStoredFile, x => x.StoredFileId);
+                    existingStoredFile.StoredFileId = storedFile.StoredFileId;
+                    _isDirty = true;
+                }
             }
             finally
             {
@@ -710,7 +727,7 @@ namespace Binner.Common.StorageProviders
                 oAuthRequest.ErrorDescription = authRequest.ErrorDescription;
                 oAuthRequest.AuthorizationReceived = false;
 
-                (_db as BinnerDbV3).OAuthRequests.Add(oAuthRequest);
+                (_db as BinnerDbV3)?.OAuthRequests.Add(oAuthRequest);
                 _isDirty = true;
             }
             finally
@@ -738,14 +755,19 @@ namespace Binner.Common.StorageProviders
                     UserId = userContext?.UserId
                 };
 
-                var existingOAuthRequest = (_db as BinnerDbV3).OAuthRequests
+                var existingOAuthRequest = (_db as BinnerDbV3)?.OAuthRequests
                     .Where(x => x.UserId == userContext?.UserId && x.Provider == oAuthRequest.Provider && x.RequestId == oAuthRequest.RequestId)
                     .FirstOrDefault();
-                existingOAuthRequest = Mapper.Map<OAuthRequest, OAuthRequest>(oAuthRequest, existingOAuthRequest, x => x.OAuthRequestId);
-                existingOAuthRequest.UserId = userContext?.UserId;
-                existingOAuthRequest.DateCreatedUtc = existingOAuthRequest.DateCreatedUtc;
-                existingOAuthRequest.DateModifiedUtc = DateTime.UtcNow;
-                _isDirty = true;
+                if (existingOAuthRequest != null)
+                {
+                    existingOAuthRequest =
+                        Mapper.Map<OAuthRequest, OAuthRequest>(oAuthRequest, existingOAuthRequest,
+                            x => x.OAuthRequestId);
+                    existingOAuthRequest.UserId = userContext?.UserId;
+                    existingOAuthRequest.DateCreatedUtc = existingOAuthRequest.DateCreatedUtc;
+                    existingOAuthRequest.DateModifiedUtc = DateTime.UtcNow;
+                    _isDirty = true;
+                }
             }
             finally
             {
@@ -760,7 +782,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                var existingOAuthRequest = (_db as BinnerDbV3).OAuthRequests
+                var existingOAuthRequest = (_db as BinnerDbV3)?.OAuthRequests
                     .Where(x => x.RequestId.Equals(requestId) && x.UserId == userContext?.UserId)
                     .FirstOrDefault();
                 if (existingOAuthRequest == null)
@@ -774,7 +796,7 @@ namespace Binner.Common.StorageProviders
                     Provider = existingOAuthRequest.Provider,
                     ReturnToUrl = existingOAuthRequest.ReturnToUrl,
                     UserId = userContext?.UserId,
-                    CreatedUtc= existingOAuthRequest.DateCreatedUtc,
+                    CreatedUtc = existingOAuthRequest.DateCreatedUtc,
                 };
             }
             finally
@@ -932,11 +954,11 @@ namespace Binner.Common.StorageProviders
                 db = version.Version switch
                 {
                     // Version 1
-                    BinnerDbV1.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    BinnerDbV1.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV1>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
                     // Version 2
-                    BinnerDbV2.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV2>(bytes, _serializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    BinnerDbV2.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV2>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
                     // Version 3
-                    BinnerDbV3.VersionNumber => _serializer.Deserialize<BinnerDbV3>(bytes, _serializationOptions),
+                    BinnerDbV3.VersionNumber => _serializer.Deserialize<BinnerDbV3>(bytes, SerializationOptions),
                     _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
                 };
                 return db;
@@ -971,7 +993,7 @@ namespace Binner.Common.StorageProviders
                 db.Checksum = BuildChecksum(db);
                 using var stream = new MemoryStream();
                 WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV3.VersionNumber, BinnerDbV3.VersionCreated));
-                var serializedBytes = _serializer.Serialize(db, _serializationOptions);
+                var serializedBytes = _serializer.Serialize(db, SerializationOptions);
                 stream.Write(serializedBytes, 0, serializedBytes.Length);
                 Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
                 File.WriteAllBytes(_config.Filename, stream.ToArray());
@@ -1028,7 +1050,8 @@ namespace Binner.Common.StorageProviders
                 if (field.IsDefined(typeof(ParentPartTypeAttribute), false))
                 {
                     var customAttribute = Attribute.GetCustomAttribute(field, typeof(ParentPartTypeAttribute)) as ParentPartTypeAttribute;
-                    parentPartTypeId = (int)customAttribute.Parent;
+                    if (customAttribute != null)
+                        parentPartTypeId = (int)customAttribute.Parent;
                 }
                 initialPartTypes.Add(new PartType
                 {
@@ -1069,7 +1092,7 @@ namespace Binner.Common.StorageProviders
         private bool ValidateChecksum(IBinnerDb db)
         {
             var calculatedChecksum = BuildChecksum(db);
-            if (db.Checksum.Equals(calculatedChecksum))
+            if (db.Checksum?.Equals(calculatedChecksum) == true)
                 return true;
             return false;
         }
@@ -1128,9 +1151,7 @@ namespace Binner.Common.StorageProviders
                         }).GetAwaiter().GetResult();
                     }
 
-                    _ioThread = null;
                     _quitEvent.Dispose();
-                    _db = null;
                 }
                 finally
                 {

@@ -62,9 +62,9 @@ namespace Binner.Common.Integrations
             if (response.IsSuccessStatusCode)
             {
                 var resultString = response.Content.ReadAsStringAsync().Result;
-                var results = JsonConvert.DeserializeObject<Order>(resultString, _serializerSettings);
+                var results = JsonConvert.DeserializeObject<Order>(resultString, _serializerSettings) ?? new();
                 if (results.Errors.Any())
-                    new ApiResponse(results.Errors.Select(x => x.Message), nameof(MouserApi));
+                    new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));
                 return new ApiResponse(results, nameof(MouserApi));
             }
             return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
@@ -91,20 +91,20 @@ namespace Binner.Common.Integrations
             requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _client.SendAsync(requestMessage);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                throw new MouserUnauthorizedException(response.ReasonPhrase);
+                throw new MouserUnauthorizedException(response.ReasonPhrase ?? string.Empty);
 
             if (response.IsSuccessStatusCode)
             {
                 var resultString = response.Content.ReadAsStringAsync().Result;
-                var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
-                if (results.Errors.Any())
+                var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings) ?? new();
+                if (results.Errors?.Any() == true)
                     throw new MouserErrorsException(results.Errors);
-                return new ApiResponse(results.SearchResults.Parts, nameof(MouserApi));
+                return new ApiResponse(results.SearchResults?.Parts ?? new List<MouserPart>(), nameof(MouserApi));
             }
             return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
 
-        public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25)
+        public async Task<IApiResponse?> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25)
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/keyword?apiKey={_configuration.ApiKeys.SearchApiKey}");
@@ -122,13 +122,13 @@ namespace Binner.Common.Integrations
             requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _client.SendAsync(requestMessage);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                throw new MouserUnauthorizedException(response.ReasonPhrase);
+                throw new MouserUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
 
             if (response.IsSuccessStatusCode)
             {
                 var resultString = response.Content.ReadAsStringAsync().Result;
-                var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings);
-                if (results.Errors.Any())
+                var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings) ?? new();
+                if (results.Errors?.Any() == true)
                     throw new MouserErrorsException(results.Errors);
                 return new ApiResponse(results, nameof(MouserApi));
             }

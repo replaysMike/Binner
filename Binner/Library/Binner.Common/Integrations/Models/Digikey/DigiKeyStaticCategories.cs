@@ -281,7 +281,7 @@ namespace Binner.Common.Integrations.Models.DigiKey
         private static List<FullCategory> DeserializeCategories()
         {
             var response = JsonConvert.DeserializeObject<CategoriesResponse>(_categoriesJson);
-            return response.Categories.ToList();
+            return response?.Categories.ToList() ?? new();
         }
 
         public void Validate()
@@ -315,7 +315,7 @@ namespace Binner.Common.Integrations.Models.DigiKey
         /// <summary>
         /// Maps a DigiKey category to a Part Type Id
         /// </summary>
-        /// <param name="category"></param>
+        /// <param name="categoryId"></param>
         /// <returns></returns>
         public int? MatchToPartTypeId(int categoryId)
         {
@@ -327,9 +327,9 @@ namespace Binner.Common.Integrations.Models.DigiKey
         /// <summary>
         /// Maps a DigiKey category name to a Part Type Id
         /// </summary>
-        /// <param name="category"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public int? MatchToPartTypeId(string name)
+        public int? MatchToPartTypeId(string? name)
         {
             if (!string.IsNullOrEmpty(name))
             {

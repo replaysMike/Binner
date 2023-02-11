@@ -18,19 +18,19 @@ namespace ApiClient.Extensions
     public static class StringExtensions
     {
         [DebuggerStepThrough]
-        public static bool IsMissing(this string value)
+        public static bool IsMissing(this string? value)
         {
             return string.IsNullOrWhiteSpace(value);
         }
 
         [DebuggerStepThrough]
-        public static bool IsPresent(this string value)
+        public static bool IsPresent(this string? value)
         {
             return !string.IsNullOrWhiteSpace(value);
         }
 
         [DebuggerStepThrough]
-        public static string EnsureTrailingSlash(this string input)
+        public static string? EnsureTrailingSlash(this string? input)
         {
             if (string.IsNullOrEmpty(input))
             {

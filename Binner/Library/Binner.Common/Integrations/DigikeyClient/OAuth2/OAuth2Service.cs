@@ -71,19 +71,19 @@ namespace ApiClient.OAuth2
         /// </summary>
         /// <param name="code">Code value returned by the RedirectUri callback</param>
         /// <returns>Returns OAuth2AccessToken</returns>
-        public async Task<OAuth2AccessToken> FinishAuthorization(string code)
+        public async Task<OAuth2AccessToken?> FinishAuthorization(string code)
         {
             ServicePointManager.ServerCertificateValidationCallback =
                 delegate { return true; };
 
             // Build up the body for the token request
-            var body = new List<KeyValuePair<string, string>>
+            var body = new List<KeyValuePair<string, string?>>
             {
-                new KeyValuePair<string, string>(OAuth2Constants.Code, code),
-                new KeyValuePair<string, string>(OAuth2Constants.RedirectUri, _configuration.oAuthPostbackUrl),
-                new KeyValuePair<string, string>(OAuth2Constants.ClientId, _configuration.ClientId),
-                new KeyValuePair<string, string>(OAuth2Constants.ClientSecret, _configuration.ClientSecret),
-                new KeyValuePair<string, string>(OAuth2Constants.GrantType, OAuth2Constants.GrantTypes.AuthorizationCode)
+                new KeyValuePair<string, string?>(OAuth2Constants.Code, code),
+                new KeyValuePair<string, string?>(OAuth2Constants.RedirectUri, _configuration.oAuthPostbackUrl),
+                new KeyValuePair<string, string?>(OAuth2Constants.ClientId, _configuration.ClientId),
+                new KeyValuePair<string, string?>(OAuth2Constants.ClientSecret, _configuration.ClientSecret),
+                new KeyValuePair<string, string?>(OAuth2Constants.GrantType, OAuth2Constants.GrantTypes.AuthorizationCode)
             };
 
             // Request the token
@@ -115,7 +115,7 @@ namespace ApiClient.OAuth2
                 tokenResponse.EnsureSuccessStatusCode();
             }
 
-            // Deserializes the token response if successfull
+            // Deserializes the token response if successful
             var oAuth2Token = OAuth2Helpers.ParseOAuth2AccessTokenResponse(text);
 
             return oAuth2Token;

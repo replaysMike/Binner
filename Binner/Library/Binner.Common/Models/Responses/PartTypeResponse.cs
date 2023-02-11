@@ -15,7 +15,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// Project name
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// The parent part type

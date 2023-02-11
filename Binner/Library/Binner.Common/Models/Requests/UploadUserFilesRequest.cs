@@ -18,6 +18,6 @@ namespace Binner.Common.Models.Requests
         /// <summary>
         /// List of uploaded files
         /// </summary>
-        public ICollection<T> Files { get; set; }
+        public ICollection<T>? Files { get; set; }
     }
 }

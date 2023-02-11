@@ -4,6 +4,6 @@ namespace Binner.Common.Models
 {
     public class CreateBulkPartRequest
     {
-        public ICollection<PartBase> Parts { get; set; }
+        public ICollection<PartBase>? Parts { get; set; }
     }
 }

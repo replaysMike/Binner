@@ -47,7 +47,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="credential"></param>
         /// <returns></returns>
-        Task<OAuthCredential> GetOAuthCredentialAsync(string providerName);
+        Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName);
 
         /// <summary>
         /// Remove a saved a oAuth Credential

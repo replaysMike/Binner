@@ -7,7 +7,7 @@ namespace Binner.Common.Configuration
         /// <summary>
         /// The storage provider to use
         /// </summary>
-        public string Provider { get; set; }
+        public string? Provider { get; set; }
 
         /// <summary>
         /// Configuration to pass to the provider
@@ -17,6 +17,6 @@ namespace Binner.Common.Configuration
         /// <summary>
         /// The path to store user uploaded files to
         /// </summary>
-        public string UserUploadedFilesPath { get;set;}
+        public string? UserUploadedFilesPath { get;set;}
     }
 }

@@ -89,7 +89,7 @@ namespace Binner.Common.Integrations
         public async Task<IApiResponse> GetOrderAsync(string orderId)
         {
             var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized)
+            if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
@@ -105,7 +105,7 @@ namespace Binner.Common.Integrations
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings);
+                        var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings) ?? new();
                         return new ApiResponse(results, nameof(DigikeyApi));
                     }
                     return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
@@ -125,7 +125,7 @@ namespace Binner.Common.Integrations
         public async Task<IApiResponse> GetProductDetailsAsync(string digikeyPartNumber)
         {
             var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized)
+            if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
@@ -141,7 +141,7 @@ namespace Binner.Common.Integrations
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<Product>(resultString, _serializerSettings);
+                        var results = JsonConvert.DeserializeObject<Product>(resultString, _serializerSettings) ?? new();
                         return new ApiResponse(results, nameof(DigikeyApi));
                     }
                     return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
@@ -161,7 +161,7 @@ namespace Binner.Common.Integrations
         public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode)
         {
             var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized)
+            if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
@@ -177,7 +177,7 @@ namespace Binner.Common.Integrations
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(resultString, _serializerSettings);
+                        var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(resultString, _serializerSettings) ?? new();
                         return new ApiResponse(results, nameof(DigikeyApi));
                     }
                     return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
@@ -192,7 +192,7 @@ namespace Binner.Common.Integrations
         public async Task<IApiResponse> GetCategoriesAsync()
         {
             var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized)
+            if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
@@ -208,7 +208,7 @@ namespace Binner.Common.Integrations
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<CategoriesResponse>(resultString, _serializerSettings);
+                        var results = JsonConvert.DeserializeObject<CategoriesResponse>(resultString, _serializerSettings) ?? new();
                         return new ApiResponse(results, nameof(DigikeyApi));
                     }
                     return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
@@ -224,7 +224,7 @@ namespace Binner.Common.Integrations
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var authResponse = await AuthorizeAsync();
-            if (authResponse == null || !authResponse.IsAuthorized)
+            if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
 
             var keywords = new List<string>();
@@ -298,7 +298,7 @@ namespace Binner.Common.Integrations
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings);
+                        var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new ();
                         return new ApiResponse(results, nameof(DigikeyApi));
                     }
                     return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
@@ -443,9 +443,14 @@ namespace Binner.Common.Integrations
                     // also map all the alternates
                     var memberInfos = typeof(Taxonomies).GetMember(taxonomy.ToString());
                     var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(Taxonomies));
-                    var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
-                    var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
-                    // taxonomies.AddRange(alternateIds);
+                    if (enumValueMemberInfo != null)
+                    {
+                        var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
+                        var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
+
+                        // taxonomies.AddRange(alternateIds);
+                    }
+
                     switch (taxonomy)
                     {
                         case Taxonomies.Resistor:
@@ -487,10 +492,10 @@ namespace Binner.Common.Integrations
                 _oAuth2Service.AccessTokens.RefreshToken = ex.Authorization.RefreshToken;
                 var token = await _oAuth2Service.RefreshTokenAsync();
                 var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
-                var refreshTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId, referer)
+                var refreshTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
                 {
-                    AccessToken = token.AccessToken,
-                    RefreshToken = token.RefreshToken,
+                    AccessToken = token.AccessToken ?? string.Empty,
+                    RefreshToken = token.RefreshToken ?? string.Empty,
                     CreatedUtc = DateTime.UtcNow,
                     ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(token.ExpiresIn)),
                     AuthorizationReceived = true,
@@ -548,10 +553,10 @@ namespace Binner.Common.Integrations
             {
                 // reuse a saved oAuth credential
                 var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
-                var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId, referer)
+                var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
                 {
-                    AccessToken = credential.AccessToken,
-                    RefreshToken = credential.RefreshToken,
+                    AccessToken = credential.AccessToken ?? string.Empty,
+                    RefreshToken = credential.RefreshToken ?? string.Empty,
                     CreatedUtc = credential.DateCreatedUtc,
                     ExpiresUtc = credential.DateExpiresUtc,
                     AuthorizationReceived = true,
@@ -569,7 +574,7 @@ namespace Binner.Common.Integrations
         private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(int? userId)
         {
             var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
-            var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId, referer)
+            var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
             {
                 UserId = userId
             };
@@ -714,18 +719,20 @@ namespace Binner.Common.Integrations
             return result;
         }
 
-        private T GetEnumByDescription<T>(string description)
+        private T? GetEnumByDescription<T>(string description)
         {
             var type = typeof(T).GetExtendedType();
             foreach (var val in type.EnumValues)
             {
                 var memberInfos = type.Type.GetMember(val.Value);
                 var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == type.Type);
-                var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
-                var descriptionVal = ((DescriptionAttribute)valueAttributes[0]).Description;
-                if (descriptionVal.Equals(description))
-                    return (T)val.Key;
-
+                var valueAttributes = enumValueMemberInfo?.GetCustomAttributes(typeof(DescriptionAttribute), false);
+                if (valueAttributes != null)
+                {
+                    var descriptionVal = ((DescriptionAttribute)valueAttributes[0]).Description;
+                    if (descriptionVal.Equals(description))
+                        return (T)val.Key;
+                }
             }
             return default(T);
         }
