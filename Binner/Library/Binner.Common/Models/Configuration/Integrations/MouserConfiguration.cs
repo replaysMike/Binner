@@ -20,16 +20,16 @@
         /// <summary>
         /// The Api key for search features
         /// </summary>
-        public string SearchApiKey { get; set; }
+        public string? SearchApiKey { get; set; }
 
         /// <summary>
         /// The Api key for order management
         /// </summary>
-        public string OrderApiKey { get; set; }
+        public string? OrderApiKey { get; set; }
 
         /// <summary>
         /// The Api key for cart management
         /// </summary>
-        public string CartApiKey { get; set; }
+        public string? CartApiKey { get; set; }
     }
 }

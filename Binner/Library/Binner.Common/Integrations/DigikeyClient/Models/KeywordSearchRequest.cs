@@ -24,7 +24,7 @@ namespace ApiClient.Models
         /// <value>
         ///     The keywords.
         /// </value>
-        public string Keywords { get; set; }
+        public string? Keywords { get; set; }
 
         /// <summary>
         ///     Gets or sets the record count.

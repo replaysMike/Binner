@@ -8,12 +8,12 @@ namespace Binner.Common.Models.Responses
         /// <summary>
         /// Full name of printer
         /// </summary>
-        public string PrinterName { get; set; }
+        public string? PrinterName { get; set; }
 
         /// <summary>
         /// Label model number
         /// </summary>
-        public string PartLabelName { get; set; }
+        public string? PartLabelName { get; set; }
 
         /// <summary>
         /// Label paper source
@@ -23,11 +23,11 @@ namespace Binner.Common.Models.Responses
         /// <summary>
         /// Printer part label template (main lines)
         /// </summary>
-        public IEnumerable<LineConfiguration> Lines { get; set; }
+        public IEnumerable<LineConfiguration>? Lines { get; set; }
 
         /// <summary>
         /// Printer part label template (side identifiers)
         /// </summary>
-        public IEnumerable<LineConfiguration> Identifiers { get; set; }
+        public IEnumerable<LineConfiguration>? Identifiers { get; set; }
     }
 }

@@ -71,11 +71,11 @@ namespace Binner.Common.Integrations
             await _lock.WaitAsync();
             try
             {
-                ApiCredential credential = null;
+                ApiCredential? credential = null;
                 if (_credentials.ContainsKey(key))
                 {
                     var credentials = _credentials[key];
-                    credential = credentials.FirstOrDefault(x => x.ApiName.Equals(apiName));
+                    credential = credentials.FirstOrDefault(x => x.ApiName?.Equals(apiName) == true);
                     if (credential == null)
                     {
                         // wipe out the whole configuration and reload - apiName should not be missing!
@@ -95,7 +95,7 @@ namespace Binner.Common.Integrations
                 {
                     // return the credential requested
                     var credentials = _credentials[key];
-                    credential = credentials.FirstOrDefault(x => x.ApiName.Equals(apiName));
+                    credential = credentials.FirstOrDefault(x => x.ApiName == apiName);
                     if (credential != null)
                         return credential;
                 }

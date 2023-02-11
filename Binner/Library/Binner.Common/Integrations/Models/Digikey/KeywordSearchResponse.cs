@@ -107,13 +107,13 @@ namespace Binner.Common.Integrations.Models.DigiKey
 
     public class LimitedTaxonomy
     {
-        public ICollection<LimitedTaxonomy> Children { get; set; }
+        public ICollection<LimitedTaxonomy>? Children { get; set; }
         public int ProductCount { get; set; }
         public int NewProductCount { get; set; }
         public int ParameterId { get; set; }
-        public string ValueId { get; set; }
-        public string Parameter { get; set; }
-        public string Value { get; set; }
+        public string? ValueId { get; set; }
+        public string? Parameter { get; set; }
+        public string? Value { get; set; }
         public override string ToString()
         {
             return $"{Parameter} = {Value}";
@@ -122,19 +122,21 @@ namespace Binner.Common.Integrations.Models.DigiKey
 
     public class LimitedParameter
     {
-        public ICollection<ValuePair> Values { get; set; }
+        public ICollection<ValuePair>? Values { get; set; }
         public int ParameterId { get; set; }
-        public string Parameter { get; set; }
+        public string? Parameter { get; set; }
         public override string ToString()
         {
-            return $"{Parameter} = {string.Join(",", Values)}";
+            if (Values != null)
+                return $"{Parameter} = {string.Join(",", Values)}";
+            return $"{Parameter} = ";
         }
     }
 
     public class ValuePair
     {
-        public string ValueId { get; set; }
-        public string Value { get; set; }
+        public string? ValueId { get; set; }
+        public string? Value { get; set; }
         public override string ToString()
         {
             return $"{ValueId} = {Value}";
@@ -143,10 +145,10 @@ namespace Binner.Common.Integrations.Models.DigiKey
 
     public class IsoSearchLocale
     {
-        public string Site { get; set; }
-        public string Language { get; set; }
-        public string Currency { get; set; }
-        public string ShipToCountry { get; set; }
+        public string? Site { get; set; }
+        public string? Language { get; set; }
+        public string? Currency { get; set; }
+        public string? ShipToCountry { get; set; }
         public override string ToString()
         {
             return $"{Site} {Language} {Currency}";

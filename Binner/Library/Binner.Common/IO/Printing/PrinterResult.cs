@@ -10,7 +10,7 @@
         /// <summary>
         /// The error message
         /// </summary>
-        public string ErrorMessage { get; internal set; }
+        public string? ErrorMessage { get; internal set; }
 
         /// <summary>
         /// The error code returned by the printer

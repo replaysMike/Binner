@@ -6,13 +6,12 @@ namespace Binner.Common.Integrations.Models
     /// <summary>
     /// An api response
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class ApiResponse : IApiResponse
     {
         /// <summary>
         /// Response from the api
         /// </summary>
-        public object Response { get; set; }
+        public object? Response { get; set; }
 
         /// <summary>
         /// Requires authentication to continue
@@ -22,7 +21,7 @@ namespace Binner.Common.Integrations.Models
         /// <summary>
         /// A redirect Url location if requires authentication
         /// </summary>
-        public string RedirectUrl { get; set; }
+        public string? RedirectUrl { get; set; }
 
         /// <summary>
         /// Errors

@@ -10,7 +10,7 @@
         /// <summary>
         /// Optional comma delimited list of keywords associated with datasheet
         /// </summary>
-        public string Keywords { get; set; }
+        public string? Keywords { get; set; }
 
 
     }

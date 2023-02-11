@@ -16,18 +16,18 @@ namespace Binner.Common.Configuration
         /// <summary>
         /// The server name
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// The server ip to bind to
         /// </summary>
-        public string IP { get; set; }
+        public string? IP { get; set; }
 
         /// <summary>
         /// The public facing Url accessible from the internet
         /// This is required if Digikey API features are used.
         /// </summary>
-        public string PublicUrl { get; set; }
+        public string? PublicUrl { get; set; }
 
         /// <summary>
         /// The port number to host
@@ -52,7 +52,7 @@ namespace Binner.Common.Configuration
         /// <summary>
         /// The origin to allow for Cors
         /// </summary>
-        public string CorsAllowOrigin { get; set; }
+        public string? CorsAllowOrigin { get; set; }
 
         /// <summary>
         /// Digikey configuration

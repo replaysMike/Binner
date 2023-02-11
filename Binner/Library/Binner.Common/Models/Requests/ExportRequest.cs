@@ -2,6 +2,6 @@
 {
     public class ExportRequest
     {
-        public string ExportFormat { get; set; }
+        public string? ExportFormat { get; set; }
     }
 }

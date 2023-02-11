@@ -2,6 +2,6 @@
 {
     public class SearchResultsResponse : MouserResponse
     {
-        public SearchResults SearchResults { get; set; }
+        public SearchResults? SearchResults { get; set; }
     }
 }

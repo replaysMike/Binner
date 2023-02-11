@@ -10,7 +10,7 @@
         /// <summary>
         /// The main part number
         /// </summary>
-        public string PartNumber { get; set; }
+        public string? PartNumber { get; set; }
 
         /// <summary>
         /// Quantity on hand
@@ -35,42 +35,42 @@
         /// <summary>
         /// The optional Digikey part number
         /// </summary>
-        public string DigiKeyPartNumber { get; set; }
+        public string? DigiKeyPartNumber { get; set; }
 
         /// <summary>
         /// The optional Mouser part number
         /// </summary>
-        public string MouserPartNumber { get; set; }
+        public string? MouserPartNumber { get; set; }
 
         /// <summary>
         /// Description of part
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Package type
         /// </summary>
-        public string PackageType { get; set; }
+        public string? PackageType { get; set; }
 
         /// <summary>
         /// Product Url
         /// </summary>
-        public string ProductUrl { get; set; }
+        public string? ProductUrl { get; set; }
 
         /// <summary>
         /// The supplier that provides the lowest cost
         /// </summary>
-        public string LowestCostSupplier { get; set; }
+        public string? LowestCostSupplier { get; set; }
 
         /// <summary>
         /// The product page Url for the lowest cost supplier
         /// </summary>
-        public string LowestCostSupplierUrl { get; set; }
+        public string? LowestCostSupplierUrl { get; set; }
 
         /// <summary>
         /// Image url
         /// </summary>
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
         /// <summary>
         /// Type of part
@@ -85,46 +85,46 @@
         /// <summary>
         /// Type of part
         /// </summary>
-        public string PartType { get; set; }
+        public string? PartType { get; set; }
 
         /// <summary>
         /// Mounting Type of part
         /// </summary>
-        public string MountingType { get; set; }
+        public string? MountingType { get; set; }
 
         /// <summary>
         /// Additional keywords
         /// </summary>
-        public string Keywords { get; set; }
+        public string? Keywords { get; set; }
 
         /// <summary>
         /// Datasheet URL
         /// </summary>
-        public string DatasheetUrl { get; set; }
+        public string? DatasheetUrl { get; set; }
 
         /// <summary>
         /// Location of part (i.e. warehouse, room)
         /// </summary>
-        public string Location { get; set; }
+        public string? Location { get; set; }
 
         /// <summary>
         /// Bin number
         /// </summary>
-        public string BinNumber { get; set; }
+        public string? BinNumber { get; set; }
 
         /// <summary>
         /// Secondary Bin number
         /// </summary>
-        public string BinNumber2 { get; set; }
+        public string? BinNumber2 { get; set; }
 
         /// <summary>
         /// Manufacturer name
         /// </summary>
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
         /// <summary>
         /// The manufacturer part number
         /// </summary>
-        public string ManufacturerPartNumber { get; set; }
+        public string? ManufacturerPartNumber { get; set; }
     }
 }

@@ -43,10 +43,10 @@ namespace Binner.Web.ServiceHost
         private static readonly Logger _nlogLogger = NLog.Web.NLogBuilder.ConfigureNLog(_logFile).GetCurrentClassLogger();
 
         private bool _isDisposed;
-        private ILogger<BinnerWebHostService> _logger;
-        private WebHostServiceConfiguration _config;
+        private ILogger<BinnerWebHostService>? _logger;
+        private WebHostServiceConfiguration? _config;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private IWebHost _webHost;
+        private IWebHost? _webHost;
 
         public bool Start(HostControl hostControl)
         {

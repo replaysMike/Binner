@@ -5,11 +5,11 @@
         /// <summary>
         /// Supplier specific Order Id
         /// </summary>
-        public string OrderId { get; set; }
+        public string? OrderId { get; set; }
 
         /// <summary>
         /// Name of supplier
         /// </summary>
-        public string Supplier { get; set; }
+        public string? Supplier { get; set; }
     }
 }

@@ -59,11 +59,10 @@ namespace Binner.Common.Extensions
         {
             var paq = uri.PathAndQuery; // need to access PathAndQuery
             var flagsFieldInfo = typeof(Uri).GetField("_flags", BindingFlags.Instance | BindingFlags.NonPublic);
-            var flags = (ulong)flagsFieldInfo.GetValue(uri);
+            var flags = (ulong?)flagsFieldInfo?.GetValue(uri);
             var flagsBefore = flags;
-            // System.Uri.Flags.E_QueryNotCanonical | System.Uri.Flags.DnsHostType | System.Uri.Flags.AuthorityFound | System.Uri.Flags.MinimalUriInfoSet | System.Uri.Flags.AllUriInfoSet | System.Uri.Flags.HostUnicodeNormalized | System.Uri.Flags.RestUnicodeNormalized
             flags &= ~((ulong)0xC30); // Flags.PathNotCanonical|Flags.QueryNotCanonical|Flags.E_QueryNotCanonical|Flags.E_PathNotCanonical
-            flagsFieldInfo.SetValue(uri, flags);
+            flagsFieldInfo?.SetValue(uri, flags);
         }
     }
 }

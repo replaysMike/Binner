@@ -27,7 +27,8 @@ namespace Binner.Common.StorageProviders
             if (Providers.ContainsKey(providerNameLowerCase))
             {
                 var provider = Providers[providerNameLowerCase];
-                return Activator.CreateInstance(provider, config) as IStorageProvider;
+                var instance = Activator.CreateInstance(provider, config) as IStorageProvider ?? throw new Exception($"Unable to create StorageProvider: {providerName}");
+                return instance;
             }
             else
                 throw new Exception($"StorageProvider not registered: {providerName}");

@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.30</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win10-x64;linux-arm;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
@@ -20,17 +22,28 @@
     <None Remove="Resources\**" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(Configuration)'=='Debug' AND Exists('..\..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj')">
+    <ProjectReference Include="..\..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql.csproj" />
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql.csproj" />
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite.csproj" />
+    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'!='Debug' OR !Exists('..\..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj')">
+    <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
+    <PackageReference Include="Binner.StorageProvider.Sqlite" Version="$(LibraryVersion)" />
+    <PackageReference Include="Binner.StorageProvider.SqlServer" Version="$(LibraryVersion)" />
+    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="$(LibraryVersion)" />
+    <PackageReference Include="Binner.StorageProvider.MySql" Version="$(LibraryVersion)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AnySerializer" Version="1.1.46" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
     <PackageReference Include="Binner.SwarmApi" Version="1.0.2" />
-    <PackageReference Include="Binner.Model.Common" Version="1.0.29" />
-    <PackageReference Include="Binner.StorageProvider.Sqlite" Version="1.0.29" />
-    <PackageReference Include="Binner.StorageProvider.SqlServer" Version="1.0.29" />
-    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.29" />
-    <PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.29" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />

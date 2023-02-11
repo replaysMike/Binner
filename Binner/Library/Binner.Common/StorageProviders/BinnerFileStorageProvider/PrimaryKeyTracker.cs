@@ -98,13 +98,12 @@ namespace Binner.Common.StorageProviders
                 _dataLock.Wait();
                 try
                 {
-                    _primaryKeys = null;
+                    _primaryKeys.Clear();
                 }
                 finally
                 {
                     _dataLock.Release();
                     _dataLock.Dispose();
-                    _dataLock = null;
                 }
             }
             _isDisposed = true;

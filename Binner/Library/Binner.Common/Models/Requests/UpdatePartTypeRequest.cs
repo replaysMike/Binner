@@ -10,7 +10,7 @@
         /// <summary>
         /// Name of Part Type
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Description of project

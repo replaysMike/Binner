@@ -18,11 +18,11 @@ namespace ApiClient.Models
 {
     public class ApiClientSettings
     {
-        public String ClientId { get; set; }
-        public String ClientSecret { get; set; }
-        public String RedirectUri { get; set; }
-        public String AccessToken { get; set; }
-        public String RefreshToken { get; set; }
+        public String? ClientId { get; set; }
+        public String? ClientSecret { get; set; }
+        public String? RedirectUri { get; set; }
+        public String? AccessToken { get; set; }
+        public String? RefreshToken { get; set; }
         public DateTime ExpirationDateTime { get; set; }
 
         public void UpdateAndSave(OAuth2AccessToken oAuth2AccessToken)

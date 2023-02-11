@@ -10,12 +10,12 @@
         /// <summary>
         /// Digikey Client Id
         /// </summary>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Digikey Client Secret
         /// </summary>
-        public string ClientSecret { get; set; }
+        public string? ClientSecret { get; set; }
 
         /// <summary>
         /// The oAuth Postback Url - this must match the Callback Url for the App you configured on Digikey's API

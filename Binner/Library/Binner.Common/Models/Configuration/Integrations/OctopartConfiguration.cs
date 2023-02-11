@@ -4,7 +4,7 @@
     {
         public bool Enabled { get; set; } = false;
 
-        public string ApiKey { get; set; }
+        public string? ApiKey { get; set; }
 
         /// <summary>
         /// Path to the Octopart Api

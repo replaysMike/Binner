@@ -15,7 +15,7 @@ namespace Binner.Common.Integrations
         /// <summary>
         /// The name of the api
         /// </summary>
-        public string ApiName { get; internal set; }
+        public string? ApiName { get; internal set; }
 
         /// <summary>
         /// The key/value mapping of credential values
@@ -39,7 +39,7 @@ namespace Binner.Common.Integrations
         /// <param name="userId">User Id</param>
         /// <param name="credentials">Key/value mappings of credential values</param>
         /// <param name="apiName">Name of api to store the credentials as</param>
-        public ApiCredential(int userId, IDictionary<string, object> credentials, string apiName)
+        public ApiCredential(int userId, IDictionary<string, object> credentials, string? apiName)
         {
             UserId = userId;
             Credentials = credentials;
@@ -64,7 +64,7 @@ namespace Binner.Common.Integrations
         /// </summary>
         /// <param name="key">Credential key name</param>
         /// <returns></returns>
-        public string TryGetCredentialString(string key)
+        public string? TryGetCredentialString(string key)
         {
             if (Credentials.ContainsKey(key))
                 return Credentials[key]?.ToString() ?? string.Empty;

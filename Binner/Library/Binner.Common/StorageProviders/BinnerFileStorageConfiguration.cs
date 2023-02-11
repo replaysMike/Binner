@@ -4,11 +4,9 @@ namespace Binner.Common.StorageProviders
 {
     public class BinnerFileStorageConfiguration
     {
-        public string Filename { get; set; }
+        public string Filename { get; set; } = string.Empty;
 
-        public BinnerFileStorageConfiguration()
-        {
-        }
+        public BinnerFileStorageConfiguration() { }
 
         public BinnerFileStorageConfiguration(IDictionary<string, string> config)
         {

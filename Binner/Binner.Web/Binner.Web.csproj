@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.30</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win10-x64;linux-arm;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
@@ -19,13 +20,25 @@
     <FileVersion>2.2.0.0</FileVersion>
     <Version>2.2.0</Version>
     <ApplicationIcon>binner128x128.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug' AND Exists('..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj')">
+    <ProjectReference Include="..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'!='Debug' OR !Exists('..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj')">
+    <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Library\Binner.Common\Binner.Common.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
-    <PackageReference Include="Binner.Model.Common" Version="1.0.29" />
     <PackageReference Include="LightInject" Version="6.4.0" />
     <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1" />
@@ -71,10 +84,6 @@
     <Content Include="Resources\datasheet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Library\Binner.Common\Binner.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -40,13 +40,13 @@ namespace Binner.Common.Models.Configuration.Integrations
         /// <summary>
         /// DigiKey client Id
         /// </summary>
-        public string DigiKeyClientId { get; set; }
+        public string? DigiKeyClientId { get; set; }
 
 
         /// <summary>
         /// DigiKey client secret
         /// </summary>
-        public string DigiKeyClientSecret { get; set; }
+        public string? DigiKeyClientSecret { get; set; }
 
         /// <summary>
         /// Path to oAuth postback Url

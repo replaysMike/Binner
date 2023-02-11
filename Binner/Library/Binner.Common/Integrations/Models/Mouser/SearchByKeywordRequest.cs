@@ -2,7 +2,7 @@
 {
     public class SearchByKeywordRequest
     {
-        public string Keyword { get; set; }
+        public string? Keyword { get; set; }
 
         /// <summary>
         /// Used to specify how many records the method should return.
@@ -22,7 +22,7 @@
         /// <summary>
         /// Optional. If not provided, the default is false. Used when searching for keywords in the language specified when you signed up for Search API. Can use string representation: true
         /// </summary>
-        public string SearchWithYourSignUpLanguage { get; set; }
+        public string? SearchWithYourSignUpLanguage { get; set; }
     }
 
     public enum SearchOptions

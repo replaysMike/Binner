@@ -5,6 +5,6 @@
         /// <summary>
         /// The main part number
         /// </summary>
-        public string PartNumber { get; set; }
+        public string? PartNumber { get; set; }
     }
 }
