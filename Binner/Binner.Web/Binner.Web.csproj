@@ -27,7 +27,7 @@
     <ProjectReference Include="..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)'!='Debug' OR !Exists('..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj')">
+  <ItemGroup Condition="'$(Configuration)'!='Debug'">
     <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
   </ItemGroup>
 

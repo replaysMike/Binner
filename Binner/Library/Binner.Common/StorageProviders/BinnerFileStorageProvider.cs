@@ -394,7 +394,7 @@ namespace Binner.Common.StorageProviders
                     .Count();
                 var parts = _db.Parts
                     .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
-                    .OrderBy(request.OrderBy, request.Direction)
+                    .OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "PartId" : request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToList();
@@ -414,12 +414,12 @@ namespace Binner.Common.StorageProviders
             {
                 var totalItems = _db.Parts
                     .Where(x => x.UserId == userContext?.UserId)
-                    .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst())?.ToString() == request.Value)
+                    .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By!.UcFirst())?.ToString() == request.Value)
                     .Count();
                 var parts = _db.Parts
                     .Where(x => x.UserId == userContext?.UserId)
-                    .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst())?.ToString() == request.Value)
-                    .OrderBy(request.OrderBy, request.Direction)
+                    .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By!.UcFirst())?.ToString() == request.Value)
+                    .OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "PartId" : request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToList();
@@ -458,11 +458,10 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public Project? GetProjectInternal(long projectId, IUserContext userContext)
+        public Project? GetProjectInternal(long projectId, IUserContext? userContext)
         {
             return _db.Projects
-                .Where(x => x.ProjectId.Equals(projectId) && x.UserId == userContext?.UserId)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.ProjectId.Equals(projectId) && x.UserId == userContext?.UserId);
         }
 
         public async Task<Project?> GetProjectAsync(string projectName, IUserContext userContext)
@@ -472,8 +471,7 @@ namespace Binner.Common.StorageProviders
             try
             {
                 return _db.Projects
-                    .Where(x => x.Name.Equals(projectName, StringComparison.InvariantCultureIgnoreCase) && x.UserId == userContext?.UserId)
-                    .FirstOrDefault();
+                    .FirstOrDefault(x => x.Name?.Equals(projectName, StringComparison.InvariantCultureIgnoreCase) == true && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -489,7 +487,7 @@ namespace Binner.Common.StorageProviders
             {
                 return _db.Projects
                     .Where(x => x.UserId == userContext?.UserId)
-                    .OrderBy(request.OrderBy, request.Direction)
+                    .OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "ProjectId" : request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToList();
@@ -525,9 +523,12 @@ namespace Binner.Common.StorageProviders
             {
                 project.UserId = userContext?.UserId;
                 var existingProject = GetProjectInternal(project.ProjectId, userContext);
-                existingProject = Mapper.Map<Project, Project>(project, existingProject, x => x.ProjectId);
-                existingProject.ProjectId = project.ProjectId;
-                _isDirty = true;
+                if (existingProject != null)
+                {
+                    existingProject = Mapper.Map<Project, Project>(project, existingProject, x => x.ProjectId);
+                    existingProject.ProjectId = project.ProjectId;
+                    _isDirty = true;
+                }
             }
             finally
             {
@@ -570,7 +571,8 @@ namespace Binner.Common.StorageProviders
                 {
                     var nextProjectId = _db.Projects.OrderByDescending(x => x.ProjectId)
                         .Select(x => x.ProjectId)
-                        .FirstOrDefault() + 1;
+                        .FirstOrDefault();
+                    nextProjectId++;
                     _primaryKeyTracker.SetNextKey<Project>(nextProjectId);
                     _isDirty = true;
                 }
@@ -606,7 +608,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV3)?.StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return ((_db as BinnerDbV3)?.StoredFiles)?.FirstOrDefault(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -620,7 +622,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV3)?.StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return ((_db as BinnerDbV3)?.StoredFiles)?.FirstOrDefault(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -654,7 +656,7 @@ namespace Binner.Common.StorageProviders
             {
                 return (_db as BinnerDbV3)?.StoredFiles
                     .Where(x => x.UserId == userContext?.UserId)
-                    .OrderBy(request.OrderBy, request.Direction)
+                    .OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "StoredFileId" : request.OrderBy, request.Direction)
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToList() ?? new List<StoredFile>();
@@ -697,7 +699,7 @@ namespace Binner.Common.StorageProviders
             {
                 storedFile.UserId = userContext?.UserId;
                 var existingStoredFile = ((_db as BinnerDbV3)?.StoredFiles)
-                    .FirstOrDefault(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId);
+                    ?.FirstOrDefault(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId);
                 if (existingStoredFile != null)
                 {
                     existingStoredFile = Mapper.Map<StoredFile, StoredFile>(storedFile, existingStoredFile, x => x.StoredFileId);
@@ -717,15 +719,17 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                var oAuthRequest = new OAuthRequest();
-                oAuthRequest.UserId = userContext?.UserId;
-                oAuthRequest.OAuthRequestId = (int)_primaryKeyTracker.GetNextKey<OAuthRequest>();
-                oAuthRequest.RequestId = authRequest.Id;
-                oAuthRequest.Provider = authRequest.Provider;
-                oAuthRequest.ReturnToUrl = authRequest.ReturnToUrl;
-                oAuthRequest.Error = authRequest.Error;
-                oAuthRequest.ErrorDescription = authRequest.ErrorDescription;
-                oAuthRequest.AuthorizationReceived = false;
+                var oAuthRequest = new OAuthRequest
+                {
+                    UserId = userContext?.UserId,
+                    OAuthRequestId = (int)_primaryKeyTracker.GetNextKey<OAuthRequest>(),
+                    RequestId = authRequest.Id,
+                    Provider = authRequest.Provider,
+                    ReturnToUrl = authRequest.ReturnToUrl,
+                    Error = authRequest.Error,
+                    ErrorDescription = authRequest.ErrorDescription,
+                    AuthorizationReceived = false
+                };
 
                 (_db as BinnerDbV3)?.OAuthRequests.Add(oAuthRequest);
                 _isDirty = true;
@@ -755,9 +759,8 @@ namespace Binner.Common.StorageProviders
                     UserId = userContext?.UserId
                 };
 
-                var existingOAuthRequest = (_db as BinnerDbV3)?.OAuthRequests
-                    .Where(x => x.UserId == userContext?.UserId && x.Provider == oAuthRequest.Provider && x.RequestId == oAuthRequest.RequestId)
-                    .FirstOrDefault();
+                var existingOAuthRequest = ((_db as BinnerDbV3)?.OAuthRequests)
+                    ?.FirstOrDefault(x => x.UserId == userContext?.UserId && x.Provider == oAuthRequest.Provider && x.RequestId == oAuthRequest.RequestId);
                 if (existingOAuthRequest != null)
                 {
                     existingOAuthRequest =
@@ -782,9 +785,8 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                var existingOAuthRequest = (_db as BinnerDbV3)?.OAuthRequests
-                    .Where(x => x.RequestId.Equals(requestId) && x.UserId == userContext?.UserId)
-                    .FirstOrDefault();
+                var existingOAuthRequest = ((_db as BinnerDbV3)?.OAuthRequests)
+                    ?.FirstOrDefault(x => x.RequestId.Equals(requestId) && x.UserId == userContext?.UserId);
                 if (existingOAuthRequest == null)
                     return null;
                 return new Model.Common.OAuthAuthorization(existingOAuthRequest.Provider, existingOAuthRequest.RequestId)

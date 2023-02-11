@@ -30,7 +30,7 @@
     <ProjectReference Include="..\..\..\..\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)'!='Debug' OR !Exists('..\..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj')">
+  <ItemGroup Condition="'$(Configuration)'!='Debug'">
     <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
     <PackageReference Include="Binner.StorageProvider.Sqlite" Version="$(LibraryVersion)" />
     <PackageReference Include="Binner.StorageProvider.SqlServer" Version="$(LibraryVersion)" />
