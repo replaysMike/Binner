@@ -26,10 +26,10 @@
     <PackageReference Include="AnySerializer" Version="1.1.46" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
     <PackageReference Include="Binner.SwarmApi" Version="1.0.2" />
-    <PackageReference Include="Binner.Model.Common" Version="1.0.26" />
+    <PackageReference Include="Binner.Model.Common" Version="1.0.28" />
     <PackageReference Include="Binner.StorageProvider.Sqlite" Version="1.0.26" />
     <PackageReference Include="Binner.StorageProvider.SqlServer" Version="1.0.26" />
-    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.25" />
+    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="1.0.26" />
     <PackageReference Include="Binner.StorageProvider.MySql" Version="1.0.26" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />

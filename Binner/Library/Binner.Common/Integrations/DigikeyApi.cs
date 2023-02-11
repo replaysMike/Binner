@@ -1,7 +1,6 @@
 ﻿using ApiClient.OAuth2;
 using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
-using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Services;
@@ -495,7 +494,7 @@ namespace Binner.Common.Integrations
                     CreatedUtc = DateTime.UtcNow,
                     ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(token.ExpiresIn)),
                     AuthorizationReceived = true,
-                    UserId = _requestContext.GetUserContext().UserId
+                    UserId = _requestContext.GetUserContext()?.UserId
                 };
                 if (refreshTokenResponse.IsAuthorized)
                 {
@@ -526,7 +525,7 @@ namespace Binner.Common.Integrations
                 }
                 // user must authorize
                 // request a token if we don't already have one
-                var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext().UserId);
+                var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext()?.UserId);
                 return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             }
         }
@@ -540,7 +539,7 @@ namespace Binner.Common.Integrations
         private async Task<OAuthAuthorization> AuthorizeAsync()
         {
             var user = _requestContext.GetUserContext();
-            if (user == null || user.UserId <= 0)
+            if (user != null && user.UserId <= 0)
                 throw new AuthenticationException("User is not authenticated!");
 
             // check if we have saved an existing auth credential in the database
@@ -556,7 +555,7 @@ namespace Binner.Common.Integrations
                     CreatedUtc = credential.DateCreatedUtc,
                     ExpiresUtc = credential.DateExpiresUtc,
                     AuthorizationReceived = true,
-                    UserId = user.UserId
+                    UserId = user?.UserId
                 };
 
                 return authRequest;
@@ -564,10 +563,10 @@ namespace Binner.Common.Integrations
 
             // user must authorize
             // request a token if we don't already have one
-            return await CreateOAuthAuthorizationRequestAsync(user.UserId);
+            return await CreateOAuthAuthorizationRequestAsync(user?.UserId);
         }
 
-        private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(int userId)
+        private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(int? userId)
         {
             var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
             var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId, referer)

@@ -7,7 +7,7 @@ if is_user_root; then
 	systemctl daemon-reload
 	systemctl enable Binner.service
 	systemctl start Binner.service
-	echo "Binner.Web is now running at https://localhost:8090"
+	echo "Binner service is now running at https://localhost:8090"
 	exit 0
 else
 	echo "This script must be run as root user using sudo.";

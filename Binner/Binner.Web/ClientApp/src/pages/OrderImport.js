@@ -1,203 +1,213 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import _ from 'underscore';
-import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Icon } from 'semantic-ui-react';
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+import { Link } from "react-router-dom";
+import _ from "underscore";
+import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader } from "semantic-ui-react";
+import { fetchApi } from "../common/fetchApi";
+import { FormError } from "../components/FormError";
 import { toast } from "react-toastify";
-import { fetchApi } from '../common/fetchApi';
+import { format, parseJSON } from "date-fns";
+import { formatCurrency } from "../common/Utils";
 
-export class OrderImport extends Component {
-  static displayName = OrderImport.name;
-  static abortController = new AbortController();
+export function OrderImport(props) {
+  OrderImport.abortController = new AbortController();
+  const [orderLabel, setOrderLabel] = useState("Order #");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState({});
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [order, setOrder] = useState({
+    orderId: "",
+    supplier: ""
+  });
+  const [suppliers] = useState([
+    {
+      key: 1,
+      value: "DigiKey",
+      text: "DigiKey"
+    },
+    {
+      key: 2,
+      value: "Mouser",
+      text: "Mouser"
+    }
+  ]);  
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: false,
-      metadataParts: [],
-      results: {},
-      error: null,
-      order: {
-        orderId: '',
-        supplier: '',
-      },
-      suppliers: [
-        {
-          key: 1,
-          value: 'DigiKey',
-          text: 'DigiKey',
-        },
-        {
-          key: 2,
-          value: 'Mouser',
-          text: 'Mouser',
-        },
-      ]
-    };
-    this.onSubmit = this.onSubmit.bind(this);
-    this.onImportParts = this.onImportParts.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleChecked = this.handleChecked.bind(this);
-  }
+  const onImportParts = async (e) => {
+    setLoading(true);
+    setError(null);
 
-  componentDidMount() {
-  }
-
-  async onImportParts(e) {
-    const { order, results } = this.state;
-    this.setState({ loading: true, error: null });
     const request = {
       orderId: order.orderId,
       supplier: order.supplier,
       parts: _.where(results.parts, { selected: true })
     };
-    await fetchApi('part/importparts', {
-      method: 'POST',
+    await fetchApi("part/importparts", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(request),
+      body: JSON.stringify(request)
+    }).then((response) => {
+      const { data } = response;
+      // reset form
+      setLoading(false);
+      toast.success(`${data.length} parts were imported!`);
     });
-    // reset form
-    this.setState({
-      order: { orderId: '', supplier: order.supplier },
-      results: {},
-      loading: false
-    });
-  }
+  };
 
-  async onSubmit(e) {
+  const onSubmit = async (e) => {
     OrderImport.abortController.abort(); // Cancel the previous request
     OrderImport.abortController = new AbortController();
-    const { order } = this.state;
-    if (!order.supplier) {
-      toast.error('You must choose a supplier');
-      return;
-    }
-    this.setState({ loading: true, error: null, results: {}, metadataParts: [] });
+    setLoading(true);
+    setError(null);
+    setResults({});
+
     const request = {
       orderId: order.orderId,
       supplier: order.supplier
     };
+
     try {
-      const response = await fetch('part/import', {
-        method: 'POST',
+      await fetchApi("part/import", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(request),
         signal: OrderImport.abortController.signal
-      });
-      const responseData = await response.json();
-      if (responseData.requiresAuthentication) {
-        // redirect for authentication
-        window.open(responseData.redirectUrl, '_blank');
-        return;
-      }
-
-      if (response.status === 200) {
-        if (responseData.errors && responseData.errors.length > 0){
-          // display error
-          const errorMessage = responseData.errors.join('\n');
-          this.setState({ error: errorMessage, loading: false });
-          toast.error(errorMessage);
-        }else {
-          const { response: data } = responseData;
-          data.parts.forEach((i) => {
-            i.selected = true;
-          });
-          this.setState({ results: data, loading: false });
+      }).then((response) => {
+        const { data } = response;
+        if (data.requiresAuthentication) {
+          // redirect for authentication
+          window.open(data.redirectUrl, "_blank");
+          return;
         }
-      } else {
-        // display error
-        console.log(response, responseData);
-        const errorMessage = 'Internal server error ocurred!';
-        this.setState({ error: errorMessage, loading: false });
-        toast.error(errorMessage);
-      }
+
+        if (response.responseObject.status === 200) {
+          if (data.errors && data.errors.length > 0) {
+            // display error
+            const errorMessage = data.errors.join("\n");
+            setError(errorMessage);
+            setLoading(false);
+            toast.error(errorMessage);
+          } else {
+            data.response.parts.forEach((i) => {
+              i.selected = true;
+            });
+            setResults(data.response);
+            setLoading(false);
+          }
+        } else {
+          // display error
+          const errorMessage = "Internal server error ocurred!";
+          setError(errorMessage);
+          setLoading(false);
+          toast.error(errorMessage);
+        }
+      });
     } catch (ex) {
-      if (ex.name === 'AbortError') {
+      if (ex.name === "AbortError") {
         return; // Continuation logic has already been skipped, so return normally
       }
       throw ex;
     }
-  }
+  };
 
-  handleChange(e, control) {
-    const { order } = this.state;
+  const handleClear = (e) => {
+    setOrder({ orderId: "", supplier: order.supplier });
+    setResults({});
+  };
+
+  const handleChange = (e, control) => {
+    const newOrder = order;
     switch (control.name) {
-      case 'orderId':
-        order.orderId = control.value;
+      case "orderId":
+        newOrder.orderId = control.value;
         break;
-      case 'supplier':
-        order.supplier = control.value;
+      case "supplier":
+        newOrder.supplier = control.value;
+        if(newOrder.supplier === 'Mouser'){
+          setOrderLabel("Web Order #");
+          setMessage((<div><i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i></div>));
+        } else {
+          setOrderLabel("Order #");
+          setMessage("");
+        }
         break;
       default:
         break;
     }
-    this.setState({ order });
-  }
+    setOrder({...newOrder});
+  };
 
-  getMountingTypeById(mountingTypeId) {
+  const getMountingTypeById = (mountingTypeId) => {
     switch (mountingTypeId) {
       default:
       case 1:
-        return 'through hole';
+        return "through hole";
       case 2:
-        return 'surface mount';
+        return "surface mount";
     }
-  }
+  };
 
-  handleHighlightAndVisit(e, url) {
-    this.handleVisitLink(e, url);
+  const handleHighlightAndVisit = (e, url) => {
+    handleVisitLink(e, url);
     // this handles highlighting of parent row
     const parentTable = ReactDOM.findDOMNode(e.target).parentNode.parentNode.parentNode;
     const targetNode = ReactDOM.findDOMNode(e.target).parentNode.parentNode;
     for (let i = 0; i < parentTable.rows.length; i++) {
       const row = parentTable.rows[i];
-      if (row.classList.contains('positive')) row.classList.remove('positive');
+      if (row.classList.contains("positive")) row.classList.remove("positive");
     }
-    targetNode.classList.toggle('positive');
-  }
+    targetNode.classList.toggle("positive");
+  };
 
-  handleVisitLink(e, url) {
+  const handleVisitLink = (e, url) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open(url, '_blank');
-  }
+    window.open(url, "_blank");
+  };
 
-  handleChecked(e, p) {
-    const { results } = this.state;
-    const foundPart = _.find(results.parts, { supplierPartNumber: p.supplierPartNumber });
-    foundPart.selected = !foundPart.selected;
-    this.setState({ results });
-  }
+  const handleChecked = (e, p) => {
+    const newResults = results;
+    const foundPart = _.find(newResults.parts, { supplierPartNumber: p.supplierPartNumber });
+    newResults.selected = !foundPart.selected;
+    setResults(newResults);
+  };
 
-  renderAllMatchingParts(order) {
+  const formatTrackingNumber = (trackingNumber) => {
+    if (trackingNumber && trackingNumber.includes("https:"))
+      return (<a href={trackingNumber} target="_blank" rel="noreferrer">View Tracking</a>);
+    return trackingNumber || "Unspecified"
+  };
+
+  const renderAllMatchingParts = (order) => {
     return (
       <div>
-        <Form onSubmit={this.onImportParts}>
-          <Table compact celled selectable size='small' className='partstable'>
+        <Form onSubmit={onImportParts}>
+          <Table compact celled selectable size="small" className="partstable">
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell colSpan='11'>
+                <Table.HeaderCell colSpan="11">
                   <Table>
                     <Table.Body>
                       <Table.Row>
                         <Table.Cell>
-                          <Label>Customer Id</Label>
-                          {order.customerId}
+                          <Label>Customer Id:</Label>
+                          {order.customerId || "Unspecified"}
                         </Table.Cell>
                         <Table.Cell>
-                          <Label>Order Amount</Label>
-                          ${order.amount} {order.currency}
+                          <Label>Order Amount:</Label>
+                          ${order.amount.toFixed(2)} {order.currency}
                         </Table.Cell>
                         <Table.Cell>
-                          <Label>Order Date</Label>
-                          {order.orderDate}
+                          <Label>Order Date:</Label>
+                          {format(parseJSON(order.orderDate), 'MMM dd, yyyy', new Date()) || "Unspecified"}
                         </Table.Cell>
                         <Table.Cell>
-                          <Label>Tracking Number</Label>
-                          {order.trackingNumber}
+                          <Label>Tracking Number:</Label>
+                          {formatTrackingNumber(order.trackingNumber)}
                         </Table.Cell>
                       </Table.Row>
                     </Table.Body>
@@ -205,67 +215,89 @@ export class OrderImport extends Component {
                 </Table.HeaderCell>
               </Table.Row>
               <Table.Row>
-                <Table.HeaderCell></Table.HeaderCell>
+                <Table.HeaderCell>Import?</Table.HeaderCell>
                 <Table.HeaderCell>Part</Table.HeaderCell>
+                <Table.HeaderCell>Part#</Table.HeaderCell>
                 <Table.HeaderCell>Manufacturer</Table.HeaderCell>
                 <Table.HeaderCell>Part Type</Table.HeaderCell>
-                <Table.HeaderCell>Supplier</Table.HeaderCell>
                 <Table.HeaderCell>Supplier Part</Table.HeaderCell>
-                <Table.HeaderCell>Package Type</Table.HeaderCell>
-                <Table.HeaderCell>Mounting Type</Table.HeaderCell>
                 <Table.HeaderCell>Cost</Table.HeaderCell>
+                <Table.HeaderCell>Qty</Table.HeaderCell>
                 <Table.HeaderCell>Image</Table.HeaderCell>
-                <Table.HeaderCell>Datasheet</Table.HeaderCell>
+                <Table.HeaderCell></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {order.parts.map((p, index) =>
+              {order.parts.map((p, index) => (
                 <Table.Row key={index}>
-                  <Table.Cell><Checkbox toggle checked={p.selected} onChange={(e) => this.handleChecked(e, p)} data={p} /></Table.Cell>
+                  <Table.Cell>
+                    <Checkbox toggle checked={p.selected} onChange={(e) => handleChecked(e, p)} data={p} />
+                  </Table.Cell>
+                  <Table.Cell style={{maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}} title={p.description}>{p.description}</Table.Cell>
                   <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                  <Table.Cell>{p.manufacturer}</Table.Cell>
+                  <Table.Cell style={{maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}} title={p.manufacturer}>{p.manufacturer}</Table.Cell>
                   <Table.Cell>{p.partType}</Table.Cell>
-                  <Table.Cell>{p.supplier}</Table.Cell>
                   <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-                  <Table.Cell>{p.packageType}</Table.Cell>
-                  <Table.Cell>{this.getMountingTypeById(p.mountingTypeId)}</Table.Cell>
-                  <Table.Cell>{p.cost}</Table.Cell>
-                  <Table.Cell><Image src={p.imageUrl} size='mini'></Image></Table.Cell>
-                  <Table.Cell>{p.datasheetUrls.map((d, dindex) =>
-                    <Button key={dindex} onClick={e => this.handleHighlightAndVisit(e, d)}>View Datasheet</Button>
-                  )}</Table.Cell>
+                  <Table.Cell>{formatCurrency(p.cost)}</Table.Cell>
+                  <Table.Cell>{p.quantityAvailable}</Table.Cell>
+                  <Table.Cell>
+                    <Image src={p.imageUrl} size="mini"></Image>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {p.datasheetUrls.map((d, dindex) => (
+                      <Link key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)} to="">
+                        View Datasheet
+                      </Link>
+                    ))}
+                  </Table.Cell>
                 </Table.Row>
-              )}
+              ))}
             </Table.Body>
           </Table>
           <Button primary>Import Parts</Button>
         </Form>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { order, suppliers, results, loading, error } = this.state;
-    return (
-      <div>
-        <h1>Order Import</h1>
-        <Form onSubmit={this.onSubmit}>
-          <Form.Group>
-            <Form.Input label='Order Id' required placeholder='1023840' icon='search' focus value={order.orderId} onChange={this.handleChange} name='orderId' />
-            <Form.Dropdown label='Supplier' required placeholder='Choose a Supplier' selection value={order.supplier} options={suppliers} onChange={this.handleChange} name='supplier' />
-          </Form.Group>
-          <Button primary>Search</Button>
-        </Form>
-        <div style={{ marginTop: '20px' }}>
-          <Segment style={{ minHeight: '50px' }}>
-            {error && (<Label color="red"><Icon name="warning sign" /> Error: {error}</Label>)}
-            <Dimmer active={loading} inverted>
-              <Loader inverted />
-            </Dimmer>
-            {!loading && results && results.parts && this.renderAllMatchingParts(results)}
-          </Segment>
-        </div>
+  return (
+    <div>
+      <h1>Order Import</h1>
+      <Form onSubmit={onSubmit}>
+        <Form.Group>
+          <Form.Dropdown
+            label="Supplier"
+            placeholder="Choose a Supplier"
+            selection
+            value={order.supplier}
+            options={suppliers}
+            onChange={handleChange}
+            name="supplier"
+          />
+          <Form.Input 
+            label={orderLabel} 
+            required 
+            placeholder="1023840" 
+            icon="search" 
+            focus 
+            value={order.orderId} 
+            onChange={handleChange} 
+            name="orderId" 
+          />
+        </Form.Group>
+        <div style={{height: '30px'}}>{message}</div>
+        <Button primary disabled={loading}>Search</Button>
+        <Button onClick={handleClear} disabled={!(results.parts && results.parts.length > 0)}>Clear</Button>
+      </Form>
+      <div style={{ marginTop: "20px" }}>
+        <Segment style={{ minHeight: "100px" }} className="centered">
+          {FormError(error)}
+          <Dimmer active={loading} inverted>
+            <Loader inverted />
+          </Dimmer>
+          {(!loading && results && results.parts && renderAllMatchingParts(results)) || <div style={{lineHeight: "100px"}}>No Results</div>}
+        </Segment>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};

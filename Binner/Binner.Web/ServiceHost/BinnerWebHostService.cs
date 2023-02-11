@@ -25,6 +25,7 @@ using System.Diagnostics;
 using Binner.Common;
 using TypeSupport.Extensions;
 using Binner.Model.Common;
+using NLog.Fluent;
 
 namespace Binner.Web.ServiceHost
 {
@@ -37,6 +38,10 @@ namespace Binner.Web.ServiceHost
     {
         const string ConfigFile = "appsettings.json";
         private const string CertificatePassword = "password";
+        const string LogManagerConfigFile = "nlog.config"; // TODO: Inject from appsettings
+        private static readonly string _logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
+        private static readonly Logger _nlogLogger = NLog.Web.NLogBuilder.ConfigureNLog(_logFile).GetCurrentClassLogger();
+
         private bool _isDisposed;
         private ILogger<BinnerWebHostService> _logger;
         private WebHostServiceConfiguration _config;
@@ -51,14 +56,26 @@ namespace Binner.Web.ServiceHost
                 if (t.Exception != null)
                 {
                     if (t.Exception.InnerException is IOException && t.Exception.InnerException.Message.Contains("already in use"))
-                        _logger.LogError($"Error: {typeof(BinnerWebHostService).GetDisplayName()} cannot bind to port {_config.Port}. Please check that the service is not already running.");
+                    {
+                        var message = $"Error: {typeof(BinnerWebHostService).GetDisplayName()} cannot bind to port {_config.Port}. Please check that the service is not already running.";
+                        if (_logger == null)
+                            _nlogLogger.Error(t.Exception, message);
+                        else
+                            _logger.LogError(t.Exception, message);
+                    }
                     else if (t.Exception.InnerException is TaskCanceledException)
                     {
                         // do nothing
                     }
                     else
-                        _logger.LogError(t.Exception, $"{typeof(BinnerWebHostService).GetDisplayName()} had an error starting up!");
-                    ShutdownWebHost();
+                    {
+                        var message = $"{typeof(BinnerWebHostService).GetDisplayName()} had an error starting up!";
+                        if (_logger == null)
+                            _nlogLogger.Error(t.Exception, message);
+                        else
+                            _logger.LogError(t.Exception, message);
+                    }
+                    hostControl.Stop();
                 }
             }, TaskContinuationOptions.OnlyOnFaulted); ;
             return true;
@@ -76,6 +93,7 @@ namespace Binner.Web.ServiceHost
             var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
             var configFile = Path.Combine(configPath, ConfigFile);
             var configuration = Config.GetConfiguration(configFile);
+            _nlogLogger.Info($"Loading configuration at {configFile}");
             _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
 
             // parse the requested IP from the config
@@ -88,6 +106,7 @@ namespace Binner.Web.ServiceHost
             var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
             var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
 
+            _nlogLogger.Info($"Building the WebHost on {ipAddress}:{_config.Port} ...");
             var host = Microsoft.AspNetCore.WebHost
             .CreateDefaultBuilder()
             .ConfigureKestrel(options =>

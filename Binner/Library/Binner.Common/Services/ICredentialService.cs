@@ -1,5 +1,4 @@
-﻿using Binner.Common.Integrations.Models.Digikey;
-using Binner.Model.Common;
+﻿using Binner.Model.Common;
 using System;
 using System.Threading.Tasks;
 

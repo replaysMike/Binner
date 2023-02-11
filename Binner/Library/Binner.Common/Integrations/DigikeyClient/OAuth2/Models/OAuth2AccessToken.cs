@@ -11,6 +11,7 @@
 // 
 //-----------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using ApiClient.Extensions;
@@ -28,11 +29,23 @@ namespace ApiClient.OAuth2.Models
         [JsonProperty(PropertyName = "error")]
         public string Error { get; set; }
 
-        public bool IsError => Error.IsPresent();
+        public bool IsError => Error.IsPresent() || ErrorMessage.IsPresent() || ErrorDescription.IsPresent() || ErrorDetails.IsPresent();
+
+        public string ErrorMessage { get; set; }
 
         /// <summary>Gets or sets the error description.</summary>
         [JsonProperty(PropertyName = "error_description")]
         public string ErrorDescription { get; set; }
+
+        public string ErrorDetails { get; set; }
+
+        public string RequestId { get; set; }
+
+        public IEnumerable<string> ValidationErrors { get; set; } = new List<string>();
+
+        public string ErrorResponseVersion { get; set; }
+
+        public int StatusCode { get; set; }
 
         /// <summary>Gets or sets the id token.</summary>
         [JsonProperty(PropertyName = "id_token")]

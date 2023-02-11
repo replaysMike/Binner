@@ -1,5 +1,4 @@
-﻿using Binner.Common.Integrations.Models.Digikey;
-using Binner.Model.Common;
+﻿using Binner.Model.Common;
 using System;
 using System.Threading.Tasks;
 
@@ -24,10 +23,10 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="authRequest"></param>
         /// <returns></returns>
-        public Task<OAuthAuthorization> CreateOAuthRequestAsync(OAuthAuthorization authRequest)
+        public async Task<OAuthAuthorization> CreateOAuthRequestAsync(OAuthAuthorization authRequest)
         {
-            //return await _storageProvider.CreateOAuthRequestAsync(authRequest, _requestContext.GetUserContext());
-            return null;
+
+            return await _storageProvider.CreateOAuthRequestAsync(authRequest, _requestContext.GetUserContext());
         }
 
         /// <summary>
@@ -35,10 +34,9 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest)
+        public async Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest)
         {
-            //return await _storageProvider.UpdateOAuthRequestAsync(authRequest, _requestContext.GetUserContext());
-            return null;
+            return await _storageProvider.UpdateOAuthRequestAsync(authRequest, _requestContext.GetUserContext());
         }
 
         /// <summary>
@@ -46,10 +44,9 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="requestId">The request Id initiated the request</param>
         /// <returns></returns>
-        public Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId)
+        public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId)
         {
-            //return await _storageProvider.GetOAuthRequestAsync(requestId, _requestContext.GetUserContext());
-            return null;
+            return await _storageProvider.GetOAuthRequestAsync(requestId, _requestContext.GetUserContext());
         }
 
         /// <summary>

@@ -395,6 +395,7 @@ namespace Binner.Web.Controllers
                 {
                     // create new part
                     var part = Mapper.Map<CommonPart, Part>(commonPart);
+                    part.Quantity += commonPart.QuantityAvailable;
                     if (commonPart.Supplier.Equals("digikey", StringComparison.InvariantCultureIgnoreCase))
                         part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
                     if (commonPart.Supplier.Equals("mouser", StringComparison.InvariantCultureIgnoreCase))

@@ -13,6 +13,11 @@
     margin: 10px auto 10px auto !important;
 }
 
+.ui.label {
+    background-color: transparent !important;
+    font-weight: 500 !important;
+}
+
 .binner-container {
     max-width: 1500px;
 }

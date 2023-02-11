@@ -1,13 +1,15 @@
 ﻿using ApiClient.OAuth2;
 using Binner.Common;
 using Binner.Common.Integrations;
-using Binner.Common.Integrations.Models.Digikey;
 using Binner.Common.Services;
 using Binner.Model.Common;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Mime;
+using System.Security.Authentication;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
@@ -18,72 +20,101 @@ namespace Binner.Web.Controllers
     public class AuthorizationController : ControllerBase
     {
         private readonly ILogger<AuthorizationController> _logger;
-        private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
+        private readonly IIntegrationApiFactory _integrationApiFactory;
 
-        public AuthorizationController(ILogger<AuthorizationController> logger, OAuth2Service oAuth2Service, ICredentialService credentialService)
+        public AuthorizationController(ILogger<AuthorizationController> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory)
         {
             _logger = logger;
-            _oAuth2Service = oAuth2Service;
             _credentialService = credentialService;
+            _integrationApiFactory = integrationApiFactory;
         }
 
         /// <summary>
         /// Authorize an oAuth application
         /// </summary>
         /// <remarks>
-        /// This is used as a postback Url for oAuth authorization of external services/integrations
+        /// This is used as a postback Url for oAuth authorization of external services/integrations.
+        /// Currently only DigiKey supports this (and is required for using their api)
         /// </remarks>
-        /// <param name="code"></param>
-        /// <param name="scope"></param>
-        /// <param name="state"></param>
+        /// <param name="code">The authorization code provided by the api</param>
+        /// <param name="scope">Optional, Scope is unused</param>
+        /// <param name="state">State should be a Guid indicating the dbo.OAuthRequests.RequestId</param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> AuthorizeAsync([FromQuery]string code, [FromQuery]string scope, [FromQuery]string state)
+        public async Task<IActionResult> AuthorizeAsync([FromQuery] string? code, [FromQuery] string? scope, [FromQuery] string? state)
         {
-            var contextKey = $"{nameof(DigikeyApi)}-{User.Identity.Name}";
-            var authRequest = ServerContext.Get<OAuthAuthorization>(contextKey);
+            if (string.IsNullOrEmpty(code)) throw new ArgumentNullException("code", "Code parameter must be specified");
+            if (string.IsNullOrEmpty(state)) throw new ArgumentNullException("state", "State parameter must be specified");
+
+            // state is a Guid indicating the requestId
+            if (!Guid.TryParse(state, out var requestId) && requestId != Guid.Empty)
+                throw new ArgumentException("State is an invalid format.", "state");
+
+            var authRequest = await _credentialService.GetOAuthRequestAsync(requestId);
             if (authRequest == null)
+                throw new AuthenticationException($"Error - no originating oAuth request found! You must restart the oAuth authentication process.");
+
+            // local binner does not require a valid userId
+            //if (authRequest.UserId == null)
+            //    throw new AuthenticationException($"Error - no user is associated with this oAuth request!");
+
+            switch (authRequest.Provider)
             {
-                // try get next integration
-                contextKey = $"{nameof(MouserApi)}-{User.Identity.Name}";
-                authRequest = ServerContext.Get<OAuthAuthorization>(contextKey);
+                case nameof(DigikeyApi):
+                    await HandleDigikeyApiAuthorizationAsync(authRequest, code);
+                    break;
+                default:
+                    throw new NotImplementedException($"Unhandled OAuth provider name '{authRequest.Provider}'");
             }
-            if (authRequest != null)
+
+            return Redirect(authRequest.ReturnToUrl);
+        }
+
+        private async Task HandleDigikeyApiAuthorizationAsync(OAuthAuthorization authRequest, string code)
+        {
+            // local binner does not require a valid userId
+            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(authRequest.UserId ?? 0);
+            var authResult = await digikeyApi.OAuth2Service.FinishAuthorization(code);
+
+            // reconstruct the user's session based on their UserId, since we don't have a Jwt token here for the user
+            //var user = await _authenticationService.GetUserAsync(authRequest.UserId.Value);
+            //var claims = _jwtService.GetClaims(user);
+            //var claimsIdentity = new ClaimsIdentity(claims, "Password");
+            //System.Threading.Thread.CurrentPrincipal = new ClaimsPrincipal(claimsIdentity);
+            //User.AddIdentity(claimsIdentity);
+
+            authRequest.AuthorizationReceived = true;
+            authRequest.AuthorizationCode = code;
+            if (authResult.IsError)
             {
-                var authResult = await _oAuth2Service.FinishAuthorization(code);
+                authRequest.Error = authResult.ErrorMessage;
+                authRequest.ErrorDescription = authResult.ErrorDetails;
+            }
+            else
+            {
                 // store the authorization tokens
                 // result.AccessToken
                 // result.RefreshToken
                 // result.ExpiresIn
-                authRequest.AuthorizationReceived = true;
-                if (authResult.IsError)
-                {
-                    authRequest.Error = authResult.Error;
-                    authRequest.ErrorDescription = authResult.ErrorDescription;
-                }
-                else
-                {
-                    authRequest.AccessToken = authResult.AccessToken;
-                    authRequest.RefreshToken = authResult.RefreshToken;
-                    authRequest.CreatedUtc = DateTime.UtcNow;
-                    authRequest.ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(authResult.ExpiresIn));
-                }
+                authRequest.AccessToken = authResult.AccessToken;
+                authRequest.RefreshToken = authResult.RefreshToken;
+                authRequest.CreatedUtc = DateTime.UtcNow;
+                authRequest.ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(authResult.ExpiresIn));
 
-                ServerContext.Set(contextKey, authRequest);
                 // save the credential
-                await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
+                var credential = await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
                 {
-                    Provider = contextKey,
+                    Provider = nameof(DigikeyApi),
                     AccessToken = authRequest.AccessToken,
                     RefreshToken = authRequest.RefreshToken,
                     DateCreatedUtc = authRequest.CreatedUtc,
                     DateExpiresUtc = authRequest.ExpiresUtc,
                 });
-
-                return Redirect(authRequest.ReturnToUrl);
             }
-            return BadRequest("No authorization request found, invalid callback.");
+
+            // update oauth request as complete
+            await _credentialService.UpdateOAuthRequestAsync(authRequest);
         }
     }
 }

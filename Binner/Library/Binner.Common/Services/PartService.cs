@@ -161,7 +161,7 @@ namespace Binner.Common.Services
         private async Task<IServiceResult<ExternalOrderResponse>> GetExternalDigikeyOrderAsync(string orderId)
         {
             var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
             if (!digikeyApi.IsUserConfigured)
                 return ServiceResult<ExternalOrderResponse>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 

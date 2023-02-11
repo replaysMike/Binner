@@ -2,8 +2,6 @@
 using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Model.Common;
-using Microsoft.Data.SqlClient;
-using NPOI.HSSF.Record;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -580,7 +578,7 @@ namespace Binner.Common.StorageProviders
                 storedFile.UserId = userContext?.UserId;
                 storedFile.StoredFileId = _primaryKeyTracker.GetNextKey<StoredFile>();
 
-                (_db as BinnerDbV2).StoredFiles.Add(storedFile);
+                (_db as BinnerDbV3).StoredFiles.Add(storedFile);
                 _isDirty = true;
             }
             finally
@@ -596,7 +594,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV2).StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return (_db as BinnerDbV3).StoredFiles.Where(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
             }
             finally
             {
@@ -610,7 +608,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV2).StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
+                return (_db as BinnerDbV3).StoredFiles.Where(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId).FirstOrDefault();
             }
             finally
             {
@@ -624,7 +622,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV2).StoredFiles
+                return (_db as BinnerDbV3).StoredFiles
                     .Where(x => x.PartId.Equals(partId))
                     .Where(x => fileType == null || x.StoredFileType.Equals(fileType))
                     .Where(x => x.UserId == userContext?.UserId)
@@ -642,7 +640,7 @@ namespace Binner.Common.StorageProviders
             var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return (_db as BinnerDbV2).StoredFiles
+                return (_db as BinnerDbV3).StoredFiles
                     .Where(x => x.UserId == userContext?.UserId)
                     .OrderBy(request.OrderBy, request.Direction)
                     .Skip(pageRecords)
@@ -661,10 +659,10 @@ namespace Binner.Common.StorageProviders
             try
             {
                 storedFile.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV2).StoredFiles.Remove(storedFile);
+                var itemRemoved = (_db as BinnerDbV3).StoredFiles.Remove(storedFile);
                 if (itemRemoved)
                 {
-                    var nextStoredFileId = (_db as BinnerDbV2).StoredFiles.OrderByDescending(x => x.StoredFileId)
+                    var nextStoredFileId = (_db as BinnerDbV3).StoredFiles.OrderByDescending(x => x.StoredFileId)
                         .Select(x => x.StoredFileId)
                         .FirstOrDefault() + 1;
                     _primaryKeyTracker.SetNextKey<StoredFile>(nextStoredFileId);
@@ -685,7 +683,7 @@ namespace Binner.Common.StorageProviders
             try
             {
                 storedFile.UserId = userContext?.UserId;
-                var existingStoredFile = (_db as BinnerDbV2).StoredFiles.Where(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
+                var existingStoredFile = (_db as BinnerDbV3).StoredFiles.Where(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId).FirstOrDefault();
                 existingStoredFile = Mapper.Map<StoredFile, StoredFile>(storedFile, existingStoredFile, x => x.StoredFileId);
                 existingStoredFile.StoredFileId = storedFile.StoredFileId;
                 _isDirty = true;
@@ -695,6 +693,94 @@ namespace Binner.Common.StorageProviders
                 _dataLock.Release();
             }
             return storedFile;
+        }
+
+        public async Task<Model.Common.OAuthAuthorization> CreateOAuthRequestAsync(Model.Common.OAuthAuthorization authRequest, IUserContext userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                var oAuthRequest = new OAuthRequest();
+                oAuthRequest.UserId = userContext?.UserId;
+                oAuthRequest.OAuthRequestId = (int)_primaryKeyTracker.GetNextKey<OAuthRequest>();
+                oAuthRequest.RequestId = authRequest.Id;
+                oAuthRequest.Provider = authRequest.Provider;
+                oAuthRequest.ReturnToUrl = authRequest.ReturnToUrl;
+                oAuthRequest.Error = authRequest.Error;
+                oAuthRequest.ErrorDescription = authRequest.ErrorDescription;
+                oAuthRequest.AuthorizationReceived = false;
+
+                (_db as BinnerDbV3).OAuthRequests.Add(oAuthRequest);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return authRequest;
+        }
+
+        public async Task<Model.Common.OAuthAuthorization> UpdateOAuthRequestAsync(Model.Common.OAuthAuthorization authRequest, IUserContext userContext)
+        {
+            if (authRequest == null) throw new ArgumentNullException(nameof(authRequest));
+            await _dataLock.WaitAsync();
+            try
+            {
+                var oAuthRequest = new OAuthRequest
+                {
+                    AuthorizationCode = authRequest.AuthorizationCode,
+                    AuthorizationReceived = authRequest.AuthorizationReceived,
+                    Error = authRequest.Error,
+                    ErrorDescription = authRequest.ErrorDescription,
+                    Provider = authRequest.Provider,
+                    RequestId = authRequest.Id,
+                    ReturnToUrl = authRequest.ReturnToUrl,
+                    UserId = userContext?.UserId
+                };
+
+                var existingOAuthRequest = (_db as BinnerDbV3).OAuthRequests
+                    .Where(x => x.UserId == userContext?.UserId && x.Provider == oAuthRequest.Provider && x.RequestId == oAuthRequest.RequestId)
+                    .FirstOrDefault();
+                existingOAuthRequest = Mapper.Map<OAuthRequest, OAuthRequest>(oAuthRequest, existingOAuthRequest, x => x.OAuthRequestId);
+                existingOAuthRequest.UserId = userContext?.UserId;
+                existingOAuthRequest.DateCreatedUtc = existingOAuthRequest.DateCreatedUtc;
+                existingOAuthRequest.DateModifiedUtc = DateTime.UtcNow;
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return authRequest;
+        }
+
+        public async Task<Model.Common.OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext userContext)
+        {
+            if (requestId == Guid.Empty) throw new ArgumentException(nameof(requestId));
+            await _dataLock.WaitAsync();
+            try
+            {
+                var existingOAuthRequest = (_db as BinnerDbV3).OAuthRequests
+                    .Where(x => x.RequestId.Equals(requestId) && x.UserId == userContext?.UserId)
+                    .FirstOrDefault();
+                if (existingOAuthRequest == null)
+                    return null;
+                return new Model.Common.OAuthAuthorization(existingOAuthRequest.Provider, existingOAuthRequest.RequestId)
+                {
+                    AuthorizationCode = existingOAuthRequest.AuthorizationCode,
+                    AuthorizationReceived = existingOAuthRequest.AuthorizationReceived,
+                    Error = existingOAuthRequest.Error,
+                    ErrorDescription = existingOAuthRequest.ErrorDescription,
+                    Provider = existingOAuthRequest.Provider,
+                    ReturnToUrl = existingOAuthRequest.ReturnToUrl,
+                    UserId = userContext?.UserId,
+                    CreatedUtc= existingOAuthRequest.DateCreatedUtc,
+                };
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
         }
 
         private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType, IUserContext userContext)
@@ -806,7 +892,8 @@ namespace Binner.Common.StorageProviders
                             { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() + 1, 1) },
                             { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() + 1, 1) },
                             { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault() + 1, 1) },
-                            { typeof(StoredFile).Name, Math.Max((_db as BinnerDbV2).StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() + 1, 1) },
+                            { typeof(StoredFile).Name, Math.Max((_db as BinnerDbV3).StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() + 1, 1) },
+                            { typeof(OAuthRequest).Name, Math.Max((_db as BinnerDbV3).OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() + 1, 1) },
                         });
                     }
                 }
@@ -845,9 +932,11 @@ namespace Binner.Common.StorageProviders
                 db = version.Version switch
                 {
                     // Version 1
-                    BinnerDbV1.VersionNumber => new BinnerDbV2(_serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    BinnerDbV1.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV1>(bytes, _serializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
                     // Version 2
-                    BinnerDbV2.VersionNumber => _serializer.Deserialize<BinnerDbV2>(bytes, _serializationOptions),
+                    BinnerDbV2.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV2>(bytes, _serializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    // Version 3
+                    BinnerDbV3.VersionNumber => _serializer.Deserialize<BinnerDbV3>(bytes, _serializationOptions),
                     _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
                 };
                 return db;
@@ -869,7 +958,7 @@ namespace Binner.Common.StorageProviders
                 await _dataLock.WaitAsync();
             try
             {
-                var db = _db as BinnerDbV2;
+                var db = _db as BinnerDbV3;
                 db.FirstPartId = db.Parts
                     .OrderBy(x => x.PartId)
                     .Select(x => x.PartId)
@@ -881,7 +970,7 @@ namespace Binner.Common.StorageProviders
                 db.Count = db.Parts.Count;
                 db.Checksum = BuildChecksum(db);
                 using var stream = new MemoryStream();
-                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV2.VersionNumber, BinnerDbV2.VersionCreated));
+                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV3.VersionNumber, BinnerDbV3.VersionCreated));
                 var serializedBytes = _serializer.Serialize(db, _serializationOptions);
                 stream.Write(serializedBytes, 0, serializedBytes.Length);
                 Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
@@ -950,7 +1039,7 @@ namespace Binner.Common.StorageProviders
                 });
             }
 
-            return new BinnerDbV2
+            return new BinnerDbV3
             {
                 Count = 0,
                 FirstPartId = 0,
@@ -961,7 +1050,8 @@ namespace Binner.Common.StorageProviders
                 Parts = new List<Part>(),
                 Projects = new List<Project>(),
                 OAuthCredentials = new List<OAuthCredential>(),
-                StoredFiles= new List<StoredFile>()
+                StoredFiles = new List<StoredFile>(),
+                OAuthRequests = new List<OAuthRequest>(),
             };
         }
 
