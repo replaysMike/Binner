@@ -19,16 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LinkedPackages", "LinkedPackages", "{5E8D1F9D-68C0-444A-B04F-5AAC822D684E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Model.Common", "..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj", "{C20F9564-A622-4361-A77B-9306C6960A36}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.MySql", "..\..\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql.csproj", "{86E6D3DE-87B1-44E8-850D-B8ED07F832AE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.Postgresql", "..\..\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql.csproj", "{A3BD6C9B-3E22-4498-9176-A5BC62621923}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.Sqlite", "..\..\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite.csproj", "{D33BCB54-67C3-4E66-B3A3-3F64F56CA5F7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.StorageProvider.SqlServer", "..\..\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer.csproj", "{4609E099-7C4F-4300-B8FA-DFEC2B741550}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,21 +41,6 @@ Global
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C20F9564-A622-4361-A77B-9306C6960A36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C20F9564-A622-4361-A77B-9306C6960A36}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C20F9564-A622-4361-A77B-9306C6960A36}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{86E6D3DE-87B1-44E8-850D-B8ED07F832AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{86E6D3DE-87B1-44E8-850D-B8ED07F832AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{86E6D3DE-87B1-44E8-850D-B8ED07F832AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3BD6C9B-3E22-4498-9176-A5BC62621923}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3BD6C9B-3E22-4498-9176-A5BC62621923}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3BD6C9B-3E22-4498-9176-A5BC62621923}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D33BCB54-67C3-4E66-B3A3-3F64F56CA5F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D33BCB54-67C3-4E66-B3A3-3F64F56CA5F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D33BCB54-67C3-4E66-B3A3-3F64F56CA5F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4609E099-7C4F-4300-B8FA-DFEC2B741550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4609E099-7C4F-4300-B8FA-DFEC2B741550}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4609E099-7C4F-4300-B8FA-DFEC2B741550}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,11 +50,6 @@ Global
 		{A38B9ACE-0E92-48E3-8A86-9FF6AB6442C9} = {2D9C4743-1B04-41B1-A12F-4CCF6F5BAB3E}
 		{0757A85F-FDA8-41B3-AAD3-B60D5F791EC7} = {3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}
 		{FF69AD29-B3F1-499C-908A-9E2FFAFED7D9} = {3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}
-		{C20F9564-A622-4361-A77B-9306C6960A36} = {5E8D1F9D-68C0-444A-B04F-5AAC822D684E}
-		{86E6D3DE-87B1-44E8-850D-B8ED07F832AE} = {5E8D1F9D-68C0-444A-B04F-5AAC822D684E}
-		{A3BD6C9B-3E22-4498-9176-A5BC62621923} = {5E8D1F9D-68C0-444A-B04F-5AAC822D684E}
-		{D33BCB54-67C3-4E66-B3A3-3F64F56CA5F7} = {5E8D1F9D-68C0-444A-B04F-5AAC822D684E}
-		{4609E099-7C4F-4300-B8FA-DFEC2B741550} = {5E8D1F9D-68C0-444A-B04F-5AAC822D684E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {413F8D19-37B6-4A57-858F-DD8AFF2DAE96}
