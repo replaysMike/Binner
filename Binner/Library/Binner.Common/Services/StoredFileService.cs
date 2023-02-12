@@ -29,7 +29,7 @@ namespace Binner.Common.Services
         {
             if (string.IsNullOrEmpty(_configuration.UserUploadedFilesPath))
                 throw new BinnerConfigurationException($"No 'StorageProviderConfiguration.UserUploadedFilesPath' value is provided in the configuration. Please set the path you would like to store files in appsettings.json.");
-            if (files == null || !files.Any()) return new List<StoredFile>();
+            if (!files.Any()) return new List<StoredFile>();
 
             var userContext = _requestContext.GetUserContext();
             var storedFiles = new List<StoredFile>();
@@ -62,7 +62,12 @@ namespace Binner.Common.Services
                 {
                     // save the file to disk
                     if (!Directory.Exists(pathToFile))
-                        Directory.CreateDirectory(Path.GetDirectoryName(pathToFile));
+                    {
+                        var dir = Path.GetDirectoryName(pathToFile);
+                        if (dir != null)
+                            Directory.CreateDirectory(dir);
+                    }
+
                     using (var fileStream = File.Create(pathToFile))
                     {
                         file.Stream.Position = 0;
@@ -79,10 +84,17 @@ namespace Binner.Common.Services
             return storedFiles;
         }
 
-        public string GetStoredFilePath(StoredFileType storedFileType) => Path.Combine(_configuration.UserUploadedFilesPath, storedFileType.ToString());
+        public string GetStoredFilePath(StoredFileType storedFileType)
+        {
+            if (string.IsNullOrEmpty(_configuration.UserUploadedFilesPath))
+                throw new Exception("No UserUploadedFilesPath set in the configuration");
+            return Path.Combine(_configuration.UserUploadedFilesPath, storedFileType.ToString());
+        }
 
         private string GenerateFilename(string originalFilename, Part part, StoredFileType storedFileType)
         {
+            if (string.IsNullOrEmpty(part.PartNumber))
+                throw new Exception("No part number specified");
             var extension = Path.GetExtension(originalFilename);
             var filename = $"{part.PartNumber.Replace("/", "_")}-{storedFileType}{extension}";
             var path = GetStoredFilePath(storedFileType);
@@ -121,12 +133,12 @@ namespace Binner.Common.Services
             return false;
         }
 
-        public async Task<StoredFile> GetStoredFileAsync(long storedFileId)
+        public async Task<StoredFile?> GetStoredFileAsync(long storedFileId)
         {
             return await _storageProvider.GetStoredFileAsync(storedFileId, _requestContext.GetUserContext());
         }
 
-        public async Task<StoredFile> GetStoredFileAsync(string filename)
+        public async Task<StoredFile?> GetStoredFileAsync(string filename)
         {
             return await _storageProvider.GetStoredFileAsync(filename, _requestContext.GetUserContext());
         }

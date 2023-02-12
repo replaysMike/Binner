@@ -53,6 +53,8 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery] GetPartRequest request)
         {
+            if (string.IsNullOrEmpty(request.PartNumber))
+                return BadRequest($"No part number specified!");
             var response = await _partService.GetPartWithStoredFilesAsync(request.PartNumber);
             if (response.Part == null) return NotFound();
             var partResponse = Mapper.Map<Part, PartStoredFilesResponse>(response.Part);
@@ -95,13 +97,18 @@ namespace Binner.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePartAsync(CreatePartRequest request)
         {
+            if (string.IsNullOrEmpty(request.PartTypeId))
+                return BadRequest($"No part type specified!");
+
             var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " ", "," }, StringSplitOptions.RemoveEmptyEntries);
 
             var partType = await GetPartTypeAsync(request.PartTypeId);
             if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
+
             mappedPart.PartTypeId = partType.PartTypeId;
-            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId);
+            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
+            
             if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             var duplicatePartResponse = await CheckForDuplicateAsync(request, mappedPart);
@@ -123,11 +130,15 @@ namespace Binner.Web.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdatePartAsync(UpdatePartRequest request)
         {
+            if (string.IsNullOrEmpty(request.PartTypeId))
+                return BadRequest($"No part type specified!");
+
             var mappedPart = Mapper.Map<UpdatePartRequest, Part>(request);
             var partType = await GetPartTypeAsync(request.PartTypeId);
             if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
+            
             mappedPart.PartTypeId = partType.PartTypeId;
-            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId);
+            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
             if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             mappedPart.PartId = request.PartId;
@@ -155,12 +166,15 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> CreateBulkPartsAsync(CreateBulkPartRequest request)
         {
             var updatedParts = new List<Part>();
-            var mappedParts = Mapper.Map<ICollection<PartBase>, ICollection<Part>>(request.Parts);
+            var mappedParts = Mapper.Map<ICollection<PartBase>, ICollection<Part>>(request.Parts ?? new List<PartBase>());
             var partTypes = await _partTypeService.GetPartTypesAsync();
-            var defaultPartType = partTypes.Where(x => x.Name.Equals("Other", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ?? partTypes.FirstOrDefault();
+            var defaultPartType = partTypes
+                .FirstOrDefault(x => x.Name?.Equals("Other", StringComparison.InvariantCultureIgnoreCase) == true) ?? partTypes.First();
             foreach (var mappedPart in mappedParts)
             {
                 // does it already exist?
+                if (string.IsNullOrEmpty(mappedPart.PartNumber))
+                    continue;
                 var existingSearch = await _partService.FindPartsAsync(mappedPart.PartNumber);
                 if (existingSearch.Any())
                 {
@@ -181,7 +195,8 @@ namespace Binner.Web.Controllers
                         {
                             // convert this entry to a part
                             var entry = barcodeResult.Response.Parts.First();
-                            var partType = partTypes.Where(x => x.Name == entry.PartType).FirstOrDefault();
+                            var partType = partTypes
+                                .FirstOrDefault(x => x.Name == entry.PartType) ?? partTypes.First();
                             mappedPart.PartNumber = entry.ManufacturerPartNumber;
                             mappedPart.PartTypeId = partType != null ? partType.PartTypeId : defaultPartType.PartTypeId;
                             mappedPart.MountingTypeId = entry.MountingTypeId;
@@ -203,33 +218,49 @@ namespace Binner.Web.Controllers
                     // if we didn't already map it using above methods, get metadata on the part
                     if (!isMapped)
                     {
+                        if (string.IsNullOrEmpty(mappedPart.PartNumber))
+                            continue;
                         var metadataResponse = await _partService.GetPartInformationAsync(mappedPart.PartNumber);
-                        var digikeyParts = metadataResponse.Response.Parts.Where(x => x.Supplier.Equals("Digikey", StringComparison.InvariantCultureIgnoreCase)).OrderByDescending(x => x.DatasheetUrls.Any()).ThenBy(x => x.Cost).ToList();
-                        var mouserParts = metadataResponse.Response.Parts.Where(x => x.Supplier.Equals("Mouser", StringComparison.InvariantCultureIgnoreCase)).OrderByDescending(x => x.DatasheetUrls.Any()).ThenBy(x => x.Cost).ToList();
-                        var metadata = metadataResponse.Response.Parts.FirstOrDefault();
-                        if (metadata != null)
+                        if (metadataResponse != null)
                         {
-                            var partType = partTypes.Where(x => x.Name == metadata.PartType).FirstOrDefault();
-                            mappedPart.PartTypeId = partType != null ? partType.PartTypeId : defaultPartType.PartTypeId;
-                            mappedPart.MountingTypeId = metadata.MountingTypeId;
-                            mappedPart.Description = metadata.Description;
-                            mappedPart.DatasheetUrl = metadata.DatasheetUrls.FirstOrDefault();
-                            mappedPart.DigiKeyPartNumber = digikeyParts.FirstOrDefault()?.SupplierPartNumber;
-                            mappedPart.MouserPartNumber = mouserParts.FirstOrDefault()?.SupplierPartNumber;
-                            mappedPart.ImageUrl = metadata.ImageUrl;
-                            mappedPart.Manufacturer = metadata.Manufacturer;
-                            mappedPart.ManufacturerPartNumber = metadata.ManufacturerPartNumber;
-                            mappedPart.Keywords = metadata.Keywords ?? new List<string>();
-                            mappedPart.LowStockThreshold = 10;
-                            mappedPart.ProductUrl = metadata.ProductUrl;
-                            mappedPart.PackageType = metadata.PackageType;
-                            mappedPart.Cost = (decimal)metadata.Cost;
-                        }
-                        else
-                        {
-                            // map some default values as we don't know what this is
-                            mappedPart.PartTypeId = defaultPartType.PartTypeId;
-                            mappedPart.MountingTypeId = (int)MountingType.ThroughHole;
+                            var digikeyParts = metadataResponse.Response.Parts
+                                .Where(x =>
+                                    x.Supplier?.Equals("Digikey", StringComparison.InvariantCultureIgnoreCase) == true)
+                                .OrderByDescending(x => x.DatasheetUrls.Any())
+                                .ThenBy(x => x.Cost)
+                                .ToList();
+                            var mouserParts = metadataResponse.Response.Parts
+                                .Where(x => x.Supplier?.Equals("Mouser", StringComparison.InvariantCultureIgnoreCase) ==
+                                            true)
+                                .OrderByDescending(x => x.DatasheetUrls.Any())
+                                .ThenBy(x => x.Cost)
+                                .ToList();
+                            var metadata = metadataResponse.Response.Parts.FirstOrDefault();
+                            if (metadata != null)
+                            {
+                                var partType = partTypes.FirstOrDefault(x => x.Name == metadata.PartType) ??
+                                               defaultPartType;
+                                mappedPart.PartTypeId = partType.PartTypeId;
+                                mappedPart.MountingTypeId = metadata.MountingTypeId;
+                                mappedPart.Description = metadata.Description;
+                                mappedPart.DatasheetUrl = metadata.DatasheetUrls.FirstOrDefault();
+                                mappedPart.DigiKeyPartNumber = digikeyParts.FirstOrDefault()?.SupplierPartNumber;
+                                mappedPart.MouserPartNumber = mouserParts.FirstOrDefault()?.SupplierPartNumber;
+                                mappedPart.ImageUrl = metadata.ImageUrl;
+                                mappedPart.Manufacturer = metadata.Manufacturer;
+                                mappedPart.ManufacturerPartNumber = metadata.ManufacturerPartNumber;
+                                mappedPart.Keywords = metadata.Keywords ?? new List<string>();
+                                mappedPart.LowStockThreshold = 10;
+                                mappedPart.ProductUrl = metadata.ProductUrl;
+                                mappedPart.PackageType = metadata.PackageType;
+                                mappedPart.Cost = (decimal)metadata.Cost;
+                            }
+                            else
+                            {
+                                // map some default values as we don't know what this is
+                                mappedPart.PartTypeId = defaultPartType.PartTypeId;
+                                mappedPart.MountingTypeId = (int)MountingType.ThroughHole;
+                            }
                         }
                     }
                     updatedParts.Add(await _partService.AddPartAsync(mappedPart));
@@ -267,14 +298,19 @@ namespace Binner.Web.Controllers
             if (parts == null || !parts.Any())
                 return NotFound();
             var partTypes = await _partService.GetPartTypesAsync();
-            var partsOrdered = parts.OrderBy(x => x.Rank).Select(x => x.Result).ToList();
+            var partsOrdered = parts
+                .OrderBy(x => x.Rank)
+                .Select(x => x.Result)
+                .ToList();
             var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(partsOrdered);
             // map part types
             foreach (var part in partsResponse)
             {
                 part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
                 part.MountingType = ((MountingType)part.MountingTypeId).ToString();
-                part.Keywords = string.Join(" ", partsOrdered.First(x => x.PartId == part.PartId).Keywords);
+                var keywordsList = partsOrdered.First(x => x.PartId == part.PartId).Keywords;
+                if (keywordsList != null)
+                    part.Keywords = string.Join(" ", keywordsList);
             }
 
             return Ok(partsResponse);
@@ -339,19 +375,19 @@ namespace Binner.Web.Controllers
             var mountingType = mountingTypeId;
             if (int.TryParse(partTypeId, out var _partTypeId))
             {
-                var _partType = await _partTypeService.GetPartTypeAsync(_partTypeId);
-                if (_partType != null) partType = _partType.Name;
+                var partTypeWithName = await _partTypeService.GetPartTypeAsync(_partTypeId);
+                if (partTypeWithName != null) partType = partTypeWithName.Name;
             }
             if (int.TryParse(mountingTypeId, out var _mountingTypeId))
             {
                 if (Enum.IsDefined(typeof(MountingType), _mountingTypeId))
                 {
-                    var _mountingType = (MountingType)_mountingTypeId;
-                    mountingType = _mountingType.ToString();
+                    var mountingTypeEnum = (MountingType)_mountingTypeId;
+                    mountingType = mountingTypeEnum.ToString();
                 }
             }
 
-            var metadata = await _partService.GetPartInformationAsync(partNumber, partType, mountingType);
+            var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType);
             if (metadata == null)
                 return NotFound();
             return Ok(metadata);
@@ -365,6 +401,8 @@ namespace Binner.Web.Controllers
         [HttpPost("import")]
         public async Task<IActionResult> OrderImportAsync(OrderImportRequest request)
         {
+            if (string.IsNullOrEmpty(request.OrderId)) return BadRequest("No OrderId specified");
+            if (string.IsNullOrEmpty(request.Supplier)) return BadRequest("No Supplier specified");
             var metadata = await _partService.GetExternalOrderAsync(request.OrderId, request.Supplier);
             if (metadata == null)
                 return NotFound();
@@ -380,6 +418,8 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> OrderImportPartsAsync(OrderImportPartsRequest request)
         {
             var parts = new List<PartResponse>();
+            if (request.Parts == null || request.Parts.Count == 0)
+                return Ok();
             foreach (var commonPart in request.Parts)
             {
                 var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == commonPart.ManufacturerPartNumber);
@@ -396,9 +436,9 @@ namespace Binner.Web.Controllers
                     // create new part
                     var part = Mapper.Map<CommonPart, Part>(commonPart);
                     part.Quantity += commonPart.QuantityAvailable;
-                    if (commonPart.Supplier.Equals("digikey", StringComparison.InvariantCultureIgnoreCase))
+                    if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
-                    if (commonPart.Supplier.Equals("mouser", StringComparison.InvariantCultureIgnoreCase))
+                    if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.MouserPartNumber = commonPart.SupplierPartNumber;
                     part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
                     part.PartNumber = commonPart.ManufacturerPartNumber;
@@ -423,6 +463,7 @@ namespace Binner.Web.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
                 var part = await _partService.GetPartAsync(request.PartNumber);
                 if (part == null) return NotFound();
                 var stream = new MemoryStream();
@@ -447,6 +488,7 @@ namespace Binner.Web.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
                 var part = await _partService.GetPartAsync(request.PartNumber);
                 Image<Rgba32> image;
                 if (part == null)
@@ -480,6 +522,8 @@ namespace Binner.Web.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(request.PartNumber))
+                    return BadRequest("No part number specified.");
                 var stream = new MemoryStream();
                 var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, Color.Black, Color.White, 300, 25);
                 image.SaveAsPng(stream);
@@ -498,10 +542,12 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <param name="part"></param>
         /// <returns></returns>
-        private async Task<IActionResult> CheckForDuplicateAsync(CreatePartRequest request, Part part)
+        private async Task<IActionResult?> CheckForDuplicateAsync(CreatePartRequest request, Part part)
         {
             if (request is IPreventDuplicateResource && !((IPreventDuplicateResource)request).AllowPotentialDuplicate)
             {
+                if (string.IsNullOrEmpty(part.PartNumber))
+                    return BadRequest("No part number specified.");
                 var existingSearch = await _partService.FindPartsAsync(part.PartNumber);
                 if (existingSearch.Any())
                 {
@@ -524,9 +570,9 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <param name="partType"></param>
         /// <returns></returns>
-        private async Task<PartType> GetPartTypeAsync(string partType)
+        private async Task<PartType?> GetPartTypeAsync(string partType)
         {
-            PartType result = null;
+            PartType? result = null;
             if (int.TryParse(partType, out int partTypeId))
             {
                 // numeric format

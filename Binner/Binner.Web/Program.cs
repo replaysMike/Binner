@@ -123,14 +123,14 @@ bool PrintDbInfo()
     PrintBox("   Binner database information   ", ConsoleColor.Blue, ConsoleColor.Yellow);
     Console.ForegroundColor = ConsoleColor.Gray;
     var storageConfig = builder.Configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
-    if (config == null)
+    if (storageConfig == null)
     {
         PrintError($"Could not read the {nameof(StorageProviderConfiguration)} section of your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
         Environment.Exit(ExitCodes.InvalidConfig);
     }
 
     PrintLabel("Provider", ConsoleColor.White);
-    PrintValue(storageConfig.Provider, ConsoleColor.Cyan);
+    PrintValue(storageConfig.Provider ?? "Unknown", ConsoleColor.Cyan);
     PrintLabel("Configuration", ConsoleColor.White);
     Console.WriteLine();
 
@@ -141,53 +141,61 @@ bool PrintDbInfo()
         PrintValue(value.Value);
     }
     PrintLabel("   User File Uploads Path");
-    PrintValue(storageConfig.UserUploadedFilesPath);
+    PrintValue(storageConfig.UserUploadedFilesPath ?? "Not Set");
 
     PrintLabel("Provider Information", ConsoleColor.White);
     Console.WriteLine();
-    if (storageConfig.Provider == BinnerFileStorageProvider.ProviderName)
+    if (string.IsNullOrEmpty(storageConfig.Provider))
     {
-        var fsProvider = new BinnerFileStorageProvider(storageConfig.ProviderConfiguration);
-        var response = fsProvider.TestConnectionAsync().GetAwaiter().GetResult();
-        PrintLabel("   Db Created");
-        PrintValue(fsProvider.Version?.Created.ToShortDateString());
-        PrintLabel("   Db Version");
-        PrintValue(fsProvider.Version?.Version);
-
-        PrintLabel("   Connection");
-        if (response.IsSuccess)
-            PrintOk();
-        else
-            PrintFailed();
-        PrintLabel("   Db Exists");
-        if (response.DatabaseExists)
-            PrintOk();
-        else
-            PrintFailed();
+        PrintError("   No storage provider set in storage configuration!");
     }
     else
     {
-        var factory = new StorageProviderFactory();
-        var storageProvider = factory.Create(storageConfig.Provider, storageConfig.ProviderConfiguration);
-        var response = storageProvider.TestConnectionAsync().GetAwaiter().GetResult();
-        PrintLabel("   Connection");
-        if (response.IsSuccess)
-            PrintOk();
-        else
-            PrintFailed();
-        PrintLabel("   Db Exists");
-        if (response.DatabaseExists)
-            PrintOk();
-        else
-            PrintFailed();
-        if (response.Errors.Any())
+        if (storageConfig.Provider == BinnerFileStorageProvider.ProviderName)
         {
-            PrintLabel("   Errors", ConsoleColor.Red);
-            Console.ForegroundColor = ConsoleColor.Gray;
-            foreach (var error in response.Errors) Console.WriteLine($"    - {error}");
-            Console.WriteLine();
+            var fsProvider = new BinnerFileStorageProvider(storageConfig.ProviderConfiguration);
+            var response = fsProvider.TestConnectionAsync().GetAwaiter().GetResult();
+            PrintLabel("   Db Created");
+            PrintValue(fsProvider.Version?.Created.ToShortDateString());
+            PrintLabel("   Db Version");
+            PrintValue(fsProvider.Version?.Version);
+
+            PrintLabel("   Connection");
+            if (response.IsSuccess)
+                PrintOk();
+            else
+                PrintFailed();
+            PrintLabel("   Db Exists");
+            if (response.DatabaseExists)
+                PrintOk();
+            else
+                PrintFailed();
+        }
+        else
+        {
+            var factory = new StorageProviderFactory();
+            var storageProvider = factory.Create(storageConfig.Provider, storageConfig.ProviderConfiguration);
+            var response = storageProvider.TestConnectionAsync().GetAwaiter().GetResult();
+            PrintLabel("   Connection");
+            if (response.IsSuccess)
+                PrintOk();
+            else
+                PrintFailed();
+            PrintLabel("   Db Exists");
+            if (response.DatabaseExists)
+                PrintOk();
+            else
+                PrintFailed();
+            if (response.Errors.Any())
+            {
+                PrintLabel("   Errors", ConsoleColor.Red);
+                Console.ForegroundColor = ConsoleColor.Gray;
+                foreach (var error in response.Errors) Console.WriteLine($"    - {error}");
+                Console.WriteLine();
+            }
         }
     }
+
     PrintLabel("Server", ConsoleColor.White);
     Console.WriteLine();
     PrintLabel("   Environment");
@@ -234,10 +242,10 @@ void PrintLabel(string label, ConsoleColor color = ConsoleColor.Gray)
     Console.Write($"{label}: ");
 }
 
-void PrintValue(object value, ConsoleColor color = ConsoleColor.DarkGray)
+void PrintValue(object? value, ConsoleColor color = ConsoleColor.DarkGray)
 {
     Console.ForegroundColor = color;
-    Console.WriteLine($"{value.ToString()}");
+    Console.WriteLine($"{value?.ToString()}");
 }
 
 void PrintOk()

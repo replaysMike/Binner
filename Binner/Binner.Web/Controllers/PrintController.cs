@@ -50,7 +50,7 @@ namespace Binner.Web.Controllers
                 if (!request.Lines.Any())
                     image = new BlankImage(text: "No lines specified!", fontFamily: _fontManager.InstalledFonts.Families.First()).Image;
                 else
-                    image = _labelPrinter.PrintLabel(request.Lines, new PrinterOptions(request.LabelSource, request.LabelName, request.GenerateImageOnly, request.ShowDiagnostic));
+                    image = _labelPrinter.PrintLabel(request.Lines, new PrinterOptions(request.LabelSource, request.LabelName ?? string.Empty, request.GenerateImageOnly, request.ShowDiagnostic));
                 image.SaveAsPng(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 return new FileStreamResult(stream, "image/png");

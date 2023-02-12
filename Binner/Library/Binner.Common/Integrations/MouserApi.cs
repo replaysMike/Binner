@@ -104,7 +104,7 @@ namespace Binner.Common.Integrations
             return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
 
-        public async Task<IApiResponse?> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25)
+        public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25)
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/keyword?apiKey={_configuration.ApiKeys.SearchApiKey}");
@@ -132,7 +132,7 @@ namespace Binner.Common.Integrations
                     throw new MouserErrorsException(results.Errors);
                 return new ApiResponse(results, nameof(MouserApi));
             }
-            return null;
+            return new ApiResponse($"Received error status code {response.StatusCode}", nameof(MouserApi));
         }
 
         private HttpRequestMessage CreateRequest(HttpMethod method, Uri uri)

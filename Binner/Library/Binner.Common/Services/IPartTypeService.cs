@@ -9,14 +9,14 @@ namespace Binner.Common.Services
         /// <summary>
         /// Add a new partType
         /// </summary>
-        /// <param name="project"></param>
+        /// <param name="partType"></param>
         /// <returns></returns>
-        Task<PartType> AddPartTypeAsync(PartType partType);
+        Task<PartType?> AddPartTypeAsync(PartType partType);
 
         /// <summary>
         /// Update an existing partType
         /// </summary>
-        /// <param name="project"></param>
+        /// <param name="partType"></param>
         /// <returns></returns>
         Task<PartType> UpdatePartTypeAsync(PartType partType);
 
@@ -32,7 +32,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="partTypeId"></param>
         /// <returns></returns>
-        Task<PartType> GetPartTypeAsync(long partTypeId);
+        Task<PartType?> GetPartTypeAsync(long partTypeId);
 
         /// <summary>
         /// Get all part types

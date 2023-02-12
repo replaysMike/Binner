@@ -47,14 +47,14 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="projectId"></param>
         /// <returns></returns>
-        Task<StoredFile> GetStoredFileAsync(long storedFileId);
+        Task<StoredFile?> GetStoredFileAsync(long storedFileId);
 
         /// <summary>
         /// Get a user uploaded file
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        Task<StoredFile> GetStoredFileAsync(string filename);
+        Task<StoredFile?> GetStoredFileAsync(string filename);
 
         /// <summary>
         /// Get user uploaded files

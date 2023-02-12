@@ -49,14 +49,14 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="partNumber"></param>
         /// <returns></returns>
-        Task<Part> GetPartAsync(string partNumber);
+        Task<Part?> GetPartAsync(string partNumber);
 
         /// <summary>
         /// Get a part with its associated stored files
         /// </summary>
         /// <param name="partNumber"></param>
         /// <returns></returns>
-        Task<(Part Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber);
+        Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber);
 
         /// <summary>
         /// Get all parts
@@ -77,14 +77,14 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="partType"></param>
         /// <returns></returns>
-        Task<PartType> GetOrCreatePartTypeAsync(PartType partType);
+        Task<PartType?> GetOrCreatePartTypeAsync(PartType partType);
 
         /// <summary>
         /// Get a partType by its id
         /// </summary>
         /// <param name="partTypeId"></param>
         /// <returns></returns>
-        Task<PartType> GetPartTypeAsync(int partTypeId);
+        Task<PartType?> GetPartTypeAsync(int partTypeId);
 
         /// <summary>
         /// Get information about a barcode
@@ -100,7 +100,7 @@ namespace Binner.Common.Services
         /// <param name="partType">Part type</param>
         /// <param name="mountingType">Mounting type</param>
         /// <returns></returns>
-        Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
+        Task<IServiceResult<PartResults>?> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
 
         /// <summary>
         /// Determine the part type
@@ -123,7 +123,7 @@ namespace Binner.Common.Services
         /// <param name="orderId"></param>
         /// <param name="supplier"></param>
         /// <returns></returns>
-        Task<IServiceResult<ExternalOrderResponse>> GetExternalOrderAsync(string orderId, string supplier);
+        Task<IServiceResult<ExternalOrderResponse>?> GetExternalOrderAsync(string orderId, string supplier);
 
         /// <summary>
         /// Get all part types

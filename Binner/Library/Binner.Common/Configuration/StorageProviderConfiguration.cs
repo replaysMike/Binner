@@ -7,7 +7,7 @@ namespace Binner.Common.Configuration
         /// <summary>
         /// The storage provider to use
         /// </summary>
-        public string? Provider { get; set; }
+        public string Provider { get; set; } = "Binner";
 
         /// <summary>
         /// Configuration to pass to the provider

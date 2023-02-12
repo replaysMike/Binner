@@ -56,7 +56,7 @@ namespace Binner.Web.Controllers
         /// <summary>
         /// Get an existing user uploaded file
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="fileName"></param>
         /// <returns></returns>
         [HttpGet("local")]
         public async Task<IActionResult> GetStoredFileContentAsync([FromQuery] string fileName)
@@ -67,6 +67,8 @@ namespace Binner.Web.Controllers
 
             // read the file contents
             new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType);
+            if (string.IsNullOrEmpty(contentType))
+                return BadRequest($"Could not determine content type for file '{fileName}'");
             var path = _storedFileService.GetStoredFilePath(storedFile.StoredFileType);
             var pathToFile = Path.Combine(path, fileName);
             if (System.IO.File.Exists(pathToFile))
@@ -80,7 +82,7 @@ namespace Binner.Web.Controllers
         /// <summary>
         /// Get a preview image of the stored file
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="fileName"></param>
         /// <returns></returns>
         [HttpGet("preview")]
         public async Task<IActionResult> GetStoredFilePreviewAsync([FromQuery] string fileName)
@@ -91,19 +93,23 @@ namespace Binner.Web.Controllers
 
             // read the file contents
             new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType);
+            if (string.IsNullOrEmpty(contentType))
+                return BadRequest($"Could not determine content type for file '{fileName}'");
+            // return a default cover image for the following formats
             switch (contentType)
             {
                 case "application/pdf":
                 case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                 case "application/msword":
                 case "application/text":
-                var pathToCoverImage = Path.Combine("./Resources", "datasheet.png");
-                if (System.IO.File.Exists(pathToCoverImage))
-                {
-                    var bytes = System.IO.File.ReadAllBytes(pathToCoverImage);
-                    return File(bytes, contentType);
-                }
-                return NotFound();
+                    var pathToCoverImage = Path.Combine("./Resources", "datasheet.png");
+                    if (System.IO.File.Exists(pathToCoverImage))
+                    {
+                        var bytes = System.IO.File.ReadAllBytes(pathToCoverImage);
+                        return File(bytes, contentType);
+                    }
+                    // error, cover image not found
+                    return NotFound();
             }
 
             // return the actual file if it's an image type
@@ -140,7 +146,7 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> CreateStoredFileAsync([FromForm] UploadUserFilesRequest<IFormFile> request)
         {
             var acceptedMimeTypes = new string[] { "application/pdf","image/jpeg","image/png","image/svg+xml","image/webp","image/gif","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
-            if (request == null || request.Files.Count == 0)
+            if (request.Files == null || request.Files.Count == 0)
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse(new Exception("No files were uploaded!")));
 
             foreach(var file in request.Files)

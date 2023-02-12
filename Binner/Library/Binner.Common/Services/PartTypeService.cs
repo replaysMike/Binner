@@ -8,8 +8,8 @@ namespace Binner.Common.Services
 {
     public class PartTypeService : IPartTypeService
     {
-        private IStorageProvider _storageProvider;
-        private RequestContextAccessor _requestContext;
+        private readonly IStorageProvider _storageProvider;
+        private readonly RequestContextAccessor _requestContext;
 
         public PartTypeService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
         {
@@ -17,7 +17,7 @@ namespace Binner.Common.Services
             _requestContext = requestContextAccessor;
         }
 
-        public async Task<PartType> AddPartTypeAsync(PartType partType)
+        public async Task<PartType?> AddPartTypeAsync(PartType partType)
         {
             return await _storageProvider.GetOrCreatePartTypeAsync(partType, _requestContext.GetUserContext());
         }
@@ -30,7 +30,7 @@ namespace Binner.Common.Services
             
             // does it have children? todo: need storage provider support for this
             var partTypes = await GetPartTypesAsync();
-            if (partTypes.Where(x => x.ParentPartTypeId== existingPartType.PartTypeId).Any())
+            if (partTypes.Any(x => x.ParentPartTypeId== existingPartType.PartTypeId))
             {
                 throw new InvalidOperationException($"Cannot delete part type '{existingPartType.Name}' until it's children are deleted.");
             }            
@@ -38,7 +38,7 @@ namespace Binner.Common.Services
             return await _storageProvider.DeletePartTypeAsync(partType, _requestContext.GetUserContext());
         }
 
-        public async Task<PartType> GetPartTypeAsync(long partTypeId)
+        public async Task<PartType?> GetPartTypeAsync(long partTypeId)
         {
             return await _storageProvider.GetPartTypeAsync(partTypeId, _requestContext.GetUserContext());
         }

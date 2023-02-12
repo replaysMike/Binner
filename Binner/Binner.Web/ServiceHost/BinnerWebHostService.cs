@@ -57,7 +57,7 @@ namespace Binner.Web.ServiceHost
                 {
                     if (t.Exception.InnerException is IOException && t.Exception.InnerException.Message.Contains("already in use"))
                     {
-                        var message = $"Error: {typeof(BinnerWebHostService).GetDisplayName()} cannot bind to port {_config.Port}. Please check that the service is not already running.";
+                        var message = $"Error: {typeof(BinnerWebHostService).GetDisplayName()} cannot bind to port '{_config?.Port}'. Please check that the service is not already running.";
                         if (_logger == null)
                             _nlogLogger.Error(t.Exception, message);
                         else
@@ -90,17 +90,17 @@ namespace Binner.Web.ServiceHost
         private async Task InitializeWebHostAsync()
         {
             // run without awaiting to avoid service startup delays, and allow the service to shutdown cleanly
-            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
             var configFile = Path.Combine(configPath, ConfigFile);
             var configuration = Config.GetConfiguration(configFile);
             _nlogLogger.Info($"Loading configuration at {configFile}");
-            _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
+            _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>() ?? throw new BinnerConfigurationException($"Configuration section '{nameof(WebHostServiceConfiguration)}' does not exist!");
 
             // parse the requested IP from the config
             var ipAddress = IPAddress.Any;
             var ipString = _config.IP;
             if (!string.IsNullOrEmpty(ipString) && ipString != "*")
-                IPAddress.TryParse(_config.IP, out ipAddress);
+                if(!IPAddress.TryParse(_config.IP, out ipAddress)) throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
 
             // use embedded certificate
             var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
@@ -111,16 +111,13 @@ namespace Binner.Web.ServiceHost
             .CreateDefaultBuilder()
             .ConfigureKestrel(options =>
             {
-                if (certificate != null)
+                options.ConfigureHttpsDefaults(opt =>
                 {
-                    options.ConfigureHttpsDefaults(opt =>
-                    {
-                        opt.ServerCertificate = certificate;
-                        opt.ClientCertificateMode = ClientCertificateMode.NoCertificate;
-                        opt.CheckCertificateRevocation = false;
-                        opt.AllowAnyClientCertificate();
-                    });
-                }
+                    opt.ServerCertificate = certificate;
+                    opt.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+                    opt.CheckCertificateRevocation = false;
+                    opt.AllowAnyClientCertificate();
+                });
                 options.Listen(ipAddress, _config.Port, c =>
                 {
                     c.UseHttps();
@@ -158,7 +155,7 @@ namespace Binner.Web.ServiceHost
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to shutdown WebHost!");
+                _logger?.LogError(ex, "Failed to shutdown WebHost!");
             }
         }
 

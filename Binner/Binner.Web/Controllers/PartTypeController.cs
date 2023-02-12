@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
@@ -66,7 +67,7 @@ namespace Binner.Web.Controllers
             PartType? parentPartType = null;
             if (!string.IsNullOrEmpty(parent))
             {
-                parentPartType = partTypes.FirstOrDefault(x => x.Name.Equals(parent, StringComparison.InvariantCultureIgnoreCase));
+                parentPartType = partTypes.FirstOrDefault(x => x.Name?.Equals(parent, StringComparison.InvariantCultureIgnoreCase) == true);
                 if (parentPartType == null)
                     return NotFound();
             }
@@ -97,6 +98,7 @@ namespace Binner.Web.Controllers
             var mappedPartType = Mapper.Map<CreatePartTypeRequest, PartType>(request);
             mappedPartType.DateCreatedUtc = DateTime.UtcNow;
             var partType = await _partTypeService.AddPartTypeAsync(mappedPartType);
+            if (partType == null) return BadRequest("Failed to create part type!");
 
             var partTypeResponse = Mapper.Map<PartType, PartTypeResponse>(partType);
             if (partType.ParentPartTypeId != null)

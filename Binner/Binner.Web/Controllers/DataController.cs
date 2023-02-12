@@ -64,6 +64,9 @@ namespace Binner.Web.Controllers
         [HttpGet("export")]
         public async Task<IActionResult> ExportAsync([FromQuery] ExportRequest request)
         {
+            if (string.IsNullOrEmpty(request.ExportFormat))
+                return BadRequest($"No export format specified");
+
             var exporter = new DataExporter(_storageProvider);
             try
             {
