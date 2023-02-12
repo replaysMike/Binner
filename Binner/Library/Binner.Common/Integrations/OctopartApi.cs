@@ -39,7 +39,7 @@ namespace Binner.Common.Integrations
             partNumber = "SN74S74N";
             var values = new Dictionary<string, string>
             {
-                { "apikey", _configuration.ApiKey },
+                { "apikey", _configuration.ApiKey ?? string.Empty },
                 //{ "apikey", "EXAMPLE_KEY" },
                 { "queries" , $@"[{{""mpn"":""{partNumber}""}}]"},
                 { "pretty_print", "true" },
@@ -57,14 +57,17 @@ namespace Binner.Common.Integrations
                 var resultString = response.Content.ReadAsStringAsync().Result;
                 var result = JsonConvert.DeserializeObject<dynamic>(resultString);
                 // dynamic requires Microsoft.CSharp nuget package
-                foreach (var r in result["results"])
+                if (result != null)
                 {
-                    foreach (var item in r["items"])
+                    foreach (var r in result["results"])
                     {
-                        foreach (var datasheet in item["datasheets"])
+                        foreach (var item in r["items"])
                         {
-                            var url = datasheet["url"];
-                            datasheets.Add(url.Value);
+                            foreach (var datasheet in item["datasheets"])
+                            {
+                                var url = datasheet["url"];
+                                datasheets.Add(url.Value);
+                            }
                         }
                     }
                 }

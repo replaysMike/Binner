@@ -14,8 +14,8 @@ namespace Binner.Common.IO.Printing
     internal class WindowsPrinterEnvironment : IPrinterEnvironment
     {
         private readonly IPrinterSettings _printerSettings;
-        private LabelDefinition _labelProperties;
-        private Image<Rgba32> _printImage;
+        private LabelDefinition _labelProperties = new ();
+        private Image<Rgba32>? _printImage;
 
         public WindowsPrinterEnvironment(IPrinterSettings printerSettings)
         {
@@ -84,14 +84,14 @@ namespace Binner.Common.IO.Printing
                 LabelSource.Right => "Right Roll",
                 _ => "Automatically Select",
             };
-            throw new InvalidOperationException($"Unknown label source: {labelSource}");
         }
 
         private void T_PrintPage(object sender, PrintPageEventArgs e)
         {
             // Printing requires a System.Drawing.Bitmap so it must be converted
-            var bitmap = _printImage.ToBitmap();
-            e.Graphics.DrawImage(bitmap, new System.Drawing.Point(0, 0));
+            var bitmap = _printImage?.ToBitmap();
+            if (bitmap != null)
+                e.Graphics?.DrawImage(bitmap, new System.Drawing.Point(0, 0));
             e.HasMorePages = false;
         }
     }

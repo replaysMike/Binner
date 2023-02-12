@@ -167,7 +167,7 @@ namespace Binner.Common.IO
 
                                 var name = GetQuoted(rowData[header.GetHeaderIndex("Name")])?.Trim();
                                 // part types need to have a unique name for the user and can not be part of global part types
-                                if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
+                                if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name?.Equals(name, StringComparison.InvariantCultureIgnoreCase) == true))
                                 {
                                     var partType = new PartType
                                     {
@@ -177,9 +177,13 @@ namespace Binner.Common.IO
                                         UserId = userContext.UserId
                                     };
                                     partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
-                                    _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId", partTypeId, partType.PartTypeId);
-                                    result.TotalRowsImported++;
-                                    result.RowsImportedByTable["PartTypes"]++;
+                                    if (partType != null)
+                                    {
+                                        _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId", partTypeId,
+                                            partType.PartTypeId);
+                                        result.TotalRowsImported++;
+                                        result.RowsImportedByTable["PartTypes"]++;
+                                    }
                                 }
                                 else
                                 {
@@ -276,7 +280,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        private bool TryGet<T>(string[] rowData, Header header, string name, out T value)
+        private bool TryGet<T>(string[] rowData, Header header, string name, out T? value)
         {
             value = default;
             var type = typeof(T);

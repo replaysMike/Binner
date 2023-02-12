@@ -793,10 +793,10 @@ namespace Binner.Common.StorageProviders
                 {
                     AuthorizationCode = existingOAuthRequest.AuthorizationCode,
                     AuthorizationReceived = existingOAuthRequest.AuthorizationReceived,
-                    Error = existingOAuthRequest.Error,
-                    ErrorDescription = existingOAuthRequest.ErrorDescription,
+                    Error = existingOAuthRequest.Error ?? string.Empty,
+                    ErrorDescription = existingOAuthRequest.ErrorDescription ?? string.Empty,
                     Provider = existingOAuthRequest.Provider,
-                    ReturnToUrl = existingOAuthRequest.ReturnToUrl,
+                    ReturnToUrl = existingOAuthRequest.ReturnToUrl ?? string.Empty,
                     UserId = userContext?.UserId,
                     CreatedUtc = existingOAuthRequest.DateCreatedUtc,
                 };
@@ -916,8 +916,8 @@ namespace Binner.Common.StorageProviders
                             { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() + 1, 1) },
                             { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() + 1, 1) },
                             { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault() + 1, 1) },
-                            { typeof(StoredFile).Name, Math.Max((_db as BinnerDbV3).StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() + 1, 1) },
-                            { typeof(OAuthRequest).Name, Math.Max((_db as BinnerDbV3).OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() + 1, 1) },
+                            { typeof(StoredFile).Name, Math.Max((_db as BinnerDbV3)?.StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { typeof(OAuthRequest).Name, Math.Max((_db as BinnerDbV3)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
                         });
                     }
                 }
@@ -983,6 +983,8 @@ namespace Binner.Common.StorageProviders
             try
             {
                 var db = _db as BinnerDbV3;
+                if (db == null) return;
+
                 db.FirstPartId = db.Parts
                     .OrderBy(x => x.PartId)
                     .Select(x => x.PartId)
@@ -997,7 +999,9 @@ namespace Binner.Common.StorageProviders
                 WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV3.VersionNumber, BinnerDbV3.VersionCreated));
                 var serializedBytes = _serializer.Serialize(db, SerializationOptions);
                 stream.Write(serializedBytes, 0, serializedBytes.Length);
-                Directory.CreateDirectory(Path.GetDirectoryName(_config.Filename));
+                var directoryName = Path.GetDirectoryName(_config.Filename);
+                if (!string.IsNullOrEmpty(directoryName))
+                    Directory.CreateDirectory(directoryName);
                 File.WriteAllBytes(_config.Filename, stream.ToArray());
             }
             catch (Exception ex)
@@ -1013,14 +1017,10 @@ namespace Binner.Common.StorageProviders
 
         private BinnerDbVersion ReadDbVersion(Stream stream)
         {
-            BinnerDbVersion version = null;
-            using (var reader = new BinaryReader(stream, Encoding.UTF8, true))
-            {
-                var versionByte = reader.ReadByte();
-                var versionCreated = reader.ReadInt64();
-                version = new BinnerDbVersion(versionByte, DateTime.FromBinary(versionCreated));
-            }
-            return version;
+            using var reader = new BinaryReader(stream, Encoding.UTF8, true);
+            var versionByte = reader.ReadByte();
+            var versionCreated = reader.ReadInt64();
+            return new BinnerDbVersion(versionByte, DateTime.FromBinary(versionCreated));
         }
 
         private void WriteDbVersion(Stream stream, BinnerDbVersion version)
@@ -1049,7 +1049,7 @@ namespace Binner.Common.StorageProviders
                 int? parentPartTypeId = null;
                 var partTypeEnum = (DefaultPartTypes)partType.Key;
                 var field = typeof(DefaultPartTypes).GetField(partType.Value);
-                if (field.IsDefined(typeof(ParentPartTypeAttribute), false))
+                if (field?.IsDefined(typeof(ParentPartTypeAttribute), false) == true)
                 {
                     var customAttribute = Attribute.GetCustomAttribute(field, typeof(ParentPartTypeAttribute)) as ParentPartTypeAttribute;
                     if (customAttribute != null)
@@ -1082,12 +1082,9 @@ namespace Binner.Common.StorageProviders
 
         private string BuildChecksum(IBinnerDb db)
         {
-            string hash;
-            byte[] bytes = _serializer.Serialize(db, "Checksum");
-            using (var sha1 = SHA1.Create())
-            {
-                hash = Convert.ToBase64String(sha1.ComputeHash(bytes));
-            }
+            var bytes = _serializer.Serialize(db, "Checksum");
+            using var sha1 = SHA1.Create();
+            var hash = Convert.ToBase64String(sha1.ComputeHash(bytes));
             return hash;
         }
 
