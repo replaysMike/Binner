@@ -86,10 +86,10 @@ namespace Binner.Web.Controllers
 
             authRequest.AuthorizationReceived = true;
             authRequest.AuthorizationCode = code;
-            if (authResult.IsError)
+            if (authResult == null || authResult.IsError)
             {
-                authRequest.Error = authResult.ErrorMessage;
-                authRequest.ErrorDescription = authResult.ErrorDetails;
+                authRequest.Error = authResult?.ErrorMessage ?? "No auth result received";
+                authRequest.ErrorDescription = authResult?.ErrorDetails ?? string.Empty;
             }
             else
             {
@@ -97,8 +97,8 @@ namespace Binner.Web.Controllers
                 // result.AccessToken
                 // result.RefreshToken
                 // result.ExpiresIn
-                authRequest.AccessToken = authResult.AccessToken;
-                authRequest.RefreshToken = authResult.RefreshToken;
+                authRequest.AccessToken = authResult.AccessToken ?? string.Empty;
+                authRequest.RefreshToken = authResult.RefreshToken ?? string.Empty;
                 authRequest.CreatedUtc = DateTime.UtcNow;
                 authRequest.ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(authResult.ExpiresIn));
 

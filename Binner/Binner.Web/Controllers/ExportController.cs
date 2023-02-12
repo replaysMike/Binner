@@ -35,6 +35,8 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> ExportAsync([FromQuery] ExportRequest request)
         {
+            if(string.IsNullOrEmpty(request.ExportFormat))
+                return BadRequest($"No export format specified");
             switch (request.ExportFormat.ToLower())
             {
                 case "csv":

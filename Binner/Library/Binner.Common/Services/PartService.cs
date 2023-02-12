@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
@@ -61,12 +62,12 @@ namespace Binner.Common.Services
             return await _storageProvider.GetLowStockAsync(request, _requestContext.GetUserContext());
         }
 
-        public async Task<Part> GetPartAsync(string partNumber)
+        public async Task<Part?> GetPartAsync(string partNumber)
         {
             return await _storageProvider.GetPartAsync(partNumber, _requestContext.GetUserContext());
         }
 
-        public async Task<(Part Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber)
+        public async Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber)
         {
             var userContext = _requestContext.GetUserContext();
             var partEntity = await _storageProvider.GetPartAsync(partNumber, userContext);
@@ -105,14 +106,14 @@ namespace Binner.Common.Services
             return await _storageProvider.DeletePartAsync(part, _requestContext.GetUserContext());
         }
 
-        public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType)
+        public async Task<PartType?> GetOrCreatePartTypeAsync(PartType partType)
         {
             if (partType == null) throw new ArgumentNullException(nameof(partType));
             if (partType.Name == null) throw new ArgumentNullException(nameof(partType.Name));
             return await _storageProvider.GetOrCreatePartTypeAsync(partType, _requestContext.GetUserContext());
         }
 
-        public async Task<PartType> GetPartTypeAsync(int partTypeId)
+        public async Task<PartType?> GetPartTypeAsync(int partTypeId)
         {
             return await _storageProvider.GetPartTypeAsync(partTypeId, _requestContext.GetUserContext());
         }
@@ -131,12 +132,17 @@ namespace Binner.Common.Services
 
             var apiResponse = await digikeyApi.GetCategoriesAsync();
             if (apiResponse.RequiresAuthentication)
-                return ServiceResult<CategoriesResponse>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                return ServiceResult<CategoriesResponse>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
             else if (apiResponse.Errors?.Any() == true)
                 return ServiceResult<CategoriesResponse>.Create(apiResponse.Errors, apiResponse.ApiName);
 
-            var digikeyResponse = (CategoriesResponse)apiResponse.Response;
-            return ServiceResult<CategoriesResponse>.Create(digikeyResponse);
+            if (apiResponse.Response != null)
+            {
+                var digikeyResponse = (CategoriesResponse)apiResponse.Response;
+                return ServiceResult<CategoriesResponse>.Create(digikeyResponse);
+            }
+
+            return ServiceResult<CategoriesResponse>.Create("Invalid response received", apiResponse.ApiName);
         }
 
         /// <summary>
@@ -145,12 +151,12 @@ namespace Binner.Common.Services
         /// <param name="orderId"></param>
         /// <param name="supplier"></param>
         /// <returns></returns>
-        public async Task<IServiceResult<ExternalOrderResponse>> GetExternalOrderAsync(string orderId, string supplier)
+        public async Task<IServiceResult<ExternalOrderResponse>?> GetExternalOrderAsync(string orderId, string supplier)
         {
             switch (supplier.ToLower())
             {
                 case "digikey":
-                    return await GetExternalDigikeyOrderAsync(orderId);
+                    return await GetExternalDigiKeyOrderAsync(orderId);
                 case "mouser":
                     return await GetExternalMouserOrderAsync(orderId);
                 default:
@@ -158,7 +164,7 @@ namespace Binner.Common.Services
             }
         }
 
-        private async Task<IServiceResult<ExternalOrderResponse>> GetExternalDigikeyOrderAsync(string orderId)
+        private async Task<IServiceResult<ExternalOrderResponse>?> GetExternalDigiKeyOrderAsync(string orderId)
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
@@ -167,10 +173,10 @@ namespace Binner.Common.Services
 
             var apiResponse = await digikeyApi.GetOrderAsync(orderId);
             if (apiResponse.RequiresAuthentication)
-                return ServiceResult<ExternalOrderResponse>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                return ServiceResult<ExternalOrderResponse>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
             else if (apiResponse.Errors?.Any() == true)
                 return ServiceResult<ExternalOrderResponse>.Create(apiResponse.Errors, apiResponse.ApiName);
-            var digikeyResponse = (OrderSearchResponse)apiResponse.Response;
+            var digikeyResponse = (OrderSearchResponse?)apiResponse.Response ?? new OrderSearchResponse();
 
             var lineItems = digikeyResponse.LineItems;
             var commonParts = new List<CommonPart>();
@@ -179,10 +185,12 @@ namespace Binner.Common.Services
             foreach (var lineItem in lineItems)
             {
                 // get details on this digikey part
+                if (string.IsNullOrEmpty(lineItem.DigiKeyPartNumber))
+                    continue;
                 var partResponse = await digikeyApi.GetProductDetailsAsync(lineItem.DigiKeyPartNumber);
                 if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                 {
-                    var part = (Product)partResponse.Response;
+                    var part = (Product?)partResponse.Response ?? new Product();
                     // convert the part to a common part
                     var additionalPartNumbers = new List<string>();
                     var basePart = part.Parameters
@@ -213,10 +221,10 @@ namespace Binner.Common.Services
                         SupplierPartNumber = part.DigiKeyPartNumber,
                         Supplier = "DigiKey",
                         ManufacturerPartNumber = part.ManufacturerPartNumber,
-                        Manufacturer = part.Manufacturer.Value,
+                        Manufacturer = part.Manufacturer?.Value ?? string.Empty,
                         Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
                         ImageUrl = part.PrimaryPhoto,
-                        DatasheetUrls = new List<string> { part.PrimaryDatasheet },
+                        DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
                         ProductUrl = part.ProductUrl,
                         Status = part.ProductStatus,
                         Currency = currency,
@@ -246,7 +254,7 @@ namespace Binner.Common.Services
             });
         }
 
-        private async Task<IServiceResult<ExternalOrderResponse>> GetExternalMouserOrderAsync(string orderId)
+        private async Task<IServiceResult<ExternalOrderResponse>?> GetExternalMouserOrderAsync(string orderId)
         {
             var user = _requestContext.GetUserContext();
             var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user.UserId);
@@ -255,61 +263,71 @@ namespace Binner.Common.Services
 
             var apiResponse = await mouserApi.GetOrderAsync(orderId);
             if (apiResponse.RequiresAuthentication)
-                return ServiceResult<ExternalOrderResponse>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                return ServiceResult<ExternalOrderResponse>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
             else if (apiResponse.Errors?.Any() == true)
                 return ServiceResult<ExternalOrderResponse>.Create(apiResponse.Errors, apiResponse.ApiName);
-            var mouserOrderResponse = (Order)apiResponse.Response;
-
-
-            var lineItems = mouserOrderResponse.OrderLines;
-            var commonParts = new List<CommonPart>();
-            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
-            // look up every part by digikey part number
-            foreach (var lineItem in lineItems)
+            var mouserOrderResponse = (Order?)apiResponse.Response;
+            if (mouserOrderResponse != null)
             {
-                // get details on this digikey part
-                var partResponse = await mouserApi.GetProductDetailsAsync(lineItem.MouserPartNumber);
-                if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                var lineItems = mouserOrderResponse.OrderLines;
+                var commonParts = new List<CommonPart>();
+                var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+                // look up every part by digikey part number
+                foreach (var lineItem in lineItems)
                 {
-                    var searchResults = (ICollection<MouserPart>)partResponse.Response;
-                    // convert the part to a common part
-                    var part = searchResults.First();
-                    commonParts.Add(new CommonPart
+                    // get details on this digikey part
+                    if (string.IsNullOrEmpty(lineItem.MouserPartNumber))
+                        continue;
+                    var partResponse = await mouserApi.GetProductDetailsAsync(lineItem.MouserPartNumber);
+                    if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                     {
-                        SupplierPartNumber = part.MouserPartNumber,
-                        Supplier = "Mouser",
-                        ManufacturerPartNumber = part.ManufacturerPartNumber,
-                        Manufacturer = part.Manufacturer,
-                        Description = part.Description,
-                        ImageUrl = part.ImagePath,
-                        DatasheetUrls = new List<string> { part.DataSheetUrl },
-                        ProductUrl = part.ProductDetailUrl,
-                        Status = part.LifecycleStatus,
-                        Currency = mouserOrderResponse.CurrencyCode,
-                        AdditionalPartNumbers = new List<string>(),
-                        BasePartNumber = "",
-                        MountingTypeId = 0,
-                        PackageType = "",
-                        Cost = lineItem.UnitPrice,
-                        QuantityAvailable = lineItem.Quantity,
-                        Reference = lineItem.CartItemCustPartNumber,
-                    });
+                        if (partResponse.Response != null)
+                        {
+                            var searchResults = (ICollection<MouserPart>)partResponse.Response;
+                            // convert the part to a common part
+                            var part = searchResults.First();
+                            commonParts.Add(new CommonPart
+                            {
+                                SupplierPartNumber = part.MouserPartNumber,
+                                Supplier = "Mouser",
+                                ManufacturerPartNumber = part.ManufacturerPartNumber,
+                                Manufacturer = part.Manufacturer,
+                                Description = part.Description,
+                                ImageUrl = part.ImagePath,
+                                DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
+                                ProductUrl = part.ProductDetailUrl,
+                                Status = part.LifecycleStatus,
+                                Currency = mouserOrderResponse.CurrencyCode,
+                                AdditionalPartNumbers = new List<string>(),
+                                BasePartNumber = "",
+                                MountingTypeId = 0,
+                                PackageType = "",
+                                Cost = lineItem.UnitPrice,
+                                QuantityAvailable = lineItem.Quantity,
+                                Reference = lineItem.CartItemCustPartNumber,
+                            });
+                        }
+                    }
                 }
+
+                foreach (var part in commonParts)
+                {
+                    part.PartType = DeterminePartType(part, partTypes);
+                    part.Keywords = DetermineKeywordsFromPart(part, partTypes);
+                }
+
+                return ServiceResult<ExternalOrderResponse>.Create(new ExternalOrderResponse
+                {
+                    OrderDate = DateTime.MinValue,
+                    Currency = mouserOrderResponse.CurrencyCode,
+                    CustomerId = "",
+                    Amount = mouserOrderResponse.OrderTotal,
+                    TrackingNumber = "",
+                    Parts = commonParts
+                });
             }
-            foreach (var part in commonParts)
-            {
-                part.PartType = DeterminePartType(part, partTypes);
-                part.Keywords = DetermineKeywordsFromPart(part, partTypes);
-            }
-            return ServiceResult<ExternalOrderResponse>.Create(new ExternalOrderResponse
-            {
-                OrderDate = DateTime.MinValue,
-                Currency = mouserOrderResponse.CurrencyCode,
-                CustomerId = "",
-                Amount = mouserOrderResponse.OrderTotal,
-                TrackingNumber = "",
-                Parts = commonParts
-            });
+
+            return ServiceResult<ExternalOrderResponse>.Create("Error", nameof(MouserApi));
         }
 
         public async Task<IServiceResult<PartResults>> GetBarcodeInfoAsync(string barcode)
@@ -326,63 +344,66 @@ namespace Binner.Common.Services
             {
                 var apiResponse = await digikeyApi.GetBarcodeDetailsAsync(barcode);
                 if (apiResponse.RequiresAuthentication)
-                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                 else if (apiResponse.Errors?.Any() == true)
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
-                digikeyResponse = (ProductBarcodeResponse)apiResponse.Response;
-                if (digikeyResponse != null)
+                digikeyResponse = (ProductBarcodeResponse?)apiResponse.Response;
+                if (digikeyResponse != null && !string.IsNullOrEmpty(digikeyResponse.DigiKeyPartNumber))
                 {
                     var partResponse = await digikeyApi.GetProductDetailsAsync(digikeyResponse.DigiKeyPartNumber);
                     if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                     {
-                        var part = (Product)partResponse.Response;
-                        var additionalPartNumbers = new List<string>();
-                        var basePart = part.Parameters
-                            .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
-                            .Select(x => x.Value)
-                            .FirstOrDefault();
-                        if (!string.IsNullOrEmpty(basePart))
-                            additionalPartNumbers.Add(basePart);
-                        var mountingTypeId = MountingType.ThroughHole;
-                        Enum.TryParse<MountingType>(part.Parameters
-                            .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
-                            .Select(x => x.Value.Replace(" ", ""))
-                            .FirstOrDefault(), out mountingTypeId);
-                        var currency = string.Empty;
-                        if (string.IsNullOrEmpty(currency))
-                            currency = "USD";
-                        var packageType = part.Parameters
+                        var part = (Product?)partResponse.Response;
+                        if (part != null)
+                        {
+                            var additionalPartNumbers = new List<string>();
+                            var basePart = part.Parameters
+                                .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
+                                .Select(x => x.Value)
+                                .FirstOrDefault();
+                            if (!string.IsNullOrEmpty(basePart))
+                                additionalPartNumbers.Add(basePart);
+                            var mountingTypeId = MountingType.ThroughHole;
+                            Enum.TryParse<MountingType>(part.Parameters
+                                .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
+                                .Select(x => x.Value?.Replace(" ", ""))
+                                .FirstOrDefault(), out mountingTypeId);
+                            var currency = string.Empty;
+                            if (string.IsNullOrEmpty(currency))
+                                currency = "USD";
+                            var packageType = part.Parameters
                                 ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                                 .Select(x => x.Value)
                                 .FirstOrDefault();
-                        if (string.IsNullOrEmpty(packageType))
-                            packageType = part.Parameters
-                                ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
-                                .Select(x => x.Value)
-                                .FirstOrDefault();
-                        response.Parts.Add(new CommonPart
-                        {
-                            Supplier = "DigiKey",
-                            SupplierPartNumber = part.DigiKeyPartNumber,
-                            BasePartNumber = basePart,
-                            AdditionalPartNumbers = additionalPartNumbers,
-                            Manufacturer = part.Manufacturer.Value,
-                            ManufacturerPartNumber = part.ManufacturerPartNumber,
-                            Cost = part.UnitPrice,
-                            Currency = currency,
-                            DatasheetUrls = new List<string> { part.PrimaryDatasheet },
-                            Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
-                            ImageUrl = part.PrimaryPhoto,
-                            PackageType = part.Parameters
-                                ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
-                                .Select(x => x.Value)
-                                .FirstOrDefault(),
-                            MountingTypeId = (int)mountingTypeId,
-                            PartType = "",
-                            ProductUrl = part.ProductUrl,
-                            Status = part.ProductStatus,
-                            QuantityAvailable = digikeyResponse.Quantity
-                        });
+                            if (string.IsNullOrEmpty(packageType))
+                                packageType = part.Parameters
+                                    ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                                    .Select(x => x.Value)
+                                    .FirstOrDefault();
+                            response.Parts.Add(new CommonPart
+                            {
+                                Supplier = "DigiKey",
+                                SupplierPartNumber = part.DigiKeyPartNumber,
+                                BasePartNumber = basePart,
+                                AdditionalPartNumbers = additionalPartNumbers,
+                                Manufacturer = part.Manufacturer?.Value ?? string.Empty,
+                                ManufacturerPartNumber = part.ManufacturerPartNumber,
+                                Cost = part.UnitPrice,
+                                Currency = currency,
+                                DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
+                                Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
+                                ImageUrl = part.PrimaryPhoto,
+                                PackageType = part.Parameters
+                                    ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                                    .Select(x => x.Value)
+                                    .FirstOrDefault(),
+                                MountingTypeId = (int)mountingTypeId,
+                                PartType = "",
+                                ProductUrl = part.ProductUrl,
+                                Status = part.ProductStatus,
+                                QuantityAvailable = digikeyResponse.Quantity
+                            });
+                        }
                     }
                     else
                     {
@@ -409,10 +430,10 @@ namespace Binner.Common.Services
             return ServiceResult<PartResults>.Create(response);
         }
 
-        public async Task<IServiceResult<PartResults>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")
+        public async Task<IServiceResult<PartResults>?> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")
         {
-            const int MaxImagesPerSupplier = 5;
-            const int MaxImagesTotal = 10;
+            const int maxImagesPerSupplier = 5;
+            const int maxImagesTotal = 10;
             var totalImages = 0;
             var user = _requestContext.GetUserContext();
             //var context = await _contextFactory.CreateDbContextAsync();
@@ -431,14 +452,11 @@ namespace Binner.Common.Services
             if (digikeyApi.IsSearchPartsConfigured)
             {
                 var apiResponse = await digikeyApi.SearchAsync(searchKeywords, partType, mountingType);
-                if (apiResponse != null)
-                {
-                    if (apiResponse.RequiresAuthentication)
-                        return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
-                    else if (apiResponse.Errors?.Any() == true)
-                        return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
-                    digikeyResponse = (KeywordSearchResponse)apiResponse.Response;
-                }
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                else if (apiResponse.Errors?.Any() == true)
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                digikeyResponse = (KeywordSearchResponse?)apiResponse.Response;
             }
             if (mouserApi.IsSearchPartsConfigured)
             {
@@ -446,16 +464,16 @@ namespace Binner.Common.Services
                 if (apiResponse != null)
                 {
                     if (apiResponse.RequiresAuthentication)
-                        return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl, apiResponse.Errors, apiResponse.ApiName);
+                        return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                     else if (apiResponse.Errors?.Any() == true)
                         return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
-                    mouserResponse = (SearchResultsResponse)apiResponse.Response;
+                    mouserResponse = (SearchResultsResponse?)apiResponse.Response;
                 }
             }
             if (octopartApi.IsSearchPartsConfigured)
             {
                 var octopartResponse = await octopartApi.GetDatasheetsAsync(partNumber);
-                datasheets.AddRange((ICollection<string>)octopartResponse.Response);
+                datasheets.AddRange((ICollection<string>?)octopartResponse.Response ?? new List<string>());
             }
             if (swarmApi.IsSearchPartsConfigured)
             {
@@ -464,7 +482,7 @@ namespace Binner.Common.Services
                 {
                     if (apiResponse.Errors?.Any() == true)
                         return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
-                    swarmResponse = (SwarmApi.Response.SearchPartResponse)apiResponse.Response;
+                    swarmResponse = (SwarmApi.Response.SearchPartResponse?)apiResponse.Response ?? new SwarmApi.Response.SearchPartResponse();
                 }
             }
 
@@ -474,8 +492,10 @@ namespace Binner.Common.Services
             var datasheetUrls = new List<NameValuePair<DatasheetSource>>();
 
             ProcessSwarmResponse(partNumber, response, swarmResponse, partTypes, productImageUrls, datasheetUrls);
-            await ProcessDigikeyResponseAsync(partNumber, response, digikeyResponse, productImageUrls, datasheetUrls);
-            await ProcessMouserResponseAsync(partNumber, response, mouserResponse, productImageUrls, datasheetUrls);
+            if (digikeyResponse != null)
+                await ProcessDigikeyResponseAsync(partNumber, response, digikeyResponse, productImageUrls, datasheetUrls);
+            if (mouserResponse != null)
+                await ProcessMouserResponseAsync(partNumber, response, mouserResponse, productImageUrls, datasheetUrls);
             SetPartTypesAndKeywords(response, partTypes);
 
             // apply ranking
@@ -518,7 +538,7 @@ namespace Binner.Common.Services
                         ResourceId = swarmPart.ResourceId,
                         Source = (DataSource)(int)swarmPart.Source,
                         SwarmPartNumberId = swarmPart.SwarmPartNumberId,
-                        PartNumberManufacturers = swarmPart.PartNumberManufacturers.Select(x => new PartNumberManufacturer
+                        PartNumberManufacturers = swarmPart.PartNumberManufacturers?.Select(x => new PartNumberManufacturer
                         {
                             AlternateDescription = x.AlternateDescription,
                             AlternateNames = x.AlternateNames,
@@ -613,61 +633,78 @@ namespace Binner.Common.Services
                     var defaultImageUrl = GetDefaultImageUrl(part);
                     if (defaultImageUrl != null)
                         productImageUrls.Add(new NameValuePair<string>(part.Name, defaultImageUrl));
-                    foreach (var manufacturerPart in part.PartNumberManufacturers)
+                    if (part.PartNumberManufacturers?.Any() == true)
                     {
-                        foreach (var image in manufacturerPart.ImageMetadata.OrderByDescending(x => x.IsDefault).ThenBy(x => x.ImageType))
+                        foreach (var manufacturerPart in part.PartNumberManufacturers)
                         {
-                            var imageUrl = GetImageUrl(image);
-                            if (!string.IsNullOrEmpty(imageUrl) && !productImageUrls.Any(x => x.Value.Equals(imageUrl, ComparisonType))
-                                && imagesAdded < MaxImagesPerSupplier && totalImages < MaxImagesTotal)
+                            foreach (var image in manufacturerPart.ImageMetadata.OrderByDescending(x => x.IsDefault)
+                                         .ThenBy(x => x.ImageType))
                             {
-                                imagesAdded++;
-                                totalImages++;
-                                productImageUrls.Add(new NameValuePair<string>(manufacturerPart.Name, imageUrl));
+                                var imageUrl = GetImageUrl(image);
+                                if (!string.IsNullOrEmpty(imageUrl) && !productImageUrls.Any(x =>
+                                                                        x.Value.Equals(imageUrl, ComparisonType))
+                                                                    && imagesAdded < maxImagesPerSupplier &&
+                                                                    totalImages < maxImagesTotal)
+                                {
+                                    imagesAdded++;
+                                    totalImages++;
+                                    productImageUrls.Add(new NameValuePair<string>(manufacturerPart.Name, imageUrl));
+                                }
                             }
-                        }
-                        foreach (var datasheet in manufacturerPart.Datasheets.OrderByDescending(x => x.DatasheetId == manufacturerPart.PrimaryDatasheetId))
-                        {
-                            var datasheetUrl = GetDatasheetUrl(datasheet);
-                            var datasheetCoverImageUrl = GetDatasheetCoverImageUrl(datasheet);
-                            if (!string.IsNullOrEmpty(datasheetUrl) && !datasheetUrls.Any(x => x.Value.DatasheetUrl.Equals(datasheetUrl, ComparisonType)))
-                            {
-                                datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPart.Name, new DatasheetSource(datasheetCoverImageUrl, datasheetUrl, datasheet.Title ?? manufacturerPart.Name, datasheet.ShortDescription, datasheet.ManufacturerName)));
-                            }
-                        }
-                        var mountingType = manufacturerPart.Parametrics
-                            .Where(x => x.Name.Equals("Mounting Type", ComparisonType))
-                            .Select(x => x.ValueAsString)
-                            .FirstOrDefault();
-                        var mountingTypeId = MountingType.ThroughHole;
-                        Enum.TryParse<MountingType>(mountingType, out mountingTypeId);
 
-                        foreach (var supplierPart in manufacturerPart.Suppliers)
-                        {
-                            response.Parts.Add(new CommonPart
+                            foreach (var datasheet in manufacturerPart.Datasheets.OrderByDescending(x =>
+                                         x.DatasheetId == manufacturerPart.PrimaryDatasheetId))
                             {
-                                Rank = 0,
-                                SwarmPartNumberManufacturerId = manufacturerPart.PartNumberManufacturerId,
-                                Supplier = supplierPart.SupplierName,
-                                SupplierPartNumber = supplierPart.SupplierPartNumber,
-                                BasePartNumber = part.Name,
-                                Manufacturer = manufacturerPart.ManufacturerName,
-                                ManufacturerPartNumber = manufacturerPart.Name,
-                                Cost = supplierPart.Cost ?? 0,
-                                Currency = supplierPart.Currency,
-                                Description = !string.IsNullOrEmpty(manufacturerPart.Description) ? manufacturerPart.Description : part.Description,
-                                DatasheetUrls = GetDatasheetUrls(manufacturerPart),
-                                ImageUrl = GetDefaultManufacturerImageUrl(manufacturerPart),
-                                PackageType = manufacturerPart.Package.Select(x => x.Name).FirstOrDefault() ?? string.Empty,
-                                MountingTypeId = (int)mountingTypeId,
-                                PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault() ?? string.Empty,
-                                ProductUrl = supplierPart.ProductUrl,
-                                Status = manufacturerPart.IsObsolete ? "Inactive" : "Active",
-                                QuantityAvailable = supplierPart.QuantityAvailable ?? 0,
-                                MinimumOrderQuantity = supplierPart.MinimumOrderQuantity ?? 0,
-                                FactoryStockAvailable = supplierPart.FactoryStockAvailable ?? 0,
-                                FactoryLeadTime = supplierPart.FactoryLeadTime,
-                            });
+                                var datasheetUrl = GetDatasheetUrl(datasheet);
+                                var datasheetCoverImageUrl = GetDatasheetCoverImageUrl(datasheet);
+                                if (!string.IsNullOrEmpty(datasheetUrl) && !datasheetUrls.Any(x =>
+                                        x.Value.DatasheetUrl.Equals(datasheetUrl, ComparisonType)))
+                                {
+                                    datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPart.Name,
+                                        new DatasheetSource(datasheetCoverImageUrl, datasheetUrl,
+                                            datasheet.Title ?? manufacturerPart.Name, datasheet?.ShortDescription ?? string.Empty,
+                                            datasheet?.ManufacturerName ?? string.Empty)));
+                                }
+                            }
+
+                            var mountingType = manufacturerPart.Parametrics
+                                .Where(x => x.Name.Equals("Mounting Type", ComparisonType))
+                                .Select(x => x.ValueAsString)
+                                .FirstOrDefault();
+                            var mountingTypeId = MountingType.ThroughHole;
+                            Enum.TryParse<MountingType>(mountingType, out mountingTypeId);
+
+                            foreach (var supplierPart in manufacturerPart.Suppliers)
+                            {
+                                response.Parts.Add(new CommonPart
+                                {
+                                    Rank = 0,
+                                    SwarmPartNumberManufacturerId = manufacturerPart.PartNumberManufacturerId,
+                                    Supplier = supplierPart.SupplierName,
+                                    SupplierPartNumber = supplierPart.SupplierPartNumber,
+                                    BasePartNumber = part.Name,
+                                    Manufacturer = manufacturerPart.ManufacturerName,
+                                    ManufacturerPartNumber = manufacturerPart.Name,
+                                    Cost = supplierPart.Cost ?? 0,
+                                    Currency = supplierPart.Currency,
+                                    Description = !string.IsNullOrEmpty(manufacturerPart.Description)
+                                        ? manufacturerPart.Description
+                                        : part.Description,
+                                    DatasheetUrls = GetDatasheetUrls(manufacturerPart),
+                                    ImageUrl = GetDefaultManufacturerImageUrl(manufacturerPart),
+                                    PackageType = manufacturerPart.Package.Select(x => x.Name).FirstOrDefault() ??
+                                                  string.Empty,
+                                    MountingTypeId = (int)mountingTypeId,
+                                    PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name)
+                                        .FirstOrDefault() ?? string.Empty,
+                                    ProductUrl = supplierPart.ProductUrl,
+                                    Status = manufacturerPart.IsObsolete ? "Inactive" : "Active",
+                                    QuantityAvailable = supplierPart.QuantityAvailable ?? 0,
+                                    MinimumOrderQuantity = supplierPart.MinimumOrderQuantity ?? 0,
+                                    FactoryStockAvailable = supplierPart.FactoryStockAvailable ?? 0,
+                                    FactoryLeadTime = supplierPart.FactoryLeadTime,
+                                });
+                            }
                         }
                     }
                 }
@@ -709,13 +746,14 @@ namespace Binner.Common.Services
                 {
                     if (part.DefaultImageId != null && !string.IsNullOrEmpty(part.DefaultImageResourcePath) && !string.IsNullOrEmpty(part.DefaultImageResourceSourceUrl))
                         return $"https://{part.DefaultImageResourceSourceUrl}/{part.DefaultImageResourcePath}_{part.DefaultImageId}.png";
-                    return null;
+                    return string.Empty;
                 }
             }
 
             Task ProcessDigikeyResponseAsync(string partNumber, PartResults response, KeywordSearchResponse digikeyResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
             {
-                if (digikeyResponse == null || digikeyResponse.Products == null) return Task.CompletedTask;
+                if (!digikeyResponse.Products.Any()) return Task.CompletedTask;
+
                 var imagesAdded = 0;
                 var digiKeyDatasheetUrls = digikeyResponse.Products
                     .Where(x => !string.IsNullOrEmpty(x.PrimaryDatasheet))
@@ -759,7 +797,7 @@ namespace Binner.Common.Services
                             .FirstOrDefault();
                     if (!string.IsNullOrEmpty(part.PrimaryPhoto)
                         && !productImageUrls.Any(x => x.Value.Equals(part.PrimaryPhoto, ComparisonType))
-                        && imagesAdded < MaxImagesPerSupplier && totalImages < MaxImagesTotal)
+                        && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
                     {
                         productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber, part.PrimaryPhoto));
                         imagesAdded++;
@@ -777,7 +815,7 @@ namespace Binner.Common.Services
                         {
                             var datasheetUrl = GetDatasheetUrl(existingDatasheet);
                             var datasheetCoverImageUrl = GetDatasheetCoverImageUrl(existingDatasheet);
-                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, new DatasheetSource(datasheetCoverImageUrl, datasheetUrl, existingDatasheet.Title ?? part.ManufacturerPartNumber, existingDatasheet.ShortDescription, existingDatasheet.ManufacturerName ?? part.Manufacturer?.Value ?? string.Empty)));
+                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, new DatasheetSource(datasheetCoverImageUrl, datasheetUrl, existingDatasheet.Title ?? part.ManufacturerPartNumber, existingDatasheet.ShortDescription ?? string.Empty, existingDatasheet.ManufacturerName ?? part.Manufacturer?.Value ?? string.Empty)));
                         }
                         else
                         {
@@ -792,11 +830,11 @@ namespace Binner.Common.Services
                         SupplierPartNumber = part.DigiKeyPartNumber,
                         BasePartNumber = basePart,
                         AdditionalPartNumbers = additionalPartNumbers,
-                        Manufacturer = part.Manufacturer.Value,
+                        Manufacturer = part.Manufacturer?.Value ?? string.Empty,
                         ManufacturerPartNumber = part.ManufacturerPartNumber,
                         Cost = (double)part.UnitPrice,
                         Currency = currency,
-                        DatasheetUrls = new List<string> { part.PrimaryDatasheet },
+                        DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
                         Description = part.ProductDescription + Environment.NewLine + part.DetailedDescription,
                         ImageUrl = part.PrimaryPhoto,
                         PackageType = part.Parameters
@@ -839,11 +877,15 @@ namespace Binner.Common.Services
                     int.TryParse(part.FactoryStock, out var factoryStockAvailable);
                     if (!string.IsNullOrEmpty(part.ImagePath)
                         && !productImageUrls.Any(x => x.Value.Equals(part.ImagePath, ComparisonType))
-                        && imagesAdded < MaxImagesPerSupplier && totalImages < MaxImagesTotal)
+                        && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
                     {
-                        productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber, part.ImagePath));
-                        imagesAdded++;
-                        totalImages++;
+                        if (!string.IsNullOrEmpty(part.ManufacturerPartNumber))
+                        {
+                            productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber,
+                                part.ImagePath));
+                            imagesAdded++;
+                            totalImages++;
+                        }
                     }
 
                     // if there is a datasheet that hasn't been added, add it
@@ -858,7 +900,8 @@ namespace Binner.Common.Services
                         {
                             var datasheetUrl = GetDatasheetUrl(existingDatasheet);
                             var datasheetCoverImageUrl = GetDatasheetCoverImageUrl(existingDatasheet);
-                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, new DatasheetSource(datasheetCoverImageUrl, datasheetUrl, existingDatasheet.Title ?? part.ManufacturerPartNumber, existingDatasheet.ShortDescription, existingDatasheet.ManufacturerName ?? part.Manufacturer)));
+                            if (!string.IsNullOrEmpty(part.ManufacturerPartNumber))
+                                datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, new DatasheetSource(datasheetCoverImageUrl, datasheetUrl, existingDatasheet.Title ?? part.ManufacturerPartNumber, existingDatasheet?.ShortDescription ?? string.Empty, existingDatasheet?.ManufacturerName ?? part.Manufacturer ?? string.Empty)));
                         }
                         else
                         {
@@ -867,7 +910,7 @@ namespace Binner.Common.Services
                     }
 
                     var basePart = string.Empty;
-                    if (part.ManufacturerPartNumber.Contains(partNumber, ComparisonType))
+                    if (part.ManufacturerPartNumber?.Contains(partNumber, ComparisonType) == true)
                         basePart = partNumber;
                     response.Parts.Add(new CommonPart
                     {
@@ -880,7 +923,7 @@ namespace Binner.Common.Services
                         ManufacturerPartNumber = part.ManufacturerPartNumber,
                         Cost = (part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Cost) ?? 0d,
                         Currency = currency,
-                        DatasheetUrls = new List<string> { part.DataSheetUrl },
+                        DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
                         Description = part.Description,
                         ImageUrl = part.ImagePath,
                         PackageType = "",
@@ -927,27 +970,37 @@ namespace Binner.Common.Services
             var keywords = new List<string>();
             var possiblePartTypes = GetMatchingPartTypes(part, partTypes);
             foreach (var possiblePartType in possiblePartTypes)
-                if (!keywords.Contains(possiblePartType.Key.Name, StringComparer.InvariantCultureIgnoreCase))
+            {
+                if (!string.IsNullOrEmpty(possiblePartType.Key.Name) && !keywords.Contains(possiblePartType.Key.Name, StringComparer.InvariantCultureIgnoreCase))
+                {
                     keywords.Add(possiblePartType.Key.Name.ToLower());
+                }
+            }
 
-            if (!keywords.Contains(part.ManufacturerPartNumber, StringComparer.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrEmpty(part.ManufacturerPartNumber) && !keywords.Contains(part.ManufacturerPartNumber, StringComparer.InvariantCultureIgnoreCase))
                 keywords.Add(part.ManufacturerPartNumber.ToLower());
-            var desc = part.Description.ToLower().Split(new string[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var desc = part.Description?.ToLower().Split(new[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             // add the first 4 words of desc
             var wordCount = 0;
-            var ignoredWords = new string[] { "and", "the", "in", "or", "in", "a", };
-            foreach (var word in desc)
+            var ignoredWords = new[] { "and", "the", "in", "or", "in", "a", };
+            if (desc != null)
             {
-                if (!ignoredWords.Contains(word, StringComparer.InvariantCultureIgnoreCase) && !keywords.Contains(word, StringComparer.InvariantCultureIgnoreCase))
+                foreach (var word in desc)
                 {
-                    keywords.Add(word.ToLower());
-                    wordCount++;
+                    if (!ignoredWords.Contains(word, StringComparer.InvariantCultureIgnoreCase) &&
+                        !keywords.Contains(word, StringComparer.InvariantCultureIgnoreCase))
+                    {
+                        keywords.Add(word.ToLower());
+                        wordCount++;
+                    }
+
+                    if (wordCount >= 4)
+                        break;
                 }
-                if (wordCount >= 4)
-                    break;
             }
+
             foreach (var basePart in part.AdditionalPartNumbers)
-                if (basePart != null && !keywords.Contains(basePart, StringComparer.InvariantCultureIgnoreCase))
+                if (!keywords.Contains(basePart, StringComparer.InvariantCultureIgnoreCase))
                     keywords.Add(basePart.ToLower());
             var mountingType = (MountingType)part.MountingTypeId;
             if (!string.IsNullOrEmpty(mountingType.ToString()) && !keywords.Contains(mountingType.ToString(), StringComparer.InvariantCultureIgnoreCase))
