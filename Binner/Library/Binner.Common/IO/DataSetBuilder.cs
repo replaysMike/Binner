@@ -50,7 +50,12 @@ namespace Binner.Common.IO
             {
                 var row = partsTable.NewRow();
                 foreach (var prop in partType.Properties)
-                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), partsTable.Columns[prop.Name].DataType, prop.Type);
+                {
+                    var dataType = partsTable.Columns[prop.Name]?.DataType;
+                    if (dataType != null)
+                        row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                }
+
                 partsTable.Rows.Add(row);
             }
 
@@ -59,7 +64,12 @@ namespace Binner.Common.IO
             {
                 var row = partTypesTable.NewRow();
                 foreach (var prop in partTypesType.Properties)
-                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), partTypesTable.Columns[prop.Name].DataType, prop.Type);
+                {
+                    var dataType = partTypesTable.Columns[prop.Name]?.DataType;
+                    if (dataType != null)
+                        row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                }
+
                 partTypesTable.Rows.Add(row);
             }
 
@@ -68,14 +78,19 @@ namespace Binner.Common.IO
             {
                 var row = projectsTable.NewRow();
                 foreach (var prop in projectsType.Properties)
-                    row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), projectsTable.Columns[prop.Name].DataType, prop.Type);
+                {
+                    var dataType = projectsTable.Columns[prop.Name]?.DataType;
+                    if (dataType != null)
+                        row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                }
+
                 projectsTable.Rows.Add(row);
             }
 
             return dataSet;
         }
 
-        private object DefaultValue(Type type)
+        private object? DefaultValue(Type type)
         {
             if (type == typeof(string))
                 return "";
@@ -86,25 +101,25 @@ namespace Binner.Common.IO
             return Activator.CreateInstance(Nullable.GetUnderlyingType(type) ?? type);
         }
 
-        private object TranslateValue(object val, Type rowType, Type originalType)
+        private object? TranslateValue(object val, Type rowType, Type originalType)
         {
             var newVal = val;
             var originalExtendedType = originalType.GetExtendedType();
             if (_numericTypes.Contains(originalExtendedType.UnderlyingType))
                 newVal = Convert.ToDouble(val);
-            if (val != null && originalExtendedType.IsCollection)
+            if (originalExtendedType.IsCollection)
             {
                 // join collections
                 newVal = string.Join(",", (ICollection<string>)val);
             }
-            if (val != null && originalExtendedType.UnderlyingType == typeof(TimeSpan))
+            if (originalExtendedType.UnderlyingType == typeof(TimeSpan))
                 newVal = ((TimeSpan)val).ToString();
             return newVal ?? DefaultValue(rowType);
         }
 
         private Type TranslateType(Type type)
         {
-            Type translatedType = type;
+            var translatedType = type;
             var extendedType = type.GetExtendedType();
             if (extendedType.IsCollection)
                 translatedType = extendedType.ElementType;

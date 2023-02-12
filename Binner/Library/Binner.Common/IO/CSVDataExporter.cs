@@ -13,7 +13,7 @@ namespace Binner.Common.IO
     /// </summary>
     public sealed class CsvDataExporter : IDataExporter
     {
-        public CSVOptions Options { get; } = CSVOptions.QuoteStrings;
+        public CsvOptions Options => CsvOptions.QuoteStrings;
 
         public IDictionary<StreamName, Stream> Export(IBinnerDb db)
         {
@@ -55,7 +55,7 @@ namespace Binner.Common.IO
 
         private string EscapeValue(object value, Type dataType)
         {
-            if (Options.HasFlag(CSVOptions.QuoteStrings))
+            if (Options.HasFlag(CsvOptions.QuoteStrings))
             {
                 if (dataType == typeof(string))
                     return $@"""{value?.ToString()}""";
@@ -66,11 +66,11 @@ namespace Binner.Common.IO
                 return $@"{string.Join(" ", value)}";
             if (dataType == typeof(DateTime))
                 return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
-            return value.ToString();
+            return value.ToString() ?? string.Empty;
         }
 
         [Flags]
-        public enum CSVOptions
+        public enum CsvOptions
         {
             None = 0,
             QuoteStrings = 1,

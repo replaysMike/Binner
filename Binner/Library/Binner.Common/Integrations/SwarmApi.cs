@@ -34,7 +34,7 @@ namespace Binner.Common.Integrations
             _configuration = configuration;
             _credentialService = credentialService;
             _httpContextAccessor = httpContextAccessor;
-            _client = new SwarmApiClient(new SwarmApiConfiguration(_configuration.ApiKey, new Uri(_configuration.ApiUrl)));
+            _client = new SwarmApiClient(new SwarmApiConfiguration(_configuration.ApiKey ?? string.Empty, new Uri(_configuration.ApiUrl)));
             _requestContext = requestContext;
         }
 
@@ -43,7 +43,7 @@ namespace Binner.Common.Integrations
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
 
             var response = await _client.SearchPartsAsync(new SearchPartRequest { PartNumber = partNumber, PartType = partType, MountingType = mountingType });
-            if (response.IsSuccessful)
+            if (response.IsSuccessful && response.Response != null)
             {
                 return new ApiResponse(response.Response, nameof(SwarmApi));
             }
@@ -60,7 +60,7 @@ namespace Binner.Common.Integrations
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
 
             var response = await _client.GetPartInformationAsync(new PartInformationRequest { PartNumber = partNumber, PartType = partType, MountingType = mountingType });
-            if (response.IsSuccessful)
+            if (response.IsSuccessful && response.Response != null)
             {
                 return new ApiResponse(response.Response, nameof(SwarmApi));
             }
