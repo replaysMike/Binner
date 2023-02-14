@@ -4,10 +4,8 @@ using Binner.Common.Services;
 using Binner.SwarmApi;
 using Binner.SwarmApi.Request;
 using Microsoft.AspNetCore.Http;
-using NPOI.OpenXmlFormats.Wordprocessing;
 using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,12 +20,9 @@ namespace Binner.Common.Integrations
         private readonly SwarmApiClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
 
-        /// <summary>
-        /// Returns true if the Api is properly configured
-        /// </summary>
-        public bool IsSearchPartsConfigured => _configuration.Enabled;
+        public bool IsEnabled => _configuration.Enabled;
 
-        public bool IsUserConfigured => _configuration.Enabled;
+        public IApiConfiguration Configuration => _configuration;
 
         public SwarmApi(SwarmConfiguration configuration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext)
         {
@@ -37,6 +32,10 @@ namespace Binner.Common.Integrations
             _client = new SwarmApiClient(new SwarmApiConfiguration(_configuration.ApiKey ?? string.Empty, new Uri(_configuration.ApiUrl)));
             _requestContext = requestContext;
         }
+
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount);
+
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25) => SearchAsync(partNumber, partType, string.Empty, recordCount);
 
         public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "", int recordCount = 50)
         {
@@ -55,11 +54,14 @@ namespace Binner.Common.Integrations
             return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {string.Join("\n", response.Errors)}", nameof(SwarmApi));
         }
 
-        public async Task<IApiResponse> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "", int recordCount = 50)
+        public Task<IApiResponse> GetOrderAsync(string orderId)
         {
-            if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
+            throw new NotImplementedException();
+        }
 
-            var response = await _client.GetPartInformationAsync(new PartInformationRequest { PartNumber = partNumber, PartType = partType, MountingType = mountingType });
+        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber)
+        {
+            var response = await _client.GetPartInformationAsync(new PartInformationRequest { PartNumber = partNumber });
             if (response.IsSuccessful && response.Response != null)
             {
                 return new ApiResponse(response.Response, nameof(SwarmApi));

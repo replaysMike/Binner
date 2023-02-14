@@ -1,4 +1,8 @@
-﻿namespace Binner.Common.Integrations
+﻿using Binner.Common.Integrations.Models;
+using Binner.Common.Models.Configuration.Integrations;
+using System.Threading.Tasks;
+
+namespace Binner.Common.Integrations
 {
     /// <summary>
     /// An integrated Api
@@ -6,13 +10,54 @@
     public interface IIntegrationApi
     {
         /// <summary>
-        /// True if the Api is configured/enabled for searching parts
+        /// True if api is enabled
         /// </summary>
-        bool IsSearchPartsConfigured { get; }
+        public bool IsEnabled { get; }
 
         /// <summary>
-        /// True if the Api is configured/enabled
+        /// Api configuration
         /// </summary>
-        bool IsUserConfigured { get; }
+        public IApiConfiguration Configuration { get; }
+
+        /// <summary>
+        /// Search for a part
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <param name="recordCount"></param>
+        /// <returns></returns>
+        Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25);
+
+        /// <summary>
+        /// Search for a part
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <param name="partType"></param>
+        /// <param name="recordCount"></param>
+        /// <returns></returns>
+        Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25);
+        
+        /// <summary>
+        /// Search for a part
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <param name="partType"></param>
+        /// <param name="mountingType"></param>
+        /// <param name="recordCount"></param>
+        /// <returns></returns>
+        Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25);
+
+        /// <summary>
+        /// Get an order by it's orderId
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <returns></returns>
+        Task<IApiResponse> GetOrderAsync(string orderId);
+
+        /// <summary>
+        /// Get details about a part
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <returns></returns>
+        Task<IApiResponse> GetProductDetailsAsync(string partNumber);
     }
 }
