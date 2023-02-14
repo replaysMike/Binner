@@ -32,7 +32,7 @@ namespace Binner.Common.Services
         /// <summary>
         /// Update a oAuth request
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="authRequest"></param>
         /// <returns></returns>
         public async Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest)
         {
@@ -62,9 +62,9 @@ namespace Binner.Common.Services
         /// <summary>
         /// Get a saved a oAuth Credential
         /// </summary>
-        /// <param name="credential"></param>
+        /// <param name="providerName"></param>
         /// <returns></returns>
-        public async Task<OAuthCredential> GetOAuthCredentialAsync(string providerName)
+        public async Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName)
         {
             return await _storageProvider.GetOAuthCredentialAsync(providerName, _requestContext.GetUserContext());
         }
@@ -72,7 +72,7 @@ namespace Binner.Common.Services
         /// <summary>
         /// Remove a saved a oAuth Credential
         /// </summary>
-        /// <param name="credential"></param>
+        /// <param name="providerName"></param>
         /// <returns></returns>
         public async Task RemoveOAuthCredentialAsync(string providerName)
         {

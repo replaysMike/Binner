@@ -3,12 +3,12 @@ using System.Linq;
 
 namespace Binner.Common.Models
 {
-    public class ServiceResult<T> : IServiceResult<T>
+    public class ServiceResult<T> : IServiceResult<T?>
     {
         /// <summary>
         /// Response from the api
         /// </summary>
-        public T Response { get; set; }
+        public T? Response { get; set; }
 
         /// <summary>
         /// Requires authentication to continue
@@ -18,17 +18,17 @@ namespace Binner.Common.Models
         /// <summary>
         /// A redirect Url location if requires authentication
         /// </summary>
-        public string RedirectUrl { get; set; }
+        public string? RedirectUrl { get; set; }
 
         /// <summary>
         /// Errors
         /// </summary>
-        public IEnumerable<string> Errors { get; set; }
+        public IEnumerable<string> Errors { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Name of api
         /// </summary>
-        public string ApiName { get; set; }
+        public string? ApiName { get; set; }
 
         public ServiceResult(T response)
         {

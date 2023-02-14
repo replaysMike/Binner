@@ -20,7 +20,7 @@ namespace Binner.Common.Models.Responses
         /// <summary>
         /// The exception stack trace
         /// </summary>
-        public string StackTrace { get; set; }
+        public string? StackTrace { get; set; }
 
         public ExceptionResponse(Exception exception) : this(string.Empty, exception) { }
 

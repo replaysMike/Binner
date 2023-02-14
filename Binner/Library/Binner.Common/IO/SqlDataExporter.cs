@@ -44,19 +44,19 @@ namespace Binner.Common.IO
             return streams;
         }
 
-        private string EscapeValue(object value, Type dataType)
+        private string? EscapeValue(object? value, Type dataType)
         {
             if (dataType == typeof(string))
-                return value == null ? "NULL" : $@"'{value?.ToString().Replace("'", "\'")}'";
+                return value == null ? "NULL" : $@"'{value?.ToString()?.Replace("'", "\'")}'";
             if (dataType == typeof(Guid))
-                return value == null ? "NULL" : $@"'{value?.ToString().Replace("'", "\'")}'";
+                return value == null ? "NULL" : $@"'{value?.ToString()?.Replace("'", "\'")}'";
             if (dataType == typeof(ICollection<string>))
                 return value == null ? "NULL" : $@"'{string.Join(",", value)}'";
             if (dataType == typeof(ICollection<string>))
                 return value == null ? "NULL" : $@"{string.Join(" ", value)}";
             if (dataType == typeof(DateTime))
                 return value == null ? "NULL" : $@"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'";
-            return value.ToString();
+            return value?.ToString();
         }
     }
 }

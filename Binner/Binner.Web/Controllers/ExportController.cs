@@ -50,21 +50,21 @@ namespace Binner.Web.Controllers
             }
         }
 
-        private async Task<IActionResult> ExportCsvAsync(IUserContext userContext)
+        private async Task<IActionResult> ExportCsvAsync(IUserContext? userContext)
         {
             var exporter = new CsvDataExporter();
             var streams = exporter.Export(await _storageProvider.GetDatabaseAsync(userContext));
             return ExportToFile(streams);
         }
 
-        private async Task<IActionResult> ExportExcelAsync(IUserContext userContext)
+        private async Task<IActionResult> ExportExcelAsync(IUserContext? userContext)
         {
             var exporter = new ExcelDataExporter();
             var streams = exporter.Export(await _storageProvider.GetDatabaseAsync(userContext));
             return ExportToFile(streams);
         }
 
-        private async Task<IActionResult> ExportSqlAsync(IUserContext userContext)
+        private async Task<IActionResult> ExportSqlAsync(IUserContext? userContext)
         {
             var exporter = new SqlDataExporter();
             var streams = exporter.Export(await _storageProvider.GetDatabaseAsync(userContext));

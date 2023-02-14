@@ -22,7 +22,7 @@ namespace Binner.Common.IO
             _storageProvider = storageProvider;
         }
 
-        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext userContext)
+        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext? userContext)
         {
             var result = new ImportResult();
             foreach (var file in files)
@@ -42,7 +42,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext userContext)
+        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext? userContext)
         {
             const char delimiter = ',';
             var result = new ImportResult();
@@ -136,9 +136,11 @@ namespace Binner.Common.IO
             return result;
         }
 
-        private async Task AddRowAsync(ImportResult result, int rowNumber, char delimiter, string row, string tableName, Dictionary<string, int> columnMap, ICollection<PartType> partTypes, UserContext userContext)
+        private async Task AddRowAsync(ImportResult result, int rowNumber, char delimiter, string row, string? tableName, Dictionary<string, int> columnMap, ICollection<PartType> partTypes, UserContext? userContext)
         {
             var rowData = SplitBoundaries(row, new char[] { delimiter }, true);
+            if (string.IsNullOrEmpty(tableName))
+                return;
 
             switch (tableName.ToLower())
             {
@@ -166,7 +168,7 @@ namespace Binner.Common.IO
                                 Color = color,
                                 DateCreatedUtc = dateCreatedUtc,
                                 //DateModifiedUtc = dateModifiedUtc,
-                                UserId = userContext.UserId
+                                UserId = userContext?.UserId
                             };
                             project = await _storageProvider.AddProjectAsync(project, userContext);
                             _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
@@ -193,19 +195,23 @@ namespace Binner.Common.IO
 
                         var name = GetQuoted(rowData[columnMap["Name"]])?.Trim();
                         // part types need to have a unique name for the user and can not be part of global part types
-                        if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
+                        if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x?.Name?.Equals(name, StringComparison.InvariantCultureIgnoreCase) == true))
                         {
                             var partType = new PartType
                             {
                                 ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
                                 Name = name,
                                 DateCreatedUtc = dateCreatedUtc,
-                                UserId = userContext.UserId
+                                UserId = userContext?.UserId
                             };
                             partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
-                            _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId", partTypeId, partType.PartTypeId);
-                            result.TotalRowsImported++;
-                            result.RowsImportedByTable["PartTypes"]++;
+                            if (partType != null)
+                            {
+                                _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId", partTypeId,
+                                    partType.PartTypeId);
+                                result.TotalRowsImported++;
+                                result.RowsImportedByTable["PartTypes"]++;
+                            }
                         }
                         else
                         {
@@ -280,7 +286,7 @@ namespace Binner.Common.IO
                                 Quantity = quantity,
                                 //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
                                 DateCreatedUtc = dateCreatedUtc,
-                                UserId = userContext.UserId
+                                UserId = userContext?.UserId
                             };
                             part = await _storageProvider.AddPartAsync(part, userContext);
                             _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);
@@ -311,7 +317,7 @@ namespace Binner.Common.IO
             return unquotedVal;
         }
 
-        private string? GetQuoted(string val)
+        private string? GetQuoted(string? val)
         {
             if (val == null)
                 return null;
@@ -328,14 +334,16 @@ namespace Binner.Common.IO
             return val;
         }
 
-        private bool TryGet<T>(string[] rowData, Dictionary<string, int>? columnMap, string name, out T value)
+        private bool TryGet<T>(string?[] rowData, Dictionary<string, int>? columnMap, string name, out T? value)
         {
             value = default;
+            if (columnMap == null)
+                return false;
             var type = typeof(T);
             if (!columnMap.ContainsKey(name))
                 return false;
             var columnIndex = columnMap[name];
-            if (Nullable.GetUnderlyingType(type) != null && (rowData[columnIndex] == null || rowData[columnIndex].Equals("null", StringComparison.InvariantCultureIgnoreCase)))
+            if (Nullable.GetUnderlyingType(type) != null && (rowData[columnIndex] == null || rowData[columnIndex]?.Equals("null", StringComparison.InvariantCultureIgnoreCase) == true))
                 return true;
             var unquotedValue = GetQuoted(rowData[columnIndex]);
 
@@ -388,9 +396,12 @@ namespace Binner.Common.IO
             foreach (var row in rows)
             {
                 var tableName = GetTableName(row);
-                if (!orderedRows.ContainsKey(tableName))
-                    orderedRows.Add(tableName, new List<string>());
-                orderedRows[tableName].Add(row);
+                if (!string.IsNullOrEmpty(tableName))
+                {
+                    if (!orderedRows.ContainsKey(tableName))
+                        orderedRows.Add(tableName, new List<string>());
+                    orderedRows[tableName].Add(row);
+                }
             }
             var result = new List<string>();
             foreach (var supportedTable in SupportedTables)

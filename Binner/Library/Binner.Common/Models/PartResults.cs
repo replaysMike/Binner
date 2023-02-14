@@ -49,8 +49,8 @@ namespace Binner.Common.Models
 
     public class NameValuePair<T>
     {
-        public string Name { get; set; }
-        public T Value { get; set; }
+        public string? Name { get; set; }
+        public T? Value { get; set; }
         public NameValuePair() { }
         public NameValuePair(string name, T value)
         {

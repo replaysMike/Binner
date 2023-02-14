@@ -86,7 +86,7 @@ namespace Binner.Common.IO
             };
         }
 
-        private void SetCellValue(ICell cell, object value, IDictionary<string, ICellStyle> styles)
+        private void SetCellValue(ICell cell, object? value, IDictionary<string, ICellStyle> styles)
         {
             switch (value)
             {
@@ -131,7 +131,7 @@ namespace Binner.Common.IO
                     cell.SetCellValue(b);
                     break;
                 default:
-                    throw new InvalidOperationException($"Unknown excel export data type format: {value.GetType().Name}");
+                    throw new InvalidOperationException($"Unknown excel export data type format: {value?.GetType().Name}");
             }
         }
     }

@@ -44,12 +44,12 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.PartLabelTemplate, options =>
                     options.MapFrom(x => new PartLabelTemplate
                     {
-                        Line1 = x.Printer.Lines.Skip(0).Select(z => new LineConfiguration(z, LabelLines.Line1)).First(),
-                        Line2 = x.Printer.Lines.Skip(1).Select(z => new LineConfiguration(z, LabelLines.Line2)).First(),
-                        Line3 = x.Printer.Lines.Skip(2).Select(z => new LineConfiguration(z, LabelLines.Line3)).First(),
-                        Line4 = x.Printer.Lines.Skip(3).Select(z => new LineConfiguration(z, LabelLines.Line4)).First(),
-                        Identifier = x.Printer.Lines.Skip(4).Select(z => new LineConfiguration(z, LabelLines.Identifier1)).First(),
-                        Identifier2 = x.Printer.Lines.Skip(5).Select(z => new LineConfiguration(z, LabelLines.Identifier2)).First(),
+                        Line1 = x.Printer.Lines != null ? x.Printer.Lines.Skip(0).Select(z => new LineConfiguration(z, LabelLines.Line1)).First() : new LineConfiguration(),
+                        Line2 = x.Printer.Lines != null ? x.Printer.Lines.Skip(1).Select(z => new LineConfiguration(z, LabelLines.Line2)).First() : new LineConfiguration(),
+                        Line3 = x.Printer.Lines != null ? x.Printer.Lines.Skip(2).Select(z => new LineConfiguration(z, LabelLines.Line3)).First() : new LineConfiguration(),
+                        Line4 = x.Printer.Lines != null ? x.Printer.Lines.Skip(3).Select(z => new LineConfiguration(z, LabelLines.Line4)).First() : new LineConfiguration(),
+                        Identifier = x.Printer.Lines != null ? x.Printer.Lines.Skip(4).Select(z => new LineConfiguration(z, LabelLines.Identifier1)).First() : new LineConfiguration(),
+                        Identifier2 = x.Printer.Lines != null ? x.Printer.Lines.Skip(5).Select(z => new LineConfiguration(z, LabelLines.Identifier2)).First() : new LineConfiguration(),
                     })
                 );
         }

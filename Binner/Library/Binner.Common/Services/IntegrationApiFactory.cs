@@ -112,32 +112,32 @@ namespace Binner.Common.Services
                 var credentials = new List<ApiCredential>();
 
                 // add user defined credentials
-                var swarmConfiguration = new Dictionary<string, object?>
+                var swarmConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", userIntegrationConfiguration.SwarmEnabled },
-                    { "ApiKey", userIntegrationConfiguration.SwarmApiKey },
+                    { "ApiKey", userIntegrationConfiguration.SwarmApiKey ?? string.Empty },
                     { "ApiUrl", userIntegrationConfiguration.SwarmApiUrl },
                 };
                 credentials.Add(new ApiCredential(userId, swarmConfiguration, nameof(SwarmApi)));
 
-                var digikeyConfiguration = new Dictionary<string, object?>
+                var digikeyConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", userIntegrationConfiguration.DigiKeyEnabled }
                 };
                 credentials.Add(new ApiCredential(userId, digikeyConfiguration, nameof(DigikeyApi)));
 
-                var mouserConfiguration = new Dictionary<string, object?>
+                var mouserConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", userIntegrationConfiguration.MouserEnabled },
-                    { "CartApiKey", userIntegrationConfiguration.MouserCartApiKey },
-                    { "OrderApiKey", userIntegrationConfiguration.MouserOrderApiKey }
+                    { "CartApiKey", userIntegrationConfiguration.MouserCartApiKey ?? string.Empty },
+                    { "OrderApiKey", userIntegrationConfiguration.MouserOrderApiKey ?? string.Empty }
                 };
                 credentials.Add(new ApiCredential(userId, mouserConfiguration, nameof(MouserApi)));
 
-                var octopartConfiguration = new Dictionary<string, object?>
+                var octopartConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", userIntegrationConfiguration.OctopartEnabled },
-                    { "ApiKey", userIntegrationConfiguration.OctopartApiKey },
+                    { "ApiKey", userIntegrationConfiguration.OctopartApiKey ?? string.Empty },
                     { "ApiUrl", userIntegrationConfiguration.OctopartApiUrl }
                 };
                 credentials.Add(new ApiCredential(userId, octopartConfiguration, nameof(OctopartApi)));

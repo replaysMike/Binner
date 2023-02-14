@@ -1,5 +1,4 @@
 ﻿using Binner.Common.Models;
-using Binner.Model;
 using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
@@ -23,8 +22,9 @@ namespace Binner.Common.IO
         /// <summary>
         /// Export Binner database to multiple streams, one for each table.
         /// </summary>
-        /// <param name="db">The Binner database to export</param>
-        public async Task<IDictionary<StreamName, Stream>> ExportAsync(string exportFormat, UserContext userContext)
+        /// <param name="exportFormat">The Binner database to export</param>
+        /// <param name="userContext"></param>
+        public async Task<IDictionary<StreamName, Stream>> ExportAsync(string exportFormat, UserContext? userContext)
         {
             var database = await _storageProvider.GetDatabaseAsync(userContext);
             switch (exportFormat.ToLower())

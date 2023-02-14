@@ -26,7 +26,7 @@ namespace Binner.Common.IO
             _storageProvider = storageProvider;
         }
 
-        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext userContext)
+        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext? userContext)
         {
             var result = new ImportResult();
             foreach (var file in files)
@@ -46,7 +46,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext userContext)
+        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext? userContext)
         {
             var result = new ImportResult();
             foreach (var table in SupportedTables)
@@ -88,12 +88,12 @@ namespace Binner.Common.IO
                                             var project = new Project
                                             {
                                                 Name = name,
-                                                Description = GetQuoted(rowData.GetCell(header.GetHeaderIndex("Description")).ToString()),
-                                                Location = GetQuoted(rowData.GetCell(header.GetHeaderIndex("Location")).ToString()),
+                                                Description = GetQuoted(rowData.GetCell(header.GetHeaderIndex("Description"))?.ToString()),
+                                                Location = GetQuoted(rowData.GetCell(header.GetHeaderIndex("Location"))?.ToString()),
                                                 Color = color,
                                                 DateCreatedUtc = dateCreatedUtc,
                                                 //DateModifiedUtc = dateModifiedUtc,
-                                                UserId = userContext.UserId
+                                                UserId = userContext?.UserId
                                             };
                                             project = await _storageProvider.AddProjectAsync(project, userContext);
                                             _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
@@ -128,12 +128,16 @@ namespace Binner.Common.IO
                                                 ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
                                                 Name = name,
                                                 DateCreatedUtc = dateCreatedUtc,
-                                                UserId = userContext.UserId
+                                                UserId = userContext?.UserId
                                             };
                                             partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
-                                            _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId", partTypeId, partType.PartTypeId);
-                                            result.TotalRowsImported++;
-                                            result.RowsImportedByTable["PartTypes"]++;
+                                            if (partType != null)
+                                            {
+                                                _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId",
+                                                    partTypeId, partType.PartTypeId);
+                                                result.TotalRowsImported++;
+                                                result.RowsImportedByTable["PartTypes"]++;
+                                            }
                                         }
                                         else
                                         {
@@ -204,7 +208,7 @@ namespace Binner.Common.IO
                                                 Quantity = quantity,
                                                 //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
                                                 DateCreatedUtc = dateCreatedUtc,
-                                                UserId = userContext.UserId
+                                                UserId = userContext?.UserId
                                             };
                                             part = await _storageProvider.AddPartAsync(part, userContext);
                                             _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);
@@ -232,7 +236,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        private bool TryGet<T>(IRow rowData, Header header, string name, out T value)
+        private bool TryGet<T>(IRow rowData, Header header, string name, out T? value)
         {
             value = default;
             var type = typeof(T);
@@ -281,7 +285,7 @@ namespace Binner.Common.IO
             return false;
         }
 
-        private string? GetQuoted(string val)
+        private string? GetQuoted(string? val)
         {
             if (val == null)
                 return null;

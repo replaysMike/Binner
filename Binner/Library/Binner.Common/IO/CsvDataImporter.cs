@@ -22,7 +22,7 @@ namespace Binner.Common.IO
             _storageProvider = storageProvider;
         }
 
-        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext userContext)
+        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext? userContext)
         {
             var result = new ImportResult();
             // is filename correct?
@@ -61,7 +61,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext userContext)
+        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext? userContext)
         {
             var result = new ImportResult();
             foreach (var table in SupportedTables)
@@ -143,7 +143,7 @@ namespace Binner.Common.IO
                                         Color = color,
                                         DateCreatedUtc = dateCreatedUtc,
                                         //DateModifiedUtc = dateModifiedUtc,
-                                        UserId = userContext.UserId
+                                        UserId = userContext?.UserId
                                     };
                                     project = await _storageProvider.AddProjectAsync(project, userContext);
                                     _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
@@ -174,7 +174,7 @@ namespace Binner.Common.IO
                                         ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
                                         Name = name,
                                         DateCreatedUtc = dateCreatedUtc,
-                                        UserId = userContext.UserId
+                                        UserId = userContext?.UserId
                                     };
                                     partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
                                     if (partType != null)
@@ -254,7 +254,7 @@ namespace Binner.Common.IO
                                         Quantity = quantity,
                                         //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
                                         DateCreatedUtc = dateCreatedUtc,
-                                        UserId = userContext.UserId
+                                        UserId = userContext?.UserId
                                     };
                                     part = await _storageProvider.AddPartAsync(part, userContext);
                                     _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);

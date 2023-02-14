@@ -7,12 +7,12 @@ namespace Binner.Common.IO.Printing
         /// <summary>
         /// Label name
         /// </summary>
-        public string LabelName => MediaSize?.Name;
+        public string? LabelName => MediaSize?.Name;
 
         /// <summary>
         /// The media size information of the label
         /// </summary>
-        public MediaSize MediaSize { get; set; }
+        public MediaSize MediaSize { get; set; } = new MediaSize();
 
         /// <summary>
         /// Top margin of label

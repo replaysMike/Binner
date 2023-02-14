@@ -59,16 +59,16 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
                 // complex mapping situation
                 .ForMember(x => x.Lines, options => options.MapFrom(x => new List<LineConfiguration> {
-                        x.PartLabelTemplate.Line1,
-                        x.PartLabelTemplate.Line2,
-                        x.PartLabelTemplate.Line3,
-                        x.PartLabelTemplate.Line4
+                        x.PartLabelTemplate.Line1 ?? new LineConfiguration(),
+                        x.PartLabelTemplate.Line2 ?? new LineConfiguration(),
+                        x.PartLabelTemplate.Line3 ?? new LineConfiguration(),
+                        x.PartLabelTemplate.Line4 ?? new LineConfiguration()
                     })
 
                 )
                 .ForMember(x => x.Identifiers, options => options.MapFrom(x => new List<LineConfiguration> {
-                        x.PartLabelTemplate.Identifier,
-                        x.PartLabelTemplate.Identifier2
+                        x.PartLabelTemplate.Identifier ?? new LineConfiguration(),
+                        x.PartLabelTemplate.Identifier2 ?? new LineConfiguration()
                     })
                 );
 
@@ -80,12 +80,12 @@ namespace Binner.Common.MappingProfiles
                 // complex mapping situation
                 .ForMember(x => x.PartLabelTemplate, options => options.MapFrom(x => new PartLabelTemplate
                 {
-                    Line1 = x.Lines.Skip(0).FirstOrDefault(),
-                    Line2 = x.Lines.Skip(1).FirstOrDefault(),
-                    Line3 = x.Lines.Skip(2).FirstOrDefault(),
-                    Line4 = x.Lines.Skip(3).FirstOrDefault(),
-                    Identifier = x.Identifiers.Skip(0).FirstOrDefault(),
-                    Identifier2 = x.Identifiers.Skip(1).FirstOrDefault()
+                    Line1 = x.Lines != null ? x.Lines.Skip(0).FirstOrDefault() : null,
+                    Line2 = x.Lines != null ? x.Lines.Skip(1).FirstOrDefault() : null,
+                    Line3 = x.Lines != null ? x.Lines.Skip(2).FirstOrDefault() : null,
+                    Line4 = x.Lines != null ? x.Lines.Skip(3).FirstOrDefault() : null,
+                    Identifier = x.Identifiers != null ? x.Identifiers.Skip(0).FirstOrDefault() : null,
+                    Identifier2 = x.Identifiers != null ? x.Identifiers.Skip(1).FirstOrDefault() : null
                 })
             );
 

@@ -9,12 +9,12 @@ namespace Binner.Common.Models
         /// <summary>
         /// Response object
         /// </summary>
-        T Response { get; set; }
+        T? Response { get; set; }
 
         /// <summary>
         /// Name of api
         /// </summary>
-        string ApiName { get; set; }
+        string? ApiName { get; set; }
 
         /// <summary>
         /// Requires authentication to continue
@@ -24,7 +24,7 @@ namespace Binner.Common.Models
         /// <summary>
         /// A redirect Url location if requires authentication
         /// </summary>
-        string RedirectUrl { get; set; }
+        string? RedirectUrl { get; set; }
 
         /// <summary>
         /// Errors
