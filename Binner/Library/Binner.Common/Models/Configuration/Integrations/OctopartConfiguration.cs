@@ -1,6 +1,6 @@
 ﻿namespace Binner.Common.Models.Configuration.Integrations
 {
-    public class OctopartConfiguration
+    public class OctopartConfiguration : IApiConfiguration
     {
         public bool Enabled { get; set; } = false;
 
@@ -10,5 +10,7 @@
         /// Path to the Octopart Api
         /// </summary>
         public string ApiUrl { get; set; } = "https://octopart.com";
+
+        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl);
     }
 }

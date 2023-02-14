@@ -1,18 +1,24 @@
 ﻿namespace Binner.Common.Models.Configuration.Integrations
 {
-    public class MouserConfiguration
+    public class MouserConfiguration : IApiConfiguration
     {
         public bool Enabled { get; set; } = true;
+
+        public string? ApiKey => ApiKeys.SearchApiKey;
 
         /// <summary>
         /// Mouser Api Keys
         /// </summary>
-        public MouserApiKeys ApiKeys { get; set; } = new MouserApiKeys();
+        public MouserApiKeys ApiKeys { get; set; } = new();
 
         /// <summary>
         /// Path to the Mouser Api
         /// </summary>
         public string ApiUrl { get; set; } = "https://api.mouser.com";
+
+        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiKeys.SearchApiKey) && !string.IsNullOrEmpty(ApiUrl);
+        public bool IsOrdersConfigured => Enabled && !string.IsNullOrEmpty(ApiKeys.OrderApiKey) && !string.IsNullOrEmpty(ApiUrl);
+        public bool IsCartConfigured => Enabled && !string.IsNullOrEmpty(ApiKeys.CartApiKey) && !string.IsNullOrEmpty(ApiUrl);
     }
 
     public class MouserApiKeys

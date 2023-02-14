@@ -56,18 +56,9 @@ namespace Binner.Common.Integrations
         /// </summary>
         public OAuth2Service OAuth2Service => _oAuth2Service;
 
-        /// <summary>
-        /// Returns true if the Api is properly configured
-        /// </summary>
-        public bool IsSearchPartsConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ClientId)
-            && !string.IsNullOrEmpty(_configuration.ClientSecret)
-            && !string.IsNullOrEmpty(_configuration.ApiUrl);
+        public bool IsEnabled => _configuration.Enabled;
 
-        public bool IsUserConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ClientId)
-            && !string.IsNullOrEmpty(_configuration.ClientSecret)
-            && !string.IsNullOrEmpty(_configuration.ApiUrl);
+        public IApiConfiguration Configuration => _configuration;
 
         public DigikeyApi(DigikeyConfiguration configuration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext)
         {
@@ -117,12 +108,7 @@ namespace Binner.Common.Integrations
             });
         }
 
-        /// <summary>
-        /// Get information about a DigiKey product
-        /// </summary>
-        /// <param name="digikeyPartNumber"></param>
-        /// <returns></returns>
-        public async Task<IApiResponse> GetProductDetailsAsync(string digikeyPartNumber)
+        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber)
         {
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
@@ -132,7 +118,7 @@ namespace Binner.Common.Integrations
                 try
                 {
                     // set what fields we want from the API
-                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Products/", digikeyPartNumber);
+                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Products/", partNumber);
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
@@ -220,7 +206,11 @@ namespace Binner.Common.Integrations
             });
         }
 
-        public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "", int recordCount = 25)
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount);
+
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25) => SearchAsync(partNumber, partType, string.Empty, recordCount);
+        
+        public async Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25)
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var authResponse = await AuthorizeAsync();
@@ -298,7 +288,7 @@ namespace Binner.Common.Integrations
                     if (response.IsSuccessStatusCode)
                     {
                         var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new ();
+                        var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new();
                         return new ApiResponse(results, nameof(DigikeyApi));
                     }
                     return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));

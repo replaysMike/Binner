@@ -3,6 +3,7 @@ using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
+using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Models.Responses;
 using Binner.Model.Common;
 using System;
@@ -127,7 +128,7 @@ namespace Binner.Common.Services
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
-            if (!digikeyApi.IsUserConfigured)
+            if (!digikeyApi.IsEnabled)
                 return ServiceResult<CategoriesResponse>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             var apiResponse = await digikeyApi.GetCategoriesAsync();
@@ -168,7 +169,7 @@ namespace Binner.Common.Services
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
-            if (!digikeyApi.IsUserConfigured)
+            if (!digikeyApi.IsEnabled)
                 return ServiceResult<ExternalOrderResponse>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             var apiResponse = await digikeyApi.GetOrderAsync(orderId);
@@ -258,7 +259,7 @@ namespace Binner.Common.Services
         {
             var user = _requestContext.GetUserContext();
             var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user.UserId);
-            if (!mouserApi.IsUserOrderConfigured)
+            if (!((MouserConfiguration)mouserApi.Configuration).IsOrdersConfigured)
                 return ServiceResult<ExternalOrderResponse>.Create("Mouser Ordering Api is not enabled. Please configure your Mouser API settings and add an Ordering Api key.", nameof(Integrations.MouserApi));
 
             var apiResponse = await mouserApi.GetOrderAsync(orderId);
@@ -334,13 +335,13 @@ namespace Binner.Common.Services
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
-            if (!digikeyApi.IsUserConfigured)
+            if (!digikeyApi.IsEnabled)
                 return ServiceResult<PartResults>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             // currently only supports DigiKey, as Mouser barcodes are part numbers
             var response = new PartResults();
             var digikeyResponse = new ProductBarcodeResponse();
-            if (digikeyApi.IsUserConfigured)
+            if (digikeyApi.IsEnabled)
             {
                 var apiResponse = await digikeyApi.GetBarcodeDetailsAsync(barcode);
                 if (apiResponse.RequiresAuthentication)
@@ -449,7 +450,7 @@ namespace Binner.Common.Services
             var mouserResponse = new SearchResultsResponse();
             var searchKeywords = partNumber;
 
-            if (digikeyApi.IsSearchPartsConfigured)
+            if (digikeyApi.Configuration.IsConfigured)
             {
                 var apiResponse = await digikeyApi.SearchAsync(searchKeywords, partType, mountingType);
                 if (apiResponse.RequiresAuthentication)
@@ -458,24 +459,21 @@ namespace Binner.Common.Services
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 digikeyResponse = (KeywordSearchResponse?)apiResponse.Response;
             }
-            if (mouserApi.IsSearchPartsConfigured)
+            if (mouserApi.Configuration.IsConfigured)
             {
                 var apiResponse = await mouserApi.SearchAsync(searchKeywords, partType, mountingType);
-                if (apiResponse != null)
-                {
-                    if (apiResponse.RequiresAuthentication)
-                        return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
-                    else if (apiResponse.Errors?.Any() == true)
-                        return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
-                    mouserResponse = (SearchResultsResponse?)apiResponse.Response;
-                }
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                else if (apiResponse.Errors?.Any() == true)
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                mouserResponse = (SearchResultsResponse?)apiResponse.Response;
             }
-            if (octopartApi.IsSearchPartsConfigured)
+            if (octopartApi.Configuration.IsConfigured)
             {
                 var octopartResponse = await octopartApi.GetDatasheetsAsync(partNumber);
                 datasheets.AddRange((ICollection<string>?)octopartResponse.Response ?? new List<string>());
             }
-            if (swarmApi.IsSearchPartsConfigured)
+            if (swarmApi.Configuration.IsConfigured)
             {
                 var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
                 if (apiResponse != null)

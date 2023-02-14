@@ -3,7 +3,7 @@
     /// <summary>
     /// Binner Swarm Api configuration settings
     /// </summary>
-    public class SwarmConfiguration
+    public class SwarmConfiguration : IApiConfiguration
     {
         public bool Enabled { get; set; } = true;
 
@@ -16,5 +16,8 @@
         /// Path to the Swarm Api
         /// </summary>
         public string ApiUrl { get; set; } = "https://swarm.binner.io";
+
+        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiUrl);
+        
     }
 }

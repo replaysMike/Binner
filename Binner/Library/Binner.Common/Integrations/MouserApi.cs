@@ -29,21 +29,9 @@ namespace Binner.Common.Integrations
             Converters = new List<JsonConverter> { new StringEnumConverter() }
         };
 
-        public bool IsSearchPartsConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ApiKeys.SearchApiKey)
-            && !string.IsNullOrEmpty(_configuration.ApiUrl);
+        public bool IsEnabled => _configuration.Enabled;
 
-        public bool IsUserConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ApiUrl)
-            && !string.IsNullOrEmpty(_configuration.ApiKeys.SearchApiKey);
-
-        public bool IsUserOrderConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ApiUrl)
-            && !string.IsNullOrEmpty(_configuration.ApiKeys.OrderApiKey);
-
-        public bool IsUserCartConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ApiUrl)
-            && !string.IsNullOrEmpty(_configuration.ApiKeys.CartApiKey);
+        public IApiConfiguration Configuration => _configuration;
 
         public MouserApi(MouserConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
@@ -103,6 +91,12 @@ namespace Binner.Common.Integrations
             }
             return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
+
+        public Task<IApiResponse> SearchAsync(string keyword, int recordCount = 25) =>
+            SearchAsync(keyword, string.Empty, string.Empty, recordCount);
+        
+
+        public Task<IApiResponse> SearchAsync(string keyword, string partType, int recordCount = 25) => SearchAsync(keyword, partType, string.Empty, recordCount);
 
         public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25)
         {

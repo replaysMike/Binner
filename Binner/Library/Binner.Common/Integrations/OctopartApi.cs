@@ -18,13 +18,9 @@ namespace Binner.Common.Integrations
         private readonly HttpClient _client;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public bool IsSearchPartsConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ApiKey)
-            && !string.IsNullOrEmpty(_configuration.ApiUrl);
+        public bool IsEnabled => _configuration.Enabled;
 
-        public bool IsUserConfigured => _configuration.Enabled
-            && !string.IsNullOrEmpty(_configuration.ApiKey)
-            && !string.IsNullOrEmpty(_configuration.ApiUrl);
+        public IApiConfiguration Configuration => _configuration;
 
         public OctopartApi(OctopartConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
@@ -74,6 +70,32 @@ namespace Binner.Common.Integrations
                 // parse into readable format
             }
             return new ApiResponse(datasheets, nameof(OctopartApi));
+        }
+
+        
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IApiResponse> GetOrderAsync(string orderId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IApiResponse> GetProductDetailsAsync(string partNumber)
+        {
+            throw new NotImplementedException();
         }
     }
 }
