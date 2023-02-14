@@ -124,10 +124,10 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
         }
 
-        public async Task<IServiceResult<CategoriesResponse>> GetCategoriesAsync()
+        public async Task<IServiceResult<CategoriesResponse?>> GetCategoriesAsync()
         {
             var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
             if (!digikeyApi.IsEnabled)
                 return ServiceResult<CategoriesResponse>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
@@ -152,7 +152,7 @@ namespace Binner.Common.Services
         /// <param name="orderId"></param>
         /// <param name="supplier"></param>
         /// <returns></returns>
-        public async Task<IServiceResult<ExternalOrderResponse>?> GetExternalOrderAsync(string orderId, string supplier)
+        public async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(string orderId, string supplier)
         {
             switch (supplier.ToLower())
             {
@@ -165,7 +165,7 @@ namespace Binner.Common.Services
             }
         }
 
-        private async Task<IServiceResult<ExternalOrderResponse>?> GetExternalDigiKeyOrderAsync(string orderId)
+        private async Task<IServiceResult<ExternalOrderResponse?>> GetExternalDigiKeyOrderAsync(string orderId)
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
@@ -200,11 +200,10 @@ namespace Binner.Common.Services
                         .FirstOrDefault();
                     if (!string.IsNullOrEmpty(basePart))
                         additionalPartNumbers.Add(basePart);
-                    var mountingTypeId = MountingType.ThroughHole;
                     Enum.TryParse<MountingType>(part.Parameters
                         .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
-                        .Select(x => x.Value.Replace(" ", ""))
-                        .FirstOrDefault(), out mountingTypeId);
+                        .Select(x => x.Value?.Replace(" ", "") ?? string.Empty)
+                        .FirstOrDefault(), out var mountingTypeId);
                     var currency = digikeyResponse.Currency;
                     if (string.IsNullOrEmpty(currency))
                         currency = "USD";
@@ -255,10 +254,10 @@ namespace Binner.Common.Services
             });
         }
 
-        private async Task<IServiceResult<ExternalOrderResponse>?> GetExternalMouserOrderAsync(string orderId)
+        private async Task<IServiceResult<ExternalOrderResponse?>> GetExternalMouserOrderAsync(string orderId)
         {
             var user = _requestContext.GetUserContext();
-            var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user.UserId);
+            var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
             if (!((MouserConfiguration)mouserApi.Configuration).IsOrdersConfigured)
                 return ServiceResult<ExternalOrderResponse>.Create("Mouser Ordering Api is not enabled. Please configure your Mouser API settings and add an Ordering Api key.", nameof(Integrations.MouserApi));
 
@@ -331,10 +330,10 @@ namespace Binner.Common.Services
             return ServiceResult<ExternalOrderResponse>.Create("Error", nameof(MouserApi));
         }
 
-        public async Task<IServiceResult<PartResults>> GetBarcodeInfoAsync(string barcode)
+        public async Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode)
         {
             var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
             if (!digikeyApi.IsEnabled)
                 return ServiceResult<PartResults>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
@@ -364,11 +363,10 @@ namespace Binner.Common.Services
                                 .FirstOrDefault();
                             if (!string.IsNullOrEmpty(basePart))
                                 additionalPartNumbers.Add(basePart);
-                            var mountingTypeId = MountingType.ThroughHole;
                             Enum.TryParse<MountingType>(part.Parameters
                                 .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
                                 .Select(x => x.Value?.Replace(" ", ""))
-                                .FirstOrDefault(), out mountingTypeId);
+                                .FirstOrDefault(), out var mountingTypeId);
                             var currency = string.Empty;
                             if (string.IsNullOrEmpty(currency))
                                 currency = "USD";
@@ -431,7 +429,7 @@ namespace Binner.Common.Services
             return ServiceResult<PartResults>.Create(response);
         }
 
-        public async Task<IServiceResult<PartResults>?> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")
+        public async Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")
         {
             const int maxImagesPerSupplier = 5;
             const int maxImagesTotal = 10;
@@ -499,7 +497,7 @@ namespace Binner.Common.Services
             // apply ranking
             response.Parts = response.Parts
                 // return unique results
-                .DistinctBy(x => new { x.Supplier, x.SupplierPartNumber })
+                .DistinctBy(x => new { Supplier = x.Supplier ?? string.Empty, SupplierPartNumber = x.SupplierPartNumber ?? string.Empty })
                 // order by source
                 .OrderBy(x => x.Rank)
                 .ThenByDescending(x => x.QuantityAvailable)
@@ -779,7 +777,7 @@ namespace Binner.Common.Services
                     var mountingTypeId = MountingType.ThroughHole;
                     Enum.TryParse<MountingType>(part.Parameters
                         .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
-                        .Select(x => x.Value.Replace(" ", ""))
+                        .Select(x => x.Value?.Replace(" ", ""))
                         .FirstOrDefault(), out mountingTypeId);
                     var currency = digikeyResponse.SearchLocaleUsed.Currency;
                     if (string.IsNullOrEmpty(currency))
@@ -794,7 +792,7 @@ namespace Binner.Common.Services
                             .Select(x => x.Value)
                             .FirstOrDefault();
                     if (!string.IsNullOrEmpty(part.PrimaryPhoto)
-                        && !productImageUrls.Any(x => x.Value.Equals(part.PrimaryPhoto, ComparisonType))
+                        && !productImageUrls.Any(x => x.Value?.Equals(part.PrimaryPhoto, ComparisonType) == true)
                         && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
                     {
                         productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber, part.PrimaryPhoto));
@@ -803,7 +801,7 @@ namespace Binner.Common.Services
                     }
 
                     // if there is a datasheet that hasn't been added, add it
-                    if (!string.IsNullOrEmpty(part.PrimaryDatasheet) && !datasheetUrls.Any(x => x.Value.DatasheetUrl.Equals(part.PrimaryDatasheet, ComparisonType)))
+                    if (!string.IsNullOrEmpty(part.PrimaryDatasheet) && !datasheetUrls.Any(x => x.Value?.DatasheetUrl?.Equals(part.PrimaryDatasheet, ComparisonType) == true))
                     {
                         // if we have this datasheet already as a processed datasheet, use it instead to get the cover image and title
                         // todo: finish

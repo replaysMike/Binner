@@ -25,15 +25,15 @@ namespace Binner.Common.Services
             };
             var serializer = new JsonSerializer();
 
-            JObject json;
+            JObject? json;
             using (var textReader = new StreamReader(filename))
             {
                 using var reader = new JsonTextReader(textReader);
-                json = (JObject)serializer.Deserialize(reader);
+                json = (JObject?)serializer.Deserialize(reader);
                 textReader.Close();
             }
 
-            if (json.ContainsKey(sectionName))
+            if (json != null && json.ContainsKey(sectionName) && instance != null)
                 json[sectionName] = JToken.FromObject(instance);
             else
                 throw new BinnerConfigurationException($"There is no section named '{sectionName}' in the configuration file '{filename}'!");

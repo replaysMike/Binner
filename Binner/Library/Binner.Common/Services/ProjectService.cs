@@ -6,8 +6,8 @@ namespace Binner.Common.Services
 {
     public class ProjectService : IProjectService
     {
-        private IStorageProvider _storageProvider;
-        private RequestContextAccessor _requestContext;
+        private readonly IStorageProvider _storageProvider;
+        private readonly RequestContextAccessor _requestContext;
 
         public ProjectService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
         {
@@ -25,12 +25,12 @@ namespace Binner.Common.Services
             return await _storageProvider.DeleteProjectAsync(project, _requestContext.GetUserContext());
         }
 
-        public async Task<Project> GetProjectAsync(long projectId)
+        public async Task<Project?> GetProjectAsync(long projectId)
         {
             return await _storageProvider.GetProjectAsync(projectId, _requestContext.GetUserContext());
         }
 
-        public async Task<Project> GetProjectAsync(string name)
+        public async Task<Project?> GetProjectAsync(string name)
         {
             return await _storageProvider.GetProjectAsync(name, _requestContext.GetUserContext());
         }

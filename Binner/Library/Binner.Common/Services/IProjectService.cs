@@ -32,14 +32,14 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="projectId"></param>
         /// <returns></returns>
-        Task<Project> GetProjectAsync(long projectId);
+        Task<Project?> GetProjectAsync(long projectId);
 
         /// <summary>
         /// Get a project
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        Task<Project> GetProjectAsync(string name);
+        Task<Project?> GetProjectAsync(string name);
 
         /// <summary>
         /// Get all projects

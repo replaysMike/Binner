@@ -13,7 +13,7 @@ namespace Binner.Common.IO.Printing
     {
         public Image<Rgba32> Image { get; private set; }
 
-        public BlankImage(int width = 500, int height = 50, Color? color = null, string text = null, FontFamily? fontFamily = null)
+        public BlankImage(int width = 500, int height = 50, Color? color = null, string? text = null, FontFamily? fontFamily = null)
         {
             Image = new Image<Rgba32>(width, height);
             if (color is null)

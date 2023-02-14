@@ -191,14 +191,14 @@ namespace Binner.Web.Controllers
                     if (isNumber.Match(mappedPart.PartNumber).Success)
                     {
                         var barcodeResult = await _partService.GetBarcodeInfoAsync(mappedPart.PartNumber);
-                        if (barcodeResult.Response.Parts.Any())
+                        if (barcodeResult != null && barcodeResult.Response?.Parts.Any() == true)
                         {
                             // convert this entry to a part
                             var entry = barcodeResult.Response.Parts.First();
                             var partType = partTypes
                                 .FirstOrDefault(x => x.Name == entry.PartType) ?? partTypes.First();
                             mappedPart.PartNumber = entry.ManufacturerPartNumber;
-                            mappedPart.PartTypeId = partType != null ? partType.PartTypeId : defaultPartType.PartTypeId;
+                            mappedPart.PartTypeId = partType.PartTypeId;
                             mappedPart.MountingTypeId = entry.MountingTypeId;
                             mappedPart.DatasheetUrl = entry.DatasheetUrls.FirstOrDefault();
                             mappedPart.ManufacturerPartNumber = entry.ManufacturerPartNumber;
@@ -221,7 +221,7 @@ namespace Binner.Web.Controllers
                         if (string.IsNullOrEmpty(mappedPart.PartNumber))
                             continue;
                         var metadataResponse = await _partService.GetPartInformationAsync(mappedPart.PartNumber);
-                        if (metadataResponse != null)
+                        if (metadataResponse.Response != null)
                         {
                             var digikeyParts = metadataResponse.Response.Parts
                                 .Where(x =>

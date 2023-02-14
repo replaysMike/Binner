@@ -149,9 +149,9 @@ namespace Binner.Common.IO.Printing
             var rightMargin = 0;
             var leftMargin = 0;
             // allow vertical binNumber to be written, if provided
-            if (!string.IsNullOrEmpty(PrinterSettings.PartLabelTemplate.Identifier.Content) && PrinterSettings.PartLabelTemplate.Identifier.Position == LabelPosition.Right)
+            if (!string.IsNullOrEmpty(PrinterSettings.PartLabelTemplate.Identifier?.Content) && PrinterSettings.PartLabelTemplate.Identifier?.Position == LabelPosition.Right)
                 rightMargin = 5;
-            if (!string.IsNullOrEmpty(PrinterSettings.PartLabelTemplate.Identifier.Content) && PrinterSettings.PartLabelTemplate.Identifier.Position == LabelPosition.Left)
+            if (!string.IsNullOrEmpty(PrinterSettings.PartLabelTemplate.Identifier?.Content) && PrinterSettings.PartLabelTemplate.Identifier?.Position == LabelPosition.Left)
                 leftMargin = 5;
             var margins = new Margin(leftMargin, rightMargin, 0, 0);
 
@@ -163,19 +163,19 @@ namespace Binner.Common.IO.Printing
             content.Identifier = content.Identifier ?? ReplaceTemplate(content.Part, PrinterSettings.PartLabelTemplate.Identifier);
             content.Identifier2 = content.Identifier2 ?? ReplaceTemplate(content.Part, PrinterSettings.PartLabelTemplate.Identifier2);
 
-            // merge any adjascent template lines together
+            // merge any adjacent template lines together
             MergeLines(PrinterSettings.PartLabelTemplate, content, paperRect, margins);
-            var line1Position = DrawLine(image, labelProperties, new PointF(_labelStart[PrinterSettings.PartLabelTemplate.Line1.Label - 1].X, _labelStart[PrinterSettings.PartLabelTemplate.Line1.Label - 1].Y), content.Part, content.Line1, PrinterSettings.PartLabelTemplate.Line1, paperRect, margins);
-            var line2Position = DrawLine(image, labelProperties, line1Position, content.Part, content.Line2, PrinterSettings.PartLabelTemplate.Line2, paperRect, margins);
-            var line3Position = DrawLine(image, labelProperties, line2Position, content.Part, content.Line3, PrinterSettings.PartLabelTemplate.Line3, paperRect, margins);
-            var line4Position = DrawLine(image, labelProperties, line3Position, content.Part, content.Line4, PrinterSettings.PartLabelTemplate.Line4, paperRect, margins);
+            var line1Position = DrawLine(image, labelProperties, new PointF(_labelStart[PrinterSettings.PartLabelTemplate.Line1?.Label ?? 0 - 1].X, _labelStart[PrinterSettings.PartLabelTemplate.Line1?.Label ?? 0 - 1].Y), content.Part, content.Line1, PrinterSettings.PartLabelTemplate.Line1, paperRect, margins);
+            var line2Position = DrawLine(image, labelProperties, line1Position, content.Part, content.Line2, PrinterSettings.PartLabelTemplate?.Line2, paperRect, margins);
+            var line3Position = DrawLine(image, labelProperties, line2Position, content.Part, content.Line3, PrinterSettings.PartLabelTemplate?.Line3, paperRect, margins);
+            var line4Position = DrawLine(image, labelProperties, line3Position, content.Part, content.Line4, PrinterSettings.PartLabelTemplate?.Line4, paperRect, margins);
 
-            var identifierPosition = DrawLine(image, labelProperties, line4Position, content.Part, content.Identifier, PrinterSettings.PartLabelTemplate.Identifier, paperRect, margins);
-            var identifierPosition2 = DrawLine(image, labelProperties, identifierPosition, content.Part, content.Identifier2, PrinterSettings.PartLabelTemplate.Identifier2, paperRect, margins);
+            var identifierPosition = DrawLine(image, labelProperties, line4Position, content.Part, content.Identifier, PrinterSettings.PartLabelTemplate?.Identifier, paperRect, margins);
+            var identifierPosition2 = DrawLine(image, labelProperties, identifierPosition, content.Part, content.Identifier2, PrinterSettings.PartLabelTemplate?.Identifier2, paperRect, margins);
         }
 
         /// <summary>
-        /// Merge all adjascent template lines
+        /// Merge all adjacent template lines
         /// </summary>
         /// <param name="template"></param>
         /// <param name="content"></param>
@@ -183,19 +183,19 @@ namespace Binner.Common.IO.Printing
         /// <param name="margins"></param>
         private void MergeLines(PartLabelTemplate template, LabelContent content, Rectangle paperRect, Margin margins)
         {
-            if (template.Line1.Content == template.Line2.Content)
+            if (template.Line1?.Content == template.Line2?.Content)
             {
                 MergeLines(content.Line1, content.Line2, paperRect, margins, out var newLine, out var newLine2);
                 content.Line1 = newLine;
                 content.Line2 = newLine2;
             }
-            if (template.Line2.Content == template.Line3.Content)
+            if (template.Line2?.Content == template.Line3?.Content)
             {
                 MergeLines(content.Line2, content.Line3, paperRect, margins, out var newLine, out var newLine2);
                 content.Line2 = newLine;
                 content.Line3 = newLine2;
             }
-            if (template.Line3.Content == template.Line4.Content)
+            if (template.Line3?.Content == template.Line4?.Content)
             {
                 MergeLines(content.Line3, content.Line4, paperRect, margins, out var newLine, out var newLine2);
                 content.Line3 = newLine;
@@ -210,17 +210,18 @@ namespace Binner.Common.IO.Printing
         /// <param name="secondLine"></param>
         /// <param name="paperRect"></param>
         /// <param name="margins"></param>
-        private void MergeLines(string firstLine, string secondLine, Rectangle paperRect, Margin margins, out string newFirstLine, out string newSecondLine)
+        /// <param name="newFirstLine"></param>
+        /// <param name="newSecondLine"></param>
+        private void MergeLines(string? firstLine, string? secondLine, Rectangle paperRect, Margin margins, out string newFirstLine, out string newSecondLine)
         {
             var fontFirstLine = CreateFont(PrinterSettings.PartLabelTemplate.Line2, firstLine, paperRect);
             var fontSecondLine = CreateFont(PrinterSettings.PartLabelTemplate.Line3, secondLine, paperRect);
-            var line1 = firstLine.ToString();
-            string line2;
+            var line1 = firstLine?.ToString() ?? string.Empty;
+            var line2 = string.Empty;
             // merge lines and use the second line to wrap
             FontRectangle len;
-            var description = line1?.Trim() ?? "";
+            var description = line1?.Trim() ?? string.Empty;
             line1 = description.ToString();
-            line2 = "";
             // autowrap line 2
             do
             {
@@ -244,9 +245,9 @@ namespace Binner.Common.IO.Printing
             newSecondLine = line2;
         }
 
-        private PointF DrawLine(Image<Rgba32> image, LabelDefinition labelProperties, PointF lineOffset, object part, string text, LineConfiguration template, Rectangle paperRect, Margin margins)
+        private PointF DrawLine(Image<Rgba32> image, LabelDefinition labelProperties, PointF lineOffset, object? part, string? text, LineConfiguration? template, Rectangle paperRect, Margin margins)
         {
-            if (string.IsNullOrWhiteSpace(text))
+            if (string.IsNullOrWhiteSpace(text) || template == null)
                 return new PointF(0, lineOffset.Y);
             var font = CreateFont(template, text, paperRect);
             var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
@@ -264,7 +265,7 @@ namespace Binner.Common.IO.Printing
             }
             else
             {
-                
+
                 if (template.Rotate > 0)
                 {
                     switch (template.Position)
@@ -285,7 +286,7 @@ namespace Binner.Common.IO.Printing
                     // https://github.com/SixLabors/ImageSharp.Drawing/discussions/190
                     // rotating text correctly in ImageSharp turned out to be beyond trivial
                     var builder = new AffineTransformBuilder()
-                        .AppendRotationDegrees(PrinterSettings.PartLabelTemplate.Identifier.Rotate)
+                        .AppendRotationDegrees(PrinterSettings.PartLabelTemplate?.Identifier?.Rotate ?? 0)
                         .AppendTranslation(new PointF(x, y));
                     var drawingOptions = new DrawingOptions
                     {
@@ -327,23 +328,22 @@ namespace Binner.Common.IO.Printing
             return new PointF(0, y + textBounds.Height);
         }
 
-        private Font CreateFont(LineConfiguration template, string lineValue, Rectangle paperRect)
+        private Font CreateFont(LineConfiguration? template, string? lineValue, Rectangle paperRect)
         {
             Font font;
-            var fontFamily = GetOrCreateFontFamily(template.FontName ?? DefaultFontName);
-            if (template.AutoSize)
-                font = AutosizeFont(fontFamily, template.FontSize - 1, lineValue, paperRect.Width);
+            var fontFamily = GetOrCreateFontFamily(template?.FontName ?? DefaultFontName);
+            if (template?.AutoSize == true)
+                font = AutosizeFont(fontFamily, template?.FontSize ?? 8 - 1, lineValue, paperRect.Width);
             else
             {
-                font = new Font(fontFamily, template.FontSize - 1);
+                font = new Font(fontFamily, template?.FontSize ?? 8 - 1);
             }
             return font;
         }
 
         private FontFamily GetOrCreateFontFamily(string fontName)
         {
-            FontFamily fontFamily;
-            if (_fontCollection.Value.TryGet(fontName, out fontFamily))
+            if (_fontCollection.Value.TryGet(fontName, out var fontFamily))
             {
                 return fontFamily;
             }
@@ -359,9 +359,9 @@ namespace Binner.Common.IO.Printing
             return _fontFamily;
         }
 
-        private static string ReplaceTemplate(object data, LineConfiguration config)
+        private static string ReplaceTemplate(object? data, LineConfiguration? config)
         {
-            var template = config.Content;
+            var template = config?.Content ?? string.Empty;
             var value = template;
             if (template.Contains("{") && template.Contains("}"))
             {
@@ -376,9 +376,9 @@ namespace Binner.Common.IO.Printing
                 else
                     value = value.Replace(template, string.Empty);
             }
-            if (config.UpperCase)
+            if (config?.UpperCase == true)
                 value = value.ToUpper();
-            else if (config.LowerCase)
+            else if (config?.LowerCase == true)
                 value = value.ToLower();
 
             return value;
@@ -403,21 +403,25 @@ namespace Binner.Common.IO.Printing
             }
         }
 
-        private Font AutosizeFont(FontFamily fontFamily, float fontSize, string text, int maxWidth)
+        private Font AutosizeFont(FontFamily fontFamily, float fontSize, string? text, int maxWidth)
         {
             FontRectangle len;
             var newFontSize = fontSize;
-            do
+            if (!string.IsNullOrEmpty(text))
             {
-                var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
-                var textOptions = new TextOptions(testFont)
+                do
                 {
-                    Dpi = Dpi
-                };
-                len = TextMeasurer.Measure(text, textOptions);
-                if (len.Width > maxWidth)
-                    newFontSize -= 0.5f;
-            } while (len.Width > maxWidth);
+                    var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
+                    var textOptions = new TextOptions(testFont)
+                    {
+                        Dpi = Dpi
+                    };
+                    len = TextMeasurer.Measure(text, textOptions);
+                    if (len.Width > maxWidth)
+                        newFontSize -= 0.5f;
+                } while (len.Width > maxWidth);
+            }
+
             return new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
         }
 

@@ -44,7 +44,7 @@ namespace Binner.Common
         /// <typeparam name="T"></typeparam>
         /// <param name="key">Unique key to identify the data</param>
         /// <returns></returns>
-        public static T Get<T>(string key)
+        public static T? Get<T>(string key)
         {
             return ServerContext.Instance.GetData<T>(key);
         }
@@ -67,6 +67,7 @@ namespace Binner.Common
         /// <param name="data"></param>
         public void SetData<T>(string key, T data)
         {
+            if (data == null) throw new ArgumentNullException(nameof(data));
             _lock.Wait();
             try
             {
@@ -92,7 +93,7 @@ namespace Binner.Common
         /// <typeparam name="T"></typeparam>
         /// <param name="key">Unique key to identify the data</param>
         /// <returns></returns>
-        public T GetData<T>(string key)
+        public T? GetData<T>(string key)
         {
             _lock.Wait();
             try
@@ -159,13 +160,11 @@ namespace Binner.Common
                 try
                 {
                     _contextData.Clear();
-                    _contextData = null;
                 }
                 finally
                 {
                     _lock.Release();
                     _lock.Dispose();
-                    _lock = null;
                 }
 
             }

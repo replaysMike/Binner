@@ -10,7 +10,7 @@
         /// <summary>
         /// Label name
         /// </summary>
-        public string LabelName { get; set; }
+        public string? LabelName { get; set; }
 
         /// <summary>
         /// True to generate the label image only

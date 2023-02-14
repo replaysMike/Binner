@@ -1,4 +1,5 @@
-﻿using Binner.Common.Models;
+﻿using System;
+using Binner.Common.Models;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Security.Claims;
@@ -23,7 +24,7 @@ namespace Binner.Common
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public T Get<T>(string key)
+        public T? Get<T>(string key)
         {
             var context = _httpContextAccessor.HttpContext;
             if (context != null)
@@ -40,15 +41,14 @@ namespace Binner.Common
         /// Get the current user context
         /// </summary>
         /// <returns></returns>
-        public UserContext GetUserContext()
+        public UserContext? GetUserContext()
         {
             var context = _httpContextAccessor.HttpContext;
-            if (context != null && context.User != null 
-                && context.User.Identity.IsAuthenticated)
+            if (context != null && context.User != null && context.User.Identity?.IsAuthenticated == true)
             {
                 return new UserContext
                 {
-                    UserId = int.Parse(context.User.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault()),
+                    UserId = int.Parse(context.User.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault() ?? "0"),
                     Name = context.User.Claims.Where(x => x.Type == "Name").Select(x => x.Value).FirstOrDefault(),
                     EmailAddress = context.User.Identity.Name,
                     PhoneNumber = context.User.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault()
@@ -61,7 +61,7 @@ namespace Binner.Common
         /// Get the current user
         /// </summary>
         /// <returns></returns>
-        public ClaimsPrincipal GetUser()
+        public ClaimsPrincipal? GetUser()
         {
             var context = _httpContextAccessor.HttpContext;
             if (context != null)

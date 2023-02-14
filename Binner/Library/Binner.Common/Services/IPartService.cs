@@ -42,7 +42,7 @@ namespace Binner.Common.Services
         /// List all DigiKey categories
         /// </summary>
         /// <returns></returns>
-        Task<IServiceResult<Integrations.Models.DigiKey.CategoriesResponse>> GetCategoriesAsync();
+        Task<IServiceResult<Integrations.Models.DigiKey.CategoriesResponse?>> GetCategoriesAsync();
 
         /// <summary>
         /// Get a part by part number
@@ -91,7 +91,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="barcode"></param>
         /// <returns></returns>
-        Task<IServiceResult<PartResults>> GetBarcodeInfoAsync(string barcode);
+        Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode);
 
         /// <summary>
         /// Get metadata about a part number
@@ -100,7 +100,7 @@ namespace Binner.Common.Services
         /// <param name="partType">Part type</param>
         /// <param name="mountingType">Mounting type</param>
         /// <returns></returns>
-        Task<IServiceResult<PartResults>?> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
+        Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
 
         /// <summary>
         /// Determine the part type
@@ -123,7 +123,7 @@ namespace Binner.Common.Services
         /// <param name="orderId"></param>
         /// <param name="supplier"></param>
         /// <returns></returns>
-        Task<IServiceResult<ExternalOrderResponse>?> GetExternalOrderAsync(string orderId, string supplier);
+        Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(string orderId, string supplier);
 
         /// <summary>
         /// Get all part types

@@ -24,13 +24,14 @@ namespace Binner.Common.IO.Printing
     {
         private const bool OutputDebug = true;
         private const bool FlipLabelImage = true;
-        private const string CUPSError = "Please ensure CUPS print server is installed on your environment. Example: `sudo apt install cups`";
+        private const string CupsError = "Please ensure CUPS print server is installed on your environment. Example: `sudo apt install cups`";
         private readonly IPrinterSettings _printerSettings;
         private LabelDefinition _labelProperties;
 
         public CupsPrinterEnvironment(IPrinterSettings printerSettings)
         {
             _printerSettings = printerSettings;
+            _labelProperties = new LabelDefinition();
         }
 
         public PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage)
@@ -48,7 +49,7 @@ namespace Binner.Common.IO.Printing
                 }
                 catch (Exception ex)
                 {
-                    throw new CupsException(CUPSError, ex);
+                    throw new CupsException(CupsError, ex);
                 }
                 finally
                 {
@@ -71,7 +72,7 @@ namespace Binner.Common.IO.Printing
             };
         }
 
-        private void SendToCups(string filename, PrinterOptions options)
+        private void SendToCups(string? filename, PrinterOptions options)
         {
             if (string.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
             if (options is null) throw new ArgumentNullException(nameof(options));
@@ -79,32 +80,32 @@ namespace Binner.Common.IO.Printing
             var process = CreateProcess();
             var result = StartProcess(process);
 
-            (bool isSuccess, string errorMessage, int exitCode) StartProcess(Process process)
+            (bool isSuccess, string errorMessage, int exitCode) StartProcess(Process innerProcess)
             {
-                if (process.Start())
+                if (innerProcess.Start())
                 {
-                    process.BeginErrorReadLine();
-                    process.BeginOutputReadLine();
-                    WriteDebug($"CUPS: Print process id {process.Id} started!");
-                    process.WaitForExit();
+                    innerProcess.BeginErrorReadLine();
+                    innerProcess.BeginOutputReadLine();
+                    WriteDebug($"CUPS: Print process id {innerProcess.Id} started!");
+                    innerProcess.WaitForExit();
                     try
                     {
-                        if (process.ExitCode == 0)
+                        if (innerProcess.ExitCode == 0)
                             // print success
-                            return (true, string.Empty, process.ExitCode);
+                            return (true, string.Empty, innerProcess.ExitCode);
                         else
                         {
-                            return (false, $"CUPS: Print process returned non-zero exit code ({process.ExitCode}), check for errors!", process.ExitCode);
+                            return (false, $"CUPS: Print process returned non-zero exit code ({innerProcess.ExitCode}), check for errors!", innerProcess.ExitCode);
                         }
                     }
                     finally
                     {
-                        process.Dispose();
+                        innerProcess.Dispose();
                     }
                 }
                 else
                 {
-                    return (false, $"Failed to launch process named '{process.StartInfo.FileName}'. {CUPSError}", 0);
+                    return (false, $"Failed to launch process named '{innerProcess.StartInfo.FileName}'. {CupsError}", 0);
                 }
             }
 
@@ -146,20 +147,20 @@ namespace Binner.Common.IO.Printing
                 var optionsStr = string.Empty;
                 if (printerOptions.Any())
                     optionsStr = $"{string.Join(" ", printerOptions)}";
-                var process = new Process();
-                process.StartInfo.FileName = "lp";
+                var innerProcess = new Process();
+                innerProcess.StartInfo.FileName = "lp";
                 // -d {printerName} ;specify a specific printer
                 var arguments = $"-d {printerName} {optionsStr} {fileToPrint}";
-                process.StartInfo.Arguments = arguments;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.EnableRaisingEvents = true;
-                process.ErrorDataReceived += Process_ErrorDataReceived;
-                process.OutputDataReceived += Process_OutputDataReceived;
-                process.Exited += Process_Exited;
-                return process;
+                innerProcess.StartInfo.Arguments = arguments;
+                innerProcess.StartInfo.RedirectStandardOutput = true;
+                innerProcess.StartInfo.RedirectStandardError = true;
+                innerProcess.StartInfo.UseShellExecute = false;
+                innerProcess.StartInfo.CreateNoWindow = true;
+                innerProcess.EnableRaisingEvents = true;
+                innerProcess.ErrorDataReceived += Process_ErrorDataReceived;
+                innerProcess.OutputDataReceived += Process_OutputDataReceived;
+                innerProcess.Exited += Process_Exited;
+                return innerProcess;
             }
 
             string GetCupsSafePrinterName(string printerName)
@@ -172,11 +173,9 @@ namespace Binner.Common.IO.Printing
             }
         }
 
-        private (string filename, bool isSuccess, string errorMessage) SaveTempImage(Image<Rgba32> labelImage)
+        private (string? filename, bool isSuccess, string? errorMessage) SaveTempImage(Image<Rgba32> labelImage)
         {
             var filename = $"{Path.GetTempFileName()}.png";
-            if (filename is null)
-                return (filename, false, "The platform generated temporary filename was null!");
             try
             {
                 if (FlipLabelImage)
@@ -195,14 +194,14 @@ namespace Binner.Common.IO.Printing
             }
         }
 
-        private void DeleteTempFile(string filename)
+        private void DeleteTempFile(string? filename)
         {
             if (string.IsNullOrEmpty(filename)) throw new ArgumentNullException(nameof(filename));
             if (File.Exists(filename))
                 File.Delete(filename);
         }
 
-        private void Process_Exited(object sender, EventArgs e)
+        private void Process_Exited(object? sender, EventArgs e)
         {
             if (sender is null)
                 return;

@@ -15,7 +15,7 @@ namespace Binner.Common.IO.Printing
         /// Content template, encoded Part property with braces. 
         /// Eg. "{partNumber}", "{date}", "{description}", "{manufacturerPartNumber}" etc
         /// </summary>
-        public string Content { get; set; }
+        public string? Content { get; set; }
 
         /// <summary>
         /// Font name
@@ -66,11 +66,13 @@ namespace Binner.Common.IO.Printing
         /// Font color to use.
         /// Will show on previews and for printers that use color
         /// </summary>
-        public string Color { get; set; }
+        public string? Color { get; set; }
 
         public LabelLines Line { get; set; }
 
-        public LineConfiguration() { }
+        public LineConfiguration()
+        {
+        }
 
         public LineConfiguration(LineConfiguration lineConfiguration, LabelLines line)
         {

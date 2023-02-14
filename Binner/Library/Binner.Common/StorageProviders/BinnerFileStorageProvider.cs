@@ -61,7 +61,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<IBinnerDb> GetDatabaseAsync(IUserContext userContext)
+        public async Task<IBinnerDb> GetDatabaseAsync(IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -79,7 +79,7 @@ namespace Binner.Common.StorageProviders
             return Task.FromResult(new ConnectionResponse { IsSuccess = true, DatabaseExists = File.Exists(_config.Filename), Errors = new List<string>() });
         }
 
-        public async Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName, IUserContext userContext)
+        public async Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -94,7 +94,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext userContext)
+        public async Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -117,7 +117,7 @@ namespace Binner.Common.StorageProviders
             return credential;
         }
 
-        public async Task RemoveOAuthCredentialAsync(string providerName, IUserContext userContext)
+        public async Task RemoveOAuthCredentialAsync(string providerName, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -135,7 +135,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<Part> AddPartAsync(Part part, IUserContext userContext)
+        public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -152,7 +152,7 @@ namespace Binner.Common.StorageProviders
             return part;
         }
 
-        public async Task<Part> UpdatePartAsync(Part part, IUserContext userContext)
+        public async Task<Part> UpdatePartAsync(Part part, IUserContext? userContext)
         {
             if (part == null) throw new ArgumentNullException(nameof(part));
             await _dataLock.WaitAsync();
@@ -174,7 +174,7 @@ namespace Binner.Common.StorageProviders
             return part;
         }
 
-        public async Task<PartType?> GetOrCreatePartTypeAsync(PartType partType, IUserContext userContext)
+        public async Task<PartType?> GetOrCreatePartTypeAsync(PartType partType, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -202,7 +202,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext userContext)
+        public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -217,7 +217,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext userContext)
+        public async Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -237,7 +237,7 @@ namespace Binner.Common.StorageProviders
                 .FirstOrDefault();
         }
 
-        public async Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext userContext)
+        public async Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext? userContext)
         {
             if (partType == null) throw new ArgumentNullException(nameof(partType));
             await _dataLock.WaitAsync();
@@ -259,7 +259,7 @@ namespace Binner.Common.StorageProviders
             return partType;
         }
 
-        public async Task<bool> DeletePartAsync(Part part, IUserContext userContext)
+        public async Task<bool> DeletePartAsync(Part part, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -282,7 +282,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext userContext)
+        public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext? userContext)
         {
             if (string.IsNullOrEmpty(keywords)) throw new ArgumentNullException(nameof(keywords));
 
@@ -308,7 +308,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<Part?> GetPartAsync(long partId, IUserContext userContext)
+        public async Task<Part?> GetPartAsync(long partId, IUserContext? userContext)
         {
             if (partId <= 0) throw new ArgumentException(nameof(partId));
             await _dataLock.WaitAsync();
@@ -328,7 +328,7 @@ namespace Binner.Common.StorageProviders
                 .FirstOrDefault();
         }
 
-        public async Task<Part?> GetPartAsync(string partNumber, IUserContext userContext)
+        public async Task<Part?> GetPartAsync(string partNumber, IUserContext? userContext)
         {
             if (string.IsNullOrEmpty(partNumber)) throw new ArgumentNullException(nameof(partNumber));
             await _dataLock.WaitAsync();
@@ -342,7 +342,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<long> GetPartsCountAsync(IUserContext userContext)
+        public async Task<long> GetPartsCountAsync(IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -356,7 +356,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<long> GetUniquePartsCountAsync(IUserContext userContext)
+        public async Task<long> GetUniquePartsCountAsync(IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -370,7 +370,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<decimal> GetPartsValueAsync(IUserContext userContext)
+        public async Task<decimal> GetPartsValueAsync(IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -384,7 +384,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext userContext)
+        public async Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             var pageRecords = (request.Page - 1) * request.Results;
@@ -406,7 +406,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext userContext)
+        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             var pageRecords = (request.Page - 1) * request.Results;
@@ -431,7 +431,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext userContext)
+        public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -444,7 +444,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<Project?> GetProjectAsync(long projectId, IUserContext userContext)
+        public async Task<Project?> GetProjectAsync(long projectId, IUserContext? userContext)
         {
             if (projectId <= 0) throw new ArgumentException(nameof(projectId));
             await _dataLock.WaitAsync();
@@ -464,7 +464,7 @@ namespace Binner.Common.StorageProviders
                 .FirstOrDefault(x => x.ProjectId.Equals(projectId) && x.UserId == userContext?.UserId);
         }
 
-        public async Task<Project?> GetProjectAsync(string projectName, IUserContext userContext)
+        public async Task<Project?> GetProjectAsync(string projectName, IUserContext? userContext)
         {
             if (string.IsNullOrEmpty(projectName)) throw new ArgumentNullException(nameof(projectName));
             await _dataLock.WaitAsync();
@@ -479,7 +479,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext userContext)
+        public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             var pageRecords = (request.Page - 1) * request.Results;
@@ -498,7 +498,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<Project> AddProjectAsync(Project project, IUserContext userContext)
+        public async Task<Project> AddProjectAsync(Project project, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -515,7 +515,7 @@ namespace Binner.Common.StorageProviders
             return project;
         }
 
-        public async Task<Project> UpdateProjectAsync(Project project, IUserContext userContext)
+        public async Task<Project> UpdateProjectAsync(Project project, IUserContext? userContext)
         {
             if (project == null) throw new ArgumentNullException(nameof(project));
             await _dataLock.WaitAsync();
@@ -537,7 +537,7 @@ namespace Binner.Common.StorageProviders
             return project;
         }
 
-        public async Task<bool> DeletePartTypeAsync(PartType partType, IUserContext userContext)
+        public async Task<bool> DeletePartTypeAsync(PartType partType, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -560,7 +560,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<bool> DeleteProjectAsync(Project project, IUserContext userContext)
+        public async Task<bool> DeleteProjectAsync(Project project, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -584,7 +584,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<StoredFile> AddStoredFileAsync(StoredFile storedFile, IUserContext userContext)
+        public async Task<StoredFile> AddStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -602,7 +602,7 @@ namespace Binner.Common.StorageProviders
             return storedFile;
         }
 
-        public async Task<StoredFile?> GetStoredFileAsync(long storedFileId, IUserContext userContext)
+        public async Task<StoredFile?> GetStoredFileAsync(long storedFileId, IUserContext? userContext)
         {
             if (storedFileId <= 0) throw new ArgumentException(nameof(storedFileId));
             await _dataLock.WaitAsync();
@@ -616,7 +616,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<StoredFile?> GetStoredFileAsync(string filename, IUserContext userContext)
+        public async Task<StoredFile?> GetStoredFileAsync(string filename, IUserContext? userContext)
         {
             if (string.IsNullOrEmpty(filename)) throw new ArgumentException(nameof(filename));
             await _dataLock.WaitAsync();
@@ -630,7 +630,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(long partId, StoredFileType? fileType, IUserContext userContext)
+        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(long partId, StoredFileType? fileType, IUserContext? userContext)
         {
             if (partId <= 0) throw new ArgumentException(nameof(partId));
             await _dataLock.WaitAsync();
@@ -648,7 +648,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(PaginatedRequest request, IUserContext userContext)
+        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(PaginatedRequest request, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             var pageRecords = (request.Page - 1) * request.Results;
@@ -667,7 +667,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<bool> DeleteStoredFileAsync(StoredFile storedFile, IUserContext userContext)
+        public async Task<bool> DeleteStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -691,7 +691,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        public async Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile, IUserContext userContext)
+        public async Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
         {
             if (storedFile == null) throw new ArgumentNullException(nameof(storedFile));
             await _dataLock.WaitAsync();
@@ -714,7 +714,7 @@ namespace Binner.Common.StorageProviders
             return storedFile;
         }
 
-        public async Task<Model.Common.OAuthAuthorization> CreateOAuthRequestAsync(Model.Common.OAuthAuthorization authRequest, IUserContext userContext)
+        public async Task<Model.Common.OAuthAuthorization> CreateOAuthRequestAsync(Model.Common.OAuthAuthorization authRequest, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
@@ -741,7 +741,7 @@ namespace Binner.Common.StorageProviders
             return authRequest;
         }
 
-        public async Task<Model.Common.OAuthAuthorization> UpdateOAuthRequestAsync(Model.Common.OAuthAuthorization authRequest, IUserContext userContext)
+        public async Task<Model.Common.OAuthAuthorization> UpdateOAuthRequestAsync(Model.Common.OAuthAuthorization authRequest, IUserContext? userContext)
         {
             if (authRequest == null) throw new ArgumentNullException(nameof(authRequest));
             await _dataLock.WaitAsync();
@@ -779,7 +779,7 @@ namespace Binner.Common.StorageProviders
             return authRequest;
         }
 
-        public async Task<Model.Common.OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext userContext)
+        public async Task<Model.Common.OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext? userContext)
         {
             if (requestId == Guid.Empty) throw new ArgumentException(nameof(requestId));
             await _dataLock.WaitAsync();
@@ -807,7 +807,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType, IUserContext userContext)
+        private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType, IUserContext? userContext)
         {
             var matches = new List<SearchResult<Part>>();
 
@@ -845,7 +845,7 @@ namespace Binner.Common.StorageProviders
             return matches;
         }
 
-        private ICollection<SearchResult<Part>> GetPartialMatches(ICollection<string> words, StringComparison comparisonType, IUserContext userContext)
+        private ICollection<SearchResult<Part>> GetPartialMatches(ICollection<string> words, StringComparison comparisonType, IUserContext? userContext)
         {
             var matches = new List<SearchResult<Part>>();
 
