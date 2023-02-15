@@ -91,15 +91,15 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        throw new DigikeyUnauthorizedException(authenticationResponse);
-                    if (response.IsSuccessStatusCode)
+                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
                     {
-                        var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings) ?? new();
-                        return new ApiResponse(results, nameof(DigikeyApi));
+                        return apiResponse;
                     }
-                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+
+                    // 200 OK
+                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings) ?? new();
+                    return new ApiResponse(results, nameof(DigikeyApi));
                 }
                 catch (Exception)
                 {
@@ -122,15 +122,15 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        throw new DigikeyUnauthorizedException(authenticationResponse);
-                    if (response.IsSuccessStatusCode)
+                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
                     {
-                        var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<Product>(resultString, _serializerSettings) ?? new();
-                        return new ApiResponse(results, nameof(DigikeyApi));
+                        return apiResponse;
                     }
-                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+
+                    // 200 OK
+                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var results = JsonConvert.DeserializeObject<Product>(resultString, _serializerSettings) ?? new();
+                    return new ApiResponse(results, nameof(DigikeyApi));
                 }
                 catch (Exception)
                 {
@@ -158,15 +158,15 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        throw new DigikeyUnauthorizedException(authenticationResponse);
-                    if (response.IsSuccessStatusCode)
+                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
                     {
-                        var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(resultString, _serializerSettings) ?? new();
-                        return new ApiResponse(results, nameof(DigikeyApi));
+                        return apiResponse;
                     }
-                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+
+                    // 200 OK
+                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(resultString, _serializerSettings) ?? new();
+                    return new ApiResponse(results, nameof(DigikeyApi));
                 }
                 catch (Exception)
                 {
@@ -189,15 +189,15 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        throw new DigikeyUnauthorizedException(authenticationResponse);
-                    if (response.IsSuccessStatusCode)
+                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
                     {
-                        var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<CategoriesResponse>(resultString, _serializerSettings) ?? new();
-                        return new ApiResponse(results, nameof(DigikeyApi));
+                        return apiResponse;
                     }
-                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+
+                    // 200 OK
+                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var results = JsonConvert.DeserializeObject<CategoriesResponse>(resultString, _serializerSettings) ?? new();
+                    return new ApiResponse(results, nameof(DigikeyApi));
                 }
                 catch (Exception)
                 {
@@ -209,7 +209,7 @@ namespace Binner.Common.Integrations
         public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount);
 
         public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25) => SearchAsync(partNumber, partType, string.Empty, recordCount);
-        
+
         public async Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25)
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
@@ -283,15 +283,15 @@ namespace Binner.Common.Integrations
                     requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        throw new DigikeyUnauthorizedException(authenticationResponse);
-                    if (response.IsSuccessStatusCode)
+                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
                     {
-                        var resultString = response.Content.ReadAsStringAsync().Result;
-                        var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new();
-                        return new ApiResponse(results, nameof(DigikeyApi));
+                        return apiResponse;
                     }
-                    return ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+
+                    // 200 OK
+                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new();
+                    return new ApiResponse(results, nameof(DigikeyApi));
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -465,9 +465,47 @@ namespace Binner.Common.Integrations
         }
 
         /// <summary>
+        /// Handle known error conditions first, if response is OK false will be returned
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="authenticationResponse"></param>
+        /// <param name="apiResponse"></param>
+        /// <returns></returns>
+        /// <exception cref="DigikeyUnauthorizedException"></exception>
+        private bool TryHandleResponse(HttpResponseMessage response, OAuthAuthorization authenticationResponse, out IApiResponse apiResponse)
+        {
+            apiResponse = apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new DigikeyUnauthorizedException(authenticationResponse);
+            else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
+            {
+                if (response.Headers.Contains("X-RateLimit-Limit"))
+                {
+                    // throttled
+                    var remainingTime = TimeSpan.Zero;
+                    if (response.Headers.Contains("X-RateLimit-Remaining"))
+                        remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
+                    apiResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}", nameof(DigikeyApi));
+                    return true;
+                }
+
+                // return generic error
+                return true;
+            }
+            else if (response.IsSuccessStatusCode)
+            {
+                // allow processing of response
+                return false;
+            }
+
+            // return generic error
+            return true;
+        }
+
+        /// <summary>
         /// Wraps an API request - if the request is unauthorized it will refresh the Auth token and re-issue the request
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="authResponse"></param>
         /// <param name="func"></param>
         /// <returns></returns>
         private async Task<IApiResponse> WrapApiRequestAsync(OAuthAuthorization authResponse, Func<OAuthAuthorization, Task<IApiResponse>> func)

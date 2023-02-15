@@ -12,6 +12,6 @@
         /// <summary>
         /// Path to the Octopart Api
         /// </summary>
-        public string? ApiUrl { get; set; } = "https://octopart.com";
+        public string ApiUrl { get; set; } = "https://octopart.com";
     }
 }

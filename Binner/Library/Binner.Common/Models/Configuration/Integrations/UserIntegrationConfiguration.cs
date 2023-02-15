@@ -91,7 +91,7 @@ namespace Binner.Common.Models.Configuration.Integrations
         /// <summary>
         /// Path to the Octopart Api
         /// </summary>
-        public string? OctopartApiUrl { get; set; } = "https://octopart.com";
+        public string OctopartApiUrl { get; set; } = "https://octopart.com";
 
         /// <summary>
         /// Octopart Api key

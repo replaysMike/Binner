@@ -69,3 +69,14 @@ export const MD5 = (val) => {
 export const escapeRegex = (string) => {
   return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+
+/**
+ * Check if a string is numeric
+ * @param {string} str String to parse
+ * @returns true if string is a number
+ */
+export const isNumeric = (str) => {
+  if (typeof str != "string") return false // we only process strings!  
+  return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+         !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+};

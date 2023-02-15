@@ -25,16 +25,24 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Binner, options => options.MapFrom(x => new SwarmUserConfiguration
                 {
                     Enabled = x.SwarmEnabled,
+                    ApiKey = x.SwarmApiKey,
+                    ApiUrl = x.SwarmApiUrl
                 }))
                 .ForMember(x => x.Digikey, options => options.MapFrom(x => new DigiKeyUserConfiguration
                 {
                     Enabled = x.DigiKeyEnabled,
+                    ClientId = x.DigiKeyClientId,
+                    ClientSecret = x.DigiKeyClientSecret,
+                    ApiUrl = x.DigiKeyApiUrl,
+                    oAuthPostbackUrl = x.DigiKeyOAuthPostbackUrl
                 }))
                 .ForMember(x => x.Mouser, options => options.MapFrom(x => new MouserUserConfiguration
                 {
                     Enabled = x.MouserEnabled,
+                    SearchApiKey = x.MouserSearchApiKey,
                     CartApiKey = x.MouserCartApiKey,
                     OrderApiKey = x.MouserOrderApiKey,
+                    ApiUrl = x.MouserApiUrl
                 }))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => new OctopartUserConfiguration
                 {

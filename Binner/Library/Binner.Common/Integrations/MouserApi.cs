@@ -2,6 +2,7 @@
 using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models.Configuration.Integrations;
+using Binner.Model.Common;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -115,18 +116,54 @@ namespace Binner.Common.Integrations
             var json = JsonConvert.SerializeObject(request, _serializerSettings);
             requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _client.SendAsync(requestMessage);
+            if (TryHandleResponse(response, out var apiResponse))
+            {
+                return apiResponse;
+            }
+
+            // 200 OK
+            var resultString = response.Content.ReadAsStringAsync().Result;
+            var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings) ?? new();
+            if (results.Errors?.Any() == true)
+                throw new MouserErrorsException(results.Errors);
+            return new ApiResponse(results, nameof(MouserApi));
+        }
+
+        /// <summary>
+        /// Handle known error conditions first, if response is OK false will be returned
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="apiResponse"></param>
+        /// <returns></returns>
+        /// <exception cref="DigikeyUnauthorizedException"></exception>
+        private bool TryHandleResponse(HttpResponseMessage response,out IApiResponse apiResponse)
+        {
+            apiResponse = apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new MouserUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
-
-            if (response.IsSuccessStatusCode)
+            else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
             {
-                var resultString = response.Content.ReadAsStringAsync().Result;
-                var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings) ?? new();
-                if (results.Errors?.Any() == true)
-                    throw new MouserErrorsException(results.Errors);
-                return new ApiResponse(results, nameof(MouserApi));
+                if (response.Headers.Contains("X-RateLimit-Limit"))
+                {
+                    // throttled
+                    var remainingTime = TimeSpan.Zero;
+                    if (response.Headers.Contains("X-RateLimit-Remaining"))
+                        remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
+                    apiResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}", nameof(MouserApi));
+                    return true;
+                }
+
+                // return generic error
+                return true;
             }
-            return new ApiResponse($"Received error status code {response.StatusCode}", nameof(MouserApi));
+            else if (response.IsSuccessStatusCode)
+            {
+                // allow processing of response
+                return false;
+            }
+
+            // return generic error
+            return true;
         }
 
         private HttpRequestMessage CreateRequest(HttpMethod method, Uri uri)

@@ -18,10 +18,10 @@ namespace Binner.Common.IO.Printing
     public class DymoLabelPrinterHardware : ILabelPrinterHardware
     {
         private const string DefaultFontName = "Segoe UI";
-        private static readonly Color DefaultTextColor = Color.Black;
         private const float Dpi = 300;
         private const string FontsPath = "./Fonts";
-        private static Lazy<FontCollection> _fontCollection = new Lazy<FontCollection>(() => new FontCollection());
+        private static readonly Color DefaultTextColor = Color.Black;
+        private static readonly Lazy<FontCollection> FontCollection = new(() => new FontCollection());
         private static FontFamily _fontFamily;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly List<PointF> _labelStart = new();
@@ -48,7 +48,7 @@ namespace Binner.Common.IO.Printing
         private static void LoadFonts()
         {
             // Load fonts
-            if (!_fontCollection.IsValueCreated)
+            if (!FontCollection.IsValueCreated)
             {
                 var fontFiles = new FontScanner().GetFonts(FontsPath);
                 foreach (var fontFile in fontFiles)
@@ -57,7 +57,7 @@ namespace Binner.Common.IO.Printing
                     {
                         try
                         {
-                            _fontCollection.Value.Add(fontFile);
+                            FontCollection.Value.Add(fontFile);
                         }
                         catch (Exception)
                         {
@@ -66,7 +66,7 @@ namespace Binner.Common.IO.Printing
                     }
                 }
             }
-            _fontFamily = _fontCollection.Value.Get(DefaultFontName);
+            _fontFamily = FontCollection.Value.Get(DefaultFontName);
         }
 
         public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
@@ -165,7 +165,9 @@ namespace Binner.Common.IO.Printing
 
             // merge any adjacent template lines together
             MergeLines(PrinterSettings.PartLabelTemplate, content, paperRect, margins);
-            var line1Position = DrawLine(image, labelProperties, new PointF(_labelStart[PrinterSettings.PartLabelTemplate.Line1?.Label ?? 0 - 1].X, _labelStart[PrinterSettings.PartLabelTemplate.Line1?.Label ?? 0 - 1].Y), content.Part, content.Line1, PrinterSettings.PartLabelTemplate.Line1, paperRect, margins);
+            var index = PrinterSettings.PartLabelTemplate.Line1?.Label ?? 1;
+            var line0Position = _labelStart[index - 1];
+            var line1Position = DrawLine(image, labelProperties, line0Position, content.Part, content.Line1, PrinterSettings.PartLabelTemplate.Line1, paperRect, margins);
             var line2Position = DrawLine(image, labelProperties, line1Position, content.Part, content.Line2, PrinterSettings.PartLabelTemplate?.Line2, paperRect, margins);
             var line3Position = DrawLine(image, labelProperties, line2Position, content.Part, content.Line3, PrinterSettings.PartLabelTemplate?.Line3, paperRect, margins);
             var line4Position = DrawLine(image, labelProperties, line3Position, content.Part, content.Line4, PrinterSettings.PartLabelTemplate?.Line4, paperRect, margins);
@@ -343,7 +345,7 @@ namespace Binner.Common.IO.Printing
 
         private FontFamily GetOrCreateFontFamily(string fontName)
         {
-            if (_fontCollection.Value.TryGet(fontName, out var fontFamily))
+            if (FontCollection.Value.TryGet(fontName, out var fontFamily))
             {
                 return fontFamily;
             }
