@@ -33,11 +33,15 @@ export function BarcodeScannerInput(props) {
   }, [props.listening]);
 
 	const addKeyboardHandler = () => {
-    if (document) document.addEventListener("keydown", onKeydown);
+    if (document) {
+			document.addEventListener("keydown", onKeydown);
+		}
   };
 
   const removeKeyboardHandler = () => {
-    if (document) document.removeEventListener("keydown");
+    if (document) { 
+			document.removeEventListener("keydown", onKeydown);
+		}
   };
 
 	// listens for document keydown events, used for barcode scanner input

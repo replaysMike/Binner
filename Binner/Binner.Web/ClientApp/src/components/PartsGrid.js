@@ -238,7 +238,8 @@ export default function PartsGrid(props) {
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {parts.map((p, key) =>
+                {parts.length > 0 
+                ? parts.map((p, key) =>
                   <Table.Row key={key} onClick={e => handleLoadPartClick(e, p)}>
                     {col.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
                     {col.quantity && <Table.Cell>
@@ -291,7 +292,8 @@ export default function PartsGrid(props) {
                       <Button circular size='mini' icon='delete' title='Delete' onClick={e => confirmDeleteOpen(e, p)} />
                     </Table.Cell>}
                   </Table.Row>
-                )}
+                )
+              : (<Table.Row><Table.Cell colSpan={13} textAlign="center">{props.children && props.children.length > 0 ? props.children : "No results."}</Table.Cell></Table.Row>)}
               </Table.Body>
             </Table>
             <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} size='mini' />
