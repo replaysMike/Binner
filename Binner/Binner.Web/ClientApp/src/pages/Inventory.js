@@ -383,7 +383,7 @@ export function Inventory(props) {
   };
 
   const removeKeyboardHandler = () => {
-    if (document) document.removeEventListener("keydown");
+    if (document) document.removeEventListener("keydown", onKeydown);
   };
 
   const enableKeyboardListening = () => {

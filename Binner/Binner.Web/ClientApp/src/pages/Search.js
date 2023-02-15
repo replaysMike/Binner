@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import _ from 'underscore';
-import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Input, Button, Icon } from 'semantic-ui-react';
-import { getQueryVariable } from '../common/query';
-import PartsGrid from '../components/PartsGrid';
-import { fetchApi } from '../common/fetchApi';
+import _ from "underscore";
+import debounce from "lodash.debounce";
+import { Input, Button, Icon, Form } from "semantic-ui-react";
+import { getQueryVariable } from "../common/query";
+import PartsGrid from "../components/PartsGrid";
+import { fetchApi } from "../common/fetchApi";
+import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 
-export function Search (props) {
+export function Search(props) {
   Search.abortController = new AbortController();
   const [searchParams] = useSearchParams();
 
@@ -19,40 +20,54 @@ export function Search (props) {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
+  const [isKeyboardListening, setIsKeyboardListening] = useState(true);
+
+  // debounced handler for processing barcode scanner input
+  const handleBarcodeInput = (e, value) => {
+    console.log('handleBarcodeInput', value);
+    setKeyword(value);
+    search(value);
+  };
+
+  const enableKeyboardListening = () => {
+    setIsKeyboardListening(true);
+  };
+
+  const disableKeyboardListening = () => {
+    setIsKeyboardListening(false);
+  };
 
   const loadParts = async (page, reset = false, _by = null, _byValue = null, _pageSize = null) => {
     let byParameter = _by;
     let byValueParameter = _byValue;
     let pageSizeParameter = _pageSize;
-    if (byParameter === null)
-      byParameter = by;
-    if (byValueParameter === null)
-      byValueParameter = byValue;
-    if (pageSizeParameter === null)
-      pageSizeParameter = pageSize;
+    if (byParameter === null) byParameter = by;
+    if (byValueParameter === null) byValueParameter = byValue;
+    if (pageSizeParameter === null) pageSizeParameter = pageSize;
 
-    const response = await fetchApi(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSizeParameter}&page=${page}&by=${byParameter}&value=${byValueParameter}`);
+    const response = await fetchApi(
+      `part/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSizeParameter}&page=${page}&by=${byParameter}&value=${byValueParameter}`
+    );
     const { data } = response;
     const pageOfData = data.items;
     const totalPages = data.totalItems / pageSizeParameter;
     let newData = [];
-    if (reset)
-      newData = [...pageOfData];
-    else
-      newData = [...parts, ...pageOfData];
-      setParts(newData);
-      setPage(page);
-      setTotalPages(totalPages);
-      setLoading(false);
+    if (reset) newData = [...pageOfData];
+    else newData = [...parts, ...pageOfData];
+    setParts(newData);
+    setPage(page);
+    setTotalPages(totalPages);
+    setLoading(false);
   };
 
   const search = async (keyword) => {
+    console.log('search', keyword);
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
-    
+
     // if there's a keyword we should clear binning (because they use different endpoints)
-    setBy('');
-    setByValue('');
+    setBy("");
+    setByValue("");
 
     setLoading(true);
 
@@ -65,20 +80,19 @@ export function Search (props) {
         const data = await response.json();
         setParts(data || []);
         setLoading(false);
-      }
-      else {
+      } else {
         setParts([]);
         setLoading(false);
       }
     } catch (ex) {
-      if (ex.name === 'AbortError') {
+      if (ex.name === "AbortError") {
         return; // Continuation logic has already been skipped, so return normally
       }
       throw ex;
     }
   };
 
-  const searchDebounced = AwesomeDebouncePromise(search, 400);
+  const searchDebounced = useMemo(() => debounce(search, 400), []);
 
   useEffect(() => {
     const _keyword = searchParams.get("keyword");
@@ -124,7 +138,7 @@ export function Search (props) {
 
   const handleSearch = (e, control) => {
     switch (control.name) {
-      case 'keyword':
+      case "keyword":
         if (control.value && control.value.length > 0) {
           searchDebounced(control.value);
         } else {
@@ -132,15 +146,15 @@ export function Search (props) {
         }
         break;
       default:
-          break;
+        break;
     }
     setKeyword(control.value);
   };
 
   const removeFilter = (e) => {
     e.preventDefault();
-    setBy('');
-    setByValue('');
+    setBy("");
+    setByValue("");
     props.history(`/inventory`);
   };
 
@@ -151,17 +165,43 @@ export function Search (props) {
 
   return (
     <div>
+      <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={3} />
       <h1>Inventory</h1>
-      <Input placeholder='Search' icon='search' focus value={keyword} onChange={handleSearch} name='keyword' />
-      <div style={{ paddingTop: '10px', marginBottom: '10px' }}>
-        {by && <Button primary size='mini' onClick={removeFilter}><Icon name='delete' />{by}: {byValue}</Button>}
+      <Form>
+        <Form.Field width={5}>
+          <Input            
+            placeholder="Search"
+            icon="search"
+            focus
+            value={keyword}
+            onChange={handleSearch}
+            name="keyword"
+            onFocus={disableKeyboardListening}
+            onBlur={enableKeyboardListening}
+          />
+        </Form.Field>
+      </Form>
+      <div style={{ paddingTop: "10px", marginBottom: "10px" }}>
+        {by && (
+          <Button primary size="mini" onClick={removeFilter}>
+            <Icon name="delete" />
+            {by}: {byValue}
+          </Button>
+        )}
       </div>
-      <PartsGrid parts={parts} page={page} totalPages={totalPages} loading={loading} loadPage={handleNextPage} onPartClick={handlePartClick} onPageSizeChange={handlePageSizeChange} name='partsGrid' />
+      <PartsGrid
+        parts={parts}
+        page={page}
+        totalPages={totalPages}
+        loading={loading}
+        loadPage={handleNextPage}
+        onPartClick={handlePartClick}
+        onPageSizeChange={handlePageSizeChange}
+        name="partsGrid"
+      >No matching results.</PartsGrid>
     </div>
   );
 }
 
 // eslint-disable-next-line import/no-anonymous-default-export
-export default (props) => (
-  <Search {...props} params={useParams()} history={useNavigate()} location={window.location} />
-);
+export default (props) => <Search {...props} params={useParams()} history={useNavigate()} location={window.location} />;
