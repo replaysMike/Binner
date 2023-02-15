@@ -239,7 +239,6 @@ export const Settings = (props) => {
       },
       body: JSON.stringify(settings)
     }).then((response) => {
-      console.log('response', response);
       const saveMessage = "System settings were saved.";
       toast.success(saveMessage);
       setSaveMessage(saveMessage);
@@ -309,7 +308,10 @@ export const Settings = (props) => {
   return (
     <div>
       <h1>Settings</h1>
-      <p>Configure your integrations, printer configuration, as well as label part templates.</p>
+      <p>
+        Configure your integrations, printer configuration, as well as label part templates.<br/>
+        Additional help can be found on the <a href="https://github.com/replaysMike/Binner/wiki/Configuration" target="_blank" rel="noreferrer">Wiki</a>
+      </p>
 
       <Form onSubmit={onSubmit}>
         <Segment loading={loading} color="blue" raised padded>
@@ -329,18 +331,21 @@ export const Settings = (props) => {
               Swarm
             </Header>
             <p>
-              Swarm is a free API service provided by Binner that contains part information from many aggregate sources. It is the primary source of part, media
+              Swarm is a free API service provided by <a href="https://binner.io" target="_blank" rel="noreferrer">Binner's cloud service</a> that contains part metadata from many aggregate sources. It is the primary source of part, media
               and datasheet information. Registering for your own API Keys will give you higher request limits and can be obtained at{" "}
               <a href="https://binner.io/swarm" target="_blank" rel="noreferrer">
                 https://binner.io/swarm
               </a>
             </p>
-            <Popup
-              wide
-              content={<p>Check this box to enable Binner Swarm support.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Swarm Support</label>
+            <Form.Field width={10}>
+              <label>Swarm Support</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[120, 0]}
+                hoverable
+                content={<p>Choose if you would like to enable Binner Swarm support.</p>}
+                trigger={
                   <Dropdown
                     name="swarmEnabled"
                     placeholder="Enabled"
@@ -349,24 +354,28 @@ export const Settings = (props) => {
                     options={enabledSources}
                     onChange={handleChange}
                   />
-                </Form.Field>
-              }
-            />
-            <Popup
-              wide
-              content={<p>Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Api Key</label>
-                  <Input className="labeled" placeholder="" value={settings.binner.apiKey || ""} name="swarmApiKey" onChange={handleChange}></Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Swarm's API Url</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>ApiUrl</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Key</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.</p>}
+                trigger={<Input className="labeled" placeholder="" value={settings.binner.apiKey || ""} name="swarmApiKey" onChange={handleChange}></Input>}
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Url</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Swarm's API Url</p>}
+                trigger={
                   <Input
                     className="labeled"
                     placeholder="swarm.binner.io"
@@ -377,9 +386,9 @@ export const Settings = (props) => {
                     <Label>https://</Label>
                     <input />
                   </Input>
-                </Form.Field>
-              }
-            />
+                }
+              />
+            </Form.Field>
           </Segment>
 
           <Segment loading={loading} color="green" secondary>
@@ -392,17 +401,20 @@ export const Settings = (props) => {
                 https://developer.digikey.com/
               </a>
             </p>
-            <Popup
-              wide
-              content={
-                <p>
-                  Check this box to enable DigiKey support. You will occasionally be asked to login to your DigiKey account to allow Binner to access your
-                  information.
-                </p>
-              }
-              trigger={
-                <Form.Field width={10}>
-                  <label>DigiKey Support</label>
+            <Form.Field width={10}>
+              <label>DigiKey Support</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>
+                    Choose if you would like to enable DigiKey support. You will occasionally be asked to login to your DigiKey account to allow Binner to
+                    access your information.
+                  </p>
+                }
+                trigger={
                   <Dropdown
                     name="digikeyEnabled"
                     placeholder="Enabled"
@@ -411,23 +423,47 @@ export const Settings = (props) => {
                     options={enabledSources}
                     onChange={handleChange}
                   />
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Your DigiKey client id.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>ClientId</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Client Id</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={
+                  <div>
+                    Your DigiKey <b>Client ID</b>.
+                    <div className="helpimage">
+                      <img src="/image/help/digikey-apikeys.png" alt="DigiKey Client ID" />
+                      Figure 1. DigiKey Api Key settings
+                    </div>
+                  </div>
+                }
+                trigger={
                   <Input className="labeled" placeholder="" value={settings.digikey.clientId || ""} name="digikeyClientId" onChange={handleChange}></Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Your DigiKey client secret (api key).</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Client Secret</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Client Secret</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[95, 0]}
+                hoverable
+                content={
+                  <div>
+                    Your DigiKey <b>Client Secret</b>.
+                    <div className="helpimage">
+                      <img src="/image/help/digikey-apikeys.png" alt="DigiKey Client Secret" />
+                      Figure 1. DigiKey Api Key settings
+                    </div>
+                  </div>
+                }
+                trigger={
                   <Input
                     className="labeled"
                     placeholder=""
@@ -435,15 +471,22 @@ export const Settings = (props) => {
                     name="digikeyClientSecret"
                     onChange={handleChange}
                   ></Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              wide="very"
-              content={<p>DigiKey's API Url. This will either be api.digikey.com (live) or sandbox-api.digikey.com (for testing)</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>ApiUrl</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Url</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={
+                  <p>
+                    DigiKey's API Url. This will either be <i>api.digikey.com</i> (live) or <i>sandbox-api.digikey.com</i> (for testing only)
+                  </p>
+                }
+                trigger={
                   <Input
                     className="labeled"
                     placeholder="sandbox-api.digikey.com"
@@ -454,21 +497,31 @@ export const Settings = (props) => {
                     <Label>https://</Label>
                     <input />
                   </Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              wide="very"
-              content={
-                <p>
-                  Binner's postback url must be registered with your DigiKey Api account and be accessable through your router. Ensure your firewall rules allow
-                  incoming requests to Binner's port (default 8090) and is port forwarded to the correct machine on your network (localhost won't work, must be
-                  your public IP). Example: <i>54.55.123.46:8090/Authorization/Authorize</i>
-                </p>
-              }
-              trigger={
-                <Form.Field width={10}>
-                  <label>PostbackUrl</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Postback Url</label>
+              <Popup
+                wide="very"
+                position="top left"
+                offset={[95, 0]}
+                hoverable
+                content={
+                  <div>
+                    Binner's postback url must be registered with DigiKey exactly as specified here, on DigiKey this is named <b>Callback URL</b>. This should
+                    almost always be localhost, and no firewall settings are required as your web browser will be making the request.
+                    <br />
+                    <br />
+                    <b>Example:</b> <i>localhost:8090/Authorization/Authorize</i>
+                    <br />
+                    <div className="helpimage">
+                      <img src="/image/help/digikey-callbackurl.png" alt="DigiKey Callback URL" />
+                      Figure 1. DigiKey Api settings
+                    </div>
+                  </div>
+                }
+                trigger={
                   <Input
                     className="labeled"
                     placeholder="localhost:8090/Authorization/Authorize"
@@ -479,9 +532,9 @@ export const Settings = (props) => {
                     <Label>https://</Label>
                     <input />
                   </Input>
-                </Form.Field>
-              }
-            />
+                }
+              />
+            </Form.Field>
           </Segment>
 
           <Segment loading={loading} color="green" secondary>
@@ -494,12 +547,15 @@ export const Settings = (props) => {
                 https://www.mouser.com/api-hub/
               </a>
             </p>
-            <Popup
-              wide
-              content={<p>Check this box to enable Mouser support.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Mouser Support</label>
+            <Form.Field width={10}>
+              <label>Mouser Support</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[120, 0]}
+                hoverable
+                content={<p>Choose if you would like to enable Mouser support.</p>}
+                trigger={
                   <Dropdown
                     name="mouserEnabled"
                     placeholder="Enabled"
@@ -508,14 +564,17 @@ export const Settings = (props) => {
                     options={enabledSources}
                     onChange={handleChange}
                   />
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Your api key for accessing the search api.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Search Api Key</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Search Api Key</label>
+              <Popup
+                position="top left"
+                offset={[110, 0]}
+                hoverable
+                content={<p>Your api key for accessing the search api.</p>}
+                trigger={
                   <Input
                     className="labeled"
                     placeholder=""
@@ -523,32 +582,41 @@ export const Settings = (props) => {
                     name="mouserSearchApiKey"
                     onChange={handleChange}
                   ></Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Your api key for accessing the orders api.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Order Api Key</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Orders Api Key</label>
+              <Popup
+                position="top left"
+                offset={[110, 0]}
+                hoverable
+                content={<p>Your api key for accessing the orders api.</p>}
+                trigger={
                   <Input className="labeled" placeholder="" value={settings.mouser.orderApiKey || ""} name="mouserOrderApiKey" onChange={handleChange}></Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Your api key for accessing the shopping cart api.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Cart Api Key</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Cart Api Key</label>
+              <Popup
+                position="top left"
+                offset={[90, 0]}
+                hoverable
+                content={<p>Your api key for accessing the shopping cart api.</p>}
+                trigger={
                   <Input className="labeled" placeholder="" value={settings.mouser.cartApiKey || ""} name="mouserCartApiKey" onChange={handleChange}></Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Mouser's API Url. This will be api.mouser.com</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Api Url</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Url</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Mouser's API Url. This will be api.mouser.com</p>}
+                trigger={
                   <Input
                     className="labeled"
                     placeholder="api.mouser.com"
@@ -559,9 +627,9 @@ export const Settings = (props) => {
                     <Label>https://</Label>
                     <input />
                   </Input>
-                </Form.Field>
-              }
-            />
+                }
+              />
+            </Form.Field>
           </Segment>
 
           <Segment loading={loading} color="green" secondary>
@@ -574,12 +642,15 @@ export const Settings = (props) => {
                 https://octopart.com/api/home
               </a>
             </p>
-            <Popup
-              wide
-              content={<p>Check this box to enable Octopart support.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Octopart Support</label>
+            <Form.Field width={10}>
+              <label>Octopart Support</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={<p>Choose if you would like to enable Octopart support.</p>}
+                trigger={
                   <Dropdown
                     name="octopartEnabled"
                     placeholder="Disabled"
@@ -588,23 +659,29 @@ export const Settings = (props) => {
                     options={enabledSources}
                     onChange={handleChange}
                   />
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Your api key for Octopart.</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Api Key</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Key</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Your api key for Octopart.</p>}
+                trigger={
                   <Input className="labeled" placeholder="" value={settings.octopart.apiKey || ""} name="octopartApiKey" onChange={handleChange}></Input>
-                </Form.Field>
-              }
-            />
-            <Popup
-              content={<p>Octopart's API Url. This will be octopart.com</p>}
-              trigger={
-                <Form.Field width={10}>
-                  <label>Api Url</label>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Url</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Octopart's API Url. This will be octopart.com</p>}
+                trigger={
                   <Input
                     action
                     className="labeled"
@@ -616,9 +693,9 @@ export const Settings = (props) => {
                     <Label>https://</Label>
                     <input />
                   </Input>
-                </Form.Field>
-              }
-            />
+                }
+              />
+            </Form.Field>
           </Segment>
         </Segment>
 

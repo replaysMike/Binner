@@ -1,26 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ReactDOM from "react-dom";
 import { Link } from "react-router-dom";
 import _ from "underscore";
-import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader } from "semantic-ui-react";
+import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Popup } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
 import { FormError } from "../components/FormError";
 import { toast } from "react-toastify";
 import { format, parseJSON } from "date-fns";
-import { formatCurrency } from "../common/Utils";
+import { formatCurrency, isNumeric } from "../common/Utils";
+import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 
 export function OrderImport(props) {
   OrderImport.abortController = new AbortController();
-  const [orderLabel, setOrderLabel] = useState("Order #");
+  const [orderLabel, setOrderLabel] = useState("Sales Order #");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState({});
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [order, setOrder] = useState({
     orderId: "",
-    supplier: ""
+    supplier: "DigiKey"
   });
-  const [suppliers] = useState([
+  const [supplierOptions] = useState([
     {
       key: 1,
       value: "DigiKey",
@@ -31,9 +33,31 @@ export function OrderImport(props) {
       value: "Mouser",
       text: "Mouser"
     }
-  ]);  
+  ]);
 
-  const onImportParts = async (e) => {
+  // debounced handler for processing barcode scanner input
+  const handleBarcodeInput = (e, value) => {
+    // ignore single keypresses
+    if (isNumeric(value)) {
+      const newOrder = { ...order, orderId: value };
+      setOrder({...newOrder});
+      toast.info(`Loading order# ${value}`, { autoClose: 10000 });
+      getPartsToImport(e, newOrder);
+    } else if (value.length > 5) {
+      // handle invalid input if it's not keyboard typing
+      toast.error(`Hmmm, that doesn't look like a valid order number!`);
+    }
+  };
+
+  const enableKeyboardListening = () => {
+    setIsKeyboardListening(true);
+  };
+
+  const disableKeyboardListening = () => {
+    setIsKeyboardListening(false);
+  };
+
+  const handleImportParts = async (e) => {
     setLoading(true);
     setError(null);
 
@@ -56,7 +80,7 @@ export function OrderImport(props) {
     });
   };
 
-  const onSubmit = async (e) => {
+  const getPartsToImport = async (e, order) => {
     OrderImport.abortController.abort(); // Cancel the previous request
     OrderImport.abortController = new AbortController();
     setLoading(true);
@@ -78,8 +102,12 @@ export function OrderImport(props) {
         signal: OrderImport.abortController.signal
       }).then((response) => {
         const { data } = response;
+        toast.dismiss();
         if (data.requiresAuthentication) {
           // redirect for authentication
+          const errorMessage = data.errors.join('\n');
+          setError(errorMessage);
+          setLoading(false);
           window.open(data.redirectUrl, "_blank");
           return;
         }
@@ -131,7 +159,7 @@ export function OrderImport(props) {
           setOrderLabel("Web Order #");
           setMessage((<div><i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i></div>));
         } else {
-          setOrderLabel("Order #");
+          setOrderLabel("Sales Order #");
           setMessage("");
         }
         break;
@@ -185,7 +213,7 @@ export function OrderImport(props) {
   const renderAllMatchingParts = (order) => {
     return (
       <div>
-        <Form onSubmit={onImportParts}>
+        <Form onSubmit={handleImportParts}>
           <Table compact celled selectable size="small" className="partstable">
             <Table.Header>
               <Table.Row>
@@ -262,31 +290,37 @@ export function OrderImport(props) {
 
   return (
     <div>
+      <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} />
       <h1>Order Import</h1>
-      <Form onSubmit={onSubmit}>
+      <Form onSubmit={e => getPartsToImport(e, order)}>
         <Form.Group>
           <Form.Dropdown
             label="Supplier"
-            placeholder="Choose a Supplier"
             selection
             value={order.supplier}
-            options={suppliers}
+            options={supplierOptions}
             onChange={handleChange}
             name="supplier"
           />
-          <Form.Input 
-            label={orderLabel} 
-            required 
-            placeholder="1023840" 
-            icon="search" 
-            focus 
-            value={order.orderId} 
-            onChange={handleChange} 
-            name="orderId" 
-          />
+          <Popup 
+            position="bottom left"
+            wide
+            content={<div>Enter your order number for the supplier.<br/><br/>For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br/>For <b>Mouser</b> orders, this is the <i>Web Order #</i>.</div>}
+            trigger={<Form.Input 
+              label={orderLabel} 
+              placeholder="1023840" 
+              icon="search" 
+              focus 
+              value={order.orderId} 
+              onChange={handleChange} 
+              onFocus={disableKeyboardListening}
+              onBlur={enableKeyboardListening}
+              name="orderId" 
+              />}
+          />          
         </Form.Group>
         <div style={{height: '30px'}}>{message}</div>
-        <Button primary disabled={loading}>Search</Button>
+        <Button primary disabled={loading || order.orderId.length === 0}>Search</Button>
         <Button onClick={handleClear} disabled={!(results.parts && results.parts.length > 0)}>Clear</Button>
       </Form>
       <div style={{ marginTop: "20px" }}>

@@ -15,6 +15,6 @@
         /// <summary>
         /// Path to the Swarm Api
         /// </summary>
-        public string ApiUrl { get; set; } = "https://swarm.binner.io";
+        public string? ApiUrl { get; set; } = "https://swarm.binner.io";
     }
 }

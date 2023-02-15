@@ -25,6 +25,6 @@
         /// <summary>
         /// Path to the Digikey Api
         /// </summary>
-        public string ApiUrl { get; set; } = "https://sandbox-api.digikey.com";
+        public string ApiUrl { get; set; } = "https://api.digikey.com";
     }
 }

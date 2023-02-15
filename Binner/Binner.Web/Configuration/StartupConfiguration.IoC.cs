@@ -75,7 +75,7 @@ namespace Binner.Web.Configuration
 
         private static void RegisterPrinterService(IServiceContainer container)
         {
-            container.Register<IBarcodeGenerator, BarcodeGenerator>(new PerContainerLifetime());
+            container.Register<IBarcodeGenerator, BarcodeGenerator>(new PerScopeLifetime());
             container.Register<ILabelPrinterHardware>((serviceFactory) =>
             {
                 var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
@@ -93,20 +93,20 @@ namespace Binner.Web.Configuration
 
         private static void RegisterServices(IServiceContainer container)
         {
-            container.Register<IPartService, PartService>(new PerContainerLifetime());
-            container.Register<IPartTypeService, PartTypeService>(new PerContainerLifetime());
-            container.Register<IProjectService, ProjectService>(new PerContainerLifetime());
-            container.Register<ICredentialService, CredentialService>(new PerContainerLifetime());
-            container.Register<ISettingsService, SettingsService>(new PerContainerLifetime());
-            container.Register<ISwarmService, SwarmService>(new PerContainerLifetime());
-            container.Register<IStoredFileService, StoredFileService>(new PerContainerLifetime());
+            container.Register<IPartService, PartService>(new PerScopeLifetime());
+            container.Register<IPartTypeService, PartTypeService>(new PerScopeLifetime());
+            container.Register<IProjectService, ProjectService>(new PerScopeLifetime());
+            container.Register<ICredentialService, CredentialService>(new PerScopeLifetime());
+            container.Register<ISettingsService, SettingsService>(new PerScopeLifetime());
+            container.Register<ISwarmService, SwarmService>(new PerScopeLifetime());
+            container.Register<IStoredFileService, StoredFileService>(new PerScopeLifetime());
         }
 
         private static void RegisterApiIntegrations(IServiceContainer container)
         {
             // register integration apis    
-            container.Register<IIntegrationApiFactory, IntegrationApiFactory>();
-            container.Register<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>();
+            container.Register<IIntegrationApiFactory, IntegrationApiFactory>(new PerScopeLifetime());
+            container.Register<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>(new PerScopeLifetime());
         }
     }
 }

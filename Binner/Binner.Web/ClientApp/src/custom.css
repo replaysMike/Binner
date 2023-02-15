@@ -13,7 +13,7 @@
     margin: 10px auto 10px auto !important;
 }
 
-.ui.label {
+.partstable .ui.label {
     background-color: transparent !important;
     font-weight: 500 !important;
 }
@@ -422,4 +422,18 @@ code {
     font-weight: 400;
     box-shadow: 0 2px 2px 0 rgb(34 36 38 / 15%);
     cursor: pointer;
+}
+
+.helpimage {
+    padding: 10px;
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.helpimage img {
+    border: 1px dashed #eee;
+    padding: 10px;
+    max-width: 500px;
+    height: auto;
+    display: block;
 }
