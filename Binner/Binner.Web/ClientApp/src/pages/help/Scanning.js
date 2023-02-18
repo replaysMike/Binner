@@ -79,39 +79,9 @@ export const Scanning = () => {
 				<Segment>
 						<h4>Mouser</h4>
 						
-						<p>
-							Mouser uses different types of barcodes for it's various paperwork and labeling. Invoices use a standard code-128 barcode which can be scanned on the Order Import page.<br/><br/>
-							Parts use a 2D DotMatrix barcode so you must have a scanner that supports 2D barcodes.
+						<p style={{textAlign: 'center', margin: '100px'}}>
+							Mouser barcode scanning support is <i>coming soon</i>! Look for it in the next feature release.
 						</p>
-
-						<h5>Scanning Parts</h5>
-						By scanning the 2D Dotmatrix barcode on a part label you can:<br/><br/>
-						<ul>
-							<li>Search for parts in your inventory on the Search page</li>
-							<li>Add new parts to your inventory on the Add Inventory page</li>
-							<li>Bulk import new parts on the Add Inventory page</li>
-						</ul>
-
-						<div className="helpvideo">
-							<img src="/image/help/digikey-label.jpg" alt="Mouser DotMatrix 2D Barcode" style={{width: '400px', height: 'auto'}} />
-							Example 1. This is a 2D DotMatrix barcode on a standard Mouser part label.
-						</div>
-
-						<h5>Importing Orders</h5>
-
-						<p>
-							On the <Link to="/import">Order Import</Link> page you can scan one of your past orders to import all parts in the order at once.<br/>
-							To do so, you will need the Mouser packing list for your order. The invoice doesn't contain the barcodes you want, however you can type in the Sales Order Number manually easily as well.
-
-						</p>
-
-						<div className="helpvideo">
-							<img src="/image/help/digikey-packinglist.jpg" alt="Mouser DotMatrix 2D Barcode" style={{width: '600px', height: 'auto'}} />
-							Example 2. There are multiple 1D code-128 barcodes, and several 2D DotMatrix barcodes on a standard Mouser packing list.
-						</div>
-
-						<p>The Sales Order number can be scanned (top right) to import the entire - <i>or parts of</i> an order. You can also scan the 2D DotMatrix barcodes which provide the same information.</p>
-						<p>Additionally, each itemized part can be scanned in the packing list but this is only supported on the Add Inventory page. Note there is a barcode for both the part as well as a smaller barcode for its quantity.</p>
 
 					</Segment>
 
