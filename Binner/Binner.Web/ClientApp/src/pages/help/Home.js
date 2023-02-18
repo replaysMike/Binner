@@ -24,6 +24,7 @@ export const Help = () => {
                 <div className="helpcontainer">
                     <ul>
                         <li><Link to="/help/scanning">Barcode Scanning</Link><p>Learn more about what types of features are available using a handheld barcode scanner.</p></li>
+												<li><Link to="/help/api-integrations">Api Integrations</Link><p>Configuring Api integrations are an important part of using Binner effectively.</p></li>
                         <li><a href="https://github.com/replaysMike/Binner/wiki">Wiki</a><p>Get more help from the wiki on GitHub</p></li>
                     </ul>
                 </div>

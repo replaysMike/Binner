@@ -168,3 +168,46 @@ img.helpvideo {
   border: 1px dotted #666;
   padding: 5px;
 }
+
+textarea {
+	width: 75%;
+	height: 200px;
+}
+
+code {
+	background: #f4f4f4;
+	border: 1px solid #ddd;
+	border-left: 3px solid #f36d33;
+	color: #666;
+	page-break-inside: avoid;
+	font-family: monospace;
+	font-size: 15px;
+	line-height: 1.6;
+	margin-bottom: 1.6em;
+	max-width: 100%;
+	padding: 1em 1.5em;
+	display: block;
+	word-wrap: break-word !important;
+	white-space: pre-line !important;
+}
+
+pre {
+	white-space: pre !important;
+}
+
+p > b, li > b, .bullet > b {
+	font-weight: 600;
+	color: rgb(0, 115, 204);
+}
+
+li {
+	padding: 10px 0;
+	margin-left: 30px;
+}
+
+.bullet {
+	border-left: 2px solid #3340f3;
+	padding: 10px;
+	margin-left: 30px;
+	margin-bottom: 15px;
+}

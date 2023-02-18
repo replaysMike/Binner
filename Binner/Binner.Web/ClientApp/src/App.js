@@ -31,7 +31,7 @@ import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalc
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
 import { Help } from './pages/help/Home';
 import { Scanning } from './pages/help/Scanning';
-
+import { ApiIntegrations } from './pages/help/ApiIntegrations';
 
 export default class App extends Component {
   static displayName = App.name;
@@ -87,6 +87,7 @@ export default class App extends Component {
             />
             <Route exact path="/help" element={<Help />} />
             <Route path="/help/scanning" element={<Scanning />} />
+            <Route path="/help/api-integrations" element={<ApiIntegrations />} />
           </Routes>
         </Layout>
         <ErrorContext.Provider value={this.state}>
