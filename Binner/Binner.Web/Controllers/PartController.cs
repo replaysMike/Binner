@@ -108,7 +108,7 @@ namespace Binner.Web.Controllers
 
             mappedPart.PartTypeId = partType.PartTypeId;
             mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
-            
+
             if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             var duplicatePartResponse = await CheckForDuplicateAsync(request, mappedPart);
@@ -136,7 +136,7 @@ namespace Binner.Web.Controllers
             var mappedPart = Mapper.Map<UpdatePartRequest, Part>(request);
             var partType = await GetPartTypeAsync(request.PartTypeId);
             if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
-            
+
             mappedPart.PartTypeId = partType.PartTypeId;
             mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
             if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
@@ -166,7 +166,8 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> CreateBulkPartsAsync(CreateBulkPartRequest request)
         {
             var updatedParts = new List<Part>();
-            var mappedParts = Mapper.Map<ICollection<PartBase>, ICollection<Part>>(request.Parts ?? new List<PartBase>());
+            var partsRequested = request.Parts ?? new List<PartBase>();
+            var mappedParts = Mapper.Map<ICollection<PartBase>, ICollection<Part>>(partsRequested);
             var partTypes = await _partTypeService.GetPartTypesAsync();
             var defaultPartType = partTypes
                 .FirstOrDefault(x => x.Name?.Equals("Other", StringComparison.InvariantCultureIgnoreCase) == true) ?? partTypes.First();
@@ -186,12 +187,22 @@ namespace Binner.Web.Controllers
                 else
                 {
                     var isMapped = false;
-                    // if it's numeric only, try getting barcode information
-                    var isNumber = new Regex(@"^\d+$");
-                    if (isNumber.Match(mappedPart.PartNumber).Success)
+                    var barcode = string.Empty;
+                    var partRequested = partsRequested?.Where(x => x.PartNumber == mappedPart.PartNumber).FirstOrDefault();
+                    if (partRequested != null && !string.IsNullOrEmpty(partRequested.Barcode))
+                        barcode = partRequested.Barcode;
+                    else
                     {
-                        var barcodeResult = await _partService.GetBarcodeInfoAsync(mappedPart.PartNumber);
-                        if (barcodeResult != null && barcodeResult.Response?.Parts.Any() == true)
+                        // if it's numeric only, try getting barcode information
+                        var isNumber = Regex.Match(@"^\d+$", mappedPart.PartNumber).Success;
+                        if (isNumber) barcode = mappedPart.PartNumber;
+
+                    }
+
+                    if (!string.IsNullOrEmpty(barcode))
+                    {
+                        var barcodeResult = await _partService.GetBarcodeInfoAsync(barcode);
+                        if (barcodeResult.Response?.Parts.Any() == true)
                         {
                             // convert this entry to a part
                             var entry = barcodeResult.Response.Parts.First();

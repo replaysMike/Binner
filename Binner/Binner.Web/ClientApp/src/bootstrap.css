@@ -254,9 +254,10 @@
   background-color: transparent;
   border: 0;
 }
+/*
 .hidden {
   display: none !important;
-}
+}*/
 .affix {
   position: fixed;
 }

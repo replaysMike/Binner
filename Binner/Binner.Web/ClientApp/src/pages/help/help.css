@@ -1,0 +1,170 @@
+.mdblock {
+	font-family: 'Source Code Pro', monospace;
+	color: #000;
+	font-size: 0.7em;
+	font-weight: 500;
+	padding: 10px 20px;
+	background-color: #ddd;
+	border: 1px dashed #aaa;
+	margin: 20px 10px;
+}
+
+.definitions {
+	padding: 20px;
+	margin: 10px 10px;
+	border: 1px solid #aaa;
+}
+
+.definition {
+	margin-bottom: 20px;
+}
+
+.definition.optional span:after {
+	content: 'optional';
+	margin: 0 10px 0 0px;
+	font-style: italic;
+	font-weight: 500;
+}
+
+.definition span:nth-child(1) {
+	font-weight: 700;
+}
+
+table.excel {
+	font-size: 0.8em;
+	margin-top: 20px;
+	margin-bottom: 50px;
+}
+
+table.excel tr:nth-child(1) {
+	border: 1px solid #000;
+	padding: 0 5px;
+	text-align: center;
+	background-color: #ddd !important;
+}
+
+table.excel tr:nth-child(1) td {
+	border: 1px solid #000;
+	background-color: #ddd !important;
+	font-weight: 800;
+}
+
+table.excel tr:nth-child(2) td {
+	font-weight: 800;
+}
+
+table.excel td:nth-child(1) {
+	border: 1px solid #000;
+	font-weight: 800;
+	padding: 0 10px;
+	text-align: center;
+	background-color: #ddd;
+}
+
+table.excel td {
+	font-size: 0.9em;
+	border: 1px dotted #aaa;
+	padding: 2px 6px;
+	background-color: #fff;
+}
+
+table.excel tr:last-child td {
+	text-align: left;
+}
+
+table.excel tr:last-child td span.active {
+	background-color: #fff;
+	margin-left: 20px;
+	right: 0;
+	padding: 4px 15px;
+	border-radius: 0 0 8px 8px;
+	border: 1px solid #000;
+	border-top: 0;
+	top: 1px;
+}
+
+table.excel tr:last-child td span {
+	background-color: #dadada;
+	border-right: 1px solid #aaa;
+	padding: 1px 15px;
+	position: relative;
+	top: 1px;
+}
+
+.helpcontainer {
+  margin: auto;
+  width: 90%;
+}
+
+.helpcontainer ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.helpcontainer li {
+  list-style: none;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-top: 5px solid rgb(0, 115, 204);
+  max-width: 200px;
+  min-width: 150px;
+  min-height: 200px;
+  margin: 10px;
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+  padding: 10px;
+}
+
+.helpcontainer li:HOVER{
+  background-color: #f6f6f6;
+  border-top: 5px solid #DF1461;
+}
+
+.helpcontainer a {
+  display: inline-block;
+  color: #000;
+  font-weight: 800;
+  font-size: 1.1em;
+  min-height: 50px;
+  padding: 10px;
+}
+
+div.helpvideo {
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+  padding: 20px;
+  background-color: #f6f6f6;
+}
+
+.helpvideo img {
+  display: block;
+  border: 1px dotted #666;
+  padding: 5px;
+  width: 700px;
+  height: auto;
+}
+
+img.helpvideo {
+  border: 1px dotted #666;
+  padding: 5px;
+  width: 700px;
+  height: auto;
+}
+
+.imagegroup {
+	display: flex;
+}
+
+.imagegroup div {
+	margin: 10px 50px;
+}
+
+.imagegroup img {
+	display: block;
+  border: 1px dotted #666;
+  padding: 5px;
+}

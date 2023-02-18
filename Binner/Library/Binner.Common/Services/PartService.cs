@@ -346,8 +346,19 @@ namespace Binner.Common.Services
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                 else if (apiResponse.Errors?.Any() == true)
-                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
-                digikeyResponse = (ProductBarcodeResponse?)apiResponse.Response;
+                {
+                    //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    // try looking up the part by its barcode value, which could be a product search
+                    digikeyResponse = new ProductBarcodeResponse
+                    {
+                        DigiKeyPartNumber = barcode
+                    };
+                }
+                else
+                {
+                    digikeyResponse = (ProductBarcodeResponse?)apiResponse.Response;
+                }
+                
                 if (digikeyResponse != null && !string.IsNullOrEmpty(digikeyResponse.DigiKeyPartNumber))
                 {
                     var partResponse = await digikeyApi.GetProductDetailsAsync(digikeyResponse.DigiKeyPartNumber);
@@ -474,12 +485,9 @@ namespace Binner.Common.Services
             if (swarmApi.Configuration.IsConfigured)
             {
                 var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
-                if (apiResponse != null)
-                {
-                    if (apiResponse.Errors?.Any() == true)
-                        return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
-                    swarmResponse = (SwarmApi.Response.SearchPartResponse?)apiResponse.Response ?? new SwarmApi.Response.SearchPartResponse();
-                }
+                if (apiResponse.Errors?.Any() == true)
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                swarmResponse = (SwarmApi.Response.SearchPartResponse?)apiResponse.Response ?? new SwarmApi.Response.SearchPartResponse();
             }
 
             // todo: cache part types (I think we already have it somewhere)
