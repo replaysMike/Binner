@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { usePrompt } from "../hooks/usePrompt";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import {
@@ -24,7 +25,7 @@ import {
   Card,
   Menu,
   Placeholder,
-  Breadcrumb
+  Flag
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
@@ -38,6 +39,7 @@ import { getPartTypeId } from "../common/partTypes";
 import axios from "axios";
 import { StoredFileType } from "../common/StoredFileType";
 import { GetTypeName, GetTypeValue } from "../common/Types";
+import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import "./Inventory.css";
 
 const ProductImageIntervalMs = 10 * 1000;
@@ -45,7 +47,6 @@ const ProductImageIntervalMs = 10 * 1000;
 export function Inventory(props) {
   const maxRecentAddedParts = 10;
   const [searchParams] = useSearchParams();
-  let barcodeBuffer = "";
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
     lastPartTypeId: 14, // IC
@@ -144,6 +145,14 @@ export function Inventory(props) {
   const [uploading, setUploading] = useState(false);
   const [dragOverClass, setDragOverClass] = useState("");
 
+  const isEditing = part.partId > 0 || props.params.partNumber;
+
+  // todo: find a better alternative, we shouldn't need to do this!
+  const bulkScanIsOpenRef = useRef();
+  bulkScanIsOpenRef.current = bulkScanIsOpen;
+  const scannedPartsRef = useRef();
+  scannedPartsRef.current = scannedParts;
+
   useEffect(() => {
     const partNumberStr = props.params.partNumber;
     const fetchData = async () => {
@@ -157,15 +166,12 @@ export function Inventory(props) {
       } else {
         resetForm();
       }
-      addKeyboardHandler();
     };
     fetchData().catch(console.error);
     return () => {
-      removeKeyboardHandler();
-      scannerDebounced.cancel();
       searchDebounced.cancel();
     };
-  }, [props.params.partNumber]); //test
+  }, [props.params.partNumber]);
 
   const fetchPartMetadata = async (input, part) => {
     Inventory.infoAbortController.abort();
@@ -190,7 +196,7 @@ export function Inventory(props) {
 
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
-        if (!part.partNumber) setPartFromMetadata(metadataParts, suggestedPart, partTypes);
+        if(!isEditing) setPartFromMetadata(metadataParts, suggestedPart, partTypes);
       } else {
         // no part metadata available
         setPartMetadataIsSubscribed(true);
@@ -211,47 +217,6 @@ export function Inventory(props) {
     }
   };
 
-  // debounced handler for processing barcode scanner input
-  const barcodeInput = (e, value) => {
-    barcodeBuffer = "";
-    if (value.indexOf(String.fromCharCode(13), value.length - 2) >= 0) {
-      const cleanPartNumber = value.replace(String.fromCharCode(13), "").trim();
-      // if we have an ok string lets search for the part
-      if (cleanPartNumber.length > 2) {
-        if (bulkScanIsOpen) {
-          // add to bulk scanned parts
-          const lastPart = _.last(scannedParts);
-          const scannedPart = {
-            partNumber: cleanPartNumber,
-            quantity: 1,
-            location: (lastPart && lastPart.location) || "",
-            binNumber: (lastPart && lastPart.binNumber) || "",
-            binNumber2: (lastPart && lastPart.binNumber2) || ""
-          };
-          const existingPartNumber = _.find(scannedParts, { partNumber: cleanPartNumber });
-          if (existingPartNumber) {
-            existingPartNumber.quantity++;
-            localStorage.setItem("scannedPartsSerialized", JSON.stringify(scannedParts));
-            setShowBarcodeBeingScanned(false);
-            setHighlightScannedPart(existingPartNumber);
-            setScannedParts(scannedParts);
-          } else {
-            const newScannedParts = [...scannedParts, scannedPart];
-            localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
-            setShowBarcodeBeingScanned(false);
-            setHighlightScannedPart(scannedPart);
-            setScannedParts(newScannedParts);
-          }
-        } else {
-          // scan single part
-          handleChange(e, { name: "partNumber", value: cleanPartNumber });
-          setShowBarcodeBeingScanned(false);
-        }
-      }
-    }
-  };
-
-  const scannerDebounced = useMemo(() => debounce(barcodeInput, 100), []);
   const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [partTypes, part]);
 
   const onUploadSubmit = async (uploadFiles, type) => {
@@ -264,8 +229,7 @@ export function Inventory(props) {
       const requestData = new FormData();
       requestData.append("partId", part.partId);
       requestData.append("storedFileType", GetTypeValue(StoredFileType, type));
-      for (let i = 0; i < uploadFiles.length; i++) 
-        requestData.append("files", uploadFiles[i], uploadFiles[i].name);
+      for (let i = 0; i < uploadFiles.length; i++) requestData.append("files", uploadFiles[i], uploadFiles[i].name);
 
       axios
         .request({
@@ -283,66 +247,64 @@ export function Inventory(props) {
             setError(<ul className="errors">{errorMessage}</ul>);
           } else {
             // success uploading
-            if (uploadFiles.length === 1)
-              toast.success(`File uploaded.`);
-            else 
-              toast.success(`${uploadFiles.length} files uploaded.`);
+            if (uploadFiles.length === 1) toast.success(`File uploaded.`);
+            else toast.success(`${uploadFiles.length} files uploaded.`);
 
             // add it to the local data
             var typeValue = GetTypeValue(StoredFileType, type);
             var i = 0;
-            switch(typeValue){
+            switch (typeValue) {
               case StoredFileType.ProductImage:
                 const productImages = [...infoResponse.productImages];
-                for(i = 0; i < data.length; i++){
-                  productImages.unshift({ 
+                for (i = 0; i < data.length; i++) {
+                  productImages.unshift({
                     name: data[i].originalFileName,
                     value: `/storedFile/preview?fileName=${data[i].fileName}`,
-                    id: data[i].storedFileId 
+                    id: data[i].storedFileId
                   });
                 }
-                setInfoResponse({...infoResponse, productImages });
+                setInfoResponse({ ...infoResponse, productImages });
                 break;
               case StoredFileType.Datasheet:
                 const datasheets = [...infoResponse.datasheets];
-                for(i = 0; i < data.length; i++){
-                  const datasheet = { 
+                for (i = 0; i < data.length; i++) {
+                  const datasheet = {
                     name: data[i].originalFileName,
                     value: {
                       datasheetUrl: `/storedFile/local?fileName=${data[i].fileName}`,
                       description: data[i].originalFileName,
                       imageUrl: `/storedFile/preview?fileName=${data[i].fileName}`,
-                      manufacturer: '',
-                      title: data[i].originalFileName,
+                      manufacturer: "",
+                      title: data[i].originalFileName
                     },
-                    id: data[i].storedFileId 
+                    id: data[i].storedFileId
                   };
                   datasheets.unshift(datasheet);
                   setDatasheetMeta(datasheet);
                 }
-                setInfoResponse({...infoResponse, datasheets });
+                setInfoResponse({ ...infoResponse, datasheets });
                 break;
               case StoredFileType.Pinout:
                 const pinoutImages = [...infoResponse.pinoutImages];
-                for(i = 0; i < data.length; i++){
-                  pinoutImages.unshift({ 
+                for (i = 0; i < data.length; i++) {
+                  pinoutImages.unshift({
                     name: data[i].originalFileName,
                     value: `/storedFile/preview?fileName=${data[i].fileName}`,
-                    id: data[i].storedFileId 
+                    id: data[i].storedFileId
                   });
                 }
-                setInfoResponse({...infoResponse, pinoutImages });
+                setInfoResponse({ ...infoResponse, pinoutImages });
                 break;
               case StoredFileType.ReferenceDesign:
-                const circuitImages = [...infoResponse.circuitImages ];
-                for(i = 0; i < data.length; i++){
-                  circuitImages.unshift({ 
+                const circuitImages = [...infoResponse.circuitImages];
+                for (i = 0; i < data.length; i++) {
+                  circuitImages.unshift({
                     name: data[i].originalFileName,
                     value: `/storedFile/preview?fileName=${data[i].fileName}`,
-                    id: data[i].storedFileId 
+                    id: data[i].storedFileId
                   });
                 }
-                setInfoResponse({...infoResponse, circuitImages });
+                setInfoResponse({ ...infoResponse, circuitImages });
                 break;
               default:
             }
@@ -358,8 +320,8 @@ export function Inventory(props) {
           console.error("error", error);
           if (error.code === "ERR_NETWORK") {
             const msg = "Unable to upload. Check that the file is not locked or deleted.";
-						toast.error(msg, { autoClose: 10000 });
-						setError(msg);
+            toast.error(msg, { autoClose: 10000 });
+            setError(msg);
           } else {
             toast.error(`Import upload failed!`);
             setError(error.message);
@@ -374,16 +336,93 @@ export function Inventory(props) {
   };
 
   const onUploadError = (errors) => {
-    for(let i = 0; i < errors.length; i++)
-      toast.error(errors[i], { autoClose: 10000 });
+    for (let i = 0; i < errors.length; i++) toast.error(errors[i], { autoClose: 10000 });
   };
 
-  const addKeyboardHandler = () => {
-    if (document) document.addEventListener("keydown", onKeydown);
+  // for processing barcode scanner input
+  const handleBarcodeInput = (e, input) => {
+    if (!input.value) return;
+
+    let cleanPartNumber = "";
+    if (input.type === "datamatrix") {
+      if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
+      else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
+    } else if (input.type === "code128") {
+      cleanPartNumber = input.value;
+    }
+
+    if (!cleanPartNumber) return;
+
+    // add part
+    if (bulkScanIsOpenRef.current) {
+      // bulk scan add part
+      const lastPart = _.last(scannedParts);
+      const scannedPart = {
+        partNumber: cleanPartNumber,
+        quantity: parseInt(input.value.quantity || "1"),
+        location: (lastPart && lastPart.location) || "",
+        binNumber: (lastPart && lastPart.binNumber) || "",
+        binNumber2: (lastPart && lastPart.binNumber2) || "",
+        origin: (input.value.countryOfOrigin && input.value.countryOfOrigin.toLowerCase()) || "",
+        description: input.value.description || "",
+        barcode: input.rawValue
+      };
+      const existingPartNumber = _.find(scannedPartsRef.current, { partNumber: cleanPartNumber });
+      if (existingPartNumber) {
+        existingPartNumber.quantity++;
+        localStorage.setItem("scannedPartsSerialized", JSON.stringify(scannedPartsRef.current));
+        setShowBarcodeBeingScanned(false);
+        setHighlightScannedPart(existingPartNumber);
+        setScannedParts(scannedPartsRef.current);
+      } else {
+        // fetch metadata on the barcode, don't await, do a background update
+        fetchBarcodeMetadata(e, scannedPart.barcode);
+
+        const newScannedParts = [...scannedPartsRef.current, scannedPart];
+        localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
+        setShowBarcodeBeingScanned(false);
+        setHighlightScannedPart(scannedPart);
+        setScannedParts(newScannedParts);
+      }
+    } else {
+      // scan single part
+      if (cleanPartNumber) {
+        setPartMetadataIsSubscribed(false);
+        const newPart = {...part, partNumber: cleanPartNumber, quantity: input.value.quantity || "1"};
+        setPart(newPart);
+        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastQuantity: newPart.quantity }));
+        setShowBarcodeBeingScanned(false);
+        searchDebounced(cleanPartNumber, newPart);
+        setIsDirty(true);
+      }
+    }
   };
 
-  const removeKeyboardHandler = () => {
-    if (document) document.removeEventListener("keydown", onKeydown);
+  const fetchBarcodeMetadata = async (e, barcode) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const response = await fetchApi(`part/barcode/info?barcode=${barcode}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    if (response.responseObject.status === 200) {
+      const { data } = response;
+      if (data.response.parts.length > 0) {
+        // show the metadata in the UI
+        var partInfo =  data.response.parts[0];
+        const newScannedParts = [...scannedPartsRef.current];
+        const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber);
+        if (scannedPartIndex >= 0) {
+          const scannedPart = newScannedParts[scannedPartIndex];
+          scannedPart.description = partInfo.description;
+          newScannedParts[scannedPartIndex] = scannedPart;
+          setScannedParts(newScannedParts);
+          localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
+        }
+      }
+    }
   };
 
   const enableKeyboardListening = () => {
@@ -392,36 +431,6 @@ export function Inventory(props) {
 
   const disableKeyboardListening = () => {
     setIsKeyboardListening(false);
-  };
-
-  /*UNSAFE_componentWillReceiveProps(nextProps) {
-    // if the path changes do some necessary housekeeping
-    if (nextProps.location !== props.location) {
-      // reset the form if the URL has changed
-      resetForm();
-    }
-  }*/
-
-  // listens for document keydown events, used for barcode scanner input
-  const onKeydown = (e) => {
-    if (isKeyboardListening) {
-      let char = String.fromCharCode(96 <= e.keyCode && e.keyCode <= 105 ? e.keyCode - 48 : e.keyCode);
-      // map proper value when shift is used
-      if (e.shiftKey) char = e.key;
-      // map numlock extra keys
-      if ((e.keyCode >= 186 && e.keyCode <= 192) || (e.keyCode >= 219 && e.keyCode <= 222)) char = e.key;
-      if (
-        e.keyCode === 13 ||
-        e.keyCode === 32 ||
-        e.keyCode === 9 ||
-        (e.keyCode >= 48 && e.keyCode <= 90) ||
-        (e.keyCode >= 107 && e.keyCode <= 111) ||
-        (e.keyCode >= 186 && e.keyCode <= 222)
-      ) {
-        barcodeBuffer += char;
-        scannerDebounced(e, barcodeBuffer);
-      }
-    }
   };
 
   const formatField = (e) => {
@@ -524,40 +533,48 @@ export function Inventory(props) {
   };
 
   const mergeInfoResponse = (infoResponse, storedFiles) => {
-    var storedProductImages = _.filter(storedFiles, x => x.storedFileType === StoredFileType.ProductImage);
-    var storedDatasheets = _.filter(storedFiles, x => x.storedFileType === StoredFileType.Datasheet);
-    var storedPinouts = _.filter(storedFiles, x => x.storedFileType === StoredFileType.Pinout);
-    var storedReferenceDesigns = _.filter(storedFiles, x => x.storedFileType === StoredFileType.ReferenceDesign);
+    var storedProductImages = _.filter(storedFiles, (x) => x.storedFileType === StoredFileType.ProductImage);
+    var storedDatasheets = _.filter(storedFiles, (x) => x.storedFileType === StoredFileType.Datasheet);
+    var storedPinouts = _.filter(storedFiles, (x) => x.storedFileType === StoredFileType.Pinout);
+    var storedReferenceDesigns = _.filter(storedFiles, (x) => x.storedFileType === StoredFileType.ReferenceDesign);
     if (storedProductImages && storedProductImages.length > 0)
-      infoResponse.productImages.unshift(...storedProductImages.map(pi => ({
-        name: pi.originalFileName,
-        value: `/storedFile/preview?fileName=${pi.fileName}`,
-        id: pi.storedFileId
-      })));
+      infoResponse.productImages.unshift(
+        ...storedProductImages.map((pi) => ({
+          name: pi.originalFileName,
+          value: `/storedFile/preview?fileName=${pi.fileName}`,
+          id: pi.storedFileId
+        }))
+      );
     if (storedDatasheets && storedDatasheets.length > 0)
-      infoResponse.datasheets.unshift(...storedDatasheets.map(pi => ({
-        name: pi.originalFileName,
-        value: {
-          datasheetUrl: `/storedFile/local?fileName=${pi.fileName}`,
-          description: pi.originalFileName,
-          imageUrl: `/storedFile/preview?fileName=${pi.fileName}`,
-          manufacturer: '',
-          title: pi.originalFileName,
-        },
-        id: pi.storedFileId
-      })));
+      infoResponse.datasheets.unshift(
+        ...storedDatasheets.map((pi) => ({
+          name: pi.originalFileName,
+          value: {
+            datasheetUrl: `/storedFile/local?fileName=${pi.fileName}`,
+            description: pi.originalFileName,
+            imageUrl: `/storedFile/preview?fileName=${pi.fileName}`,
+            manufacturer: "",
+            title: pi.originalFileName
+          },
+          id: pi.storedFileId
+        }))
+      );
     if (storedPinouts && storedPinouts.length > 0)
-      infoResponse.pinoutImages.unshift(...storedPinouts.map(pi => ({
-        name: pi.originalFileName,
-        value: `/storedFile/preview?fileName=${pi.fileName}`,
-        id: pi.storedFileId
-      })));
+      infoResponse.pinoutImages.unshift(
+        ...storedPinouts.map((pi) => ({
+          name: pi.originalFileName,
+          value: `/storedFile/preview?fileName=${pi.fileName}`,
+          id: pi.storedFileId
+        }))
+      );
     if (storedReferenceDesigns && storedReferenceDesigns.length > 0)
-      infoResponse.circuitImages.unshift(...storedReferenceDesigns.map(pi => ({
-        name: pi.originalFileName,
-        value: `/storedFile/preview?fileName=${pi.fileName}`,
-        id: pi.storedFileId
-      })));
+      infoResponse.circuitImages.unshift(
+        ...storedReferenceDesigns.map((pi) => ({
+          name: pi.originalFileName,
+          value: `/storedFile/preview?fileName=${pi.fileName}`,
+          id: pi.storedFileId
+        }))
+      );
     return infoResponse;
   };
 
@@ -961,13 +978,17 @@ export function Inventory(props) {
     const request = {
       parts: scannedParts
     };
-    await fetchApi("part/bulk", {
+    const response = await fetchApi("part/bulk", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
+    if (response.responseObject.status === 200) {
+      const { data } = response;
+      toast.success(`Added ${data.length} new parts!`);
+    }
     localStorage.setItem("scannedPartsSerialized", JSON.stringify([]));
     setBulkScanIsOpen(false);
     setScannedParts([]);
@@ -977,7 +998,7 @@ export function Inventory(props) {
     e.preventDefault();
     e.stopPropagation();
     scannedPart[control.name] = control.value;
-    setScannedParts(scannedParts);
+    setScannedParts([...scannedParts]);
     setIsDirty(true);
   };
 
@@ -1017,24 +1038,23 @@ export function Inventory(props) {
       body: JSON.stringify({ storedFileId: selectedLocalFile.localFile.id })
     });
     var itemsExceptDeleted;
-    switch(selectedLocalFile.type){
-      case 'productImages':
+    switch (selectedLocalFile.type) {
+      case "productImages":
         itemsExceptDeleted = _.without(infoResponse.productImages, _.findWhere(infoResponse.productImages, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({...infoResponse, productImages: itemsExceptDeleted});
+        setInfoResponse({ ...infoResponse, productImages: itemsExceptDeleted });
         break;
-      case 'datasheets':
+      case "datasheets":
         itemsExceptDeleted = _.without(infoResponse.datasheets, _.findWhere(infoResponse.datasheets, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({...infoResponse, datasheets: itemsExceptDeleted});
-        if (itemsExceptDeleted.length > 0)
-          setDatasheetMeta(itemsExceptDeleted[0]);
+        setInfoResponse({ ...infoResponse, datasheets: itemsExceptDeleted });
+        if (itemsExceptDeleted.length > 0) setDatasheetMeta(itemsExceptDeleted[0]);
         break;
-      case 'pinoutImages':
+      case "pinoutImages":
         itemsExceptDeleted = _.without(infoResponse.pinoutImages, _.findWhere(infoResponse.pinoutImages, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({...infoResponse, pinoutImages: itemsExceptDeleted});
-          break;
-      case 'circuitImages':
+        setInfoResponse({ ...infoResponse, pinoutImages: itemsExceptDeleted });
+        break;
+      case "circuitImages":
         itemsExceptDeleted = _.without(infoResponse.circuitImages, _.findWhere(infoResponse.circuitImages, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({...infoResponse, circuitImages: itemsExceptDeleted});
+        setInfoResponse({ ...infoResponse, circuitImages: itemsExceptDeleted });
         break;
       default:
     }
@@ -1048,7 +1068,13 @@ export function Inventory(props) {
     e.stopPropagation();
     setConfirmDeleteIsOpen(true);
     setSelectedPart(part);
-    setConfirmPartDeleteContent(<p>Are you sure you want to delete part <b>{part.partNumber}</b>?<br/><br/>This action is <i>permanent and cannot be recovered</i>.</p>);
+    setConfirmPartDeleteContent(
+      <p>
+        Are you sure you want to delete part <b>{part.partNumber}</b>?<br />
+        <br />
+        This action is <i>permanent and cannot be recovered</i>.
+      </p>
+    );
   };
 
   const confirmDeleteClose = (e) => {
@@ -1063,7 +1089,13 @@ export function Inventory(props) {
     e.stopPropagation();
     setConfirmDeleteLocalFileIsOpen(true);
     setSelectedLocalFile({ localFile, type });
-    setConfirmLocalFileDeleteContent(<p>Are you sure you want to delete this local file named <b>{localFile.name}</b>?<br/><br/>This action is <i>permanent and cannot be recovered</i>.</p>);
+    setConfirmLocalFileDeleteContent(
+      <p>
+        Are you sure you want to delete this local file named <b>{localFile.name}</b>?<br />
+        <br />
+        This action is <i>permanent and cannot be recovered</i>.
+      </p>
+    );
   };
 
   const confirmDeleteLocalFileClose = (e) => {
@@ -1127,7 +1159,9 @@ export function Inventory(props) {
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell>Part</Table.HeaderCell>
-              <Table.HeaderCell width={2}>Quantity</Table.HeaderCell>
+              <Table.HeaderCell>Quantity</Table.HeaderCell>
+              <Table.HeaderCell>Description</Table.HeaderCell>
+              <Table.HeaderCell>Origin</Table.HeaderCell>
               <Table.HeaderCell>Location</Table.HeaderCell>
               <Table.HeaderCell>Bin Number</Table.HeaderCell>
               <Table.HeaderCell>Bin Number 2</Table.HeaderCell>
@@ -1140,7 +1174,7 @@ export function Inventory(props) {
                 key={index}
                 className={highlightScannedPart && p.partNumber === highlightScannedPart.partNumber ? `scannedPartAnimation ${Math.random()}` : ""}
               >
-                <Table.Cell collapsing>
+                <Table.Cell collapsing style={{maxWidth: '200px'}}>
                   <Label>{p.partNumber}</Label>
                 </Table.Cell>
                 <Table.Cell collapsing>
@@ -1153,6 +1187,17 @@ export function Inventory(props) {
                     onBlur={enableKeyboardListening}
                   />
                 </Table.Cell>
+                <Table.Cell collapsing className="ellipsis" style={{maxWidth: '200px'}}>
+                  <Popup 
+                    wide
+                    hoverable
+                    content={<p>{p.description}</p>}
+                    trigger={<div>{p.description}</div>}
+                  />                  
+                </Table.Cell>
+                <Table.Cell collapsing textAlign="center" verticalAlign="middle" width={1}>
+                  <Flag name={p.origin || ""} />
+                </Table.Cell>
                 <Table.Cell collapsing>
                   <Form.Input
                     width={16}
@@ -1162,7 +1207,6 @@ export function Inventory(props) {
                     name="location"
                     onFocus={disableKeyboardListening}
                     onBlur={enableKeyboardListening}
-                    onKeyDown={(e) => onScannedInputKeyDown(e, p)}
                   />
                 </Table.Cell>
                 <Table.Cell collapsing>
@@ -1174,7 +1218,6 @@ export function Inventory(props) {
                     name="binNumber"
                     onFocus={disableKeyboardListening}
                     onBlur={enableKeyboardListening}
-                    onKeyDown={(e) => onScannedInputKeyDown(e, p)}
                   />
                 </Table.Cell>
                 <Table.Cell collapsing>
@@ -1186,7 +1229,6 @@ export function Inventory(props) {
                     name="binNumber2"
                     onFocus={disableKeyboardListening}
                     onBlur={enableKeyboardListening}
-                    onKeyDown={(e) => onScannedInputKeyDown(e, p)}
                   />
                 </Table.Cell>
                 <Table.Cell collapsing textAlign="center" verticalAlign="middle">
@@ -1232,9 +1274,10 @@ export function Inventory(props) {
   };
 
   const matchingPartsList = renderAllMatchingParts(part, metadataParts);
-  const title = part.partId > 0 || props.params.partNumber ? "Edit Inventory" : "Add Inventory";
+  const title = isEditing ? "Edit Inventory" : "Add Inventory";
 
   /* RENDER */
+
   return (
     <div>
       <Modal centered open={duplicatePartModalOpen} onClose={handleDuplicatePartModalClose}>
@@ -1252,46 +1295,76 @@ export function Inventory(props) {
           </Button>
         </Modal.Actions>
       </Modal>
-      <Confirm className="confirm" header='Delete Part' open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDeletePart} content={confirmPartDeleteContent} />
-      <Confirm className="confirm" header='Delete File' open={confirmDeleteLocalFileIsOpen} onCancel={confirmDeleteLocalFileClose} onConfirm={handleDeleteLocalFile} content={confirmLocalFileDeleteContent} />
+      <Confirm
+        className="confirm"
+        header="Delete Part"
+        open={confirmDeleteIsOpen}
+        onCancel={confirmDeleteClose}
+        onConfirm={handleDeletePart}
+        content={confirmPartDeleteContent}
+      />
+      <Confirm
+        className="confirm"
+        header="Delete File"
+        open={confirmDeleteLocalFileIsOpen}
+        onCancel={confirmDeleteLocalFileClose}
+        onConfirm={handleDeleteLocalFile}
+        content={confirmLocalFileDeleteContent}
+      />
 
       {/* FORM START */}
 
       <Form onSubmit={onSubmit}>
+        {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={3} /> }
         {part && part.partId > 0 && (
-          <Button animated="vertical" circular floated="right" size="mini" onClick={printLabel} style={{ marginTop: "5px" }}>
+          <Button
+            animated="vertical"
+            circular
+            floated="right"
+            size="mini"
+            onClick={printLabel}
+            style={{ marginTop: "5px", marginRight: "20px", width: "100px" }}
+          >
+            <Button.Content hidden>Print</Button.Content>
             <Button.Content visible>
               <Icon name="print" />
             </Button.Content>
-            <Button.Content hidden>Print</Button.Content>
           </Button>
         )}
         {part.partNumber && <Image src={"/part/preview?partNumber=" + part.partNumber} width={180} floated="right" style={{ marginTop: "0px" }} />}
         <h1 style={{ display: "inline-block", marginRight: "30px" }}>{title}</h1>
-        <div title="Bulk Barcode Scan" style={{ width: "132px", height: "30px", display: "inline-block", cursor: "pointer" }} onClick={handleBulkBarcodeScan}>
-          <div className="anim-box">
-            <div className="scanner" />
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-lg"></div>
-            <div className="anim-item anim-item-lg"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-lg"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-md"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-md"></div>
-            <div className="anim-item anim-item-lg"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-lg"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-lg"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-lg"></div>
-            <div className="anim-item anim-item-sm"></div>
-            <div className="anim-item anim-item-md"></div>
-          </div>
-        </div>
+        {!isEditing &&
+          <Popup
+            wide
+            content={<p>Bulk add parts using a barcode scanner</p>}
+            trigger={
+              <div style={{ width: "132px", height: "30px", display: "inline-block", cursor: "pointer" }} onClick={handleBulkBarcodeScan}>
+                <div className="anim-box">
+                  <div className="scanner" />
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-md"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-md"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-md"></div>
+                </div>
+              </div>
+            }
+          />
+        }
 
         {partMetadataIsSubscribed && (
           <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
@@ -1639,13 +1712,23 @@ export function Inventory(props) {
                       {infoResponse.productImages.map((productImage, imageKey) => (
                         <Carousel.Item key={imageKey}>
                           <Image src={productImage.value} size="large" />
-                          {productImage.id && 
-                            <Popup 
-                              position='top left'
+                          {productImage.id && (
+                            <Popup
+                              position="top left"
                               content="Delete this local file"
-                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, productImage, 'productImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                              trigger={
+                                <Button
+                                  onClick={(e) => confirmDeleteLocalFileOpen(e, productImage, "productImages")}
+                                  type="button"
+                                  size="tiny"
+                                  style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
+                                  color="red"
+                                >
+                                  <Icon name="delete" style={{ margin: 0 }} />
+                                </Button>
+                              }
                             />
-                          }
+                          )}
                           <Carousel.Caption>
                             <h5>{productImage.name}</h5>
                           </Carousel.Caption>
@@ -1677,13 +1760,23 @@ export function Inventory(props) {
                         {infoResponse.datasheets.map((datasheet, datasheetKey) => (
                           <Carousel.Item key={datasheetKey} onClick={(e) => handleVisitLink(e, datasheet.value.datasheetUrl)} data={datasheet}>
                             <Image src={datasheet.value.imageUrl} size="large" />
-                            {datasheet.id && 
-                              <Popup 
-                                position='top left'
+                            {datasheet.id && (
+                              <Popup
+                                position="top left"
                                 content="Delete this local file"
-                                trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, datasheet, 'datasheets')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
+                                trigger={
+                                  <Button
+                                    onClick={(e) => confirmDeleteLocalFileOpen(e, datasheet, "datasheets")}
+                                    type="button"
+                                    size="tiny"
+                                    style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
+                                    color="red"
+                                  >
+                                    <Icon name="delete" style={{ margin: 0 }} />
+                                  </Button>
+                                }
                               />
-                            }
+                            )}
                           </Carousel.Item>
                         ))}
                       </Carousel>
@@ -1706,10 +1799,10 @@ export function Inventory(props) {
                     </Placeholder>
                   )}
                   <Card.Content extra>
-                      <Header as="h4">
-                        <Icon name="file pdf" />
-                        Datasheets
-                      </Header>
+                    <Header as="h4">
+                      <Icon name="file pdf" />
+                      Datasheets
+                    </Header>
                   </Card.Content>
                 </Card>
               </Dropzone>
@@ -1723,18 +1816,28 @@ export function Inventory(props) {
                       <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
                         {infoResponse.pinoutImages.map((pinout, pinoutKey) => (
                           <Carousel.Item key={pinoutKey}>
-                          <Image src={pinout.value} size="large" />
-                          {pinout.id && 
-                            <Popup 
-                              position='top left'
-                              content="Delete this local file"
-                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, pinout, 'pinoutImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
-                            />
-                          }
-                          <Carousel.Caption>
-                            <h5>{pinout.name}</h5>
-                          </Carousel.Caption>
-                        </Carousel.Item>
+                            <Image src={pinout.value} size="large" />
+                            {pinout.id && (
+                              <Popup
+                                position="top left"
+                                content="Delete this local file"
+                                trigger={
+                                  <Button
+                                    onClick={(e) => confirmDeleteLocalFileOpen(e, pinout, "pinoutImages")}
+                                    type="button"
+                                    size="tiny"
+                                    style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
+                                    color="red"
+                                  >
+                                    <Icon name="delete" style={{ margin: 0 }} />
+                                  </Button>
+                                }
+                              />
+                            )}
+                            <Carousel.Caption>
+                              <h5>{pinout.name}</h5>
+                            </Carousel.Caption>
+                          </Carousel.Item>
                         ))}
                       </Carousel>
                     </div>
@@ -1761,18 +1864,28 @@ export function Inventory(props) {
                       <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
                         {infoResponse.circuitImages.map((circuit, circuitKey) => (
                           <Carousel.Item key={circuitKey}>
-                          <Image src={circuit.value} size="large" />
-                          {circuit.id && 
-                            <Popup 
-                              position='top left'
-                              content="Delete this local file"
-                              trigger={<Button onClick={e => confirmDeleteLocalFileOpen(e, circuit, 'circuitImages')} type="button" size='tiny' style={{position: 'absolute', top: '4px', right: '2px', padding: '2px', zIndex: '9999'}} color='red'><Icon name="delete" style={{margin: 0}} /></Button>}
-                            />
-                          }
-                          <Carousel.Caption>
-                            <h5>{circuit.name}</h5>
-                          </Carousel.Caption>
-                        </Carousel.Item>
+                            <Image src={circuit.value} size="large" />
+                            {circuit.id && (
+                              <Popup
+                                position="top left"
+                                content="Delete this local file"
+                                trigger={
+                                  <Button
+                                    onClick={(e) => confirmDeleteLocalFileOpen(e, circuit, "circuitImages")}
+                                    type="button"
+                                    size="tiny"
+                                    style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
+                                    color="red"
+                                  >
+                                    <Icon name="delete" style={{ margin: 0 }} />
+                                  </Button>
+                                }
+                              />
+                            )}
+                            <Carousel.Caption>
+                              <h5>{circuit.name}</h5>
+                            </Carousel.Caption>
+                          </Carousel.Item>
                         ))}
                       </Carousel>
                     </div>
@@ -1839,7 +1952,7 @@ export function Inventory(props) {
             </div>
           </Modal.Content>
           <Modal.Actions>
-            <Button onClick={() => setBulkScanIsOpen(false)}>Cancel</Button>
+            <Button onClick={handleBulkScanClose}>Cancel</Button>
             <Button primary onClick={onSubmitScannedParts}>
               Save
             </Button>

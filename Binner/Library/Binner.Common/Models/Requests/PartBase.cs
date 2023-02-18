@@ -116,5 +116,10 @@
         /// The manufacturer part number
         /// </summary>
         public string? ManufacturerPartNumber { get; set; }
+
+        /// <summary>
+        /// The raw barcode that was scanned
+        /// </summary>
+        public string? Barcode { get; set; }
     }
 }

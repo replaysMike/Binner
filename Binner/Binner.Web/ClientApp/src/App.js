@@ -29,6 +29,9 @@ import { Settings } from "./pages/Settings";
 import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
 import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalculator";
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
+import { Help } from './pages/help/Home';
+import { Scanning } from './pages/help/Scanning';
+
 
 export default class App extends Component {
   static displayName = App.name;
@@ -82,6 +85,8 @@ export default class App extends Component {
               path="/tools/voltagedivider"
               element={<VoltageDividerCalculator />}
             />
+            <Route exact path="/help" element={<Help />} />
+            <Route path="/help/scanning" element={<Scanning />} />
           </Routes>
         </Layout>
         <ErrorContext.Provider value={this.state}>

@@ -36,17 +36,30 @@ export function OrderImport(props) {
   ]);
 
   // debounced handler for processing barcode scanner input
-  const handleBarcodeInput = (e, value) => {
+  const handleBarcodeInput = (e, input) => {
     // ignore single keypresses
-    if (isNumeric(value)) {
-      const newOrder = { ...order, orderId: value };
-      setOrder({...newOrder});
-      toast.info(`Loading order# ${value}`, { autoClose: 10000 });
-      getPartsToImport(e, newOrder);
-    } else if (value.length > 5) {
-      // handle invalid input if it's not keyboard typing
-      toast.error(`Hmmm, that doesn't look like a valid order number!`);
+    let orderNumber = '';
+    if (input.type === "datamatrix") {
+      if (input.value.salesOrder) {
+        orderNumber = input.value.salesOrder;
+      } else {
+        toast.error(`Hmm, I don't recognize that 2D barcode!`, { autoClose: 10000 });
+        return;
+      }
     }
+
+    if (isNumeric(input.value)) {
+      orderNumber = input.value;
+    } else if (input.value.length > 5) {
+      // handle invalid input if it's not keyboard typing
+      toast.error(`Hmmm, that doesn't look like a valid order number!`, { autoClose: 10000 });
+      return;
+    }
+
+    const newOrder = { ...order, orderId: orderNumber };
+    setOrder({ ...newOrder });
+    toast.info(`Loading order# ${orderNumber}`, { autoClose: 10000 });
+    getPartsToImport(e, newOrder);
   };
 
   const enableKeyboardListening = () => {
@@ -105,7 +118,7 @@ export function OrderImport(props) {
         toast.dismiss();
         if (data.requiresAuthentication) {
           // redirect for authentication
-          const errorMessage = data.errors.join('\n');
+          const errorMessage = data.errors.join("\n");
           setError(errorMessage);
           setLoading(false);
           window.open(data.redirectUrl, "_blank");
@@ -155,9 +168,13 @@ export function OrderImport(props) {
         break;
       case "supplier":
         newOrder.supplier = control.value;
-        if(newOrder.supplier === 'Mouser'){
+        if (newOrder.supplier === "Mouser") {
           setOrderLabel("Web Order #");
-          setMessage((<div><i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i></div>));
+          setMessage(
+            <div>
+              <i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i>
+            </div>
+          );
         } else {
           setOrderLabel("Sales Order #");
           setMessage("");
@@ -166,7 +183,7 @@ export function OrderImport(props) {
       default:
         break;
     }
-    setOrder({...newOrder});
+    setOrder({ ...newOrder });
   };
 
   const getMountingTypeById = (mountingTypeId) => {
@@ -206,8 +223,12 @@ export function OrderImport(props) {
 
   const formatTrackingNumber = (trackingNumber) => {
     if (trackingNumber && trackingNumber.includes("https:"))
-      return (<a href={trackingNumber} target="_blank" rel="noreferrer">View Tracking</a>);
-    return trackingNumber || "Unspecified"
+      return (
+        <a href={trackingNumber} target="_blank" rel="noreferrer">
+          View Tracking
+        </a>
+      );
+    return trackingNumber || "Unspecified";
   };
 
   const renderAllMatchingParts = (order) => {
@@ -226,12 +247,11 @@ export function OrderImport(props) {
                           {order.customerId || "Unspecified"}
                         </Table.Cell>
                         <Table.Cell>
-                          <Label>Order Amount:</Label>
-                          ${order.amount.toFixed(2)} {order.currency}
+                          <Label>Order Amount:</Label>${order.amount.toFixed(2)} {order.currency}
                         </Table.Cell>
                         <Table.Cell>
                           <Label>Order Date:</Label>
-                          {format(parseJSON(order.orderDate), 'MMM dd, yyyy', new Date()) || "Unspecified"}
+                          {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
                         </Table.Cell>
                         <Table.Cell>
                           <Label>Tracking Number:</Label>
@@ -261,9 +281,13 @@ export function OrderImport(props) {
                   <Table.Cell>
                     <Checkbox toggle checked={p.selected} onChange={(e) => handleChecked(e, p)} data={p} />
                   </Table.Cell>
-                  <Table.Cell style={{maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}} title={p.description}>{p.description}</Table.Cell>
+                  <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.description}>
+                    {p.description}
+                  </Table.Cell>
                   <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                  <Table.Cell style={{maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}} title={p.manufacturer}>{p.manufacturer}</Table.Cell>
+                  <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.manufacturer}>
+                    {p.manufacturer}
+                  </Table.Cell>
                   <Table.Cell>{p.partType}</Table.Cell>
                   <Table.Cell>{p.supplierPartNumber}</Table.Cell>
                   <Table.Cell>{formatCurrency(p.cost)}</Table.Cell>
@@ -292,36 +316,43 @@ export function OrderImport(props) {
     <div>
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} />
       <h1>Order Import</h1>
-      <Form onSubmit={e => getPartsToImport(e, order)}>
+      <Form onSubmit={(e) => getPartsToImport(e, order)}>
         <Form.Group>
-          <Form.Dropdown
-            label="Supplier"
-            selection
-            value={order.supplier}
-            options={supplierOptions}
-            onChange={handleChange}
-            name="supplier"
-          />
-          <Popup 
+          <Form.Dropdown label="Supplier" selection value={order.supplier} options={supplierOptions} onChange={handleChange} name="supplier" />
+          <Popup
             position="bottom left"
             wide
-            content={<div>Enter your order number for the supplier.<br/><br/>For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br/>For <b>Mouser</b> orders, this is the <i>Web Order #</i>.</div>}
-            trigger={<Form.Input 
-              label={orderLabel} 
-              placeholder="1023840" 
-              icon="search" 
-              focus 
-              value={order.orderId} 
-              onChange={handleChange} 
-              onFocus={disableKeyboardListening}
-              onBlur={enableKeyboardListening}
-              name="orderId" 
-              />}
-          />          
+            content={
+              <div>
+                Enter your order number for the supplier.
+                <br />
+                <br />
+                For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br />
+                For <b>Mouser</b> orders, this is the <i>Web Order #</i>.
+              </div>
+            }
+            trigger={
+              <Form.Input
+                label={orderLabel}
+                placeholder="1023840"
+                icon="search"
+                focus
+                value={order.orderId}
+                onChange={handleChange}
+                onFocus={disableKeyboardListening}
+                onBlur={enableKeyboardListening}
+                name="orderId"
+              />
+            }
+          />
         </Form.Group>
-        <div style={{height: '30px'}}>{message}</div>
-        <Button primary disabled={loading || order.orderId.length === 0}>Search</Button>
-        <Button onClick={handleClear} disabled={!(results.parts && results.parts.length > 0)}>Clear</Button>
+        <div style={{ height: "30px" }}>{message}</div>
+        <Button primary disabled={loading || order.orderId.length === 0}>
+          Search
+        </Button>
+        <Button onClick={handleClear} disabled={!(results.parts && results.parts.length > 0)}>
+          Clear
+        </Button>
       </Form>
       <div style={{ marginTop: "20px" }}>
         <Segment style={{ minHeight: "100px" }} className="centered">
@@ -329,9 +360,9 @@ export function OrderImport(props) {
           <Dimmer active={loading} inverted>
             <Loader inverted />
           </Dimmer>
-          {(!loading && results && results.parts && renderAllMatchingParts(results)) || <div style={{lineHeight: "100px"}}>No Results</div>}
+          {(!loading && results && results.parts && renderAllMatchingParts(results)) || <div style={{ lineHeight: "100px" }}>No Results</div>}
         </Segment>
       </div>
     </div>
   );
-};
+}

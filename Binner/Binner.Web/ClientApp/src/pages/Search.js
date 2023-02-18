@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import _ from "underscore";
 import debounce from "lodash.debounce";
-import { Input, Button, Icon, Form } from "semantic-ui-react";
+import { Input, Button, Icon, Form, Popup } from "semantic-ui-react";
 import { getQueryVariable } from "../common/query";
 import PartsGrid from "../components/PartsGrid";
 import { fetchApi } from "../common/fetchApi";
@@ -23,10 +23,15 @@ export function Search(props) {
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
 
   // debounced handler for processing barcode scanner input
-  const handleBarcodeInput = (e, value) => {
-    console.log('handleBarcodeInput', value);
-    setKeyword(value);
-    search(value);
+  const handleBarcodeInput = (e, input) => {
+    let partNumber = '';
+    if (input.type === "datamatrix") {
+      partNumber = input.value.mfgPartNumber;
+    } else {
+      partNumber = input.value;
+    }
+    setKeyword(partNumber);
+    search(partNumber);
   };
 
   const enableKeyboardListening = () => {
@@ -166,7 +171,7 @@ export function Search(props) {
   return (
     <div>
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={3} />
-      <h1>Inventory</h1>
+      <h1>Inventory</h1>      
       <Form>
         <Form.Field width={5}>
           <Input            

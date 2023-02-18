@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Form, Input } from "semantic-ui-react";
+import { Form, Input, Icon, Popup } from "semantic-ui-react";
 import "./NavMenu.css";
 
 export function NavMenu(props) {
@@ -40,6 +40,14 @@ export function NavMenu(props) {
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>
             <Form onSubmit={onSubmit}>
               <ul className="navbar-nav flex-grow">
+                <NavItem style={{lineHeight: '2.3'}}>
+                  <Popup 
+                    position="left center"
+                    content="Help"
+                    trigger={<Link to="/help" className="help-icon"><Icon name="help circle" /></Link>}
+                  />
+                  
+                </NavItem>
                 <NavItem>
                   <Input
                     icon={{ name: "search", circular: true, link: true, onClick: onSubmit }}

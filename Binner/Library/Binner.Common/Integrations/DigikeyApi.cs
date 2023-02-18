@@ -18,6 +18,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.Integrations
@@ -154,7 +155,18 @@ namespace Binner.Common.Integrations
                 try
                 {
                     // set what fields we want from the API
-                    var uri = Url.Combine(_configuration.ApiUrl, "Barcoding/v3/ProductBarcodes/", barcode);
+                    // https://developer.digikey.com/products/barcode/barcoding/productbarcode
+                    var endpoint = "Barcoding/v3/PackListBarcodes/";
+                    var barcodeFormatted = barcode.ToString();
+                    if (barcode.StartsWith("[)>"))
+                    {
+                        endpoint = "Barcoding/v3/Product2DBarcodes/";
+                        // DigiKey requires the GS (Group separator) to be \u241D, and the RS (Record separator) to be \u241E
+                        barcodeFormatted = barcodeFormatted.Replace("\u001d", "\u241D").Replace("\u001e", "\u241E");
+                        barcodeFormatted = HttpUtility.UrlEncode(barcodeFormatted);
+                    }
+
+                    var uri = Url.Combine(_configuration.ApiUrl, endpoint, barcodeFormatted);
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
