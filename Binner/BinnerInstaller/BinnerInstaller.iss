@@ -8,11 +8,12 @@
 AppId={{5B8E7506-21A8-49BB-B144-6523D0E43E34}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-AppVerName={#MyAppName}
+AppVerName={#MyAppName} v{#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
+VersionInfoVersion={#MyAppVersion}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\Binner.Web\LICENSE
@@ -28,6 +29,7 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 WizardImageFile=.\WizardLarge.bmp
 WizardSmallImageFile=.\WizardSmall.bmp
 CloseApplications=force
+UsePreviousTasks=no
 
 
 [Languages]
@@ -35,12 +37,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
 UninstallingService=Uninstalling existing {#MyAppName} service...
-InstallingService=Installing {#MyAppName} service...
+InstallingService=Installing {#MyAppName} {#MyAppVersion} service...
 InstallingCertificates=Installing certificates...
 StartingApp=Starting {#MyAppName}...
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "keepconfiguration"; Description: "Keep existing configuration"
 Name: "installservice"; Description: "Install {#MyAppName} as a Windows service"
 
 [Files]
@@ -89,11 +92,48 @@ external 'QueryServiceStatus@advapi32.dll stdcall';
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ResultCode : Integer;
+  SourcePath: string;
+  DestPath: string;
 begin
+  // backup the appsettings
+  if CurStep = ssInstall then
+  begin
+    if WizardIsTaskSelected('keepconfiguration') then
+     begin
+      SourcePath := ExpandConstant('{app}\appsettings.json');
+      DestPath := ExpandConstant('{app}\appsettings.installerbackup.json');
+      if FileExists(SourcePath) then
+      begin
+        if not FileCopy(SourcePath, DestPath, False) then
+        begin
+         Log(Format('Backed up %s to %s', [SourcePath, DestPath]));
+        end
+          else
+        begin
+          Log(Format('Failed to Backup %s', [SourcePath]));
+        end;
+      end;
+    end;
+  end;
+  
   // Install the service if the task was checked by the user
   if CurStep = ssPostInstall then
   begin
     Log('Post install');
+
+    if WizardIsTaskSelected('keepconfiguration') then
+     begin
+      // restore the appsettings
+      SourcePath := ExpandConstant('{app}\appsettings.json');
+      DestPath := ExpandConstant('{app}\appsettings.installerbackup.json');
+      if FileExists(DestPath) then
+      begin
+        if FileCopy(DestPath, SourcePath, False) then
+        begin
+          Log(Format('Restored %s from Backup %s', [SourcePath, DestPath]));
+        end;
+      end;
+    end;
 
     // Install the certificate as trusted before launching apps
     WizardForm.StatusLabel.Caption := CustomMessage('InstallingCertificates');
