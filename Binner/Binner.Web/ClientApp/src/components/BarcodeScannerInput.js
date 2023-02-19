@@ -79,6 +79,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     let parsedValue = {};
 		let gsDetected = false;
 		let rsDetected = false;
+		let eotDetected = false;
     if (value.startsWith("[)>")) {
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
@@ -86,6 +87,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			parsedValue = parseResult.value;
 			gsDetected = parseResult.gsDetected;
 			rsDetected = parseResult.rsDetected;
+			eotDetected = parseResult.eotDetected;
     } else {
       // 1D barcode
       parsedValue = value.replace("\n", "").replace("\r", "");
@@ -96,7 +98,8 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			value: parsedValue,
 			rawValue: value,
 			rsDetected,
-			gsDetected
+			gsDetected,
+			eotDetected
 		};
   };
 
@@ -111,6 +114,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 
 		let gsCodePresent = false;
 		let rsCodePresent = false;
+		let eotCodePresent = false;
     let formatNumber = "";
     let buffer = "";
     let i;
@@ -142,6 +146,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		for (i = lastPosition; i < value.length; i++) {
 			const ch = value[i];
 			if (ch.charCodeAt(0) === gsCharCode) {
+				gsCodePresent = true;
 				// start of a new line. read until next gsCharCode or EOT
 				if (gsLine.length > 0)
 					gsLines.push(gsLine);
@@ -149,80 +154,166 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			} else {
 				gsLine += ch;
 			}
+			if (ch.charCodeAt(0) === eotCharCode) {
+				eotCodePresent = true;
+			}
 		}
 		if (gsLine.length > 0)
 			gsLines.push(gsLine);
 
-		if (gsLines.length > 0)
-			gsCodePresent = true;
+		if (!gsCodePresent) {
+			// no gs codes present
+			console.log('no gs code present');
+			let readCommandType = "";
+			let readValue = "";
+			let readControlChars = true;
+			for (i = lastPosition - 1; i < value.length; i++) {
+				if (readControlChars) readCommandType += value[i];
+				else readValue += value[i];
 
-		// console.log('gsLines', gsLines);
+				//if (readControlChars === header || readControlChars === formatNumber) readValue = "";
+				if (readControlChars && controlChars.includes(readCommandType)) {
+					// start reading value
+					readControlChars = false;
+					console.log('found command', readCommandType);
+				}
+				// have we finished reading the value?
+				if(!readControlChars && readValue.length > 0) {
+					console.log('readValue', readValue);
+					for(let c = 0; c < controlChars.length; c++) {
+						if (controlChars[c] !== readCommandType && readValue.endsWith(controlChars[c])) {
+							// process the command + value
+							console.log('end readValue raw', readValue);
+							readValue = readValue.substring(0, readValue.length - controlChars[c].length);
+							console.log('end readValue', readValue, readCommandType);
+							
+							switch (readCommandType) {
+								case "P":
+									// could be DigiKey part number, or customer reference value
+									console.log('description', readCommandType, readValue);
+									parsedValue["description"] = readValue;
+									break;
+								case "1P":
+									// manufacturer part number
+									console.log('mfgPartNumber', readCommandType, readValue);
+									parsedValue["mfgPartNumber"] = readValue;
+									break;
+								case "1K":
+									// Salesorder#
+									console.log('salesOrder', readCommandType, readValue);
+									parsedValue["salesOrder"] = readValue;
+									break;
+								case "10K":
+									// invoice#
+									parsedValue["invoice"] = readValue;
+									break;
+								case "11K":
+									// don't know
+									parsedValue["unknown1"] = readValue;
+									break;
+								case "4L":
+									// country of origin
+									parsedValue["countryOfOrigin"] = readValue;
+									break;
+								case "Q":
+									// quantity
+									parsedValue["quantity"] = readValue;
+									break;
+								case "11Z":
+									// the value PICK
+									parsedValue["pick"] = readValue;
+									break;
+								case "12Z":
+									// internal part id
+									parsedValue["partId"] = readValue;
+									break;
+								case "13Z":
+									// shipment load id
+									parsedValue["loadId"] = readValue;
+									break;
+								default:
+									break;
+							}
+							// set the next read command type
+							readCommandType = controlChars[c];
+							readValue = "";
+							readControlChars = false;
+							console.log('found command', readCommandType);
+							break;
+						}
+					}
+				}
+			}
+		}else{
 
-    for (i = 0; i < gsLines.length; i++) {
-      // read until we see a control char
-      const line = gsLines[i];
-      let readCommandType = "";
-      let readValue = "";
-      let readControlChars = true;
-      for (var c = 0; c < line.length; c++) {
-        if (readControlChars) readCommandType += line[c];
-        else readValue += line[c];
+			for (i = 0; i < gsLines.length; i++) {
+				// read until we see a control char
+				const line = gsLines[i];
+				let readCommandType = "";
+				let readValue = "";
+				let readControlChars = true;
+				for (var c = 0; c < line.length; c++) {
+					if (readControlChars) readCommandType += line[c];
+					else readValue += line[c];
 
-        if (readControlChars === header || readControlChars === formatNumber) readValue = "";
-        if (controlChars.includes(readCommandType)) {
-          // start reading value
-          readControlChars = false;
-        }
-      }
-      switch (readCommandType) {
-        case "P":
-          // could be DigiKey part number, or customer reference value
-          parsedValue["description"] = readValue;
-          break;
-        case "1P":
-          // manufacturer part number
-          parsedValue["mfgPartNumber"] = readValue;
-          break;
-        case "1K":
-          // Salesorder#
-          parsedValue["salesOrder"] = readValue;
-          break;
-        case "10K":
-          // invoice#
-          parsedValue["invoice"] = readValue;
-          break;
-        case "11K":
-          // don't know
-          parsedValue["unknown1"] = readValue;
-          break;
-        case "4L":
-          // country of origin
-          parsedValue["countryOfOrigin"] = readValue;
-          break;
-        case "Q":
-          // quantity
-          parsedValue["quantity"] = readValue;
-          break;
-        case "11Z":
-          // the value PICK
-          parsedValue["pick"] = readValue;
-          break;
-        case "12Z":
-          // internal part id
-          parsedValue["partId"] = readValue;
-          break;
-        case "13Z":
-          // shipment load id
-          parsedValue["loadId"] = readValue;
-          break;
-        default:
-          break;
-      }
-    }
+					if (readControlChars === header || readControlChars === formatNumber) readValue = "";
+					if (controlChars.includes(readCommandType)) {
+						// start reading value
+						readControlChars = false;
+					}
+				}
+				switch (readCommandType) {
+					case "P":
+						// could be DigiKey part number, or customer reference value
+						parsedValue["description"] = readValue;
+						break;
+					case "1P":
+						// manufacturer part number
+						parsedValue["mfgPartNumber"] = readValue;
+						break;
+					case "1K":
+						// Salesorder#
+						parsedValue["salesOrder"] = readValue;
+						break;
+					case "10K":
+						// invoice#
+						parsedValue["invoice"] = readValue;
+						break;
+					case "11K":
+						// don't know
+						parsedValue["unknown1"] = readValue;
+						break;
+					case "4L":
+						// country of origin
+						parsedValue["countryOfOrigin"] = readValue;
+						break;
+					case "Q":
+						// quantity
+						parsedValue["quantity"] = readValue;
+						break;
+					case "11Z":
+						// the value PICK
+						parsedValue["pick"] = readValue;
+						break;
+					case "12Z":
+						// internal part id
+						parsedValue["partId"] = readValue;
+						break;
+					case "13Z":
+						// shipment load id
+						parsedValue["loadId"] = readValue;
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		console.log('parsedValue', parsedValue);
     return {
 			value: parsedValue,
 			gsDetected: gsCodePresent,
-			rsDetected: rsCodePresent
+			rsDetected: rsCodePresent,
+			eotDetected: eotCodePresent
 		};
   };
 
