@@ -59,6 +59,7 @@
     "smooth-scroll": "^16.1.3",
     "tiny-slider": "^2.9.4",
     "underscore": "^1.13.6",
+    "use-sound": "^4.0.1",
     "uuid": "^9.0.0",
     "yarn": "^1.22.19"
   },

@@ -437,7 +437,7 @@ namespace Binner.Common.Integrations
         {
             var taxonomies = new List<Taxonomies>();
             var taxonomy = Taxonomies.None;
-            if (!string.IsNullOrEmpty(partType))
+            if (!string.IsNullOrEmpty(partType) && partType != "-1")
             {
                 if (Enum.TryParse<Taxonomies>(partType, true, out taxonomy))
                 {

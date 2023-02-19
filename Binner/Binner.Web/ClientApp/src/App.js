@@ -29,6 +29,7 @@ import { Settings } from "./pages/Settings";
 import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
 import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalculator";
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
+import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { Help } from './pages/help/Home';
 import { Scanning } from './pages/help/Scanning';
 import { ApiIntegrations } from './pages/help/ApiIntegrations';
@@ -84,6 +85,10 @@ export default class App extends Component {
             <Route
               path="/tools/voltagedivider"
               element={<VoltageDividerCalculator />}
+            />
+            <Route
+              path="/tools/barcodescanner"
+              element={<BarcodeScanner />}
             />
             <Route exact path="/help" element={<Help />} />
             <Route path="/help/scanning" element={<Scanning />} />

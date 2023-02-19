@@ -152,6 +152,8 @@ export function Inventory(props) {
   bulkScanIsOpenRef.current = bulkScanIsOpen;
   const scannedPartsRef = useRef();
   scannedPartsRef.current = scannedParts;
+  const partTypesRef = useRef();
+  partTypesRef.current = partTypes;
 
   useEffect(() => {
     const partNumberStr = props.params.partNumber;
@@ -174,12 +176,14 @@ export function Inventory(props) {
   }, [props.params.partNumber]);
 
   const fetchPartMetadata = async (input, part) => {
+    if (partTypesRef.current.length === 0)
+      console.error("There are no partTypes! This shouldn't happen and is a bug.");
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
     setPartMetadataIsSubscribed(false);
     try {
-      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}`, {
+      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}`, {
         signal: Inventory.infoAbortController.signal
       });
       const data = response.data;
@@ -196,7 +200,7 @@ export function Inventory(props) {
 
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
-        if(!isEditing) setPartFromMetadata(metadataParts, suggestedPart, partTypes);
+        if(!isEditing) setPartFromMetadata(metadataParts, suggestedPart);
       } else {
         // no part metadata available
         setPartMetadataIsSubscribed(true);
@@ -217,7 +221,7 @@ export function Inventory(props) {
     }
   };
 
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [partTypes, part]);
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), []);
 
   const onUploadSubmit = async (uploadFiles, type) => {
     setUploading(true);
@@ -388,7 +392,12 @@ export function Inventory(props) {
       // scan single part
       if (cleanPartNumber) {
         setPartMetadataIsSubscribed(false);
-        const newPart = {...part, partNumber: cleanPartNumber, quantity: input.value.quantity || "1"};
+        const newPart = {...part, 
+          partNumber: cleanPartNumber, 
+          quantity: input.value.quantity || "1", 
+          partTypeId: -1,
+          mountingTypeId: -1,
+        };
         setPart(newPart);
         localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastQuantity: newPart.quantity }));
         setShowBarcodeBeingScanned(false);
@@ -702,15 +711,15 @@ export function Inventory(props) {
     updatedPart[control.name] = control.value;
     switch (control.name) {
       case "partNumber":
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
       case "partTypeId":
         localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastPartTypeId: control.value }));
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
       case "mountingTypeId":
         localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastMountingTypeId: control.value }));
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
       case "lowStockThreshold":
         localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lowStockThreshold: control.value }));
@@ -739,11 +748,14 @@ export function Inventory(props) {
     await fetchApi(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: "POST" });
   };
 
-  const setPartFromMetadata = (metadataParts, suggestedPart, partTypes) => {
+  const setPartFromMetadata = (metadataParts, suggestedPart) => {
+    if (partTypesRef.current.length === 0)
+      console.error("There are no partTypes! This shouldn't happen and is a bug.");
+
     const entity = { ...part };
     const mappedPart = {
       partNumber: suggestedPart.basePartNumber,
-      partTypeId: getPartTypeId(suggestedPart.partType, partTypes),
+      partTypeId: getPartTypeId(suggestedPart.partType, partTypesRef.current),
       mountingTypeId: suggestedPart.mountingTypeId,
       packageType: suggestedPart.packageType,
       keywords: suggestedPart.keywords && suggestedPart.keywords.join(" ").toLowerCase(),
@@ -812,7 +824,7 @@ export function Inventory(props) {
   };
 
   const handleChooseAlternatePart = (e, part, partTypes) => {
-    setPartFromMetadata(metadataParts, part, partTypes);
+    setPartFromMetadata(metadataParts, part);
     setPartModalOpen(false);
   };
 

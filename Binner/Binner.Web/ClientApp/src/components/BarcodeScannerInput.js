@@ -77,10 +77,15 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   const processBarcodeInformation = (e, value) => {
     let barcodeType = "code128";
     let parsedValue = {};
+		let gsDetected = false;
+		let rsDetected = false;
     if (value.startsWith("[)>")) {
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
-      parsedValue = parseDataMatrix(value);
+      const parseResult = parseDataMatrix(value);
+			parsedValue = parseResult.value;
+			gsDetected = parseResult.gsDetected;
+			rsDetected = parseResult.rsDetected;
     } else {
       // 1D barcode
       parsedValue = value.replace("\n", "").replace("\r", "");
@@ -89,7 +94,9 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		return {
 			type: barcodeType,
 			value: parsedValue,
-			rawValue: value
+			rawValue: value,
+			rsDetected,
+			gsDetected
 		};
   };
 
@@ -102,6 +109,8 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     const expectedFormatNumber = 6; /** 22z22 barcode */
     const controlChars = ["P", "1P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z"];
 
+		let gsCodePresent = false;
+		let rsCodePresent = false;
     let formatNumber = "";
     let buffer = "";
     let i;
@@ -111,6 +120,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
       if (buffer === header) {
         if (value.charCodeAt(i + 1) === rsCharCode) {
           // read the character after the RS token (sometimes not present)
+					rsCodePresent = true;
           formatNumberIndex = i + 2;
         } else {
           formatNumberIndex = i + 1;
@@ -142,6 +152,9 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		}
 		if (gsLine.length > 0)
 			gsLines.push(gsLine);
+
+		if (gsLines.length > 0)
+			gsCodePresent = true;
 
 		// console.log('gsLines', gsLines);
 
@@ -206,7 +219,11 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
           break;
       }
     }
-    return parsedValue;
+    return {
+			value: parsedValue,
+			gsDetected: gsCodePresent,
+			rsDetected: rsCodePresent
+		};
   };
 
   const scannerDebounced = useMemo(() => debounce(onReceivedBarcodeInput, BufferTimeMs), []);

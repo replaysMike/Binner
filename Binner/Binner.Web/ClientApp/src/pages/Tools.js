@@ -34,6 +34,12 @@ export function Tools(props) {
             </Statistic.Value>
             <Statistic.Label>Voltage Divider Calculator</Statistic.Label>
           </Statistic>
+          <Statistic onClick={(e) => route(e, "/tools/barcodescanner")} style={{ cursor: "pointer" }}>
+            <Statistic.Value>
+              <Icon name="wrench" />
+            </Statistic.Value>
+            <Statistic.Label>Barcode Scanner</Statistic.Label>
+          </Statistic>
         </Statistic.Group>
       </Segment>
     </div>
