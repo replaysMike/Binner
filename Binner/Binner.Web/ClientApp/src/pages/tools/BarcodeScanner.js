@@ -16,7 +16,12 @@ export function BarcodeScanner(props) {
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
     // ignore single keypresses
-    setBarcodeValue(JSON.stringify(input, null, 2));
+    if (input && input.rawValue) {
+      const json = {...input, rawValueFormatted: input.rawValue.replaceAll("\u001e","<RS>").replaceAll("\u001d", "<GS>")};
+      setBarcodeValue(JSON.stringify(json, null, 2));  
+    } else{
+      setBarcodeValue(JSON.stringify(input, null, 2));
+    }
     toast.info(`Barcode type ${input.type} received`);
   };
 
