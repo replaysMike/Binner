@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Binner.Common.Extensions;
+using System.Collections.Generic;
 
 namespace Binner.Common.Integrations.Models.Mouser
 {
@@ -55,17 +56,7 @@ namespace Binner.Common.Integrations.Models.Mouser
         public long Quantity { get; set; }
         public string? Price { get; set; }
         public string? Currency { get; set; }
-        public double Cost
-        {
-            get
-            {
-                var price = Price;
-                if (!string.IsNullOrEmpty(price) && price.Contains("$"))
-                    price = price.Replace("$", "");
-                double.TryParse(price, out var cost);
-                return cost;
-            }
-        }
+        public double Cost => Price.FromCurrency();
     }
 
     public class AlternatePackaging

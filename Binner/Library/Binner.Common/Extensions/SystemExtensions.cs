@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
@@ -59,6 +60,48 @@ namespace Binner.Common.Extensions
         public static string UcFirst(this string str)
         {
             return str.First().ToString().ToUpper() + str.Substring(1);
+        }
+
+        /// <summary>
+        /// Get the numeric value from a currency formatted string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static double FromCurrency(this string? input)
+        {
+            if (input == null) return 0d;
+
+            var result = 0d;
+            var allCulturesByCurrencySymbol = CultureInfo.GetCultures(CultureTypes.AllCultures)
+                .GroupBy(c => c.NumberFormat.CurrencySymbol)
+                .ToDictionary(c => c.Key, c => c.ToList());
+            var culturesMatchingInputCurrencySymbol = allCulturesByCurrencySymbol.FirstOrDefault(c => input.Contains(c.Key));
+
+            // try to find the closest matching culture to the input string
+            var foundMatching = false;
+            if (culturesMatchingInputCurrencySymbol.Value?.Any() == true)
+            {
+                foreach (var c in culturesMatchingInputCurrencySymbol.Value)
+                {
+                    if (double.TryParse(input, NumberStyles.Currency | NumberStyles.AllowDecimalPoint, c, out var successResult))
+                    {
+                        // success, use this culture
+                        foundMatching = true;
+                        result = successResult;
+                        break;
+                    }
+                }
+            }
+
+            // found no matching value to the format
+            if (!foundMatching)
+            {
+                if (!double.TryParse(input, NumberStyles.Currency | NumberStyles.AllowDecimalPoint, System.Threading.Thread.CurrentThread.CurrentCulture, out result))
+                    double.TryParse(input, out result);
+            }
+
+            return result;
         }
 
         /// <summary>
