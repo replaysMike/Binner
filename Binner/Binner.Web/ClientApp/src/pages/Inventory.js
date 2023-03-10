@@ -708,7 +708,7 @@ export function Inventory(props) {
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
     const updatedPart = { ...part };
-    updatedPart[control.name] = control.value;
+    updatedPart[control.name] = control.value.replace("\t", "");
     switch (control.name) {
       case "partNumber":
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
