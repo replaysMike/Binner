@@ -1039,6 +1039,7 @@ namespace Binner.Common.StorageProviders
                 { typeof(PartType).Name, 1 },
                 { typeof(Project).Name, 1 },
                 { typeof(StoredFile).Name, 1 },
+                { typeof(OAuthRequest).Name, 1 },
             });
 
             // seed data
