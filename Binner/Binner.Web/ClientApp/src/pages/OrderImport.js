@@ -164,7 +164,7 @@ export function OrderImport(props) {
     const newOrder = order;
     switch (control.name) {
       case "orderId":
-        newOrder.orderId = control.value;
+        newOrder.orderId = control.value.replace("\t", "");
         break;
       case "supplier":
         newOrder.supplier = control.value;
