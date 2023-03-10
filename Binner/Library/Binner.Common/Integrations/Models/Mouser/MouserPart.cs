@@ -59,9 +59,11 @@ namespace Binner.Common.Integrations.Models.Mouser
         {
             get
             {
-                if (!string.IsNullOrEmpty(Price))
-                    return double.Parse(Price.Replace("$", ""));
-                return 0;
+                var price = Price;
+                if (!string.IsNullOrEmpty(price) && price.Contains("$"))
+                    price = price.Replace("$", "");
+                double.TryParse(price, out var cost);
+                return cost;
             }
         }
     }
