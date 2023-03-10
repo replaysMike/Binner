@@ -57,15 +57,15 @@ export function ChooseAlternatePartModal(props) {
     targetNode.classList.toggle("positive");
   };
 
-	const getColorBySource = (part) => {
-		if (part.swarmPartNumberManufacturerId !== null)
-			return "blue";
-		return "grey";
-	};
+  const getLabelRibbon = (part) => {
+    if (part.swarmPartNumberManufacturerId !== null)
+      return <Label ribbon color="blue">{part.basePartNumber}</Label>;
+    return <Label ribbon>{part.basePartNumber}</Label>;
+  };
 
 	const renderAllMatchingParts = (part, metadataParts) => {
     return (
-      <Table compact celled selectable size="small" className="partstable">
+      <Table compact celled selectable striped size="small">
         <Table.Header>
           <Table.Row>
 						<Table.HeaderCell>Family</Table.HeaderCell>
@@ -92,7 +92,7 @@ export function ChooseAlternatePartModal(props) {
               trigger={<Table.Row key={index} onClick={(e) => handleChooseAlternatePart(e, p)}>
                 <Table.Cell>
                   {part.partNumber === p.basePartNumber ? (
-                    <Label ribbon color={getColorBySource(p)}>{p.basePartNumber}</Label>
+                    getLabelRibbon(p)
                   ) : (
                     p.basePartNumber
                   )}

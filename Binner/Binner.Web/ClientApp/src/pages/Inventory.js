@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { usePrompt } from "../hooks/usePrompt";
+import { useFocus } from "../hooks/useFocus";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import {
@@ -25,7 +25,8 @@ import {
   Card,
   Menu,
   Placeholder,
-  Flag
+  Flag,
+  Checkbox
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
@@ -47,6 +48,7 @@ const ProductImageIntervalMs = 10 * 1000;
 export function Inventory(props) {
   const maxRecentAddedParts = 10;
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
     lastPartTypeId: 14, // IC
@@ -56,7 +58,8 @@ export function Inventory(props) {
     lastLocation: "",
     lastBinNumber: "",
     lastBinNumber2: "",
-    lowStockThreshold: 10
+    lowStockThreshold: 10,
+    rememberLast: true
   };
 
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
@@ -144,6 +147,7 @@ export function Inventory(props) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [dragOverClass, setDragOverClass] = useState("");
+  const [partNumberRef, setPartNumberFocus] = useFocus();
 
   const isEditing = part.partId > 0 || props.params.partNumber;
 
@@ -399,7 +403,7 @@ export function Inventory(props) {
           mountingTypeId: -1,
         };
         setPart(newPart);
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastQuantity: newPart.quantity }));
+        if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: newPart.quantity});
         setShowBarcodeBeingScanned(false);
         searchDebounced(cleanPartNumber, newPart);
         setIsDirty(true);
@@ -655,23 +659,23 @@ export function Inventory(props) {
     setSaveMessage(saveMessage);
     setMetadataParts([]);
     setDuplicateParts([]);
-    setPart({
+    const clearedPart = {
       partId: 0,
       partNumber: "",
       allowPotentialDuplicate: false,
-      quantity: clearAll ? "1" : viewPreferences.lastQuantity + "",
-      lowStockThreshold: clearAll ? "10" : viewPreferences.lowStockThreshold + "",
-      partTypeId: clearAll ? 14 : viewPreferences.lastPartTypeId,
-      mountingTypeId: clearAll ? 1 : viewPreferences.lastMountingTypeId,
+      quantity: (clearAll || !viewPreferences.rememberLast) ? "1" : viewPreferences.lastQuantity + "",
+      lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? "10" : viewPreferences.lowStockThreshold + "",
+      partTypeId: (clearAll || !viewPreferences.rememberLast) ? 14 : viewPreferences.lastPartTypeId,
+      mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? 1 : viewPreferences.lastMountingTypeId,
       packageType: "",
       keywords: "",
       description: "",
       datasheetUrl: "",
       digiKeyPartNumber: "",
       mouserPartNumber: "",
-      location: viewPreferences.lastLocation || "",
-      binNumber: viewPreferences.lastBinNumber || "",
-      binNumber2: viewPreferences.lastBinNumber2 || "",
+      location: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastLocation + "",
+      binNumber: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber + "",
+      binNumber2: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber2 + "",
       cost: "",
       lowestCostSupplier: "",
       lowestCostSupplierUrl: "",
@@ -679,13 +683,18 @@ export function Inventory(props) {
       manufacturer: "",
       manufacturerPartNumber: "",
       imageUrl: "",
-      projectId: "",
+      projectId: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastProjectId,
       supplier: "",
       supplierPartNumber: ""
-    });
+    };
+    setPart(clearedPart);
     setLoadingPartMetadata(false);
     setLoadingPartTypes(false);
     setLoadingProjects(false);
+    if (clearAll && viewPreferences.rememberLast) {
+      updateViewPreferences({ lastQuantity: clearedPart.quantity, lowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId, lastProjectId: clearedPart.projectId });
+    }
+    setPartNumberFocus();
   };
 
   const clearForm = (e) => {
@@ -694,13 +703,31 @@ export function Inventory(props) {
       e.preventDefault();
       e.stopPropagation();
     }
+
+    if (props.params.partNumber) {
+      navigate("/inventory/add");
+      return;
+    }
+
     resetForm("", true);
   };
 
   const updateNumberPicker = (e) => {
-    localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastQuantity: e.value }));
+    if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: e.value});
     setPart({ ...part, quantity: e.value.toString() });
     setIsDirty(true);
+  };
+
+  const updateViewPreferences = (preference) => {
+    const newViewPreferences = {...viewPreferences, ...preference};
+    setViewPreferences(newViewPreferences);
+    localStorage.setItem("viewPreferences", JSON.stringify(newViewPreferences));
+  };
+
+  const handleRememberLastSelection = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
+    updateViewPreferences({ rememberLast: control.checked });
   };
 
   const handleChange = (e, control) => {
@@ -708,33 +735,39 @@ export function Inventory(props) {
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
     const updatedPart = { ...part };
-    updatedPart[control.name] = control.value.replace("\t", "");
+    updatedPart[control.name] = control.value;
     switch (control.name) {
       case "partNumber":
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
+        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) {
+          updatedPart[control.name] = control.value.replace("\t", "");
+          searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
+        }
         break;
       case "partTypeId":
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastPartTypeId: control.value }));
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastPartTypeId: control.value});
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
       case "mountingTypeId":
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastMountingTypeId: control.value }));
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastMountingTypeId: control.value});
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
       case "lowStockThreshold":
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lowStockThreshold: control.value }));
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lowStockThreshold: control.value});
         break;
       case "projectId":
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastProjectId: control.value }));
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastProjectId: control.value});
         break;
       case "location":
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastLocation: control.value }));
+        updatedPart[control.name] = control.value.replace("\t", "");
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastLocation: updatedPart[control.name]});
         break;
       case "binNumber":
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastBinNumber: control.value }));
+        updatedPart[control.name] = control.value.replace("\t", "");
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastBinNumber: updatedPart[control.name]});
         break;
       case "binNumber2":
-        localStorage.setItem("viewPreferences", JSON.stringify({ ...viewPreferences, lastBinNumber2: control.value }));
+        updatedPart[control.name] = control.value.replace("\t", "");
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastBinNumber2: updatedPart[control.name]});
         break;
       default:
         break;
@@ -1389,20 +1422,22 @@ export function Inventory(props) {
           <Grid.Row>
             <Grid.Column width={12} className="left-column">
               {/** LEFT COLUMN */}
-
               <Form.Group>
                 <Form.Input
                   label="Part"
                   required
                   placeholder="LM358"
-                  icon="search"
                   focus
                   value={part.partNumber || ""}
                   onChange={handleChange}
                   name="partNumber"
                   onFocus={disableKeyboardListening}
                   onBlur={enableKeyboardListening}
-                />
+                  icon
+                >
+                  <input ref={partNumberRef} />
+                  <Icon name="search" />
+                </Form.Input>
                 <Form.Dropdown
                   label="Part Type"
                   placeholder="Part Type"
@@ -1541,17 +1576,27 @@ export function Inventory(props) {
                   />
                 </Form.Group>
               </Segment>
-
               <Form.Field inline>
+                {!isEditing &&
+                  <Popup
+                    wide="very"
+                    position="top right"
+                    content={<p>Enable this toggle to remember the last selected values of: <i>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</i></p>}
+                    trigger={<Checkbox toggle label="Remember last selection" className="left small" style={{float: 'right'}} checked={viewPreferences.rememberLast || false} onChange={handleRememberLastSelection} />}
+                  />
+                }
                 <Button.Group>
                   <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
                     <Icon name="save" />
                     Save
                   </Button>
                   <Button.Or />
-                  <Button type="button" style={{ width: "100px" }} title="Clear form" disabled={!isDirty} onClick={clearForm}>
-                    Clear
-                  </Button>
+                  <Popup 
+                    position="right center"
+                    content="Clear the form to default values"
+                    trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>Clear</Button>}
+                  />
+                  
                 </Button.Group>
                 {part && part.partId > 0 && (
                   <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
