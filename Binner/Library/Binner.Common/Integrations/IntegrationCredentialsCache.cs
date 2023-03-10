@@ -54,6 +54,42 @@ namespace Binner.Common.Integrations
         }
 
         /// <summary>
+        /// Get credential without manipulating the cache
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="apiName"></param>
+        /// <param name="addMethod"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="DataException"></exception>
+        public async Task<ApiCredential> FetchCredentialAsync(ApiCredentialKey key, string apiName, Func<Task<ApiCredentialConfiguration>> addMethod)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (string.IsNullOrEmpty(apiName)) throw new ArgumentNullException(nameof(apiName));
+            if (addMethod == null) throw new ArgumentNullException(nameof(addMethod));
+
+            try
+            {
+                // a new credentials set for the user must be fetched
+                var configuration = await CreateNewCredentialConfigurationAsync(addMethod);
+                var credentials = configuration.ApiCredentials;
+                return credentials.First(x => x.ApiName == apiName);
+            }
+            finally
+            {
+            }
+
+            static async Task<ApiCredentialConfiguration> CreateNewCredentialConfigurationAsync(Func<Task<ApiCredentialConfiguration>> addMethod)
+            {
+                var credentialConfiguration = await addMethod();
+                if (credentialConfiguration == null)
+                    throw new DataException($"Tried to ask for new Api credential, addMethod invocation returned null!");
+
+                return credentialConfiguration;
+            }
+        }
+
+        /// <summary>
         /// Get or add a new set of api credential for a given user
         /// </summary>
         /// <param name="key"></param>
@@ -110,9 +146,9 @@ namespace Binner.Common.Integrations
 
             static async Task<ApiCredentialConfiguration> CreateNewCredentialConfigurationAsync(Func<Task<ApiCredentialConfiguration>> addMethod)
             {
-                ApiCredentialConfiguration credentialConfiguration = await addMethod();
+                var credentialConfiguration = await addMethod();
                 if (credentialConfiguration == null)
-                    throw new DataException($"Tried to ask for new Api credential, addMethod invokation returned null!");
+                    throw new DataException($"Tried to ask for new Api credential, addMethod invocation returned null!");
 
                 return credentialConfiguration;
             }

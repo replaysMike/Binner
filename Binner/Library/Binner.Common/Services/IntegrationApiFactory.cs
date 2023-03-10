@@ -80,8 +80,6 @@ namespace Binner.Common.Services
         public async Task<T> CreateAsync<T>(int userId)
             where T : class
         {
-            var apiType = typeof(T);
-            var credentialKey = ApiCredentialKey.Create(userId);
             var getCredentialsMethod = async () =>
             {
                 // create a db context
@@ -96,12 +94,19 @@ namespace Binner.Common.Services
                     SwarmEnabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
                     SwarmApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
                     SwarmApiUrl = _webHostServiceConfiguration.Integrations.Swarm.ApiUrl,
+                    SwarmTimeout = _webHostServiceConfiguration.Integrations.Swarm.Timeout,
 
                     DigiKeyEnabled = _webHostServiceConfiguration.Integrations.Digikey.Enabled,
+                    DigiKeyClientId = _webHostServiceConfiguration.Integrations.Digikey.ClientId,
+                    DigiKeyClientSecret = _webHostServiceConfiguration.Integrations.Digikey.ClientSecret,
+                    DigiKeyOAuthPostbackUrl = _webHostServiceConfiguration.Integrations.Digikey.oAuthPostbackUrl,
+                    DigiKeyApiUrl = _webHostServiceConfiguration.Integrations.Digikey.ApiUrl,
                     
                     MouserEnabled = _webHostServiceConfiguration.Integrations.Mouser.Enabled,
+                    MouserSearchApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.SearchApiKey,
                     MouserCartApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.CartApiKey,
                     MouserOrderApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.OrderApiKey,
+                    MouserApiUrl = _webHostServiceConfiguration.Integrations.Mouser.ApiUrl,
                     
                     OctopartEnabled = _webHostServiceConfiguration.Integrations.Octopart.Enabled,
                     OctopartApiKey = _webHostServiceConfiguration.Integrations.Octopart.ApiKey,
@@ -117,20 +122,27 @@ namespace Binner.Common.Services
                     { "Enabled", userIntegrationConfiguration.SwarmEnabled },
                     { "ApiKey", userIntegrationConfiguration.SwarmApiKey ?? string.Empty },
                     { "ApiUrl", userIntegrationConfiguration.SwarmApiUrl },
+                    { "Timeout", userIntegrationConfiguration.SwarmTimeout },
                 };
                 credentials.Add(new ApiCredential(userId, swarmConfiguration, nameof(SwarmApi)));
 
                 var digikeyConfiguration = new Dictionary<string, object>
                 {
-                    { "Enabled", userIntegrationConfiguration.DigiKeyEnabled }
+                    { "Enabled", userIntegrationConfiguration.DigiKeyEnabled },
+                    { "ClientId", userIntegrationConfiguration.DigiKeyClientId ?? string.Empty },
+                    { "ClientSecret", userIntegrationConfiguration.DigiKeyClientSecret ?? string.Empty },
+                    { "oAuthPostbackUrl", userIntegrationConfiguration.DigiKeyOAuthPostbackUrl },
+                    { "ApiUrl", userIntegrationConfiguration.DigiKeyApiUrl }
                 };
                 credentials.Add(new ApiCredential(userId, digikeyConfiguration, nameof(DigikeyApi)));
 
                 var mouserConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", userIntegrationConfiguration.MouserEnabled },
+                    { "SearchApiKey", userIntegrationConfiguration.MouserSearchApiKey ?? string.Empty },
                     { "CartApiKey", userIntegrationConfiguration.MouserCartApiKey ?? string.Empty },
-                    { "OrderApiKey", userIntegrationConfiguration.MouserOrderApiKey ?? string.Empty }
+                    { "OrderApiKey", userIntegrationConfiguration.MouserOrderApiKey ?? string.Empty },
+                    { "ApiUrl", userIntegrationConfiguration.MouserApiUrl },
                 };
                 credentials.Add(new ApiCredential(userId, mouserConfiguration, nameof(MouserApi)));
 
@@ -144,31 +156,47 @@ namespace Binner.Common.Services
 
                 return new ApiCredentialConfiguration(userId, credentials);
             };
+            return await CreateAsync<T>(userId, getCredentialsMethod, true);
+        }
+
+        /// <summary>
+        /// Create an integration Api for use by users
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="userId"></param>
+        /// <param name="getCredentialsMethod"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<T> CreateAsync<T>(int userId, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache = true)
+            where T : class
+        {
+            var apiType = typeof(T);
+            var credentialKey = ApiCredentialKey.Create(userId);
 
             if (apiType == typeof(Integrations.SwarmApi))
             {
-                var result = await CreateSwarmApiAsync(credentialKey, getCredentialsMethod);
+                var result = await CreateSwarmApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(DigikeyApi))
             {
-                var result = await CreateDigikeyApiAsync(credentialKey, getCredentialsMethod);
+                var result = await CreateDigikeyApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(MouserApi))
             {
-                var result = await CreateMouserApiAsync(credentialKey, getCredentialsMethod);
+                var result = await CreateMouserApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(OctopartApi))
             {
-                var result = await CreateOctopartApiAsync(credentialKey, getCredentialsMethod);
+                var result = await CreateOctopartApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
@@ -189,15 +217,19 @@ namespace Binner.Common.Services
             return api;
         }
 
-        private async Task<Integrations.SwarmApi> CreateSwarmApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod)
+        private async Task<Integrations.SwarmApi> CreateSwarmApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
         {
-            var credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(SwarmApi), getCredentialsMethod);
+            ApiCredential? credentials = null;
+            if (cache)
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(SwarmApi), getCredentialsMethod);
+            else
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(SwarmApi), getCredentialsMethod);
             var configuration = new SwarmConfiguration
             {
-                // user can disable the api
-                Enabled = _integrationConfiguration.Swarm.Enabled && credentials.GetCredentialBool("Enabled"),
-                ApiKey= _integrationConfiguration.Swarm.ApiKey,
-                ApiUrl = _integrationConfiguration.Swarm.ApiUrl,
+                Enabled = credentials.GetCredentialBool("Enabled"),
+                ApiKey= credentials.GetCredentialString("ApiKey"),
+                ApiUrl = credentials.GetCredentialString("ApiUrl"),
+                Timeout = TimeSpan.Parse(credentials.GetCredentialString("Timeout"))
             };
             var api = new Integrations.SwarmApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
             return api;
@@ -218,20 +250,20 @@ namespace Binner.Common.Services
             return api;
         }
 
-        private async Task<DigikeyApi> CreateDigikeyApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod)
+        private async Task<DigikeyApi> CreateDigikeyApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
         {
-            var credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(DigikeyApi), getCredentialsMethod);
+            ApiCredential? credentials = null;
+            if (cache)
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(DigikeyApi), getCredentialsMethod);
+            else
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(DigikeyApi), getCredentialsMethod);
             var configuration = new DigikeyConfiguration
             {
-                // user can disable the api
-                Enabled = _integrationConfiguration.Digikey.Enabled && credentials.GetCredentialBool("Enabled"),
-
-                // system settings
-                // Digikey has no user level keys as it supports oAuth
-                ClientId = _integrationConfiguration.Digikey.ClientId,
-                ClientSecret = _integrationConfiguration.Digikey.ClientSecret,
-                oAuthPostbackUrl = _integrationConfiguration.Digikey.oAuthPostbackUrl,
-                ApiUrl = _integrationConfiguration.Digikey.ApiUrl,
+                Enabled = credentials.GetCredentialBool("Enabled"),
+                ClientId = credentials.GetCredentialString("ClientId"),
+                ClientSecret = credentials.GetCredentialString("ClientSecret"),
+                oAuthPostbackUrl = credentials.GetCredentialString("oAuthPostbackUrl"),
+                ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
             var api = new DigikeyApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
             return api;
@@ -255,24 +287,23 @@ namespace Binner.Common.Services
             return api;
         }
 
-        private async Task<MouserApi> CreateMouserApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod)
+        private async Task<MouserApi> CreateMouserApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
         {
-            var credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(MouserApi), getCredentialsMethod);
+            ApiCredential? credentials = null;
+            if (cache)
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(MouserApi), getCredentialsMethod);
+            else
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(MouserApi), getCredentialsMethod);
             var configuration = new MouserConfiguration
             {
-                // user can disable the api
-                Enabled = _integrationConfiguration.Mouser.Enabled && credentials.GetCredentialBool("Enabled"),
-
+                Enabled = credentials.GetCredentialBool("Enabled"),
                 ApiKeys = new MouserApiKeys
                 {
-                    // user level keys
                     OrderApiKey = credentials.GetCredentialString("OrderApiKey"),
                     CartApiKey = credentials.GetCredentialString("CartApiKey"),
-                    // system key is used
-                    SearchApiKey = _integrationConfiguration.Mouser.ApiKeys.SearchApiKey
+                    SearchApiKey = credentials.GetCredentialString("SearchApiKey")
                 },
-                // system settings
-                ApiUrl = _integrationConfiguration.Mouser.ApiUrl,
+                ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
             var api = new MouserApi(configuration, _httpContextAccessor);
             return api;
@@ -291,15 +322,16 @@ namespace Binner.Common.Services
             return api;
         }
 
-        private async Task<OctopartApi> CreateOctopartApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod)
+        private async Task<OctopartApi> CreateOctopartApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
         {
-            var credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(OctopartApi), getCredentialsMethod);
+            ApiCredential? credentials = null;
+            if (cache)
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(OctopartApi), getCredentialsMethod);
+            else
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(OctopartApi), getCredentialsMethod);
             var configuration = new OctopartConfiguration
             {
-                // user can disable the api
-                Enabled = _integrationConfiguration.Octopart.Enabled && credentials.GetCredentialBool("Enabled"),
-
-                // user level keys
+                Enabled = credentials.GetCredentialBool("Enabled"),
                 ApiKey = credentials.GetCredentialString("ApiKey"),
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };

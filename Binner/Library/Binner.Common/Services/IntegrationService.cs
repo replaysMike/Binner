@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Binner.Common.Configuration;
 using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
 using Binner.Common.Models.Configuration.Integrations;
+using Binner.Common.Models.Requests;
 using Binner.Common.Models.Responses;
 using Binner.Model.Common;
 using System;
@@ -32,15 +34,70 @@ namespace Binner.Common.Services
             _swarmService = swarmService;
         }
 
-        public async Task<TestApiResponse> TestApiAsync(string apiName)
+        public async Task<TestApiResponse> TestApiAsync(TestApiRequest request)
         {
             var user = _requestContext.GetUserContext();
 
-            switch (apiName.ToLower())
+            var getCredentialsMethod = async () =>
+            {
+                // create a db context
+                //using var context = await _contextFactory.CreateDbContextAsync();
+                /*var userIntegrationConfiguration = await context.UserIntegrationConfigurations
+                    .Where(x => x.UserId.Equals(userId))
+                    .FirstOrDefaultAsync()
+                    ?? new Data.DataModel.UserIntegrationConfiguration();*/
+                // todo: temporary until we move integration configuration to the UI
+                var comparisonType = StringComparison.InvariantCultureIgnoreCase;
+
+                // build the credentials list
+                var credentials = new List<ApiCredential>();
+
+                // add user defined credentials
+                var swarmConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
+                    { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty },
+                    { "Timeout", request.Configuration.Where(x => x.Key.Equals("Timeout", comparisonType) && x.Value != null).Select(x => TimeSpan.Parse(x.Value ?? "00:00:05")).FirstOrDefault() },
+                };
+                credentials.Add(new ApiCredential(user?.UserId ?? 0, swarmConfiguration, nameof(SwarmApi)));
+
+                var digikeyConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
+                    { "ClientId", request.Configuration.Where(x => x.Key.Equals("ClientId", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ClientSecret", request.Configuration.Where(x => x.Key.Equals("ClientSecret", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
+                    { "oAuthPostbackUrl", request.Configuration.Where(x => x.Key.Equals("oAuthPostbackUrl", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x =>  WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty }
+                };
+                credentials.Add(new ApiCredential(user?.UserId ?? 0, digikeyConfiguration, nameof(DigikeyApi)));
+
+                var mouserConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
+                    { "CartApiKey", request.Configuration.Where(x => x.Key.Equals("CartApiKey", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
+                    { "OrderApiKey", request.Configuration.Where(x => x.Key.Equals("OrderApiKey", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "SearchApiKey", request.Configuration.Where(x => x.Key.Equals("SearchApiKey", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty },
+                };
+                credentials.Add(new ApiCredential(user?.UserId ?? 0, mouserConfiguration, nameof(MouserApi)));
+
+                var octopartConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
+                    { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty }
+                };
+                credentials.Add(new ApiCredential(user?.UserId ?? 0, octopartConfiguration, nameof(OctopartApi)));
+
+                return new ApiCredentialConfiguration(user?.UserId ?? 0, credentials);
+            };
+
+            switch (request.Name.ToLower())
             {
                 case "swarm":
                     {
-                        var api = await _integrationApiFactory.CreateAsync<Integrations.SwarmApi>(user?.UserId ?? 0);
+                        var api = await _integrationApiFactory.CreateAsync<Integrations.SwarmApi>(user?.UserId ?? 0, getCredentialsMethod, false);
                         if (!api.IsEnabled)
                             return new TestApiResponse(nameof(Integrations.SwarmApi), "Api is not enabled.");
                         try
@@ -57,7 +114,7 @@ namespace Binner.Common.Services
                     }
                 case "digikey":
                     {
-                        var api = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
+                        var api = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0, getCredentialsMethod, false);
                         if (!api.IsEnabled)
                             return new TestApiResponse(nameof(Integrations.DigikeyApi), "Api is not enabled.");
                         try
@@ -79,7 +136,7 @@ namespace Binner.Common.Services
                     }
                 case "mouser":
                     {
-                        var api = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
+                        var api = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0, getCredentialsMethod, false);
                         if (!api.IsEnabled)
                             return new TestApiResponse(nameof(Integrations.MouserApi), "Api is not enabled.");
                         try
@@ -96,7 +153,7 @@ namespace Binner.Common.Services
                     }
                 case "octopart":
                     {
-                        var api = await _integrationApiFactory.CreateAsync<Integrations.OctopartApi>(user?.UserId ?? 0);
+                        var api = await _integrationApiFactory.CreateAsync<Integrations.OctopartApi>(user?.UserId ?? 0, getCredentialsMethod, false);
                         if (!api.IsEnabled)
                             return new TestApiResponse(nameof(Integrations.OctopartApi), "Api is not enabled.");
                         try
@@ -113,7 +170,14 @@ namespace Binner.Common.Services
                     }
             }
 
-            return new TestApiResponse(apiName, $"Unknown api name!");
+            return new TestApiResponse(request.Name, $"Unknown api name!");
+        }
+
+        private static string WrapUrl(string url)
+        {
+            if (!url.Contains("http://") && !url.Contains("https://"))
+                url = $"https://{url}";
+            return url;
         }
     }
 }

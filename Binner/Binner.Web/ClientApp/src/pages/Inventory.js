@@ -139,6 +139,7 @@ export function Inventory(props) {
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [partMetadataIsSubscribed, setPartMetadataIsSubscribed] = useState(false);
+  const [partMetadataError, setPartMetadataError] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
@@ -163,6 +164,7 @@ export function Inventory(props) {
     const partNumberStr = props.params.partNumber;
     const fetchData = async () => {
       setPartMetadataIsSubscribed(false);
+      setPartMetadataError(null);
       await fetchPartTypes();
       await fetchProjects();
       await fetchRecentRows();
@@ -186,6 +188,7 @@ export function Inventory(props) {
     Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
     setPartMetadataIsSubscribed(false);
+    setPartMetadataError(null);
     try {
       const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}`, {
         signal: Inventory.infoAbortController.signal
@@ -194,6 +197,11 @@ export function Inventory(props) {
       if (data.requiresAuthentication) {
         // redirect for authentication
         window.open(data.redirectUrl, "_blank");
+        return;
+      }
+
+      if (data.errors && data.errors.length > 0) {
+        setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
         return;
       }
 
@@ -396,6 +404,7 @@ export function Inventory(props) {
       // scan single part
       if (cleanPartNumber) {
         setPartMetadataIsSubscribed(false);
+        setPartMetadataError(null);
         const newPart = {...part, 
           partNumber: cleanPartNumber, 
           quantity: input.value.quantity || "1", 
@@ -734,6 +743,7 @@ export function Inventory(props) {
     e.preventDefault();
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
+    setPartMetadataError(null);
     const updatedPart = { ...part };
     updatedPart[control.name] = control.value;
     switch (control.name) {
@@ -1417,6 +1427,11 @@ export function Inventory(props) {
             the part is indexed.
           </div>
         )}
+        {partMetadataError && (
+          <div className="page-error" onClick={() => setPartMetadataError(null)}>
+            <Icon name="close" /> {partMetadataError}
+          </div>
+        )}
 
         <Grid celled className="inventory-container">
           <Grid.Row>
@@ -1755,7 +1770,7 @@ export function Inventory(props) {
             <Grid.Column width={4} className="right-column">
               {/** RIGHT COLUMN */}
 
-              <Menu>
+              <Menu className="shortcuts">
                 <Menu.Item onClick={(e) => visitAnchor(e, "#datasheets")}>Datasheets</Menu.Item>
                 <Menu.Item onClick={(e) => visitAnchor(e, "#pinout")}>Pinout</Menu.Item>
                 <Menu.Item onClick={(e) => visitAnchor(e, "#circuits")}>Circuits</Menu.Item>

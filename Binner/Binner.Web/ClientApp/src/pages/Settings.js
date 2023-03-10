@@ -62,6 +62,7 @@ export const Settings = (props) => {
       enabled: true,
       apiKey: "",
       apiUrl: "",
+      timeout: "00:00:05"
     },
     digikey: {
       enabled: false,
@@ -361,8 +362,39 @@ export const Settings = (props) => {
 
   const handleTestApi = (e, apiName) => {
     e.preventDefault();
+    const configuration = [];
+    switch(apiName){
+      case "swarm":
+        configuration.push({ key: "enabled", value: settings.binner.enabled + "" });
+        configuration.push({ key: "apiKey", value: settings.binner.apiKey });
+        configuration.push({ key: "apiUrl", value: settings.binner.apiUrl });
+        configuration.push({ key: "timeout", value: settings.binner.timeout });
+        break;
+      case "digikey":
+        configuration.push({ key: "enabled", value: settings.digikey.enabled + "" });
+        configuration.push({ key: "clientId", value: settings.digikey.clientId });
+        configuration.push({ key: "clientSecret", value: settings.digikey.clientSecret });
+        configuration.push({ key: "apiUrl", value: settings.digikey.apiUrl });
+        configuration.push({ key: "oAuthPostbackUrl", value: settings.digikey.oAuthPostbackUrl });
+        break;
+      case "mouser":
+        configuration.push({ key: "enabled", value: settings.mouser.enabled + "" });
+        configuration.push({ key: "searchApiKey", value: settings.mouser.searchApiKey });
+        configuration.push({ key: "orderApiKey", value: settings.mouser.orderApiKey });
+        configuration.push({ key: "cartApiKey", value: settings.mouser.cartApiKey });
+        configuration.push({ key: "apiUrl", value: settings.mouser.apiUrl });
+        break;
+      case "octopart":
+        configuration.push({ key: "enabled", value: settings.octopart.enabled + "" });
+        configuration.push({ key: "apiKey", value: settings.octopart.apiKey });
+        configuration.push({ key: "apiUrl", value: settings.octopart.apiUrl });
+        break;
+      default:
+        break;
+    }
     const request = {
       name: apiName,
+      configuration
     };
     setTesting(true);
     fetchApi("settings/testapi", {
@@ -555,15 +587,41 @@ export const Settings = (props) => {
                 }
               />
             </Form.Field>
-            <Button
-              className="test"
-              type="button"
-              onClick={(e) => handleTestApi(e, "swarm")}
-              disabled={testing}
-            >
-              Test
-            </Button>
-            {getTestResultIcon("swarm")}
+            <Form.Field width={10}>
+              <label>Timeout</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={
+                  <p>
+                    Swarm api request timeout. Default: '00:00:05' (5 seconds)
+                  </p>
+                }
+                trigger={
+                  <Input
+                    className="labeled"
+                    placeholder=""
+                    value={settings.binner.timeout || ""}
+                    name="swarmTimeout"
+                    onChange={handleChange}
+                  ></Input>
+                }
+              />
+            </Form.Field>
+            <Form.Field>
+              <Button
+                primary
+                className="test"
+                type="button"
+                onClick={(e) => handleTestApi(e, "swarm")}
+                disabled={testing}
+              >
+                Test Api
+              </Button>
+              {getTestResultIcon("swarm")}
+            </Form.Field>
           </Segment>
 
           <Segment loading={loading} color="green" secondary>
@@ -740,16 +798,18 @@ export const Settings = (props) => {
                 }
               />
             </Form.Field>
-            <Button
-              primary
-              className="test"
-              type="button"
-              onClick={(e) => handleTestApi(e, "digikey")}
-              disabled={testing}
-            >
-              Test
-            </Button>
-            {getTestResultIcon("digikey")}
+            <Form.Field>
+              <Button
+                primary
+                className="test"
+                type="button"
+                onClick={(e) => handleTestApi(e, "digikey")}
+                disabled={testing}
+              >
+                Test Api
+              </Button>
+              {getTestResultIcon("digikey")}
+            </Form.Field>
           </Segment>
 
           <Segment loading={loading} color="green" secondary>
@@ -867,16 +927,18 @@ export const Settings = (props) => {
                 }
               />
             </Form.Field>
-            <Button
-              primary
-              className="test"
-              type="button"
-              onClick={(e) => handleTestApi(e, "mouser")}
-              disabled={testing}
-            >
-              Test
-            </Button>
-            {getTestResultIcon("mouser")}
+            <Form.Field>
+              <Button
+                primary
+                className="test"
+                type="button"
+                onClick={(e) => handleTestApi(e, "mouser")}
+                disabled={testing}
+              >
+                Test Api
+              </Button>
+              {getTestResultIcon("mouser")}
+            </Form.Field>
           </Segment>
 
           <Segment loading={loading} color="green" secondary>
@@ -957,16 +1019,18 @@ export const Settings = (props) => {
                 }
               />
             </Form.Field>
-            <Button
-              primary
-              className="test"
-              type="button"
-              onClick={(e) => handleTestApi(e, "octopart")}
-              disabled={testing}
-            >
-              Test
-            </Button>
-            {getTestResultIcon("octopart")}
+            <Form.Field>
+              <Button
+                primary
+                className="test"
+                type="button"
+                onClick={(e) => handleTestApi(e, "octopart")}
+                disabled={testing}
+              >
+                Test Api
+              </Button>
+              {getTestResultIcon("octopart")}
+            </Form.Field>
           </Segment>
         </Segment>
 

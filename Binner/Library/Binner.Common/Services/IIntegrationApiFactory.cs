@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using Binner.Common.Integrations;
+using System;
+using System.Threading.Tasks;
 
 namespace Binner.Common.Services
 {
@@ -21,5 +23,15 @@ namespace Binner.Common.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<T> CreateAsync<T>(int userId) where T : class;
+
+        /// <summary>
+        /// Create an integration Api for use by users
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="userId"></param>
+        /// <param name="getCredentialsMethod"></param>
+        /// <param name="cache">True to enable caching of credentials</param>
+        /// <returns></returns>
+        Task<T> CreateAsync<T>(int userId, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache = true) where T : class;
     }
 }

@@ -5,7 +5,6 @@ using Binner.Common.Models;
 using Binner.Common.Models.Configuration;
 using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Models.Requests;
-using Binner.Common.Models.Responses;
 using System.Linq;
 
 namespace Binner.Common.MappingProfiles
@@ -26,6 +25,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.SwarmEnabled, options => options.MapFrom(x => x.Binner.Enabled))
                 .ForMember(x => x.SwarmApiKey, options => options.MapFrom(x => x.Binner.ApiKey))
                 .ForMember(x => x.SwarmApiUrl, options => options.MapFrom(x => x.Binner.ApiUrl))
+                .ForMember(x => x.SwarmTimeout, options => options.MapFrom(x => x.Binner.Timeout))
                 .ForMember(x => x.DigiKeyEnabled, options => options.MapFrom(x => x.Digikey.Enabled))
                 .ForMember(x => x.DigiKeyClientId, options => options.MapFrom(x => x.Digikey.ClientId))
                 .ForMember(x => x.DigiKeyClientSecret, options => options.MapFrom(x => x.Digikey.ClientSecret))

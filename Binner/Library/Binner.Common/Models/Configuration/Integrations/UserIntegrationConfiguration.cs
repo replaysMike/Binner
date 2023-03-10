@@ -33,6 +33,11 @@ namespace Binner.Common.Models.Configuration.Integrations
         public string? SwarmApiUrl { get; set; }
 
         /// <summary>
+        /// Swarm api request timeout
+        /// </summary>
+        public TimeSpan? SwarmTimeout { get; set; }
+
+        /// <summary>
         /// DigiKey api enabled
         /// </summary>
         public bool DigiKeyEnabled { get; set; } = true;
