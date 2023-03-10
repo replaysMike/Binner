@@ -7,7 +7,7 @@ import debounce from "lodash.debounce";
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({listening, minInputLength, onReceived, helpUrl}) {
+export function BarcodeScannerInput({listening, minInputLength, onReceived, helpUrl, swallowKeyEvent}) {
   const BufferTimeMs = 500;
 	const [keyBuffer, setKeyBuffer] = useState([]);
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
@@ -308,7 +308,6 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 				}
 			}
 		}
-		console.log('parsedValue', parsedValue);
     return {
 			value: parsedValue,
 			gsDetected: gsCodePresent,
@@ -348,8 +347,10 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   // listens for document keydown events, used for barcode scanner input
   const onKeydown = (e) => {
     if (listeningRef.current === true) {
-			e.preventDefault();
-			e.stopPropagation();
+			if (swallowKeyEvent) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
 			keyBufferRef.current.push(e);
       scannerDebounced(e, keyBufferRef.current);
     } else {
@@ -380,11 +381,13 @@ BarcodeScannerInput.propTypes = {
   listening: PropTypes.bool,
   /** keyboard buffer smaller than this length will ignore input */
   minInputLength: PropTypes.number,
-  helpUrl: PropTypes.string
+  helpUrl: PropTypes.string,
+	swallowKeyEvent: PropTypes.bool
 };
 
 BarcodeScannerInput.defaultProps = {
   listening: true,
   minInputLength: 4,
-  helpUrl: "/help/scanning"
+  helpUrl: "/help/scanning",
+	swallowKeyEvent: true
 };

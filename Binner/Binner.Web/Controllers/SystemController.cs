@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Mime;
+using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
@@ -21,18 +22,20 @@ namespace Binner.Web.Controllers
         private readonly ILogger<ProjectController> _logger;
         private readonly WebHostServiceConfiguration _config;
         private readonly ISettingsService _settingsService;
+        private readonly IntegrationService _integrationService;
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly FontManager _fontManager;
         private readonly AutoMapper.IMapper _mapper;
         private readonly IServiceContainer _container;
 
-        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, ILabelPrinterHardware labelPrinter, FontManager fontManager)
+        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager)
         {
             _mapper = mapper;
             _container = container;
             _logger = logger;
             _config = config;
             _settingsService = settingsService;
+            _integrationService = integrationService;
             _labelPrinter = labelPrinter;
             _fontManager = fontManager;
         }
@@ -84,6 +87,29 @@ namespace Binner.Web.Controllers
             {
                 var settingsResponse = _mapper.Map<SettingsResponse>(_config);
                 return Ok(settingsResponse);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
+
+        }
+
+        /// <summary>
+        /// Test api settings
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("/settings/testapi")]
+        public async Task<IActionResult> TestApiAsync(TestApiRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Name)) return BadRequest();
+
+                // test api
+                var result = await _integrationService.TestApiAsync(request.Name);
+
+                return Ok(result);
             }
             catch (Exception ex)
             {

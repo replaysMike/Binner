@@ -100,6 +100,7 @@ namespace Binner.Web.Configuration
             container.Register<ISettingsService, SettingsService>(new PerScopeLifetime());
             container.Register<ISwarmService, SwarmService>(new PerScopeLifetime());
             container.Register<IStoredFileService, StoredFileService>(new PerScopeLifetime());
+            container.Register<IntegrationService>(new PerScopeLifetime());
         }
 
         private static void RegisterApiIntegrations(IServiceContainer container)

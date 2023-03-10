@@ -18,3 +18,28 @@ code {
 pre {
 	white-space: pre !important;
 }
+
+.block-container{
+	display: flex;
+	vertical-align: middle;
+}
+
+.block-container label {
+	font-weight: 600;
+	line-height: 3.0;
+}
+
+.block-container .block {
+	border: 1px solid #888;
+	background-color: rgb(189, 189, 189);
+	padding: 5px 20px;
+	margin: 10px;
+	color: #888;
+}
+
+.block-container .block.active {
+	border: 1px solid #666;
+	background-color: rgb(0, 100, 128);
+	color: #fff;
+	font-weight: 600;
+}

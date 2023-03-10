@@ -41,7 +41,7 @@ namespace Binner.Common.StorageProviders
             try
             {
                 if (!_primaryKeys.ContainsKey(key))
-                    throw new ArgumentException("Invalid key name specified", nameof(key));
+                    _primaryKeys.Add(key, 0);
                 var nextKey = _primaryKeys[key];
                 _primaryKeys[key]++;
                 return nextKey;
