@@ -9,8 +9,8 @@ namespace Binner.Common.StorageProviders
     /// </summary>
     public class PrimaryKeyTracker : IDisposable
     {
-        private IDictionary<string, long> _primaryKeys;
-        private SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
+        private readonly IDictionary<string, long> _primaryKeys;
+        private readonly SemaphoreSlim _dataLock = new SemaphoreSlim(1, 1);
         private bool _isDisposed;
 
         public PrimaryKeyTracker(IDictionary<string, long> keys)
@@ -21,7 +21,6 @@ namespace Binner.Common.StorageProviders
         /// <summary>
         /// Get the next primary key
         /// </summary>
-        /// <param name="key"></param>
         /// <returns></returns>
         public long GetNextKey<T>()
         {
