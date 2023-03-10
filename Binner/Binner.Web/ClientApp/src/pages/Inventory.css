@@ -100,3 +100,38 @@
 	font-weight: 500;
 	color: #c00;
 }
+
+.ui.toggle.checkbox.left label {
+	padding-left: 0;
+	padding-right: 4em;
+}
+
+.ui.checkbox.left input,
+.ui.toggle.checkbox.left label:before {
+	left: auto;
+	right: 0;
+}
+
+.ui.toggle.checkbox.left label:after {
+	left: auto;
+	right: 2.2em;
+	transition: background 0.3s ease 0s, right 0.3s ease 0s;
+}
+
+.ui.toggle.checkbox.left input:checked + label:after {
+	left: auto;
+	right: 0;
+	transition: background 0.3s ease 0s, right 0.3s ease 0s;
+}
+
+.ui.toggle.checkbox.small {
+	font-size: 0.9em;
+}
+
+.ui.toggle.checkbox.small label:before {
+	transform: scale(0.75);
+}
+
+.ui.toggle.checkbox.small label:after {
+	transform: scale(0.75);
+}

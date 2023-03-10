@@ -1,4 +1,5 @@
-﻿using AnyBarcode;
+﻿using System;
+using AnyBarcode;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -21,8 +22,15 @@ namespace Binner.Common.IO.Printing
         public Image<Rgba32> GenerateBarcode(string partNumber, Color foregroundColor, Color backgroundColor, int width, int height)
         {
             var barcode = new Barcode();
-            var barcodeImage = barcode.Encode<Rgba32>(partNumber, BarcodeType.Code128, foregroundColor, backgroundColor, width, height);
-            return barcodeImage;
-        }        
+            try
+            {
+                var barcodeImage = barcode.Encode<Rgba32>(partNumber, BarcodeType.Code128, foregroundColor, backgroundColor, width, height);
+                return barcodeImage;
+            }
+            catch (Exception)
+            {
+                return new Image<Rgba32>(width, height);
+            }
+        }
     }
 }

@@ -916,6 +916,8 @@ namespace Binner.Common.Services
                     var basePart = string.Empty;
                     if (part.ManufacturerPartNumber?.Contains(partNumber, ComparisonType) == true)
                         basePart = partNumber;
+                    if (string.IsNullOrEmpty(basePart))
+                        basePart = partNumber;
                     response.Parts.Add(new CommonPart
                     {
                         Rank = 2,
