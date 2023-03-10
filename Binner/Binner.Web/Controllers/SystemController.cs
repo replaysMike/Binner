@@ -1,4 +1,7 @@
-﻿using Binner.Common.Configuration;
+﻿using Azure.Core;
+using Binner.Common;
+using Binner.Common.Configuration;
+using Binner.Common.Integrations;
 using Binner.Common.IO.Printing;
 using Binner.Common.Models.Requests;
 using Binner.Common.Models.Responses;
@@ -27,8 +30,10 @@ namespace Binner.Web.Controllers
         private readonly FontManager _fontManager;
         private readonly AutoMapper.IMapper _mapper;
         private readonly IServiceContainer _container;
+        private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
+        private readonly RequestContextAccessor _requestContext;
 
-        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager)
+        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider)
         {
             _mapper = mapper;
             _container = container;
@@ -38,6 +43,8 @@ namespace Binner.Web.Controllers
             _integrationService = integrationService;
             _labelPrinter = labelPrinter;
             _fontManager = fontManager;
+            _requestContext = requestContextAccessor;
+            _credentialProvider = credentialProvider;
         }
 
         /// <summary>
@@ -60,6 +67,10 @@ namespace Binner.Web.Controllers
                 request.Digikey.oAuthPostbackUrl = $"https://{request.Digikey.oAuthPostbackUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Mouser.ApiUrl = $"https://{request.Mouser.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Octopart.ApiUrl = $"https://{request.Octopart.ApiUrl.Replace("https://", "").Replace("http://", "")}";
+
+                // clear the credentials cache for the apis
+                var user = _requestContext.GetUserContext();
+                _credentialProvider.Cache.Clear(new ApiCredentialKey { UserId = user?.UserId ?? 0 });
 
                 var newConfiguration = _mapper.Map<SettingsRequest, WebHostServiceConfiguration>(request, _config);
                 _settingsService.SaveSettingsAs(newConfiguration, nameof(WebHostServiceConfiguration), AppSettingsFilename, true);
@@ -107,7 +118,7 @@ namespace Binner.Web.Controllers
                 if (string.IsNullOrEmpty(request.Name)) return BadRequest();
 
                 // test api
-                var result = await _integrationService.TestApiAsync(request.Name);
+                var result = await _integrationService.TestApiAsync(request);
 
                 return Ok(result);
             }

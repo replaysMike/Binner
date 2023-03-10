@@ -429,6 +429,16 @@ code {
     cursor: pointer;
 }
 
+.page-error {
+    background-color: #ce2727;
+    color: #fff;
+    padding: 2px 10px;
+    border: 1px dotted #6d0a0a;
+    font-weight: 400;
+    box-shadow: 0 2px 2px 0 rgb(34 36 38 / 15%);
+    cursor: pointer;
+}
+
 .helpimage {
     padding: 10px;
     font-size: 0.8em;

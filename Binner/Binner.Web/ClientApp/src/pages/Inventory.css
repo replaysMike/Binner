@@ -45,22 +45,22 @@
 	height: 375.28px;
 }
 
-.ui.menu {
+.ui.menu.shortcuts {
 	line-height: 1;
 	min-height: unset;
 }
 
-.ui.menu .item {
+.ui.menu.shortcuts .item {
 	font-size: 0.90vw;
 	justify-content: center;
 	width: 33%;
 }
 
-.ui.menu .item:nth-child(3):before {
+.ui.menu.shortcuts .item:nth-child(3):before {
 	width: 0;
 }
 
-.ui.menu .item:nth-child(3) {
+.ui.menu.shortcuts .item:nth-child(3) {
 	content: none;
 }
 

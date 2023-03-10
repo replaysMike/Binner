@@ -55,7 +55,7 @@ export function Search(props) {
     );
     const { data } = response;
     const pageOfData = data.items;
-    const totalPages = data.totalItems / pageSizeParameter;
+    const totalPages = Math.ceil(data.totalItems / pageSizeParameter);
     let newData = [];
     if (reset) newData = [...pageOfData];
     else newData = [...parts, ...pageOfData];
@@ -136,9 +136,8 @@ export function Search(props) {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
-  const handleNextPage = () => {
-    const nextPage = page + 1;
-    loadParts(nextPage);
+  const handleNextPage = (e, page) => {
+    loadParts(page, true);
   };
 
   const handleSearch = (e, control) => {

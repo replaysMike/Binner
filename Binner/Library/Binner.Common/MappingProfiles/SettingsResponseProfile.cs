@@ -26,7 +26,8 @@ namespace Binner.Common.MappingProfiles
                 {
                     Enabled = x.SwarmEnabled,
                     ApiKey = x.SwarmApiKey,
-                    ApiUrl = x.SwarmApiUrl
+                    ApiUrl = x.SwarmApiUrl,
+                    Timeout = x.SwarmTimeout
                 }))
                 .ForMember(x => x.Digikey, options => options.MapFrom(x => new DigiKeyUserConfiguration
                 {
@@ -101,6 +102,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.ApiKey))
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
+                .ForMember(x => x.Timeout, options => options.MapFrom(x => x.Timeout))
                 .ReverseMap();
             CreateMap<DigikeyConfiguration, DigiKeyUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
@@ -126,6 +128,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.SwarmEnabled))
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.SwarmApiKey))
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.SwarmApiUrl))
+                .ForMember(x => x.Timeout, options => options.MapFrom(x => x.SwarmTimeout))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, DigiKeyUserConfiguration>()
