@@ -765,7 +765,9 @@ export function Inventory(props) {
     setPartMetadataError(null);
     const updatedPart = { ...part };
 
-    if (control.value.includes("[)>")) {
+    console.log('control', control.value);
+    // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
+    if (control && control.value && typeof control.value === "string" && control.value.includes("[)>")) {
       enableKeyboardListening();
       setKeyboardPassThrough("[)>");
       updatedPart[control.name] = "";
