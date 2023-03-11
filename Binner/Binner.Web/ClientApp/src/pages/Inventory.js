@@ -142,7 +142,9 @@ export function Inventory(props) {
   const [partMetadataError, setPartMetadataError] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
+  const [keyboardPassThrough, setKeyboardPassThrough] = useState(null);
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
+  const [bulkScanSaving, setBulkScanSaving] = useState(false);
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
   const [error, setError] = useState(null);
   const [files, setFiles] = useState([]);
@@ -359,6 +361,9 @@ export function Inventory(props) {
   const handleBarcodeInput = (e, input) => {
     if (!input.value) return;
 
+    // really important: reset the keyboard passthrough or scan results will be unreliable
+    setKeyboardPassThrough(null);
+
     let cleanPartNumber = "";
     if (input.type === "datamatrix") {
       if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
@@ -435,10 +440,12 @@ export function Inventory(props) {
         // show the metadata in the UI
         var partInfo =  data.response.parts[0];
         const newScannedParts = [...scannedPartsRef.current];
-        const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber);
+        const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber || i.barcode === barcode);
         if (scannedPartIndex >= 0) {
           const scannedPart = newScannedParts[scannedPartIndex];
           scannedPart.description = partInfo.description;
+          if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
+            scannedPart.partNumber = partInfo.basePartNumber;
           newScannedParts[scannedPartIndex] = scannedPart;
           setScannedParts(newScannedParts);
           localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
@@ -739,12 +746,32 @@ export function Inventory(props) {
     updateViewPreferences({ rememberLast: control.checked });
   };
 
+  const handlePartNumberKeyDown = (e) => {
+    // this logic is used to prevent barcode scanners from submitting the form with the enter key, when input has focus
+    // here we are using window instead of a state object for performance reasons :-0
+    if (window) {
+      const elapsed = new Date().getTime() - window.lastKeyDown;
+      if (e.keyCode === 13 && elapsed < 200) {
+        e.preventDefault();
+      }
+      window.lastKeyDown = new Date().getTime();
+    }
+  }
+
   const handleChange = (e, control) => {
     e.preventDefault();
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     const updatedPart = { ...part };
+
+    if (control.value.includes("[)>")) {
+      enableKeyboardListening();
+      setKeyboardPassThrough("[)>");
+      updatedPart[control.name] = "";
+      return;
+    }
+
     updatedPart[control.name] = control.value;
     switch (control.name) {
       case "partNumber":
@@ -861,8 +888,10 @@ export function Inventory(props) {
       )
     );
 
-    entity.lowestCostSupplier = lowestCostPart.supplier;
-    entity.lowestCostSupplierUrl = lowestCostPart.productUrl;
+    if (lowestCostPart) {
+      entity.lowestCostSupplier = lowestCostPart.supplier;
+      entity.lowestCostSupplierUrl = lowestCostPart.productUrl;
+    }
     setPart(entity);
   };
 
@@ -1030,6 +1059,7 @@ export function Inventory(props) {
   const onSubmitScannedParts = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setBulkScanSaving(true);
     const request = {
       parts: scannedParts
     };
@@ -1047,6 +1077,7 @@ export function Inventory(props) {
     localStorage.setItem("scannedPartsSerialized", JSON.stringify([]));
     setBulkScanIsOpen(false);
     setScannedParts([]);
+    setBulkScanSaving(false);
   };
 
   const handleScannedPartChange = (e, control, scannedPart) => {
@@ -1197,6 +1228,21 @@ export function Inventory(props) {
     setDatasheetMeta(infoResponse.datasheets[activeIndex]);
   };
 
+  const handleAddBulkScanRow = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setScannedParts([...scannedParts, {
+      basePartNumber: '',
+      partNumber: '',
+      quantity: 1,
+      description: '',
+      origin: '',
+      location: '',
+      binNumber: '',
+      binNumber2: ''
+     }]);
+  };
+
   const renderScannedParts = (scannedParts, highlightScannedPart) => {
     if (highlightScannedPart) {
       // reset the css highlight animation
@@ -1230,7 +1276,13 @@ export function Inventory(props) {
                 className={highlightScannedPart && p.partNumber === highlightScannedPart.partNumber ? `scannedPartAnimation ${Math.random()}` : ""}
               >
                 <Table.Cell collapsing style={{maxWidth: '200px'}}>
-                  <Label>{p.partNumber}</Label>
+                  <Form.Input 
+                    name="partNumber" 
+                    value={p.partNumber} 
+                    onChange={(e, c) => handleScannedPartChange(e, c, p)} 
+                    onFocus={disableKeyboardListening} 
+                    onBlur={e => { enableKeyboardListening(); fetchBarcodeMetadata(e, p.partNumber); }} 
+                  />
                 </Table.Cell>
                 <Table.Cell collapsing>
                   <Form.Input
@@ -1247,7 +1299,7 @@ export function Inventory(props) {
                     wide
                     hoverable
                     content={<p>{p.description}</p>}
-                    trigger={<div>{p.description}</div>}
+                    trigger={<Form.Input name="description" value={p.description} onChange={(e, c) => handleScannedPartChange(e, c, p)} onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />}
                   />                  
                 </Table.Cell>
                 <Table.Cell collapsing textAlign="center" verticalAlign="middle" width={1}>
@@ -1370,7 +1422,7 @@ export function Inventory(props) {
       {/* FORM START */}
 
       <Form onSubmit={onSubmit}>
-        {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={3} /> }
+        {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} passThrough={keyboardPassThrough} minInputLength={3} /> }
         {part && part.partId > 0 && (
           <Button
             animated="vertical"
@@ -1448,6 +1500,7 @@ export function Inventory(props) {
                   name="partNumber"
                   onFocus={disableKeyboardListening}
                   onBlur={enableKeyboardListening}
+                  onKeyDown={handlePartNumberKeyDown}
                   icon
                 >
                   <input ref={partNumberRef} />
@@ -1629,7 +1682,7 @@ export function Inventory(props) {
                   Part Metadata
                 </Header>
 
-                {metadataParts && metadataParts.length > 0 && (
+                {metadataParts && metadataParts.length > 1 && (
                   <ChooseAlternatePartModal
                     trigger={
                       <Popup
@@ -2019,13 +2072,16 @@ export function Inventory(props) {
               </div>
             </div>
             <div style={{ textAlign: "center" }}>
-              Start scanning parts...
+              <p>Start scanning parts...</p>
+              <div style={{textAlign: 'right', height: '35px', width: '100%'}}>
+                <Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" /> Manual Add</Button>
+              </div>
               {renderScannedParts(scannedParts, highlightScannedPart)}
             </div>
           </Modal.Content>
           <Modal.Actions>
             <Button onClick={handleBulkScanClose}>Cancel</Button>
-            <Button primary onClick={onSubmitScannedParts}>
+            <Button primary onClick={onSubmitScannedParts} disabled={bulkScanSaving}>
               Save
             </Button>
           </Modal.Actions>

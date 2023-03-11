@@ -86,8 +86,14 @@ export function ChooseAlternatePartModal(props) {
             <Popup 
               key={index}
               wide='very'
-              flowing
-              content={<div className="part-metadata-info"><h1>{p.manufacturer}</h1> <h2>{p.manufacturerPartNumber}</h2><br/>{p.description}<br/><b>Keywords:</b> <i>{p.keywords.join(' ')}</i><br/><b>Status:</b> {p.status === 'Inactive' ? <span className="inactive">Inactive</span> : p.status}</div>}
+              hoverable
+              content={<div className="part-metadata-info">
+                  <h1>{p.manufacturer}</h1> <h2>{p.manufacturerPartNumber}</h2><br/>
+                  <div style={{padding: '5px'}}>{p.description}</div>
+                  <b>Keywords:</b> <i>{p.keywords.join(' ')}</i><br/>
+                  <b>Status:</b> {p.status === 'Inactive' ? <span className="inactive">Inactive</span> : p.status}<br/>
+                  via <b>{p.supplier}</b> <a href={p.productUrl} target="_blank" rel="noreferrer">{p.supplierPartNumber}</a>
+                </div>}
               position='top center'
               trigger={<Table.Row key={index} onClick={(e) => handleChooseAlternatePart(e, p)}>
                 <Table.Cell>

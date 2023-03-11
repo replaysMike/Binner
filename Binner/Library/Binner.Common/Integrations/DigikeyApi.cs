@@ -145,7 +145,7 @@ namespace Binner.Common.Integrations
         /// </summary>
         /// <param name="barcode"></param>
         /// <returns></returns>
-        public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode)
+        public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode, ScannedBarcodeType barcodeType)
         {
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
@@ -156,13 +156,35 @@ namespace Binner.Common.Integrations
                 {
                     // set what fields we want from the API
                     // https://developer.digikey.com/products/barcode/barcoding/productbarcode
-                    var endpoint = "Barcoding/v3/PackListBarcodes/";
-                    var barcodeFormatted = barcode.ToString();
-                    if (barcode.StartsWith("[)>"))
+
+                    var is2dBarcode = barcode.StartsWith("[)>");
+                    var endpoint = "Barcoding/v3/ProductBarcodes/";
+                    switch (barcodeType)
                     {
-                        endpoint = "Barcoding/v3/Product2DBarcodes/";
+                        case ScannedBarcodeType.Product:
+                        default:
+                            endpoint = "Barcoding/v3/ProductBarcodes/";
+                            if (is2dBarcode)
+                                endpoint = "Barcoding/v3/Product2DBarcodes/";
+                            break;
+                        case ScannedBarcodeType.Packlist:
+                            endpoint = "Barcoding/v3/PackListBarcodes/";
+                            if (is2dBarcode)
+                                endpoint = "Barcoding/v3/PackList2DBarcodes/";
+                            break;
+                    }
+
+                    var barcodeFormatted = barcode.ToString();
+                    if (is2dBarcode)
+                    {
                         // DigiKey requires the GS (Group separator) to be \u241D, and the RS (Record separator) to be \u241E
-                        barcodeFormatted = barcodeFormatted.Replace("\u001d", "\u241D").Replace("\u001e", "\u241E");
+                        barcodeFormatted = barcodeFormatted
+                            // GS
+                            .Replace("\u001d", "\u241D")
+                            .Replace("\u005d", "\u241D")
+                            // RS
+                            .Replace("\u001e", "\u241E")
+                            .Replace("\u005e", "\u241E");
                         barcodeFormatted = HttpUtility.UrlEncode(barcodeFormatted);
                     }
 
