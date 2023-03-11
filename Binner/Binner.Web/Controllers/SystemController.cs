@@ -128,5 +128,28 @@ namespace Binner.Web.Controllers
             }
 
         }
+
+        /// <summary>
+        /// Forget cached credentials
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("/settings/forgetcredentials")]
+        public async Task<IActionResult> ForgetCredentialsAsync(ForgetCachedCredentialsRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Name)) return BadRequest();
+
+                // test api
+                var result = await _integrationService.ForgetCachedCredentialsAsync(request);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
+
+        }
     }
 }

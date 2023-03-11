@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Route, Routes } from "react-router";
+import { useSearchParams } from "react-router-dom";
 import { createBrowserHistory as createHistory } from "history";
 import { ErrorContext } from "./common/ErrorContext";
 
@@ -33,13 +34,18 @@ import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { Help } from './pages/help/Home';
 import { Scanning } from './pages/help/Scanning';
 import { ApiIntegrations } from './pages/help/ApiIntegrations';
+import { toast } from "react-toastify";
 
-export default class App extends Component {
+function withSearchParams(Component) {
+  return props => <Component {...props} searchParams={useSearchParams()} />;
+}
+
+class App extends Component {
   static displayName = App.name;
   history = createHistory(this.props);
 
-  constructor(){
-    super();
+  constructor(props){
+    super(props);
     this.state = {
       modalTitle: "",
       url: "",
@@ -48,6 +54,30 @@ export default class App extends Component {
       stackTrace: ""
     };
     window.showErrorWindow = this.showErrorWindow;
+
+    // provide a UI toast when we have authenticated with DigiKey
+    if (props.searchParams) {
+      const [searchParams] = props.searchParams;
+      const apiAuthSuccess = searchParams.get("api-authenticate") || '';
+      if (apiAuthSuccess !== '') {
+        let apiName = searchParams.get("api") || 'External Api';
+        // validate the name
+        switch(apiName.toLowerCase()){
+          case "digikey":
+          case "mouser":
+          case "swarm":
+          case "octopart":
+            break;
+          default:
+            apiName = 'External Api';
+            break;
+        }
+        if (apiAuthSuccess)
+          toast.success(`Successfully authenticated with ${apiName}!`);
+        else
+          toast.error(`Failed to authenticate with ${apiName}!`);
+      }
+    }
   }
 
   showErrorWindow = errorObject => {
@@ -102,3 +132,5 @@ export default class App extends Component {
     );
   }
 }
+
+export default withSearchParams(App);

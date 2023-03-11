@@ -6,6 +6,7 @@ using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Services;
 using Binner.Model.Common;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -636,7 +637,12 @@ namespace Binner.Common.Integrations
         private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(int? userId)
         {
             var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
-            var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
+            var uriBuilder = new UriBuilder(referer);
+            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+            query["api-authenticate"] = "true";
+            query["api"] = "DigiKey";
+            uriBuilder.Query = query.ToString();
+            var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, uriBuilder.ToString())
             {
                 UserId = userId
             };

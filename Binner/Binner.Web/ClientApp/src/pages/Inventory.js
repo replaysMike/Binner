@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useFocus } from "../hooks/useFocus";
 import _ from "underscore";
 import debounce from "lodash.debounce";
@@ -47,7 +47,6 @@ const ProductImageIntervalMs = 10 * 1000;
 
 export function Inventory(props) {
   const maxRecentAddedParts = 10;
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
@@ -765,7 +764,6 @@ export function Inventory(props) {
     setPartMetadataError(null);
     const updatedPart = { ...part };
 
-    console.log('control', control.value);
     // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
     if (control && control.value && typeof control.value === "string" && control.value.includes("[)>")) {
       enableKeyboardListening();

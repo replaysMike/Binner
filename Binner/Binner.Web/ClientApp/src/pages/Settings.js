@@ -360,6 +360,30 @@ export const Settings = (props) => {
     window.location.href = authorizationUrl;
   };
 
+  const handleForgetCredentials = (e, apiName) => {
+    e.preventDefault();
+    const request = {
+      name: apiName
+    };
+    fetchApi("settings/forgetcredentials", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    }).then((response) => {
+      const { data } = response;
+      if (data.success) {
+        toast.success(`Successfully cleared cached credentials for ${apiName}`);
+      } else {
+        toast.error(`Failed to clear cached credentials for ${apiName}`);
+      }
+    }).catch((err) => {
+      toast.error(`Error: ${err}`);
+      console.error('Error!', err);
+    });
+  };
+  
   const handleTestApi = (e, apiName) => {
     e.preventDefault();
     const configuration = [];
@@ -479,7 +503,7 @@ export const Settings = (props) => {
         open={confirmAuthIsOpen}
         onCancel={() => setConfirmAuthIsOpen(false)}
         onConfirm={handleAuthRedirect}
-        content="Api is requesting that you authenticate first. You will be redirected back after authenticating."
+        content="External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider."
       />
       <Form onSubmit={onSubmit}>
         <Segment loading={loading} color="blue" raised padded>
@@ -797,6 +821,21 @@ export const Settings = (props) => {
                   </Input>
                 }
               />
+            </Form.Field>
+            <Form.Field>
+              <Popup 
+                wide
+                content="Forget any cached credentials and force reauthentication with DigiKey"
+                trigger={<Button
+                  secondary
+                  className="test"
+                  type="button"
+                  onClick={(e) => handleForgetCredentials(e, "digikey")}
+                  disabled={testing}
+                >
+                  Forget Credentials
+                </Button>}
+              />              
             </Form.Field>
             <Form.Field>
               <Button

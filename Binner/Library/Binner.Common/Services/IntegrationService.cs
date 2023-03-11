@@ -1,13 +1,6 @@
-﻿using AutoMapper;
-using Binner.Common.Configuration;
-using Binner.Common.Integrations;
-using Binner.Common.Integrations.Models.DigiKey;
-using Binner.Common.Integrations.Models.Mouser;
-using Binner.Common.Models;
-using Binner.Common.Models.Configuration.Integrations;
+﻿using Binner.Common.Integrations;
 using Binner.Common.Models.Requests;
 using Binner.Common.Models.Responses;
-using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,21 +10,17 @@ namespace Binner.Common.Services
 {
     public class IntegrationService
     {
-        private const string MissingDatasheetCoverName = "datasheetcover.png";
-        private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
-        private readonly IStorageProvider _storageProvider;
-        private readonly IMapper _mapper;
         private readonly IIntegrationApiFactory _integrationApiFactory;
         private readonly RequestContextAccessor _requestContext;
-        private readonly ISwarmService _swarmService;
+        private readonly ICredentialService _credentialService;
+        private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
 
-        public IntegrationService(IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
+        public IntegrationService(IIntegrationApiFactory integrationApiFactory, RequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider)
         {
-            _storageProvider = storageProvider;
-            _mapper = mapper;
             _integrationApiFactory = integrationApiFactory;
             _requestContext = requestContextAccessor;
-            _swarmService = swarmService;
+            _credentialService = credentialService;
+            _credentialProvider = credentialProvider;
         }
 
         public async Task<TestApiResponse> TestApiAsync(TestApiRequest request)
@@ -168,6 +157,20 @@ namespace Binner.Common.Services
                             return new TestApiResponse(nameof(Integrations.OctopartApi), ex.GetBaseException().Message);
                         }
                     }
+            }
+
+            return new TestApiResponse(request.Name, $"Unknown api name!");
+        }
+
+        public async Task<TestApiResponse> ForgetCachedCredentialsAsync(ForgetCachedCredentialsRequest request)
+        {
+            var user = _requestContext.GetUserContext();
+            switch (request.Name.ToLower())
+            {
+                case "digikey":
+                    await _credentialService.RemoveOAuthCredentialAsync(nameof(DigikeyApi));
+                    _credentialProvider.Cache.Clear(new ApiCredentialKey { UserId = user?.UserId ?? 0 });
+                    return new TestApiResponse(nameof(Integrations.DigikeyApi), true);
             }
 
             return new TestApiResponse(request.Name, $"Unknown api name!");
