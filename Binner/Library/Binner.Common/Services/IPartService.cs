@@ -90,8 +90,9 @@ namespace Binner.Common.Services
         /// Get information about a barcode
         /// </summary>
         /// <param name="barcode"></param>
+        /// <param name="barcodeType"></param>
         /// <returns></returns>
-        Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode);
+        Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode, ScannedBarcodeType barcodeType);
 
         /// <summary>
         /// Get metadata about a part number

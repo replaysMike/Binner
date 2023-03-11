@@ -7,7 +7,7 @@ import debounce from "lodash.debounce";
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({listening, minInputLength, onReceived, helpUrl, swallowKeyEvent}) {
+export function BarcodeScannerInput({listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough}) {
   const BufferTimeMs = 500;
 	const [keyBuffer, setKeyBuffer] = useState([]);
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
@@ -56,11 +56,12 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
       }  
 			
 			// normal character
-			let char = String.fromCharCode(96 <= key.keyCode && key.keyCode <= 105 ? key.keyCode - 48 : key.keyCode);
+			let char = key.isFake ? key.key : String.fromCharCode(96 <= key.keyCode && key.keyCode <= 105 ? key.keyCode - 48 : key.keyCode);
 			
 			if (key.shiftKey) char = key.key;
 			if ((key.keyCode >= 186 && key.keyCode <= 192) || (key.keyCode >= 219 && key.keyCode <= 222)) char = key.key;
 			if (
+				key.isFake ||
 				key.keyCode === 13 ||
 				key.keyCode === 32 ||
 				key.keyCode === 9 ||
@@ -105,9 +106,9 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 
   const parseDataMatrix = (value) => {
     let parsedValue = {};
-    const gsCharCode = 29;
-    const rsCharCode = 30;
-    const eotCharCode = 4;
+		const gsCharCodes = [29, 93];
+		const rsCharCodes = [30, 94];
+    const eotCharCodes = [4, 68];
     const header = "[)>";
     const expectedFormatNumber = 6; /** 22z22 barcode */
     const controlChars = ["P", "1P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z"];
@@ -122,7 +123,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     for (i = 0; i < value.length; i++) {
       buffer += value[i];
       if (buffer === header) {
-        if (value.charCodeAt(i + 1) === rsCharCode) {
+        if (rsCharCodes.includes(value.charCodeAt(i + 1))) {
           // read the character after the RS token (sometimes not present)
 					rsCodePresent = true;
           formatNumberIndex = i + 2;
@@ -145,7 +146,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		let gsLine = '';
 		for (i = lastPosition; i < value.length; i++) {
 			const ch = value[i];
-			if (ch.charCodeAt(0) === gsCharCode) {
+			if (gsCharCodes.includes(ch.charCodeAt(0))) {
 				gsCodePresent = true;
 				// start of a new line. read until next gsCharCode or EOT
 				if (gsLine.length > 0)
@@ -154,158 +155,76 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			} else {
 				gsLine += ch;
 			}
-			if (ch.charCodeAt(0) === eotCharCode) {
+			if (eotCharCodes.includes(ch.charCodeAt(0))) {
 				eotCodePresent = true;
 			}
 		}
 		if (gsLine.length > 0)
 			gsLines.push(gsLine);
 
-		if (!gsCodePresent) {
-			// no gs codes present
-			console.log('no gs code present');
+		for (i = 0; i < gsLines.length; i++) {
+			// read until we see a control char
+			const line = gsLines[i];
 			let readCommandType = "";
 			let readValue = "";
 			let readControlChars = true;
-			for (i = lastPosition - 1; i < value.length; i++) {
-				if (readControlChars) readCommandType += value[i];
-				else readValue += value[i];
+			for (var c = 0; c < line.length; c++) {
+				if (readControlChars) readCommandType += line[c];
+				else readValue += line[c];
 
-				//if (readControlChars === header || readControlChars === formatNumber) readValue = "";
-				if (readControlChars && controlChars.includes(readCommandType)) {
+				if (readControlChars === header || readControlChars === formatNumber) readValue = "";
+				if (controlChars.includes(readCommandType)) {
 					// start reading value
 					readControlChars = false;
-					console.log('found command', readCommandType);
-				}
-				// have we finished reading the value?
-				if(!readControlChars && readValue.length > 0) {
-					console.log('readValue', readValue);
-					for(let c = 0; c < controlChars.length; c++) {
-						if (controlChars[c] !== readCommandType && readValue.endsWith(controlChars[c])) {
-							// process the command + value
-							console.log('end readValue raw', readValue);
-							readValue = readValue.substring(0, readValue.length - controlChars[c].length);
-							console.log('end readValue', readValue, readCommandType);
-							
-							switch (readCommandType) {
-								case "P":
-									// could be DigiKey part number, or customer reference value
-									console.log('description', readCommandType, readValue);
-									parsedValue["description"] = readValue;
-									break;
-								case "1P":
-									// manufacturer part number
-									console.log('mfgPartNumber', readCommandType, readValue);
-									parsedValue["mfgPartNumber"] = readValue;
-									break;
-								case "1K":
-									// Salesorder#
-									console.log('salesOrder', readCommandType, readValue);
-									parsedValue["salesOrder"] = readValue;
-									break;
-								case "10K":
-									// invoice#
-									parsedValue["invoice"] = readValue;
-									break;
-								case "11K":
-									// don't know
-									parsedValue["unknown1"] = readValue;
-									break;
-								case "4L":
-									// country of origin
-									parsedValue["countryOfOrigin"] = readValue;
-									break;
-								case "Q":
-									// quantity
-									parsedValue["quantity"] = readValue;
-									break;
-								case "11Z":
-									// the value PICK
-									parsedValue["pick"] = readValue;
-									break;
-								case "12Z":
-									// internal part id
-									parsedValue["partId"] = readValue;
-									break;
-								case "13Z":
-									// shipment load id
-									parsedValue["loadId"] = readValue;
-									break;
-								default:
-									break;
-							}
-							// set the next read command type
-							readCommandType = controlChars[c];
-							readValue = "";
-							readControlChars = false;
-							console.log('found command', readCommandType);
-							break;
-						}
-					}
 				}
 			}
-		}else{
-
-			for (i = 0; i < gsLines.length; i++) {
-				// read until we see a control char
-				const line = gsLines[i];
-				let readCommandType = "";
-				let readValue = "";
-				let readControlChars = true;
-				for (var c = 0; c < line.length; c++) {
-					if (readControlChars) readCommandType += line[c];
-					else readValue += line[c];
-
-					if (readControlChars === header || readControlChars === formatNumber) readValue = "";
-					if (controlChars.includes(readCommandType)) {
-						// start reading value
-						readControlChars = false;
-					}
-				}
-				switch (readCommandType) {
-					case "P":
-						// could be DigiKey part number, or customer reference value
-						parsedValue["description"] = readValue;
-						break;
-					case "1P":
-						// manufacturer part number
-						parsedValue["mfgPartNumber"] = readValue;
-						break;
-					case "1K":
-						// Salesorder#
-						parsedValue["salesOrder"] = readValue;
-						break;
-					case "10K":
-						// invoice#
-						parsedValue["invoice"] = readValue;
-						break;
-					case "11K":
-						// don't know
-						parsedValue["unknown1"] = readValue;
-						break;
-					case "4L":
-						// country of origin
-						parsedValue["countryOfOrigin"] = readValue;
-						break;
-					case "Q":
-						// quantity
+			switch (readCommandType) {
+				case "P":
+					// could be DigiKey part number, or customer reference value
+					parsedValue["description"] = readValue;
+					break;
+				case "1P":
+					// manufacturer part number
+					parsedValue["mfgPartNumber"] = readValue;
+					break;
+				case "1K":
+					// Salesorder#
+					parsedValue["salesOrder"] = readValue;
+					break;
+				case "10K":
+					// invoice#
+					parsedValue["invoice"] = readValue;
+					break;
+				case "11K":
+					// don't know
+					parsedValue["unknown1"] = readValue;
+					break;
+				case "4L":
+					// country of origin
+					parsedValue["countryOfOrigin"] = readValue;
+					break;
+				case "Q":
+					// quantity
+					const parsedIntValue = parseInt(readValue);
+					if (isNaN(parsedIntValue))
 						parsedValue["quantity"] = readValue;
-						break;
-					case "11Z":
-						// the value PICK
-						parsedValue["pick"] = readValue;
-						break;
-					case "12Z":
-						// internal part id
-						parsedValue["partId"] = readValue;
-						break;
-					case "13Z":
-						// shipment load id
-						parsedValue["loadId"] = readValue;
-						break;
-					default:
-						break;
-				}
+					else
+						parsedValue["quantity"] = parsedIntValue;
+					break;
+				case "11Z":
+					// the value PICK
+					parsedValue["pick"] = readValue;
+					break;
+				case "12Z":
+					// internal part id
+					parsedValue["partId"] = readValue;
+					break;
+				case "13Z":
+					// shipment load id
+					parsedValue["loadId"] = readValue;
+					break;
+				default:
+					break;
 			}
 		}
     return {
@@ -330,7 +249,19 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   useEffect(() => {
 		// handle changes to the incoming listening prop
     setIsKeyboardListening(listening);
+		listeningRef.current = listening;
   }, [listening]);
+
+	useEffect(() => {
+		// handle changes to keyboard input passed directly to the component.
+		// this is used to inject data to the keypress buffer
+		if (passThrough && passThrough.length > 0){
+			for(let i = 0; i < passThrough.length; i++) {
+				const fakeKeyPress = { key: passThrough[i], keyCode: passThrough[i].charCodeAt(0), altKey: false, ctrlKey: false, shiftKey: false, isFake: true };
+				keyBufferRef.current.push(fakeKeyPress);
+			}
+		}
+  }, [passThrough]);
 
   const addKeyboardHandler = () => {
     if (document) {
@@ -382,7 +313,9 @@ BarcodeScannerInput.propTypes = {
   /** keyboard buffer smaller than this length will ignore input */
   minInputLength: PropTypes.number,
   helpUrl: PropTypes.string,
-	swallowKeyEvent: PropTypes.bool
+	swallowKeyEvent: PropTypes.bool,
+	/** keyboard passthrough, for passing data directly to component */
+	passThrough: PropTypes.string
 };
 
 BarcodeScannerInput.defaultProps = {

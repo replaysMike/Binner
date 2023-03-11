@@ -24,7 +24,14 @@ export function BarcodeScanner(props) {
     setEotDetected(false);
 
     if (input && input.rawValue) {
-      const json = {...input, rawValueFormatted: input.rawValue.replaceAll("\u001e","<RS>").replaceAll("\u001d", "<GS>").replaceAll("\u0004", "<EOT>")};
+      const rawValueFormatted = input.rawValue
+        .replaceAll("\u001e","<RS>")
+        .replaceAll("\u005e","<RS>")
+        .replaceAll("\u001d", "<GS>")
+        .replaceAll("\u005d", "<GS>")
+        .replaceAll("<RS>\u0004", "<RS><EOT>")
+        .replaceAll("<RS>\u0044", "<RS><EOT>");
+      const json = {...input, rawValueFormatted: rawValueFormatted};
       setBarcodeValue(JSON.stringify(json, null, 2));
       setRsDetected(input.rsDetected);
       setGsDetected(input.gsDetected);
@@ -46,16 +53,18 @@ export function BarcodeScanner(props) {
           <div className="block-container">
             <label>Detected:</label>
             <Popup 
-              content={<p>RS, or record separator (ASCII 30, unicode \u001e) is a hidden data code indicating the start of a record. It is optional for barcodes.</p>}
+              wide
+              content={<p>RS, or record separator (<i>ASCII 30, unicode \u001e or ASCII 94, unicode \u005e</i>) is a hidden data code indicating the start of a record. It is optional for barcodes.</p>}
               trigger={<div className={`block ${rsDetected ? 'active' : ''}`}>RS</div>}
             />
             <Popup 
-              content={<p>GS, or group separator (ASCII 29, unicode \u001d) is a hidden data code indicating the start of a group of data. It is the most important encoding used for 2D Data Matrix, QR and Aztec barcodes.</p>}
+              wide
+              content={<p>GS, or group separator (<i>ASCII 29, unicode \u001d or ASCII 93, unicode \u005d</i>) is a hidden data code indicating the start of a group of data. It is the most important encoding used for 2D Data Matrix, QR and Aztec barcodes.</p>}
               trigger={<div className={`block ${gsDetected ? 'active' : ''}`}>GS</div>}
             />
             <Popup 
               content={<p>EOT, or end of transmission (ASCII 04, unicode \u0004) separator is a hidden data code indicating the end of a barcode transmission. It is optional for barcodes.</p>}
-              trigger={<div className={`block ${gsDetected ? 'active' : ''}`}>EOT</div>}
+              trigger={<div className={`block ${eotDetected ? 'active' : ''}`}>EOT</div>}
             />
           </div>
         </div>

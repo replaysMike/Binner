@@ -36,7 +36,7 @@ export function Tools(props) {
           </Statistic>
           <Statistic onClick={(e) => route(e, "/tools/barcodescanner")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
-              <Icon name="wrench" />
+              <Icon name="barcode" />
             </Statistic.Value>
             <Statistic.Label>Barcode Scanner</Statistic.Label>
           </Statistic>

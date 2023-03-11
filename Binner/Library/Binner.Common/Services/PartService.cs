@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services
@@ -330,7 +331,50 @@ namespace Binner.Common.Services
             return ServiceResult<ExternalOrderResponse>.Create("Error", nameof(MouserApi));
         }
 
-        public async Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode)
+        public async Task<IServiceResult<Product?>> GetBarcodeInfoProductAsync(string barcode, ScannedBarcodeType barcodeType)
+        {
+            var user = _requestContext.GetUserContext();
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
+            if (!digikeyApi.IsEnabled)
+                return ServiceResult<Product?>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
+
+            // currently only supports DigiKey, as Mouser barcodes are part numbers
+            var response = new PartResults();
+            var digikeyResponse = new ProductBarcodeResponse();
+            if (digikeyApi.IsEnabled)
+            {
+                var apiResponse = await digikeyApi.GetBarcodeDetailsAsync(barcode, barcodeType);
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<Product?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                else if (apiResponse.Errors?.Any() == true)
+                {
+                    //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    // try looking up the part by its barcode value, which could be a product search
+                    digikeyResponse = new ProductBarcodeResponse
+                    {
+                        DigiKeyPartNumber = barcode
+                    };
+                }
+                else
+                {
+                    digikeyResponse = (ProductBarcodeResponse?)apiResponse.Response;
+                }
+                
+                if (digikeyResponse != null && !string.IsNullOrEmpty(digikeyResponse.DigiKeyPartNumber))
+                {
+                    var partResponse = await digikeyApi.GetProductDetailsAsync(digikeyResponse.DigiKeyPartNumber);
+                    if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                    {
+                        var part = (Product?)partResponse.Response;
+                        return ServiceResult<Product?>.Create(part);
+                    }
+                }
+            }
+
+            return ServiceResult<Product?>.Create(null);
+        }
+
+        public async Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode, ScannedBarcodeType barcodeType)
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
@@ -342,7 +386,7 @@ namespace Binner.Common.Services
             var digikeyResponse = new ProductBarcodeResponse();
             if (digikeyApi.IsEnabled)
             {
-                var apiResponse = await digikeyApi.GetBarcodeDetailsAsync(barcode);
+                var apiResponse = await digikeyApi.GetBarcodeDetailsAsync(barcode, barcodeType);
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                 else if (apiResponse.Errors?.Any() == true)
@@ -394,7 +438,7 @@ namespace Binner.Common.Services
                             {
                                 Supplier = "DigiKey",
                                 SupplierPartNumber = part.DigiKeyPartNumber,
-                                BasePartNumber = basePart,
+                                BasePartNumber = basePart ?? part.ManufacturerPartNumber,
                                 AdditionalPartNumbers = additionalPartNumbers,
                                 Manufacturer = part.Manufacturer?.Value ?? string.Empty,
                                 ManufacturerPartNumber = part.ManufacturerPartNumber,
@@ -467,6 +511,17 @@ namespace Binner.Common.Services
                 else if (apiResponse.Errors?.Any() == true)
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 digikeyResponse = (KeywordSearchResponse?)apiResponse.Response;
+                if (digikeyResponse?.Products.Any() != true)
+                {
+                    // if it's numerical, try getting barcode info
+                    var barcode = string.Empty;
+                    var isNumber = Regex.IsMatch(searchKeywords, @"^\d+$");
+                    if (isNumber) barcode = searchKeywords;
+                    var barcodeResult = await GetBarcodeInfoProductAsync(barcode, ScannedBarcodeType.Product);
+                    digikeyResponse = new KeywordSearchResponse();
+                    if (barcodeResult.Response != null)
+                        digikeyResponse.Products.Add(barcodeResult.Response);
+                }
             }
             if (mouserApi.Configuration.IsConfigured)
             {
@@ -782,6 +837,9 @@ namespace Binner.Common.Services
                         if (part.ManufacturerPartNumber.Contains(partNumber, ComparisonType))
                             basePart = partNumber;
                     }
+
+                    if (string.IsNullOrEmpty(basePart))
+                        basePart = part.ManufacturerPartNumber;
                     var mountingTypeId = MountingType.ThroughHole;
                     Enum.TryParse<MountingType>(part.Parameters
                         .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
