@@ -20,7 +20,7 @@ namespace Binner.Common.Services
         /// <summary>
         /// Update an existing part
         /// </summary>
-        /// <param name="partNumber"></param>
+        /// <param name="part"></param>
         /// <returns></returns>
         Task<Part> UpdatePartAsync(Part part);
 
@@ -100,8 +100,9 @@ namespace Binner.Common.Services
         /// <param name="partNumber">Part number</param>
         /// <param name="partType">Part type</param>
         /// <param name="mountingType">Mounting type</param>
+        /// <param name="supplierPartNumbers">Supplier's part number if known</param>
         /// <returns></returns>
-        Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "");
+        Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "");
 
         /// <summary>
         /// Determine the part type

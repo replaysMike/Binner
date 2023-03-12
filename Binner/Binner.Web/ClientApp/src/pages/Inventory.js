@@ -150,8 +150,7 @@ export function Inventory(props) {
   const [uploading, setUploading] = useState(false);
   const [dragOverClass, setDragOverClass] = useState("");
   const [partNumberRef, setPartNumberFocus] = useFocus();
-
-  const isEditing = part.partId > 0 || props.params.partNumber;
+  const [isEditing, setIsEditing] = useState((part && part.partId > 0) || (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0));
 
   // todo: find a better alternative, we shouldn't need to do this!
   const bulkScanIsOpenRef = useRef();
@@ -191,7 +190,7 @@ export function Inventory(props) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     try {
-      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}`, {
+      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""}`, {
         signal: Inventory.infoAbortController.signal
       });
       const data = response.data;
@@ -234,7 +233,7 @@ export function Inventory(props) {
     }
   };
 
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), []);
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [isEditing]);
 
   const onUploadSubmit = async (uploadFiles, type) => {
     setUploading(true);
@@ -671,6 +670,7 @@ export function Inventory(props) {
 
   const resetForm = (saveMessage = "", clearAll = false) => {
     setIsDirty(false);
+    setIsEditing(false);
     setSaveMessage(saveMessage);
     setMetadataParts([]);
     setDuplicateParts([]);

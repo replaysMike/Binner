@@ -471,9 +471,12 @@ namespace Binner.Common.Integrations
                     if (enumValueMemberInfo != null)
                     {
                         var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
-                        var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
+                        if (valueAttributes.Any())
+                        {
+                            var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
 
-                        // taxonomies.AddRange(alternateIds);
+                            // taxonomies.AddRange(alternateIds);
+                        }
                     }
 
                     switch (taxonomy)

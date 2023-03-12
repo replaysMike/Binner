@@ -89,6 +89,7 @@ export function OrderImport(props) {
       const { data } = response;
       // reset form
       setLoading(false);
+      setResults({});
       toast.success(`${data.length} parts were imported!`);
     });
   };

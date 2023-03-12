@@ -384,29 +384,32 @@ namespace Binner.Web.Controllers
         /// <summary>
         /// Get part information
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="partNumber"></param>
+        /// <param name="partTypeId"></param>
+        /// <param name="mountingTypeId"></param>
+        /// <param name="supplierPartNumbers">List of supplier part numbers if known, in the format: 'suppliername:partnumber,suppliername2:partnumber'</param>
         /// <returns></returns>
         [HttpGet("info")]
-        public async Task<IActionResult> GetPartInfoAsync([FromQuery] string partNumber, [FromQuery] string partTypeId = "", [FromQuery] string mountingTypeId = "")
+        public async Task<IActionResult> GetPartInfoAsync([FromQuery] string partNumber, [FromQuery] string partTypeId = "", [FromQuery] string mountingTypeId = "", [FromQuery] string supplierPartNumbers = "")
         {
             var partType = partTypeId;
             var mountingType = mountingTypeId;
-            if (int.TryParse(partTypeId, out var _partTypeId))
+            if (int.TryParse(partTypeId, out var parsedPartTypeId))
             {
-                var partTypeWithName = await _partTypeService.GetPartTypeAsync(_partTypeId);
+                var partTypeWithName = await _partTypeService.GetPartTypeAsync(parsedPartTypeId);
                 if (partTypeWithName != null) partType = partTypeWithName.Name;
             }
-            if (int.TryParse(mountingTypeId, out var _mountingTypeId))
+            if (int.TryParse(mountingTypeId, out var parsedMountingTypeId))
             {
-                if (Enum.IsDefined(typeof(MountingType), _mountingTypeId))
+                if (Enum.IsDefined(typeof(MountingType), parsedMountingTypeId))
                 {
-                    var mountingTypeEnum = (MountingType)_mountingTypeId;
+                    var mountingTypeEnum = (MountingType)parsedMountingTypeId;
                     mountingType = mountingTypeEnum.ToString();
                 }
             }
 
-            var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType);
-            if (metadata == null)
+            var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType, supplierPartNumbers);
+            if (metadata.Response == null)
                 return NotFound();
             return Ok(metadata);
         }
@@ -422,7 +425,7 @@ namespace Binner.Web.Controllers
             if (string.IsNullOrEmpty(request.OrderId)) return BadRequest("No OrderId specified");
             if (string.IsNullOrEmpty(request.Supplier)) return BadRequest("No Supplier specified");
             var metadata = await _partService.GetExternalOrderAsync(request.OrderId, request.Supplier);
-            if (metadata == null)
+            if (metadata.Response == null)
                 return NotFound();
             return Ok(metadata);
         }
@@ -460,6 +463,10 @@ namespace Binner.Web.Controllers
                         part.MouserPartNumber = commonPart.SupplierPartNumber;
                     part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
                     part.PartNumber = commonPart.ManufacturerPartNumber;
+
+                    var partType = await GetPartTypeAsync(commonPart.PartType);
+                    part.PartTypeId = partType?.PartTypeId ?? 0;
+
                     part.DateCreatedUtc = DateTime.UtcNow;
                     part = await _partService.AddPartAsync(part);
                     var mappedPart = Mapper.Map<Part, PartResponse>(part);

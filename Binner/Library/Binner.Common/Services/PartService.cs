@@ -199,8 +199,13 @@ namespace Binner.Common.Services
                         .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
                         .Select(x => x.Value)
                         .FirstOrDefault();
+                    
                     if (!string.IsNullOrEmpty(basePart))
                         additionalPartNumbers.Add(basePart);
+                    
+                    if (string.IsNullOrEmpty(basePart))
+                        basePart = part.ManufacturerPartNumber;
+
                     Enum.TryParse<MountingType>(part.Parameters
                         .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
                         .Select(x => x.Value?.Replace(" ", "") ?? string.Empty)
@@ -300,7 +305,7 @@ namespace Binner.Common.Services
                                 Status = part.LifecycleStatus,
                                 Currency = mouserOrderResponse.CurrencyCode,
                                 AdditionalPartNumbers = new List<string>(),
-                                BasePartNumber = "",
+                                BasePartNumber = part.ManufacturerPartNumber,
                                 MountingTypeId = 0,
                                 PackageType = "",
                                 Cost = lineItem.UnitPrice,
@@ -359,7 +364,7 @@ namespace Binner.Common.Services
                 {
                     digikeyResponse = (ProductBarcodeResponse?)apiResponse.Response;
                 }
-                
+
                 if (digikeyResponse != null && !string.IsNullOrEmpty(digikeyResponse.DigiKeyPartNumber))
                 {
                     var partResponse = await digikeyApi.GetProductDetailsAsync(digikeyResponse.DigiKeyPartNumber);
@@ -402,7 +407,7 @@ namespace Binner.Common.Services
                 {
                     digikeyResponse = (ProductBarcodeResponse?)apiResponse.Response;
                 }
-                
+
                 if (digikeyResponse != null && !string.IsNullOrEmpty(digikeyResponse.DigiKeyPartNumber))
                 {
                     var partResponse = await digikeyApi.GetProductDetailsAsync(digikeyResponse.DigiKeyPartNumber);
@@ -484,7 +489,7 @@ namespace Binner.Common.Services
             return ServiceResult<PartResults>.Create(response);
         }
 
-        public async Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "")
+        public async Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "")
         {
             const int maxImagesPerSupplier = 5;
             const int maxImagesTotal = 10;
@@ -511,16 +516,62 @@ namespace Binner.Common.Services
                 else if (apiResponse.Errors?.Any() == true)
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 digikeyResponse = (KeywordSearchResponse?)apiResponse.Response;
-                if (digikeyResponse?.Products.Any() != true)
+                if (digikeyResponse != null)
                 {
-                    // if it's numerical, try getting barcode info
-                    var barcode = string.Empty;
-                    var isNumber = Regex.IsMatch(searchKeywords, @"^\d+$");
-                    if (isNumber) barcode = searchKeywords;
-                    var barcodeResult = await GetBarcodeInfoProductAsync(barcode, ScannedBarcodeType.Product);
-                    digikeyResponse = new KeywordSearchResponse();
-                    if (barcodeResult.Response != null)
-                        digikeyResponse.Products.Add(barcodeResult.Response);
+                    // if no part found, and it's numerical, try getting barcode info
+                    if (digikeyResponse.Products.Any() != true)
+                    {
+                        var isNumber = Regex.IsMatch(searchKeywords, @"^\d+$");
+                        if (isNumber)
+                        {
+                            var barcode = searchKeywords;
+                            var barcodeResult = await GetBarcodeInfoProductAsync(barcode, ScannedBarcodeType.Product);
+                            digikeyResponse = new KeywordSearchResponse();
+                            if (barcodeResult.Response != null)
+                                digikeyResponse.Products.Add(barcodeResult.Response);
+                        }
+                    }
+
+                    // if no part found, look up part if a supplier part number is provided
+                    if (digikeyResponse.Products.Any() != true && !string.IsNullOrEmpty(supplierPartNumbers))
+                    {
+                        var supplierPartNumberParts = supplierPartNumbers.Split(',');
+                        foreach (var supplierPartNumberPair in supplierPartNumberParts)
+                        {
+                            var supplierPair = supplierPartNumberPair.Split(':');
+                            if (supplierPair.Length < 2) continue;
+                            var supplierName = supplierPair[0];
+                            if (supplierName.Equals("digikey", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                var supplierPartNumber = supplierPair[1];
+                                if (!string.IsNullOrEmpty(supplierPartNumber))
+                                {
+                                    // try looking it up via the digikey part number
+                                    var partResponse = await digikeyApi.GetProductDetailsAsync(supplierPartNumber);
+                                    if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                                    {
+                                        var part = (Product?)partResponse.Response;
+                                        if (part != null)
+                                            digikeyResponse.Products.Add(part);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // if no part found, try treating the part number as a supplier part number
+                    if (digikeyResponse.Products.Any() != true && !string.IsNullOrEmpty(supplierPartNumbers))
+                    {
+                        var supplierPartNumber = searchKeywords;
+                        // try looking it up via the digikey part number
+                        var partResponse = await digikeyApi.GetProductDetailsAsync(supplierPartNumber);
+                        if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                        {
+                            var part = (Product?)partResponse.Response;
+                            if (part != null)
+                                digikeyResponse.Products.Add(part);
+                        }
+                    }
                 }
             }
             if (mouserApi.Configuration.IsConfigured)
