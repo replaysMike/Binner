@@ -62,7 +62,7 @@ export function Inventory(props) {
   };
 
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
-  const [infoResponse, setInfoResponse] = useState([]);
+  const [infoResponse, setInfoResponse] = useState({});
   const [datasheetTitle, setDatasheetTitle] = useState("");
   const [datasheetPartName, setDatasheetPartName] = useState("");
   const [datasheetDescription, setDatasheetDescription] = useState("");
@@ -706,6 +706,7 @@ export function Inventory(props) {
     setLoadingPartMetadata(false);
     setLoadingPartTypes(false);
     setLoadingProjects(false);
+    setInfoResponse({});
     if (clearAll && viewPreferences.rememberLast) {
       updateViewPreferences({ lastQuantity: clearedPart.quantity, lowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId, lastProjectId: clearedPart.projectId });
     }
