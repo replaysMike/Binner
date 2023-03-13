@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -445,6 +446,7 @@ namespace Binner.Web.Controllers
                     var existingPart = existingParts.First();
                     // update quantity
                     existingPart.Quantity += commonPart.QuantityAvailable;
+                    existingPart.Cost = (decimal)commonPart.Cost;
                     existingPart = await _partService.UpdatePartAsync(existingPart);
                     parts.Add(Mapper.Map<Part, PartResponse>(existingPart));
                 }
@@ -453,6 +455,7 @@ namespace Binner.Web.Controllers
                     // create new part
                     var part = Mapper.Map<CommonPart, Part>(commonPart);
                     part.Quantity += commonPart.QuantityAvailable;
+                    part.Cost = (decimal)commonPart.Cost;
                     if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
                     if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
