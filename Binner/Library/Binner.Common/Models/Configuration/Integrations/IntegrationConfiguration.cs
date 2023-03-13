@@ -23,6 +23,11 @@
         public MouserConfiguration Mouser { get; set; } = new MouserConfiguration();
 
         /// <summary>
+        /// Arrow config
+        /// </summary>
+        public ArrowConfiguration Arrow { get; set; } = new ArrowConfiguration();
+
+        /// <summary>
         /// AliExpress config
         /// </summary>
         public AliExpressConfiguration AliExpress { get; set; } = new AliExpressConfiguration();

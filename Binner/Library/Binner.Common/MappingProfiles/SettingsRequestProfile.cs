@@ -17,6 +17,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Binner, options => options.MapFrom(x => x.Integrations.Swarm))
                 .ForMember(x => x.Digikey, options => options.MapFrom(x => x.Integrations.Digikey))
                 .ForMember(x => x.Mouser, options => options.MapFrom(x => x.Integrations.Mouser))
+                .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Octopart))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ReverseMap();
@@ -35,6 +36,10 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.MouserOrderApiKey, options => options.MapFrom(x => x.Mouser.OrderApiKey))
                 .ForMember(x => x.MouserSearchApiKey, options => options.MapFrom(x => x.Mouser.SearchApiKey))
                 .ForMember(x => x.MouserApiUrl, options => options.MapFrom(x => x.Mouser.ApiUrl))
+                .ForMember(x => x.ArrowEnabled, options => options.MapFrom(x => x.Arrow.Enabled))
+                .ForMember(x => x.ArrowUsername, options => options.MapFrom(x => x.Arrow.Username))
+                .ForMember(x => x.ArrowApiKey, options => options.MapFrom(x => x.Arrow.ApiKey))
+                .ForMember(x => x.ArrowApiUrl, options => options.MapFrom(x => x.Arrow.ApiUrl))
                 .ForMember(x => x.OctopartEnabled, options => options.MapFrom(x => x.Octopart.Enabled))
                 .ForMember(x => x.OctopartApiKey, options => options.MapFrom(x => x.Octopart.ApiKey))
                 .ForMember(x => x.OctopartApiUrl, options => options.MapFrom(x => x.Octopart.ApiUrl))

@@ -1,5 +1,8 @@
 ﻿namespace Binner.Common.Models.Configuration.Integrations
 {
+    /// <summary>
+    /// Octopart api configuration
+    /// </summary>
     public class OctopartConfiguration : IApiConfiguration
     {
         public bool Enabled { get; set; } = false;

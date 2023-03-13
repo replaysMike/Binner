@@ -5,6 +5,7 @@ using Binner.SwarmApi;
 using Binner.SwarmApi.Request;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,11 +39,11 @@ namespace Binner.Common.Integrations
             _requestContext = requestContext;
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount);
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);
 
-        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25) => SearchAsync(partNumber, partType, string.Empty, recordCount);
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
 
-        public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "", int recordCount = 50)
+        public async Task<IApiResponse> SearchAsync(string partNumber, string partType = "", string mountingType = "", int recordCount = 50, Dictionary<string, string>? additionalOptions = null)
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
 
@@ -69,12 +70,12 @@ namespace Binner.Common.Integrations
             }
         }
 
-        public Task<IApiResponse> GetOrderAsync(string orderId)
+        public Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber)
+        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null)
         {
             try
             {

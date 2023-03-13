@@ -12,6 +12,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Binner.Common.Integrations.Models.Arrow;
+using Part = Binner.Model.Common.Part;
 
 namespace Binner.Common.Services
 {
@@ -500,12 +502,14 @@ namespace Binner.Common.Services
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
             var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
             var octopartApi = await _integrationApiFactory.CreateAsync<Integrations.OctopartApi>(user?.UserId ?? 0);
+            var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0);
 
             var datasheets = new List<string>();
             var response = new PartResults();
             var swarmResponse = new SwarmApi.Response.SearchPartResponse();
             var digikeyResponse = new KeywordSearchResponse();
             var mouserResponse = new SearchResultsResponse();
+            var arrowResponse = new ItemServiceResult();
             var searchKeywords = partNumber;
 
             if (digikeyApi.Configuration.IsConfigured)
@@ -574,6 +578,7 @@ namespace Binner.Common.Services
                     }
                 }
             }
+            
             if (mouserApi.Configuration.IsConfigured)
             {
                 var apiResponse = await mouserApi.SearchAsync(searchKeywords, partType, mountingType);
@@ -583,17 +588,29 @@ namespace Binner.Common.Services
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 mouserResponse = (SearchResultsResponse?)apiResponse.Response;
             }
+            
             if (octopartApi.Configuration.IsConfigured)
             {
                 var octopartResponse = await octopartApi.GetDatasheetsAsync(partNumber);
                 datasheets.AddRange((ICollection<string>?)octopartResponse.Response ?? new List<string>());
             }
+            
             if (swarmApi.Configuration.IsConfigured)
             {
                 var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
                 if (apiResponse.Errors?.Any() == true)
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 swarmResponse = (SwarmApi.Response.SearchPartResponse?)apiResponse.Response ?? new SwarmApi.Response.SearchPartResponse();
+            }
+
+            if (arrowApi.Configuration.IsConfigured)
+            {
+                var apiResponse = await arrowApi.SearchAsync(searchKeywords, partType, mountingType);
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                else if (apiResponse.Errors?.Any() == true)
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                arrowResponse = (ItemServiceResult?)apiResponse.Response;
             }
 
             // todo: cache part types (I think we already have it somewhere)
@@ -606,6 +623,8 @@ namespace Binner.Common.Services
                 await ProcessDigikeyResponseAsync(partNumber, response, digikeyResponse, productImageUrls, datasheetUrls);
             if (mouserResponse != null)
                 await ProcessMouserResponseAsync(partNumber, response, mouserResponse, productImageUrls, datasheetUrls);
+            if (arrowResponse != null)
+                await ProcessArrowResponseAsync(partNumber, response, arrowResponse, productImageUrls, datasheetUrls);
             SetPartTypesAndKeywords(response, partTypes);
 
             // apply ranking
@@ -860,9 +879,9 @@ namespace Binner.Common.Services
                 }
             }
 
-            Task ProcessDigikeyResponseAsync(string partNumber, PartResults response, KeywordSearchResponse digikeyResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
+            Task ProcessDigikeyResponseAsync(string partNumber, PartResults response, KeywordSearchResponse? digikeyResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
             {
-                if (!digikeyResponse.Products.Any()) return Task.CompletedTask;
+                if (digikeyResponse == null || !digikeyResponse.Products.Any()) return Task.CompletedTask;
 
                 var imagesAdded = 0;
                 var digiKeyDatasheetUrls = digikeyResponse.Products
@@ -968,7 +987,7 @@ namespace Binner.Common.Services
                 return Task.CompletedTask;
             }
 
-            Task ProcessMouserResponseAsync(string partNumber, PartResults response, SearchResultsResponse mouserResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
+            Task ProcessMouserResponseAsync(string partNumber, PartResults response, SearchResultsResponse? mouserResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
             {
                 if (mouserResponse == null || mouserResponse.SearchResults == null) return Task.CompletedTask;
                 var imagesAdded = 0;
@@ -1052,6 +1071,13 @@ namespace Binner.Common.Services
                         FactoryLeadTime = part.LeadTime
                     });
                 }
+                return Task.CompletedTask;
+            }
+
+            Task ProcessArrowResponseAsync(string partNumber, PartResults response, ItemServiceResult? arrowResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
+            {
+                if (arrowResponse == null || arrowResponse.Data == null || !arrowResponse.Data.Any()) return Task.CompletedTask;
+
                 return Task.CompletedTask;
             }
 

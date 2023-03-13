@@ -20,6 +20,11 @@ namespace Binner.Common.Models.Responses
         public MouserUserConfiguration Mouser { get; set; } = new MouserUserConfiguration();
 
         /// <summary>
+        /// Arrow config
+        /// </summary>
+        public ArrowUserConfiguration Arrow { get; set; } = new ArrowUserConfiguration();
+
+        /// <summary>
         /// Binner config
         /// </summary>
         public SwarmUserConfiguration Binner { get; set; } = new SwarmUserConfiguration();

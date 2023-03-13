@@ -21,6 +21,11 @@ namespace Binner.Common.Models.Requests
         public MouserUserConfiguration Mouser { get; set; } = new MouserUserConfiguration();
 
         /// <summary>
+        /// Arrow config
+        /// </summary>
+        public ArrowUserConfiguration Arrow { get; set; } = new ArrowUserConfiguration();
+
+        /// <summary>
         /// Binner swarm config
         /// </summary>
         public SwarmUserConfiguration Binner { get; set; } = new SwarmUserConfiguration();

@@ -79,7 +79,7 @@ namespace Binner.Common.Integrations
             ThroughHole = 80
         }
 
-        public async Task<IApiResponse> GetOrderAsync(string orderId)
+        public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
@@ -110,7 +110,7 @@ namespace Binner.Common.Integrations
             });
         }
 
-        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber)
+        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null)
         {
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
@@ -241,11 +241,11 @@ namespace Binner.Common.Integrations
             });
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount);
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);
 
-        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25) => SearchAsync(partNumber, partType, string.Empty, recordCount);
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
 
-        public async Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25)
+        public async Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var authResponse = await AuthorizeAsync();

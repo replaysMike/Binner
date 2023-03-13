@@ -89,6 +89,26 @@ namespace Binner.Common.Models.Configuration.Integrations
         public string MouserApiUrl { get; set; } = "https://api.mouser.com";
 
         /// <summary>
+        /// Arrow api enabled
+        /// </summary>
+        public bool ArrowEnabled { get; set; } = true;
+
+        /// <summary>
+        /// The user's Arrow username
+        /// </summary>
+        public string? ArrowUsername { get; set; }
+
+        /// <summary>
+        /// The Api key
+        /// </summary>
+        public string? ArrowApiKey { get; set; }
+
+        /// <summary>
+        /// Arrow api url
+        /// </summary>
+        public string ArrowApiUrl { get; set; } = "https://api.arrow.com";
+
+        /// <summary>
         /// Octopart api enabled
         /// </summary>
         public bool OctopartEnabled { get; set; } = false;

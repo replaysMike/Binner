@@ -78,6 +78,12 @@ export const Settings = (props) => {
       cartApiKey: "",
       apiUrl: "",
     },
+    arrow: {
+      enabled: false,
+      username: "",
+      apiKey: "",
+      apiUrl: "",
+    },
     octopart: {
       enabled: false,
       apiKey: "",
@@ -279,6 +285,9 @@ export const Settings = (props) => {
     if (control.name.startsWith("mouser")) {
       setControlValue(newSettings.mouser, "mouser", control);
     }
+    if (control.name.startsWith("arrow")) {
+      setControlValue(newSettings.arrow, "arrow", control);
+    }
     if (control.name.startsWith("octopart")) {
       setControlValue(newSettings.octopart, "octopart", control);
     }
@@ -407,6 +416,12 @@ export const Settings = (props) => {
         configuration.push({ key: "orderApiKey", value: settings.mouser.orderApiKey });
         configuration.push({ key: "cartApiKey", value: settings.mouser.cartApiKey });
         configuration.push({ key: "apiUrl", value: settings.mouser.apiUrl });
+        break;
+      case "arrow":
+        configuration.push({ key: "enabled", value: settings.arrow.enabled + "" });
+        configuration.push({ key: "username", value: settings.arrow.username });
+        configuration.push({ key: "apiKey", value: settings.arrow.apiKey });
+        configuration.push({ key: "apiUrl", value: settings.arrow.apiUrl });
         break;
       case "octopart":
         configuration.push({ key: "enabled", value: settings.octopart.enabled + "" });
@@ -982,6 +997,116 @@ export const Settings = (props) => {
 
           <Segment loading={loading} color="green" secondary>
             <Header dividing as="h3">
+              Arrow
+            </Header>
+            <p>
+              Arrow API Keys can be obtained at{" "}
+              <a
+                href="https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey"
+                target="_blank"
+                rel="noreferrer"
+              >
+                https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey
+              </a>
+            </p>
+            <Form.Field width={10}>
+              <label>Arrow Support</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>Choose if you would like to enable Arrow support.</p>
+                }
+                trigger={
+                  <Dropdown
+                    name="arrowEnabled"
+                    placeholder="Disabled"
+                    selection
+                    value={settings.arrow.enabled ? 1 : 0}
+                    options={enabledSources}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Username</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Your username/login for Arrow.</p>}
+                trigger={
+                  <Input
+                    className="labeled"
+                    placeholder=""
+                    value={settings.arrow.username || ""}
+                    name="arrowUsername"
+                    onChange={handleChange}
+                  ></Input>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Key</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Your api key for Arrow.</p>}
+                trigger={
+                  <Input
+                    className="labeled"
+                    placeholder=""
+                    value={settings.arrow.apiKey || ""}
+                    name="arrowApiKey"
+                    onChange={handleChange}
+                  ></Input>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>Api Url</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>Arrow's API Url. This will be api.arrow.com</p>}
+                trigger={
+                  <Input
+                    action
+                    className="labeled"
+                    placeholder="api.arrow.com"
+                    value={(settings.arrow.apiUrl || "")
+                      .replace("http://", "")
+                      .replace("https://", "")}
+                    name="arrowApiUrl"
+                    onChange={handleChange}
+                  >
+                    <Label>https://</Label>
+                    <input />
+                  </Input>
+                }
+              />
+            </Form.Field>
+            <Form.Field>
+              <Button
+                primary
+                className="test"
+                type="button"
+                onClick={(e) => handleTestApi(e, "arrow")}
+                disabled={testing}
+              >
+                Test Api
+              </Button>
+              {getTestResultIcon("arrow")}
+            </Form.Field>
+          </Segment>
+
+          <Segment loading={loading} color="green" secondary>
+            <Header dividing as="h3">
               Octopart
             </Header>
             <p>
@@ -1045,7 +1170,7 @@ export const Settings = (props) => {
                   <Input
                     action
                     className="labeled"
-                    placeholder="api.mouser.com"
+                    placeholder="octopart.com"
                     value={(settings.octopart.apiUrl || "")
                       .replace("http://", "")
                       .replace("https://", "")}

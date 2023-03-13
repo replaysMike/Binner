@@ -1,7 +1,7 @@
 ﻿namespace Binner.Common.Models.Configuration.Integrations
 {
     /// <summary>
-    /// Digikey APi configuration settings
+    /// Digikey api configuration settings
     /// </summary>
     public class DigikeyConfiguration : IApiConfiguration
     {
@@ -10,12 +10,12 @@
         public string? ApiKey => ClientId;
 
         /// <summary>
-        /// Digikey Client Id
+        /// Client Id
         /// </summary>
         public string? ClientId { get; set; }
 
         /// <summary>
-        /// Digikey Client Secret
+        /// Client Secret
         /// </summary>
         public string? ClientSecret { get; set; }
 
@@ -26,7 +26,7 @@
         public string oAuthPostbackUrl { get; set; } = "https://localhost:8090/Authorization/Authorize";
 
         /// <summary>
-        /// Path to the Digikey Api
+        /// Path to the api
         /// </summary>
         public string ApiUrl { get; set; } = "https://api.digikey.com";
 

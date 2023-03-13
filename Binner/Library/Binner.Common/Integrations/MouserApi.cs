@@ -41,7 +41,7 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
-        public async Task<IApiResponse> GetOrderAsync(string orderId)
+        public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/order/{orderId}?apiKey={_configuration.ApiKeys.OrderApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Get, uri);
@@ -64,7 +64,7 @@ namespace Binner.Common.Integrations
         /// </summary>
         /// <param name="partNumber"></param>
         /// <returns></returns>
-        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber)
+        public async Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null)
         {
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/partnumber?apiKey={_configuration.ApiKeys.SearchApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
@@ -93,13 +93,13 @@ namespace Binner.Common.Integrations
             return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
 
-        public Task<IApiResponse> SearchAsync(string keyword, int recordCount = 25) =>
-            SearchAsync(keyword, string.Empty, string.Empty, recordCount);
+        public Task<IApiResponse> SearchAsync(string keyword, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) =>
+            SearchAsync(keyword, string.Empty, string.Empty, recordCount, additionalOptions);
         
 
-        public Task<IApiResponse> SearchAsync(string keyword, string partType, int recordCount = 25) => SearchAsync(keyword, partType, string.Empty, recordCount);
+        public Task<IApiResponse> SearchAsync(string keyword, string partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(keyword, partType, string.Empty, recordCount, additionalOptions);
 
-        public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25)
+        public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/keyword?apiKey={_configuration.ApiKeys.SearchApiKey}");
@@ -149,7 +149,7 @@ namespace Binner.Common.Integrations
                     var remainingTime = TimeSpan.Zero;
                     if (response.Headers.Contains("X-RateLimit-Remaining"))
                         remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
-                    apiResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}", nameof(MouserApi));
+                    apiResponse = ApiResponse.Create($"{nameof(MouserApi)} request throttled. Try again in {remainingTime}", nameof(MouserApi));
                     return true;
                 }
 

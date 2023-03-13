@@ -67,6 +67,13 @@ namespace Binner.Common.Services
                 if (resultTyped != null)
                     return resultTyped;
             }
+            if (apiType == typeof(ArrowApi))
+            {
+                var result = CreateGlobalArrowApi();
+                var resultTyped = result as T;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
             throw new NotImplementedException($"Unhandled type '{apiType.Name}'");
         }
 
@@ -146,6 +153,15 @@ namespace Binner.Common.Services
                 };
                 credentials.Add(new ApiCredential(userId, mouserConfiguration, nameof(MouserApi)));
 
+                var arrowConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", userIntegrationConfiguration.ArrowEnabled },
+                    { "Username", userIntegrationConfiguration.ArrowUsername ?? string.Empty },
+                    { "ApiKey", userIntegrationConfiguration.ArrowApiKey ?? string.Empty },
+                    { "ApiUrl", userIntegrationConfiguration.ArrowApiUrl },
+                };
+                credentials.Add(new ApiCredential(userId, arrowConfiguration, nameof(ArrowApi)));
+
                 var octopartConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", userIntegrationConfiguration.OctopartEnabled },
@@ -197,6 +213,13 @@ namespace Binner.Common.Services
             if (apiType == typeof(OctopartApi))
             {
                 var result = await CreateOctopartApiAsync(credentialKey, getCredentialsMethod, cache);
+                var resultTyped = result as T;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(ArrowApi))
+            {
+                var result = await CreateArrowApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
@@ -336,6 +359,38 @@ namespace Binner.Common.Services
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
             var api = new OctopartApi(configuration, _httpContextAccessor);
+            return api;
+        }
+
+        private ArrowApi CreateGlobalArrowApi()
+        {
+            var configuration = new ArrowConfiguration
+            {
+                // system settings
+                Enabled = _integrationConfiguration.Arrow.Enabled,
+                Username = _integrationConfiguration.Arrow.Username,
+                ApiKey = _integrationConfiguration.Arrow.ApiKey,
+                ApiUrl = _integrationConfiguration.Arrow.ApiUrl,
+            };
+            var api = new ArrowApi(configuration, _httpContextAccessor);
+            return api;
+        }
+
+        private async Task<ArrowApi> CreateArrowApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
+        {
+            ApiCredential? credentials = null;
+            if (cache)
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(ArrowApi), getCredentialsMethod);
+            else
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(ArrowApi), getCredentialsMethod);
+            var configuration = new ArrowConfiguration
+            {
+                Enabled = credentials.GetCredentialBool("Enabled"),
+                Username = credentials.GetCredentialString("Username"),
+                ApiKey = credentials.GetCredentialString("ApiKey"),
+                ApiUrl = credentials.GetCredentialString("ApiUrl"),
+            };
+            var api = new ArrowApi(configuration, _httpContextAccessor);
             return api;
         }
     }

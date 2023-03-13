@@ -1,5 +1,6 @@
 ﻿using Binner.Common.Integrations.Models;
 using Binner.Common.Models.Configuration.Integrations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Integrations
@@ -24,8 +25,9 @@ namespace Binner.Common.Integrations
         /// </summary>
         /// <param name="partNumber"></param>
         /// <param name="recordCount"></param>
+        /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25);
+        Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null);
 
         /// <summary>
         /// Search for a part
@@ -33,8 +35,9 @@ namespace Binner.Common.Integrations
         /// <param name="partNumber"></param>
         /// <param name="partType"></param>
         /// <param name="recordCount"></param>
+        /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25);
+        Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null);
         
         /// <summary>
         /// Search for a part
@@ -43,21 +46,24 @@ namespace Binner.Common.Integrations
         /// <param name="partType"></param>
         /// <param name="mountingType"></param>
         /// <param name="recordCount"></param>
+        /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25);
+        Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null);
 
         /// <summary>
         /// Get an order by it's orderId
         /// </summary>
         /// <param name="orderId"></param>
+        /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> GetOrderAsync(string orderId);
+        Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null);
 
         /// <summary>
         /// Get details about a part
         /// </summary>
         /// <param name="partNumber"></param>
+        /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> GetProductDetailsAsync(string partNumber);
+        Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null);
     }
 }

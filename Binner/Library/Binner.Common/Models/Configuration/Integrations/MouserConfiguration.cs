@@ -1,5 +1,8 @@
 ﻿namespace Binner.Common.Models.Configuration.Integrations
 {
+    /// <summary>
+    /// Mouser api configuration
+    /// </summary>
     public class MouserConfiguration : IApiConfiguration
     {
         public bool Enabled { get; set; } = true;
