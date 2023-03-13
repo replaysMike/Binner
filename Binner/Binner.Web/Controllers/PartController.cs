@@ -313,7 +313,7 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> SearchAsync([FromQuery] string keywords)
         {
             var parts = await _partService.FindPartsAsync(keywords);
-            if (parts == null || !parts.Any())
+            if (!parts.Any())
                 return NotFound();
             var partTypes = await _partService.GetPartTypesAsync();
             var partsOrdered = parts
@@ -409,8 +409,6 @@ namespace Binner.Web.Controllers
             }
 
             var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType, supplierPartNumbers);
-            if (metadata.Response == null)
-                return NotFound();
             return Ok(metadata);
         }
 
@@ -425,8 +423,6 @@ namespace Binner.Web.Controllers
             if (string.IsNullOrEmpty(request.OrderId)) return BadRequest("No OrderId specified");
             if (string.IsNullOrEmpty(request.Supplier)) return BadRequest("No Supplier specified");
             var metadata = await _partService.GetExternalOrderAsync(request.OrderId, request.Supplier);
-            if (metadata.Response == null)
-                return NotFound();
             return Ok(metadata);
         }
 
