@@ -5,6 +5,7 @@ import _ from 'underscore';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { fetchApi } from '../common/fetchApi';
+import "./PartsGrid.css";
 
 const AppMedia = createMedia({
   breakpoints: {
@@ -25,7 +26,9 @@ export default function PartsGrid(props) {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(props.totalPages);
   const [loading, setLoading] = useState(props.loading);
-  const [selectedPart, setSelectedPart] = useState(null);
+  const [selectedPart, setSelectedPart] = useState(props.selectedPart);
+  const [editable, setEditable] = useState(props.editable);
+  const [visitable, setVisitable] = useState(props.visitable);
   const [column, setColumn] = useState(null);
   const [columns, setColumns] = useState(props.columns);
   const [direction, setDirection] = useState(null);
@@ -51,6 +54,9 @@ export default function PartsGrid(props) {
     setLoading(props.loading);
     setColumns(props.columns);
     setPage(props.page);
+    setSelectedPart(props.selectedPart);
+    setEditable(props.editable);
+    setVisitable(props.visitable);
     setTotalPages(Math.ceil(props.totalPages));
   }, [props]);
 
@@ -239,14 +245,14 @@ export default function PartsGrid(props) {
             <Table.Body>
               {parts.length > 0 
               ? parts.map((p, key) =>
-                <Table.Row key={key} onClick={e => handleLoadPartClick(e, p)}>
+                <Table.Row key={key} onClick={e => handleLoadPartClick(e, p)} className={selectedPart === p ? "selected" : ""}>
                   {col.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
                   {col.quantity && <Table.Cell>
                     <Popup 
                       hideOnScroll
                       position="bottom left"
                       content={`The quantity of parts currently in stock.`}
-                      trigger={<Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} />}
+                      trigger={editable ? <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} /> : <span>{p.quantity}</span>}
                     />                      
                   </Table.Cell>}
                   {col.lowstockthreshold && <Table.Cell>
@@ -264,13 +270,13 @@ export default function PartsGrid(props) {
                     {renderChildren ? <span className='truncate small' title={p.description}>{p.description}</span> : null}
                   </Table.Cell>)}}</Media> }
                   {col.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                    {renderChildren ? <Link to={`/inventory?by=location&value=${p.location}`} onClick={handleSelfLink}><span className='truncate'>{p.location}</span></Link> : null}
+                    {visitable ? (renderChildren ? <Link to={`/inventory?by=location&value=${p.location}`} onClick={handleSelfLink}><span className='truncate'>{p.location}</span></Link> : null) : <span>{p.location}</span>}
                   </Table.Cell>)}}</Media> }
                   {col.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                    {renderChildren ? <Link to={`/inventory?by=binNumber&value=${p.binNumber}`} onClick={handleSelfLink}>{p.binNumber}</Link> : null}
+                    {visitable ? (renderChildren ? <Link to={`/inventory?by=binNumber&value=${p.binNumber}`} onClick={handleSelfLink}>{p.binNumber}</Link> : null) : <span>{p.binNumber}</span>}
                   </Table.Cell>)}}</Media> }
                   {col.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                    {renderChildren ? <Link to={`/inventory?by=binNumber2&value=${p.binNumber2}`} onClick={handleSelfLink}>{p.binNumber2}</Link> : null}
+                    {visitable ? (renderChildren ? <Link to={`/inventory?by=binNumber2&value=${p.binNumber2}`} onClick={handleSelfLink}>{p.binNumber2}</Link> : null) : <span>{p.binNumber2}</span>}
                   </Table.Cell>)}}</Media> }
                   {col.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
                     {renderChildren ? "$" + p.cost.toFixed(2) : null}
@@ -326,11 +332,19 @@ PartsGrid.propTypes = {
   onPartClick: PropTypes.func,
   /** Event handler when page size is changed */
   onPageSizeChange: PropTypes.func,
+  /** Highlight the selected part if provided */
+  selectedPart: PropTypes.object,
+  /** True if edit options are exposed */
+  editable: PropTypes.bool,
+  /** True if links are exposed */
+  visitable: PropTypes.bool
 };
 
 PartsGrid.defaultProps = {
   loading: true,
   columns: 'partNumber,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,print,delete',
   page: 1,
-  totalPages: 1
+  totalPages: 1,
+  editable: true,
+  visitable: true
 };

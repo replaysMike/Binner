@@ -18,6 +18,8 @@ import './bootstrap.css'; /* needed for the carousel control */
 import { Home } from "./pages/Home";
 import Inventory from "./pages/Inventory";
 import Search from "./pages/Search";
+import Boms from "./pages/Boms";
+import Bom from "./pages/Bom";
 import { Datasheets } from "./pages/Datasheets";
 import LowInventory from "./pages/LowInventory";
 import { OrderImport } from "./pages/OrderImport";
@@ -98,6 +100,8 @@ class App extends Component {
             <Route exact path="/inventory/add" element={<Inventory />} />
             <Route exact path="/inventory/:partNumber" element={<Inventory />} />
             <Route exact path="/inventory" element={<Search />} />
+            <Route exact path="/bom/:project" element={<Bom />} />
+            <Route path="/bom" element={<Boms />} />
             <Route path="/datasheets" element={<Datasheets />} />
             <Route path="/lowstock" element={<LowInventory />} />
             <Route path="/import" element={<OrderImport />} />

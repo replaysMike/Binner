@@ -43,7 +43,7 @@ export function Home(props) {
       <h1>Dashboard</h1>
       <p>Binner is an inventory management app for makers, hobbyists and professionals.</p>
       <Segment>
-        <Statistic.Group widths="three">
+        <Statistic.Group widths="four">
           <Statistic onClick={(e) => route(e, "/inventory/add")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="plus" />
@@ -55,6 +55,12 @@ export function Home(props) {
               <Icon name="search" />
             </Statistic.Value>
             <Statistic.Label>Search Inventory</Statistic.Label>
+          </Statistic>
+          <Statistic onClick={(e) => route(e, "/bom")} style={{ cursor: "pointer" }}>
+            <Statistic.Value>
+              <Icon name="list alternate outline" />
+            </Statistic.Value>
+            <Statistic.Label>BOM</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/datasheets")} style={{ cursor: "pointer" }}>
             <Statistic.Value>

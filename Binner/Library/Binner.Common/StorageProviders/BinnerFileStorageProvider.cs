@@ -2,6 +2,7 @@
 using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Model.Common;
+using NPOI.HPSF;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +29,7 @@ namespace Binner.Common.StorageProviders
         private readonly ManualResetEvent _quitEvent = new(false);
         private readonly Guid _instance = Guid.NewGuid();
         private PrimaryKeyTracker _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>());
-        private IBinnerDb _db = new BinnerDbV3();
+        private IBinnerDb _db = new BinnerDbV4();
         private bool _isDirty;
         private Thread _ioThread = new Thread(new ThreadStart(() => { }));
 
@@ -85,8 +86,7 @@ namespace Binner.Common.StorageProviders
             try
             {
                 return _db.OAuthCredentials
-                    .Where(x => x.Provider == providerName && x.UserId == userContext?.UserId)
-                    .FirstOrDefault();
+                    .FirstOrDefault(x => x.Provider == providerName && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -100,7 +100,7 @@ namespace Binner.Common.StorageProviders
             try
             {
                 credential.UserId = userContext?.UserId;
-                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == credential.Provider && x.UserId == credential.UserId).FirstOrDefault();
+                var existingCredential = _db.OAuthCredentials.FirstOrDefault(x => x.Provider == credential.Provider && x.UserId == credential.UserId);
                 if (existingCredential != null)
                 {
                     existingCredential.AccessToken = credential.AccessToken;
@@ -122,7 +122,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                var existingCredential = _db.OAuthCredentials.Where(x => x.Provider == providerName && x.UserId == userContext?.UserId).FirstOrDefault();
+                var existingCredential = _db.OAuthCredentials.FirstOrDefault(x => x.Provider == providerName && x.UserId == userContext?.UserId);
                 if (existingCredential != null)
                 {
                     _db.OAuthCredentials.Remove(existingCredential);
@@ -233,8 +233,7 @@ namespace Binner.Common.StorageProviders
         private PartType? GetPartTypeInternal(long partTypeId, IUserContext? userContext)
         {
             return _db.PartTypes
-                .Where(x => x.PartTypeId == partTypeId && x.UserId == userContext?.UserId)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.PartTypeId == partTypeId && x.UserId == userContext?.UserId);
         }
 
         public async Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext? userContext)
@@ -324,8 +323,8 @@ namespace Binner.Common.StorageProviders
 
         private Part? GetPartInternal(long partId, IUserContext? userContext)
         {
-            return _db.Parts.Where(x => x.PartId == partId && x.UserId == userContext?.UserId)
-                .FirstOrDefault();
+            return _db.Parts
+                .FirstOrDefault(x => x.PartId == partId && x.UserId == userContext?.UserId);
         }
 
         public async Task<Part?> GetPartAsync(string partNumber, IUserContext? userContext)
@@ -361,8 +360,8 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return _db.Parts.Where(x => x.UserId == userContext?.UserId)
-                    .Count();
+                return _db.Parts
+                    .Count(x => x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -390,8 +389,8 @@ namespace Binner.Common.StorageProviders
             var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                var totalItems = _db.Parts.Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
-                    .Count();
+                var totalItems = _db.Parts
+                    .Count(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId);
                 var parts = _db.Parts
                     .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext?.UserId)
                     .OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "PartId" : request.OrderBy, request.Direction)
@@ -592,7 +591,7 @@ namespace Binner.Common.StorageProviders
                 storedFile.UserId = userContext?.UserId;
                 storedFile.StoredFileId = _primaryKeyTracker.GetNextKey<StoredFile>();
 
-                (_db as BinnerDbV3)?.StoredFiles.Add(storedFile);
+                (_db as BinnerDbV4)?.StoredFiles.Add(storedFile);
                 _isDirty = true;
             }
             finally
@@ -608,7 +607,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return ((_db as BinnerDbV3)?.StoredFiles)?.FirstOrDefault(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId);
+                return ((_db as BinnerDbV4)?.StoredFiles)?.FirstOrDefault(x => x.StoredFileId.Equals(storedFileId) && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -622,7 +621,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return ((_db as BinnerDbV3)?.StoredFiles)?.FirstOrDefault(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId);
+                return ((_db as BinnerDbV4)?.StoredFiles)?.FirstOrDefault(x => x.FileName.Equals(filename) && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -636,7 +635,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                return (_db as BinnerDbV3)?.StoredFiles
+                return (_db as BinnerDbV4)?.StoredFiles
                     .Where(x => x.PartId.Equals(partId))
                     .Where(x => fileType == null || x.StoredFileType.Equals(fileType))
                     .Where(x => x.UserId == userContext?.UserId)
@@ -654,7 +653,7 @@ namespace Binner.Common.StorageProviders
             var pageRecords = (request.Page - 1) * request.Results;
             try
             {
-                return (_db as BinnerDbV3)?.StoredFiles
+                return (_db as BinnerDbV4)?.StoredFiles
                     .Where(x => x.UserId == userContext?.UserId)
                     .OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "StoredFileId" : request.OrderBy, request.Direction)
                     .Skip(pageRecords)
@@ -673,10 +672,10 @@ namespace Binner.Common.StorageProviders
             try
             {
                 storedFile.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV3)?.StoredFiles.Remove(storedFile);
+                var itemRemoved = (_db as BinnerDbV4)?.StoredFiles.Remove(storedFile);
                 if (itemRemoved == true)
                 {
-                    var nextStoredFileId = ((_db as BinnerDbV3)?.StoredFiles.OrderByDescending(x => x.StoredFileId)
+                    var nextStoredFileId = ((_db as BinnerDbV4)?.StoredFiles.OrderByDescending(x => x.StoredFileId)
                         .Select(x => x.StoredFileId)
                         .FirstOrDefault() ?? 0);
                     nextStoredFileId++;
@@ -698,7 +697,7 @@ namespace Binner.Common.StorageProviders
             try
             {
                 storedFile.UserId = userContext?.UserId;
-                var existingStoredFile = ((_db as BinnerDbV3)?.StoredFiles)
+                var existingStoredFile = ((_db as BinnerDbV4)?.StoredFiles)
                     ?.FirstOrDefault(x => x.StoredFileId.Equals(storedFile.StoredFileId) && x.UserId == userContext?.UserId);
                 if (existingStoredFile != null)
                 {
@@ -731,7 +730,7 @@ namespace Binner.Common.StorageProviders
                     AuthorizationReceived = false
                 };
 
-                (_db as BinnerDbV3)?.OAuthRequests.Add(oAuthRequest);
+                (_db as BinnerDbV4)?.OAuthRequests.Add(oAuthRequest);
                 _isDirty = true;
             }
             finally
@@ -759,7 +758,7 @@ namespace Binner.Common.StorageProviders
                     UserId = userContext?.UserId
                 };
 
-                var existingOAuthRequest = ((_db as BinnerDbV3)?.OAuthRequests)
+                var existingOAuthRequest = ((_db as BinnerDbV4)?.OAuthRequests)
                     ?.FirstOrDefault(x => x.UserId == userContext?.UserId && x.Provider == oAuthRequest.Provider && x.RequestId == oAuthRequest.RequestId);
                 if (existingOAuthRequest != null)
                 {
@@ -785,7 +784,7 @@ namespace Binner.Common.StorageProviders
             await _dataLock.WaitAsync();
             try
             {
-                var existingOAuthRequest = ((_db as BinnerDbV3)?.OAuthRequests)
+                var existingOAuthRequest = ((_db as BinnerDbV4)?.OAuthRequests)
                     ?.FirstOrDefault(x => x.RequestId.Equals(requestId) && x.UserId == userContext?.UserId);
                 if (existingOAuthRequest == null)
                     return null;
@@ -800,6 +799,385 @@ namespace Binner.Common.StorageProviders
                     UserId = userContext?.UserId,
                     CreatedUtc = existingOAuthRequest.DateCreatedUtc,
                 };
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<Pcb?> GetPcbAsync(long pcbId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return ((_db as BinnerDbV4)?.Pcbs)?.FirstOrDefault(x => x.PcbId == pcbId && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<Pcb> AddPcbAsync(Pcb pcb, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                pcb.UserId = userContext?.UserId;
+                pcb.PcbId = _primaryKeyTracker.GetNextKey<Pcb>();
+
+                (_db as BinnerDbV4)?.Pcbs.Add(pcb);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return pcb;
+        }
+
+        public async Task<Pcb> UpdatePcbAsync(Pcb pcb, IUserContext? userContext)
+        {
+            if (pcb == null) throw new ArgumentNullException(nameof(pcb));
+            await _dataLock.WaitAsync();
+            try
+            {
+                pcb.UserId = userContext?.UserId;
+                var existingPcb = ((_db as BinnerDbV4)?.Pcbs)
+                    ?.FirstOrDefault(x => x.PcbId.Equals(pcb.PcbId) && x.UserId == userContext?.UserId);
+                if (existingPcb != null)
+                {
+                    existingPcb = Mapper.Map<Pcb, Pcb>(pcb, existingPcb, x => x.PcbId);
+                    existingPcb.PcbId = pcb.PcbId;
+                    existingPcb.DateModifiedUtc = DateTime.UtcNow;
+                    _isDirty = true;
+                }
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return pcb;
+        }
+
+        public async Task<bool> DeletePcbAsync(Pcb pcb, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                pcb.UserId = userContext?.UserId;
+                var itemRemoved = (_db as BinnerDbV4)?.Pcbs.Remove(pcb);
+                if (itemRemoved == true)
+                {
+                    var nextPcbId = ((_db as BinnerDbV4)?.Pcbs.OrderByDescending(x => x.PcbId)
+                        .Select(x => x.PcbId)
+                        .FirstOrDefault() ?? 0);
+                    nextPcbId++;
+                    _primaryKeyTracker.SetNextKey<Pcb>(nextPcbId);
+                    _isDirty = true;
+                }
+                return itemRemoved == true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<PcbStoredFileAssignment?> GetPcbStoredFileAssignmentAsync(long pcbStoredFileAssignmentId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return ((_db as BinnerDbV4)?.PcbStoredFileAssignments)?.FirstOrDefault(x => x.PcbStoredFileAssignmentId == pcbStoredFileAssignmentId && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<PcbStoredFileAssignment>> GetPcbStoredFileAssignmentsAsync(long pcbId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return (_db as BinnerDbV4)?.PcbStoredFileAssignments
+                    .Where(x => x.PcbId == pcbId && x.UserId == userContext?.UserId)
+                    .ToList() ?? new List<PcbStoredFileAssignment>();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<PcbStoredFileAssignment> AddPcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                assignment.PcbStoredFileAssignmentId = _primaryKeyTracker.GetNextKey<PcbStoredFileAssignment>();
+
+                (_db as BinnerDbV4)?.PcbStoredFileAssignments.Add(assignment);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return assignment;
+        }
+
+        public async Task<PcbStoredFileAssignment> UpdatePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
+        {
+            if (assignment == null) throw new ArgumentNullException(nameof(assignment));
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                var existingPcbStoredFileAssignment = ((_db as BinnerDbV4)?.PcbStoredFileAssignments)
+                    ?.FirstOrDefault(x => x.PcbStoredFileAssignmentId.Equals(assignment.PcbStoredFileAssignmentId) && x.UserId == userContext?.UserId);
+                if (existingPcbStoredFileAssignment != null)
+                {
+                    existingPcbStoredFileAssignment = Mapper.Map<PcbStoredFileAssignment, PcbStoredFileAssignment>(assignment, existingPcbStoredFileAssignment, x => x.PcbStoredFileAssignmentId);
+                    existingPcbStoredFileAssignment.PcbStoredFileAssignmentId = assignment.PcbStoredFileAssignmentId;
+                    existingPcbStoredFileAssignment.DateModifiedUtc = DateTime.UtcNow;
+                    _isDirty = true;
+                }
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return assignment;
+        }
+
+        public async Task<bool> RemovePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                var itemRemoved = (_db as BinnerDbV4)?.PcbStoredFileAssignments.Remove(assignment);
+                if (itemRemoved == true)
+                {
+                    var nextPcbStoredFileAssignmentId = ((_db as BinnerDbV4)?.PcbStoredFileAssignments.OrderByDescending(x => x.PcbStoredFileAssignmentId)
+                        .Select(x => x.PcbStoredFileAssignmentId)
+                        .FirstOrDefault() ?? 0);
+                    nextPcbStoredFileAssignmentId++;
+                    _primaryKeyTracker.SetNextKey<PcbStoredFileAssignment>(nextPcbStoredFileAssignmentId);
+                    _isDirty = true;
+                }
+                return itemRemoved == true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectPartAssignmentId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return ((_db as BinnerDbV4)?.ProjectPartAssignments)?.FirstOrDefault(x => x.ProjectPartAssignmentId == projectPartAssignmentId && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(long projectId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return (_db as BinnerDbV4)?.ProjectPartAssignments
+                    .Where(x => x.ProjectId == projectId && x.UserId == userContext?.UserId)
+                    .ToList() ?? new List<ProjectPartAssignment>();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(long projectId, PaginatedRequest request, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
+            try
+            {
+                return (_db as BinnerDbV4)?.ProjectPartAssignments
+                    .Where(x => x.ProjectId == projectId && x.UserId == userContext?.UserId)
+                    .OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "ProjectPartAssignmentId" : request.OrderBy, request.Direction)
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToList() ?? new List<ProjectPartAssignment>();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ProjectPartAssignment> AddProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                assignment.ProjectPartAssignmentId = _primaryKeyTracker.GetNextKey<ProjectPartAssignment>();
+
+                (_db as BinnerDbV4)?.ProjectPartAssignments.Add(assignment);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return assignment;
+        }
+
+        public async Task<ProjectPartAssignment> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
+        {
+            if (assignment == null) throw new ArgumentNullException(nameof(assignment));
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                var existingProjectPartAssignment = ((_db as BinnerDbV4)?.ProjectPartAssignments)
+                    ?.FirstOrDefault(x => x.ProjectPartAssignmentId.Equals(assignment.ProjectPartAssignmentId) && x.UserId == userContext?.UserId);
+                if (existingProjectPartAssignment != null)
+                {
+                    existingProjectPartAssignment = Mapper.Map<ProjectPartAssignment, ProjectPartAssignment>(assignment, existingProjectPartAssignment, x => x.ProjectPartAssignmentId);
+                    existingProjectPartAssignment.ProjectPartAssignmentId = assignment.ProjectPartAssignmentId;
+                    existingProjectPartAssignment.DateModifiedUtc = DateTime.UtcNow;
+                    _isDirty = true;
+                }
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return assignment;
+        }
+
+        public async Task<bool> RemoveProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                var itemRemoved = (_db as BinnerDbV4)?.ProjectPartAssignments.Remove(assignment);
+                if (itemRemoved == true)
+                {
+                    var nextProjectPartAssignmentId = ((_db as BinnerDbV4)?.ProjectPartAssignments.OrderByDescending(x => x.ProjectPartAssignmentId)
+                        .Select(x => x.ProjectPartAssignmentId)
+                        .FirstOrDefault() ?? 0);
+                    nextProjectPartAssignmentId++;
+                    _primaryKeyTracker.SetNextKey<ProjectPartAssignment>(nextProjectPartAssignmentId);
+                    _isDirty = true;
+                }
+                return itemRemoved == true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ProjectPcbAssignment?> GetProjectPcbAssignmentAsync(long projectPcbAssignmentId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return ((_db as BinnerDbV4)?.ProjectPcbAssignments)?.FirstOrDefault(x => x.ProjectPcbAssignmentId == projectPcbAssignmentId && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<ProjectPcbAssignment>> GetProjectPcbAssignmentsAsync(long projectId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return (_db as BinnerDbV4)?.ProjectPcbAssignments
+                    .Where(x => x.ProjectId == projectId && x.UserId == userContext?.UserId)
+                    .ToList() ?? new List<ProjectPcbAssignment>();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ProjectPcbAssignment> AddProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                assignment.ProjectPcbAssignmentId = _primaryKeyTracker.GetNextKey<ProjectPcbAssignment>();
+
+                (_db as BinnerDbV4)?.ProjectPcbAssignments.Add(assignment);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return assignment;
+        }
+
+        public async Task<ProjectPcbAssignment> UpdateProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
+        {
+            if (assignment == null) throw new ArgumentNullException(nameof(assignment));
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                var existingProjectPcbAssignment = ((_db as BinnerDbV4)?.ProjectPcbAssignments)
+                    ?.FirstOrDefault(x => x.ProjectPcbAssignmentId.Equals(assignment.ProjectPcbAssignmentId) && x.UserId == userContext?.UserId);
+                if (existingProjectPcbAssignment != null)
+                {
+                    existingProjectPcbAssignment = Mapper.Map<ProjectPcbAssignment, ProjectPcbAssignment>(assignment, existingProjectPcbAssignment, x => x.ProjectPcbAssignmentId);
+                    existingProjectPcbAssignment.ProjectPcbAssignmentId = assignment.ProjectPcbAssignmentId;
+                    _isDirty = true;
+                }
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return assignment;
+        }
+
+        public async Task<bool> RemoveProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                assignment.UserId = userContext?.UserId;
+                var itemRemoved = (_db as BinnerDbV4)?.ProjectPcbAssignments.Remove(assignment);
+                if (itemRemoved == true)
+                {
+                    var nextProjectPcbAssignmentId = ((_db as BinnerDbV4)?.ProjectPcbAssignments.OrderByDescending(x => x.ProjectPcbAssignmentId)
+                        .Select(x => x.ProjectPcbAssignmentId)
+                        .FirstOrDefault() ?? 0);
+                    nextProjectPcbAssignmentId++;
+                    _primaryKeyTracker.SetNextKey<ProjectPcbAssignment>(nextProjectPcbAssignmentId);
+                    _isDirty = true;
+                }
+                return itemRemoved == true;
             }
             finally
             {
@@ -913,11 +1291,15 @@ namespace Binner.Common.StorageProviders
                         _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>
                         {
                             // there is no guaranteed order so we must sort first
-                            { typeof(Part).Name, Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() + 1, 1) },
-                            { typeof(PartType).Name, Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() + 1, 1) },
-                            { typeof(Project).Name, Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault() + 1, 1) },
-                            { typeof(StoredFile).Name, Math.Max((_db as BinnerDbV3)?.StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() ?? 0 + 1, 1) },
-                            { typeof(OAuthRequest).Name, Math.Max((_db as BinnerDbV3)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { nameof(Part), Math.Max(_db.Parts.OrderByDescending(x => x.PartId).Select(x => x.PartId).FirstOrDefault() + 1, 1) },
+                            { nameof(PartType), Math.Max(_db.PartTypes.OrderByDescending(x => x.PartTypeId).Select(x => x.PartTypeId).FirstOrDefault() + 1, 1) },
+                            { nameof(Project), Math.Max(_db.Projects.OrderByDescending(x => x.ProjectId).Select(x => x.ProjectId).FirstOrDefault() + 1, 1) },
+                            { nameof(StoredFile), Math.Max((_db as BinnerDbV4)?.StoredFiles.OrderByDescending(x => x.StoredFileId).Select(x => x.StoredFileId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { nameof(OAuthRequest), Math.Max((_db as BinnerDbV4)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { nameof(Pcb), Math.Max((_db as BinnerDbV4)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { nameof(PcbStoredFileAssignment), Math.Max((_db as BinnerDbV4)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { nameof(ProjectPartAssignment), Math.Max((_db as BinnerDbV4)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { nameof(ProjectPcbAssignment), Math.Max((_db as BinnerDbV4)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
                         });
                     }
                 }
@@ -955,12 +1337,14 @@ namespace Binner.Common.StorageProviders
             {
                 db = version.Version switch
                 {
-                    // Version 1
-                    BinnerDbV1.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV1>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
-                    // Version 2
-                    BinnerDbV2.VersionNumber => new BinnerDbV3(_serializer.Deserialize<BinnerDbV2>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
-                    // Version 3
-                    BinnerDbV3.VersionNumber => _serializer.Deserialize<BinnerDbV3>(bytes, SerializationOptions),
+                    // Version 1 (upgrade required)
+                    BinnerDbV1.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV1>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    // Version 2 (upgrade required)
+                    BinnerDbV2.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV2>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    // Version 3 (upgrade required)
+                    BinnerDbV3.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV3>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    // Version 4
+                    BinnerDbV4.VersionNumber => _serializer.Deserialize<BinnerDbV4>(bytes, SerializationOptions),
                     _ => throw new InvalidOperationException($"Unsupported database version: {version}"),
                 };
                 return db;
@@ -982,7 +1366,7 @@ namespace Binner.Common.StorageProviders
                 await _dataLock.WaitAsync();
             try
             {
-                var db = _db as BinnerDbV3;
+                var db = _db as BinnerDbV4;
                 if (db == null) return;
 
                 db.FirstPartId = db.Parts
@@ -996,7 +1380,7 @@ namespace Binner.Common.StorageProviders
                 db.Count = db.Parts.Count;
                 db.Checksum = BuildChecksum(db);
                 using var stream = new MemoryStream();
-                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV3.VersionNumber, BinnerDbV3.VersionCreated));
+                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV4.VersionNumber, BinnerDbV4.VersionCreated));
                 var serializedBytes = _serializer.Serialize(db, SerializationOptions);
                 stream.Write(serializedBytes, 0, serializedBytes.Length);
                 var directoryName = Path.GetDirectoryName(_config.Filename);
@@ -1035,11 +1419,16 @@ namespace Binner.Common.StorageProviders
             var created = DateTime.UtcNow;
             _primaryKeyTracker = new PrimaryKeyTracker(new Dictionary<string, long>
             {
-                { typeof(Part).Name, 1 },
-                { typeof(PartType).Name, 1 },
-                { typeof(Project).Name, 1 },
-                { typeof(StoredFile).Name, 1 },
-                { typeof(OAuthRequest).Name, 1 },
+                { nameof(Part), 1 },
+                { nameof(PartType), 1 },
+                { nameof(Project), 1 },
+                { nameof(StoredFile), 1 },
+                { nameof(OAuthRequest), 1 },
+                { nameof(Pcb), 1 },
+                { nameof(PcbStoredFileAssignment), 1 },
+                { nameof(ProjectPartAssignment), 1 },
+                { nameof(ProjectPcbAssignment), 1 },
+                { nameof(OAuthRequest), 1 },
             });
 
             // seed data
@@ -1065,7 +1454,7 @@ namespace Binner.Common.StorageProviders
                 });
             }
 
-            return new BinnerDbV3
+            return new BinnerDbV4
             {
                 Count = 0,
                 FirstPartId = 0,
@@ -1078,6 +1467,10 @@ namespace Binner.Common.StorageProviders
                 OAuthCredentials = new List<OAuthCredential>(),
                 StoredFiles = new List<StoredFile>(),
                 OAuthRequests = new List<OAuthRequest>(),
+                Pcbs = new List<Pcb>(),
+                PcbStoredFileAssignments = new List<PcbStoredFileAssignment>(),
+                ProjectPartAssignments = new List<ProjectPartAssignment>(),
+                ProjectPcbAssignments = new List<ProjectPcbAssignment>()
             };
         }
 

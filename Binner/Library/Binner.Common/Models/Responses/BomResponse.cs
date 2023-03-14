@@ -1,16 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Binner.Common.Models
 {
     /// <summary>
-    /// A user uploaded file
+    /// A user defined project
     /// </summary>
-    public class StoredFileResponse
+    public class BomResponse
     {
         /// <summary>
         /// Primary key
         /// </summary>
-        public long StoredFileId { get; set; }
+        public long ProjectId { get; set; }
 
         /// <summary>
         /// Project name
@@ -28,11 +29,6 @@ namespace Binner.Common.Models
         public string? Location { get; set; }
 
         /// <summary>
-        /// The number of parts assigned to the project
-        /// </summary>
-        public long Parts { get; set; }
-
-        /// <summary>
         /// Project color
         /// </summary>
         public int Color { get; set; }
@@ -41,5 +37,7 @@ namespace Binner.Common.Models
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
+
+        public ICollection<PartResponse> Parts { get; set; } = new List<PartResponse>();
     }
 }

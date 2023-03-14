@@ -1,0 +1,53 @@
+.large {
+	font-weight: 600;
+	font-size: 1.5em;
+}
+
+.datacontainer {
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 10px;
+	text-align: center;
+}
+
+.datacontainer .field {
+	background-color: #f6f6f6;
+	border: 1px solid #ccc;
+	border-left: 1px solid #ccc !important;
+	border-radius: 0px;
+	padding: 5px;
+	margin: 5px !important;
+}
+
+.buttons {
+	margin-bottom: 20px;
+}
+
+.buttons button {
+	margin-right: 10px !important;
+}
+
+.ui.table.bom{
+	font-size: 0.9em;
+	width: 1200px;
+}
+
+input[type=checkbox] {
+	cursor: pointer;
+}
+
+td.overflow>div {
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+td.overflow span {
+	
+}
+
+.scroll-container{
+	display: block;
+	overflow-x: scroll;
+}

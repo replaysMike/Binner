@@ -1,4 +1,5 @@
-﻿using Binner.Model.Common;
+﻿using Binner.Common.Models.Requests;
+using Binner.Model.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -46,5 +47,26 @@ namespace Binner.Common.Services
         /// </summary>
         /// <returns></returns>
         Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request);
+
+        /// <summary>
+        /// Add a part to the project (BOM)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Project?> AddPartAsync(AddBomPartRequest request);
+
+        /// <summary>
+        /// Update part details in project (BOM)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Project?> UpdatePartAsync(UpdateBomPartRequest request);
+
+        /// <summary>
+        /// Remove part from project (BOM)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<bool> RemovePartAsync(RemoveBomPartRequest request);
     }
 }
