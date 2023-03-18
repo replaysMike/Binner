@@ -265,8 +265,8 @@ namespace Binner.Common.Services
 
                         if (performUpdates)
                         {
-                            await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(pcbPart.Part), user);
                             pcbPart.Part.Quantity -= quantityToRemove;
+                            await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(pcbPart.Part), user);
                         }
                     }
 
