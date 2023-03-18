@@ -41,7 +41,7 @@ export function Bom(props) {
   };
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomRecordsPerPage")) || 5);
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(defaultProject);
   const [column, setColumn] = useState(null);
@@ -78,6 +78,7 @@ export function Bom(props) {
     const response = await fetchApi(`bom?name=${projectName}`);
     const { data } = response;
     setProject(data);
+    setTotalPages(Math.ceil(data.parts.length / pageSize));
     setLoading(false);
   };
 
@@ -85,8 +86,16 @@ export function Bom(props) {
     loadProject(props.params.project);
   }, [props.params]);
 
-  const handlePageSizeChange = async (e, pageSize) => {
-    setPageSize(pageSize);
+  const handlePageSizeChange = async (e, control) => {
+    const newPageSize = parseInt(control.value);
+    const newTotalPages = Math.ceil(project.parts.length / newPageSize);
+    setPageSize(newPageSize);
+    setTotalPages(newTotalPages);
+    localStorage.setItem("bomRecordsPerPage", newPageSize);
+    // redirect to the last page if less pages
+    if (page > newTotalPages) {
+      setPage(newTotalPages);
+    }
   };
 
   const handlePageChange = (e, control) => {
@@ -141,6 +150,7 @@ export function Bom(props) {
         checkboxes[i].checked = false;
       }
       setProject({...project, parts: parts});
+      setTotalPages(Math.ceil(parts.length / pageSize));
     }
     else
       toast.error("Failed to remove parts from BOM!");
@@ -225,7 +235,7 @@ export function Bom(props) {
   const getPage = (page, recordCount) => {
     const start = (page - 1) * recordCount;
     const partsPage = [];
-    for(let i = start; i < recordCount; i++) {
+    for(let i = start; i < start + recordCount; i++) {
       if (i < project.parts.length)
         partsPage.push(project.parts[i]);
     }
@@ -258,6 +268,7 @@ export function Bom(props) {
     if (response.ok) {
       const data = await response.json();
       setProject(data);
+      setTotalPages(Math.ceil(data.parts.length / pageSize));
     } else {
       toast.error('Failed to add part!');
     }
