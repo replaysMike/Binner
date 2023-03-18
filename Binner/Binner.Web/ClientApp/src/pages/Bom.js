@@ -1,21 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import {
-  Icon,
-  Input,
-  Label,
-  Button,
-  TextArea,
-  Form,
-  Table,
-  Segment,
-  Popup,
-  Grid,
-  Pagination,
-  Dropdown,
-  Confirm,
-  Breadcrumb
-} from "semantic-ui-react";
+import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import axios from "axios";
 import _ from "underscore";
@@ -53,6 +38,7 @@ export function Bom(props) {
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to remove these part(s) from your BOM?");
   const [isDirty, setIsDirty] = useState(false);
+  const [pageDisabled, setPageDisabled] = useState(false);
 
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -75,16 +61,25 @@ export function Bom(props) {
 
   const loadProject = async (projectName) => {
     setLoading(true);
-    const response = await fetchApi(`bom?name=${projectName}`);
-    const { data } = response;
-    setProject(data);
-    setTotalPages(Math.ceil(data.parts.length / pageSize));
-    setLoading(false);
+    const response = await fetchApi(`bom?name=${projectName}`).catch((c) => {
+      if (c.status === 404) {
+        toast.error(`Could not find project named ${projectName}`);
+        setPageDisabled(true);
+        setLoading(false);
+        return;
+      }
+    });
+    if (response && response.data) {
+      const { data } = response;
+      setProject(data);
+      setTotalPages(Math.ceil(data.parts.length / pageSize));
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     loadProject(props.params.project);
-  }, [props.params]);
+  }, [props.params.project]);
 
   const handlePageSizeChange = async (e, control) => {
     const newPageSize = parseInt(control.value);
@@ -135,25 +130,23 @@ export function Bom(props) {
       projectId: project.projectId,
       ids: checkedValues
     };
-    const response = await fetchApi('bom/part', {
-      method: 'DELETE',
+    const response = await fetchApi("bom/part", {
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
     if (response.responseObject.status === 200) {
-      const parts = _.filter(project.parts, i => !checkedValues.includes(i.projectPartAssignmentId));
+      const parts = _.filter(project.parts, (i) => !checkedValues.includes(i.projectPartAssignmentId));
 
       // also reset the checkboxes
       for (let i = 0; i < checkboxes.length; i++) {
         checkboxes[i].checked = false;
       }
-      setProject({...project, parts: parts});
+      setProject({ ...project, parts: parts });
       setTotalPages(Math.ceil(parts.length / pageSize));
-    }
-    else
-      toast.error("Failed to remove parts from BOM!");
+    } else toast.error("Failed to remove parts from BOM!");
     setLoading(false);
     setBtnDeleteDisabled(true);
     setConfirmDeleteIsOpen(false);
@@ -196,19 +189,17 @@ export function Bom(props) {
   const savePartInlineChange = async (bomPart) => {
     if (!isDirty) return;
     setLoading(true);
-    const request = {...bomPart, quantity: parseInt(bomPart.quantity) || 0, part: {...bomPart.part, quantity: parseInt(bomPart.part.quantity) || 0}};
-    const response = await fetchApi('bom/part', {
-      method: 'PUT',
+    const request = { ...bomPart, quantity: parseInt(bomPart.quantity) || 0, part: { ...bomPart.part, quantity: parseInt(bomPart.part.quantity) || 0 } };
+    const response = await fetchApi("bom/part", {
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
-    }
-    else
-      toast.error("Failed to save project change!");
+    } else toast.error("Failed to save project change!");
     setLoading(false);
     setIsDirty(false);
   };
@@ -216,10 +207,9 @@ export function Bom(props) {
   const handlePartsInlineChange = (e, control, part) => {
     e.preventDefault();
     e.stopPropagation();
-    if (part[control.name] !== control.value)
-      setIsDirty(true);
-    switch(control.name) {
-      case 'quantity':
+    if (part[control.name] !== control.value) setIsDirty(true);
+    switch (control.name) {
+      case "quantity":
         let parsed = parseInt(control.value);
         if (!isNaN(parsed)) {
           part[control.name] = parsed;
@@ -229,22 +219,21 @@ export function Bom(props) {
         part[control.name] = control.value;
         break;
     }
-    setProject({...project});
+    setProject({ ...project });
   };
 
   const getPage = (page, recordCount) => {
     const start = (page - 1) * recordCount;
     const partsPage = [];
-    for(let i = start; i < start + recordCount; i++) {
-      if (i < project.parts.length)
-        partsPage.push(project.parts[i]);
+    for (let i = start; i < start + recordCount; i++) {
+      if (i < project.parts.length) partsPage.push(project.parts[i]);
     }
     return partsPage;
   };
 
   const handleAddPart = async (e, addPartSelectedPart) => {
     if (!addPartSelectedPart) {
-      toast.error('No part selected!');
+      toast.error("No part selected!");
       return;
     }
     // add part to BOM/project
@@ -256,7 +245,7 @@ export function Bom(props) {
       pcbId: addPartSelectedPart.pcbId,
       quantity: addPartSelectedPart.quantity,
       notes: addPartSelectedPart.notes,
-      referenceId: addPartSelectedPart.referenceId,
+      referenceId: addPartSelectedPart.referenceId
     };
     const response = await fetch("bom/part", {
       method: "POST",
@@ -270,7 +259,7 @@ export function Bom(props) {
       setProject(data);
       setTotalPages(Math.ceil(data.parts.length / pageSize));
     } else {
-      toast.error('Failed to add part!');
+      toast.error("Failed to add part!");
     }
     setLoading(false);
   };
@@ -291,9 +280,9 @@ export function Bom(props) {
       const data = await response.json();
       project.pcbs.push(data);
       toast.success(`Added ${pcb.name} pcb to project!`);
-      setProject({...project});
+      setProject({ ...project });
     } else {
-      toast.error('Failed to add pcb!');
+      toast.error("Failed to add pcb!");
     }
     setLoading(false);
   };
@@ -319,15 +308,19 @@ export function Bom(props) {
       toast.error(message, { autoClose: 10000 });
     }
     setLoading(false);
-  };  
+  };
 
   const handleDownload = async (e) => {
     // download a BOM parts list
     setLoading(true);
     axios
-      .post(`bom/download`, { projectId: project.projectId }, {
-        responseType: "blob"
-      })
+      .post(
+        `bom/download`,
+        { projectId: project.projectId },
+        {
+          responseType: "blob"
+        }
+      )
       .then((blob) => {
         // specifying blob filename, must create an anchor tag and use it as suggested: https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
         var file = window.URL.createObjectURL(blob.data);
@@ -354,14 +347,21 @@ export function Bom(props) {
     e.preventDefault();
     e.stopPropagation();
     const checkboxesChecked = getPartsSelected();
-    const selectedPartAssignmentIds = checkboxesChecked.map(c => parseInt(c.value));
+    const selectedPartAssignmentIds = checkboxesChecked.map((c) => parseInt(c.value));
     setConfirmDeleteIsOpen(true);
     setConfirmPartDeleteContent(
       <p>
-        Are you sure you want to remove these <b>{checkboxesChecked.length}</b> part(s) from your BOM?<br />
+        Are you sure you want to remove these <b>{checkboxesChecked.length}</b> part(s) from your BOM?
         <br />
-        <b>{project.parts.filter(p => selectedPartAssignmentIds.includes(p.projectPartAssignmentId)).map(p => p.partName).join(', ')}</b>
-        <br /><br />
+        <br />
+        <b>
+          {project.parts
+            .filter((p) => selectedPartAssignmentIds.includes(p.projectPartAssignmentId))
+            .map((p) => p.partName)
+            .join(", ")}
+        </b>
+        <br />
+        <br />
         This action is <i>permanent and cannot be recovered</i>.
       </p>
     );
@@ -376,15 +376,19 @@ export function Bom(props) {
   return (
     <div>
       <Breadcrumb>
-        <Breadcrumb.Section link onClick={() => props.history("/")}>Home</Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/")}>
+          Home
+        </Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section link onClick={() => props.history("/bom")}>BOMs</Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/bom")}>
+          BOMs
+        </Breadcrumb.Section>
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>BOM</Breadcrumb.Section>
       </Breadcrumb>
       <FormHeader name="Bill of Materials" to="..">
         Manage your BOM by creating PCB(s) and adding your parts.
-			</FormHeader>
+      </FormHeader>
       <AddBomPartModal isOpen={addPartModalOpen} onAdd={handleAddPart} onClose={() => setAddPartModalOpen(false)} pcbs={project.pcbs || []} />
       <AddPcbModal isOpen={addPcbModalOpen} onAdd={handleAddPcb} onClose={() => setAddPcbModalOpen(false)} />
       <ProducePcbModal isOpen={producePcbModalOpen} onSubmit={handleProducePcb} onClose={() => setProducePcbModalOpen(false)} pcbs={project.pcbs || []} />
@@ -398,20 +402,33 @@ export function Bom(props) {
       />
 
       <Form>
-        <Segment className="thicker" {...(_.find(ProjectColors, c => c.value === project.color).name !== '' && { color: _.find(ProjectColors, c => c.value === project.color).name })}>
+        <Segment
+          raised
+          disabled={pageDisabled}
+          className="thicker"
+          {...(_.find(ProjectColors, (c) => c.value === project.color).name !== "" && { color: _.find(ProjectColors, (c) => c.value === project.color).name })}
+        >
           <Grid columns={2}>
             <Grid.Column>
               <span className="large">{project.name}</span>
-              <div style={{float: 'right'}}><Link to={`/project/${project.name}`} className="small">Edit Project</Link></div>
+              <div style={{ float: "right" }}>
+                <Link to={`/project/${project.name}`} className="small">
+                  Edit Project
+                </Link>
+              </div>
             </Grid.Column>
             <Grid.Column>
               <div className="datacontainer">
                 <Form.Group>
                   <Form.Field>
-                    In Stock (<b>{_.filter(project.parts, s => s.part.quantity >= s.quantity).length}</b>)
+                    In Stock (<b>{_.filter(project.parts, (s) => s.part.quantity >= s.quantity).length}</b>)
                   </Form.Field>
                   <Form.Field>
-                    Out of Stock (<b className={`${_.filter(project.parts, s => s.part.quantity < s.quantity).length > 0 ? "outofstock" : ""}`}>{_.filter(project.parts, s => s.part.quantity < s.quantity).length}</b>)
+                    Out of Stock (
+                    <b className={`${_.filter(project.parts, (s) => s.part.quantity < s.quantity).length > 0 ? "outofstock" : ""}`}>
+                      {_.filter(project.parts, (s) => s.part.quantity < s.quantity).length}
+                    </b>
+                    )
                   </Form.Field>
                   <Form.Field>
                     Total Parts (<b>{project.parts.length}</b>)
@@ -429,7 +446,7 @@ export function Bom(props) {
             <Popup
               content="Add a part to the BOM"
               trigger={
-                <Button primary onClick={handleOpenAddPart} size="mini">
+                <Button primary onClick={handleOpenAddPart} size="mini" disabled={pageDisabled}>
                   <Icon name="plus" /> Add Part
                 </Button>
               }
@@ -437,7 +454,7 @@ export function Bom(props) {
             <Popup
               content="Download a BOM part list"
               trigger={
-                <Button onClick={handleDownload} size="mini">
+                <Button onClick={handleDownload} size="mini" disabled={pageDisabled}>
                   <Icon name="download" /> Download
                 </Button>
               }
@@ -454,7 +471,7 @@ export function Bom(props) {
               wide
               content="Add a PCB to this project"
               trigger={
-                <Button onClick={handleOpenAddPcb} size="mini">
+                <Button onClick={handleOpenAddPcb} size="mini" disabled={pageDisabled}>
                   <Icon name="microchip" color="blue" /> Add PCB
                 </Button>
               }
@@ -463,12 +480,11 @@ export function Bom(props) {
               wide
               content="Reduce inventory quantities when a PCB is assembled"
               trigger={
-                <Button secondary onClick={handleOpenProducePcb} size="mini">
+                <Button secondary onClick={handleOpenProducePcb} size="mini" disabled={pageDisabled}>
                   <Icon name="microchip" color="blue" /> Produce PCB
                 </Button>
               }
             />
-
           </div>
 
           <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em", marginTop: "5px" }}>
@@ -483,7 +499,7 @@ export function Bom(props) {
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell></Table.HeaderCell>
-                    <Table.HeaderCell style={{width: '120px'}} sorted={column === "PCB" ? direction : null} onClick={handleSort("PCB")}>
+                    <Table.HeaderCell style={{ width: "120px" }} sorted={column === "PCB" ? direction : null} onClick={handleSort("PCB")}>
                       PCB
                     </Table.HeaderCell>
                     <Table.HeaderCell width={2} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
@@ -492,7 +508,7 @@ export function Bom(props) {
                     <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
                       Mfr Part
                     </Table.HeaderCell>
-                    <Table.HeaderCell style={{width: '100px'}} sorted={column === "partType" ? direction : null} onClick={handleSort("partType")}>
+                    <Table.HeaderCell style={{ width: "100px" }} sorted={column === "partType" ? direction : null} onClick={handleSort("partType")}>
                       Part Type
                     </Table.HeaderCell>
                     <Table.HeaderCell sorted={column === "cost" ? direction : null} onClick={handleSort("cost")}>
@@ -507,7 +523,7 @@ export function Bom(props) {
                     <Table.HeaderCell sorted={column === "leadTime" ? direction : null} onClick={handleSort("leadTime")}>
                       Lead Time
                     </Table.HeaderCell>
-                    <Table.HeaderCell style={{width: '110px'}} sorted={column === "referenceId" ? direction : null} onClick={handleSort("referenceId")}>
+                    <Table.HeaderCell style={{ width: "110px" }} sorted={column === "referenceId" ? direction : null} onClick={handleSort("referenceId")}>
                       Reference Id
                     </Table.HeaderCell>
                     <Table.HeaderCell style={{ width: "200px" }} sorted={column === "description" ? direction : null} onClick={handleSort("description")}>
@@ -524,19 +540,41 @@ export function Bom(props) {
                       <Table.Cell>
                         <input type="checkbox" name="chkSelect" value={bomPart.projectPartAssignmentId} onChange={(e) => handlePartSelected(e, bomPart)} />
                       </Table.Cell>
-                      <Table.Cell className="overflow"><div style={{ maxWidth: "120px" }}>{_.find(project.pcbs, x => x.pcbId === bomPart.pcbId)?.name}</div></Table.Cell>
+                      <Table.Cell className="overflow">
+                        <div style={{ maxWidth: "120px" }}>{_.find(project.pcbs, (x) => x.pcbId === bomPart.pcbId)?.name}</div>
+                      </Table.Cell>
                       <Table.Cell>
-                        {bomPart.part 
-                        ? <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link>
-                        : bomPart.partName}
+                        {bomPart.part ? <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link> : bomPart.partName}
                       </Table.Cell>
                       <Table.Cell>{bomPart.part.manufacturerPartNumber}</Table.Cell>
                       <Table.Cell>{bomPart.part.partType}</Table.Cell>
                       <Table.Cell>{formatCurrency(bomPart.part.cost)}</Table.Cell>
-                      <Table.Cell><Input type='text' transparent name='quantity' onBlur={e => saveColumn(e, bomPart)} onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)} value={bomPart.quantity || 0} fluid className={`inline-editable ${(bomPart.quantity > bomPart.part.quantity ? "outofstock" : "")}`} /></Table.Cell>
+                      <Table.Cell>
+                        <Input
+                          type="text"
+                          transparent
+                          name="quantity"
+                          onBlur={(e) => saveColumn(e, bomPart)}
+                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                          value={bomPart.quantity || 0}
+                          fluid
+                          className={`inline-editable ${bomPart.quantity > bomPart.part.quantity ? "outofstock" : ""}`}
+                        />
+                      </Table.Cell>
                       <Table.Cell>{bomPart.part.quantity}</Table.Cell>
                       <Table.Cell>{bomPart.part.leadTime}</Table.Cell>
-                      <Table.Cell><Input type='text' transparent name='referenceId' onBlur={e => saveColumn(e, bomPart)} onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)} value={bomPart.referenceId || ''} fluid className="inline-editable" /></Table.Cell>
+                      <Table.Cell>
+                        <Input
+                          type="text"
+                          transparent
+                          name="referenceId"
+                          onBlur={(e) => saveColumn(e, bomPart)}
+                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                          value={bomPart.referenceId || ""}
+                          fluid
+                          className="inline-editable"
+                        />
+                      </Table.Cell>
                       <Table.Cell className="overflow">
                         <div style={{ width: "250px" }}>
                           <Popup hoverable content={<p>{bomPart.part.description}</p>} trigger={<span>{bomPart.part.description}</span>} />
@@ -544,7 +582,16 @@ export function Bom(props) {
                       </Table.Cell>
                       <Table.Cell>
                         <div style={{ maxWidth: "250px" }}>
-                          <Form.Field type='text' control={TextArea} style={{height: '50px', minHeight: '50px', padding: '5px'}} name='notes' onBlur={e => saveColumn(e, bomPart)} onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)} value={bomPart.notes || ''} className="transparent inline-editable" />
+                          <Form.Field
+                            type="text"
+                            control={TextArea}
+                            style={{ height: "50px", minHeight: "50px", padding: "5px" }}
+                            name="notes"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.notes || ""}
+                            className="transparent inline-editable"
+                          />
                         </div>
                       </Table.Cell>
                     </Table.Row>

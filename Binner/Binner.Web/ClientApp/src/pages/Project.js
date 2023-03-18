@@ -43,6 +43,8 @@ export function Project(props) {
 	const [confirmPcbDeleteContent, setConfirmDeletePcbContent] = useState("Are you sure you want to delete this PCB and it's part(s) from your BOM?");
 	const [selectedPcb, setSelectedPcb] = useState(null);
 	const [btnSubmitDisabled, setBtnSubmitDisabled] = useState(false);
+	const [btnDeleteDisabled, setBtnDeleteDisabled] = useState(false);
+	const [pageDisabled, setPageDisabled] = useState(false);
 	
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -61,6 +63,10 @@ export function Project(props) {
 			.catch(c => {
 				if (c.status === 404){
 					toast.error(`Could not find a project named '${projectName}'`);
+					setBtnSubmitDisabled(true);
+					setBtnDeleteDisabled(true);
+					setPageDisabled(true);
+					setLoading(false);
 					return;	
 				}
 			});
@@ -164,7 +170,8 @@ export function Project(props) {
     });
     if (response.ok) {
       const data = await response.json();
-			props.history(-1);
+			// redirect if name changed to new name
+			props.history(`/project/${data.name}`);
 			toast.success('Project saved!');
     } else {
       toast.error('Failed to save project!');
@@ -248,7 +255,7 @@ export function Project(props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>Edit Project</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name="Edit Project" to="..">
+      <FormHeader name="Edit Project" to={`/bom/${project.name}`}>
         Projects are used as part of your BOM, allowing you to associate parts to multiple PCBs.
 			</FormHeader>
       <Confirm
@@ -269,7 +276,7 @@ export function Project(props) {
       />
 
       <Form onSubmit={handleSaveProject}>
-        <Segment>
+        <Segment raised disabled={pageDisabled}>
           <Form.Field width={4}>
 						<Popup
                 wide
@@ -303,10 +310,10 @@ export function Project(props) {
 						/>
 					</Form.Group>
 					<Button primary type="submit" disabled={btnSubmitDisabled}><Icon name="save" /> Save</Button>
-					<Button onClick={confirmDeleteProjectOpen}><Icon name="trash" /> Delete</Button>
+					<Button onClick={confirmDeleteProjectOpen} disabled={btnDeleteDisabled}><Icon name="trash" /> Delete</Button>
         </Segment>
 
-				<Segment>
+				<Segment disabled={pageDisabled}>
 					<h2>PCBs</h2>
 					<Table>
 						<Table.Header>
