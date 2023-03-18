@@ -398,7 +398,7 @@ export function Bom(props) {
       />
 
       <Form>
-        <Segment>
+        <Segment className="thicker" {...(_.find(ProjectColors, c => c.value === project.color).name !== '' && { color: _.find(ProjectColors, c => c.value === project.color).name })}>
           <Grid columns={2}>
             <Grid.Column>
               <span className="large">{project.name}</span>

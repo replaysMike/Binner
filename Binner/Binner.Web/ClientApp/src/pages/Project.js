@@ -164,7 +164,7 @@ export function Project(props) {
     });
     if (response.ok) {
       const data = await response.json();
-			props.history(`/project/${data.name}`);
+			props.history(-1);
 			toast.success('Project saved!');
     } else {
       toast.error('Failed to save project!');

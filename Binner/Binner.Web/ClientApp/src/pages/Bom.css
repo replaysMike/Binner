@@ -3,6 +3,20 @@
 	font-size: 2em;
 }
 
+.ui.segment.thicker,
+.ui.red.segment.thicker,
+.ui.blue.segment.thicker,
+.ui.black.segment.thicker,
+.ui.green.segment.thicker,
+.ui.orange.segment.thicker,
+.ui.purple.segment.thicker,
+.ui.yellow.segment.thicker,
+.ui.pink.segment.thicker,
+.ui.grey.segment.thicker,
+.ui.voilet.segment.thicker {
+	border-top-width: 5px !important;
+}
+
 .datacontainer {
 	border: 1px solid #ccc;
 	border-radius: 4px;
