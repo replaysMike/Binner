@@ -197,6 +197,7 @@ const invokeErrorHandler = async (response) => {
     status: response.status,
     ...responseObject,
   };
-  window.showErrorWindow(errorObject);
+  if (window && window.showErrorWindow)
+    window.showErrorWindow(errorObject);
   return Promise.reject(response);
 };

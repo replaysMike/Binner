@@ -2,7 +2,6 @@
 using AnySerializer;
 using Binner.Common.Extensions;
 using Binner.Model.Common;
-using NPOI.HPSF;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -264,7 +263,11 @@ namespace Binner.Common.StorageProviders
             try
             {
                 part.UserId = userContext?.UserId;
-                var itemRemoved = _db.Parts.Remove(part);
+                var entity = (_db as BinnerDbV4)?.Parts
+                    .FirstOrDefault(x => x.PartId == part.PartId && x.UserId == part.UserId);
+                if (entity == null)
+                    return false;
+                var itemRemoved = _db.Parts.Remove(entity);
                 if (itemRemoved)
                 {
                     var nextPartId = _db.Parts.OrderByDescending(x => x.PartId)
@@ -542,7 +545,11 @@ namespace Binner.Common.StorageProviders
             try
             {
                 partType.UserId = userContext?.UserId;
-                var itemRemoved = _db.PartTypes.Remove(partType);
+                var entity = (_db as BinnerDbV4)?.PartTypes
+                    .FirstOrDefault(x => x.PartTypeId == partType.PartTypeId && x.UserId == partType.UserId);
+                if (entity == null)
+                    return false;
+                var itemRemoved = _db.PartTypes.Remove(entity);
                 if (itemRemoved)
                 {
                     var nextPartTypeId = _db.PartTypes.OrderByDescending(x => x.PartTypeId)
@@ -565,7 +572,11 @@ namespace Binner.Common.StorageProviders
             try
             {
                 project.UserId = userContext?.UserId;
-                var itemRemoved = _db.Projects.Remove(project);
+                var entity = (_db as BinnerDbV4)?.Projects
+                    .FirstOrDefault(x => x.ProjectId == project.ProjectId && x.UserId == project.UserId);
+                if (entity == null)
+                    return false;
+                var itemRemoved = _db.Projects.Remove(entity);
                 if (itemRemoved)
                 {
                     var nextProjectId = _db.Projects.OrderByDescending(x => x.ProjectId)
@@ -672,7 +683,11 @@ namespace Binner.Common.StorageProviders
             try
             {
                 storedFile.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV4)?.StoredFiles.Remove(storedFile);
+                var entity = (_db as BinnerDbV4)?.StoredFiles
+                    .FirstOrDefault(x => x.StoredFileId == storedFile.StoredFileId && x.UserId == storedFile.UserId);
+                if (entity == null)
+                    return false;
+                var itemRemoved = (_db as BinnerDbV4)?.StoredFiles.Remove(entity);
                 if (itemRemoved == true)
                 {
                     var nextStoredFileId = ((_db as BinnerDbV4)?.StoredFiles.OrderByDescending(x => x.StoredFileId)
@@ -806,12 +821,38 @@ namespace Binner.Common.StorageProviders
             }
         }
 
+        #region BinnerDb V4
+        
         public async Task<Pcb?> GetPcbAsync(long pcbId, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
             try
             {
                 return ((_db as BinnerDbV4)?.Pcbs)?.FirstOrDefault(x => x.PcbId == pcbId && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<Pcb>> GetPcbsAsync(long projectId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                var pcbs = new List<Pcb>();
+                var assignments = (_db as BinnerDbV4)?.ProjectPcbAssignments
+                    .Where(x => x.ProjectId == projectId && x.UserId == userContext?.UserId)
+                    .ToList() ?? new List<ProjectPcbAssignment>();
+
+                foreach (var assignment in assignments)
+                {
+                    var pcb = (_db as BinnerDbV4)?.Pcbs.FirstOrDefault(x => x.PcbId == assignment.PcbId);
+                    if (pcb != null)
+                        pcbs.Add(pcb);
+                }
+                return pcbs;
             }
             finally
             {
@@ -867,7 +908,13 @@ namespace Binner.Common.StorageProviders
             try
             {
                 pcb.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV4)?.Pcbs.Remove(pcb);
+                // first get the full entity
+                var pcbEntity = (_db as BinnerDbV4)?.Pcbs
+                    .FirstOrDefault(x => x.PcbId == pcb.PcbId && x.UserId == pcb.UserId);
+                if (pcbEntity == null)
+                    return false;
+
+                var itemRemoved = (_db as BinnerDbV4)?.Pcbs.Remove(pcbEntity);
                 if (itemRemoved == true)
                 {
                     var nextPcbId = ((_db as BinnerDbV4)?.Pcbs.OrderByDescending(x => x.PcbId)
@@ -961,7 +1008,15 @@ namespace Binner.Common.StorageProviders
             try
             {
                 assignment.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV4)?.PcbStoredFileAssignments.Remove(assignment);
+                // first get the full entity
+                var assignmentEntity = (_db as BinnerDbV4)?.PcbStoredFileAssignments
+                    .FirstOrDefault(x => assignment.PcbStoredFileAssignmentId > 0 
+                        ? x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId 
+                        : (x.PcbId == assignment.PcbId && x.StoredFileId == assignment.StoredFileId) 
+                          && x.UserId == assignment.UserId);
+                if (assignmentEntity == null)
+                    return false;
+                var itemRemoved = (_db as BinnerDbV4)?.PcbStoredFileAssignments.Remove(assignmentEntity);
                 if (itemRemoved == true)
                 {
                     var nextPcbStoredFileAssignmentId = ((_db as BinnerDbV4)?.PcbStoredFileAssignments.OrderByDescending(x => x.PcbStoredFileAssignmentId)
@@ -985,6 +1040,47 @@ namespace Binner.Common.StorageProviders
             try
             {
                 return ((_db as BinnerDbV4)?.ProjectPartAssignments)?.FirstOrDefault(x => x.ProjectPartAssignmentId == projectPartAssignmentId && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<ProjectPartAssignment>> GetPartAssignmentsAsync(long partId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return (_db as BinnerDbV4)?.ProjectPartAssignments
+                    .Where(x => x.PartId == partId && x.UserId == userContext?.UserId)
+                    .ToList() ?? new List<ProjectPartAssignment>();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectId, long partId, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return ((_db as BinnerDbV4)?.ProjectPartAssignments)?.FirstOrDefault(x => x.ProjectId == projectId && x.PartId == partId && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectId, string partName, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                return ((_db as BinnerDbV4)?.ProjectPartAssignments)?.FirstOrDefault(x => x.ProjectId == projectId && x.PartName != null && x.PartName.Equals(partName, StringComparison.InvariantCultureIgnoreCase) && x.UserId == userContext?.UserId);
             }
             finally
             {
@@ -1074,7 +1170,15 @@ namespace Binner.Common.StorageProviders
             try
             {
                 assignment.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV4)?.ProjectPartAssignments.Remove(assignment);
+                // first get the full entity
+                var assignmentEntity = (_db as BinnerDbV4)?.ProjectPartAssignments
+                    .FirstOrDefault(x => assignment.ProjectPartAssignmentId > 0 
+                        ? x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId 
+                        : (x.ProjectId == assignment.ProjectId && x.PcbId == assignment.PcbId) 
+                          && x.UserId == assignment.UserId);
+                if (assignmentEntity == null)
+                    return false;
+                var itemRemoved = (_db as BinnerDbV4)?.ProjectPartAssignments.Remove(assignmentEntity);
                 if (itemRemoved == true)
                 {
                     var nextProjectPartAssignmentId = ((_db as BinnerDbV4)?.ProjectPartAssignments.OrderByDescending(x => x.ProjectPartAssignmentId)
@@ -1167,7 +1271,15 @@ namespace Binner.Common.StorageProviders
             try
             {
                 assignment.UserId = userContext?.UserId;
-                var itemRemoved = (_db as BinnerDbV4)?.ProjectPcbAssignments.Remove(assignment);
+                // first get the full entity
+                var assignmentEntity = (_db as BinnerDbV4)?.ProjectPcbAssignments
+                    .FirstOrDefault(x => assignment.ProjectPcbAssignmentId > 0 
+                        ? x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId 
+                        : (x.ProjectId == assignment.ProjectId && x.PcbId == assignment.PcbId) 
+                        && x.UserId == assignment.UserId);
+                if (assignmentEntity == null)
+                    return false;
+                var itemRemoved = (_db as BinnerDbV4)?.ProjectPcbAssignments.Remove(assignmentEntity);
                 if (itemRemoved == true)
                 {
                     var nextProjectPcbAssignmentId = ((_db as BinnerDbV4)?.ProjectPcbAssignments.OrderByDescending(x => x.ProjectPcbAssignmentId)
@@ -1184,6 +1296,8 @@ namespace Binner.Common.StorageProviders
                 _dataLock.Release();
             }
         }
+
+        #endregion
 
         private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType, IUserContext? userContext)
         {
@@ -1332,17 +1446,22 @@ namespace Binner.Common.StorageProviders
         private IBinnerDb LoadDatabaseByVersion(BinnerDbVersion version, byte[] bytes)
         {
             IBinnerDb db;
+            // note about PropertyVersion:
+            // specify the latest version(s) in PropertyVersion, so we can deserialize older databases that don't have these properties
+            // as new databases are created, we need to skip properties tagged with the appropriate versions (except the latest)
+            // todo: a better more permanent solution is needed, by switching to an internal database that is parsed and not serialized.
+            //       Maybe time to use a file based sql solution even if it will be slightly slower.
             // Support database loading by version number
             try
             {
                 db = version.Version switch
                 {
                     // Version 1 (upgrade required)
-                    BinnerDbV1.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV1>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    BinnerDbV1.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV1>(bytes, SerializationOptions, new PropertyVersion("BinnerDbV4")), (upgradeDb) => BuildChecksum(upgradeDb)),
                     // Version 2 (upgrade required)
-                    BinnerDbV2.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV2>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    BinnerDbV2.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV2>(bytes, SerializationOptions, new PropertyVersion("BinnerDbV4")), (upgradeDb) => BuildChecksum(upgradeDb)),
                     // Version 3 (upgrade required)
-                    BinnerDbV3.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV3>(bytes, SerializationOptions), (upgradeDb) => BuildChecksum(upgradeDb)),
+                    BinnerDbV3.VersionNumber => new BinnerDbV4(_serializer.Deserialize<BinnerDbV3>(bytes, SerializationOptions, new PropertyVersion("BinnerDbV4")), (upgradeDb) => BuildChecksum(upgradeDb)),
                     // Version 4
                     BinnerDbV4.VersionNumber => _serializer.Deserialize<BinnerDbV4>(bytes, SerializationOptions),
                     _ => throw new InvalidOperationException($"Unsupported database version: {version}"),

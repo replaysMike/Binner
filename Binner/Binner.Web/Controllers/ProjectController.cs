@@ -53,18 +53,7 @@ namespace Binner.Web.Controllers
             
             if (project == null) return NotFound();
             
-            var bomResponse = Mapper.Map<Project, BomResponse>(project);
-            var partsForProject = await _partService.GetPartsAsync(x => x.ProjectId == project.ProjectId);
-            bomResponse.Parts = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(partsForProject);
-            var partTypes = await _partService.GetPartTypesAsync();
-            foreach (var part in bomResponse.Parts)
-            {
-                part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
-                part.MountingType = ((MountingType)part.MountingTypeId).ToString();
-                part.Keywords = string.Join(" ", partsForProject.First(x => x.PartId == part.PartId).Keywords ?? new List<string>());
-            }
-
-            return Ok(bomResponse);
+            return Ok(Mapper.Map<Project, ProjectResponse>(project));
         }
 
         /// <summary>
@@ -119,52 +108,12 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> DeletePartAsync(DeleteProjectRequest request)
+        public async Task<IActionResult> DeleteProjectAsync(DeleteProjectRequest request)
         {
             var isDeleted = await _projectService.DeleteProjectAsync(new Project
             {
                 ProjectId = request.ProjectId
             });
-            return Ok(isDeleted);
-        }
-
-        /// <summary>
-        /// Add part to project (BOM)
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpPost("part")]
-        public async Task<IActionResult> AddPartProjectAsync(AddBomPartRequest request)
-        {
-            var project = await _projectService.AddPartAsync(request);
-            if (project == null)
-                return NotFound();
-            return Ok(project);
-        }
-
-        /// <summary>
-        /// Update part details in project (BOM)
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpPut("part")]
-        public async Task<IActionResult> UpdatePartProjectAsync(UpdateBomPartRequest request)
-        {
-            var project = await _projectService.UpdatePartAsync(request);
-            if (project == null)
-                return NotFound();
-            return Ok(project);
-        }
-
-        /// <summary>
-        /// Remove a part from a project (BOM)
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpDelete("part")]
-        public async Task<IActionResult> RemovePartProjectAsync(RemoveBomPartRequest request)
-        {
-            var isDeleted = await _projectService.RemovePartAsync(request);
             return Ok(isDeleted);
         }
     }

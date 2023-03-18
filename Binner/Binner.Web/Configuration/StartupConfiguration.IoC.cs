@@ -96,6 +96,7 @@ namespace Binner.Web.Configuration
             container.Register<IPartService, PartService>(new PerScopeLifetime());
             container.Register<IPartTypeService, PartTypeService>(new PerScopeLifetime());
             container.Register<IProjectService, ProjectService>(new PerScopeLifetime());
+            container.Register<IPcbService, PcbService>(new PerScopeLifetime());
             container.Register<ICredentialService, CredentialService>(new PerScopeLifetime());
             container.Register<ISettingsService, SettingsService>(new PerScopeLifetime());
             container.Register<ISwarmService, SwarmService>(new PerScopeLifetime());

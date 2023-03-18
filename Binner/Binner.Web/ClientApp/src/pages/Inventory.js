@@ -30,6 +30,7 @@ import {
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
+import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
 import Dropzone from "../components/Dropzone";
 import { ProjectColors } from "../common/Types";
@@ -51,7 +52,7 @@ export function Inventory(props) {
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
     lastPartTypeId: 14, // IC
-    lastMountingTypeId: 1, // Through Hole
+    lastMountingTypeId: "0", // None
     lastQuantity: 1,
     lastProjectId: null,
     lastLocation: "",
@@ -75,7 +76,7 @@ export function Inventory(props) {
     quantity: viewPreferences.lastQuantity + "",
     lowStockThreshold: viewPreferences.lowStockThreshold + "",
     partTypeId: viewPreferences.lastPartTypeId || 14,
-    mountingTypeId: viewPreferences.lastMountingTypeId || 1,
+    mountingTypeId: (viewPreferences.lastMountingTypeId || 0) + "",
     packageType: "",
     keywords: "",
     description: "",
@@ -99,18 +100,18 @@ export function Inventory(props) {
   };
   const defaultMountingTypes = [
     {
-      key: 999,
-      value: null,
-      text: ""
+      key: 0,
+      value: "0", /** using strings here because semantic doesnt allow selection of value=0 */
+      text: "None"
     },
     {
       key: 1,
-      value: 1,
+      value: "1",
       text: "Through Hole"
     },
     {
       key: 2,
-      value: 2,
+      value: "2",
       text: "Surface Mount"
     }
   ];
@@ -132,7 +133,7 @@ export function Inventory(props) {
   const [confirmDeleteLocalFileIsOpen, setConfirmDeleteLocalFileIsOpen] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [mountingTypes, setMountingTypes] = useState(defaultMountingTypes);
+  const [mountingTypes] = useState(defaultMountingTypes);
   const [loadingPartMetadata, setLoadingPartMetadata] = useState(true);
   const [loadingPartTypes, setLoadingPartTypes] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -412,7 +413,7 @@ export function Inventory(props) {
           partNumber: cleanPartNumber, 
           quantity: input.value.quantity || "1", 
           partTypeId: -1,
-          mountingTypeId: -1,
+          mountingTypeId: "-1",
         };
         setPart(newPart);
         if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: newPart.quantity});
@@ -482,7 +483,9 @@ export function Inventory(props) {
         signal: Inventory.partAbortController.signal
       });
       const { data } = response;
-      setPart(data);
+      const mappedPart = {...data, mountingTypeId: data.mountingTypeId + ""};
+      console.log('data', mappedPart);
+      setPart(mappedPart);
       setLoadingPartMetadata(false);
       return data;
     } catch (ex) {
@@ -550,8 +553,10 @@ export function Inventory(props) {
   };
 
   const getMountingTypeById = (mountingTypeId) => {
-    switch (mountingTypeId) {
+    switch (parseInt(mountingTypeId)) {
       default:
+      case 0:
+        return "none";
       case 1:
         return "through hole";
       case 2:
@@ -681,7 +686,7 @@ export function Inventory(props) {
       quantity: (clearAll || !viewPreferences.rememberLast) ? "1" : viewPreferences.lastQuantity + "",
       lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? "10" : viewPreferences.lowStockThreshold + "",
       partTypeId: (clearAll || !viewPreferences.rememberLast) ? 14 : viewPreferences.lastPartTypeId,
-      mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? 1 : viewPreferences.lastMountingTypeId,
+      mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? "0" : viewPreferences.lastMountingTypeId + "",
       packageType: "",
       keywords: "",
       description: "",
@@ -786,6 +791,7 @@ export function Inventory(props) {
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
       case "mountingTypeId":
+        console.log('mounting type', control.value);
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastMountingTypeId: control.value});
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
@@ -827,7 +833,7 @@ export function Inventory(props) {
     const mappedPart = {
       partNumber: suggestedPart.basePartNumber,
       partTypeId: getPartTypeId(suggestedPart.partType, partTypesRef.current),
-      mountingTypeId: suggestedPart.mountingTypeId,
+      mountingTypeId: suggestedPart.mountingTypeId + "",
       packageType: suggestedPart.packageType,
       keywords: suggestedPart.keywords && suggestedPart.keywords.join(" ").toLowerCase(),
       description: suggestedPart.description,
@@ -841,11 +847,12 @@ export function Inventory(props) {
       imageUrl: suggestedPart.imageUrl,
       status: suggestedPart.status
     };
+    console.log('suggestedPart', mappedPart);
     entity.partNumber = mappedPart.partNumber;
     entity.supplier = mappedPart.supplier;
     entity.supplierPartNumber = mappedPart.supplierPartNumber;
     if (mappedPart.partTypeId) entity.partTypeId = mappedPart.partTypeId || "";
-    if (mappedPart.mountingTypeId) entity.mountingTypeId = mappedPart.mountingTypeId || "";
+    if (mappedPart.mountingTypeId) entity.mountingTypeId = (mappedPart.mountingTypeId || "") + "";
     entity.packageType = mappedPart.packageType || "";
     entity.cost = mappedPart.cost || 0.0;
     entity.keywords = mappedPart.keywords || "";
@@ -1440,7 +1447,8 @@ export function Inventory(props) {
           </Button>
         )}
         {part.partNumber && <Image src={"/part/preview?partNumber=" + part.partNumber} width={180} floated="right" style={{ marginTop: "0px" }} />}
-        <h1 style={{ display: "inline-block", marginRight: "30px" }}>{title}</h1>
+        <FormHeader name={title} to="..">
+        </FormHeader>
         {!isEditing &&
           <Popup
             wide
@@ -1525,7 +1533,7 @@ export function Inventory(props) {
                   placeholder="Mounting Type"
                   search
                   selection
-                  value={part.mountingTypeId || ""}
+                  value={(part.mountingTypeId || "") + ""}
                   options={mountingTypes}
                   onChange={handleChange}
                   name="mountingTypeId"
@@ -1571,19 +1579,6 @@ export function Inventory(props) {
                       onBlur={enableKeyboardListening}
                     />
                   }
-                />
-                <Form.Dropdown
-                  label="Project"
-                  placeholder="My Project"
-                  loading={loadingProjects}
-                  search
-                  selection
-                  value={part.projectId || ""}
-                  options={projects}
-                  onChange={handleChange}
-                  name="projectId"
-                  onFocus={disableKeyboardListening}
-                  onBlur={enableKeyboardListening}
                 />
               </Form.Group>
 

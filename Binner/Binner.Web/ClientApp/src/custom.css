@@ -8,6 +8,10 @@
     }
 }
 
+h1>a,h1>a:hover {
+    text-decoration: none !important;
+}
+
 .ui.statistic {
     display: -webkit-box;
     margin: 10px auto 10px auto !important;

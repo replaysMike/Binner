@@ -3,6 +3,7 @@ import _ from "underscore";
 import { Table, Input, Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
+import { FormHeader } from "../components/FormHeader";
 
 export function PartTypes(props) {
   const defaultPartType = {
@@ -24,6 +25,7 @@ export function PartTypes(props) {
   const [loadingAllPartTypes, setLoadingAllPartTypes] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [selectedPartType, setSelectedPartType] = useState(null);
+  const [chkHideEmptyTypes, setChkHideEmptyTypes] = useState(false);
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete this part?");
 
   const loadPartTypes = useCallback((parentPartType = "") => {
@@ -228,7 +230,6 @@ export function PartTypes(props) {
 
   return (
     <div>
-      <h1>Part Types</h1>
       <Breadcrumb>
         <Breadcrumb.Section href="/">Home</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -240,20 +241,28 @@ export function PartTypes(props) {
             </React.Fragment> 
           : <Breadcrumb.Section active>Part Types</Breadcrumb.Section>}
       </Breadcrumb>
-      <p>
+      <FormHeader name="Part Types" to="..">
         Part Types allow you to separate your parts by type. <i>Parent</i> types allow for unlimited part type hierarchy.
         <br />
         For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.
+			</FormHeader>
+      <p>
       </p>
       <Confirm className="confirm" header='Delete Part' open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDelete} content={confirmPartDeleteContent} />
 
       <Segment loading={loading}>
+        <div style={{float: 'left'}}>
+          <Popup 
+            content="Hide part types that have no parts assigned"
+            trigger={<Form.Checkbox toggle label="Hide Empty Types" name="filterEmpty" onChange={(e, control) => setChkHideEmptyTypes(!chkHideEmptyTypes)} />}
+          />          
+        </div>
         <div style={{ minHeight: "35px" }}>
-        {parentPartType && <Button size="mini" onClick={handleUnsetParentPartType}><Icon name="arrow alternate circle left"/> Back</Button>}
           <Button onClick={handleShowAdd} icon size="mini" floated="right">
             <Icon name="file" /> Add Part Type
           </Button>
         </div>
+        {parentPartType && <Button size="mini" onClick={handleUnsetParentPartType}><Icon name="arrow alternate circle left"/> Back</Button>}
         <div>
           {addVisible && (
             <Segment>
@@ -285,19 +294,31 @@ export function PartTypes(props) {
               <Table.HeaderCell width={3} sorted={column === "parentPartTypeId" ? direction : null} onClick={handleSort("location")}>
                 Parent
               </Table.HeaderCell>
-              <Table.HeaderCell sorted={column === "parts" ? direction : null} onClick={handleSort("parts")}>
+              <Table.HeaderCell width={2} sorted={column === "parts" ? direction : null} onClick={handleSort("parts")}>
                 Parts Count
               </Table.HeaderCell>
-              <Table.HeaderCell width={3}></Table.HeaderCell>
+              <Table.HeaderCell width={2}></Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {partTypes.map((p) => (
+            {parentPartType && 
+            <Table.Row key={-1}>
+              <Table.Cell colSpan={2} style={{fontSize: '1.2em', marginLeft: '5px'}}><div style={{border: '1px solid #0d3d61', borderRadius: '4px', fontSize: '0.8em', color: '#fff', backgroundColor: '#2185d0', display: 'inline-block', padding: '1px 5px', marginRight: '10px'}}>Parent</div> <b>{parentPartType.name}</b></Table.Cell>
+              <Table.Cell>{parentPartType.parts}</Table.Cell>
+              <Table.Cell></Table.Cell>
+            </Table.Row>
+            }
+            {partTypes.length > 0 
+            ? partTypes.map((p) => (
+              chkHideEmptyTypes && p.parts === 0 
+              ? ""
+              :
               <Table.Row key={p.partTypeId} onClick={(e) => handleEditRow(e, p)} className="clickablerow">
                 <Table.Cell>
                   <Popup 
                     content="Edit the part type name"
                     trigger={<Input
+                      width={4}
                       labelPosition="left"
                       type="text"
                       transparent
@@ -308,7 +329,7 @@ export function PartTypes(props) {
                       value={p.name || ""}
                       fluid
                     />}
-                  />                  
+                  />
                 </Table.Cell>
                 <Table.Cell>{p.parentPartType}</Table.Cell>
                 <Table.Cell>{p.parts}</Table.Cell>
@@ -316,7 +337,12 @@ export function PartTypes(props) {
                   {!p.isSystem ? <Button icon="delete" size="tiny" onClick={(e) => confirmDeleteOpen(e, p)} /> : "System Type"}
                 </Table.Cell>
               </Table.Row>
-            ))}
+            ))
+            : <Table.Row>
+              <Table.Cell colSpan={4} textAlign='center'>
+                There are no child part types.
+              </Table.Cell>
+              </Table.Row>}
           </Table.Body>
         </Table>
       </Segment>

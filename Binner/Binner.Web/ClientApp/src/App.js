@@ -20,11 +20,11 @@ import Inventory from "./pages/Inventory";
 import Search from "./pages/Search";
 import Boms from "./pages/Boms";
 import Bom from "./pages/Bom";
+import Project from "./pages/Project";
 import { Datasheets } from "./pages/Datasheets";
 import LowInventory from "./pages/LowInventory";
 import { OrderImport } from "./pages/OrderImport";
 import { PartTypes } from "./pages/PartTypes";
-import { Projects } from "./pages/Projects";
 import { ExportData } from "./pages/ExportData";
 import { PrintLabels } from "./pages/PrintLabels";
 import { Tools } from "./pages/Tools";
@@ -101,12 +101,13 @@ class App extends Component {
             <Route exact path="/inventory/:partNumber" element={<Inventory />} />
             <Route exact path="/inventory" element={<Search />} />
             <Route exact path="/bom/:project" element={<Bom />} />
+            <Route exact path="/project/:project" element={<Project />} />
             <Route path="/bom" element={<Boms />} />
             <Route path="/datasheets" element={<Datasheets />} />
             <Route path="/lowstock" element={<LowInventory />} />
             <Route path="/import" element={<OrderImport />} />
             <Route path="/partTypes" element={<PartTypes />} />
-            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects" element={<Bom />} />
             <Route path="/exportData" element={<ExportData />} />
             <Route path="/print" element={<PrintLabels />} />
             <Route exact path="/tools" element={<Tools />} />

@@ -216,10 +216,16 @@ export function OrderImport(props) {
   };
 
   const handleChecked = (e, p) => {
-    const newResults = results;
-    const foundPart = _.find(newResults.parts, { supplierPartNumber: p.supplierPartNumber });
-    newResults.selected = !foundPart.selected;
-    setResults(newResults);
+    //const newResults = [...results];
+    //const foundPart = _.find(newResults.parts, { supplierPartNumber: p.supplierPartNumber });
+    //newResults.selected = !foundPart.selected;
+    //console.log('handleChecked', newResults, foundPart);
+    //setResults(newResults);
+    //const otherResults = _.filter(results.parts, x => x.supplierPartNumber !== p.supplierPartNumber);
+    p.selected = !p.selected;
+    //const newResults = {...results, parts: [...otherResults, p]};
+    setResults({...results});
+    //console.log('newResults', newResults);
   };
 
   const formatTrackingNumber = (trackingNumber) => {
@@ -307,7 +313,7 @@ export function OrderImport(props) {
               ))}
             </Table.Body>
           </Table>
-          <Button primary>Import Parts</Button>
+          <Button primary disabled={_.filter(results.parts, i => i.selected).length === 0}>Import Parts</Button>
         </Form>
       </div>
     );

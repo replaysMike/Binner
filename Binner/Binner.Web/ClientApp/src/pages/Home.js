@@ -69,7 +69,7 @@ export function Home(props) {
             <Statistic.Label>Datasheets</Statistic.Label>
           </Statistic>
         </Statistic.Group>
-        <Statistic.Group widths="four" size="tiny" style={{ marginTop: "50px" }}>
+        <Statistic.Group widths="three" size="tiny" style={{ marginTop: "50px" }}>
           <Statistic onClick={(e) => route(e, "/lowstock")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="battery low" />
@@ -81,12 +81,6 @@ export function Home(props) {
               <Icon name="sitemap" />
             </Statistic.Value>
             <Statistic.Label>Part Types</Statistic.Label>
-          </Statistic>
-          <Statistic onClick={(e) => route(e, "/projects")} style={{ cursor: "pointer" }}>
-            <Statistic.Value>
-              <Icon name="folder open" />
-            </Statistic.Value>
-            <Statistic.Label>Projects</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/exportData")} style={{ cursor: "pointer" }}>
             <Statistic.Value>

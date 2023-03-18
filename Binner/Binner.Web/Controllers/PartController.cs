@@ -140,7 +140,7 @@ namespace Binner.Web.Controllers
 
             mappedPart.PartTypeId = partType.PartTypeId;
             mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
-            if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
+            if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             mappedPart.PartId = request.PartId;
             mappedPart.Keywords = request.Keywords?.Split(new string[] { " ", "," }, StringSplitOptions.RemoveEmptyEntries);
@@ -469,6 +469,8 @@ namespace Binner.Web.Controllers
                     part.DateCreatedUtc = DateTime.UtcNow;
                     part = await _partService.AddPartAsync(part);
                     var mappedPart = Mapper.Map<Part, PartResponse>(part);
+                    mappedPart.PartType = partType?.Name;
+                    mappedPart.PartTypeId = part.PartTypeId;
                     mappedPart.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
                     parts.Add(mappedPart);
                 }

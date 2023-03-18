@@ -5,7 +5,8 @@
     /// </summary>
     public enum MountingType
     {
+        None = 0,
         ThroughHole = 1,
-        SurfaceMount
+        SurfaceMount,
     }
 }

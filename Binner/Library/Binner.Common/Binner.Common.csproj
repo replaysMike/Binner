@@ -49,7 +49,7 @@
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
-    <PackageReference Include="AnySerializer" Version="1.1.46" />
+    <PackageReference Include="AnySerializer" Version="1.2.5" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
     <PackageReference Include="Binner.SwarmApi" Version="1.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
@@ -68,7 +68,7 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
-    <PackageReference Include="TypeSupport" Version="1.1.12" />
+    <PackageReference Include="TypeSupport" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>

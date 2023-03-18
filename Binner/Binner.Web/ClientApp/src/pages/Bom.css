@@ -1,6 +1,6 @@
 .large {
 	font-weight: 600;
-	font-size: 1.5em;
+	font-size: 2em;
 }
 
 .datacontainer {
@@ -29,18 +29,31 @@
 
 .ui.table.bom{
 	font-size: 0.9em;
-	width: 1200px;
+	width: 1500px;
 }
 
 input[type=checkbox] {
 	cursor: pointer;
 }
 
+table.bom th {
+	
+}
+
+table.bom td {
+	vertical-align: middle;
+}
+
 td.overflow>div {
-	display: inline-block;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	display: inline-block;/* or inline-block */
+  text-overflow: ellipsis;
+  word-wrap: normal;
+  overflow: hidden;
+  max-height: 3.2em !important;
+  line-height: 1.6em !important;
+	display: -webkit-box; 
+	-webkit-line-clamp: 2; 
+	-webkit-box-orient: vertical;
 }
 
 td.overflow span {
@@ -50,4 +63,17 @@ td.overflow span {
 .scroll-container{
 	display: block;
 	overflow-x: scroll;
+}
+
+b.outofstock {
+	color:#c00;
+}
+
+div.outofstock {
+	border: 1px dashed #c00;
+}
+
+div.outofstock>input {
+	color: #c00 !important;
+	font-weight: 700;
 }

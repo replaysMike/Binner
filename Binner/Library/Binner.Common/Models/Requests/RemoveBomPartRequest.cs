@@ -1,13 +1,13 @@
-﻿namespace Binner.Common.Models.Requests
+﻿using System.Collections;
+using System.Collections.Generic;
+
+namespace Binner.Common.Models.Requests
 {
     public class RemoveBomPartRequest
     {
         public string? Project { get; set; }
         public int? ProjectId { get; set; }
 
-        /// <summary>
-        /// Part number to remove
-        /// </summary>
-        public string? PartNumber { get; set; }
+        public ICollection<long> Ids { get; set; } = new List<long>();
     }
 }

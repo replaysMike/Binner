@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace Binner.Common.Models.Requests
+namespace Binner.Common.Models
 {
-    public class UpdateBomPartRequest
+    public class ProjectPart
     {
         /// <summary>
         /// Primary key
         /// </summary>
+        [Key]
         public long ProjectPartAssignmentId { get; set; }
 
         /// <summary>
@@ -44,6 +45,16 @@ namespace Binner.Common.Models.Requests
         /// Custom reference Id that can be used as a custom designator for the part
         /// </summary>
         public string? ReferenceId { get; set; }
+
+        /// <summary>
+        /// Creation date
+        /// </summary>
+        public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Modification date
+        /// </summary>
+        public DateTime DateModifiedUtc { get; set; } = DateTime.UtcNow;
 
         public PartResponse? Part { get; set; }
     }

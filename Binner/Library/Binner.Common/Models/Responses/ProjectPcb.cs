@@ -1,37 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Binner.Common.Models
 {
-    /// <summary>
-    /// A user defined project
-    /// </summary>
-    public class BomResponse
+    public class ProjectPcb
     {
         /// <summary>
         /// Primary key
         /// </summary>
-        public long ProjectId { get; set; }
+        public long PcbId { get; set; }
 
         /// <summary>
-        /// Project name
+        /// Pcb name
         /// </summary>
         public string? Name { get; set; }
 
         /// <summary>
-        /// Project description
+        /// Pcb description
         /// </summary>
         public string? Description { get; set; }
 
         /// <summary>
-        /// Project location
+        /// The serial format template. Example: SN000000000
         /// </summary>
-        public string? Location { get; set; }
+        public string? SerialNumberFormat { get; set; }
 
         /// <summary>
-        /// Project color
+        /// The last serial number used. Example: SN000000001
         /// </summary>
-        public int Color { get; set; }
+        public string? LastSerialNumber { get; set; }
 
         /// <summary>
         /// Creation date
@@ -39,13 +35,13 @@ namespace Binner.Common.Models
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// List of parts in the project
+        /// Modification date
         /// </summary>
-        public ICollection<ProjectPart> Parts { get; set; } = new List<ProjectPart>();
+        public DateTime DateModifiedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// List of pcb's in the project
+        /// Number of parts assigned to pcb
         /// </summary>
-        public ICollection<ProjectPcb> Pcbs { get; set; } = new List<ProjectPcb>();
+        public int PartsCount { get; set; }
     }
 }

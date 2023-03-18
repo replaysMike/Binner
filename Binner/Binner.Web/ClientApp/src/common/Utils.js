@@ -7,12 +7,9 @@
  */
 export const encodeResistance = (number, decimals = 0) => {
   const ohms = Number.parseFloat(number) || 0;
-  if (ohms >= 1000 * 1000 * 1000)
-    return `${(ohms / (1000 * 1000 * 1000)).toFixed(decimals)}GΩ`;
-  else if (ohms >= 1000 * 1000)
-    return `${(ohms / (1000 * 1000)).toFixed(decimals)}MΩ`;
-  else if (ohms >= 1000)
-    return `${(ohms / (1000)).toFixed(decimals)}kΩ`;
+  if (ohms >= 1000 * 1000 * 1000) return `${(ohms / (1000 * 1000 * 1000)).toFixed(decimals)}GΩ`;
+  else if (ohms >= 1000 * 1000) return `${(ohms / (1000 * 1000)).toFixed(decimals)}MΩ`;
+  else if (ohms >= 1000) return `${(ohms / 1000).toFixed(decimals)}kΩ`;
   return `${ohms.toFixed(decimals)}Ω`;
 };
 
@@ -22,12 +19,12 @@ export const encodeResistance = (number, decimals = 0) => {
  */
 export const decodeResistance = (str) => {
   str = str.toString().toLowerCase();
-  if (str.indexOf('k') > 0) {
-    return (Number.parseInt(str.replace('k', '')) * 1000);
-  } else if (str.indexOf('m') > 0) {
-    return (Number.parseInt(str.replace('m', '')) * 1000 * 1000);
-  } else if (str.indexOf('g') > 0) {
-    return (Number.parseInt(str.replace('g', '')) * 1000 * 1000 * 1000);
+  if (str.indexOf("k") > 0) {
+    return Number.parseInt(str.replace("k", "")) * 1000;
+  } else if (str.indexOf("m") > 0) {
+    return Number.parseInt(str.replace("m", "")) * 1000 * 1000;
+  } else if (str.indexOf("g") > 0) {
+    return Number.parseInt(str.replace("g", "")) * 1000 * 1000 * 1000;
   }
   return Number.parseInt(str);
 };
@@ -35,12 +32,26 @@ export const decodeResistance = (str) => {
 /**
  * Format a number with local currency format
  * @param {number} number Number to format
- * @param {number} maxDecimals The maximum number of decimals to return
+ * @param {string} currency Currency to use, default: 'USD'
+ * @param {number} maxDecimals The maximum number of decimals to return, default: 5
  * @returns formatted number string
  */
-export const formatCurrency = (number, maxDecimals = 5) => {
-  return number.toLocaleString('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: maxDecimals});
-}
+export const formatCurrency = (number, currency = 'USD', maxDecimals = 5) => {
+  const lang = getLocaleLanguage();
+  return number.toLocaleString(lang, { style: "currency", currency: currency, maximumFractionDigits: maxDecimals });
+};
+
+/**
+ * Get the locale language of the browser
+ * @returns language string
+ */
+export const getLocaleLanguage = () => {
+  try {
+    return (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.language;
+  } catch {
+    return "en-US";
+  }
+};
 
 /**
  * Format a number with thousand separators
@@ -50,7 +61,7 @@ export const formatCurrency = (number, maxDecimals = 5) => {
 export const formatNumber = (number) => {
   // return number.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
   return number.toLocaleString();
-}
+};
 
 /**
  * Compute an MD5 value
@@ -64,10 +75,10 @@ export const MD5 = (val) => {
 /**
  * Escapes a string as a regex
  * @param {string} string string expression to escape
- * @returns 
+ * @returns
  */
 export const escapeRegex = (string) => {
-  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 };
 
 /**
@@ -76,7 +87,9 @@ export const escapeRegex = (string) => {
  * @returns true if string is a number
  */
 export const isNumeric = (str) => {
-  if (typeof str != "string") return false // we only process strings!  
-  return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-         !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+  if (typeof str != "string") return false; // we only process strings!
+  return (
+    !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+    !isNaN(parseFloat(str))
+  ); // ...and ensure strings of whitespace fail
 };

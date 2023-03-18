@@ -107,7 +107,16 @@ namespace Binner.Common.Services
 
         public async Task<bool> DeletePartAsync(Part part)
         {
-            return await _storageProvider.DeletePartAsync(part, _requestContext.GetUserContext());
+            var user = _requestContext.GetUserContext();
+            // if this part is assigned in any BOMs, remove it
+            var projectPartAssignments = await _storageProvider.GetPartAssignmentsAsync(part.PartId, user);
+            foreach (var partAssignment in projectPartAssignments)
+            {
+                await _storageProvider.RemoveProjectPartAssignmentAsync(partAssignment, user);
+            }
+
+            var success = await _storageProvider.DeletePartAsync(part, user);
+            return success;
         }
 
         public async Task<PartType?> GetOrCreatePartTypeAsync(PartType partType)

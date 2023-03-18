@@ -6,18 +6,25 @@
         public int? ProjectId { get; set; }
 
         /// <summary>
-        /// Part number to add
+        /// Part number
         /// </summary>
-        public string? PartNumber { get; set; }
+        public string PartNumber { get; set; } = null!;
+
+        public int? PcbId { get; set; }
 
         /// <summary>
         /// Quantity of part required for BOM
         /// </summary>
-        public int? Quantity { get; set; }
+        public int Quantity { get; set; }
 
         /// <summary>
         /// Note for BOM part
         /// </summary>
-        public string? Note { get; set; }
+        public string? Notes { get; set; }
+
+        /// <summary>
+        /// Custom reference Id for customer
+        /// </summary>
+        public string? ReferenceId { get; set; }
     }
 }

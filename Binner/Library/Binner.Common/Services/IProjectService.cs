@@ -1,4 +1,5 @@
-﻿using Binner.Common.Models.Requests;
+﻿using Binner.Common.Models;
+using Binner.Common.Models.Requests;
 using Binner.Model.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -48,6 +49,21 @@ namespace Binner.Common.Services
         /// <returns></returns>
         Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request);
 
+        
+        /// <summary>
+        /// Get parts for a project (BOM)
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns></returns>
+        Task<ICollection<ProjectPart>> GetPartsAsync(long projectId);
+
+        /// <summary>
+        /// Get pcbs for a project (BOM)
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns></returns>
+        Task<ICollection<ProjectPcb>> GetPcbsAsync(long projectId);
+
         /// <summary>
         /// Add a part to the project (BOM)
         /// </summary>
@@ -68,5 +84,12 @@ namespace Binner.Common.Services
         /// <param name="request"></param>
         /// <returns></returns>
         Task<bool> RemovePartAsync(RemoveBomPartRequest request);
+
+        /// <summary>
+        /// Produce a PCB by reducing inventory quantities within the BOM
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<bool> ProducePcbAsync(ProduceBomPcbRequest request);
     }
 }

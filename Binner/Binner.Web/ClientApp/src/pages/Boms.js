@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
-import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Dimmer, Loader, Header, Confirm, Grid,
-  Card, Menu, Placeholder, Flag, Checkbox, Pagination, Dropdown
+import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Breadcrumb, Pagination, Dropdown
 } from "semantic-ui-react";
+import { FormHeader } from "../components/FormHeader";
 import _ from 'underscore';
 import { fetchApi } from '../common/fetchApi';
 import { ProjectColors } from "../common/Types";
@@ -103,8 +103,26 @@ export function Boms (props) {
     props.history(`/bom/${p.name}`);
   };
 
-  const onSubmit = () => {
-
+  const onCreateProject = async () => {
+    const request = {
+      name: project.name,
+      description: project.description,
+      location: project.location,
+      color: Number.parseInt(project.color) || 0
+    };
+    const response = await fetchApi('project', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    });
+    if (response.responseObject.status === 200) {
+      // reset form
+      setProject(defaultProject);
+      setAddVisible(false);
+      loadProjects(page, true);
+    }
   };
 
   const handleSort = (clickedColumn) => () => {
@@ -122,22 +140,22 @@ export function Boms (props) {
   const saveColumn = async (e) => {
     changeTracker.forEach(async (val) => {
       const project = _.where(projects, { projectId: val.projectId }) || [];
-      if (project.length > 0) await save(project[0]);
+      if (project.length > 0) await inlineSave(project[0]);
     });
     setProjects(projects);
     setChangeTracker([]);
   };
 
-  const save = async (project) => {
+  const inlineSave = async (project) => {
     const p = _.where(projects, { projectId: project.projectId });
     p.loading = false;
-    let lastSavedProjectId = 0;
     project.color = Number.parseInt(project.color) || 0;
     const request = {
+      projectId: project.projectId,
       name: project.name,
       description: project.description,
       location: project.location,
-      color: project.color
+      color: project.color,
     };
     const response = await fetchApi('project', {
       method: 'PUT',
@@ -148,7 +166,6 @@ export function Boms (props) {
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
-      lastSavedProjectId = data.projectId;
     }
     else {
       console.log('failed to save project');
@@ -168,7 +185,7 @@ export function Boms (props) {
     setChangeTracker(changes);
   };
 
-  const handleDelete = async (e, project) => {
+  const handleDeleteProject = async (e, project) => {
     await fetchApi('project', {
       method: 'DELETE',
       headers: {
@@ -179,14 +196,23 @@ export function Boms (props) {
 
     await loadProjects(page, true);   
   };
+
+  const focusColumn = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
   
   return (
     <div>
-      <h1>Bill of Materials</h1>
-      <p>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => props.history("/")}>Home</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>BOM</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name="Bill of Materials" to="..">
         Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>
         Choose or create the project to manage BOM for.<br/>
-      </p>
+			</FormHeader>
       <Segment>
         <div style={{float: 'right', verticalAlign: 'middle', fontSize: '0.9em'}}>
           <Dropdown 
@@ -206,7 +232,7 @@ export function Boms (props) {
           <div>
             {addVisible &&
               <Segment>
-                <Form onSubmit={onSubmit}>
+                <Form onSubmit={onCreateProject}>
                   <Form.Input width={6} label='Name' required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
                   <Form.Field width={10} control={TextArea} label='Description' value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
                   <Form.Group>
@@ -226,18 +252,18 @@ export function Boms (props) {
                 <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}>Description</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}>Location</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'parts' ? direction : null} onClick={handleSort('parts')}>Parts</Table.HeaderCell>
-                <Table.HeaderCell></Table.HeaderCell>
+                <Table.HeaderCell width={2}></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
               {projects.map(p =>
                 <Table.Row key={p.projectId} onClick={e => handleLoadBom(e, p)}>
-                  <Table.Cell textAlign='center'><Label circular {...(_.find(ProjectColors, c => c.value === p.color).name !== '' && { color: _.find(ProjectColors, c => c.value === p.color).name })} size='mini' /></Table.Cell>
-                  <Table.Cell><Input labelPosition='left' type='text' transparent name='name' onBlur={saveColumn} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
-                  <Table.Cell><Input type='text' transparent name='description' onBlur={saveColumn} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
-                  <Table.Cell><Input type='text' transparent name='location' onBlur={saveColumn} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
+                  <Table.Cell textAlign='center' style={{verticalAlign: 'middle'}}><Label circular {...(_.find(ProjectColors, c => c.value === p.color).name !== '' && { color: _.find(ProjectColors, c => c.value === p.color).name })} size='mini' /></Table.Cell>
+                  <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
+                  <Table.Cell><Input type='text' className="inline-editable" transparent name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
+                  <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
                   <Table.Cell>{p.parts}</Table.Cell>
-                  <Table.Cell textAlign='center'><Button icon='delete' size='tiny' onClick={e => handleDelete(e, p)} /></Table.Cell>
+                  <Table.Cell textAlign='center'><Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${p.name}`); }} title="Edit project" /> <Button icon='delete' size='tiny' onClick={e => handleDeleteProject(e, p)} title="Delete project" /></Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>
