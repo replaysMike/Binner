@@ -17,7 +17,7 @@ export function Boms (props) {
   };
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomsRecordsPerPage")) || 5);
   const [loading, setLoading] = useState(true);
   const [addVisible, setAddVisible] = useState(false);
   const [project, setProject] = useState(defaultProject);
@@ -44,7 +44,7 @@ export function Boms (props) {
     { key: 5, text: '100', value: 100 },
   ];
 
-  const loadProjects = async (page, reset = false) => {
+  const loadProjects = async (page, pageSize, reset = false) => {
     setLoading(true);
     let endOfData = false;
     const response = await fetchApi(`project/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
@@ -62,24 +62,36 @@ export function Boms (props) {
     }
     setProjects(newData);
     setPage(page);
+    setTotalPages(Math.ceil(newData.length / pageSize));
     setNoRemainingData(endOfData);
     setLoading(false);
   };
 
   useEffect(() => {
-    loadProjects(page);
+    loadProjects(page, pageSize);
   }, [page]);
 
   const handleNextPage = () => {
     if (noRemainingData) return;
 
     const nextPage = page + 1;
-    loadProjects(nextPage);
+    loadProjects(nextPage, pageSize);
   };
 
-  const handlePageSizeChange = async (e, pageSize) => {
-    setPageSize(pageSize);
-    await loadProjects(page, true);
+  const handlePageSizeChange = async (e, control) => {
+    const newPageSize = parseInt(control.value);
+    const newTotalPages = Math.ceil(projects.length / newPageSize);
+    let newPage = page;
+    setPageSize(newPageSize);
+    setTotalPages(newTotalPages);
+    localStorage.setItem("bomsRecordsPerPage", newPageSize);
+    // redirect to the last page if less pages
+    if (page > newTotalPages) {
+      newPage = newTotalPages;
+      setPage(newPage);
+    }
+
+    await loadProjects(newPage, newPageSize, true);
   };
 
   const handlePageChange = (e, control) => {
@@ -121,7 +133,7 @@ export function Boms (props) {
       // reset form
       setProject(defaultProject);
       setAddVisible(false);
-      loadProjects(page, true);
+      loadProjects(page, pageSize, true);
     }
   };
 
@@ -194,7 +206,7 @@ export function Boms (props) {
       body: JSON.stringify({ projectId: project.projectId})
     });
 
-    await loadProjects(page, true);   
+    await loadProjects(page, pageSize, true);   
   };
 
   const focusColumn = (e) => {
