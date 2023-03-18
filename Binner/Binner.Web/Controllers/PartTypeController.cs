@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection.Metadata.Ecma335;
@@ -83,8 +84,31 @@ namespace Binner.Web.Controllers
                 var partsForPartType = await _partService.GetPartsAsync(x => x.PartTypeId == partType.PartTypeId);
                 partType.Parts = partsForPartType.Count;
                 partType.ParentPartType = parentPartType?.Name;
+                // also count children
+                var recursiveChildPartTypes = GetChildPartTypes(partTypes, partType.PartTypeId);
+                if (recursiveChildPartTypes.Any())
+                {
+                    var childPartsForPartType =
+                        await _partService.GetPartsAsync(x => recursiveChildPartTypes.Select(y => y.PartTypeId).Contains(x.PartTypeId));
+                    partType.Parts += childPartsForPartType.Count;
+                }
             }
             return Ok(partTypesResponse);
+        }
+
+        private ICollection<PartType> GetChildPartTypes(ICollection<PartType> partTypes, long partTypeId)
+        {
+            var results = new List<PartType>();
+            var childPartTypes = partTypes.Where(x => x.ParentPartTypeId == partTypeId)
+                .ToList();
+            foreach (var childPartType in childPartTypes)
+            {
+                var descendants = GetChildPartTypes(partTypes, childPartType.PartTypeId);
+                if (descendants.Any())
+                    results.AddRange(descendants);
+            }
+            results.AddRange(childPartTypes);
+            return results;
         }
 
         /// <summary>
