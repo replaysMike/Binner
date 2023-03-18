@@ -1547,7 +1547,6 @@ namespace Binner.Common.StorageProviders
                 { nameof(PcbStoredFileAssignment), 1 },
                 { nameof(ProjectPartAssignment), 1 },
                 { nameof(ProjectPcbAssignment), 1 },
-                { nameof(OAuthRequest), 1 },
             });
 
             // seed data
