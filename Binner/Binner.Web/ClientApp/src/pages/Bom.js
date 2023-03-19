@@ -8,10 +8,12 @@ import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
 import { formatCurrency } from "../common/Utils";
+import {format, parseJSON} from "date-fns";
 import "./Bom.css";
 import { AddBomPartModal } from "../components/AddBomPartModal";
 import { AddPcbModal } from "../components/AddPcbModal";
 import { ProducePcbModal } from "../components/ProducePcbModal";
+import { FormatFullDateTime } from "../common/datetime";
 
 export function Bom(props) {
   const defaultProject = {
@@ -437,7 +439,7 @@ export function Bom(props) {
               </div>
             </Grid.Column>
           </Grid>
-          <Label className="small">Last modified: {new Date().toDateString()}</Label>
+          <Label className="small">Last modified: {project.dateModifiedUtc && format(parseJSON(project.dateModifiedUtc), 'E, MMM dd  h:mm:ss aaa')}</Label>
 
           <br />
           <br />

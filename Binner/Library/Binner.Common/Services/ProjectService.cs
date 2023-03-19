@@ -3,6 +3,7 @@ using Binner.Common.Models;
 using Binner.Common.Models.Requests;
 using Binner.Model.Common;
 using Microsoft.Identity.Client;
+using NPOI.OpenXmlFormats.Dml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +71,7 @@ namespace Binner.Common.Services
 
         public async Task<Project> UpdateProjectAsync(Project project)
         {
+            project.DateModifiedUtc = DateTime.UtcNow;
             return await _storageProvider.UpdateProjectAsync(project, _requestContext.GetUserContext());
         }
 
@@ -147,6 +149,9 @@ namespace Binner.Common.Services
                     ReferenceId = request.ReferenceId,
                 };
                 await _storageProvider.AddProjectPartAssignmentAsync(assignment, user);
+                // update project (DateModified)
+                project.DateModifiedUtc = DateTime.UtcNow;
+                await _storageProvider.UpdateProjectAsync(project, user);
                 return project;
             }
 
@@ -187,6 +192,10 @@ namespace Binner.Common.Services
                     await _storageProvider.UpdatePartAsync(bomPart, user);
                 }
 
+                // update project (DateModified)
+                project.DateModifiedUtc = DateTime.UtcNow;
+                await _storageProvider.UpdateProjectAsync(project, user);
+
                 // return the full project
                 return await GetProjectAsync(project.ProjectId);
             }
@@ -221,6 +230,10 @@ namespace Binner.Common.Services
                     success = true;
             }
 
+            // update project (DateModified)
+            project.DateModifiedUtc = DateTime.UtcNow;
+            await _storageProvider.UpdateProjectAsync(project, user);
+
             return success;
         }
 
@@ -229,6 +242,11 @@ namespace Binner.Common.Services
             // get all the parts in the project
             var user = _requestContext.GetUserContext();
             var numberOfPcbsProduced = request.Quantity;
+
+            var project = await GetProjectAsync(request.ProjectId);
+            if (project == null)
+                return false;
+
             var parts = await GetPartsAsync(request.ProjectId);
 
             // because some storage providers don't have transaction support, first validate we have the parts/quantities before making any changes
@@ -240,6 +258,10 @@ namespace Binner.Common.Services
             await ProcessPcbParts(true);
             if (request.Unassociated)
                 await ProcessNonPcbParts(true);
+
+            // update project (DateModified)
+            project.DateModifiedUtc = DateTime.UtcNow;
+            await _storageProvider.UpdateProjectAsync(project, user);
 
             return true;
 
