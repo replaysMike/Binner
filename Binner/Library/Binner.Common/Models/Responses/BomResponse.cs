@@ -39,6 +39,11 @@ namespace Binner.Common.Models
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
+        /// Creation date
+        /// </summary>
+        public DateTime DateModifiedUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
         /// List of parts in the project
         /// </summary>
         public ICollection<ProjectPart> Parts { get; set; } = new List<ProjectPart>();

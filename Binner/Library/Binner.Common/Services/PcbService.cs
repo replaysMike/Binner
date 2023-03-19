@@ -1,4 +1,5 @@
 ﻿using Binner.Model.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,21 +17,36 @@ namespace Binner.Common.Services
             _requestContext = requestContextAccessor;
         }
 
-        public async Task<Pcb> AddPcbAsync(Pcb pcb, long projectId)
+        public async Task<Pcb?> AddPcbAsync(Pcb pcb, long projectId)
         {
             var user = _requestContext.GetUserContext();
+
+            var project = await _storageProvider.GetProjectAsync(projectId, user);
+            if (project == null)
+                return null;
+            
             var addedPcb = await _storageProvider.AddPcbAsync(pcb, user);
             await _storageProvider.AddProjectPcbAssignmentAsync(new ProjectPcbAssignment
             {
                 PcbId = addedPcb.PcbId,
                 ProjectId = projectId,
             }, user);
+
+            // update project (DateModified)
+            project.DateModifiedUtc = DateTime.UtcNow;
+            await _storageProvider.UpdateProjectAsync(project, user);
+
             return addedPcb;
         }
 
         public async Task<bool> DeletePcbAsync(Pcb pcb, long projectId)
         {
             var user = _requestContext.GetUserContext();
+
+            var project = await _storageProvider.GetProjectAsync(projectId, user);
+            if (project == null)
+                return false;
+
             // delete project pcb assignment
             await _storageProvider.RemoveProjectPcbAssignmentAsync(new ProjectPcbAssignment{ PcbId = pcb.PcbId, ProjectId = projectId}, user);
 
@@ -47,6 +63,11 @@ namespace Binner.Common.Services
                 await _storageProvider.RemoveProjectPartAssignmentAsync(partAssignment, user);
             }
             var success = await _storageProvider.DeletePcbAsync(pcb, user);
+
+            // update project (DateModified)
+            project.DateModifiedUtc = DateTime.UtcNow;
+            await _storageProvider.UpdateProjectAsync(project, user);
+
             return success;
         }
 

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -94,12 +93,12 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Delete an existing BOM part
+        /// Delete a project (BOM)
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> DeletePartAsync(DeleteProjectRequest request)
+        public async Task<IActionResult> DeleteProjectAsync(DeleteProjectRequest request)
         {
             var isDeleted = await _projectService.DeleteProjectAsync(new Project
             {
@@ -177,6 +176,8 @@ namespace Binner.Web.Controllers
                 SerialNumberFormat = request.SerialNumberFormat,
                 LastSerialNumber = request.SerialNumber
             }, request.ProjectId);
+            if (pcb == null)
+                return NotFound();
             return Ok(pcb);
         }
 
