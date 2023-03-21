@@ -159,6 +159,56 @@ code {
     margin-top: 5px;
 }
 
+.navbar-nav .dropdown {
+    padding: 2px 2px 2px 6px !important;
+    margin: 0px !important;
+}
+
+.navbar-nav .dropdown .avatar {
+    max-width: 24px;
+    max-height: 24px;
+}
+
+.kbSearch {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.kbSearch .input {
+    width: 100%;
+}
+
+.kbContent {
+    font-family: 'Roboto', sans-serif;
+    color: #636468;
+    font-size: 1em;
+    font-weight: 500;
+    margin-top: 0;
+    line-height: 1.9;
+}
+
+.kbContent p {
+    margin-bottom: 40px;
+}
+
+.kbContent img {
+    padding: 10px;
+    margin: 25px 0 0 0;
+}
+
+.kbContent .image {
+    border: 2px solid #eee;
+    font-size: 0.8em;
+    margin-top: 50px;
+}
+
+.kbContent span {
+    position:relative;
+    top: -10px;
+    padding-left: 20px;
+    font-style: italic;
+}
+
 .ellipsis {
     overflow: hidden;
     text-overflow: ellipsis;

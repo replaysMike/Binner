@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import _ from "underscore";
-import {
-  Icon,
-  Input,
-  Label,
-  Button,
-  Form,
-  Segment,
-  Header,
-  Popup,
-  Dropdown,
-  Confirm
-} from "semantic-ui-react";
+import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm } from "semantic-ui-react";
 import LineTemplate from "../components/LineTemplate";
 import { DEFAULT_FONT } from "../common/Types";
 import { fetchApi } from "../common/fetchApi";
@@ -527,7 +516,7 @@ export const Settings = (props) => {
           </Header>
           <p>
             <i>
-              To integrate with DigiKey, Mouser or Octopart API's you must
+              To integrate with DigiKey, Mouser, Arrow or Octopart API's you must
               obtain API keys for each service you wish to use.
               <br />
               Adding integrations will greatly enhance your experience.

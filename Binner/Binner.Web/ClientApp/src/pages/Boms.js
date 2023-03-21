@@ -47,7 +47,7 @@ export function Boms (props) {
   const loadProjects = async (page, pageSize, reset = false) => {
     setLoading(true);
     let endOfData = false;
-    const response = await fetchApi(`project/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
+    const response = await fetchApi(`bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
     const pageOfData = response.data;
     pageOfData.forEach(function (element) {
       element.loading = true;
@@ -225,7 +225,26 @@ export function Boms (props) {
         Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>
         Choose or create the project to manage BOM for.<br/>
 			</FormHeader>
-      <Segment>
+      
+      <div style={{ minHeight: '35px' }}>
+        <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> Add BOM Project</Button>
+      </div>
+      <div>
+        {addVisible &&
+          <Segment style={{marginBottom: '10px'}}>
+            <Form onSubmit={onCreateProject}>
+              <Form.Input width={6} label='Name' required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
+              <Form.Field width={10} control={TextArea} label='Description' value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
+              <Form.Group>
+                <Form.Input width={6} label='Location' placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
+                <Form.Dropdown width={4} label='Color' selection value={project.color} options={colors} onChange={handleChange} name='color' />
+              </Form.Group>
+              <Button primary type='submit' icon><Icon name='save' /> Save</Button>
+            </Form>
+          </Segment>
+        }
+      </div>
+      <Segment style={{marginTop: '0'}}>
         <div style={{float: 'right', verticalAlign: 'middle', fontSize: '0.9em'}}>
           <Dropdown 
             selection
@@ -238,24 +257,6 @@ export function Boms (props) {
         </div>
         <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
         <Segment loading={loading}>
-          <div style={{ minHeight: '35px' }}>
-            <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> Add BOM Project</Button>
-          </div>
-          <div>
-            {addVisible &&
-              <Segment>
-                <Form onSubmit={onCreateProject}>
-                  <Form.Input width={6} label='Name' required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
-                  <Form.Field width={10} control={TextArea} label='Description' value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
-                  <Form.Group>
-                    <Form.Input width={6} label='Location' required placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
-                    <Form.Dropdown width={4} label='Color' selection value={project.color} options={colors} onChange={handleChange} name='color' />
-                  </Form.Group>
-                  <Button primary type='submit' icon><Icon name='save' /> Save</Button>
-                </Form>
-              </Segment>
-            }
-          </div>
           <Table compact celled sortable selectable striped size='small'>
             <Table.Header>
               <Table.Row>
@@ -263,7 +264,8 @@ export function Boms (props) {
                 <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}>Project</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}>Description</Table.HeaderCell>
                 <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}>Location</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'parts' ? direction : null} onClick={handleSort('parts')}>Parts</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'partCount' ? direction : null} onClick={handleSort('partCount')}>Parts</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'pcbCount' ? direction : null} onClick={handleSort('pcbCount')}>Pcbs</Table.HeaderCell>
                 <Table.HeaderCell width={2}></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
@@ -274,7 +276,8 @@ export function Boms (props) {
                   <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
                   <Table.Cell><Input type='text' className="inline-editable" transparent name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
                   <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
-                  <Table.Cell>{p.parts}</Table.Cell>
+                  <Table.Cell>{p.partCount}</Table.Cell>
+                  <Table.Cell>{p.pcbCount}</Table.Cell>
                   <Table.Cell textAlign='center'><Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${p.name}`); }} title="Edit project" /> <Button icon='delete' size='tiny' onClick={e => handleDeleteProject(e, p)} title="Delete project" /></Table.Cell>
                 </Table.Row>
               )}

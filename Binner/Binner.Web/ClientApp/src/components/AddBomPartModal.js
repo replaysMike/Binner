@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Icon, Button, Form, Modal, Popup, TextArea, Header } from "semantic-ui-react";
+import { Icon, Button, Form, Modal, Popup, TextArea, Header, Confirm } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import PartsGrid from "./PartsGrid";
 import NumberPicker from "./NumberPicker";
@@ -7,7 +7,13 @@ import debounce from "lodash.debounce";
 
 export function AddBomPartModal(props) {
   AddBomPartModal.abortController = new AbortController();
-	const defaultForm = { keyword: "", pcbId: null, quantity: '1', referenceId: '', notes: '' };
+	const defaultForm = { 
+    keyword: "", 
+    pcbId: null, 
+    quantity: '1', 
+    referenceId: '', 
+    notes: '' 
+  };
   const [isOpen, setIsOpen] = useState(false);
   const [addPartSearchResults, setAddPartSearchResults] = useState([]);
 	const [pcbs, setPcbs] = useState([]);
@@ -15,9 +21,10 @@ export function AddBomPartModal(props) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState(defaultForm);
-	
+	const [confirmAddPartIsOpen, setConfirmAddPartIsOpen] = useState(false);
+
 	const pcbOptions = [{key: 0, text: 'None', value: 0}];
   if (pcbs && pcbs.length > 0) {
     for(let i = 0; i < pcbs.length; i++)
@@ -71,7 +78,10 @@ export function AddBomPartModal(props) {
   const handleAddPartsNextPage = (e) => {};
 
   const handleAddPartSelectPart = (e, part) => {
-    setSelectedPart(part);
+    if (selectedPart === part)
+      setSelectedPart(null);
+    else
+      setSelectedPart(part);
   };
 
   const handlePageSizeChange = async (e, pageSize) => {
@@ -95,20 +105,45 @@ export function AddBomPartModal(props) {
   };
 
   const handleAddPart = (e) => {
+		confirmAddPartClose();
     if (props.onAdd) {
-      props.onAdd(e, { part: selectedPart, 
+      props.onAdd(e, { 
+        part: selectedPart, 
 				pcbId: form.pcbId,
 				quantity: form.quantity,
 				notes: form.notes,
 				referenceId: form.referenceId,
+        partName: selectedPart?.partNumber || form.keyword
 			});
     } else {
       console.error("No onAdd handler defined!");
     }
   };
 
+	const handleConfirmPartSelection = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!selectedPart) {
+      setConfirmAddPartIsOpen(true);
+    } else {
+      handleAddPart(e);
+    }
+  };
+
+  const confirmAddPartClose = () => {
+    setConfirmAddPartIsOpen(false);
+  };
+
   return (
     <div>
+			<Confirm
+        className="confirm"
+        header="Add Part"
+        open={confirmAddPartIsOpen}
+        onCancel={confirmAddPartClose}
+        onConfirm={handleAddPart}
+        content={<p>You have not selected a part from your inventory.<br/>Are you sure you want to add this part without associating it to a part in your inventory?<br/><br/><span className="small">Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</span></p>}
+      />
       <Modal centered open={isOpen || false} onClose={handleModalClose}>
         <Modal.Header>BOM Management</Modal.Header>
 				<Modal.Description style={{ width: "100%", padding: '5px 25px' }}>
@@ -190,7 +225,7 @@ export function AddBomPartModal(props) {
         </Modal.Content>
         <Modal.Actions>
           <Button onClick={handleModalClose}>Cancel</Button>
-          <Button primary onClick={handleAddPart}>
+          <Button primary onClick={handleConfirmPartSelection}>
             <Icon name="plus" /> Add
           </Button>
         </Modal.Actions>

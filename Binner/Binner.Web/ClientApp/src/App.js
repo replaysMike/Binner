@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router";
 import { useSearchParams } from "react-router-dom";
 import { createBrowserHistory as createHistory } from "history";
 import { ErrorContext } from "./common/ErrorContext";
+import { toast } from "react-toastify";
 
 // layouts
 import { Layout } from "./layouts/Layout";
@@ -36,7 +37,6 @@ import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { Help } from './pages/help/Home';
 import { Scanning } from './pages/help/Scanning';
 import { ApiIntegrations } from './pages/help/ApiIntegrations';
-import { toast } from "react-toastify";
 
 function withSearchParams(Component) {
   return props => <Component {...props} searchParams={useSearchParams()} />;
@@ -69,6 +69,7 @@ class App extends Component {
           case "mouser":
           case "swarm":
           case "octopart":
+          case "arrow":
             break;
           default:
             apiName = 'External Api';

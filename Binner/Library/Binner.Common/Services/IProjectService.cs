@@ -69,14 +69,14 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<Project?> AddPartAsync(AddBomPartRequest request);
+        Task<ProjectPart?> AddPartAsync(AddBomPartRequest request);
 
         /// <summary>
         /// Update part details in project (BOM)
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<Project?> UpdatePartAsync(UpdateBomPartRequest request);
+        Task<ProjectPart?> UpdatePartAsync(UpdateBomPartRequest request);
 
         /// <summary>
         /// Remove part from project (BOM)

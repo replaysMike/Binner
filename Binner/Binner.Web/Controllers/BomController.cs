@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -54,6 +55,27 @@ namespace Binner.Web.Controllers
                 return NotFound();
 
             return Ok(bomResponse);
+        }
+
+        /// <summary>
+        /// Get a list of BOM projects
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("list")]
+        public async Task<IActionResult> GetProjectsAsync([FromQuery]PaginatedRequest request)
+        {
+            var projects = await _projectService.GetProjectsAsync(request);
+            var projectsResponse = new List<BomBasicResponse>();
+            foreach (var project in projects)
+            {
+                var bomResponse = Mapper.Map<Project, BomBasicResponse>(project);
+                bomResponse.PartCount = (await _projectService.GetPartsAsync(project.ProjectId)).Count;
+                bomResponse.PcbCount = (await _projectService.GetPcbsAsync(project.ProjectId)).Count;
+                projectsResponse.Add(bomResponse);
+            }
+
+            return Ok(projectsResponse);
         }
 
         public async Task<BomResponse?> GetBomResponseAsync(GetProjectRequest request)
@@ -115,10 +137,10 @@ namespace Binner.Web.Controllers
         [HttpPost("part")]
         public async Task<IActionResult> AddPartProjectAsync(AddBomPartRequest request)
         {
-            var project = await _projectService.AddPartAsync(request);
-            if (project == null)
+            var projectPart = await _projectService.AddPartAsync(request);
+            if (projectPart == null)
                 return NotFound();
-            return await GetAsync(new GetProjectRequest { ProjectId = project.ProjectId });
+            return Ok(projectPart);
         }
 
         /// <summary>
@@ -129,10 +151,10 @@ namespace Binner.Web.Controllers
         [HttpPut("part")]
         public async Task<IActionResult> UpdatePartProjectAsync(UpdateBomPartRequest request)
         {
-            var project = await _projectService.UpdatePartAsync(request);
-            if (project == null)
+            var projectPart = await _projectService.UpdatePartAsync(request);
+            if (projectPart == null)
                 return NotFound();
-            return Ok(project);
+            return Ok(projectPart);
         }
 
         /// <summary>

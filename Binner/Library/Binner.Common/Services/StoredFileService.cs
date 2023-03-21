@@ -1,9 +1,6 @@
 ﻿using Binner.Common.Configuration;
 using Binner.Common.IO;
-using Binner.Common.Models;
 using Binner.Model.Common;
-using ICSharpCode.SharpZipLib.Checksum;
-using NPOI.HPSF;
 using System;
 using System.Collections.Generic;
 using System.IO;

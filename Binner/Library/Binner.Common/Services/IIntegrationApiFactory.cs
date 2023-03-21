@@ -11,7 +11,6 @@ namespace Binner.Common.Services
         /// Only for global system usage as no user api keys will be available
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="userId"></param>
         /// <returns></returns>
         T CreateGlobal<T>() where T : class;
 
