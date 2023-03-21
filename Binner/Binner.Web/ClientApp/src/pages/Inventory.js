@@ -1774,6 +1774,45 @@ export function Inventory(props) {
                 />
               </Segment>
 
+              {/* Part Preferences */}
+              <Segment loading={loadingPartMetadata} color="green">
+                <Header dividing as="h3">
+                  Preferences
+                </Header>
+                <p>These values can be set manually and will not be synchronized automatically via apis.</p>
+
+                <Form.Field>
+                  <label>Primary Datasheet Url</label>
+                  <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
+                    <Label>http://</Label>
+                    <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>View</Button>
+                  </Input>
+                </Form.Field>
+                <Form.Field>
+                  <label>Product Url</label>
+                  <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
+                    <Label>http://</Label>
+                    <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>Visit</Button>
+                  </Input>
+                </Form.Field>
+                <Form.Group>
+                  <Form.Field width={4}>
+                    <label>DigiKey Part Number</label>
+                    <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                  </Form.Field>
+                  <Form.Field width={4}>
+                    <label>Mouser Part Number</label>
+                    <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                  </Form.Field>
+                  <Form.Field width={4}>
+                    <label>Arrow Part Number</label>
+                    <Input placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                  </Form.Field>
+                </Form.Group>
+              </Segment>
+
               {/* Suppliers */}
 
               <Segment loading={loadingPartMetadata} color="violet">
