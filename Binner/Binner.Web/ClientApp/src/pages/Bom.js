@@ -13,6 +13,7 @@ import "./Bom.css";
 import { AddBomPartModal } from "../components/AddBomPartModal";
 import { AddPcbModal } from "../components/AddPcbModal";
 import { ProducePcbModal } from "../components/ProducePcbModal";
+import { Clipboard } from "../components/Clipboard";
 import { FormatFullDateTime } from "../common/datetime";
 import { getProducablePcbCount as getProduciblePcbCount, getOutOfStockPartsCount, getInStockPartsCount, getProjectColor } from "../common/bomTools";
 
@@ -428,6 +429,18 @@ export function Bom(props) {
     return <span className="inventorymessage">You can produce <b>{pcbCount}</b> PCB's with your current inventory.</span>;
   };
 
+  const setActivePartName = (e, partName) => {
+    const activePartName = document.getElementById('activePartName');
+    if (activePartName) {
+      activePartName.innerHTML = partName;
+      if (partName.length > 0) {
+        activePartName.style.opacity = 1;
+      } else {
+        activePartName.style.opacity = 0;
+      }
+    }
+  };
+
   const outOfStock = getOutOfStockPartsCount(project?.parts);
   const inStock = getInStockPartsCount(project?.parts);
   const producibleCount = getProduciblePcbCount(project?.parts);
@@ -566,6 +579,7 @@ export function Bom(props) {
             </div>
           </div>
 
+          <div id="activePartName" />
           <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em", marginTop: "5px" }}>
             <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="small labeled" onChange={handlePageSizeChange} />
             <span>records per page</span>
@@ -603,7 +617,7 @@ export function Bom(props) {
                       Lead Time
                     </Table.HeaderCell>
                     <Table.HeaderCell style={{ width: "110px" }} sorted={column === "referenceId" ? direction : null} onClick={handleSort("referenceId")}>
-                      Reference Id
+                      Reference Id(s)
                     </Table.HeaderCell>
                     <Table.HeaderCell style={{ width: "200px" }} sorted={column === "description" ? direction : null} onClick={handleSort("description")}>
                       Description
@@ -615,7 +629,7 @@ export function Bom(props) {
                 </Table.Header>
                 <Table.Body>
                   {getPage(page, pageSize).map((bomPart, key) => (
-                    <Table.Row key={key}>
+                    <Table.Row key={key} onMouseEnter={(e) => setActivePartName(e, bomPart.part?.partNumber || bomPart.partName)} onMouseLeave={(e) => setActivePartName(e, '')}>
                       <Table.Cell>
                         <input type="checkbox" name="chkSelect" value={bomPart.projectPartAssignmentId} onChange={(e) => handlePartSelected(e, bomPart)} />
                       </Table.Cell>
@@ -623,66 +637,86 @@ export function Bom(props) {
                         <div style={{ maxWidth: "120px" }}>{_.find(project.pcbs, (x) => x.pcbId === bomPart.pcbId)?.name}</div>
                       </Table.Cell>
                       <Table.Cell>
+                        <Clipboard text={bomPart.part?.partNumber || bomPart.partName} />
                         {bomPart.part 
                           ? <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link> 
-                          : <Input
-                              type="text"
-                              transparent
-                              name="partName"
-                              onBlur={(e) => saveColumn(e, bomPart)}
-                              onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                              value={bomPart.partName || 0}
-                              fluid
-                              className="inline-editable"
-                            />}
+                          : <Popup 
+                          wide
+                          content={<p>Edit the name of your unassociated <Icon name="microchip"/> part</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="partName"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.partName || 0}
+                            fluid
+                            className="inline-editable"
+                          />}
+                        />}
                       </Table.Cell>
-                      <Table.Cell>{bomPart.part?.manufacturerPartNumber}</Table.Cell>
+                      <Table.Cell><Clipboard text={bomPart.part?.manufacturerPartNumber} />{bomPart.part?.manufacturerPartNumber}</Table.Cell>
                       <Table.Cell>{bomPart.part?.partType}</Table.Cell>
                       <Table.Cell>{formatCurrency(bomPart.part?.cost || 0)}</Table.Cell>
                       <Table.Cell>
-                        <Input
-                          type="text"
-                          transparent
-                          name="quantity"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.quantity || 0}
-                          fluid
-                          className={`inline-editable ${bomPart.quantity > (bomPart.part?.quantity || bomPart.quantityAvailable || 0) ? "outofstock" : ""}`}
+                        <Popup 
+                          wide
+                          content={<p>Edit the <Icon name="clipboard list" /> BOM quantity required</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="quantity"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.quantity || 0}
+                            fluid
+                            className={`inline-editable ${bomPart.quantity > (bomPart.part?.quantity || bomPart.quantityAvailable || 0) ? "outofstock" : ""}`}
+                          />}
                         />
                       </Table.Cell>
                       <Table.Cell>
-                        <Input
-                          type="text"
-                          transparent
-                          name="quantityAvailable"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.part?.quantity || bomPart.quantityAvailable || 0}
-                          fluid
-                          className="inline-editable"
+                        <Popup 
+                          wide
+                          content={<p>Edit the quantity available in your <Icon name="box" /> inventory</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="quantityAvailable"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.part?.quantity || bomPart.quantityAvailable || 0}
+                            fluid
+                            className="inline-editable"
+                          />}
                         />
                       </Table.Cell>
                       <Table.Cell>{bomPart.part?.leadTime || ''}</Table.Cell>
                       <Table.Cell>
-                        <Input
-                          type="text"
-                          transparent
-                          name="referenceId"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.referenceId || ""}
-                          fluid
-                          className="inline-editable"
-                        />
+                        <Popup 
+                          wide
+                          content={<p>Edit your custom <Icon name="hashtag" /> reference Id(s)</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="referenceId"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.referenceId || ""}
+                            fluid
+                            className="inline-editable"
+                          />}
+                        />  
                       </Table.Cell>
                       <Table.Cell className="overflow">
                         <div style={{ width: "250px" }}>
-                          <Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} />
+                          <Clipboard text={bomPart.part?.description} /><Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} />
                         </div>
                       </Table.Cell>
                       <Table.Cell>
-                        <div style={{ maxWidth: "250px" }}>
+                        <Popup 
+                          wide
+                          content={<p>Provide a custom note</p>}
+                          trigger={<div style={{ maxWidth: "250px" }}>
                           <Form.Field
                             type="text"
                             control={TextArea}
@@ -693,7 +727,8 @@ export function Bom(props) {
                             value={bomPart.notes || ""}
                             className="transparent inline-editable"
                           />
-                        </div>
+                        </div>}
+                        />
                       </Table.Cell>
                     </Table.Row>
                   ))}
