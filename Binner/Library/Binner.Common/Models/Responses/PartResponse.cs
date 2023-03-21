@@ -126,5 +126,10 @@
         /// The manufacturer part number
         /// </summary>
         public string? ManufacturerPartNumber { get; set; }
+
+        /// <summary>
+        /// The Arrow part number
+        /// </summary>
+        public string? ArrowPartNumber { get; set; }
     }
 }

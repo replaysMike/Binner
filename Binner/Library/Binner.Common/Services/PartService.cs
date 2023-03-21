@@ -14,6 +14,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Binner.Common.Integrations.Models.Arrow;
 using Part = Binner.Model.Common.Part;
+using System.Data;
+using Binner.Common.Configuration;
+using static Binner.Common.Integrations.DigikeyApi;
 
 namespace Binner.Common.Services
 {
@@ -21,14 +24,17 @@ namespace Binner.Common.Services
     {
         private const string MissingDatasheetCoverName = "datasheetcover.png";
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
+        
+        private readonly WebHostServiceConfiguration _configuration;
         private readonly IStorageProvider _storageProvider;
         private readonly IMapper _mapper;
         private readonly IIntegrationApiFactory _integrationApiFactory;
         private readonly RequestContextAccessor _requestContext;
         private readonly ISwarmService _swarmService;
 
-        public PartService(IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
+        public PartService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
         {
+            _configuration = configuration;
             _storageProvider = storageProvider;
             _mapper = mapper;
             _integrationApiFactory = integrationApiFactory;
@@ -134,6 +140,26 @@ namespace Binner.Common.Services
         public async Task<ICollection<PartType>> GetPartTypesAsync()
         {
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+        }
+
+        public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId)
+        {
+            return await _storageProvider.GetPartSuppliersAsync(partId, _requestContext.GetUserContext());
+        }
+
+        public async Task<PartSupplier> AddPartSupplierAsync(PartSupplier partSupplier)
+        {
+            return await _storageProvider.AddPartSupplierAsync(partSupplier, _requestContext.GetUserContext());
+        }
+
+        public async Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier)
+        {
+            return await _storageProvider.UpdatePartSupplierAsync(partSupplier, _requestContext.GetUserContext());
+        }
+
+        public async Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier)
+        {
+            return await _storageProvider.DeletePartSupplierAsync(partSupplier, _requestContext.GetUserContext());
         }
 
         public async Task<IServiceResult<CategoriesResponse?>> GetCategoriesAsync()
@@ -626,6 +652,38 @@ namespace Binner.Common.Services
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
             var productImageUrls = new List<NameValuePair<string>>();
             var datasheetUrls = new List<NameValuePair<DatasheetSource>>();
+
+            // fetch part if it's in inventory
+            var inventoryPart = await GetPartAsync(partNumber);
+            if (inventoryPart != null && !string.IsNullOrEmpty(inventoryPart.DatasheetUrl))
+                datasheetUrls.Add(new NameValuePair<DatasheetSource>(inventoryPart.ManufacturerPartNumber ?? string.Empty, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", inventoryPart.DatasheetUrl, inventoryPart.ManufacturerPartNumber ?? string.Empty, inventoryPart.Description ?? string.Empty, inventoryPart.Manufacturer ?? string.Empty)));
+            if (inventoryPart != null)
+            {
+                // add in manually specified part suppliers if available
+                var partSuppliers = await GetPartSuppliersAsync(inventoryPart.PartId);
+                if (partSuppliers?.Any() == true)
+                {
+                    foreach (var supplier in partSuppliers)
+                    {
+                        response.Parts.Add(new CommonPart
+                        {
+                            Rank = 0,
+                            Supplier = supplier.Name,
+                            SupplierPartNumber = supplier.SupplierPartNumber,
+                            ManufacturerPartNumber = inventoryPart.ManufacturerPartNumber,
+                            BasePartNumber = inventoryPart.PartNumber,
+                            Cost = supplier.Cost ?? 0,
+                            Currency = "USD",
+                            ImageUrl = supplier.ImageUrl,
+                            ProductUrl = supplier.ProductUrl,
+                            QuantityAvailable = supplier.QuantityAvailable,
+                            MinimumOrderQuantity = supplier.MinimumOrderQuantity,
+                            // unique to these types of responses
+                            PartSupplierId = supplier.PartSupplierId
+                        });
+                    }
+                }
+            }
 
             ProcessSwarmResponse(partNumber, response, swarmResponse, partTypes, productImageUrls, datasheetUrls);
             if (digikeyResponse != null)

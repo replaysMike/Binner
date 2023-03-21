@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Binner.Common.Models
 {
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class BomResponse
+    public class BomBasicResponse
     {
         /// <summary>
         /// Primary key
@@ -46,11 +45,11 @@ namespace Binner.Common.Models
         /// <summary>
         /// List of parts in the project
         /// </summary>
-        public ICollection<ProjectPart> Parts { get; set; } = new List<ProjectPart>();
+        public int PartCount { get; set; }
 
         /// <summary>
-        /// List of pcb's in the project
+        /// Number of pcb's in the project
         /// </summary>
-        public ICollection<ProjectPcb> Pcbs { get; set; } = new List<ProjectPcb>();
+        public int PcbCount { get; set; }
     }
 }

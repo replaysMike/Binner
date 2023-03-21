@@ -1,0 +1,7 @@
+.clipboard {
+	cursor: pointer;  
+}
+
+i.icon.copy.clipboard:hover {
+	font-family: Icons !important;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
+import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb, Statistic } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import axios from "axios";
 import _ from "underscore";
@@ -8,10 +8,14 @@ import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
 import { formatCurrency } from "../common/Utils";
+import {format, parseJSON} from "date-fns";
 import "./Bom.css";
 import { AddBomPartModal } from "../components/AddBomPartModal";
 import { AddPcbModal } from "../components/AddPcbModal";
 import { ProducePcbModal } from "../components/ProducePcbModal";
+import { Clipboard } from "../components/Clipboard";
+import { FormatFullDateTime } from "../common/datetime";
+import { getProducablePcbCount as getProduciblePcbCount, getOutOfStockPartsCount, getInStockPartsCount, getProjectColor } from "../common/bomTools";
 
 export function Bom(props) {
   const defaultProject = {
@@ -38,7 +42,10 @@ export function Bom(props) {
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to remove these part(s) from your BOM?");
   const [isDirty, setIsDirty] = useState(false);
+  const [filterInStock, setFilterInStock] = useState(false);
+  const [inventoryMessage, setInventoryMessage] = useState(null);
   const [pageDisabled, setPageDisabled] = useState(false);
+  const [btnDeleteText, setBtnDeleteText] = useState('Remove Part');
 
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -72,6 +79,7 @@ export function Bom(props) {
     if (response && response.data) {
       const { data } = response;
       setProject(data);
+      setInventoryMessage(getInventoryMessage(data));
       setTotalPages(Math.ceil(data.parts.length / pageSize));
       setLoading(false);
     }
@@ -100,6 +108,10 @@ export function Bom(props) {
   const handleChange = (e, control) => {
     project[control.name] = control.value;
     setProject({ ...project });
+  };
+
+  const handleFilterInStockChange = (e, control) => {
+    setFilterInStock(control.checked);
   };
 
   const handleClick = (e, control) => {};
@@ -144,7 +156,9 @@ export function Bom(props) {
       for (let i = 0; i < checkboxes.length; i++) {
         checkboxes[i].checked = false;
       }
-      setProject({ ...project, parts: parts });
+      const newProject = { ...project, parts: parts };
+      setProject(newProject);
+      setInventoryMessage(getInventoryMessage(newProject));
       setTotalPages(Math.ceil(parts.length / pageSize));
     } else toast.error("Failed to remove parts from BOM!");
     setLoading(false);
@@ -167,8 +181,13 @@ export function Bom(props) {
   const handlePartSelected = (e, part) => {
     const checkboxesChecked = getPartsSelected();
     if (checkboxesChecked.length > 0) {
+      if (checkboxesChecked.length > 1)
+        setBtnDeleteText(`Remove (${checkboxesChecked.length}) Parts`);
+      else
+        setBtnDeleteText('Remove Part');
       setBtnDeleteDisabled(false);
     } else {
+      setBtnDeleteText('Remove Part');
       setBtnDeleteDisabled(true);
     }
   };
@@ -189,7 +208,17 @@ export function Bom(props) {
   const savePartInlineChange = async (bomPart) => {
     if (!isDirty) return;
     setLoading(true);
-    const request = { ...bomPart, quantity: parseInt(bomPart.quantity) || 0, part: { ...bomPart.part, quantity: parseInt(bomPart.part.quantity) || 0 } };
+    const request = { ...bomPart, 
+      quantity: parseInt(bomPart.quantity) || 0, 
+      quantityAvailable: bomPart.part ? 0 : (parseInt(bomPart.quantityAvailable) || 0), 
+      // conditionally add the part if it's available
+      ...(bomPart.part && 
+        {part: { 
+          ...bomPart.part, 
+          quantity: parseInt(bomPart.part.quantity) || 0 
+          }
+        })
+    };
     const response = await fetchApi("bom/part", {
       method: "PUT",
       headers: {
@@ -208,11 +237,24 @@ export function Bom(props) {
     e.preventDefault();
     e.stopPropagation();
     if (part[control.name] !== control.value) setIsDirty(true);
+    let parsed = 0;
     switch (control.name) {
       case "quantity":
-        let parsed = parseInt(control.value);
+        parsed = parseInt(control.value);
         if (!isNaN(parsed)) {
           part[control.name] = parsed;
+        }
+        break;
+      case "quantityAvailable":
+        parsed = parseInt(control.value);
+        if (!isNaN(parsed)) {
+          // special case, if editing a part change its quantity.
+          /// if no part is associated, set the quantityAvailable
+          if (part.part) {
+            part.part['quantity'] = parsed;
+          } else {
+            part[control.name] = parsed;
+          }
         }
         break;
       default:
@@ -224,9 +266,14 @@ export function Bom(props) {
 
   const getPage = (page, recordCount) => {
     const start = (page - 1) * recordCount;
+    let parts = [];
+    if (filterInStock)
+      parts = _.filter(project.parts, x => x.quantity > x.part.quantity);
+    else
+      parts = project.parts;
     const partsPage = [];
     for (let i = start; i < start + recordCount; i++) {
-      if (i < project.parts.length) partsPage.push(project.parts[i]);
+      if (i < parts.length) partsPage.push(parts[i]);
     }
     return partsPage;
   };
@@ -241,9 +288,10 @@ export function Bom(props) {
     setLoading(true);
     const request = {
       projectId: project.projectId,
-      partNumber: addPartSelectedPart.part.partNumber,
+      partNumber: addPartSelectedPart.part?.partNumber ?? addPartSelectedPart.partName,
       pcbId: addPartSelectedPart.pcbId,
       quantity: addPartSelectedPart.quantity,
+      quantityAvailable: addPartSelectedPart.part ? 0 : addPartSelectedPart.quantity,
       notes: addPartSelectedPart.notes,
       referenceId: addPartSelectedPart.referenceId
     };
@@ -256,8 +304,12 @@ export function Bom(props) {
     });
     if (response.ok) {
       const data = await response.json();
-      setProject(data);
-      setTotalPages(Math.ceil(data.parts.length / pageSize));
+      const newProject = {...project, parts: [...project.parts, data]};
+      setProject(newProject);
+      setInventoryMessage(getInventoryMessage(newProject));
+      const newTotalPages = Math.ceil(newProject.parts.length / pageSize);
+      setTotalPages(newTotalPages);
+      setPage(newTotalPages);
     } else {
       toast.error("Failed to add part!");
     }
@@ -281,6 +333,7 @@ export function Bom(props) {
       project.pcbs.push(data);
       toast.success(`Added ${pcb.name} pcb to project!`);
       setProject({ ...project });
+      setInventoryMessage(getInventoryMessage(project));
     } else {
       toast.error("Failed to add pcb!");
     }
@@ -302,6 +355,7 @@ export function Bom(props) {
     if (response.ok) {
       const data = await response.json();
       setProject(data);
+      setInventoryMessage(getInventoryMessage(data));
       toast.success(`${producePcbRequest.quantity} PCB's were produced!`);
     } else {
       const message = await response.text();
@@ -373,6 +427,30 @@ export function Bom(props) {
     setConfirmDeleteIsOpen(false);
   };
 
+  const getInventoryMessage = (project) => {
+    const pcbCount = getProduciblePcbCount(project.parts);
+    if (pcbCount === 0) {
+      return 'You do not have enough parts to produce a PCB.';
+    }
+    return <span className="inventorymessage">You can produce <b>{pcbCount}</b> PCB's with your current inventory.</span>;
+  };
+
+  const setActivePartName = (e, partName) => {
+    const activePartName = document.getElementById('activePartName');
+    if (activePartName) {
+      activePartName.innerHTML = partName;
+      if (partName.length > 0) {
+        activePartName.style.opacity = 1;
+      } else {
+        activePartName.style.opacity = 0;
+      }
+    }
+  };
+
+  const outOfStock = getOutOfStockPartsCount(project?.parts);
+  const inStock = getInStockPartsCount(project?.parts);
+  const producibleCount = getProduciblePcbCount(project?.parts);
+
   return (
     <div>
       <Breadcrumb>
@@ -406,41 +484,52 @@ export function Bom(props) {
           raised
           disabled={pageDisabled}
           className="thicker"
-          {...(_.find(ProjectColors, (c) => c.value === project.color).name !== "" && { color: _.find(ProjectColors, (c) => c.value === project.color).name })}
+          {...getProjectColor(ProjectColors, project)}
         >
-          <Grid columns={2}>
-            <Grid.Column>
+          <Grid columns={2} style={{marginBottom: '10px'}}>
+            <Grid.Column className="projectinfo">
               <span className="large">{project.name}</span>
               <div style={{ float: "right" }}>
-                <Link to={`/project/${project.name}`} className="small">
+                <Link to={`/project/${project.name}`}>
                   Edit Project
                 </Link>
               </div>
-            </Grid.Column>
-            <Grid.Column>
-              <div className="datacontainer">
-                <Form.Group>
-                  <Form.Field>
-                    In Stock (<b>{_.filter(project.parts, (s) => s.part.quantity >= s.quantity).length}</b>)
-                  </Form.Field>
-                  <Form.Field>
-                    Out of Stock (
-                    <b className={`${_.filter(project.parts, (s) => s.part.quantity < s.quantity).length > 0 ? "outofstock" : ""}`}>
-                      {_.filter(project.parts, (s) => s.part.quantity < s.quantity).length}
-                    </b>
-                    )
-                  </Form.Field>
-                  <Form.Field>
-                    Total Parts (<b>{project.parts.length}</b>)
-                  </Form.Field>
-                </Form.Group>
+              <div>
+                <label>Last modified: {project.dateModifiedUtc && format(parseJSON(project.dateModifiedUtc), FormatFullDateTime)}</label>
               </div>
             </Grid.Column>
+            <Grid.Column>
+              <Segment inverted textAlign="center" className="statisticsContainer">
+                <Statistic.Group widths="four" size="tiny">
+                  <Statistic inverted color="blue">
+                    <Statistic.Value>
+                      {inStock}
+                    </Statistic.Value>
+                    <Statistic.Label>In Stock</Statistic.Label>
+                  </Statistic>
+                  <Statistic inverted color={`${project?.parts.length > 0 && outOfStock > 0 ? "red" : "blue"}`}>
+                    <Statistic.Value>
+                      {outOfStock}
+                    </Statistic.Value>
+                    <Statistic.Label>Out of Stock</Statistic.Label>
+                  </Statistic>
+                  <Statistic inverted color="blue">
+                    <Statistic.Value>
+                      {project.parts.length}
+                    </Statistic.Value>
+                    <Statistic.Label>Total Parts</Statistic.Label>
+                  </Statistic>
+                  <Statistic inverted color={`${project?.parts.length > 0 && producibleCount === 0 ? "red" : "blue"}`}>
+                    <Statistic.Value>
+                      {producibleCount}
+                    </Statistic.Value>
+                    <Statistic.Label>Producible</Statistic.Label>
+                  </Statistic>
+                </Statistic.Group>
+                {inventoryMessage}
+              </Segment>
+            </Grid.Column>
           </Grid>
-          <Label className="small">Last modified: {new Date().toDateString()}</Label>
-
-          <br />
-          <br />
 
           <div className="buttons">
             <Popup
@@ -463,7 +552,7 @@ export function Bom(props) {
               content="Remove selected parts from the BOM"
               trigger={
                 <Button onClick={confirmDeleteOpen} disabled={btnDeleteDisabled} size="mini">
-                  <Icon name="trash alternate" /> Remove Part
+                  <Icon name="trash alternate" /> {btnDeleteText}
                 </Button>
               }
             />
@@ -485,8 +574,18 @@ export function Bom(props) {
                 </Button>
               }
             />
+            <div style={{float: 'right'}}>
+              <Popup
+                wide
+                content="Select to only show out of stock parts"
+                trigger={
+                  <Form.Checkbox toggle label="Out of Stock" name="filterInStock" onChange={handleFilterInStockChange} />
+                }
+              />
+            </div>
           </div>
 
+          <div id="activePartName" />
           <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em", marginTop: "5px" }}>
             <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="small labeled" onChange={handlePageSizeChange} />
             <span>records per page</span>
@@ -502,7 +601,7 @@ export function Bom(props) {
                     <Table.HeaderCell style={{ width: "120px" }} sorted={column === "PCB" ? direction : null} onClick={handleSort("PCB")}>
                       PCB
                     </Table.HeaderCell>
-                    <Table.HeaderCell width={2} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
+                    <Table.HeaderCell width={3} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
                       Part Number
                     </Table.HeaderCell>
                     <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
@@ -524,7 +623,7 @@ export function Bom(props) {
                       Lead Time
                     </Table.HeaderCell>
                     <Table.HeaderCell style={{ width: "110px" }} sorted={column === "referenceId" ? direction : null} onClick={handleSort("referenceId")}>
-                      Reference Id
+                      Reference Id(s)
                     </Table.HeaderCell>
                     <Table.HeaderCell style={{ width: "200px" }} sorted={column === "description" ? direction : null} onClick={handleSort("description")}>
                       Description
@@ -536,7 +635,7 @@ export function Bom(props) {
                 </Table.Header>
                 <Table.Body>
                   {getPage(page, pageSize).map((bomPart, key) => (
-                    <Table.Row key={key}>
+                    <Table.Row key={key} onMouseEnter={(e) => setActivePartName(e, bomPart.part?.partNumber || bomPart.partName)} onMouseLeave={(e) => setActivePartName(e, '')}>
                       <Table.Cell>
                         <input type="checkbox" name="chkSelect" value={bomPart.projectPartAssignmentId} onChange={(e) => handlePartSelected(e, bomPart)} />
                       </Table.Cell>
@@ -544,44 +643,85 @@ export function Bom(props) {
                         <div style={{ maxWidth: "120px" }}>{_.find(project.pcbs, (x) => x.pcbId === bomPart.pcbId)?.name}</div>
                       </Table.Cell>
                       <Table.Cell>
-                        {bomPart.part ? <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link> : bomPart.partName}
+                        <Clipboard text={bomPart.part?.partNumber || bomPart.partName} />
+                        {bomPart.part 
+                          ? <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link> 
+                          : <Popup 
+                          wide
+                          content={<p>Edit the name of your unassociated <Icon name="microchip"/> part</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="partName"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.partName || 0}
+                            className="inline-editable"
+                          />}
+                        />}
                       </Table.Cell>
-                      <Table.Cell>{bomPart.part.manufacturerPartNumber}</Table.Cell>
-                      <Table.Cell>{bomPart.part.partType}</Table.Cell>
-                      <Table.Cell>{formatCurrency(bomPart.part.cost)}</Table.Cell>
+                      <Table.Cell>{bomPart.part?.manufacturerPartNumber && <><Clipboard text={bomPart.part?.manufacturerPartNumber} /> {bomPart.part?.manufacturerPartNumber}</>}</Table.Cell>
+                      <Table.Cell>{bomPart.part?.partType}</Table.Cell>
+                      <Table.Cell>{formatCurrency(bomPart.part?.cost || 0)}</Table.Cell>
                       <Table.Cell>
-                        <Input
-                          type="text"
-                          transparent
-                          name="quantity"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.quantity || 0}
-                          fluid
-                          className={`inline-editable ${bomPart.quantity > bomPart.part.quantity ? "outofstock" : ""}`}
+                        <Popup 
+                          wide
+                          content={<p>Edit the <Icon name="clipboard list" /> BOM quantity required</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="quantity"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.quantity || 0}
+                            fluid
+                            className={`inline-editable ${bomPart.quantity > (bomPart.part?.quantity || bomPart.quantityAvailable || 0) ? "outofstock" : ""}`}
+                          />}
                         />
                       </Table.Cell>
-                      <Table.Cell>{bomPart.part.quantity}</Table.Cell>
-                      <Table.Cell>{bomPart.part.leadTime}</Table.Cell>
                       <Table.Cell>
-                        <Input
-                          type="text"
-                          transparent
-                          name="referenceId"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.referenceId || ""}
-                          fluid
-                          className="inline-editable"
+                        <Popup 
+                          wide
+                          content={<p>Edit the quantity available in your <Icon name="box" /> inventory</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="quantityAvailable"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.part?.quantity || bomPart.quantityAvailable || 0}
+                            fluid
+                            className="inline-editable"
+                          />}
                         />
+                      </Table.Cell>
+                      <Table.Cell>{bomPart.part?.leadTime || ''}</Table.Cell>
+                      <Table.Cell>
+                        <Popup 
+                          wide
+                          content={<p>Edit your custom <Icon name="hashtag" /> reference Id(s)</p>}
+                          trigger={<Input
+                            type="text"
+                            transparent
+                            name="referenceId"
+                            onBlur={(e) => saveColumn(e, bomPart)}
+                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                            value={bomPart.referenceId || ""}
+                            fluid
+                            className="inline-editable"
+                          />}
+                        />  
                       </Table.Cell>
                       <Table.Cell className="overflow">
                         <div style={{ width: "250px" }}>
-                          <Popup hoverable content={<p>{bomPart.part.description}</p>} trigger={<span>{bomPart.part.description}</span>} />
+                          {bomPart.part?.description && <><Clipboard text={bomPart.part?.description} /><Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} /></>}
                         </div>
                       </Table.Cell>
                       <Table.Cell>
-                        <div style={{ maxWidth: "250px" }}>
+                        <Popup 
+                          wide
+                          content={<p>Provide a custom note</p>}
+                          trigger={<div style={{ maxWidth: "250px" }}>
                           <Form.Field
                             type="text"
                             control={TextArea}
@@ -592,7 +732,8 @@ export function Bom(props) {
                             value={bomPart.notes || ""}
                             className="transparent inline-editable"
                           />
-                        </div>
+                        </div>}
+                        />
                       </Table.Cell>
                     </Table.Row>
                   ))}

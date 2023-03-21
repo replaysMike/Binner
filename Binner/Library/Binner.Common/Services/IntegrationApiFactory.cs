@@ -114,6 +114,11 @@ namespace Binner.Common.Services
                     MouserCartApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.CartApiKey,
                     MouserOrderApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.OrderApiKey,
                     MouserApiUrl = _webHostServiceConfiguration.Integrations.Mouser.ApiUrl,
+
+                    ArrowEnabled = _webHostServiceConfiguration.Integrations.Arrow.Enabled,
+                    ArrowUsername = _webHostServiceConfiguration.Integrations.Arrow.Username,
+                    ArrowApiKey = _webHostServiceConfiguration.Integrations.Arrow.ApiKey,
+                    ArrowApiUrl = _webHostServiceConfiguration.Integrations.Arrow.ApiUrl,
                     
                     OctopartEnabled = _webHostServiceConfiguration.Integrations.Octopart.Enabled,
                     OctopartApiKey = _webHostServiceConfiguration.Integrations.Octopart.ApiKey,

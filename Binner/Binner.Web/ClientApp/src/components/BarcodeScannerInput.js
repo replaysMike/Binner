@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Popup, Image } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
+import { Events } from "../common/events";
 
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
@@ -11,6 +12,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   const BufferTimeMs = 500;
 	const [keyBuffer, setKeyBuffer] = useState([]);
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
+	const [previousIsKeyboardListeningState, setPreviousIsKeyboardListeningState] = useState(listening || true);
 	const listeningRef = useRef();
 	listeningRef.current = isKeyboardListening;
 	const keyBufferRef = useRef();
@@ -237,12 +239,27 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 
   const scannerDebounced = useMemo(() => debounce(onReceivedBarcodeInput, BufferTimeMs), []);
 
+	const disableBarcodeInput = (e) => {
+		setPreviousIsKeyboardListeningState(isKeyboardListening);
+		setIsKeyboardListening(false);
+	};
+
+	const restoreBarcodeInput = (e) => {
+		setIsKeyboardListening(previousIsKeyboardListeningState);
+	};
+
   useEffect(() => {
     // start listening for all key presses on page
     addKeyboardHandler();
+		// add event listeners to receive requests to disable/enable barcode capture
+		document.body.addEventListener(Events.DisableBarcodeInput, disableBarcodeInput);
+		document.body.addEventListener(Events.RestoreBarcodeInput, restoreBarcodeInput);
     return () => {
       // stop listening for key presses
       removeKeyboardHandler();
+			// remove event listeners
+			document.body.removeEventListener(Events.DisableBarcodeInput, disableBarcodeInput);
+			document.body.removeEventListener(Events.RestoreBarcodeInput, restoreBarcodeInput);
     };
   }, []);
 

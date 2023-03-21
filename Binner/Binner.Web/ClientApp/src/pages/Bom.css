@@ -17,20 +17,45 @@
 	border-top-width: 5px !important;
 }
 
-.datacontainer {
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	padding: 10px;
-	text-align: center;
+.statisticsContainer {
+	padding: 0.8em !important;
 }
 
-.datacontainer .field {
-	background-color: #f6f6f6;
-	border: 1px solid #ccc;
-	border-left: 1px solid #ccc !important;
-	border-radius: 0px;
-	padding: 5px;
-	margin: 5px !important;
+.statisticsContainer .ui.statistic {
+	margin: 0px auto 20px auto !important;
+}
+
+.statisticsContainer .ui.tiny.statistic>.value, .statisticsContainer .ui.tiny.statistics .statistic>.value {
+	font-size: 1.5em !important;
+}
+
+.statisticsContainer .ui.statistic>.label {
+	font-size: 0.9em !important;
+}
+
+.statisticsContainer .inventorymessage {
+	font-size: 0.9em;
+	color: #ccc;
+}
+
+.statisticsContainer .inventorymessage b {
+	color: #fff;
+}
+
+.projectinfo a {
+	font-size: 80%;
+	font-weight: 400;
+}
+
+.projectinfo .large {
+	font-weight: 600;
+	font-size: 2em;
+}
+
+.projectinfo label {
+	font-size: .78571429rem;
+	font-weight: 500 !important;
+	color: rgba(0,0,0,.6);
 }
 
 .buttons {
@@ -90,4 +115,21 @@ div.outofstock {
 div.outofstock>input {
 	color: #c00 !important;
 	font-weight: 700;
+}
+
+#activePartName {
+	display: 'inline-block';
+	text-align: center;
+	transition-property: opacity;
+  transition-duration: 0.25s;
+	opacity: 0;
+	border: 1px solid #024d86;
+	border-radius: 4px;
+	padding: 2px 20px;
+	background-color: #2185d0;
+	margin: 5px auto;
+	color: #fff;
+	font-size: 1.1em;
+	font-weight: 600;
+	height: 30px;
 }

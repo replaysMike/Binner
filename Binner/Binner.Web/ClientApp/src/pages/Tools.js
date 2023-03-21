@@ -14,7 +14,7 @@ export function Tools(props) {
     <div>
       <h1>Tools</h1>
       <p>Binner includes a suite of free utilities common to daily life in electrical engineering.</p>
-      <Segment>
+      <Segment style={{ padding: "40px 40px" }}>
         <Statistic.Group widths="three">
           <Statistic onClick={(e) => route(e, "/tools/resistor")} style={{ cursor: "pointer" }}>
             <Statistic.Value>

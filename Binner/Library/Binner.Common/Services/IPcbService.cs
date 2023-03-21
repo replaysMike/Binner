@@ -13,7 +13,7 @@ namespace Binner.Common.Services
         /// <param name="pcb"></param>
         /// <param name="projectId"></param>
         /// <returns></returns>
-        Task<Pcb> AddPcbAsync(Pcb pcb, long projectId);
+        Task<Pcb?> AddPcbAsync(Pcb pcb, long projectId);
 
         /// <summary>
         /// Update an existing pcb

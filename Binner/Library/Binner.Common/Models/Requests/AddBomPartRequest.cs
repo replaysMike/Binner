@@ -18,6 +18,12 @@
         public int Quantity { get; set; }
 
         /// <summary>
+        /// The quantity of parts available, used when a part is not associated with this entry (BOM).
+        /// Otherwise, the part's quantity (in stock) should be used.
+        /// </summary>
+        public int QuantityAvailable { get; set; }
+
+        /// <summary>
         /// Note for BOM part
         /// </summary>
         public string? Notes { get; set; }

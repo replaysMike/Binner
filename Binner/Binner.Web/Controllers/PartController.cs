@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
-using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -560,6 +559,39 @@ namespace Binner.Web.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Barcode Error! ", ex));
             }
+        }
+
+        /// <summary>
+        /// Create a part supplier
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("partSupplier")]
+        public async Task<IActionResult> CreatePartSupplierAsync(CreatePartSupplierRequest request)
+        {
+            return Ok(await _partService.AddPartSupplierAsync(Mapper.Map<PartSupplier>(request)));
+        }
+
+        /// <summary>
+        /// Update a part supplier
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("partSupplier")]
+        public async Task<IActionResult> UpdatePartSupplierAsync(UpdatePartSupplierRequest request)
+        {
+            return Ok(await _partService.UpdatePartSupplierAsync(Mapper.Map<PartSupplier>(request)));
+        }
+
+        /// <summary>
+        /// Delete a part supplier
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpDelete("partSupplier")]
+        public async Task<IActionResult> DeletePartSupplierAsync(DeletePartSupplierRequest request)
+        {
+            return Ok(await _partService.DeletePartSupplierAsync(new PartSupplier { PartSupplierId = request.PartSupplierId }));
         }
 
         /// <summary>

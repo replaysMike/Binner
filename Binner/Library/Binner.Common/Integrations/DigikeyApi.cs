@@ -6,7 +6,6 @@ using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Services;
 using Binner.Model.Common;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -474,7 +473,6 @@ namespace Binner.Common.Integrations
                         if (valueAttributes.Any())
                         {
                             var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
-
                             // taxonomies.AddRange(alternateIds);
                         }
                     }

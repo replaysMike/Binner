@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Input, Icon, Popup } from "semantic-ui-react";
+import { AppEvents, Events } from "../common/events";
 import "./NavMenu.css";
 
 export function NavMenu(props) {
@@ -56,6 +57,8 @@ export function NavMenu(props) {
                     onChange={handleChange}
                     value={searchKeyword}
                     name="searchKeyword"
+                    onFocus={() => AppEvents.sendEvent(Events.DisableBarcodeInput)}
+                    onBlur={() => AppEvents.sendEvent(Events.RestoreBarcodeInput)}
                   />
                 </NavItem>
                 <NavItem>

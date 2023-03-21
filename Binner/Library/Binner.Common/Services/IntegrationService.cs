@@ -71,6 +71,15 @@ namespace Binner.Common.Services
                 };
                 credentials.Add(new ApiCredential(user?.UserId ?? 0, mouserConfiguration, nameof(MouserApi)));
 
+                var arrowConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
+                    { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
+                    { "Username", request.Configuration.Where(x => x.Key.Equals("Username", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty },
+                };
+                credentials.Add(new ApiCredential(user?.UserId ?? 0, arrowConfiguration, nameof(ArrowApi)));
+
                 var octopartConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
@@ -140,6 +149,23 @@ namespace Binner.Common.Services
                             return new TestApiResponse(nameof(Integrations.MouserApi), ex.GetBaseException().Message);
                         }
                     }
+                case "arrow":
+                {
+                    var api = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0, getCredentialsMethod, false);
+                    if (!api.IsEnabled)
+                        return new TestApiResponse(nameof(Integrations.ArrowApi), "Api is not enabled.");
+                    try
+                    {
+                        var result = await api.SearchAsync("LM555", 1);
+                        if (result.Errors.Any())
+                            return new TestApiResponse(nameof(Integrations.ArrowApi), string.Join(". ", result.Errors));
+                        return new TestApiResponse(nameof(Integrations.ArrowApi), true);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new TestApiResponse(nameof(Integrations.ArrowApi), ex.GetBaseException().Message);
+                    }
+                }
                 case "octopart":
                     {
                         var api = await _integrationApiFactory.CreateAsync<Integrations.OctopartApi>(user?.UserId ?? 0, getCredentialsMethod, false);

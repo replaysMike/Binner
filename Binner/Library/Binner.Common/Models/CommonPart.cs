@@ -123,5 +123,10 @@ namespace Binner.Common.Models
         /// Custom reference value
         /// </summary>
         public string? Reference { get; set; }
+
+        /// <summary>
+        /// The internal part id for manually added suppliers
+        /// </summary>
+        public long? PartSupplierId { get; set; }
     }
 }
