@@ -83,6 +83,7 @@ export function Inventory(props) {
     datasheetUrl: "",
     digiKeyPartNumber: "",
     mouserPartNumber: "",
+    arrowPartNumber: "",
     location: viewPreferences.lastLocation || "",
     binNumber: viewPreferences.lastBinNumber || "",
     binNumber2: viewPreferences.lastBinNumber2 || "",
@@ -98,6 +99,7 @@ export function Inventory(props) {
     supplierPartNumber: "",
     storedFiles: []
   };
+  const defaultPartSupplier = { name: '', supplierPartNumber: '', cost: '0', quantityAvailable: '0', minimumOrderQuantity: '0', productUrl: '', imageUrl: ''};
   const defaultMountingTypes = [
     {
       key: 0,
@@ -152,6 +154,8 @@ export function Inventory(props) {
   const [dragOverClass, setDragOverClass] = useState("");
   const [partNumberRef, setPartNumberFocus] = useFocus();
   const [isEditing, setIsEditing] = useState((part && part.partId > 0) || (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0));
+  const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
+  const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
 
   // todo: find a better alternative, we shouldn't need to do this!
   const bulkScanIsOpenRef = useRef();
@@ -191,7 +195,7 @@ export function Inventory(props) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     try {
-      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""}`, {
+      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
       const data = response.data;
@@ -484,7 +488,6 @@ export function Inventory(props) {
       });
       const { data } = response;
       const mappedPart = {...data, mountingTypeId: data.mountingTypeId + ""};
-      console.log('data', mappedPart);
       setPart(mappedPart);
       setLoadingPartMetadata(false);
       return data;
@@ -550,6 +553,94 @@ export function Inventory(props) {
     }
     setLoadingProjects(false);
     setProjects(projects);
+  };
+
+  const createPartSupplier = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLoadingPartMetadata(true);
+    const request = {
+      partId: part.partId,
+      name: partSupplier.name,
+      supplierPartNumber: partSupplier.supplierPartNumber,
+      cost: parseFloat(partSupplier.cost || '0') || 0,
+      quantityAvailable: parseInt(partSupplier.quantityAvailable || '0') || 0,
+      minimumOrderQuantity: parseInt(partSupplier.minimumOrderQuantity || '0') || 0,
+      productUrl: partSupplier.productUrl && partSupplier.productUrl.length > 4 ? `https://${partSupplier.productUrl.replace('https://', '').replace('http://', '')}` : null,
+      imageUrl: partSupplier.imageUrl && partSupplier.imageUrl.length > 4 ? `https://${partSupplier.imageUrl.replace('https://', '').replace('http://', '')}` : null
+    };
+    const response = await fetch("part/partSupplier", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
+    });
+    if (response && response.status === 200) {
+      const data = await response.json();
+      // add part supplier to ui
+      const newMetadataParts = [...metadataParts];
+      newMetadataParts.push({
+        additionalPartNumbers:[],
+        basePartNumber: null,
+        cost: data.cost,
+        currency: "USD",
+        datasheetUrls: [],
+        description: null,
+        factoryLeadTime: null,
+        factoryStockAvailable: null,
+        imageUrl: data.imageUrl,
+        keywords: [],
+        manufacturer: null,
+        manufacturerPartNumber: part.manufacturerPartNumber,
+        minimumOrderQuantity: data.minimumOrderQuantity,
+        mountingTypeId: 0,
+        packageType: null,
+        partSupplierId: data.partSupplierId,
+        partType: "",
+        productUrl: data.productUrl,
+        quantityAvailable: data.quantityAvailable,
+        rank: 0,
+        reference: null,
+        status: null,
+        supplier: data.name,
+        supplierPartNumber: data.supplierPartNumber,
+        swarmPartNumberManufacturerId: null
+      });
+      setPartSupplier(defaultPartSupplier);
+      setMetadataParts(newMetadataParts);
+      setShowAddPartSupplier(false);
+    }
+    setLoadingPartMetadata(false);
+  };
+
+  const deletePartSupplier = async (e, partSupplier) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!partSupplier.partSupplierId || partSupplier.partSupplierId <= 0)
+      return; // ignore request to delete, not a valid partSupplier object
+    setLoadingPartMetadata(true);
+    const request = {
+      partSupplierId: partSupplier.partSupplierId,
+    };
+    const response = await fetch("part/partSupplier", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
+    });
+    if (response && response.status === 200) {
+      const isSuccess = await response.json();
+      // add part supplier to ui
+      if (isSuccess){
+        const newMetadataParts = [...metadataParts.filter(x => x.partSupplierId !== request.partSupplierId)];
+        setMetadataParts(newMetadataParts);
+      }else{
+        toast.error('Failed to delete supplier part!');
+      }
+    }
+    setLoadingPartMetadata(false);
   };
 
   const getMountingTypeById = (mountingTypeId) => {
@@ -694,6 +785,7 @@ export function Inventory(props) {
       datasheetUrl: "",
       digiKeyPartNumber: "",
       mouserPartNumber: "",
+      arrowPartNumber: "",
       location: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastLocation + "",
       binNumber: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber + "",
       binNumber2: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber2 + "",
@@ -763,6 +855,13 @@ export function Inventory(props) {
       window.lastKeyDown = new Date().getTime();
     }
   }
+
+  const handlePartSupplierChange = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
+    partSupplier[control.name] = control.value;
+    setPartSupplier({ ...partSupplier });
+  };
 
   const handleChange = (e, control) => {
     e.preventDefault();
@@ -867,7 +966,8 @@ export function Inventory(props) {
     }
     if (mappedPart.supplier === "DigiKey") {
       entity.digiKeyPartNumber = mappedPart.supplierPartNumber || "";
-      const searchResult = _.find(metadataParts, (e) => {
+      // also map mouser
+      let searchResult = _.find(metadataParts, (e) => {
         return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
       });
       if (searchResult) {
@@ -876,14 +976,59 @@ export function Inventory(props) {
         if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
         if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
       }
+      // also map arrow
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.arrowPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      
     }
     if (mappedPart.supplier === "Mouser") {
       entity.mouserPartNumber = mappedPart.supplierPartNumber || "";
-      const searchResult = _.find(metadataParts, (e) => {
+      // also map digikey
+      let searchResult = _.find(metadataParts, (e) => {
         return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
       });
       if (searchResult) {
         entity.digiKeyPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map arrow
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.arrowPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+    }
+    if (mappedPart.supplier === "Arrow") {
+      entity.arrowPartNumber = mappedPart.supplierPartNumber || "";
+      // also map digikey
+      let searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map mouser
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.mouserPartNumber = searchResult.supplierPartNumber;
         if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
         if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
         if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
@@ -1056,6 +1201,8 @@ export function Inventory(props) {
   const handleVisitLink = (e, url) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!url.includes('http://') && !url.includes('https://'))
+      url = `https://${url}`;
     window.open(url, "_blank");
   };
 
@@ -1250,6 +1397,12 @@ export function Inventory(props) {
       binNumber: '',
       binNumber2: ''
      }]);
+  };
+
+  const handleShowAddPartSupplier = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowAddPartSupplier(!showAddPartSupplier);
   };
 
   const renderScannedParts = (scannedParts, highlightScannedPart) => {
@@ -1777,14 +1930,14 @@ export function Inventory(props) {
               {/* Part Preferences */}
               <Segment loading={loadingPartMetadata} color="green">
                 <Header dividing as="h3">
-                  Preferences
+                  Private Part Information
                 </Header>
                 <p>These values can be set manually and will not be synchronized automatically via apis.</p>
 
                 <Form.Field>
                   <label>Primary Datasheet Url</label>
                   <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
-                    <Label>http://</Label>
+                    <Label>https://</Label>
                     <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                     <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>View</Button>
                   </Input>
@@ -1792,7 +1945,7 @@ export function Inventory(props) {
                 <Form.Field>
                   <label>Product Url</label>
                   <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
-                    <Label>http://</Label>
+                    <Label>https://</Label>
                     <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                     <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>Visit</Button>
                   </Input>
@@ -1819,6 +1972,39 @@ export function Inventory(props) {
                 <Header dividing as="h3">
                   Suppliers
                 </Header>
+                <div style={{height: '35px'}}>
+                  <div style={{float: 'right'}}>
+                    <Button primary onClick={handleShowAddPartSupplier} size='tiny'><Icon name="plus" /> Add</Button>
+                  </div>
+                </div>
+
+                {showAddPartSupplier && <Segment raised>
+                  <Form.Input width={6} label='Supplier' required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' />
+                  <Form.Input width={6} label='Supplier Part Number' required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' />
+                  <Form.Group>
+                    <Form.Input width={3} label='Cost' placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' />
+                    <Form.Input width={4} label='Quantity Available' placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' />
+                    <Form.Input width={5} label='Minimum Order Quantity' placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' />
+                  </Form.Group>
+                  <Form.Field width={12}>
+                    <label>Product Url</label>
+                    <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl'>
+                      <Label>https://</Label>
+                      <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                      <Button onClick={e => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>Visit</Button>
+                    </Input>
+                  </Form.Field>
+                  <Form.Field width={12}>
+                    <label>Image Url</label>
+                    <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl'>
+                      <Label>https://</Label>
+                      <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                      <Button onClick={e => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>Visit</Button>
+                    </Input>
+                  </Form.Field>
+                  <Button primary icon onClick={createPartSupplier}><Icon name='save' /> Save</Button>
+                </Segment>}
+
                 <Table compact celled sortable selectable striped unstackable size="small">
                   <Table.Header>
                     <Table.Row>
@@ -1827,6 +2013,7 @@ export function Inventory(props) {
                       <Table.HeaderCell textAlign="center">Cost</Table.HeaderCell>
                       <Table.HeaderCell textAlign="center">Quantity Available</Table.HeaderCell>
                       <Table.HeaderCell textAlign="center">Minimum Order Quantity</Table.HeaderCell>
+                      <Table.HeaderCell></Table.HeaderCell>
                       <Table.HeaderCell></Table.HeaderCell>
                       <Table.HeaderCell></Table.HeaderCell>
                     </Table.Row>
@@ -1842,12 +2029,15 @@ export function Inventory(props) {
                           <Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
                           <Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
                           <Table.Cell textAlign="center">
-                            {supplier.imageUrl && <img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />}
+                            {supplier.imageUrl && supplier.imageUrl.length > 10 && supplier.imageUrl.startsWith('http') && <img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />}
                           </Table.Cell>
                           <Table.Cell textAlign="center">
-                            <a href={supplier.productUrl} target="_blank" rel="noreferrer">
+                            {supplier.productUrl && supplier.productUrl.length > 10 && supplier.productUrl.startsWith('http') && <a href={supplier.productUrl} target="_blank" rel="noreferrer">
                               Visit
-                            </a>
+                            </a>}
+                          </Table.Cell>
+                          <Table.Cell textAlign="center">
+                            {supplier.partSupplierId && supplier.partSupplierId > 0 && <Button icon='delete' size='tiny' onClick={e => deletePartSupplier(e, supplier)} title="Delete supplier part" />}
                           </Table.Cell>
                         </Table.Row>
                       ))}

@@ -162,6 +162,34 @@ namespace Binner.Common.Services
         /// </summary>
         /// <returns></returns>
         Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request);
+
+        /// <summary>
+        /// Get a list of part suppliers for a part
+        /// </summary>
+        /// <param name="partId"></param>
+        /// <returns></returns>
+        Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId);
+
+        /// <summary>
+        /// Add a new part supplier
+        /// </summary>
+        /// <param name="partSupplier"></param>
+        /// <returns></returns>
+        Task<PartSupplier> AddPartSupplierAsync(PartSupplier partSupplier);
+
+        /// <summary>
+        /// Update an existing part supplier
+        /// </summary>
+        /// <param name="partSupplier"></param>
+        /// <returns></returns>
+        Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier);
+
+        /// <summary>
+        /// Delete an existing part supplier
+        /// </summary>
+        /// <param name="partSupplier"></param>
+        /// <returns></returns>
+        Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier);
     }
 }
  
