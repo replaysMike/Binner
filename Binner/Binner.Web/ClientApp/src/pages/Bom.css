@@ -17,20 +17,45 @@
 	border-top-width: 5px !important;
 }
 
-.datacontainer {
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	padding: 10px;
-	text-align: center;
+.statisticsContainer {
+	padding: 0.8em !important;
 }
 
-.datacontainer .field {
-	background-color: #f6f6f6;
-	border: 1px solid #ccc;
-	border-left: 1px solid #ccc !important;
-	border-radius: 0px;
-	padding: 5px;
-	margin: 5px !important;
+.statisticsContainer .ui.statistic {
+	margin: 0px auto 20px auto !important;
+}
+
+.statisticsContainer .ui.tiny.statistic>.value, .statisticsContainer .ui.tiny.statistics .statistic>.value {
+	font-size: 1.5em !important;
+}
+
+.statisticsContainer .ui.statistic>.label {
+	font-size: 0.9em !important;
+}
+
+.statisticsContainer .inventorymessage {
+	font-size: 0.9em;
+	color: #ccc;
+}
+
+.statisticsContainer .inventorymessage b {
+	color: #fff;
+}
+
+.projectinfo a {
+	font-size: 80%;
+	font-weight: 400;
+}
+
+.projectinfo .large {
+	font-weight: 600;
+	font-size: 2em;
+}
+
+.projectinfo label {
+	font-size: .78571429rem;
+	font-weight: 500 !important;
+	color: rgba(0,0,0,.6);
 }
 
 .buttons {

@@ -2,8 +2,6 @@
 using Binner.Common.Models;
 using Binner.Common.Models.Requests;
 using Binner.Model.Common;
-using Microsoft.Identity.Client;
-using NPOI.OpenXmlFormats.Dml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -122,7 +120,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<Project?> AddPartAsync(AddBomPartRequest request)
+        public async Task<ProjectPart?> AddPartAsync(AddBomPartRequest request)
         {
             Project? project = null;
             var user = _requestContext.GetUserContext();
@@ -136,26 +134,25 @@ namespace Binner.Common.Services
                 return null;
 
             var part = await _storageProvider.GetPartAsync(request.PartNumber, user);
-            if (part != null)
+            var assignment = new ProjectPartAssignment
             {
-                var assignment = new ProjectPartAssignment
-                {
-                    PartId = part.PartId,
-                    ProjectId = project.ProjectId,
-                    Notes = request.Notes,
-                    PartName = request.PartNumber,
-                    PcbId = request.PcbId,
-                    Quantity = request.Quantity,
-                    ReferenceId = request.ReferenceId,
-                };
-                await _storageProvider.AddProjectPartAssignmentAsync(assignment, user);
-                // update project (DateModified)
-                project.DateModifiedUtc = DateTime.UtcNow;
-                await _storageProvider.UpdateProjectAsync(project, user);
-                return project;
-            }
+                PartId = part?.PartId,
+                ProjectId = project.ProjectId,
+                Notes = request.Notes,
+                PartName = request.PartNumber,
+                PcbId = request.PcbId,
+                Quantity = request.Quantity,
+                QuantityAvailable = part == null ? request.QuantityAvailable : 0,
+                ReferenceId = request.ReferenceId,
+            };
+            await _storageProvider.AddProjectPartAssignmentAsync(assignment, user);
+            // update project (DateModified)
+            project.DateModifiedUtc = DateTime.UtcNow;
+            await _storageProvider.UpdateProjectAsync(project, user);
 
-            return null;
+            var projectPart = Mapper.Map<ProjectPart>(assignment);
+            projectPart.Part = Mapper.Map<PartResponse>(part);
+            return projectPart;
         }
 
         /// <summary>
@@ -163,7 +160,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<Project?> UpdatePartAsync(UpdateBomPartRequest request)
+        public async Task<ProjectPart?> UpdatePartAsync(UpdateBomPartRequest request)
         {
             var user = _requestContext.GetUserContext();
             var project = await _storageProvider.GetProjectAsync(request.ProjectId, user);
@@ -184,20 +181,26 @@ namespace Binner.Common.Services
                 assignment.Notes = request.Notes;
                 assignment.ReferenceId = request.ReferenceId;
                 assignment.Quantity = request.Quantity;
+                if (part == null)
+                    assignment.QuantityAvailable = request.QuantityAvailable;
+                else
+                    assignment.QuantityAvailable = 0;
                 await _storageProvider.UpdateProjectPartAssignmentAsync(assignment, user);
-                // also update the part
-                if (request.Part != null)
+                
+                // also update the part quantity if it has changed
+                if (request.Part != null && part != null && request.Part.Quantity >= 0 && request.Part.Quantity != part.Quantity)
                 {
-                    var bomPart = Mapper.Map<Part>(request.Part);
-                    await _storageProvider.UpdatePartAsync(bomPart, user);
+                    part.Quantity = request.Part.Quantity;
+                    await _storageProvider.UpdatePartAsync(part, user);
                 }
 
                 // update project (DateModified)
                 project.DateModifiedUtc = DateTime.UtcNow;
                 await _storageProvider.UpdateProjectAsync(project, user);
 
-                // return the full project
-                return await GetProjectAsync(project.ProjectId);
+                var projectPart = Mapper.Map<ProjectPart>(assignment);
+                projectPart.Part = Mapper.Map<PartResponse>(part);
+                return projectPart;
             }
 
             return null;

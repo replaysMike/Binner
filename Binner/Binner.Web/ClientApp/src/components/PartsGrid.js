@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { createMedia } from "@artsy/fresnel";
-import { Table, Icon, Input, Label, Button, Confirm, Modal, Header, Dropdown, Pagination, Popup } from 'semantic-ui-react';
+import { Table, Icon, Input, Label, Button, Confirm, Modal, Header, Dropdown, Pagination, Popup, Dimmer, Loader } from 'semantic-ui-react';
 import _ from 'underscore';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -223,7 +223,8 @@ export default function PartsGrid(props) {
             <span>records per page</span>
           </div>
           <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
-          <Table id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
+
+          <Dimmer.Dimmable as={Table} dimmed={loading} id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
             <Table.Header>
               <Table.Row>
                 {col.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={handleSort('partNumber')}>Part</Table.HeaderCell>}
@@ -243,6 +244,7 @@ export default function PartsGrid(props) {
               </Table.Row>
             </Table.Header>
             <Table.Body>
+              {loading && <Table.Row key={-1}><Table.Cell colSpan={13}><Dimmer active={loading} inverted><Loader /></Dimmer></Table.Cell></Table.Row>}
               {parts.length > 0 
               ? parts.map((p, key) =>
                 <Table.Row key={key} onClick={e => handleLoadPartClick(e, p)} className={selectedPart === p ? "selected" : ""}>
@@ -300,7 +302,7 @@ export default function PartsGrid(props) {
               )
             : (<Table.Row><Table.Cell colSpan={13} textAlign="center">{props.children && props.children.length > 0 ? props.children : "No results."}</Table.Cell></Table.Row>)}
             </Table.Body>
-          </Table>
+          </Dimmer.Dimmable>
           <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
         </MediaContextProvider>
         <Confirm open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDeletePart} content={confirmPartDeleteContent} />
