@@ -116,3 +116,20 @@ div.outofstock>input {
 	color: #c00 !important;
 	font-weight: 700;
 }
+
+#activePartName {
+	display: 'inline-block';
+	text-align: center;
+	transition-property: opacity;
+  transition-duration: 0.25s;
+	opacity: 0;
+	border: 1px solid #024d86;
+	border-radius: 4px;
+	padding: 2px 20px;
+	background-color: #2185d0;
+	margin: 5px auto;
+	color: #fff;
+	font-size: 1.1em;
+	font-weight: 600;
+	height: 30px;
+}
