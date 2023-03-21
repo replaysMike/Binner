@@ -45,6 +45,7 @@ export function Bom(props) {
   const [filterInStock, setFilterInStock] = useState(false);
   const [inventoryMessage, setInventoryMessage] = useState(null);
   const [pageDisabled, setPageDisabled] = useState(false);
+  const [btnDeleteText, setBtnDeleteText] = useState('Remove Part');
 
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -180,8 +181,13 @@ export function Bom(props) {
   const handlePartSelected = (e, part) => {
     const checkboxesChecked = getPartsSelected();
     if (checkboxesChecked.length > 0) {
+      if (checkboxesChecked.length > 1)
+        setBtnDeleteText(`Remove (${checkboxesChecked.length}) Parts`);
+      else
+        setBtnDeleteText('Remove Part');
       setBtnDeleteDisabled(false);
     } else {
+      setBtnDeleteText('Remove Part');
       setBtnDeleteDisabled(true);
     }
   };
@@ -546,7 +552,7 @@ export function Bom(props) {
               content="Remove selected parts from the BOM"
               trigger={
                 <Button onClick={confirmDeleteOpen} disabled={btnDeleteDisabled} size="mini">
-                  <Icon name="trash alternate" /> Remove Part
+                  <Icon name="trash alternate" /> {btnDeleteText}
                 </Button>
               }
             />
@@ -595,7 +601,7 @@ export function Bom(props) {
                     <Table.HeaderCell style={{ width: "120px" }} sorted={column === "PCB" ? direction : null} onClick={handleSort("PCB")}>
                       PCB
                     </Table.HeaderCell>
-                    <Table.HeaderCell width={2} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
+                    <Table.HeaderCell width={3} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
                       Part Number
                     </Table.HeaderCell>
                     <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
@@ -650,12 +656,11 @@ export function Bom(props) {
                             onBlur={(e) => saveColumn(e, bomPart)}
                             onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
                             value={bomPart.partName || 0}
-                            fluid
                             className="inline-editable"
                           />}
                         />}
                       </Table.Cell>
-                      <Table.Cell><Clipboard text={bomPart.part?.manufacturerPartNumber} />{bomPart.part?.manufacturerPartNumber}</Table.Cell>
+                      <Table.Cell>{bomPart.part?.manufacturerPartNumber && <><Clipboard text={bomPart.part?.manufacturerPartNumber} /> {bomPart.part?.manufacturerPartNumber}</>}</Table.Cell>
                       <Table.Cell>{bomPart.part?.partType}</Table.Cell>
                       <Table.Cell>{formatCurrency(bomPart.part?.cost || 0)}</Table.Cell>
                       <Table.Cell>
@@ -709,7 +714,7 @@ export function Bom(props) {
                       </Table.Cell>
                       <Table.Cell className="overflow">
                         <div style={{ width: "250px" }}>
-                          <Clipboard text={bomPart.part?.description} /><Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} />
+                          {bomPart.part?.description && <><Clipboard text={bomPart.part?.description} /><Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} /></>}
                         </div>
                       </Table.Cell>
                       <Table.Cell>
