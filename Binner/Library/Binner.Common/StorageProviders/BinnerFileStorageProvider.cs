@@ -1299,6 +1299,111 @@ namespace Binner.Common.StorageProviders
 
         #endregion
 
+        #region BinnerDb V5
+
+        public async Task<PartSupplier> AddPartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                partSupplier.UserId = userContext?.UserId;
+                partSupplier.PartSupplierId = _primaryKeyTracker.GetNextKey<StoredFile>();
+
+                (_db as BinnerDbV5)?.PartSuppliers.Add(partSupplier);
+                _isDirty = true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return partSupplier;
+        }
+
+
+        public async Task<PartSupplier?> GetPartSupplierAsync(long partSupplierId, IUserContext? userContext)
+        {
+            if (partSupplierId <= 0) throw new ArgumentException(nameof(partSupplierId));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return ((_db as BinnerDbV5)?.PartSuppliers)?.FirstOrDefault(x => x.PartSupplierId.Equals(partSupplierId) && x.UserId == userContext?.UserId);
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId, IUserContext? userContext)
+        {
+            if (partId <= 0) throw new ArgumentException(nameof(partId));
+            await _dataLock.WaitAsync();
+            try
+            {
+                return (_db as BinnerDbV5)?.PartSuppliers
+                    .Where(x => x.PartId.Equals(partId))
+                    .Where(x => x.UserId == userContext?.UserId)
+                    .ToList() ?? new List<PartSupplier>();
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        public async Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
+        {
+            if (partSupplier == null) throw new ArgumentNullException(nameof(partSupplier));
+            await _dataLock.WaitAsync();
+            try
+            {
+                partSupplier.UserId = userContext?.UserId;
+                var existingPartSupplier = ((_db as BinnerDbV5)?.PartSuppliers)
+                    ?.FirstOrDefault(x => x.PartSupplierId.Equals(partSupplier.PartSupplierId) && x.UserId == userContext?.UserId);
+                if (existingPartSupplier != null)
+                {
+                    existingPartSupplier = Mapper.Map<PartSupplier, PartSupplier>(partSupplier, existingPartSupplier, x => x.PartSupplierId);
+                    existingPartSupplier.PartSupplierId = partSupplier.PartSupplierId;
+                    _isDirty = true;
+                }
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+            return partSupplier;
+        }
+
+        public async Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
+        {
+            await _dataLock.WaitAsync();
+            try
+            {
+                partSupplier.UserId = userContext?.UserId;
+                var entity = (_db as BinnerDbV5)?.PartSuppliers
+                    .FirstOrDefault(x => x.PartSupplierId == partSupplier.PartSupplierId && x.UserId == partSupplier.UserId);
+                if (entity == null)
+                    return false;
+                var itemRemoved = (_db as BinnerDbV5)?.PartSuppliers.Remove(entity);
+                if (itemRemoved == true)
+                {
+                    var nextPartSupplierId = ((_db as BinnerDbV5)?.PartSuppliers.OrderByDescending(x => x.PartSupplierId)
+                        .Select(x => x.PartSupplierId)
+                        .FirstOrDefault() ?? 0);
+                    nextPartSupplierId++;
+                    _primaryKeyTracker.SetNextKey<PartSupplier>(nextPartSupplierId);
+                    _isDirty = true;
+                }
+                return itemRemoved == true;
+            }
+            finally
+            {
+                _dataLock.Release();
+            }
+        }
+
+        #endregion
+
         private ICollection<SearchResult<Part>> GetExactMatches(ICollection<string> words, StringComparison comparisonType, IUserContext? userContext)
         {
             var matches = new List<SearchResult<Part>>();
@@ -1327,6 +1432,18 @@ namespace Binner.Common.StorageProviders
                 .Select(x => new SearchResult<Part>(x, 40))
                 .ToList();
             matches.AddRange(digikeyMatches);
+
+            // by mouser id
+            var mouserMatches = _db.Parts.Where(x => words.Any(y => x.MouserPartNumber?.Equals(y, comparisonType) == true) && x.UserId == userContext?.UserId)
+                .Select(x => new SearchResult<Part>(x, 40))
+                .ToList();
+            matches.AddRange(mouserMatches);
+
+            // by arrow id
+            var arrowMatches = _db.Parts.Where(x => words.Any(y => x.ArrowPartNumber?.Equals(y, comparisonType) == true) && x.UserId == userContext?.UserId)
+                .Select(x => new SearchResult<Part>(x, 40))
+                .ToList();
+            matches.AddRange(arrowMatches);
 
             // by bin number
             var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber?.Equals(y, comparisonType) == true || x.BinNumber2?.Equals(y, comparisonType) == true) && x.UserId == userContext?.UserId)
@@ -1366,6 +1483,18 @@ namespace Binner.Common.StorageProviders
                 .ToList();
             matches.AddRange(digikeyMatches);
 
+            // by mouser id
+            var mouserMatches = _db.Parts.Where(x => words.Any(y => x.MouserPartNumber?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
+                .Select(x => new SearchResult<Part>(x, 400))
+                .ToList();
+            matches.AddRange(mouserMatches);
+
+            // by arrow id
+            var arrowMatches = _db.Parts.Where(x => words.Any(y => x.ArrowPartNumber?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
+                .Select(x => new SearchResult<Part>(x, 400))
+                .ToList();
+            matches.AddRange(arrowMatches);
+            
             // by bin number
             var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber?.Contains(y, comparisonType) == true || x.BinNumber2?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 500))
@@ -1414,6 +1543,7 @@ namespace Binner.Common.StorageProviders
                             { nameof(PcbStoredFileAssignment), Math.Max((_db as BinnerDbV5)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
                             { nameof(ProjectPartAssignment), Math.Max((_db as BinnerDbV5)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
                             { nameof(ProjectPcbAssignment), Math.Max((_db as BinnerDbV5)?.OAuthRequests.OrderByDescending(x => x.OAuthRequestId).Select(x => x.OAuthRequestId).FirstOrDefault() ?? 0 + 1, 1) },
+                            { nameof(PartSupplier), Math.Max((_db as BinnerDbV5)?.PartSuppliers.OrderByDescending(x => x.PartSupplierId).Select(x => x.PartSupplierId).FirstOrDefault() ?? 0 + 1, 1) },
                         });
                     }
                 }
@@ -1549,6 +1679,7 @@ namespace Binner.Common.StorageProviders
                 { nameof(PcbStoredFileAssignment), 1 },
                 { nameof(ProjectPartAssignment), 1 },
                 { nameof(ProjectPcbAssignment), 1 },
+                { nameof(PartSupplier), 1 },
             });
 
             // seed data
@@ -1590,7 +1721,8 @@ namespace Binner.Common.StorageProviders
                 Pcbs = new List<Pcb>(),
                 PcbStoredFileAssignments = new List<PcbStoredFileAssignment>(),
                 ProjectPartAssignments = new List<ProjectPartAssignment>(),
-                ProjectPcbAssignments = new List<ProjectPcbAssignment>()
+                ProjectPcbAssignments = new List<ProjectPcbAssignment>(),
+                PartSuppliers = new List<PartSupplier>()
             };
         }
 

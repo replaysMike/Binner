@@ -35,6 +35,11 @@ namespace Binner.Common.Configuration
         public int Port { get; set; } = 4433;
 
         /// <summary>
+        /// Public resource web address (without https://) for serving public resources
+        /// </summary>
+        public string ResourceSource { get; set; } = "d6ng6g5o3ih7k.cloudfront.net";
+
+        /// <summary>
         /// Maximum number of items to cache
         /// </summary>
         public int MaxCacheItems { get; set; } = 1024;
