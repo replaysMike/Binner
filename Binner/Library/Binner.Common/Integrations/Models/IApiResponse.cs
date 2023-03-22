@@ -28,5 +28,10 @@ namespace Binner.Common.Integrations.Models
         /// Errors
         /// </summary>
         IEnumerable<string> Errors { get; set; }
+
+        /// <summary>
+        /// Warnings
+        /// </summary>
+        IEnumerable<string> Warnings { get; set; }
     }
 }

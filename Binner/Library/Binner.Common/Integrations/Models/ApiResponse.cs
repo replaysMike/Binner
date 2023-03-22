@@ -29,9 +29,19 @@ namespace Binner.Common.Integrations.Models
         public IEnumerable<string> Errors { get; set; } = new List<string>();
         
         /// <summary>
+        /// Warnings
+        /// </summary>
+        public IEnumerable<string> Warnings { get; set; } = new List<string>();
+
+        /// <summary>
         /// Name of api
         /// </summary>
         public string ApiName { get; set; }
+
+        public ApiResponse(string apiName)
+        {
+            ApiName = apiName;
+        }
 
         public ApiResponse(object response, string apiName)
         {
@@ -63,9 +73,25 @@ namespace Binner.Common.Integrations.Models
             return new ApiResponse(Enumerable.Repeat(error, 1), apiName);
         }
 
+        public static ApiResponse CreateWarning(string warning, string apiName)
+        {
+            return new ApiResponse(apiName)
+            {
+                Warnings = Enumerable.Repeat(warning, 1)
+            };
+        }
+
         public static ApiResponse Create(IEnumerable<string> errors, string apiName)
         {
             return new ApiResponse(errors, apiName);
+        }
+
+        public static ApiResponse CreateWarnings(IEnumerable<string> warnings, string apiName)
+        {
+            return new ApiResponse(apiName)
+            {
+                Warnings = warnings
+            };
         }
 
         public static ApiResponse Create(bool requiresAuthentication, string redirectUrl, string error, string apiName)

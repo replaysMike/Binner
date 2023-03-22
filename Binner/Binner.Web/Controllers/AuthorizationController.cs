@@ -1,15 +1,11 @@
-﻿using ApiClient.OAuth2;
-using Binner.Common;
-using Binner.Common.Integrations;
+﻿using Binner.Common.Integrations;
 using Binner.Common.Services;
 using Binner.Model.Common;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Mime;
 using System.Security.Authentication;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers

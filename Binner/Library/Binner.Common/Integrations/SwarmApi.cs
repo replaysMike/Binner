@@ -66,7 +66,8 @@ namespace Binner.Common.Integrations
             }
             catch (TimeoutException ex)
             {
-                return ApiResponse.Create($"Api request timed out: {ex.Message}", nameof(SwarmApi));
+                // treat timeouts as warnings
+                return ApiResponse.CreateWarning($"Api request timed out: {ex.Message}", nameof(SwarmApi));
             }
         }
 

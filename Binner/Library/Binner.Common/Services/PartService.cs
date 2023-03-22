@@ -1,22 +1,22 @@
 ﻿using AutoMapper;
+using Binner.Common.Configuration;
 using Binner.Common.Integrations;
+using Binner.Common.Integrations.Models.Arrow;
 using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Integrations.Models.Mouser;
 using Binner.Common.Models;
 using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Models.Responses;
 using Binner.Model.Common;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Binner.Common.Integrations.Models.Arrow;
 using Part = Binner.Model.Common.Part;
-using System.Data;
-using Binner.Common.Configuration;
-using static Binner.Common.Integrations.DigikeyApi;
 
 namespace Binner.Common.Services
 {
@@ -31,10 +31,12 @@ namespace Binner.Common.Services
         private readonly IIntegrationApiFactory _integrationApiFactory;
         private readonly RequestContextAccessor _requestContext;
         private readonly ISwarmService _swarmService;
+        private readonly ILogger<PartService> _logger;
 
-        public PartService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
+        public PartService(WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
         {
             _configuration = configuration;
+            _logger = logger;
             _storageProvider = storageProvider;
             _mapper = mapper;
             _integrationApiFactory = integrationApiFactory;
@@ -623,8 +625,16 @@ namespace Binner.Common.Services
                 var apiResponse = await digikeyApi.SearchAsync(searchKeywords, partType, mountingType);
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
-                else if (apiResponse.Errors?.Any() == true)
+                if (apiResponse.Warnings?.Any() == true)
+                {
+                    _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                }
+                if (apiResponse.Errors?.Any() == true)
+                {
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                }
+
                 digikeyResponse = (KeywordSearchResponse?)apiResponse.Response;
                 if (digikeyResponse != null)
                 {
@@ -690,8 +700,16 @@ namespace Binner.Common.Services
                 var apiResponse = await mouserApi.SearchAsync(searchKeywords, partType, mountingType);
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
-                else if (apiResponse.Errors?.Any() == true)
+                if (apiResponse.Warnings?.Any() == true)
+                {
+                    _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                }
+                if (apiResponse.Errors?.Any() == true)
+                {
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                }
+
                 mouserResponse = (SearchResultsResponse?)apiResponse.Response;
             }
 
@@ -704,18 +722,32 @@ namespace Binner.Common.Services
             if (swarmApi.Configuration.IsConfigured)
             {
                 var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
+                if (apiResponse.Warnings?.Any() == true)
+                {
+                    _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                }
                 if (apiResponse.Errors?.Any() == true)
+                {
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                }
+
                 swarmResponse = (SwarmApi.Response.SearchPartResponse?)apiResponse.Response ?? new SwarmApi.Response.SearchPartResponse();
             }
 
             if (arrowApi.Configuration.IsConfigured)
             {
                 var apiResponse = await arrowApi.SearchAsync(searchKeywords, partType, mountingType);
-                if (apiResponse.RequiresAuthentication)
-                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
-                else if (apiResponse.Errors?.Any() == true)
+                if (apiResponse.Warnings?.Any() == true)
+                {
+                    _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                }
+                if (apiResponse.Errors?.Any() == true)
+                {
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                }
+
                 arrowResponse = (ArrowResponse?)apiResponse.Response;
             }
 
