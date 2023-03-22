@@ -5,6 +5,7 @@ using Binner.Common.Models.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Common.Integrations
 {
-    public class ArrowApi : IIntegrationApi
+    public partial class ArrowApi : IIntegrationApi
     {
         private const string BasePath = "";
         private readonly ArrowConfiguration _configuration;
@@ -26,7 +27,7 @@ namespace Binner.Common.Integrations
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
-            // ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() },
+            ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() },
             Converters = new List<JsonConverter> { new StringEnumConverter() }
         };
 
@@ -64,7 +65,9 @@ namespace Binner.Common.Integrations
 
             // 200 OK
             var resultString = response.Content.ReadAsStringAsync().Result;
-            var results = JsonConvert.DeserializeObject<ItemServiceResult>(resultString, _serializerSettings) ?? new();
+            //resultString = FakeResults.SearchResult1;
+
+            var results = JsonConvert.DeserializeObject<ArrowResponse>(resultString, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(ArrowApi));
         }
 
@@ -75,10 +78,13 @@ namespace Binner.Common.Integrations
             if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException("ArrowConfiguration must specify a ApiUrl!");
             if (additionalOptions == null) throw new ArgumentNullException(nameof(additionalOptions));
             if (!additionalOptions.ContainsKey("password") || string.IsNullOrEmpty(additionalOptions["password"])) throw new ArgumentNullException(nameof(additionalOptions), "User password value is required!");
+            var username = _configuration.Username;
+            if (additionalOptions.ContainsKey("username") && !string.IsNullOrEmpty(additionalOptions["username"]))
+                username = additionalOptions["username"];
             
             var passwordHash = Sha256Hash(additionalOptions["password"]);
             // the orders api has it's own dedicated url path, so we don't bother to make this configurable
-            var uri = Url.Combine("https://www.arrow.com", BasePath, $"/services-cc/automatedCheckout/checkOrderStatus?username={_configuration.Username}&password={passwordHash}&format=json");
+            var uri = Url.Combine("https://www.arrow.com", BasePath, $"/services-cc/automatedCheckout/checkOrderStatus?username={username}&password={passwordHash}&format=json");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var response = await _client.SendAsync(requestMessage);
             if (TryHandleResponse(response, out var apiResponse))
@@ -116,7 +122,7 @@ namespace Binner.Common.Integrations
         {
             apiResponse = apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(ArrowApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                throw new MouserUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
+                throw new ArrowUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
             {
                 if (response.Headers.Contains("X-RateLimit-Limit"))
@@ -138,6 +144,7 @@ namespace Binner.Common.Integrations
                 return false;
             }
 
+            var resultString = response.Content.ReadAsStringAsync().Result;
             // return generic error
             return true;
         }
@@ -146,6 +153,14 @@ namespace Binner.Common.Integrations
         {
             var message = new HttpRequestMessage(method, uri);
             return message;
+        }
+
+        public class ArrowUnauthorizedException : Exception
+        {
+            public ArrowUnauthorizedException(string message) : base(message)
+            {
+
+            }
         }
     }
 }

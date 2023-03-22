@@ -71,14 +71,14 @@ export function ChooseAlternatePartModal(props) {
 						<Table.HeaderCell>Family</Table.HeaderCell>
             <Table.HeaderCell>Mfr Part</Table.HeaderCell>
             <Table.HeaderCell>Manufacturer</Table.HeaderCell>
-            <Table.HeaderCell>Part Type</Table.HeaderCell>
+            <Table.HeaderCell style={{width: '100px'}}>Part Type</Table.HeaderCell>
             <Table.HeaderCell>Source</Table.HeaderCell>
             <Table.HeaderCell style={{width: '110px'}}>Package Type</Table.HeaderCell>
             <Table.HeaderCell>Mounting Type</Table.HeaderCell>
             <Table.HeaderCell>QTY Avail.</Table.HeaderCell>
             <Table.HeaderCell>Cost</Table.HeaderCell>
             <Table.HeaderCell>Image</Table.HeaderCell>
-            <Table.HeaderCell style={{width: '170px'}}>Datasheet</Table.HeaderCell>
+            <Table.HeaderCell>Datasheet</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -120,10 +120,7 @@ export function ChooseAlternatePartModal(props) {
                       d &&
                       d.length > 0 && (
                         <p key={dindex}>
-                          <Button size="mini" title="View Datasheet" onClick={(e) => handleHighlightAndVisit(e, d)}>
-                            <Icon name="file pdf" />
-                            View Datasheet
-                          </Button>
+                          <Button circular size='mini' icon='file pdf outline' title='View PDF' onClick={e => handleHighlightAndVisit(e, d)} />
                         </p>
                       )
                   )}

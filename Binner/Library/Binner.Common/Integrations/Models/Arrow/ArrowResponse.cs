@@ -1,10 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Binner.Common.Integrations.Models.Arrow
 {
+    public class ArrowResponse
+    {
+        [JsonProperty("itemserviceresult")]
+        public ItemServiceResult? ItemServiceResult { get; set; }
+    }
+
     public class ItemServiceResult
     {
-        public ICollection<KeyValuePair<string, string>>? ServiceMetaData { get; } = new List<KeyValuePair<string, string>>();
+        public ICollection<IDictionary<string, string?>>? ServiceMetaData { get; } = new List<IDictionary<string, string?>>();
         public ICollection<TransactionAreaRow>? TransactionArea = new List<TransactionAreaRow>();
         public ICollection<Data>? Data { get; set; }
     }
@@ -55,7 +63,7 @@ namespace Binner.Common.Integrations.Models.Arrow
         public int PackSize { get; set; }
         public int MinimumOrderQuantity { get; set; }
         public string? SourcePartId { get; set; }
-        public ICollection<PriceItem> Prices { get; set; } = new List<PriceItem>();
+        public Prices Prices { get; set; } = new Prices();
         public ICollection<AvailabilityItem> Availability { get; set; } = new List<AvailabilityItem>();
         public ICollection<CustomerSpecificPricing> CustomerSpecificPricing { get; set; } = new List<CustomerSpecificPricing>();
         public ICollection<CustomerSpecificInventory> CustomerSpecificInventory { get; set; } = new List<CustomerSpecificInventory>();
@@ -71,6 +79,11 @@ namespace Binner.Common.Integrations.Models.Arrow
         public bool IsNpi { get; set; }
         public string? ProductCode { get; set; }
         public string? ContainerType { get; set; }
+    }
+
+    public class Prices
+    {
+        public ICollection<PriceItem> ResaleList { get; set; } = new List<PriceItem>();
     }
 
     public class CustomerSpecificInventory

@@ -124,8 +124,10 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="orderId"></param>
         /// <param name="supplier"></param>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
         /// <returns></returns>
-        Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(string orderId, string supplier);
+        Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(string orderId, string supplier, string? username, string? password);
 
         /// <summary>
         /// Get all part types

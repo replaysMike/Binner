@@ -20,7 +20,9 @@ export function OrderImport(props) {
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [order, setOrder] = useState({
     orderId: "",
-    supplier: "DigiKey"
+    supplier: "DigiKey",
+    username: null,
+    password: null
   });
   const [supplierOptions] = useState([
     {
@@ -32,6 +34,11 @@ export function OrderImport(props) {
       key: 2,
       value: "Mouser",
       text: "Mouser"
+    },
+    {
+      key: 3,
+      value: "Arrow",
+      text: "Arrow"
     }
   ]);
 
@@ -43,7 +50,7 @@ export function OrderImport(props) {
       if (input.value.salesOrder) {
         orderNumber = input.value.salesOrder;
       } else {
-        toast.error(`Hmm, I don't recognize that 2D barcode!`, { autoClose: 10000 });
+        toast.error(`Hmmm, I don't recognize that 2D barcode!`, { autoClose: 10000 });
         return;
       }
     }
@@ -103,7 +110,9 @@ export function OrderImport(props) {
 
     const request = {
       orderId: order.orderId,
-      supplier: order.supplier
+      supplier: order.supplier,
+      username: order.username,
+      password: order.password
     };
 
     try {
@@ -169,19 +178,29 @@ export function OrderImport(props) {
         break;
       case "supplier":
         newOrder.supplier = control.value;
-        if (newOrder.supplier === "Mouser") {
-          setOrderLabel("Web Order #");
-          setMessage(
-            <div>
-              <i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i>
-            </div>
-          );
-        } else {
-          setOrderLabel("Sales Order #");
-          setMessage("");
+        switch(newOrder.supplier) {
+          case "Mouser":
+            setOrderLabel("Web Order #");
+            setMessage(
+              <div>
+                <i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i>
+              </div>
+            );
+            break;
+          case "DigiKey":
+            setOrderLabel("Sales Order #");
+            setMessage("");
+            break;
+          case "Arrow":
+            setOrderLabel("Order Number");
+            setMessage("");
+            break;
+            default:
+            break;
         }
         break;
       default:
+        newOrder[control.name] = control.value;
         break;
     }
     setOrder({ ...newOrder });
@@ -190,6 +209,8 @@ export function OrderImport(props) {
   const getMountingTypeById = (mountingTypeId) => {
     switch (mountingTypeId) {
       default:
+      case 0:
+        return "none";
       case 1:
         return "through hole";
       case 2:
@@ -335,7 +356,8 @@ export function OrderImport(props) {
                 <br />
                 <br />
                 For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br />
-                For <b>Mouser</b> orders, this is the <i>Web Order #</i>.
+                For <b>Mouser</b> orders, this is the <i>Web Order #</i>.<br />
+                For <b>Arrow</b> orders, this is the <i>Order Number</i>.
               </div>
             }
             trigger={
@@ -352,6 +374,35 @@ export function OrderImport(props) {
               />
             }
           />
+          {order.supplier === "Arrow" &&
+          <>
+            <Popup 
+              content={<p>Enter your {order.supplier} account username</p>}
+              trigger={<Form.Input
+                label="Username/login"
+                placeholder="johndoe@example.com"
+                icon="user"
+                value={order.username || ''}
+                onChange={handleChange}
+                onFocus={disableKeyboardListening}
+                onBlur={enableKeyboardListening}
+                name="username"
+              />}
+            />
+            <Popup 
+              content={<p>Enter your {order.supplier} account password</p>}
+              trigger={<Form.Input
+                type="password"
+                label="Password"
+                icon="key"
+                value={order.password || ''}
+                onChange={handleChange}
+                onFocus={disableKeyboardListening}
+                onBlur={enableKeyboardListening}
+                name="password"
+              />}
+            />
+          </>}
         </Form.Group>
         <div style={{ height: "30px" }}>{message}</div>
         <Button primary disabled={loading || order.orderId.length === 0}>
