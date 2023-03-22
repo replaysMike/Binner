@@ -1974,21 +1974,26 @@ export function Inventory(props) {
                 </Header>
                 <div style={{height: '35px'}}>
                   <div style={{float: 'right'}}>
-                    <Button primary onClick={handleShowAddPartSupplier} size='tiny'><Icon name="plus" /> Add</Button>
+                    <Popup 
+                      wide
+                      hoverable
+                      content={<p>{part.partId <= 0 ? <span><Icon name="warning sign" color="yellow" /> You must save the part before adding custom suppliers to it.</span> : <span>Add a manual supplier entry</span>}</p>}
+                      trigger={<span><Button primary onClick={handleShowAddPartSupplier} size='tiny' disabled={part.partId <= 0}><Icon name="plus" /> Add</Button></span>}
+                    />
                   </div>
                 </div>
 
                 {showAddPartSupplier && <Segment raised>
-                  <Form.Input width={6} label='Supplier' required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' />
-                  <Form.Input width={6} label='Supplier Part Number' required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' />
+                  <Form.Input width={6} label='Supplier' required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                  <Form.Input width={6} label='Supplier Part Number' required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                   <Form.Group>
-                    <Form.Input width={3} label='Cost' placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' />
-                    <Form.Input width={4} label='Quantity Available' placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' />
-                    <Form.Input width={5} label='Minimum Order Quantity' placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' />
+                    <Form.Input width={3} label='Cost' placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Form.Input width={4} label='Quantity Available' placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Form.Input width={5} label='Minimum Order Quantity' placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                   </Form.Group>
                   <Form.Field width={12}>
                     <label>Product Url</label>
-                    <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl'>
+                    <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
                       <Label>https://</Label>
                       <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                       <Button onClick={e => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>Visit</Button>
@@ -1996,13 +2001,13 @@ export function Inventory(props) {
                   </Form.Field>
                   <Form.Field width={12}>
                     <label>Image Url</label>
-                    <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl'>
+                    <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
                       <Label>https://</Label>
                       <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                       <Button onClick={e => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>Visit</Button>
                     </Input>
                   </Form.Field>
-                  <Button primary icon onClick={createPartSupplier}><Icon name='save' /> Save</Button>
+                  <Button primary icon onClick={createPartSupplier} disabled={part.partId <= 0}><Icon name='save' /> Save</Button>
                 </Segment>}
 
                 <Table compact celled sortable selectable striped unstackable size="small">

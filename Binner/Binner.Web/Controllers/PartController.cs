@@ -570,6 +570,8 @@ namespace Binner.Web.Controllers
         [HttpPost("partSupplier")]
         public async Task<IActionResult> CreatePartSupplierAsync(CreatePartSupplierRequest request)
         {
+            if (request.PartId <= 0)
+                return BadRequest("No partId specified.");
             return Ok(await _partService.AddPartSupplierAsync(Mapper.Map<PartSupplier>(request)));
         }
 
@@ -581,6 +583,8 @@ namespace Binner.Web.Controllers
         [HttpPut("partSupplier")]
         public async Task<IActionResult> UpdatePartSupplierAsync(UpdatePartSupplierRequest request)
         {
+            if (request.PartId <= 0)
+                return BadRequest("No partId specified.");
             return Ok(await _partService.UpdatePartSupplierAsync(Mapper.Map<PartSupplier>(request)));
         }
 
@@ -592,6 +596,8 @@ namespace Binner.Web.Controllers
         [HttpDelete("partSupplier")]
         public async Task<IActionResult> DeletePartSupplierAsync(DeletePartSupplierRequest request)
         {
+            if (request.PartSupplierId <= 0)
+                return BadRequest("No partSupplierId specified.");
             return Ok(await _partService.DeletePartSupplierAsync(new PartSupplier { PartSupplierId = request.PartSupplierId }));
         }
 
