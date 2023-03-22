@@ -109,7 +109,7 @@ namespace Binner.Web.Controllers
             mappedPart.PartTypeId = partType.PartTypeId;
             mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
 
-            if (mappedPart.MountingTypeId <= 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
+            if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             var duplicatePartResponse = await CheckForDuplicateAsync(request, mappedPart);
             if (duplicatePartResponse != null)
@@ -139,6 +139,7 @@ namespace Binner.Web.Controllers
 
             mappedPart.PartTypeId = partType.PartTypeId;
             mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
+
             if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             mappedPart.PartId = request.PartId;
