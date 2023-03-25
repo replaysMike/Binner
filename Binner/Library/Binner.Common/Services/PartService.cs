@@ -1211,8 +1211,10 @@ namespace Binner.Common.Services
                 var imagesAdded = 0;
                 if (arrowResponse.ItemServiceResult.Data.Any())
                 {
-                    var partsList = arrowResponse.ItemServiceResult.Data.First().PartList;
-                    foreach (var part in partsList)
+                    var data = arrowResponse.ItemServiceResult.Data.FirstOrDefault();
+                    if (data == null || data.PartList == null || !data.PartList.Any())
+                        return Task.CompletedTask;
+                    foreach (var part in data.PartList)
                     {
                         var additionalPartNumbers = new List<string>();
                         var basePart = partNumber;

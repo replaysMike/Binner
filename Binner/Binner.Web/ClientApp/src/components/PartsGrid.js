@@ -238,6 +238,7 @@ export default function PartsGrid(props) {
                 {col.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'cost' ? direction : null} onClick={handleSort('cost')}>{renderChildren ? "Cost" : null}</Table.HeaderCell>)}}</Media> }
                 {col.digikeypartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={handleSort('digiKeyPartNumber')}>{renderChildren ? "DigiKey Part" : null}</Table.HeaderCell>)}}</Media> }
                 {col.mouserpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'mouserPartNumber' ? direction : null} onClick={handleSort('mouserPartNumber')}>{renderChildren ? "Mouser Part" : null}</Table.HeaderCell>)}}</Media> }
+                {col.arrowpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'arrowPartNumber' ? direction : null} onClick={handleSort('arrowPartNumber')}>{renderChildren ? "Arrow Part" : null}</Table.HeaderCell>)}}</Media> }
                 {col.datasheeturl && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'datasheetUrl' ? direction : null} onClick={handleSort('datasheetUrl')}>{renderChildren ? "Datasheet" : null}</Table.HeaderCell>)}}</Media> }
                 {col.print && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className}></Table.HeaderCell>)}}</Media> }
                 {col.delete && <Table.HeaderCell></Table.HeaderCell>}
@@ -248,7 +249,10 @@ export default function PartsGrid(props) {
               {parts.length > 0 
               ? parts.map((p, key) =>
                 <Table.Row key={key} onClick={e => handleLoadPartClick(e, p)} className={selectedPart === p ? "selected" : ""}>
-                  {col.partnumber && <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>}
+                  {col.partnumber && (lastSavedPartId === p.partId
+                    ? <Table.Cell><Label ribbon={lastSavedPartId === p.partId}>{p.partNumber}</Label></Table.Cell>
+                    :<Table.Cell>{p.partNumber}</Table.Cell>
+                  )}
                   {col.quantity && <Table.Cell>
                     <Popup 
                       hideOnScroll
@@ -288,6 +292,9 @@ export default function PartsGrid(props) {
                   </Table.Cell>)}}</Media> }
                   {col.mouserpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
                     {renderChildren ? <span className='truncate'>{p.mouserPartNumber}</span> : null}
+                  </Table.Cell>)}}</Media> }
+                  {col.arrowpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
+                    {renderChildren ? <span className='truncate'>{p.arrowPartNumber}</span> : null}
                   </Table.Cell>)}}</Media> }
                   {col.datasheeturl && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className} textAlign='center' verticalAlign='middle'>
                     {renderChildren ? p.datasheetUrl && <Button circular size='mini' icon='file pdf outline' title='View PDF' onClick={e => handleVisitLink(e, p.datasheetUrl)} /> : null}
@@ -344,7 +351,7 @@ PartsGrid.propTypes = {
 
 PartsGrid.defaultProps = {
   loading: true,
-  columns: 'partNumber,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,print,delete',
+  columns: 'partNumber,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,datasheetUrl,print,delete',
   page: 1,
   totalPages: 1,
   editable: true,

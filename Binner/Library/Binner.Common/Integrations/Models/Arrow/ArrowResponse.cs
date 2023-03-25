@@ -14,13 +14,13 @@ namespace Binner.Common.Integrations.Models.Arrow
     {
         public ICollection<IDictionary<string, string?>>? ServiceMetaData { get; } = new List<IDictionary<string, string?>>();
         public ICollection<TransactionAreaRow>? TransactionArea = new List<TransactionAreaRow>();
-        public ICollection<Data>? Data { get; set; }
+        public ICollection<Data?>? Data { get; set; }
     }
 
     public class Data
     {
         public ICollection<Resource> Resources { get; set; } = new List<Resource>();
-        public ICollection<Part> PartList { get; set; } = new List<Part>();
+        public ICollection<Part>? PartList { get; set; } = new List<Part>();
     }
 
     public class Part

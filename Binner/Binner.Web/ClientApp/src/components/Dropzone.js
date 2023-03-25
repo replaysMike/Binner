@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { createMedia } from "@artsy/fresnel";
-import { Table, Visibility, Input, Label, Button, Confirm, Modal, Header, Dropdown, Pagination, Popup } from 'semantic-ui-react';
-import _ from 'underscore';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { fetchApi } from '../common/fetchApi';
 import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
 

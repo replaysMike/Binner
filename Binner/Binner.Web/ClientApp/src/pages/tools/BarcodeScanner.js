@@ -1,7 +1,5 @@
-﻿import React, { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
-import _ from "underscore";
-import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Popup } from "semantic-ui-react";
+﻿import React, { useState } from "react";
+import { Form, Popup } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
 import "./BarcodeScanner.css";

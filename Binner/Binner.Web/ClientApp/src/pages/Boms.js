@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
-import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Breadcrumb, Pagination, Dropdown
-} from "semantic-ui-react";
+import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Breadcrumb, Pagination, Dropdown, Confirm } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import _ from 'underscore';
+import { toast } from "react-toastify";
 import { fetchApi } from '../common/fetchApi';
 import { ProjectColors } from "../common/Types";
 
@@ -27,6 +27,10 @@ export function Boms (props) {
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
   const [noRemainingData, setNoRemainingData] = useState(false);
+  const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
+  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete the entire project?");
+  const [confirmDeleteSelectedProject, setConfirmDeleteSelectedProject] = useState(null);
+
   const [colors] = useState(_.map(ProjectColors, function (c) {
     return {
       key: c.value,
@@ -47,7 +51,7 @@ export function Boms (props) {
   const loadProjects = async (page, pageSize, reset = false) => {
     setLoading(true);
     let endOfData = false;
-    const response = await fetchApi(`bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
+    const response = await fetchApi(`api/bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
     const pageOfData = response.data;
     pageOfData.forEach(function (element) {
       element.loading = true;
@@ -197,21 +201,55 @@ export function Boms (props) {
     setChangeTracker(changes);
   };
 
-  const handleDeleteProject = async (e, project) => {
-    await fetchApi('project', {
+  const confirmDeleteOpen = (e, p) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteSelectedProject(p);
+    setConfirmDeleteIsOpen(true);
+    setConfirmPartDeleteContent(
+      <p>
+        Are you sure you want to delete this project and your entire BOM?
+        <br />
+        <br />
+        <b>
+          {p.name}
+        </b>
+        <br />
+        <br />
+        This action is <i>permanent and cannot be recovered</i>.
+      </p>
+    );
+  };
+
+  const handleDeleteProject = async (e) => {
+    if (!confirmDeleteSelectedProject)
+      return null;
+
+    const response = await fetchApi('project', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ projectId: project.projectId})
+      body: JSON.stringify({ projectId: confirmDeleteSelectedProject.projectId})
     });
-
-    await loadProjects(page, pageSize, true);   
+    if (response.responseObject.ok) {
+      setConfirmDeleteIsOpen(false);
+      await loadProjects(page, pageSize, true);   
+    } else {
+      toast.error('Failed to delete project!');
+    }
   };
 
   const focusColumn = (e) => {
     e.preventDefault();
     e.stopPropagation();
+  };
+
+  const confirmDeleteClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteIsOpen(false);
+    setConfirmDeleteSelectedProject(null);
   };
   
   return (
@@ -221,11 +259,20 @@ export function Boms (props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>BOM</Breadcrumb.Section>
       </Breadcrumb>
+      <Confirm
+        className="confirm"
+        header="Delete Project"
+        open={confirmDeleteIsOpen}
+        onCancel={confirmDeleteClose}
+        onConfirm={handleDeleteProject}
+        content={confirmPartDeleteContent}
+      />
+
       <FormHeader name="Bill of Materials" to="..">
         Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>
         Choose or create the project to manage BOM for.<br/>
 			</FormHeader>
-      
+
       <div style={{ minHeight: '35px' }}>
         <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> Add BOM Project</Button>
       </div>
@@ -278,7 +325,7 @@ export function Boms (props) {
                   <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
                   <Table.Cell>{p.partCount}</Table.Cell>
                   <Table.Cell>{p.pcbCount}</Table.Cell>
-                  <Table.Cell textAlign='center'><Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${p.name}`); }} title="Edit project" /> <Button icon='delete' size='tiny' onClick={e => handleDeleteProject(e, p)} title="Delete project" /></Table.Cell>
+                  <Table.Cell textAlign='center'><Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${p.name}`); }} title="Edit project" /> <Button icon='delete' size='tiny' onClick={e => confirmDeleteOpen(e, p)} title="Delete project" /></Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>
