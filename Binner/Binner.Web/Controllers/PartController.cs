@@ -278,7 +278,7 @@ namespace Binner.Web.Controllers
                             {
                                 // map some default values as we don't know what this is
                                 mappedPart.PartTypeId = defaultPartType.PartTypeId;
-                                mappedPart.MountingTypeId = (int)MountingType.ThroughHole;
+                                mappedPart.MountingTypeId = (int)MountingType.None;
                             }
                         }
                     }
@@ -460,6 +460,8 @@ namespace Binner.Web.Controllers
                         part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
                     if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.MouserPartNumber = commonPart.SupplierPartNumber;
+                    if (commonPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
+                        part.ArrowPartNumber = commonPart.SupplierPartNumber;
                     part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
                     part.PartNumber = commonPart.ManufacturerPartNumber;
 

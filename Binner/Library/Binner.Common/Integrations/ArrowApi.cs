@@ -112,7 +112,7 @@ namespace Binner.Common.Integrations
                 var result = hash.ComputeHash(enc.GetBytes(value));
 
                 foreach (var b in result)
-                    builder.Append(b.ToString("x2"));
+                    builder.Append(b.ToString("X2"));
             }
 
             return builder.ToString();
