@@ -7,11 +7,8 @@
     {
         public bool Enabled { get; set; } = false;
 
-        public string? ApiKey { get; set; } = string.Empty;
+        public string? ClientId { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Path to the Octopart Api
-        /// </summary>
-        public string ApiUrl { get; set; } = "https://octopart.com";
+        public string? ClientSecret { get; set; } = string.Empty;
     }
 }

@@ -7,7 +7,17 @@
     {
         public bool Enabled { get; set; } = false;
 
-        public string? ApiKey { get; set; }
+        public string? ApiKey => ClientId;
+
+        /// <summary>
+        /// Nexar Client Id
+        /// </summary>
+        public string? ClientId { get; set; }
+
+        /// <summary>
+        /// Nexar Client Secret
+        /// </summary>
+        public string? ClientSecret { get; set; }
 
         /// <summary>
         /// Path to the Octopart Api

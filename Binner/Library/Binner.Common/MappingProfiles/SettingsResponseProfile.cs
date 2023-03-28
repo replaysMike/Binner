@@ -18,7 +18,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Digikey, options => options.MapFrom(x => x.Integrations.Digikey))
                 .ForMember(x => x.Mouser, options => options.MapFrom(x => x.Integrations.Mouser))
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
-                .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Octopart))
+                .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ReverseMap();
 
@@ -55,9 +55,9 @@ namespace Binner.Common.MappingProfiles
                 }))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => new OctopartUserConfiguration
                 {
-                    Enabled = x.OctopartEnabled,
-                    ApiUrl = x.OctopartApiUrl,
-                    ApiKey = x.OctopartApiKey
+                    Enabled = x.NexarEnabled,
+                    ClientId = x.NexarClientId,
+                    ClientSecret = x.NexarClientSecret
                 }))
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ReverseMap();
@@ -134,8 +134,8 @@ namespace Binner.Common.MappingProfiles
                 .ReverseMap();
             CreateMap<OctopartConfiguration, OctopartUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
-                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.ApiKey))
-                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
+                .ForMember(x => x.ClientId, options => options.MapFrom(x => x.ClientId))
+                .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.ClientSecret))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, SwarmUserConfiguration>()
@@ -161,17 +161,17 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.MouserApiUrl))
                 .ReverseMap();
 
-            CreateMap<UserIntegrationConfiguration, ArrowConfiguration>()
+            CreateMap<UserIntegrationConfiguration, ArrowUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.ArrowEnabled))
                 .ForMember(x => x.Username, options => options.MapFrom(x => x.ArrowUsername))
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.ArrowApiKey))
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ArrowApiUrl))
                 .ReverseMap();
 
-            CreateMap<UserIntegrationConfiguration, OctopartConfiguration>()
-                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.OctopartEnabled))
-                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.OctopartApiKey))
-                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.OctopartApiUrl))
+            CreateMap<UserIntegrationConfiguration, OctopartUserConfiguration>()
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.NexarEnabled))
+                .ForMember(x => x.ClientId, options => options.MapFrom(x => x.NexarClientId))
+                .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.NexarClientSecret))
                 .ReverseMap();
         }
     }

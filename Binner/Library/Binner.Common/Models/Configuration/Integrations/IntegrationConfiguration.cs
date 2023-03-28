@@ -10,7 +10,7 @@
         /// <summary>
         /// Octopart config
         /// </summary>
-        public OctopartConfiguration Octopart { get; set; } = new OctopartConfiguration();
+        public OctopartConfiguration Nexar { get; set; } = new OctopartConfiguration();
 
         /// <summary>
         /// Digikey config

@@ -109,19 +109,19 @@ namespace Binner.Common.Models.Configuration.Integrations
         public string ArrowApiUrl { get; set; } = "https://api.arrow.com";
 
         /// <summary>
-        /// Octopart api enabled
+        /// Nexar api enabled
         /// </summary>
-        public bool OctopartEnabled { get; set; } = false;
+        public bool NexarEnabled { get; set; } = false;
 
         /// <summary>
-        /// Path to the Octopart Api
+        /// Nexar Client Id
         /// </summary>
-        public string OctopartApiUrl { get; set; } = "https://octopart.com";
+        public string? NexarClientId { get; set; }
 
         /// <summary>
-        /// Octopart Api key
+        /// Nexar Client Secret
         /// </summary>
-        public string? OctopartApiKey { get; set; }
+        public string? NexarClientSecret { get; set; }
 
         /// <summary>
         /// Creation date

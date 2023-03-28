@@ -84,6 +84,8 @@ export function OrderImport(props) {
     const request = {
       orderId: order.orderId,
       supplier: order.supplier,
+      username: order.username,
+      password: order.password,
       parts: _.where(results.parts, { selected: true })
     };
     await fetchApi("part/importparts", {
@@ -195,8 +197,8 @@ export function OrderImport(props) {
             setOrderLabel("Order Number");
             setMessage("");
             break;
-            default:
-            break;
+          default:
+          break;
         }
         break;
       default:

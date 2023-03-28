@@ -75,8 +75,8 @@ export const Settings = (props) => {
     },
     octopart: {
       enabled: false,
-      apiKey: "",
-      apiUrl: "",
+      clientId: "",
+      clientSecret: "",
     },
     printer: {
       printerName: "",
@@ -414,8 +414,8 @@ export const Settings = (props) => {
         break;
       case "octopart":
         configuration.push({ key: "enabled", value: settings.octopart.enabled + "" });
-        configuration.push({ key: "apiKey", value: settings.octopart.apiKey });
-        configuration.push({ key: "apiUrl", value: settings.octopart.apiUrl });
+        configuration.push({ key: "clientId", value: settings.octopart.clientId });
+        configuration.push({ key: "clientSecret", value: settings.octopart.clientSecret });
         break;
       default:
         break;
@@ -516,7 +516,7 @@ export const Settings = (props) => {
           </Header>
           <p>
             <i>
-              To integrate with DigiKey, Mouser, Arrow or Octopart API's you must
+              To integrate with DigiKey, Mouser, Arrow or Octopart/Nexar API's you must
               obtain API keys for each service you wish to use.
               <br />
               Adding integrations will greatly enhance your experience.
@@ -1096,27 +1096,27 @@ export const Settings = (props) => {
 
           <Segment loading={loading} color="green" secondary>
             <Header dividing as="h3">
-              Octopart
+              Octopart/Nexar
             </Header>
             <p>
-              Octopart API Keys can be obtained at{" "}
+              Octopart/Nexar API Keys can be obtained at{" "}
               <a
-                href="https://octopart.com/api/home"
+                href="https://portal.nexar.com/sign-up"
                 target="_blank"
                 rel="noreferrer"
               >
-                https://octopart.com/api/home
+                https://portal.nexar.com/sign-up
               </a>
             </p>
             <Form.Field width={10}>
-              <label>Octopart Support</label>
+              <label>Octopart/Nexar Support</label>
               <Popup
                 wide
                 position="top left"
                 offset={[130, 0]}
                 hoverable
                 content={
-                  <p>Choose if you would like to enable Octopart support.</p>
+                  <p>Choose if you would like to enable Octopart/Nexar support.</p>
                 }
                 trigger={
                   <Dropdown
@@ -1131,44 +1131,38 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Key</label>
+              <label>Client Id</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Your api key for Octopart.</p>}
+                content={<p>Your ClientId for Octopart/Nexar.</p>}
                 trigger={
                   <Input
                     className="labeled"
                     placeholder=""
-                    value={settings.octopart.apiKey || ""}
-                    name="octopartApiKey"
+                    value={settings.octopart.clientId || ""}
+                    name="octopartClientId"
                     onChange={handleChange}
                   ></Input>
                 }
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Url</label>
+              <label>Client Secret</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Octopart's API Url. This will be octopart.com</p>}
+                content={<p>Your ClientSecret for Octopart/Nexar.</p>}
                 trigger={
                   <Input
-                    action
                     className="labeled"
-                    placeholder="octopart.com"
-                    value={(settings.octopart.apiUrl || "")
-                      .replace("http://", "")
-                      .replace("https://", "")}
-                    name="octopartApiUrl"
+                    placeholder=""
+                    value={settings.octopart.clientSecret || ""}
+                    name="octopartClientSecret"
                     onChange={handleChange}
-                  >
-                    <Label>https://</Label>
-                    <input />
-                  </Input>
+                  ></Input>
                 }
               />
             </Form.Field>
