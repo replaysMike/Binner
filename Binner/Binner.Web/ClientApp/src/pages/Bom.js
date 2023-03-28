@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb, Statistic } from "semantic-ui-react";
+import { Icon, Input, Tab, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb, Statistic, Menu, Label } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import axios from "axios";
 import _ from "underscore";
@@ -15,7 +15,7 @@ import { AddPcbModal } from "../components/AddPcbModal";
 import { ProducePcbModal } from "../components/ProducePcbModal";
 import { Clipboard } from "../components/Clipboard";
 import { FormatFullDateTime } from "../common/datetime";
-import { getProducablePcbCount as getProduciblePcbCount, getOutOfStockPartsCount, getInStockPartsCount, getProjectColor } from "../common/bomTools";
+import { getProduciblePcbCount, getOutOfStockPartsCount, getInStockPartsCount, getProjectColor } from "../common/bomTools";
 
 export function Bom(props) {
   const defaultProject = {
@@ -46,6 +46,7 @@ export function Bom(props) {
   const [inventoryMessage, setInventoryMessage] = useState(null);
   const [pageDisabled, setPageDisabled] = useState(false);
   const [btnDeleteText, setBtnDeleteText] = useState('Remove Part');
+  const [currentPcbPages, setCurrentPcbPages] = useState([]);
 
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -81,6 +82,7 @@ export function Bom(props) {
       setProject(data);
       setInventoryMessage(getInventoryMessage(data));
       setTotalPages(Math.ceil(data.parts.length / pageSize));
+      setCurrentPcbPages(_.map(data.pcbs, x => ({ pcbId: x.pcbId, page: 1 })));
       setLoading(false);
     }
   };
@@ -103,6 +105,12 @@ export function Bom(props) {
 
   const handlePageChange = (e, control) => {
     setPage(control.activePage);
+  };
+
+  const handlePcbPageChange = (e, control, pcbId) => {
+    let currentPcbPage = _.find(currentPcbPages, x => x.pcbId === pcbId);
+    currentPcbPage.page = control.activePage;
+    setCurrentPcbPages([...currentPcbPages]);
   };
 
   const handleChange = (e, control) => {
@@ -160,6 +168,7 @@ export function Bom(props) {
       setProject(newProject);
       setInventoryMessage(getInventoryMessage(newProject));
       setTotalPages(Math.ceil(parts.length / pageSize));
+      setCurrentPcbPages(_.map(newProject.pcbs, x => ({ pcbId: x.pcbId, page: 1 })));
     } else toast.error("Failed to remove parts from BOM!");
     setLoading(false);
     setBtnDeleteDisabled(true);
@@ -167,14 +176,20 @@ export function Bom(props) {
   };
 
   const handleOpenAddPart = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
     setAddPartModalOpen(true);
   };
 
   const handleOpenProducePcb = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
     setProducePcbModalOpen(true);
   };
 
   const handleOpenAddPcb = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
     setAddPcbModalOpen(true);
   };
 
@@ -228,6 +243,7 @@ export function Bom(props) {
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
+      setInventoryMessage(getInventoryMessage(project));
     } else toast.error("Failed to save project change!");
     setLoading(false);
     setIsDirty(false);
@@ -264,15 +280,26 @@ export function Bom(props) {
     setProject({ ...project });
   };
 
-  const getPage = (page, recordCount) => {
-    const start = (page - 1) * recordCount;
+  const getPage = (pcb) => {
+    let currentPage = page;
+    if (pcb.pcbId > 0) {
+      currentPage = getPcbCurrentPage(pcb.pcbId);
+    }
+    const start = (currentPage - 1) * pageSize;
+    let dataSource = [];
+    // show all parts, or the active PCB tab
+    if (pcb.pcbId === -1)
+      dataSource = project.parts;
+    else
+      dataSource = _.filter(project.parts, x => x.pcbId === pcb.pcbId);
+
     let parts = [];
     if (filterInStock)
-      parts = _.filter(project.parts, x => x.quantity > x.part.quantity);
+      parts = _.filter(dataSource, x => x.quantity > x.part.quantity);
     else
-      parts = project.parts;
+      parts = dataSource;
     const partsPage = [];
-    for (let i = start; i < start + recordCount; i++) {
+    for (let i = start; i < start + pageSize; i++) {
       if (i < parts.length) partsPage.push(parts[i]);
     }
     return partsPage;
@@ -303,13 +330,14 @@ export function Bom(props) {
       body: JSON.stringify(request)
     });
     if (response.ok) {
-      const data = await response.json();
-      const newProject = {...project, parts: [...project.parts, data]};
+      const newPart = await response.json();
+      const newProject = {...project, parts: [...project.parts, newPart]};
       setProject(newProject);
-      setInventoryMessage(getInventoryMessage(newProject));
       const newTotalPages = Math.ceil(newProject.parts.length / pageSize);
       setTotalPages(newTotalPages);
       setPage(newTotalPages);
+      setInventoryMessage(getInventoryMessage(newProject));
+      setCurrentPcbPages(_.map(newProject.pcbs, x => ({ pcbId: x.pcbId, page: 1 })));
     } else {
       toast.error("Failed to add part!");
     }
@@ -334,6 +362,7 @@ export function Bom(props) {
       toast.success(`Added ${pcb.name} pcb to project!`);
       setProject({ ...project });
       setInventoryMessage(getInventoryMessage(project));
+      setCurrentPcbPages(_.map(project.pcbs, x => ({ pcbId: x.pcbId, page: 1 })));
     } else {
       toast.error("Failed to add pcb!");
     }
@@ -427,12 +456,24 @@ export function Bom(props) {
     setConfirmDeleteIsOpen(false);
   };
 
-  const getInventoryMessage = (project) => {
-    const pcbCount = getProduciblePcbCount(project.parts);
-    if (pcbCount === 0) {
-      return 'You do not have enough parts to produce a PCB.';
+  const getInventoryMessage = (project, pcb) => {
+    if (pcb && pcb.pcbId > 0) {
+      const pcbCount = getProduciblePcbCount(_.filter(project.parts, p => p.pcbId === pcb.pcbId));
+      if (pcbCount.count === 0) {
+        return <div className="inventorymessage">You do not have enough parts to produce this PCB.</div>;
+      }
+      return <span className="inventorymessage">You can produce this PCB <b>{pcbCount.count}</b> times with your current inventory.</span>; 
     }
-    return <span className="inventorymessage">You can produce <b>{pcbCount}</b> PCB's with your current inventory.</span>;
+
+    const pcbCount = getProduciblePcbCount(project.parts);
+    if (pcbCount.count === 0) {
+      return <div className="inventorymessage">You do not have enough parts to produce your BOM.</div>;
+    }
+    const limitingPcb = _.find(project.pcbs, x => x.pcbId === pcbCount.limitingPcb);
+    return (<div className="inventorymessage">
+      <div>You can produce your BOM <b>{pcbCount.count}</b> times with your current inventory.</div>
+      {limitingPcb && <div><Icon name="microchip" color="blue"/><i>{limitingPcb?.name}</i> is the lowest on inventory.</div>}
+    </div>);
   };
 
   const setActivePartName = (e, partName) => {
@@ -447,9 +488,195 @@ export function Bom(props) {
     }
   };
 
+  const renderTabContent = (pcb = { pcbId: -1 }) => {
+    const pageParts = getPage(pcb);
+    return (<div className="scroll-container">
+      
+    {pcb.pcbId > 0 && <div className="produce-summary">
+      {getInventoryMessage(project, pcb)}
+    </div>}
+    <Table className="bom" style={{width: pageParts.length === 0 ? 'auto' : ''}}>
+      <Table.Header>
+        <Table.Row>
+          <Table.HeaderCell></Table.HeaderCell>
+          <Table.HeaderCell style={{ width: "120px" }} sorted={column === "PCB" ? direction : null} onClick={handleSort("PCB")}>
+            PCB
+          </Table.HeaderCell>
+          <Table.HeaderCell width={3} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
+            Part Number
+          </Table.HeaderCell>
+          <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
+            Mfr Part
+          </Table.HeaderCell>
+          <Table.HeaderCell style={{ width: "100px" }} sorted={column === "partType" ? direction : null} onClick={handleSort("partType")}>
+            Part Type
+          </Table.HeaderCell>
+          <Table.HeaderCell sorted={column === "cost" ? direction : null} onClick={handleSort("cost")}>
+            Cost
+          </Table.HeaderCell>
+          <Table.HeaderCell sorted={column === "quantity" ? direction : null} onClick={handleSort("quantity")}>
+            <Popup content={<p>The quantity of parts required for a single PCB</p>} trigger={<span>Quantity</span>} />
+          </Table.HeaderCell>
+          <Table.HeaderCell sorted={column === "stock" ? direction : null} onClick={handleSort("stock")}>
+            <Popup content={<p>The quantity of parts currently in inventory</p>} trigger={<span>In Stock</span>} />
+          </Table.HeaderCell>
+          <Table.HeaderCell sorted={column === "leadTime" ? direction : null} onClick={handleSort("leadTime")}>
+            Lead Time
+          </Table.HeaderCell>
+          <Table.HeaderCell style={{ width: "110px" }} sorted={column === "referenceId" ? direction : null} onClick={handleSort("referenceId")}>
+            Reference Id(s)
+          </Table.HeaderCell>
+          <Table.HeaderCell style={{ width: "200px" }} sorted={column === "description" ? direction : null} onClick={handleSort("description")}>
+            Description
+          </Table.HeaderCell>
+          <Table.HeaderCell style={{ width: "200px" }} sorted={column === "note" ? direction : null} onClick={handleSort("note")}>
+            Note
+          </Table.HeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {pageParts.length > 0 
+        ? pageParts.map((bomPart, key) => (
+          <Table.Row key={key} onMouseEnter={(e) => setActivePartName(e, bomPart.part?.partNumber || bomPart.partName)} onMouseLeave={(e) => setActivePartName(e, '')}>
+            <Table.Cell>
+              <input type="checkbox" name="chkSelect" value={bomPart.projectPartAssignmentId} onChange={(e) => handlePartSelected(e, bomPart)} />
+            </Table.Cell>
+            <Table.Cell className="overflow">
+              <div style={{ maxWidth: "120px" }}>{_.find(project.pcbs, (x) => x.pcbId === bomPart.pcbId)?.name}</div>
+            </Table.Cell>
+            <Table.Cell>
+              <Clipboard text={bomPart.part?.partNumber || bomPart.partName} />
+              {bomPart.part 
+                ? <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link> 
+                : <Popup 
+                wide
+                content={<p>Edit the name of your unassociated <Icon name="microchip"/> part</p>}
+                trigger={<Input
+                  type="text"
+                  transparent
+                  name="partName"
+                  onBlur={(e) => saveColumn(e, bomPart)}
+                  onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                  value={bomPart.partName || 0}
+                  className="inline-editable"
+                />}
+              />}
+            </Table.Cell>
+            <Table.Cell>{bomPart.part?.manufacturerPartNumber && <><Clipboard text={bomPart.part?.manufacturerPartNumber} /> {bomPart.part?.manufacturerPartNumber}</>}</Table.Cell>
+            <Table.Cell>{bomPart.part?.partType}</Table.Cell>
+            <Table.Cell>{formatCurrency(bomPart.part?.cost || 0)}</Table.Cell>
+            <Table.Cell>
+              <Popup 
+                wide
+                content={<p>Edit the <Icon name="clipboard list" /> BOM quantity required</p>}
+                trigger={<Input
+                  type="text"
+                  transparent
+                  name="quantity"
+                  onBlur={(e) => saveColumn(e, bomPart)}
+                  onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                  value={bomPart.quantity || 0}
+                  fluid
+                  className={`inline-editable ${bomPart.quantity > (bomPart.part?.quantity || bomPart.quantityAvailable || 0) ? "outofstock" : ""}`}
+                />}
+              />
+            </Table.Cell>
+            <Table.Cell>
+              <Popup 
+                wide
+                content={<p>Edit the quantity available in your <Icon name="box" /> inventory</p>}
+                trigger={<Input
+                  type="text"
+                  transparent
+                  name="quantityAvailable"
+                  onBlur={(e) => saveColumn(e, bomPart)}
+                  onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                  value={bomPart.part?.quantity || bomPart.quantityAvailable || 0}
+                  fluid
+                  className="inline-editable"
+                />}
+              />
+            </Table.Cell>
+            <Table.Cell>{bomPart.part?.leadTime || ''}</Table.Cell>
+            <Table.Cell>
+              <Popup 
+                wide
+                content={<p>Edit your custom <Icon name="hashtag" /> reference Id(s)</p>}
+                trigger={<Input
+                  type="text"
+                  transparent
+                  name="referenceId"
+                  onBlur={(e) => saveColumn(e, bomPart)}
+                  onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                  value={bomPart.referenceId || ""}
+                  fluid
+                  className="inline-editable"
+                />}
+              />  
+            </Table.Cell>
+            <Table.Cell className="overflow">
+              <div style={{ width: "250px" }}>
+                {bomPart.part?.description && <><Clipboard text={bomPart.part?.description} /><Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} /></>}
+              </div>
+            </Table.Cell>
+            <Table.Cell>
+              <Popup 
+                wide
+                content={<p>Provide a custom note</p>}
+                trigger={<div style={{ maxWidth: "250px" }}>
+                <Form.Field
+                  type="text"
+                  control={TextArea}
+                  style={{ height: "50px", minHeight: "50px", padding: "5px" }}
+                  name="notes"
+                  onBlur={(e) => saveColumn(e, bomPart)}
+                  onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                  value={bomPart.notes || ""}
+                  className="transparent inline-editable"
+                />
+              </div>}
+              />
+            </Table.Cell>
+          </Table.Row>
+        ))
+      : <Table.Row><Table.Cell colSpan={12} textAlign="center" style={{padding: '30px'}}>No parts added.<br/><br/><Link to="" onClick={handleOpenAddPart} >Add your first part!</Link></Table.Cell></Table.Row>}
+      </Table.Body>
+    </Table>
+</div>);
+  };
+
+  const getPcbTotalPages = (pcbId) => {
+    return Math.ceil(_.filter(project.parts, x => x.pcbId === pcbId).length / pageSize);
+  };
+
+  const getPcbCurrentPage = (pcbId) => {
+    return _.find(currentPcbPages, x => x.pcbId === pcbId).page;
+  };
+
   const outOfStock = getOutOfStockPartsCount(project?.parts);
   const inStock = getInStockPartsCount(project?.parts);
   const producibleCount = getProduciblePcbCount(project?.parts);
+
+  const tabs = [{ menuItem: (
+    <Menu.Item key="all">
+      All <Label>{project.parts.length}</Label>
+    </Menu.Item>), 
+    render: () => <Tab.Pane>
+      <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" style={{margin: '5px'}} />
+      {renderTabContent()}
+    </Tab.Pane> }, 
+    ..._.map(project.pcbs, pcb => ({
+      menuItem: (
+      <Menu.Item key={pcb.pcbId}>
+        <i className="pcb-icon tiny" />
+        {pcb.name} <Label>{_.filter(project.parts, x => x.pcbId === pcb.pcbId).length}</Label>
+      </Menu.Item>),
+      render: () => 
+        <Tab.Pane>
+          <Pagination activePage={getPcbCurrentPage(pcb.pcbId)} totalPages={getPcbTotalPages(pcb.pcbId)} firstItem={null} lastItem={null} onPageChange={(e, control) => handlePcbPageChange(e, control, pcb.pcbId)} size="mini" style={{margin: '5px'}} />
+          {renderTabContent(pcb)}
+        </Tab.Pane>
+    }))];
 
   return (
     <div>
@@ -479,7 +706,7 @@ export function Bom(props) {
         content={confirmPartDeleteContent}
       />
 
-      <Form>
+      <Form className="bom">
         <Segment
           raised
           disabled={pageDisabled}
@@ -519,9 +746,9 @@ export function Bom(props) {
                     </Statistic.Value>
                     <Statistic.Label>Total Parts</Statistic.Label>
                   </Statistic>
-                  <Statistic inverted color={`${project?.parts.length > 0 && producibleCount === 0 ? "red" : "blue"}`}>
+                  <Statistic inverted color={`${project?.parts.length > 0 && producibleCount.count === 0 ? "red" : "blue"}`}>
                     <Statistic.Value>
-                      {producibleCount}
+                      {producibleCount.count}
                     </Statistic.Value>
                     <Statistic.Label>Producible</Statistic.Label>
                   </Statistic>
@@ -561,7 +788,7 @@ export function Bom(props) {
               content="Add a PCB to this project"
               trigger={
                 <Button onClick={handleOpenAddPcb} size="mini" disabled={pageDisabled}>
-                  <Icon name="microchip" color="blue" /> Add PCB
+                  <i className="pcb-icon tiny" /> Add PCB
                 </Button>
               }
             />
@@ -570,7 +797,7 @@ export function Bom(props) {
               content="Reduce inventory quantities when a PCB is assembled"
               trigger={
                 <Button secondary onClick={handleOpenProducePcb} size="mini" disabled={pageDisabled}>
-                  <Icon name="microchip" color="blue" /> Produce PCB
+                  <i className="pcb-icon tiny" /> Produce PCB
                 </Button>
               }
             />
@@ -586,160 +813,13 @@ export function Bom(props) {
           </div>
 
           <div id="activePartName" />
-          <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em", marginTop: "5px" }}>
-            <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="small labeled" onChange={handlePageSizeChange} />
-            <span>records per page</span>
-          </div>
 
-          <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" />
           <Segment loading={loading}>
-            <div className="scroll-container">
-              <Table className="bom">
-                <Table.Header>
-                  <Table.Row>
-                    <Table.HeaderCell></Table.HeaderCell>
-                    <Table.HeaderCell style={{ width: "120px" }} sorted={column === "PCB" ? direction : null} onClick={handleSort("PCB")}>
-                      PCB
-                    </Table.HeaderCell>
-                    <Table.HeaderCell width={3} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
-                      Part Number
-                    </Table.HeaderCell>
-                    <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
-                      Mfr Part
-                    </Table.HeaderCell>
-                    <Table.HeaderCell style={{ width: "100px" }} sorted={column === "partType" ? direction : null} onClick={handleSort("partType")}>
-                      Part Type
-                    </Table.HeaderCell>
-                    <Table.HeaderCell sorted={column === "cost" ? direction : null} onClick={handleSort("cost")}>
-                      Cost
-                    </Table.HeaderCell>
-                    <Table.HeaderCell sorted={column === "quantity" ? direction : null} onClick={handleSort("quantity")}>
-                      <Popup content={<p>The quantity of parts required for a single PCB</p>} trigger={<span>Quantity</span>} />
-                    </Table.HeaderCell>
-                    <Table.HeaderCell sorted={column === "stock" ? direction : null} onClick={handleSort("stock")}>
-                      <Popup content={<p>The quantity of parts currently in inventory</p>} trigger={<span>In Stock</span>} />
-                    </Table.HeaderCell>
-                    <Table.HeaderCell sorted={column === "leadTime" ? direction : null} onClick={handleSort("leadTime")}>
-                      Lead Time
-                    </Table.HeaderCell>
-                    <Table.HeaderCell style={{ width: "110px" }} sorted={column === "referenceId" ? direction : null} onClick={handleSort("referenceId")}>
-                      Reference Id(s)
-                    </Table.HeaderCell>
-                    <Table.HeaderCell style={{ width: "200px" }} sorted={column === "description" ? direction : null} onClick={handleSort("description")}>
-                      Description
-                    </Table.HeaderCell>
-                    <Table.HeaderCell style={{ width: "200px" }} sorted={column === "note" ? direction : null} onClick={handleSort("note")}>
-                      Note
-                    </Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {getPage(page, pageSize).map((bomPart, key) => (
-                    <Table.Row key={key} onMouseEnter={(e) => setActivePartName(e, bomPart.part?.partNumber || bomPart.partName)} onMouseLeave={(e) => setActivePartName(e, '')}>
-                      <Table.Cell>
-                        <input type="checkbox" name="chkSelect" value={bomPart.projectPartAssignmentId} onChange={(e) => handlePartSelected(e, bomPart)} />
-                      </Table.Cell>
-                      <Table.Cell className="overflow">
-                        <div style={{ maxWidth: "120px" }}>{_.find(project.pcbs, (x) => x.pcbId === bomPart.pcbId)?.name}</div>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Clipboard text={bomPart.part?.partNumber || bomPart.partName} />
-                        {bomPart.part 
-                          ? <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link> 
-                          : <Popup 
-                          wide
-                          content={<p>Edit the name of your unassociated <Icon name="microchip"/> part</p>}
-                          trigger={<Input
-                            type="text"
-                            transparent
-                            name="partName"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.partName || 0}
-                            className="inline-editable"
-                          />}
-                        />}
-                      </Table.Cell>
-                      <Table.Cell>{bomPart.part?.manufacturerPartNumber && <><Clipboard text={bomPart.part?.manufacturerPartNumber} /> {bomPart.part?.manufacturerPartNumber}</>}</Table.Cell>
-                      <Table.Cell>{bomPart.part?.partType}</Table.Cell>
-                      <Table.Cell>{formatCurrency(bomPart.part?.cost || 0)}</Table.Cell>
-                      <Table.Cell>
-                        <Popup 
-                          wide
-                          content={<p>Edit the <Icon name="clipboard list" /> BOM quantity required</p>}
-                          trigger={<Input
-                            type="text"
-                            transparent
-                            name="quantity"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.quantity || 0}
-                            fluid
-                            className={`inline-editable ${bomPart.quantity > (bomPart.part?.quantity || bomPart.quantityAvailable || 0) ? "outofstock" : ""}`}
-                          />}
-                        />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Popup 
-                          wide
-                          content={<p>Edit the quantity available in your <Icon name="box" /> inventory</p>}
-                          trigger={<Input
-                            type="text"
-                            transparent
-                            name="quantityAvailable"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.part?.quantity || bomPart.quantityAvailable || 0}
-                            fluid
-                            className="inline-editable"
-                          />}
-                        />
-                      </Table.Cell>
-                      <Table.Cell>{bomPart.part?.leadTime || ''}</Table.Cell>
-                      <Table.Cell>
-                        <Popup 
-                          wide
-                          content={<p>Edit your custom <Icon name="hashtag" /> reference Id(s)</p>}
-                          trigger={<Input
-                            type="text"
-                            transparent
-                            name="referenceId"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.referenceId || ""}
-                            fluid
-                            className="inline-editable"
-                          />}
-                        />  
-                      </Table.Cell>
-                      <Table.Cell className="overflow">
-                        <div style={{ width: "250px" }}>
-                          {bomPart.part?.description && <><Clipboard text={bomPart.part?.description} /><Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} /></>}
-                        </div>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Popup 
-                          wide
-                          content={<p>Provide a custom note</p>}
-                          trigger={<div style={{ maxWidth: "250px" }}>
-                          <Form.Field
-                            type="text"
-                            control={TextArea}
-                            style={{ height: "50px", minHeight: "50px", padding: "5px" }}
-                            name="notes"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.notes || ""}
-                            className="transparent inline-editable"
-                          />
-                        </div>}
-                        />
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table>
+            <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em", height: '0' }}>
+              <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="small labeled" onChange={handlePageSizeChange} />
+              <span>records per page</span>
             </div>
+            <Tab panes={tabs}></Tab>
           </Segment>
         </Segment>
       </Form>

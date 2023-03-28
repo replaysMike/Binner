@@ -521,3 +521,28 @@ code {
 .help-icon:hover {
     color: rgb(0, 100, 230);
 }
+
+.pcb-icon {
+    display: inline-block;
+    width: 64px;
+    height: 46px;
+    background-size: 64px 46px;
+    background-image: url('../public/image/icon_pcb.png');
+    margin-right: 4px;
+}
+
+.pcb-icon.small {
+    width: 32px;
+    height: 23px;
+    background-size: 32px 23px;
+}
+
+.pcb-icon.tiny {
+    width: 22px;
+    height: 16px;
+    background-size: 22px 16px;
+    background-image: url('../public/image/icon_pcb_tiny.png');
+    vertical-align: middle;
+    padding: 0;
+    margin-top: 0px;
+}

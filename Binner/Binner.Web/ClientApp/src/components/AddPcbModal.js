@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Icon, Button, Form, Modal, TextArea, Image, Header, Popup } from "semantic-ui-react";
 import PropTypes from "prop-types";
+import NumberPicker from "./NumberPicker";
 
 export function AddPcbModal(props) {
   AddPcbModal.abortController = new AbortController();
-  const defaultForm = { name: "", description: "", serialNumberFormat: 'SN00000000' };
+  const defaultForm = { name: "", description: "", quantity: "1", serialNumberFormat: 'SN00000000' };
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
 
@@ -21,6 +22,10 @@ export function AddPcbModal(props) {
   const handleChange = (e, control) => {
     form[control.name] = control.value;
     setForm({ ...form });
+  };
+
+  const updateNumberPicker = (e) => {
+    setForm({ ...form, quantity: e.value.toString() });
   };
 
   const handleAdd = (e) => {
@@ -67,8 +72,25 @@ export function AddPcbModal(props) {
                     onChange={handleChange}
                   />
                 }
+              />              
+            </Form.Field>
+            <Form.Field width={8}>
+              <Popup
+                wide
+                content={<p>Enter a quantity (multiplier) of PCB's produced each time you create a PCB. This should normally be 1, unless you require several copies of the same PCB for producing your BOM project.<br/><br/><i>Example:</i> An audio amplifier may require 2 of the same PCB's, one for each left/right channel each time you produce the entire assembly.</p>}
+                trigger={
+                  <Form.Field
+												control={NumberPicker}
+												label="Quantity"
+												placeholder="1"
+												min={0}
+												value={form.quantity || ""}
+												onChange={updateNumberPicker}
+												name="quantity"
+												autoComplete="off"
+											/>
+                }
               />
-              
             </Form.Field>
             <Form.Field width={8}>
               <Popup
