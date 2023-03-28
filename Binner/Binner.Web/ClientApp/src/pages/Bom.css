@@ -33,6 +33,10 @@
 	font-size: 0.9em !important;
 }
 
+.statisticsContainer .inventorymessage, .produce-summary{
+	min-height: 32px;
+}
+
 .statisticsContainer .inventorymessage, .produce-summary .inventorymessage {
 	font-size: 0.9em;
 	color: #ccc;
@@ -65,11 +69,36 @@
 }
 
 .buttons {
-	margin-bottom: 20px;
 }
 
-.buttons button {
-	margin-right: 10px !important;
+.buttons .ui.button {
+	margin-right: 10px;
+}
+
+.ui.form.bom .ui.tabular.menu > .item {
+	max-width: 220px;
+}
+
+/* allow for text ellipsis in tabs */
+.ui.form.bom .ui.tabular.menu > .item > div {
+	max-width: 220px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.ui.form.bom .ui.tabular.menu > .item.smaller {
+	max-width: 125px;
+	padding: 0.98em 0.3em;
+	font-size: 0.9em;
+}
+
+/* allow for text ellipsis in tabs */
+.ui.form.bom .ui.tabular.menu > .item.smaller > div {
+	max-width: 125px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
 .ui.form.bom .ui.tabular.menu > .item.active > .label {
@@ -87,8 +116,8 @@
 
 .ui.table.bom{
 	font-size: 0.9em;
-	width: 1500px;
-	max-width: 1500px;
+	width: 2000px;
+	max-width: 2000px;
 }
 
 .ui.form.bom .buttons .ui.mini.button {

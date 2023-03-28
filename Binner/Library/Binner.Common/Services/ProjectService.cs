@@ -144,6 +144,8 @@ namespace Binner.Common.Services
                 Quantity = request.Quantity,
                 QuantityAvailable = part == null ? request.QuantityAvailable : 0,
                 ReferenceId = request.ReferenceId,
+                CustomDescription = request.CustomDescription,
+                SchematicReferenceId = request.SchematicReferenceId,
             };
             await _storageProvider.AddProjectPartAssignmentAsync(assignment, user);
             // update project (DateModified)
@@ -181,6 +183,9 @@ namespace Binner.Common.Services
                 assignment.Notes = request.Notes;
                 assignment.ReferenceId = request.ReferenceId;
                 assignment.Quantity = request.Quantity;
+                assignment.CustomDescription = request.CustomDescription;
+                assignment.SchematicReferenceId = request.SchematicReferenceId;
+
                 if (part == null)
                     assignment.QuantityAvailable = request.QuantityAvailable;
                 else
@@ -290,7 +295,12 @@ namespace Binner.Common.Services
 
                         if (performUpdates)
                         {
-                            pcbPart.Part.Quantity -= quantityToRemove;
+                            // if the pcb has a quantity > 1, it acts as a multiplier for BOMs that produce multiples of a single PCB
+                            // a value of 0 is invalid
+                            if (pcbEntity.Quantity > 1)
+                                pcbPart.Part.Quantity -= (quantityToRemove * pcbEntity.Quantity);
+                            else
+                                pcbPart.Part.Quantity -= quantityToRemove;
                             await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(pcbPart.Part), user);
                         }
                     }

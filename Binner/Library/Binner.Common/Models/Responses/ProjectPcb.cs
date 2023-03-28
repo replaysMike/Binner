@@ -43,5 +43,15 @@ namespace Binner.Common.Models
         /// Number of parts assigned to pcb
         /// </summary>
         public int PartsCount { get; set; }
+
+        /// <summary>
+        /// Quantity of PCBs that are produced on every production
+        /// </summary>
+        public int Quantity { get; set; }
+
+        /// <summary>
+        /// Cost to produce a single PCB board
+        /// </summary>
+        public double Cost { get; set; }
     }
 }

@@ -4,19 +4,24 @@ import { Popup, Image } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
 import { Events } from "../common/events";
+import useSound from 'use-sound';
+import boopSfx from '../audio/softbeep.mp3';
 
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough}) {
+export function BarcodeScannerInput({listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough,enableSound}) {
   const BufferTimeMs = 500;
 	const [keyBuffer, setKeyBuffer] = useState([]);
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
 	const [previousIsKeyboardListeningState, setPreviousIsKeyboardListeningState] = useState(listening || true);
+	const [playScanSound] = useSound(boopSfx, { soundEnabled: true, volume: 1 });
 	const listeningRef = useRef();
 	listeningRef.current = isKeyboardListening;
 	const keyBufferRef = useRef();
 	keyBufferRef.current = keyBuffer;
+	const playScanSoundRef = useRef();
+  playScanSoundRef.current = playScanSound;
 
   const onReceivedBarcodeInput = (e, buffer) => {
     if (buffer.length < minInputLength) {
@@ -29,6 +34,8 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		keyBufferRef.current.length = 0;
 		// process raw value into an input object with decoded information
     const input = processBarcodeInformation(e, value);
+
+		if (enableSound) playScanSoundRef.current();
 		// fire an event that we received data
 		onReceived(e, input);
   };
@@ -38,7 +45,6 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     let specialCharBuffer = [];
     for (let i = 0; i < buffer.length; i++) {
       let key = buffer[i];
-
       // check for alt key
       if (key.keyCode === 18) {
         // it's a special character, read until alt is no longer pressed
@@ -295,7 +301,14 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   // listens for document keydown events, used for barcode scanner input
   const onKeydown = (e) => {
     if (listeningRef.current === true) {
-			if (swallowKeyEvent) {
+			if (swallowKeyEvent 
+					// dont swallow function keys
+					&& !(e.keyCode >= 112 && e.keyCode <= 123)
+					// dont swallow copy/paste
+					&& !(e.ctrlKey && (e.key === "c" || e.key === "v" || e.key === "x"))
+					&& !(e.shiftKey && (e.key === "Insert"))
+					) {
+				// console.log('swallowing', e);
 				e.preventDefault();
 				e.stopPropagation();
 			}
@@ -304,6 +317,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     } else {
 			// dropped key, not listening
 		}
+		return e;
   };
 
   return (
@@ -332,12 +346,15 @@ BarcodeScannerInput.propTypes = {
   helpUrl: PropTypes.string,
 	swallowKeyEvent: PropTypes.bool,
 	/** keyboard passthrough, for passing data directly to component */
-	passThrough: PropTypes.string
+	passThrough: PropTypes.string,
+	/** True to enable beep sound when an item is scanned */
+	enableSound: PropTypes.bool
 };
 
 BarcodeScannerInput.defaultProps = {
   listening: true,
   minInputLength: 4,
   helpUrl: "/help/scanning",
-	swallowKeyEvent: true
+	swallowKeyEvent: true,
+	enableSound: true
 };

@@ -9,6 +9,7 @@ using Binner.Model.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NPOI.HPSF;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -63,7 +64,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet("list")]
-        public async Task<IActionResult> GetProjectsAsync([FromQuery]PaginatedRequest request)
+        public async Task<IActionResult> GetProjectsAsync([FromQuery] PaginatedRequest request)
         {
             var projects = await _projectService.GetProjectsAsync(request);
             var projectsResponse = new List<BomBasicResponse>();
@@ -196,7 +197,9 @@ namespace Binner.Web.Controllers
                 Name = request.Name,
                 Description = request.Description,
                 SerialNumberFormat = request.SerialNumberFormat,
-                LastSerialNumber = request.SerialNumber
+                LastSerialNumber = request.SerialNumber,
+                Quantity = request.Quantity,
+                Cost = request.Cost
             }, request.ProjectId);
             if (pcb == null)
                 return NotFound();
@@ -209,7 +212,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("pcb")]
-        public async Task<IActionResult> UpdatePartProjectAsync(Pcb request)
+        public async Task<IActionResult> UpdatePcbAsync(Pcb request)
         {
             var pcb = await _pcbService.UpdatePcbAsync(request);
             if (pcb == null)
@@ -269,14 +272,49 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("download")]
-        public async Task<IActionResult> DownloadBomAsync(GetProjectRequest request)
+        public async Task<IActionResult> DownloadBomAsync(DownloadBomRequest request)
         {
-            var bomResponse = await GetBomResponseAsync(request);
+            var bomResponse = await GetBomResponseAsync(new GetProjectRequest { Name = request.Name, ProjectId = request.ProjectId });
             if (bomResponse == null)
                 return NotFound();
-            var exporter = new BomExcelExporter();
-            var file = exporter.Export(bomResponse);
-            return ExportToFile(file, $"{bomResponse.Name}-BOM");
+            switch (request.Format)
+            {
+                default:
+                case DownloadFormats.Csv:
+                {
+                    var exporter = new BomCsvExporter();
+                    var streams = exporter.Export(bomResponse);
+                    return ExportToFile(streams, $"{bomResponse.Name}-Csv-BOM");
+                }
+                case DownloadFormats.Excel:
+                {
+                    var exporter = new BomExcelExporter();
+                    var file = exporter.Export(bomResponse);
+                    return ExportToFile(file, $"{bomResponse.Name}-Excel-BOM");
+                }
+            }
+        }
+
+        private IActionResult ExportToFile(IDictionary<StreamName, Stream> streams, string filename)
+        {
+            var zipStream = new MemoryStream();
+            using (var zipFile = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var stream in streams)
+                {
+                    // write stream to a buffer
+                    stream.Value.Seek(0, SeekOrigin.Begin);
+                    var buffer = new byte[stream.Value.Length];
+                    stream.Value.Read(buffer, 0, (int)stream.Value.Length);
+
+                    // add the stream to the zipfile
+                    var file = zipFile.CreateEntry($"{stream.Key.Name}.{stream.Key.FileExtension}");
+                    using var fileStream = file.Open();
+                    fileStream.Write(buffer, 0, buffer.Length);
+                }
+            }
+            zipStream.Seek(0, SeekOrigin.Begin);
+            return File(zipStream, "application/octet-stream", $"{filename}.zip");
         }
 
         private IActionResult ExportToFile(Stream stream, string filename)

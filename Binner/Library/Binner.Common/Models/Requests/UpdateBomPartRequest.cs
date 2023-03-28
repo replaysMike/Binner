@@ -41,7 +41,6 @@ namespace Binner.Common.Models.Requests
         /// </summary>
         public int QuantityAvailable { get; set; }
 
-
         /// <summary>
         /// Notes about this part
         /// </summary>
@@ -51,6 +50,13 @@ namespace Binner.Common.Models.Requests
         /// Custom reference Id that can be used as a custom designator for the part
         /// </summary>
         public string? ReferenceId { get; set; }
+
+        /// <summary>
+        /// Custom reference Id that can be used as a custom designator for the part on the PCB (silkscreen values)
+        /// </summary>
+        public string? SchematicReferenceId { get; set; }
+
+        public string? CustomDescription { get; set; }
 
         public PartResponse? Part { get; set; }
     }

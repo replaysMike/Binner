@@ -53,6 +53,13 @@ namespace Binner.Common.Models
         public string? ReferenceId { get; set; }
 
         /// <summary>
+        /// Custom reference Id that can be used as a custom designator for the part on the PCB (silkscreen values)
+        /// </summary>
+        public string? SchematicReferenceId { get; set; }
+
+        public string? CustomDescription { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;

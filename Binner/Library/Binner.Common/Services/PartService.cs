@@ -509,10 +509,14 @@ namespace Binner.Common.Services
                 {
                     //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                     // try looking up the part by its barcode value, which could be a product search
-                    digikeyResponse = new ProductBarcodeResponse
+                    var is2dBarcode = barcode.StartsWith("[)>");
+                    if (!is2dBarcode)
                     {
-                        DigiKeyPartNumber = barcode
-                    };
+                        digikeyResponse = new ProductBarcodeResponse
+                        {
+                            DigiKeyPartNumber = barcode
+                        };
+                    }
                 }
                 else
                 {

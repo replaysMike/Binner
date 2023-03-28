@@ -1619,7 +1619,7 @@ namespace Binner.Common.StorageProviders
                 await _dataLock.WaitAsync();
             try
             {
-                var db = _db as BinnerDbV5;
+                var db = _db as BinnerDbV6;
                 if (db == null) return;
 
                 db.FirstPartId = db.Parts
@@ -1633,7 +1633,7 @@ namespace Binner.Common.StorageProviders
                 db.Count = db.Parts.Count;
                 db.Checksum = BuildChecksum(db);
                 using var stream = new MemoryStream();
-                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV5.VersionNumber, BinnerDbV5.VersionCreated));
+                WriteDbVersion(stream, new BinnerDbVersion(BinnerDbV6.VersionNumber, BinnerDbV5.VersionCreated));
                 var serializedBytes = _serializer.Serialize(db, SerializationOptions);
                 stream.Write(serializedBytes, 0, serializedBytes.Length);
                 var directoryName = Path.GetDirectoryName(_config.Filename);
@@ -1707,7 +1707,7 @@ namespace Binner.Common.StorageProviders
                 });
             }
 
-            return new BinnerDbV5
+            return new BinnerDbV6
             {
                 Count = 0,
                 FirstPartId = 0,

@@ -40,12 +40,15 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Reference Id", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Description", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Note", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
+
                 foreach (var part in data.Parts.Where(x => x.PcbId == null))
                 {
                     var row = usheet.CreateRow(rowIndex);
                     rowIndex++;
                     columnIndex = 0;
-                    var outOfStock = part.Quantity > part.Part?.Quantity;
+                    var outOfStock = part.Quantity > (part.Part?.Quantity ?? part.QuantityAvailable);
                     var rowStyle = outOfStock ? "outofstock" : null;
                     SetCellValue(row.CreateCell(columnIndex), outOfStock ? 1 : 0, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
@@ -53,11 +56,13 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.ReferenceId, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Description, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.SchematicReferenceId, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.CustomDescription, styles, rowStyle); columnIndex++;
                 }
                 for (var i = 0; i < 10; i++)
                 {
@@ -87,12 +92,15 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Reference Id", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Description", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Note", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
+
                 foreach (var part in data.Parts.Where(x => x.PcbId == pcb.PcbId))
                 {
                     var row = sheet.CreateRow(rowIndex);
                     rowIndex++;
                     columnIndex = 0;
-                    var outOfStock = part.Quantity > part.Part?.Quantity;
+                    var outOfStock = part.Quantity > (part.Part?.Quantity ?? part.QuantityAvailable);
                     var rowStyle = outOfStock ? "outofstock" : null;
                     SetCellValue(row.CreateCell(columnIndex), outOfStock ? 1 : 0, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
@@ -100,16 +108,70 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.ReferenceId, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Description, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.SchematicReferenceId, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.CustomDescription, styles, rowStyle); columnIndex++;
                 }
                 for (var i = 0; i < 10; i++)
                 {
                     //sheet.AutoSizeColumn(i);
                     sheet.SetColumnWidth(i, 20 * 256);
+                }
+            }
+
+            // create a sheet for all out of stock items
+            if (data.Parts.Any(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)))
+            {
+                var osheet = workbook.CreateSheet("OutOfStock");
+                osheet.DefaultColumnWidth = 130;
+
+                // header
+                rowIndex = 0;
+                var headerRow = osheet.CreateRow(rowIndex);
+                rowIndex++;
+                columnIndex = 0;
+                CreateCell(headerRow, "Pcb", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "PartNumber", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Mfr Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Part Type", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Cost", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Qty Required", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Qty In Stock", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Lead Time", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Reference Id", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Description", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Note", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
+
+                foreach (var part in data.Parts.Where(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)))
+                {
+                    var row = osheet.CreateRow(rowIndex);
+                    rowIndex++;
+                    columnIndex = 0;
+                    var rowStyle = "outofstock";
+                    SetCellValue(row.CreateCell(columnIndex), data.Pcbs.Where(x => x.PcbId == part.PcbId).Select(x => x.Name).FirstOrDefault(), styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.ReferenceId, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Description, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.SchematicReferenceId, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.CustomDescription, styles, rowStyle); columnIndex++;
+                }
+                for (var i = 0; i < 10; i++)
+                {
+                    //osheet.AutoSizeColumn(i);
+                    osheet.SetColumnWidth(i, 20 * 256);
                 }
             }
 

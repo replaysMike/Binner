@@ -178,22 +178,27 @@ namespace Binner.Common.Integrations
                     if (is2dBarcode)
                     {
                         // DigiKey requires the GS (Group separator) to be \u241D, and the RS (Record separator) to be \u241E
-                        barcodeFormatted = barcodeFormatted
-                            // GS
-                            .Replace("\u001d", "\u241D")
-                            .Replace("\u005d", "\u241D")
-                            // RS
-                            .Replace("\u001e", "\u241E")
-                            .Replace("\u005e", "\u241E");
-                        barcodeFormatted = HttpUtility.UrlEncode(barcodeFormatted);
-                    }
+                        // GS
+                        var gsReplacement = "\u241D";
+                        barcodeFormatted = barcodeFormatted.Replace("\u001d", gsReplacement);
+                        barcodeFormatted = barcodeFormatted.Replace("\u005d", gsReplacement);
+                        // RS
+                        var rsReplacement = "\u241E";
+                        barcodeFormatted = barcodeFormatted.Replace("\u001e", rsReplacement);
+                        barcodeFormatted = barcodeFormatted.Replace("\u005e", rsReplacement);
 
-                    var uri = Url.Combine(_configuration.ApiUrl, endpoint, barcodeFormatted);
-                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
+                    }
+                    var barcodeFormattedPath = HttpUtility.UrlEncode(barcodeFormatted);
+
+                    //var uri = Url.Combine(_configuration.ApiUrl, endpoint, barcodeFormatted);
+                    //var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
+                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, string.Join("/", _configuration.ApiUrl, endpoint) + barcodeFormattedPath);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
                     if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
                     {
+                        var contentString = response.Content.ReadAsStringAsync().Result;
+                        apiResponse.Errors.Add(contentString);
                         return apiResponse;
                     }
 
@@ -510,7 +515,7 @@ namespace Binner.Common.Integrations
         /// <exception cref="DigikeyUnauthorizedException"></exception>
         private bool TryHandleResponse(HttpResponseMessage response, OAuthAuthorization authenticationResponse, out IApiResponse apiResponse)
         {
-            apiResponse = apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+            apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new DigikeyUnauthorizedException(authenticationResponse);
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
@@ -532,6 +537,16 @@ namespace Binner.Common.Integrations
             {
                 // allow processing of response
                 return false;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+                var resultString = response.Content.ReadAsStringAsync().Result;
+                if (!string.IsNullOrEmpty(resultString))
+                    apiResponse.Errors.Add(resultString);
+                else
+                    apiResponse.Errors.Add($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}");
+                return true;
             }
 
             // return generic error
@@ -555,6 +570,8 @@ namespace Binner.Common.Integrations
                 // get refresh token, retry
                 _oAuth2Service.AccessTokens.RefreshToken = ex.Authorization.RefreshToken;
                 var token = await _oAuth2Service.RefreshTokenAsync();
+                if (_httpContextAccessor.HttpContext == null)
+                    throw new Exception($"HttpContext cannot be null!");
                 var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
                 var refreshTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
                 {
@@ -655,6 +672,17 @@ namespace Binner.Common.Integrations
             var authUrl = _oAuth2Service.GenerateAuthUrl(scopes, state);
 
             return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
+        }
+
+        private HttpRequestMessage CreateRequest(OAuthAuthorization authResponse, HttpMethod method, string url)
+        {
+            var message = new HttpRequestMessage(method, url);
+            message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
+            message.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
+            message.Headers.Add("X-DIGIKEY-Locale-Site", "CA");
+            message.Headers.Add("X-DIGIKEY-Locale-Language", "en");
+            message.Headers.Add("X-DIGIKEY-Locale-Currency", "CAD");
+            return message;
         }
 
         private HttpRequestMessage CreateRequest(OAuthAuthorization authResponse, HttpMethod method, Uri uri)
