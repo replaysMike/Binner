@@ -100,7 +100,7 @@ export function ProducePcbModal(props) {
 
   return (
     <div>
-      <Modal centered open={isOpen || false} onClose={handleModalClose}>
+      <Modal centered open={isOpen || false} onClose={handleModalClose} className="producePcbModal">
         <Modal.Header>BOM Management</Modal.Header>
         <Modal.Content scrolling image>
           <Image size="medium" src="/image/pcb.png" wrapped />
@@ -168,7 +168,7 @@ export function ProducePcbModal(props) {
         <Modal.Actions>
           <Button onClick={handleModalClose}>Cancel</Button>
           <Button primary onClick={handleSubmit} disabled={form.pcbs.length === 0}>
-            <Icon name="microchip" /> Produce
+            <i className="pcb-icon tiny" /> Produce
           </Button>
         </Modal.Actions>
       </Modal>

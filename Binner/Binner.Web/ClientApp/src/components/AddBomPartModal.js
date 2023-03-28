@@ -135,7 +135,7 @@ export function AddBomPartModal(props) {
   };
 
   return (
-    <div>
+    <div className="addBomPartModal">
 			<Confirm
         className="confirm"
         header="Add Part"

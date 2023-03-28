@@ -53,23 +53,25 @@ export const getOutOfStockParts = (parts) => {
  * @param {array} parts Parts array from BOM list
  * @returns The count of how many PCBs can be produced
  */
-export const getProducablePcbCount = (parts) => {
-	if (parts === undefined) return 0;
+export const getProduciblePcbCount = (parts) => {
+	if (parts === undefined) return { count: 0, limitingPcb: -1 };
 	const inStock = getInStockPartsCount(parts);
 	const outOfStock = getOutOfStockPartsCount(parts);
 	if (outOfStock > 0) {
-		return 0;
+		return { count: 0, limitingPcb: -1 };
 	}
 	if (inStock > 0) {
 		// deep clone the parts array
-		const partsConsumed = parts.map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0 }}));
+		const partsConsumed = parts.map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0, pcbId: x.pcbId }}));
 		let pcbsProduced = 0;
 		let pcbsExceeded = false;
+		let limitingPcb = -1;
 		for(let pcb = 0; pcb < 10000; pcb++){
 			for(let i = 0; i < partsConsumed.length; i++) {
 				partsConsumed[i].part.quantity -= partsConsumed[i].quantity;
 				if (partsConsumed[i].part.quantity < 0) {
 					pcbsExceeded = true;
+					limitingPcb = partsConsumed[i].part.pcbId;
 					break;
 				}
 			}
@@ -77,7 +79,7 @@ export const getProducablePcbCount = (parts) => {
 				break;
 			pcbsProduced++;
 		}
-		return pcbsProduced;
+		return { count: pcbsProduced, limitingPcb };
 	}
-	return 0;
+	return { count: 0, limitingPcb: -1 };
 };

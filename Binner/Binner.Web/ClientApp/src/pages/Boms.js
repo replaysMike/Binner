@@ -51,7 +51,7 @@ export function Boms (props) {
   const loadProjects = async (page, pageSize, reset = false) => {
     setLoading(true);
     let endOfData = false;
-    const response = await fetchApi(`api/bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
+    const response = await fetchApi(`bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
     const pageOfData = response.data;
     pageOfData.forEach(function (element) {
       element.loading = true;

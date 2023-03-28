@@ -33,13 +33,19 @@
 	font-size: 0.9em !important;
 }
 
-.statisticsContainer .inventorymessage {
+.statisticsContainer .inventorymessage, .produce-summary .inventorymessage {
 	font-size: 0.9em;
 	color: #ccc;
 }
 
-.statisticsContainer .inventorymessage b {
+.statisticsContainer .inventorymessage b, .produce-summary .inventorymessage b {
 	color: #fff;
+}
+
+.statisticsContainer .inventorymessage i, .produce-summary .inventorymessage i {
+	font-style: normal;
+	font-weight: 200;
+	color: rgb(248, 234, 173);
 }
 
 .projectinfo a {
@@ -66,13 +72,47 @@
 	margin-right: 10px !important;
 }
 
+.ui.form.bom .ui.tabular.menu > .item.active > .label {
+	background-color: rgb(33, 133, 208, 1);
+}
+
+.ui.form.bom .ui.tabular.menu > .item > .label {
+	background-color: rgb(0,0,0, 0.15);
+}
+
+.ui.tab {
+	padding: 0;
+	min-height: 800px;
+}
+
 .ui.table.bom{
 	font-size: 0.9em;
 	width: 1500px;
+	max-width: 1500px;
+}
+
+.ui.form.bom .buttons .ui.mini.button {
+	line-height: 1.3em;
+}
+
+.producePcbModal .actions .ui.button {
+	line-height: 1.2em;
+}
+
+.produce-summary {
+	width: 100%;
+	padding: 4px;
+	margin: 0;
+	text-align: center;
+	background-color: rgb(0,0,0,1);
 }
 
 input[type=checkbox] {
 	cursor: pointer;
+}
+
+.ui.table.bom {
+	margin-top: 0;
 }
 
 table.bom th {
