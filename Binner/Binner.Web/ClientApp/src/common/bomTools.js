@@ -51,9 +51,10 @@ export const getOutOfStockParts = (parts) => {
 /**
  * Compute the total number of PCBs that can be produced based on BOM list inventory
  * @param {array} parts Parts array from BOM list
+ * @param {object} pcb The pcb to produce (optionally)
  * @returns The count of how many PCBs can be produced
  */
-export const getProduciblePcbCount = (parts) => {
+export const getProduciblePcbCount = (parts, pcb) => {
 	if (parts === undefined) return { count: 0, limitingPcb: -1 };
 	const inStock = getInStockPartsCount(parts);
 	const outOfStock = getOutOfStockPartsCount(parts);
@@ -68,10 +69,20 @@ export const getProduciblePcbCount = (parts) => {
 		let limitingPcb = -1;
 		for(let pcb = 0; pcb < 10000; pcb++){
 			for(let i = 0; i < partsConsumed.length; i++) {
-				partsConsumed[i].part.quantity -= partsConsumed[i].quantity;
+				const pcbId = partsConsumed[i].part.pcbId;
+				// if a pcb is provided, take into consideration the pcb quantity as well.
+				// if the pcb has a quantity > 1, it acts as a multiplier for BOMs that produce multiples of a single PCB
+				if (pcb && pcb.pcbId > 0) {
+					let pcbQuantity = pcb.quantity;
+					// a value of 0 is invalid
+					if (pcbQuantity <= 0) pcbQuantity = 1;
+					partsConsumed[i].part.quantity -= (partsConsumed[i].quantity * pcbQuantity);
+				} else {
+					partsConsumed[i].part.quantity -= partsConsumed[i].quantity;
+				}
 				if (partsConsumed[i].part.quantity < 0) {
 					pcbsExceeded = true;
-					limitingPcb = partsConsumed[i].part.pcbId;
+					limitingPcb = pcbId;
 					break;
 				}
 			}

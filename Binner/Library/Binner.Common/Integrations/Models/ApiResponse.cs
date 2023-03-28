@@ -26,12 +26,12 @@ namespace Binner.Common.Integrations.Models
         /// <summary>
         /// Errors
         /// </summary>
-        public IEnumerable<string> Errors { get; set; } = new List<string>();
+        public ICollection<string> Errors { get; set; } = new List<string>();
         
         /// <summary>
         /// Warnings
         /// </summary>
-        public IEnumerable<string> Warnings { get; set; } = new List<string>();
+        public ICollection<string> Warnings { get; set; } = new List<string>();
 
         /// <summary>
         /// Name of api
@@ -49,13 +49,13 @@ namespace Binner.Common.Integrations.Models
             ApiName = apiName;
         }
 
-        public ApiResponse(IEnumerable<string> errors, string apiName)
+        public ApiResponse(ICollection<string> errors, string apiName)
         {
             Errors = errors;
             ApiName = apiName;
         }
 
-        public ApiResponse(bool requiresAuthentication, string redirectUrl, IEnumerable<string> errors, string apiName)
+        public ApiResponse(bool requiresAuthentication, string redirectUrl, ICollection<string> errors, string apiName)
         {
             RequiresAuthentication = requiresAuthentication;
             RedirectUrl = redirectUrl;
@@ -77,16 +77,16 @@ namespace Binner.Common.Integrations.Models
         {
             return new ApiResponse(apiName)
             {
-                Warnings = Enumerable.Repeat(warning, 1)
+                Warnings = Enumerable.Repeat(warning, 1).ToList()
             };
         }
 
-        public static ApiResponse Create(IEnumerable<string> errors, string apiName)
+        public static ApiResponse Create(ICollection<string> errors, string apiName)
         {
             return new ApiResponse(errors, apiName);
         }
 
-        public static ApiResponse CreateWarnings(IEnumerable<string> warnings, string apiName)
+        public static ApiResponse CreateWarnings(ICollection<string> warnings, string apiName)
         {
             return new ApiResponse(apiName)
             {
@@ -96,10 +96,10 @@ namespace Binner.Common.Integrations.Models
 
         public static ApiResponse Create(bool requiresAuthentication, string redirectUrl, string error, string apiName)
         {
-            return new ApiResponse(requiresAuthentication, redirectUrl, Enumerable.Repeat(error, 1), apiName);
+            return new ApiResponse(requiresAuthentication, redirectUrl, Enumerable.Repeat(error, 1).ToList(), apiName);
         }
 
-        public static ApiResponse Create(bool requiresAuthentication, string redirectUrl, IEnumerable<string> errors, string apiName)
+        public static ApiResponse Create(bool requiresAuthentication, string redirectUrl, ICollection<string> errors, string apiName)
         {
             return new ApiResponse(requiresAuthentication, redirectUrl, errors, apiName);
         }

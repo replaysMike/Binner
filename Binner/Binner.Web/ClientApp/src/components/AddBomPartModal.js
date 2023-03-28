@@ -12,7 +12,9 @@ export function AddBomPartModal(props) {
     pcbId: null, 
     quantity: '1', 
     referenceId: '', 
-    notes: '' 
+    notes: '',
+    schematicReferenceId: '',
+    customDescription: ''
   };
   const [isOpen, setIsOpen] = useState(false);
   const [addPartSearchResults, setAddPartSearchResults] = useState([]);
@@ -185,8 +187,15 @@ export function AddBomPartModal(props) {
 							<Form.Field width={4}>
 								<Popup 
 									wide
-									content={<p>Enter a custom referenceId you can use for identifying this part.<br/>Examples: <i>D1</i>, <i>C2</i>, <i>Safety Fuse</i></p>}
-									trigger={<Form.Input label="ReferenceId(s)" placeholder="D1,D2" name="referenceId" value={form.referenceId || ''} onChange={handleChange} icon="hashtag" />}
+									content={<p>Enter a custom Reference Id you can use for identifying this part.<br/>Examples: <i>Optoisolator1</i>, <i>Capacitor Array</i></p>}
+									trigger={<Form.Input label="Reference Id(s)" placeholder="Optoisolator1" name="referenceId" value={form.referenceId || ''} onChange={handleChange} icon="hashtag" />}
+								/>
+							</Form.Field>
+              <Form.Field width={4}>
+								<Popup 
+									wide
+									content={<p>Enter one or more Schematic Reference Ids you can use for identifying this part on the PCB silkscreen.<br/>Examples: <i>D1</i>, <i>C2</i>, <i>Q1</i></p>}
+									trigger={<Form.Input label="Schematic Reference Id(s)" placeholder="D1,D2" name="schematicReferenceId" value={form.schematicReferenceId || ''} onChange={handleChange} icon="hashtag" />}
 								/>
 							</Form.Field>
 							<Form.Field width={4}>
@@ -197,13 +206,22 @@ export function AddBomPartModal(props) {
 									/>								
 							</Form.Field>
 						</Form.Group>
-            <Form.Field width={8}>
-							<Popup 
-								wide
-								content={<p>Search for a part in your inventory</p>}
-								trigger={<Form.Input label="Part Number" placeholder="LM358" name="keyword" value={form.keyword} onChange={handleChange} icon="microchip" />}
-							/>
-            </Form.Field>
+            <Form.Group>
+              <Form.Field width={4}>
+                <Popup 
+                  wide
+                  content={<p>Search for a part in your inventory</p>}
+                  trigger={<Form.Input label="Part Number" placeholder="LM358" name="keyword" value={form.keyword} onChange={handleChange} icon="microchip" />}
+                />
+              </Form.Field>
+              <Form.Field width={4}>
+								<Popup 
+										wide
+										content={<p>Enter your own custom description for this part.</p>}
+										trigger={<Form.Field label="Custom Description" placeholder="LM358 is a general purpose op-amp" type='text' control={TextArea} style={{height: '43px', minHeight: '43px', padding: '5px'}} name='customDescription' onChange={handleChange} value={form.customDescription || ''} />}
+									/>								
+							</Form.Field>
+            </Form.Group>
           </Form>
 
           <PartsGrid

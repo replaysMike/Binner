@@ -238,6 +238,38 @@ export function Inventory(props) {
     }
   };
 
+  const getPartMetadata = async (input, part) => {
+    if (partTypesRef.current.length === 0)
+      console.error("There are no partTypes! This shouldn't happen and is a bug.");
+    Inventory.infoAbortController.abort();
+    Inventory.infoAbortController = new AbortController();
+    try {
+      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+        signal: Inventory.infoAbortController.signal
+      });
+      const data = response.data;
+      if (data.requiresAuthentication) {
+        // redirect for authentication
+        window.open(data.redirectUrl, "_blank");
+        return;
+      }
+
+      if (data.errors && data.errors.length > 0) {
+        setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
+        return;
+      }
+
+      return data;
+
+    } catch (ex) {
+      console.error("Exception", ex);
+      if (ex.name === "AbortError") {
+        return; // Continuation logic has already been skipped, so return normally
+      }
+      throw ex;
+    }
+  };
+
   const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [isEditing]);
 
   const onUploadSubmit = async (uploadFiles, type) => {
@@ -384,6 +416,7 @@ export function Inventory(props) {
       const scannedPart = {
         partNumber: cleanPartNumber,
         quantity: parseInt(input.value.quantity || "1"),
+        scannedQuantity: parseInt(input.value.quantity || "1"),
         location: (lastPart && lastPart.location) || "",
         binNumber: (lastPart && lastPart.binNumber) || "",
         binNumber2: (lastPart && lastPart.binNumber2) || "",
@@ -393,45 +426,105 @@ export function Inventory(props) {
       };
       const existingPartNumber = _.find(scannedPartsRef.current, { partNumber: cleanPartNumber });
       if (existingPartNumber) {
-        existingPartNumber.quantity++;
+        console.log('existing part number found in scanned parts', existingPartNumber, cleanPartNumber);
+        existingPartNumber.quantity += existingPartNumber.scannedQuantity || 1;
         localStorage.setItem("scannedPartsSerialized", JSON.stringify(scannedPartsRef.current));
         setShowBarcodeBeingScanned(false);
         setHighlightScannedPart(existingPartNumber);
-        setScannedParts(scannedPartsRef.current);
+        setScannedParts([...scannedPartsRef.current]);
       } else {
         // fetch metadata on the barcode, don't await, do a background update
-        fetchBarcodeMetadata(e, scannedPart.barcode);
-
         const newScannedParts = [...scannedPartsRef.current, scannedPart];
         localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
         setShowBarcodeBeingScanned(false);
         setHighlightScannedPart(scannedPart);
         setScannedParts(newScannedParts);
+
+        fetchBarcodeMetadata(e, scannedPart, (partInfo) => {
+          // barcode found
+          const newScannedParts = [...scannedPartsRef.current];
+          const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber || i.barcode === scannedPart.barcode);
+          if (scannedPartIndex >= 0) {
+            const scannedPart = newScannedParts[scannedPartIndex];
+            scannedPart.description = partInfo.description;
+            if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
+              scannedPart.partNumber = partInfo.basePartNumber;
+            newScannedParts[scannedPartIndex] = scannedPart;
+            setScannedParts(newScannedParts);
+            localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
+          }
+        }, (scannedPart) => {
+          // no barcode info found, try searching the part number
+          //searchDebounced(scannedPart.partNumber, scannedPart);
+          console.log('no barcode found, getting partInfo');
+          getPartMetadata(scannedPart.partNumber, scannedPart).then((data) => {
+            console.log('partInfo received', data);
+            if (data.response.parts.length > 0) {
+              const firstPart = data.response.parts[0];
+              console.log('adding part', firstPart);
+              const newScannedParts = [...scannedPartsRef.current];
+              const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === firstPart.manufacturerPartNumber || i.barcode === scannedPart.barcode);
+              if (scannedPartIndex >= 0) {
+                const scannedPart = newScannedParts[scannedPartIndex];
+                scannedPart.description = firstPart.description;
+                if (firstPart.basePartNumber && firstPart.basePartNumber.length > 0)
+                  scannedPart.partNumber = firstPart.basePartNumber;
+                newScannedParts[scannedPartIndex] = scannedPart;
+                setScannedParts(newScannedParts);
+                localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
+              }
+            }
+          });
+        });
       }
     } else {
       // scan single part
-      if (cleanPartNumber) {
-        setPartMetadataIsSubscribed(false);
-        setPartMetadataError(null);
-        const newPart = {...part, 
-          partNumber: cleanPartNumber, 
-          quantity: input.value.quantity || "1", 
-          partTypeId: -1,
-          mountingTypeId: "-1",
-        };
-        setPart(newPart);
-        if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: newPart.quantity});
-        setShowBarcodeBeingScanned(false);
-        searchDebounced(cleanPartNumber, newPart);
-        setIsDirty(true);
-      }
+      console.log('bulk scan is NOT open', cleanPartNumber);
+      // fetch metadata on the barcode, don't await, do a background update
+      const scannedPart = {
+        partNumber: cleanPartNumber,
+        barcode: input.rawValue
+      };
+      fetchBarcodeMetadata(e, scannedPart, (partInfo) => {
+        // barcode found
+        console.log("Barcode info found!", partInfo);
+        if (cleanPartNumber) {
+          setPartMetadataIsSubscribed(false);
+          setPartMetadataError(null);
+          if(!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, barcodeQuantity: partInfo.quantityAvailable });
+          if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: partInfo.quantityAvailable});
+          setShowBarcodeBeingScanned(false);
+
+          // also run a search to get datasheets/images
+          searchDebounced(cleanPartNumber, part);
+          setIsDirty(true);
+        }
+      }, (scannedPart) => {
+        console.log("No barcode info found, searching part number");
+        // no barcode info found, try searching the part number
+        if (cleanPartNumber) {
+          setPartMetadataIsSubscribed(false);
+          setPartMetadataError(null);
+          const newPart = {...part, 
+            partNumber: cleanPartNumber, 
+            quantity: parseInt(input.value?.quantity || "1"),
+            partTypeId: -1,
+            mountingTypeId: "-1",
+          };
+          setPart(newPart);
+          if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: newPart.quantity});
+          setShowBarcodeBeingScanned(false);
+          searchDebounced(cleanPartNumber, newPart);
+          setIsDirty(true);
+        }
+      }); 
     }
   };
 
-  const fetchBarcodeMetadata = async (e, barcode) => {
+  const fetchBarcodeMetadata = async (e, scannedPart, onSuccess, onFailure) => {
     e.preventDefault();
     e.stopPropagation();
-    const response = await fetchApi(`part/barcode/info?barcode=${barcode}`, {
+    const response = await fetchApi(`part/barcode/info?barcode=${scannedPart.barcode}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -439,20 +532,18 @@ export function Inventory(props) {
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
+      if (data.requiresAuthentication) {
+        // redirect for authentication
+        window.open(data.redirectUrl, "_blank");
+        return;
+      }
       if (data.response.parts.length > 0) {
         // show the metadata in the UI
         var partInfo =  data.response.parts[0];
-        const newScannedParts = [...scannedPartsRef.current];
-        const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber || i.barcode === barcode);
-        if (scannedPartIndex >= 0) {
-          const scannedPart = newScannedParts[scannedPartIndex];
-          scannedPart.description = partInfo.description;
-          if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
-            scannedPart.partNumber = partInfo.basePartNumber;
-          newScannedParts[scannedPartIndex] = scannedPart;
-          setScannedParts(newScannedParts);
-          localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
-        }
+        onSuccess(partInfo);
+      }else {
+        // no barcode found
+        onFailure(scannedPart);
       }
     }
   };
@@ -872,6 +963,7 @@ export function Inventory(props) {
 
     // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
     if (control && control.value && typeof control.value === "string" && control.value.includes("[)>")) {
+      console.log('barcode input detected, switching mode');
       enableKeyboardListening();
       setKeyboardPassThrough("[)>");
       updatedPart[control.name] = "";
@@ -945,7 +1037,8 @@ export function Inventory(props) {
       manufacturer: suggestedPart.manufacturer,
       manufacturerPartNumber: suggestedPart.manufacturerPartNumber,
       imageUrl: suggestedPart.imageUrl,
-      status: suggestedPart.status
+      status: suggestedPart.status,
+      quantity: suggestedPart.barcodeQuantity || 1,
     };
     console.log('suggestedPart', mappedPart);
     entity.partNumber = mappedPart.partNumber;
@@ -1440,7 +1533,7 @@ export function Inventory(props) {
                 <Table.Cell collapsing style={{maxWidth: '200px'}}>
                   <Form.Input 
                     name="partNumber" 
-                    value={p.partNumber} 
+                    value={p.partNumber || ''} 
                     onChange={(e, c) => handleScannedPartChange(e, c, p)} 
                     onFocus={disableKeyboardListening} 
                     onBlur={e => { enableKeyboardListening(); fetchBarcodeMetadata(e, p.partNumber); }} 
@@ -1449,7 +1542,7 @@ export function Inventory(props) {
                 <Table.Cell collapsing>
                   <Form.Input
                     width={10}
-                    value={p.quantity}
+                    value={p.quantity || '1'}
                     onChange={(e, c) => handleScannedPartChange(e, c, p)}
                     name="quantity"
                     onFocus={disableKeyboardListening}
@@ -1461,7 +1554,7 @@ export function Inventory(props) {
                     wide
                     hoverable
                     content={<p>{p.description}</p>}
-                    trigger={<Form.Input name="description" value={p.description} onChange={(e, c) => handleScannedPartChange(e, c, p)} onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />}
+                    trigger={<Form.Input name="description" value={p.description || ''} onChange={(e, c) => handleScannedPartChange(e, c, p)} onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />}
                   />                  
                 </Table.Cell>
                 <Table.Cell collapsing textAlign="center" verticalAlign="middle" width={1}>
@@ -1471,7 +1564,7 @@ export function Inventory(props) {
                   <Form.Input
                     width={16}
                     placeholder="Home lab"
-                    value={p.location}
+                    value={p.location || ''}
                     onChange={(e, c) => handleScannedPartChange(e, c, p)}
                     name="location"
                     onFocus={disableKeyboardListening}
@@ -1482,7 +1575,7 @@ export function Inventory(props) {
                   <Form.Input
                     width={14}
                     placeholder=""
-                    value={p.binNumber}
+                    value={p.binNumber || ''}
                     onChange={(e, c) => handleScannedPartChange(e, c, p)}
                     name="binNumber"
                     onFocus={disableKeyboardListening}
@@ -1493,7 +1586,7 @@ export function Inventory(props) {
                   <Form.Input
                     width={14}
                     placeholder=""
-                    value={p.binNumber2}
+                    value={p.binNumber2 || ''}
                     onChange={(e, c) => handleScannedPartChange(e, c, p)}
                     name="binNumber2"
                     onFocus={disableKeyboardListening}
@@ -1583,7 +1676,7 @@ export function Inventory(props) {
 
       {/* FORM START */}
 
-      <Form onSubmit={onSubmit}>
+      <Form onSubmit={onSubmit} className="inventory">
         {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} passThrough={keyboardPassThrough} minInputLength={3} /> }
         {part && part.partId > 0 && (
           <Button
@@ -1608,7 +1701,7 @@ export function Inventory(props) {
             wide
             content={<p>Bulk add parts using a barcode scanner</p>}
             trigger={
-              <div style={{ width: "132px", height: "30px", display: "inline-block", cursor: "pointer" }} onClick={handleBulkBarcodeScan}>
+              <div style={{ width: "132px", height: "30px", display: "inline-block", cursor: "pointer" }} className="barcodescan" onClick={handleBulkBarcodeScan}>
                 <div className="anim-box">
                   <div className="scanner" />
                   <div className="anim-item anim-item-sm"></div>

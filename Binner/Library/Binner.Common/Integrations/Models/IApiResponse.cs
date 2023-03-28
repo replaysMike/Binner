@@ -27,11 +27,11 @@ namespace Binner.Common.Integrations.Models
         /// <summary>
         /// Errors
         /// </summary>
-        IEnumerable<string> Errors { get; set; }
+        ICollection<string> Errors { get; set; }
 
         /// <summary>
         /// Warnings
         /// </summary>
-        IEnumerable<string> Warnings { get; set; }
+        ICollection<string> Warnings { get; set; }
     }
 }

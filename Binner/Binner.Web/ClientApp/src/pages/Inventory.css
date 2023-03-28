@@ -135,3 +135,13 @@
 .ui.toggle.checkbox.small label:after {
 	transform: scale(0.75);
 }
+
+.inventory section {
+	display:inline-block;
+	margin-right: 40px;
+}
+
+.inventory .barcodescan {
+	position: relative;
+	top: 3px;
+}

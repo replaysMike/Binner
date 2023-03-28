@@ -18,6 +18,7 @@ import _ from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
+import { formatCurrency } from "../common/Utils";
 import "./Bom.css";
 
 export function Project(props) {
@@ -72,6 +73,7 @@ export function Project(props) {
 			});
 		if (response && response.responseObject.status === 200) {
 			const { data } = response;
+      data.pcbs = _.map(data.pcbs, x => ({...x, cost: Number(x.cost).toFixed(2)}));
 			setProject(data);
 		}
     setLoading(false);
@@ -132,6 +134,7 @@ export function Project(props) {
   };
 
 	const inlineSave = async (pcb) => {
+    pcb.cost = Number(pcb.cost).toFixed(2);
     const request = {
 			...pcb,
       projectId: project.projectId,		
@@ -145,7 +148,17 @@ export function Project(props) {
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
-
+      // update pcbs
+      const newPcbs = [...project.pcbs];
+      let existingPcb = _.find(newPcbs, x => x.pcbId === pcb.pcbId);
+      existingPcb.cost = Number(data.cost).toFixed(2);
+      existingPcb.quantity = data.quantity;
+      existingPcb.name = data.name;
+      existingPcb.description = data.description;
+      existingPcb.serialNumberFormat = data.serialNumberFormat;
+      existingPcb.lastSerialNumber = data.lastSerialNumber;
+      existingPcb.partsCount = data.partsCount;
+      setProject({...project, pcbs: newPcbs});
     }
     else {
       toast.error('Failed to save pcb!');
@@ -320,6 +333,8 @@ export function Project(props) {
 							<Table.Row>
 								<Table.HeaderCell>Name</Table.HeaderCell>
 								<Table.HeaderCell>Description</Table.HeaderCell>
+                <Table.HeaderCell>Quantity</Table.HeaderCell>
+                <Table.HeaderCell>Cost</Table.HeaderCell>
 								<Table.HeaderCell>Serial Number Format</Table.HeaderCell>
 								<Table.HeaderCell>Last Serial Number</Table.HeaderCell>
 								<Table.HeaderCell>Parts Count</Table.HeaderCell>
@@ -332,6 +347,7 @@ export function Project(props) {
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
                   <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='quantity' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.quantity || ''} fluid /></Table.Cell>
+                  <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='cost' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.cost || '0.00'} fluid /></Table.Cell>
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='serialNumberFormat' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.serialNumberFormat || ''} fluid /></Table.Cell>
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='lastSerialNumber' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.lastSerialNumber || ''} fluid /></Table.Cell>
 									<Table.Cell>{p.partsCount}</Table.Cell>

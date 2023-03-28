@@ -23,5 +23,15 @@
         /// The initial serial number
         /// </summary>
         public string? SerialNumber { get; set; }
+
+        /// <summary>
+        /// Quantity of PCBs that are produced on every production
+        /// </summary>
+        public int Quantity { get; set; }
+
+        /// <summary>
+        /// Cost to produce a single PCB board
+        /// </summary>
+        public double Cost { get; set; }
     }
 }

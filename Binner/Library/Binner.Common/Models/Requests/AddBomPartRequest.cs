@@ -32,5 +32,12 @@
         /// Custom reference Id for customer
         /// </summary>
         public string? ReferenceId { get; set; }
+
+        /// <summary>
+        /// Custom reference Id that can be used as a custom designator for the part on the PCB (silkscreen values)
+        /// </summary>
+        public string? SchematicReferenceId { get; set; }
+
+        public string? CustomDescription { get; set; }
     }
 }

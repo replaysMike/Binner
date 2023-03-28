@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Icon, Button, Form, Modal, TextArea, Image, Header, Popup } from "semantic-ui-react";
+import { Icon, Button, Form, Modal, TextArea, Input, Image, Header, Popup } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import NumberPicker from "./NumberPicker";
 
 export function AddPcbModal(props) {
   AddPcbModal.abortController = new AbortController();
-  const defaultForm = { name: "", description: "", quantity: "1", serialNumberFormat: 'SN00000000' };
+  const defaultForm = { name: "", description: "", quantity: "1", cost: 0, serialNumberFormat: 'SN00000000' };
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
 
@@ -20,7 +20,23 @@ export function AddPcbModal(props) {
   };
 
   const handleChange = (e, control) => {
-    form[control.name] = control.value;
+    switch(control.name) {
+      case 'cost':
+        // apply formatting
+
+        form[control.name] = control.value;
+
+        break;
+      default:
+        form[control.name] = control.value;
+        break;
+    }
+    setForm({ ...form });
+  };
+
+  const handleFormatCost = (e, control) => {
+    form.cost = Number(form.cost).toFixed(2);
+    if (isNaN(form.cost)) form.cost = Number(0).toFixed(2);
     setForm({ ...form });
   };
 
@@ -74,24 +90,44 @@ export function AddPcbModal(props) {
                 }
               />              
             </Form.Field>
-            <Form.Field width={8}>
-              <Popup
-                wide
-                content={<p>Enter a quantity (multiplier) of PCB's produced each time you create a PCB. This should normally be 1, unless you require several copies of the same PCB for producing your BOM project.<br/><br/><i>Example:</i> An audio amplifier may require 2 of the same PCB's, one for each left/right channel each time you produce the entire assembly.</p>}
-                trigger={
-                  <Form.Field
-												control={NumberPicker}
-												label="Quantity"
-												placeholder="1"
-												min={0}
-												value={form.quantity || ""}
-												onChange={updateNumberPicker}
-												name="quantity"
-												autoComplete="off"
-											/>
-                }
-              />
-            </Form.Field>
+            <Form.Group>
+              <Form.Field width={4}>
+                <Popup
+                  wide
+                  content={<p>Enter a quantity (multiplier) of PCB's produced each time you create a PCB. This should normally be 1, unless you require several copies of the same PCB for producing your BOM project.<br/><br/><i>Example:</i> An audio amplifier may require 2 of the same PCB's, one for each left/right channel each time you produce the entire assembly.</p>}
+                  trigger={
+                    <Form.Field
+                      control={NumberPicker}
+                      label="Quantity"
+                      placeholder="1"
+                      min={0}
+                      value={form.quantity || ""}
+                      onChange={updateNumberPicker}
+                      name="quantity"
+                      autoComplete="off"
+                    />
+                  }
+                />
+              </Form.Field>
+              <Form.Field width={4}>
+                <Popup
+                  wide
+                  content={<p>The cost to produce a single PCB board (without components). If using quantity, only specify the cost for a single board as quantity will be taken into consideration.</p>}
+                  trigger={<Form.Field>
+                    <label>Cost</label>
+                    <Input
+                      label="$"
+                      placeholder="0.00"
+                      value={form.cost || "0.00"}
+                      type="text"
+                      onChange={handleChange}
+                      name="cost"
+                      onBlur={handleFormatCost}
+                    />
+                  </Form.Field>}
+                />
+              </Form.Field>
+            </Form.Group>
             <Form.Field width={8}>
               <Popup
                 wide
