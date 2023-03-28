@@ -4,7 +4,7 @@
     <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.35</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-    <RuntimeIdentifiers>win10-x64;linux-arm;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win10-x64;linux-arm;linux-arm64;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>false</IsPackable>
