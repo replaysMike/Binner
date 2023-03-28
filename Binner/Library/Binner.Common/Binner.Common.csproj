@@ -61,6 +61,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Nexar.Client.Token" Version="0.1.1" />
     <PackageReference Include="NLog" Version="4.7.13" />
     <PackageReference Include="NPOI" Version="2.6.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
@@ -73,6 +74,10 @@
 
   <ItemGroup>
     <Folder Include="Integrations\DigikeyClient\Core\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nexar.Client\Nexar.Client.csproj" />
   </ItemGroup>
 
 </Project>

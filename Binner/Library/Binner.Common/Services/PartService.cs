@@ -16,6 +16,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Binner.Common.Integrations.Models.Nexar;
 using Part = Binner.Model.Common.Part;
 
 namespace Binner.Common.Services
@@ -609,7 +610,7 @@ namespace Binner.Common.Services
             var swarmApi = await _integrationApiFactory.CreateAsync<Integrations.SwarmApi>(user?.UserId ?? 0);
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
             var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
-            var octopartApi = await _integrationApiFactory.CreateAsync<Integrations.OctopartApi>(user?.UserId ?? 0);
+            var nexarApi = await _integrationApiFactory.CreateAsync<Integrations.NexarApi>(user?.UserId ?? 0);
             var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0);
 
             var datasheets = new List<string>();
@@ -618,6 +619,7 @@ namespace Binner.Common.Services
             var digikeyResponse = new KeywordSearchResponse();
             var mouserResponse = new SearchResultsResponse();
             var arrowResponse = new ArrowResponse();
+            var nexarResponse = new NexarPartResults();
             var searchKeywords = partNumber;
 
             if (digikeyApi.Configuration.IsConfigured)
@@ -713,10 +715,21 @@ namespace Binner.Common.Services
                 mouserResponse = (SearchResultsResponse?)apiResponse.Response;
             }
 
-            if (octopartApi.Configuration.IsConfigured)
+            if (nexarApi.Configuration.IsConfigured)
             {
-                var octopartResponse = await octopartApi.GetDatasheetsAsync(partNumber);
-                datasheets.AddRange((ICollection<string>?)octopartResponse.Response ?? new List<string>());
+                var apiResponse = await nexarApi.SearchAsync(searchKeywords, partType, mountingType);
+                if (apiResponse.RequiresAuthentication)
+                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                if (apiResponse.Warnings?.Any() == true)
+                {
+                    _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                }
+                if (apiResponse.Errors?.Any() == true)
+                {
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                }
+                nexarResponse = (NexarPartResults?)apiResponse.Response;
             }
 
             if (swarmApi.Configuration.IsConfigured)
@@ -795,6 +808,8 @@ namespace Binner.Common.Services
                 await ProcessMouserResponseAsync(partNumber, response, mouserResponse, productImageUrls, datasheetUrls);
             if (arrowResponse != null)
                 await ProcessArrowResponseAsync(partNumber, response, arrowResponse, productImageUrls, datasheetUrls);
+            if (nexarResponse != null)
+                await ProcessNexarResponseAsync(partNumber, response, nexarResponse, productImageUrls, datasheetUrls);
             SetPartTypesAndKeywords(response, partTypes);
 
             // apply ranking
@@ -1314,6 +1329,122 @@ namespace Binner.Common.Services
                             //FactoryStockAvailable = factoryStockAvailable,
                             //FactoryLeadTime = part.LeadTime
                         });
+                    }
+                }
+
+
+                return Task.CompletedTask;
+            }
+
+            Task ProcessNexarResponseAsync(string partNumber, PartResults response, NexarPartResults? nexarResponse, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
+            {
+                if (nexarResponse == null || nexarResponse.Parts == null || !nexarResponse.Parts.Any()) return Task.CompletedTask;
+
+                var imagesAdded = 0;
+                if (nexarResponse.Parts.Any())
+                {
+                    foreach (var part in nexarResponse.Parts)
+                    {
+                        var additionalPartNumbers = new List<string>();
+                        var basePart = partNumber;
+                        var productStatus = ""; // todo:
+                        var manufacturerPartNumber = part.ManufacturerPartNumber ?? partNumber;
+                        var mountingTypeId = MountingType.None;
+                        /*Enum.TryParse<MountingType>(part.
+                            .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
+                            .Select(x => x.Value?.Replace(" ", ""))
+                            .FirstOrDefault(), out mountingTypeId);*/
+                        var packageType = part.Specs.Where(x => x.Attribute?.ShortName == "case_package")
+                            .Select(x => x.Value).FirstOrDefault();
+                        var productUrl = "";
+
+                        if (!string.IsNullOrEmpty(part.BestImageUrl))
+                            productImageUrls.Add(new NameValuePair<string>(manufacturerPartNumber, part.BestImageUrl));
+                        foreach (var image in part.Images)
+                        {
+                            if (imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal && !string.IsNullOrEmpty(image.Url))
+                            {
+                                productImageUrls.Add(new NameValuePair<string>(manufacturerPartNumber, image.Url));
+                                imagesAdded++;
+                                totalImages++;
+                            }
+                        }
+
+                        if (part.BestDatasheet != null)
+                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.BestDatasheet.Url, manufacturerPartNumber, "", part.Manufacturer?.Name ?? string.Empty)));
+                        var nexarDatasheets = part.Documents.Where(x => x.Name == "Datasheet" && !string.IsNullOrEmpty(x.Url)).Select(x => x.Url.ToString()).ToList();
+                        foreach (var datasheetUri in nexarDatasheets)
+                        {
+                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", datasheetUri, manufacturerPartNumber, "", part.Manufacturer?.Name ?? string.Empty)));
+                        }
+
+                        var partCost = part.MedianPrice1000?.Price ?? 0d;
+                        var minimumOrderQuantity = 1;
+                        var quantityAvailable = part.TotalAvail;
+                        var currency = part.MedianPrice1000?.Currency ?? "USD";
+
+                        if (part.Sellers.Any())
+                        {
+                            // add each seller from Octopart
+                            foreach (var seller in part.Sellers)
+                            {
+                                var offer = seller.Offers.OrderBy(x => x.Moq).FirstOrDefault();
+                                response.Parts.Add(new CommonPart
+                                {
+                                    Rank = 3,
+                                    SwarmPartNumberManufacturerId = null,
+                                    Supplier = seller.Company?.Name ?? string.Empty,
+                                    /*SupplierPartNumber = part.PartNum, // todo:*/
+                                    BasePartNumber = basePart,
+                                    AdditionalPartNumbers = additionalPartNumbers,
+                                    Manufacturer = part.ManufacturerName,
+                                    ManufacturerPartNumber = manufacturerPartNumber,
+                                    Cost = partCost,
+                                    Currency = currency,
+                                    DatasheetUrls = nexarDatasheets,
+                                    Description = part.ShortDescription,
+                                    ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
+                                    PackageType = packageType,
+                                    MountingTypeId = (int)mountingTypeId,
+                                    PartType = "",
+                                    ProductUrl = offer?.Url,
+                                    Status = productStatus,
+                                    QuantityAvailable = offer?.InventoryLevel ?? 0,
+                                    MinimumOrderQuantity = offer?.Moq ?? 0,
+                                    //FactoryStockAvailable = factoryStockAvailable,
+                                    //FactoryLeadTime = part.LeadTime
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // there are no suppliers listed. Show it as an Octopart part
+                            response.Parts.Add(new CommonPart
+                            {
+                                Rank = 3,
+                                SwarmPartNumberManufacturerId = null,
+                                Supplier = "Octopart",
+                                /*SupplierPartNumber = part.PartNum, // todo:*/
+                                BasePartNumber = basePart,
+                                AdditionalPartNumbers = additionalPartNumbers,
+                                Manufacturer = part.ManufacturerName,
+                                ManufacturerPartNumber = manufacturerPartNumber,
+                                Cost = partCost,
+                                Currency = currency,
+                                DatasheetUrls = nexarDatasheets,
+                                Description = part.ShortDescription,
+                                ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
+                                PackageType = packageType,
+                                MountingTypeId = (int)mountingTypeId,
+                                PartType = "",
+                                ProductUrl = productUrl,
+                                Status = productStatus,
+                                QuantityAvailable = quantityAvailable,
+                                MinimumOrderQuantity = minimumOrderQuantity,
+                                //FactoryStockAvailable = factoryStockAvailable,
+                                //FactoryLeadTime = part.LeadTime
+                            });
+                        }
                     }
                 }
 

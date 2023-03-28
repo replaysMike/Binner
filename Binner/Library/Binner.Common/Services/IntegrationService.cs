@@ -83,10 +83,10 @@ namespace Binner.Common.Services
                 var octopartConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
-                    { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
-                    { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty }
+                    { "ClientId", request.Configuration.Where(x => x.Key.Equals("ClientId", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ClientSecret", request.Configuration.Where(x => x.Key.Equals("ClientSecret", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
                 };
-                credentials.Add(new ApiCredential(user?.UserId ?? 0, octopartConfiguration, nameof(OctopartApi)));
+                credentials.Add(new ApiCredential(user?.UserId ?? 0, octopartConfiguration, nameof(NexarApi)));
 
                 return new ApiCredentialConfiguration(user?.UserId ?? 0, credentials);
             };
@@ -166,21 +166,22 @@ namespace Binner.Common.Services
                         return new TestApiResponse(nameof(Integrations.ArrowApi), ex.GetBaseException().Message);
                     }
                 }
+                case "nexar":
                 case "octopart":
                     {
-                        var api = await _integrationApiFactory.CreateAsync<Integrations.OctopartApi>(user?.UserId ?? 0, getCredentialsMethod, false);
+                        var api = await _integrationApiFactory.CreateAsync<Integrations.NexarApi>(user?.UserId ?? 0, getCredentialsMethod, false);
                         if (!api.IsEnabled)
-                            return new TestApiResponse(nameof(Integrations.OctopartApi), "Api is not enabled.");
+                            return new TestApiResponse(nameof(Integrations.NexarApi), "Api is not enabled.");
                         try
                         {
                             var result = await api.SearchAsync("LM555", 1);
                             if (result.Errors.Any())
-                                return new TestApiResponse(nameof(Integrations.OctopartApi), string.Join(". ", result.Errors));
-                            return new TestApiResponse(nameof(Integrations.OctopartApi), true);
+                                return new TestApiResponse(nameof(Integrations.NexarApi), string.Join(". ", result.Errors));
+                            return new TestApiResponse(nameof(Integrations.NexarApi), true);
                         }
                         catch (Exception ex)
                         {
-                            return new TestApiResponse(nameof(Integrations.OctopartApi), ex.GetBaseException().Message);
+                            return new TestApiResponse(nameof(Integrations.NexarApi), ex.GetBaseException().Message);
                         }
                     }
             }

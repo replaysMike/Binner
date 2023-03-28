@@ -228,7 +228,7 @@ bool PrintDbInfo()
     PrintLabel("   Octopart");
     Console.WriteLine();
     PrintLabel("      Enabled");
-    PrintValue(config.Integrations.Octopart.Enabled);
+    PrintValue(config.Integrations.Nexar.Enabled);
 
     Console.ForegroundColor = ConsoleColor.Gray;
     Environment.Exit(ExitCodes.Success);

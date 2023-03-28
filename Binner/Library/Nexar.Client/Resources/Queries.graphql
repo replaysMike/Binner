@@ -1,0 +1,122 @@
+﻿query SearchMpn($mpn: String!) {
+  supSearchMpn(q: $mpn) {
+    results {
+      part {
+        mpn
+        shortDescription
+        manufacturer {
+          name
+        }
+      }
+    }
+  }
+}
+
+query PartSearch($partNumber: String!, $recordCount: Int = 25) {
+  supSearch(
+    q: $partNumber
+    inStockOnly: false
+    limit: $recordCount
+  ) {
+    hits
+    results {
+      part {
+        name
+        genericMpn
+        manufacturerUrl
+        mpn
+        manufacturer {
+          name
+          id
+          aliases
+          homepageUrl
+          slug          
+        }
+        images{
+          url
+          creditUrl
+          creditString
+        }
+        documentCollections{
+          name
+          documents {
+            name
+            url
+            pageCount
+            creditUrl
+            creditString
+          }
+        }
+        bestImage {
+          url
+          creditUrl
+          creditString
+        }
+        bestDatasheet{
+          url
+          pageCount
+          name
+          creditString
+          creditUrl
+        }
+        specs {
+          attribute {
+            id
+            name
+            shortname
+            group
+          }
+          value
+          valueType
+          units
+          unitsName
+          unitsSymbol
+          displayValue
+        }
+        cad {
+          has3dModel
+          hasAltium
+          hasOrcad
+          hasKicad
+          downloadUrlAltium
+          downloadUrlEagle
+          downloadUrlOrcad
+          downloadUrlKicad
+        }
+        medianPrice1000 {
+          price
+          currency
+          quantity
+        }
+        shortDescription
+        descriptions {
+          text
+          creditUrl
+          creditString
+        }
+        totalAvail
+        slug
+        category {
+          id
+          parentId
+          name
+          path
+        }
+        sellers(authorizedOnly: false) {
+          company {
+            name
+            homepageUrl
+            id            
+          }
+          isAuthorized
+          offers {
+            clickUrl
+            inventoryLevel
+            moq
+            packaging
+          }
+        }
+      }
+    }
+  }
+}

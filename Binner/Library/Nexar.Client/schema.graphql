@@ -1,0 +1,3964 @@
+﻿schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+scalar Map
+
+scalar Time
+
+scalar Any
+
+type Query {
+  "Fetches an object given its ID."
+  node("ID of the object." id: ID!): Node
+  "Lookup nodes by a list of IDs."
+  nodes("The list of node IDs." ids: [ID!]!): [Node]!
+  "Search for workspaces associated with this account."
+  desWorkspaces(where: DesWorkspaceFilterInput): [DesWorkspace!]!
+  "Search a specific workspace by its unique identifier."
+  desWorkspaceById("The node identifier for a workspace." id: ID!): DesWorkspace
+  "Search a specific workspace by its URL."
+  desWorkspaceByUrl(workspaceUrl: String!): DesWorkspace
+  "Get a list of workspace locations."
+  desWorkspaceLocations: [DesWorkspaceLocation!]!
+  "Gets the specified settings."
+  desSettings(workspaceUrl: String! names: [String!]!): [String]!
+  "Gets life cycle definitions."
+  desLifeCycleDefinitions(workspaceUrl: String!): [DesLifeCycleDefinition!]!
+  "Gets the first allowed life cycle by the content kind."
+  desLifeCycleDefinitionByContentTypeKind(workspaceUrl: String! kind: DesContentTypeKind!): DesLifeCycleDefinition!
+  "Gets revision naming schemes."
+  desRevisionNamingSchemes(workspaceUrl: String!): [DesRevisionNamingScheme!]!
+  "Gets the first allowed naming scheme by the content kind."
+  desRevisionNamingSchemeByContentTypeKind(workspaceUrl: String! kind: DesContentTypeKind!): DesRevisionNamingScheme!
+  "Gets the specified workspace team."
+  desTeam(workspaceUrl: String!): DesTeam!
+  "Gets the specified workspace users by IDs."
+  desUsers(workspaceUrl: String! ids: [String!]!): [DesUser]!
+  "Gets the authorized user."
+  desUserByAuth: DesUser!
+  "Gets a user by the specified global ID."
+  desUserByGlobalId(id: String!): DesUser
+  "Search projects within a workspace with results in paged groups."
+  desProjects("The web address of a workspace." workspaceUrl: String! "Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: DesProjectFilterInput): DesProjectConnection
+  "Search a specific project by its unique identifier."
+  desProjectById("The node identifier for a project." id: ID!): DesProject
+  "Gets the unique identifier for a project from its internal identifier."
+  desProjectIdFromAfsId(workspaceUrl: String! afsId: String! "If the project is known to be shared or internal, this parameter can be provided to make the query faster." isSharedProject: Boolean): DesProjectIdPayload!
+  desDesignItemById(id: ID!): DesDesignItem
+  desLibrary(workspaceUrl: String!): DesLibrary!
+  desComponentById(id: ID!): DesComponent
+  desRevisionDetailsById(id: ID!): DesRevisionDetails
+  desComponentTemplateById(id: ID!): DesComponentTemplate
+  "Search for comment threads associated with a project."
+  desCommentThreads("The node identifier for a project (This is the project field named \"id\")." projectId: ID!): [DesCommentThread!]!
+  "Search for a specific comment thread associated with a project."
+  desCommentThread("The node identifier for a project (This is the project field named \"id\")." projectId: ID! "The reference identifier for a comment thread." threadId: String!): DesCommentThread
+  desReleaseById(id: ID!): DesRelease
+  "Gets the BOM by its identifier."
+  desBomById("The BOM identifier." id: ID!): DesBom
+  desManufacturePackages: [DesManufacturePackage!]!
+  desManufacturePackageById(id: ID!): DesManufacturePackage
+  desManufacturePackageCreationJob(id: ID!): DesManufacturePackageCreationJob
+  "Find a specific reuse block by its unique identifier."
+  desReuseBlockById("The node identifier for a reuse block." id: ID!): DesReuseBlock
+  "Find a specific reuse block revision by its unique identifier."
+  desReuseBlockRevisionById("The node identifier for a reuse block revision." id: ID!): DesReuseBlockRevision
+  "The list of project tasks."
+  desProjectTasks(projectId: ID! "Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesTaskConnection
+  "The list of workspace tasks."
+  desWorkspaceTasks(workspaceUrl: String! "Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesTaskConnection
+  "*** PROTOTYPE, SUBJECT TO CHANGE ***"
+  desProjectCollaborationSimulationRevisions(projectId: ID! domainName: String! "Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesCollaborationSimulationRevisionConnection
+  "*** PROTOTYPE, SUBJECT TO CHANGE ***"
+  desProjectCollaborationSimulationLatestRevision(projectId: ID! domainName: String! projectTypeName: String!): DesCollaborationSimulationRevision!
+  desSharedWithMe: DesSharedWithMe!
+  supOctopartIdFromCiivaId(workspaceUrl: String! ciivaId: String!): String @deprecated(reason: "Use `supPartIdFromCiivaId`.")
+  "Nexar infrastructure, subject to change."
+  supPartIdFromCiivaId(ciivaId: String!): String
+  "Nexar infrastructure, subject to change."
+  supPartIdsFromCiivaIds(ciivaIds: [String!]!): [String]!
+  "Nexar infrastructure, subject to change."
+  supCiivaIdFromPartId(partId: String!): String
+  "Nexar supply part data for internal use only."
+  supPartExtrasByPartId(partId: String!): SupPartExtras
+  "Get all attributes"
+  supAttributes: [SupAttribute!]!
+  "Get manufacturer companies"
+  supManufacturers("list of company IDs.  Omit to fetch all manufacturers." ids: [String!]): [SupCompany!]!
+  "Get seller companies (distributors)"
+  supSellers("list of company IDs.  Omit to fetch all sellers." ids: [String!]): [SupCompany!]!
+  "Get categories"
+  supCategories("list of category IDs. Omit to fetch all categories." ids: [String!] "list of \/electronic-parts SEO page paths for categories." paths: [String!]): [SupCategory!]!
+  "Get parts by ID."
+  supParts("list of part IDs. APIv3 UIDs are also supported." ids: [String!]! "user's country" country: String! = "US" "user's currency" currency: String! = "USD" "fetch latest pricing and stock data from distributor API. Company.isDistributorApi indicates if a distributor supports this feature." distributorApi: Boolean "how long to wait for distributor API to respond as a duration string (e.g. `3s` or `500ms`)" distributorApiTimeout: String! = "3s" "if needed, pass along credentials for API integrations" customPricingCredentials: [SupApiCredentials!]): [SupPart]!
+  "Attempt to complete a partial query string.  Used for autosuggest \/ typeahead text inputs."
+  supSuggest("partial query string" q: String! "categoryId to scope suggestions to" categoryId: String "only return part number suggestions" partNumbersOnly: Boolean): [SupSuggestion!]!
+  "Search parts, including filters, pagination, aggregation, sorting"
+  supSearch("the query to search" q: String "user's country" country: String! = "US" "user's currency" currency: String! = "USD" "offset in the result set" start: Int "page size of results" limit: Int "field to sort by.  See [sort values](https:\/\/octopart.com\/api\/v4\/values#sort)" sort: String "direction of sort: `asc` or `desc`" sortDir: SupSortDirection "filter to remove parts with no stocking distributors" inStockOnly: Boolean "a key: value map of filters. See [filter values](https:\/\/octopart.com\/api\/v4\/values#attributes)" filters: Map "fetch latest pricing and stock data from distributor API. Company.isDistributorApi indicates if a distributor supports this feature." distributorApi: Boolean "how long to wait for distributor API to respond as a duration string (e.g. `3s` or `500ms`)" distributorApiTimeout: String! = "3s" "if needed, pass along credentials for API integrations" customPricingCredentials: [SupApiCredentials!]): SupPartResultSet!
+  "Search parts by mpn only, including filters, pagination, aggregation, sorting"
+  supSearchMpn("the query to search on mpn" q: String "user's country" country: String! = "US" "user's currency" currency: String! = "USD" "offset in the result set" start: Int "page size of results" limit: Int "field to sort by.  See [sort values](https:\/\/octopart.com\/api\/v4\/values#sort)" sort: String "direction of sort: `asc` or `desc`" sortDir: SupSortDirection "filter to remove parts with no stocking distributors" inStockOnly: Boolean "a key: value map of filters. See [filter values](https:\/\/octopart.com\/api\/v4\/values#attributes)" filters: Map "fetch latest pricing and stock data from distributor API. Company.isDistributorApi indicates if a distributor supports this feature." distributorApi: Boolean "how long to wait for distributor API to respond as a duration string (e.g. `3s` or `500ms`)" distributorApiTimeout: String! = "3s" "if needed, pass along credentials for API integrations" customPricingCredentials: [SupApiCredentials!]): SupPartResultSet!
+  "Suggest an alternate `q` when no results are found"
+  supSpellingCorrection("query string to correct" q: String!): [SupSpellingCorrection!]!
+  "Match multiple manufacturer + mpn pairs at once.  Useful for when you have a list of parts, as with a BOM (Bill of Materials)"
+  supMultiMatch("list of inputs to attempt to match" queries: [SupPartMatchQuery!]! "options when matching such as applying filters or only including authorized or in-stock parts" options: SupPartMatchOptions "user's country" country: String! = "US" "user's currency" currency: String! = "USD" "fetch latest pricing and stock data from distributor API. Company.isDistributorApi indicates if a distributor supports this feature." distributorApi: Boolean "how long to wait for distributor API to respond as a duration string (e.g. `3s` or `500ms`)" distributorApiTimeout: String! = "3s" "if needed, pass along credentials for API integrations" customPricingCredentials: [SupApiCredentials!]): [SupPartMatch!]!
+  "get a the quotes from previously submitted metadata"
+  manRapidQuotes(id: ID!): ManRapidQuoteResponse
+  manRapidQuoteRequest(id: ID!): ManRapidQuoteRequest
+  manOrder(orderId: ID!): ManOrder
+  manAssembly(id: ID!): ManAssembly
+  manListProjectOrders(id: ID!): [ManOrder]
+  manAltimadeLogin(gsid: ID): String
+  manBomResolution(projectId: ID! quoteRequestId: ID!): ManBomResolution
+  manOrderEventById(id: ID!): ManOrderEvent
+  manProjectFeatures(input: ManProjectFeatureInput!): ManFeatures
+  "Get details about the organization(s) the current user belongs to."
+  admOrganizations: [AdmOrganization!]!
+  "Gets a single application by its unique identifier."
+  admApplicationById(id: String!): AdmApplication
+  datBomPart(item: DatBomItemInput!): DatBomPartsResult!
+  datBomParts(items: [DatBomItemInput!]!): [DatBomPartsResult!]!
+  datBomPartHistories(partIds: [String!]!): [DatBomPartHistory]!
+  datBomAnalyses(items: [DatBomPartItemInput!]!): [DatBomAnalysis!]!
+  "Get an SCR Job with a specific id"
+  datScrJob("The id of the job" jobId: String!): DatScrJob!
+  "Get a list of SCR jobs."
+  datScrJobs("The list of specific job ids. Use `null` to get all of them." jobIds: [String!]): [DatScrJob!]!
+  "Get link to a downloadable SCR report."
+  datScrReport("ID of the SCR job" jobId: String!): DatScrReport!
+  "Get current metered usage statistics."
+  datScrUsage: DatScrUsage!
+  datEddiLatestEdition: DatEddiEdition!
+  datEddiEditions(where: DatEddiEditionFilterInput): [DatEddiEdition!]!
+}
+
+type Mutation {
+  desCreateComment(input: DesCreateCommentInput!): DesCreateCommentPayload!
+  desDeleteComment(input: DesDeleteCommentInput!): DesDeleteCommentPayload!
+  desUpdateComment(input: DesUpdateCommentInput!): DesUpdateCommentPayload!
+  desCreateCommentThread(input: DesCreateCommentThreadInput!): DesCreateCommentThreadPayload!
+  desDeleteCommentThread(input: DesDeleteCommentThreadInput!): DesDeleteCommentThreadPayload!
+  "Releases the specified component."
+  desReleaseComponent(input: DesReleaseComponentInput!): DesReleaseComponentPayload!
+  "Creates and releases the specified component template."
+  desReleaseComponentTemplate(input: DesReleaseComponentTemplateInput!): DesReleaseComponentTemplatePayload!
+  "Updates the specified component template."
+  desUpdateComponentTemplate(input: DesUpdateComponentTemplateInput!): DesUpdateComponentTemplatePayload!
+  "Updates parameters for the specified component (creates a new revision)."
+  desUpdateComponentRevisionParameters(input: DesUpdateComponentRevisionParametersInput!): DesUpdateComponentRevisionParametersPayload!
+  "Uploads the project zip file."
+  desUploadProject(input: DesUploadProjectInput!): DesUploadProjectPayload!
+  "*** PROTOTYPE, SUBJECT TO CHANGE ***"
+  desUploadCollaborationSimulation(input: DesUploadCollaborationSimulationInput!): DesUploadCollaborationSimulationPayload!
+  "Updates a specific result block."
+  desUpdateReuseBlock(input: DesUpdateReuseBlockInput!): DesUpdateReuseBlockPayload!
+  "Creates a user."
+  desCreateUser(input: DesCreateUserInput!): DesCreateUserPayload!
+  "Deletes the specified user."
+  desDeleteUser(input: DesDeleteUserInput!): DesDeleteUserPayload!
+  "Updates the specified user properties."
+  desUpdateUser(input: DesUpdateUserInput!): DesUpdateUserPayload!
+  "Creates a new user group."
+  desCreateUserGroup(input: DesCreateUserGroupInput!): DesCreateUserGroupPayload!
+  "Deletes the specified user group."
+  desDeleteUserGroup(input: DesDeleteUserGroupInput!): DesDeleteUserGroupPayload!
+  "Updates the specified user group."
+  desUpdateUserGroup(input: DesUpdateUserGroupInput!): DesUpdateUserGroupPayload!
+  "Adds users to the specified group."
+  desAddUsersToGroup(input: DesAddUsersToGroupInput!): DesAddUsersToGroupPayload!
+  "Removes users from the specified group."
+  desRemoveUsersFromGroup(input: DesRemoveUsersFromGroupInput!): DesRemoveUsersFromGroupPayload!
+  desLaunchWorkflow(input: DesLaunchWorkflowInput!): DesLaunchWorkflowPayload!
+  desTerminateWorkflows(input: DesTerminateWorkflowsInput!): DesTerminateWorkflowsPayload!
+  "Creates a project task."
+  desCreateProjectTask(input: DesCreateProjectTaskInput!): DesCreateTaskPayload!
+  "Creates a workspace task."
+  desCreateWorkspaceTask(input: DesCreateWorkspaceTaskInput!): DesCreateTaskPayload!
+  "Deletes the task specified by its node ID."
+  desDeleteTask(input: DesDeleteTaskInput!): DesDeleteTaskPayload!
+  "Updates the specified task."
+  desUpdateTask(input: DesUpdateTaskInput!): DesUpdateTaskPayload!
+  "Creates a new comment for the specified task."
+  desCreateTaskComment(input: DesCreateTaskCommentInput!): DesCreateTaskCommentPayload!
+  "Deletes the specified task comment."
+  desDeleteTaskComment(input: DesDeleteTaskCommentInput!): DesDeleteTaskCommentPayload!
+  "Updates the specified task comment."
+  desUpdateTaskComment(input: DesUpdateTaskCommentInput!): DesUpdateTaskCommentPayload!
+  "Creates a manufacture package."
+  desCreateManufacturePackage(input: DesCreateManufacturePackageInput!): DesCreateManufacturePackagePayload!
+  manCreateRapidQuoteRequest(qty: Int! meta: ManBoardMetaInput! shipping: ManShippingDetailsInput): ManRapidQuoteResponse
+  "for a manufacturer to return a rapid quote reponse"
+  manRespondRapidQuoteRequest("Unique request identifier" id: ID! "Quote Data From Manufactuerer" quote: ManQuoteInput!): ID!
+  manRespondBulkRapidQuoteRequest(id: ID! quotes: [ManQuoteInput!]!): ID!
+  manUpdateBomResolution(projectId: ID! quoteRequestId: ID! newSelections: [ManPartSelectionInput!]): ManBomResolution
+  manCreateAssembly(quoteRequest: ID! commitId: ID projectId: ID!): ManCreateAssemblyResponse
+  manCreateOrder(qty: Int assemblyId: ID!): ManCreateOrderResponse
+  manUpdateOrderQty(orderId: ID! qty: Int!): ManOrder
+  manUpdateOrderShipping(orderId: ID! shipping: ManShippingDetailsInput!): ManOrder
+  "accept quote, confirm order as placed. "
+  manAcceptOrderQuote(orderId: ID! quoteId: ID! paymentOptions: ManPaymentSelectionInput): ManOrder
+  manInsertOrderEvent(id: ID! event: ManOrderEventType attributes: String): ManOrder
+  manInsertOrderEmsAcceptEvent(input: ManOrderEmsAcceptInput!): ManOrder
+  manInsertOrderShipUpdateEvent(input: ManOrderShipEstimateInput!): ManOrder
+  manInsertOrderReviewEvent(input: ManOrderReviewInput!): ManOrder
+  manInsertOrderBatchedEvent(input: ManOrderBatchedInput!): ManOrder
+  manInsertOrderPartsOrderedEvent(input: ManOrderPartsOrderedInput!): ManOrder
+  manInsertOrderPcbsOrderedEvent(input: ManOrderPcbsOrderedInput!): ManOrder
+  manInsertOrderPartsReceivedEvent(input: ManOrderPartsReceivedInput!): ManOrder
+  manInsertOrderPcbsReceivedEvent(input: ManOrderPcbsReceivedInput!): ManOrder
+  manInsertOrderProcessStartEvent(input: ManOrderProcessStartInput!): ManOrder
+  manInsertOrderShippedEvent(input: ManOrderShippedInput!): ManOrder
+  manInsertOrderConsignmentDetailsEvent(input: ManOrderConsignmentDetailsInput!): ManOrder
+  "Send a message to another application."
+  admEvtSendAppNotification(input: AdmEvtSendAppNotificationInput!): AdmEvtSendAppNotificationPayload!
+  "Create a new SCR processing run for a given CSV file."
+  datScrCreateJob(input: DatScrCreateJobInput!): DatScrCreateJobPayload!
+  "Delete an SCR job and any corresponding reports."
+  datScrDeleteJob(input: DatScrDeleteJobInput!): DatScrDeleteJobPayload!
+}
+
+type Subscription {
+  desOnCommentUpdated(input: DesOnCommentUpdatedInput!): DesCommentNotification!
+}
+
+"The node interface is implemented by entities that have a global unique identifier."
+interface Node {
+  id: ID!
+}
+
+type DesAddUsersToGroupPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesArea {
+  x: Float!
+  xMm2: Decimal!
+  xMils2: Decimal!
+}
+
+type DesAssemblyDrawings {
+  assemblyDrawingFiles: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+"A Bill of Materials (BOM) contains a list of all of the parts needed for the assembly of a PCB."
+type DesBom implements Node {
+  "The node identifier for this BOM (used by `desBomById`)."
+  id: ID!
+  "The list of each unique part within the BOM."
+  bomItems: [DesBomItem!]!
+}
+
+"A Bill of Materials (BOM) item contains usage information for a unique component on the PCB."
+type DesBomItem {
+  "The detailed component information for this BOM item."
+  component: DesComponent
+  "The total number of times this item is used."
+  quantity: Decimal!
+  "The list of each instance of this BOM item."
+  bomItemInstances: [DesBomItemInstance!]!
+}
+
+"A Bill of Materials (BOM) item instance contains information for one specific use case of the item."
+type DesBomItemInstance {
+  "The unique label for this item."
+  designator: String!
+  "The variant use status for this item."
+  isFitted: Boolean!
+}
+
+"*** PROTOTYPE, SUBJECT TO CHANGE ***"
+type DesCollaborationSimulationFile {
+  fileTypeName: String!
+  downloadUrl: String!
+}
+
+"*** PROTOTYPE, SUBJECT TO CHANGE ***"
+type DesCollaborationSimulationRevision {
+  files: [DesCollaborationSimulationFile!]!
+  createdBy: DesUser!
+  metadata: String!
+  createdAt: DateTime!
+}
+
+"A connection to a list of items."
+type DesCollaborationSimulationRevisionConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesCollaborationSimulationRevisionEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesCollaborationSimulationRevision!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesCollaborationSimulationRevisionEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesCollaborationSimulationRevision!
+}
+
+"A comment is one of remarks associated with a comment thread or task."
+type DesComment {
+  "The user who created the comment."
+  createdBy: DesUser!
+  "The user who modified the comment."
+  modifiedBy: DesUser!
+  "The users mentioned by this comment."
+  mentions: [DesMention!]!
+  "The comment reference ID."
+  commentId: String!
+  "The comment text."
+  text: String!
+  "The creation date."
+  createdAt: DateTime!
+  "The last modification date."
+  modifiedAt: DateTime!
+}
+
+"A comment context provides additional information about associations for a comment thread."
+type DesCommentContext {
+  "The reference identifier for the document associated with a comment thread."
+  documentId: String
+  "The reference identifier for an object associated with a comment thread."
+  objectId: String
+  "The area associated with a comment thread."
+  area: DesRectangle!
+  "The release identifier associated with a comment thread."
+  releaseId: String
+}
+
+type DesCommentNotification {
+  action: String!
+  data: DesCommentNotificationData!
+}
+
+type DesCommentNotificationData {
+  projectId: String!
+  documentId: String
+  documentName: String
+  commentThreadId: String!
+  threadDate: String!
+  threadData: String
+  threadStatus: String
+  commentId: String!
+  commentAuthor: String
+  commentDate: String!
+  commentText: String
+}
+
+"A comment thread contains an initial remark associated with the design and a collection of replies."
+type DesCommentThread {
+  "The account information for the owner of any action or response to this comment thread."
+  assignedTo: DesUser
+  "The account information for who created this comment thread."
+  createdBy: DesUser!
+  "The account information for who most recently modified this comment thread."
+  modifiedBy: DesUser!
+  "The list of replies associated with this comment thread."
+  comments: [DesComment!]!
+  "The reference identifier for this comment thread (used by `desCreateComment`, `desDeleteComment`, `desUpdateComment`)."
+  commentThreadId: String!
+  status: Int!
+  "The `DateTime` for the creation of this comment thread."
+  createdAt: DateTime!
+  "The `DateTime` for the most recent modification of this comment thread."
+  modifiedAt: DateTime!
+  "The web address to download the screenshot associated with the creation of this comment thread."
+  originalStateScreenshotUrl: String
+  "The sequence number of this comment thread."
+  threadNumber: Int!
+  "The information about properties related to this comment thread."
+  context: DesCommentContext!
+}
+
+"A component contains the parametric details of a PCB part."
+type DesComponent implements Node {
+  "The node identifier for this component (used by `desComponentById`)."
+  id: ID!
+  "The component folder."
+  folder: DesFolder
+  "The list of the part choices associated with this component."
+  manufacturerParts: [DesManufacturerPart!]!
+  "More component data, relatively expensive, recommended for individual components with `desComponentById`."
+  details: DesComponentDetails!
+  "The library label for this component."
+  name: String!
+  "The additional information for this component."
+  comment: String!
+  "The summary of function or other performance details for this component."
+  description: String!
+  "The component revision."
+  revision: DesRevision!
+  model3D: DesModel3D
+}
+
+"A connection to a list of items."
+type DesComponentConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesComponentEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesComponent!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+type DesComponentDetails {
+  "The list of the parameters describing this component."
+  parameters: [DesComponentParameter!]!
+  "The list of the symbols for this component."
+  symbols: [DesSymbol!]!
+  "The list of the footprints for this component."
+  footprints: [DesFootprint!]!
+  "The list of the simuation models for this component."
+  simulations: [DesSimulation!]!
+}
+
+"An edge in a connection."
+type DesComponentEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesComponent!
+}
+
+type DesComponentParameter {
+  type: DesParameterType!
+  name: String!
+  value: String!
+}
+
+type DesComponentTemplate implements Node {
+  "The node ID (used by `desComponentTemplateById`)."
+  id: ID!
+  name: String!
+  description: String!
+  folder: DesFolder
+  latestRevision: DesComponentTemplateRevision!
+}
+
+"A connection to a list of items."
+type DesComponentTemplateConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesComponentTemplateEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesComponentTemplate!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesComponentTemplateEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesComponentTemplate!
+}
+
+type DesComponentTemplateRevision {
+  name: String!
+  createdAt: DateTime!
+  comment: String!
+  description: String!
+  downloadableFile: DesDownloadableFile!
+}
+
+type DesCreateCommentPayload {
+  commentId: String!
+  errors: [DesPayloadError!]!
+}
+
+type DesCreateCommentThreadPayload {
+  commentThreadId: String!
+  commentId: String!
+  errors: [DesPayloadError!]!
+}
+
+type DesCreateManufacturePackagePayload {
+  jobId: ID!
+  errors: [DesPayloadError!]!
+}
+
+type DesCreateTaskCommentPayload {
+  comment: DesComment
+  errors: [DesPayloadError!]!
+}
+
+type DesCreateTaskPayload {
+  "The created task."
+  task: DesTask!
+  errors: [DesPayloadError!]!
+}
+
+type DesCreateUserGroupPayload {
+  id: ID!
+}
+
+type DesCreateUserPayload {
+  userId: String!
+}
+
+type DesDeleteCommentPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesDeleteCommentThreadPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesDeleteTaskCommentPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesDeleteTaskPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesDeleteUserGroupPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesDeleteUserPayload {
+  errors: [DesPayloadError!]!
+}
+
+"A design manages all of the schematic, PCB, and BOM content for a project."
+type DesDesign {
+  "The list of published versions of the design grouped into pages."
+  releases("Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: DesReleaseFilterInput): DesReleaseConnection
+  "The most recent version of the design."
+  workInProgress: DesWorkInProgress!
+}
+
+type DesDesignExchange {
+  models3D: [DesModel3D!]!
+  downloadableFile: DesDownloadableFile!
+}
+
+"A design item is a specific instance of a part used in the design."
+type DesDesignItem implements Node {
+  "The node identifier for this project (used by `DesDesignItemById`)."
+  id: ID!
+  "The detailed component information for this design item."
+  component: DesComponent
+  "*** PROTOTYPE, SUBJECT TO CHANGE ***"
+  mesh3D: DesMesh3D
+  "The list of all comment threads related to this design item."
+  commentThreads: [DesCommentThread!]
+  "The unique label for this design item."
+  designator: String!
+  "The summary of function or other performance details for this design item."
+  description: String!
+  "The additional information for this design item."
+  comment: String!
+  "The layer(side) placement for this design item."
+  layer: DesLayer
+  "The planar location for this design item."
+  position: DesPosition2D!
+  "The planar boundary for this design item."
+  area: DesRectangle
+  footprintName: String!
+  "The rotation in degrees."
+  rotation: Decimal
+  "The list of connection targets for this design item."
+  pads: [DesPad!]!
+  "The list of multiple layer connections for this design item."
+  vias: [DesVia!]!
+  "The list of conductor segments for this design item."
+  tracks(where: DesTrackFilterInput): [DesTrack!]!
+}
+
+"A connection to a list of items."
+type DesDesignItemConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesDesignItemEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesDesignItem!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesDesignItemEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesDesignItem!
+}
+
+type DesDownloadableFile {
+  fileName: String!
+  relativePath: String!
+  downloadUrl: String!
+}
+
+type DesFolder {
+  name: String!
+  description: String!
+}
+
+type DesFootprint {
+  pins: [DesPin!]! @deprecated(reason: "Not implemented and may be removed.")
+  imageFullSizeUrl: String!
+  imageThumbnailUrl: String!
+  dataDownloadUrl: String!
+  folder: DesFolder
+  guid: String!
+  name: String!
+  comment: String!
+  description: String!
+}
+
+type DesGerber {
+  gerberFiles: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+type DesGerberX2 {
+  gerberX2Files: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+type DesIpc2581 {
+  ipc2581Files: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+type DesLaunchWorkflowPayload {
+  id: String!
+  status: Int!
+}
+
+type DesLayer {
+  name: String!
+  thickness: DesSize
+  dielectricConstant: Decimal
+  copperWeight: DesWeight
+  "The copper area."
+  copperArea: DesArea
+  "The ratio of copper area to PCB area."
+  copperRatio: Decimal
+  material: String
+  nets: [DesNet!]!
+  layerType: DesLayerType!
+  layerProperties: [DesLayerProperty!]!
+}
+
+type DesLayerProperty {
+  name: String!
+  text: String!
+  size: DesSize
+}
+
+type DesLibrary {
+  "Gets library components."
+  components("Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: DesComponentFilterInput): DesComponentConnection
+  "Gets library component templates."
+  componentTemplates("Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesComponentTemplateConnection
+  "Gets library reuse blocks."
+  reuseBlocks("Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesReuseBlockConnection
+}
+
+"Revision naming scheme details obtained by `desLibrary\/lifeCycleDefinitions`."
+type DesLifeCycleDefinition {
+  lifeCycleDefinitionId: String!
+  name: String!
+}
+
+type DesLifeCycleState {
+  name: String!
+}
+
+type DesManufacturePackage implements Node {
+  "The node identifier for this project (used by `desManufacturePackageById`)."
+  id: ID!
+  name: String!
+  downloadUrl: String!
+}
+
+type DesManufacturePackageCreationJob {
+  id: String!
+  createdAt: DateTime!
+  payload: DesManufacturePackageCreationJobPayload!
+  status: DesJobStatus!
+}
+
+type DesManufacturePackageCreationJobPayload {
+  packageId: ID
+  errors: [DesPayloadError!]!
+}
+
+type DesManufacturerPart {
+  supplierParts: [DesSupplierPart!]!
+  "The Octopart ID."
+  octopartId: String
+  "The manufacturer company name."
+  companyName: String!
+  "The part number (MPN)."
+  partNumber: String!
+  priority: Int!
+}
+
+"A reference to a user in a comment."
+type DesMention {
+  "The mentioned user."
+  user: DesUser!
+}
+
+type DesMesh3D {
+  glbFile: DesDownloadableFile
+}
+
+type DesModel3D {
+  parasolidFile: DesDownloadableFile
+}
+
+type DesNcDrill {
+  ncDrillFiles: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+type DesNet {
+  name: String!
+  cumulativeLength: DesSize!
+  layers: [DesLayer!]!
+  pads: [DesPad!]!
+  vias: [DesVia!]!
+  tracks(where: DesTrackFilterInput): [DesTrack!]!
+}
+
+type DesOdb {
+  odbFiles: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+type DesPad {
+  padType: DesPadType!
+  layer: DesLayer
+  net: DesNet
+  designator: String
+  globalDesignator: String
+  radius: Int
+  rotation: Decimal
+  isPlated: Boolean
+  holeSize: DesSize!
+  size: DesSize2D!
+  shape: DesPrimitiveShape
+  position: DesPosition2D!
+}
+
+type DesPayloadError {
+  message: String!
+}
+
+"A PCB contains design details of the physical product."
+type DesPcb {
+  "The details of the layer structure of this PCB."
+  layerStack: DesStackup
+  "The outline of this PCB."
+  outline: DesPolygon!
+  "The list of all part instances used in this PCB grouped into pages."
+  designItems("An optional array of designators to search." designators: [String!] "Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesDesignItemConnection
+  "The list of all electrically connected regions in this PCB."
+  nets("An optional array of names to search." names: [String!]): [DesNet!]!
+  "The list of all part connection targets in this PCB."
+  pads: [DesPad!]!
+  "The list of all conductor segments in this PCB."
+  tracks(where: DesTrackFilterInput): [DesTrack!]!
+  "The list of all multiple layer connections in this PCB."
+  vias: [DesVia!]!
+  "The list of all comment threads related to this PCB."
+  commentThreads: [DesCommentThread!]!
+  "The reference identifier for this PCB."
+  documentId: String!
+  "The document file name."
+  documentName: String!
+  "The dimensions of the PCB outline."
+  size: DesSize2D!
+  "The total area contained by the PCB outline."
+  area: DesArea!
+  "The location of the coordinate system origin."
+  origin: DesPosition2D!
+}
+
+type DesPcbAssembly {
+  packageName: String!
+  pickAndPlace: DesPickAndPlace!
+  assemblyDrawings: DesAssemblyDrawings!
+  downloadUrl: String!
+}
+
+type DesPcbFabrication {
+  packageName: String!
+  odb: DesOdb!
+  ipc2581: DesIpc2581!
+  gerber: DesGerber!
+  gerberX2: DesGerberX2!
+  ncDrill: DesNcDrill!
+  testPoints: DesTestPoints!
+  downloadUrl: String!
+}
+
+type DesPickAndPlace {
+  pickAndPlaceFiles: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+type DesPin {
+  name: String!
+  description: String!
+  designator: String!
+  electricalType: DesPinElectricalType!
+}
+
+type DesPolygon {
+  vertices: [DesPosition2D!]!
+}
+
+type DesPosition2D {
+  xMm: Decimal!
+  yMm: Decimal!
+  xMils: Decimal!
+  yMils: Decimal!
+  x: Int!
+  y: Int!
+}
+
+"A project manages all development stages of the PCB\/PCA product lifecycle."
+type DesProject implements Node {
+  "The node identifier for this project (used by `desProjectById`)."
+  id: ID!
+  "The account information for who created this project."
+  createdBy: DesUser
+  "The account information for who last modified this project."
+  updatedBy: DesUser
+  "The list of the parameters describing this project."
+  parameters("An optional list of parameter names to search." names: [String!]): [DesProjectParameter!]!
+  "The web address to download a preview image for this project."
+  previewUrl: String!
+  "The list of workflows associated with this project."
+  workflows("An option to search workflows that have been completed." isClosed: Boolean! = false "An option to search workflows that have been modified after a specific `DateTime`." modifiedAfter: DateTime where: DesWorkflowFilterInput): [DesWorkflow!]
+  "The latest VCS revision."
+  latestRevision: DesVcsRevision!
+  "The list of VCS revisions."
+  revisions("Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesVcsRevisionConnection
+  "The Altium 365 web address."
+  url: String!
+  "The Altium 365 workspace URL."
+  workspaceUrl: String!
+  "The reference identifier for this project."
+  projectId: String!
+  "The assigned name for this project."
+  name: String
+  "The summary of this project content or purpose."
+  description: String
+  "The `DateTime` when this project was created."
+  createdAt: DateTime
+  "The `DateTime` when this project was last modified."
+  updatedAt: DateTime
+  "The detailed design information for this project."
+  design: DesDesign!
+  "The list of project tasks. For a particular project consider using the more effective query `desProjectTasks`."
+  tasks: [DesTask!]
+}
+
+"A connection to a list of items."
+type DesProjectConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesProjectEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesProject!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesProjectEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesProject!
+}
+
+type DesProjectIdPayload {
+  id: ID!
+}
+
+type DesProjectParameter {
+  name: String!
+  value: String!
+}
+
+type DesRectangle {
+  pos1: DesPosition2D!
+  pos2: DesPosition2D!
+}
+
+"A release is a published version of a design with additional generated files for manufacturing."
+type DesRelease implements Node {
+  "The node identifier for this release (used by `desReleaseById`)."
+  id: ID!
+  "The list of variations contained in this release."
+  variants(where: DesReleaseVariantFilterInput): [DesReleaseVariant!]!
+  manufacturePackages: [DesManufacturePackage!]!
+  "The `DateTime` when this release was created."
+  createdAt: DateTime!
+  "The summary of this release content or purpose."
+  description: String!
+  "The reference identifier for this release."
+  releaseId: String!
+}
+
+type DesReleaseComponentPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesReleaseComponentTemplatePayload {
+  componentTemplateId: ID!
+  errors: [DesPayloadError!]!
+}
+
+"A connection to a list of items."
+type DesReleaseConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesReleaseEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesRelease!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesReleaseEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesRelease!
+}
+
+"A variant contains a specific configuration of a base design."
+type DesReleaseVariant {
+  "The data needed for assembly of this published design variant."
+  pcbAssembly: DesPcbAssembly
+  "The data needed for fabrication of this published design variant."
+  pcbFabrication: DesPcbFabrication
+  "The Bill of Materials (BOM) for this published design variant."
+  bom: DesBom
+  "The PCB document for this design variant."
+  pcb: DesPcb
+  "The descriptive label for this design variant."
+  name: String!
+  "The list of schematic documents for this design variant."
+  schematics: [DesSchematic!]!
+}
+
+type DesRemoveUsersFromGroupPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesReuseBlock implements Node {
+  latestRevision: DesReuseBlockRevision!
+  revisions: [DesReuseBlockRevision!]!
+  "The node identifier for this reuse block (used by `desReuseBlockById`)."
+  id: ID!
+  name: String!
+  description: String!
+}
+
+"A connection to a list of items."
+type DesReuseBlockConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesReuseBlockEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesReuseBlock!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesReuseBlockEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesReuseBlock!
+}
+
+type DesReuseBlockRevision implements Node {
+  pcbSnippet: DesDownloadableFile!
+  schematicSnippet: DesDownloadableFile!
+  "The node identifier for this reuse block (used by `desReuseBlockRevisionById`)."
+  id: ID!
+  name: String!
+  comment: String!
+  description: String!
+}
+
+"Revision details ID for later use or full details."
+type DesRevision {
+  "The full revision details."
+  details: DesRevisionDetails!
+  "The revision details node ID for later use."
+  id: ID!
+}
+
+"Revision details."
+type DesRevisionDetails {
+  lifeCycleState: DesLifeCycleState!
+  childCount: Int!
+  references: [DesDownloadableFile!]!
+  parentCount: Int!
+  "The node ID."
+  id: ID!
+  description: String
+  comment: String
+}
+
+"Revision naming scheme details obtained by `desLibrary\/revisionNamingSchemes`."
+type DesRevisionNamingScheme {
+  revisionNamingSchemeId: String!
+  name: String!
+}
+
+"A schematic contains the design parts and logical connections."
+type DesSchematic {
+  "The list of all part instances used in this schematic grouped into pages."
+  designItems("Returns the first N elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last N elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): DesDesignItemConnection
+  "The list of all logical part connections in this schematic."
+  nets("An optional array of names to search." names: [String!]): [DesNet!]!
+  "The list of all comment threads related to this schematic."
+  commentThreads: [DesCommentThread!]!
+  "The reference identifier for this schematic."
+  documentId: String!
+  "The document file name."
+  documentName: String!
+  parentIds: [String!]!
+  units: Int!
+}
+
+type DesSharedWithMe {
+  projects: [DesProject!]!
+  manufacturePackages: [DesManufacturePackage!]!
+  commentThreads: [DesCommentThread!]!
+}
+
+type DesSimulation {
+  dataDownloadUrl: String!
+  folder: DesFolder
+  guid: String!
+  name: String!
+  comment: String!
+  description: String!
+}
+
+type DesSize {
+  x: Decimal!
+  xMm: Decimal!
+  xMils: Decimal!
+}
+
+type DesSize2D {
+  x: Int!
+  y: Int!
+  xMm: Decimal!
+  xMils: Decimal!
+  yMm: Decimal!
+  yMils: Decimal!
+}
+
+type DesStack {
+  name: String!
+  layers: [DesLayer!]!
+}
+
+type DesStackup {
+  stackupType: String!
+  layerTypes: [DesLayerType!]!
+  roughnessType: String!
+  roughnessFactorSR: String!
+  roughnessFactorRF: String!
+  stacks: [DesStack!]!
+}
+
+type DesSupplierPart {
+  "The supplier company name."
+  companyName: String!
+  "The part number (SKU)."
+  partNumber: String!
+  "Available for library components."
+  prices: [DesSupplierPrice!]
+  "Available for library components."
+  stocks: [DesSupplierStock!]
+}
+
+type DesSupplierPrice {
+  currency: String!
+  price: Decimal!
+  breakQuantity: Int!
+}
+
+type DesSupplierStock {
+  locationName: String!
+  quantity: Decimal!
+}
+
+type DesSymbol {
+  "The list of pins."
+  pins: [DesPin!]!
+  imageFullSizeUrl: String!
+  imageThumbnailUrl: String!
+  dataDownloadUrl: String!
+  folder: DesFolder
+  guid: String!
+  name: String!
+  comment: String!
+  description: String!
+}
+
+type DesTask implements Node {
+  "The assigned user."
+  assignee: DesUser!
+  "The user who created the task."
+  createdBy: DesUser!
+  "The user who modified the task."
+  modifiedBy: DesUser!
+  "The list of task comments."
+  comments: [DesComment!]!
+  "The node ID."
+  id: ID!
+  "The task ID shown in Altium 365."
+  refId: String!
+  "The task name."
+  name: String!
+  "The task description."
+  description: String!
+  "The task priority."
+  priority: DesTaskPriority!
+  "The task status."
+  status: DesTaskStatus!
+  "The creation date."
+  createdAt: DateTime!
+  "The last modification date."
+  modifiedAt: DateTime!
+}
+
+"A connection to a list of items."
+type DesTaskConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesTaskEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesTask!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesTaskEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesTask!
+}
+
+type DesTeam {
+  users: [DesUser!]!
+  groups: [DesUserGroup!]!
+}
+
+type DesTerminateWorkflowsError {
+  id: String!
+  message: String!
+}
+
+type DesTerminateWorkflowsPayload {
+  errors: [DesTerminateWorkflowsError!]!
+}
+
+type DesTestPoints {
+  testPointFiles: [DesDownloadableFile!]!
+  packageName: String
+  downloadUrl: String
+}
+
+type DesTrack {
+  layer: DesLayer
+  net: DesNet
+  width: DesSize!
+  begin: DesPosition2D!
+  end: DesPosition2D!
+}
+
+type DesUpdateCommentPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUpdateComponentRevisionParametersPayload {
+  componentId: ID!
+  errors: [DesPayloadError!]!
+}
+
+type DesUpdateComponentTemplatePayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUpdateReuseBlockPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUpdateTaskCommentPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUpdateTaskPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUpdateUserGroupPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUpdateUserPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUploadCollaborationSimulationPayload {
+  errors: [DesPayloadError!]!
+}
+
+type DesUploadProjectPayload {
+  "The project ID."
+  projectId: ID!
+  errors: [DesPayloadError!]!
+}
+
+"User details with the identifier and nullable extra fields."
+type DesUser {
+  "Null if the user no longer exists."
+  pictureUrl(size: DesUserPictureSize): String
+  "Null if the user no longer exists."
+  groups: [DesUserGroup!]
+  "The internal user ID."
+  userId: String!
+  "Null if the user no longer exists."
+  userName: String
+  "Null if the user no longer exists."
+  email: String
+  "Null if the user no longer exists."
+  firstName: String
+  "Null if the user no longer exists."
+  lastName: String
+}
+
+"A user group information."
+type DesUserGroup implements Node {
+  "The node ID."
+  id: ID!
+  "The group name."
+  name: String!
+}
+
+"VCS revision\/commit information."
+type DesVcsRevision {
+  revisionId: String!
+  message: String!
+  author: String!
+  createdAt: DateTime!
+  files: [DesVcsRevisionFileChange!]!
+}
+
+"A connection to a list of items."
+type DesVcsRevisionConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [DesVcsRevisionEdge!]
+  "A flattened list of the nodes."
+  nodes: [DesVcsRevision!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+"An edge in a connection."
+type DesVcsRevisionEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DesVcsRevision!
+}
+
+"Describes the file affected by a VCS revision."
+type DesVcsRevisionFileChange {
+  kind: DesVcsChangeKind!
+  path: String!
+}
+
+type DesVia {
+  layer: DesLayer
+  net: DesNet
+  beginLayer: DesLayer
+  endLayer: DesLayer
+  name: String
+  holeDiameter: DesSize!
+  padDiameter: DesSize!
+  shape: DesPrimitiveShape
+  position: DesPosition2D!
+}
+
+type DesWeight {
+  x: Decimal!
+  gram: Decimal!
+  ounce: Decimal!
+}
+
+"A variant contains a specific configuration of a base design."
+type DesWipVariant {
+  designExchange: DesDesignExchange
+  "The Bill of Materials (BOM) for this design variant."
+  bom: DesBom
+  "The PCB document for this design variant."
+  pcb: DesPcb
+  "The descriptive label for this design variant."
+  name: String!
+  "The list of schematic documents for this design variant."
+  schematics: [DesSchematic!]!
+}
+
+"The most recent version of a design."
+type DesWorkInProgress {
+  "The list of variations contained in this design."
+  variants(where: DesWipVariantFilterInput): [DesWipVariant!]!
+}
+
+"A workflow manages the execution of a logical sequence of tasks."
+type DesWorkflow {
+  "The list of variables defined for this workflow."
+  variables("An optional list of parameter names to search." names: [String!]): [DesWorkflowVariable!]!
+  "The `DateTime` for the most recent changes for this workflow."
+  modifiedAt: DateTime!
+  "The reference identifier for this workflow."
+  workflowId: String!
+  "The name of the active task(s) for this workflow."
+  state: String
+  "The account information for the owner of any action or response needed for this workflow."
+  assignee: String!
+  "The account information for who created this workflow."
+  createdBy: String!
+  "The `DateTime` for the creation of this workflow."
+  createdAt: DateTime!
+  "The `DateTime` for the completion of this workflow."
+  endedAt: DateTime
+  "The label for this workflow."
+  name: String!
+  "The reference identifier for definition of this workflow."
+  processDefinitionId: String!
+  "The label for the definition of this workflow."
+  processDefinitionName: String!
+  "The current condition of this workflow."
+  status: String!
+}
+
+"A workflow definition contains a logical sequence of tasks."
+type DesWorkflowDefinition {
+  "The list of variables need to launch this workflow definition."
+  variables: [DesWorkflowVariable!]!
+  "The reference identifier for this workflow definition."
+  workflowDefinitionId: String!
+  "The label for this workflow definition."
+  name: String!
+  "The account information for who created this workflow definition."
+  createdBy: String!
+  "The `DateTime` for the creation of this workflow definition."
+  createdAt: DateTime!
+}
+
+type DesWorkflowVariable {
+  valueType: String
+  constraint: String
+  name: String!
+  value: String!
+}
+
+"A workspace provides a flexible and secure method for managing design, manufacturing and supply content."
+type DesWorkspace implements Node {
+  "The node identifier for the workspace (used by `DesWorkspaceById`)."
+  id: ID!
+  "The location of this workspace."
+  location: DesWorkspaceLocation!
+  "The resource managing components for this workspace."
+  library: DesLibrary!
+  "The list of members authorized for this workspace."
+  team: DesTeam!
+  "The list of projects managed in this workspace."
+  projects(where: DesProjectFilterInput): [DesProject!]!
+  "The list of workflow definitions in this workspace."
+  workflowDefinitions(where: DesWorkflowDefinitionFilterInput): [DesWorkflowDefinition!]
+  "The list of workflows in this workspace."
+  workflows(where: DesWorkflowFilterInput): [DesWorkflow!]
+  "The descriptive label for this workspace."
+  name: String!
+  "The web address of this workspace."
+  url: String!
+  "The summary of this workspace content or purpose."
+  description: String
+  "Tells if the workspace is the current user default."
+  isDefault: Boolean!
+  "The list of workspace tasks. For a particular workspace consider using the more effective query `desWorkspaceTasks`."
+  tasks: [DesTask!]
+}
+
+type DesWorkspaceLocation {
+  "The name of the location."
+  name: String!
+  "The preferred Nexar API URL to use for this location."
+  apiServiceUrl: String!
+  "The preferred files service URL to use for this location."
+  filesServiceUrl: String!
+}
+
+"Information about pagination in a connection."
+type PageInfo {
+  "Indicates whether more edges exist following the set defined by the clients arguments."
+  hasNextPage: Boolean!
+  "Indicates whether more edges exist prior the set defined by the clients arguments."
+  hasPreviousPage: Boolean!
+  "When paginating backwards, the cursor to continue."
+  startCursor: String
+  "When paginating forwards, the cursor to continue."
+  endCursor: String
+}
+
+"Nexar supply part data for internal use only."
+type SupPartExtras {
+  alternatives(first: Int! = 100): [SupPartExtras!]!
+  partId: String!
+  description: String
+  isRohsCompliant: Boolean
+  confidence: Float
+  datasheetUrls: [String!]
+  lifeCycle: SupPartLifeCycle!
+  parameters: [SupPartExtrasParameter!]
+  technicalDetails: [SupPartExtrasTechnicalDetail!]
+}
+
+type SupPartExtrasParameter {
+  name: String!
+  unit: String
+  value: [String!]
+}
+
+type SupPartExtrasTechnicalDetail {
+  name: String!
+  value: String!
+}
+
+input BooleanOperationFilterInput {
+  eq: Boolean
+  neq: Boolean
+}
+
+input DateTimeOperationFilterInput {
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime]
+  nin: [DateTime]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
+}
+
+input DesAddUsersToGroupInput {
+  "The group node ID."
+  id: ID!
+  "User IDs."
+  userIds: [String!]!
+}
+
+input DesCollaborationSimulationFileInput {
+  fileId: String!
+  fileType: String!
+  fileName: String!
+}
+
+"A component contains the parametric details of a PCB part."
+input DesComponentFilterInput {
+  and: [DesComponentFilterInput!]
+  or: [DesComponentFilterInput!]
+  "The library label for this component."
+  name: StringOperationFilterInput
+  "The additional information for this component."
+  comment: StringOperationFilterInput
+  "The summary of function or other performance details for this component."
+  description: StringOperationFilterInput
+  "The component revision."
+  revision: DesRevisionFilterInput
+}
+
+input DesCreateCommentInput {
+  entityId: ID!
+  commentThreadId: String!
+  text: String!
+}
+
+input DesCreateCommentThreadInput {
+  entityId: ID!
+  documentId: String!
+  documentName: String
+  documentType: DesDocumentType!
+  text: String!
+  commentContextType: DesCommentContextType!
+  itemAsDesignItemId: ID
+  itemAsInternalObjectId: String
+  area: DesRectangleInput
+  releaseId: String
+}
+
+input DesCreateManufacturePackageInput {
+  "The ID of the project to create a manufacture package from."
+  projectId: ID!
+  "The Git commit which determines the version of the project to use. If not provided, the latest version is used."
+  vcsRevisionId: String
+  "The name for the package."
+  name: String!
+  "A description for the package."
+  description: String
+  "The email addresses of the manufacturers to share the package with."
+  shareWith: [String!]!
+  "The project variant to use when creating the package. If not provided, the default variant is used."
+  variantName: String
+  "A webhook URL that will receive a POST request when the manufacture package has been created and shared."
+  callbackUrl: String
+}
+
+input DesCreateProjectTaskInput {
+  "The project node ID."
+  projectId: ID!
+  "The new task data."
+  task: DesCreateTaskInput!
+}
+
+input DesCreateTaskCommentInput {
+  "The task node ID."
+  taskId: ID!
+  "The comment text."
+  text: String!
+}
+
+input DesCreateTaskInput {
+  "New task name."
+  name: String!
+  "New task description."
+  description: String!
+  "Optional task priority."
+  priority: DesTaskPriority
+  "Optional task status."
+  status: DesTaskStatus
+}
+
+input DesCreateUserGroupInput {
+  workspaceUrl: String!
+  name: String!
+}
+
+input DesCreateUserInput {
+  workspaceUrl: String!
+  userName: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+}
+
+input DesCreateWorkspaceTaskInput {
+  "The workspace URL."
+  workspaceUrl: String!
+  "The new task data."
+  task: DesCreateTaskInput!
+}
+
+input DesDeleteCommentInput {
+  entityId: ID!
+  commentThreadId: String!
+  commentId: String!
+}
+
+input DesDeleteCommentThreadInput {
+  entityId: ID!
+  commentThreadId: String!
+}
+
+input DesDeleteTaskCommentInput {
+  "The task node ID."
+  taskId: ID!
+  "The comment ID."
+  commentId: String!
+}
+
+input DesDeleteTaskInput {
+  "The task node ID."
+  taskId: ID!
+}
+
+input DesDeleteUserGroupInput {
+  "The group node ID."
+  id: ID!
+}
+
+input DesDeleteUserInput {
+  workspaceUrl: String!
+  userId: String!
+}
+
+input DesLaunchWorkflowInput {
+  workspaceUrl: String!
+  workflowDefinitionId: String!
+  name: String
+  "The string variables."
+  variables: [DesWorkflowVariableInput!]!
+  "The attachment variables."
+  attachments: [DesWorkflowAttachmentVariableInput!]
+}
+
+input DesLayerFilterInput {
+  and: [DesLayerFilterInput!]
+  or: [DesLayerFilterInput!]
+  name: StringOperationFilterInput
+}
+
+input DesOnCommentUpdatedInput {
+  workspaceUrl: String!
+  token: String!
+}
+
+input DesPosition2DInput {
+  x: Int!
+  y: Int!
+}
+
+"A project manages all development stages of the PCB\/PCA product lifecycle."
+input DesProjectFilterInput {
+  and: [DesProjectFilterInput!]
+  or: [DesProjectFilterInput!]
+  "The Altium 365 web address."
+  url: StringOperationFilterInput
+  "The Altium 365 workspace URL."
+  workspaceUrl: StringOperationFilterInput
+  "The reference identifier for this project."
+  projectId: StringOperationFilterInput
+  "The assigned name for this project."
+  name: StringOperationFilterInput
+  "The summary of this project content or purpose."
+  description: StringOperationFilterInput
+  "The `DateTime` when this project was created."
+  createdAt: DateTimeOperationFilterInput
+  "The `DateTime` when this project was last modified."
+  updatedAt: DateTimeOperationFilterInput
+}
+
+input DesRectangleInput {
+  pos1: DesPosition2DInput!
+  pos2: DesPosition2DInput!
+}
+
+input DesReleaseComponentFileInput {
+  "Uploaded file ID."
+  fileId: String!
+  "Relative path of the source file."
+  relativePath: String!
+}
+
+input DesReleaseComponentInput {
+  workspaceUrl: String!
+  componentReleaseFolder: String!
+  componentItemName: String!
+  componentRevisionNamingSchemeId: String
+  componentLifeCycleDefinitionId: String
+  componentComment: String
+  componentDescription: String
+  parameters: [DesRevisionParameterInput!]!
+  "The symbol folder path, existing or to be created."
+  symbolReleaseFolder: String!
+  "The symbol name. Use null to be generated."
+  symbolItemName: String
+  symbolFiles: [DesReleaseComponentFileInput!]!
+  symbolRevisionNamingSchemeId: String
+  symbolLifeCycleDefinitionId: String
+  "The footprint folder path, existing or to be created."
+  footprintReleaseFolder: String!
+  "The footprint name. Use null to be generated."
+  footprintItemName: String
+  footprintFiles: [DesReleaseComponentFileInput!]!
+  footprintRevisionNamingSchemeId: String
+  footprintLifeCycleDefinitionId: String
+}
+
+"Input parameters for `desReleaseComponentTemplate`."
+input DesReleaseComponentTemplateInput {
+  "The target workspace URL."
+  workspaceUrl: String!
+  "The target folder path, existing or to be created."
+  folder: String!
+  "The component template name."
+  name: String!
+  "The component template content (CMPT format JSON string)."
+  contentAsText: String!
+  "Optional naming scheme ID."
+  revisionNamingSchemeId: String
+  "Optional life cycle ID."
+  lifeCycleDefinitionId: String
+  "Optional comment."
+  comment: String
+  "Optional description."
+  description: String
+  "Optional parameters."
+  parameters: [DesRevisionParameterInput!]
+}
+
+"A release is a published version of a design with additional generated files for manufacturing."
+input DesReleaseFilterInput {
+  and: [DesReleaseFilterInput!]
+  or: [DesReleaseFilterInput!]
+  "The node identifier for this release (used by `desReleaseById`)."
+  id: StringOperationFilterInput
+  "The `DateTime` when this release was created."
+  createdAt: DateTimeOperationFilterInput
+  "The summary of this release content or purpose."
+  description: StringOperationFilterInput
+  "The reference identifier for this release."
+  releaseId: StringOperationFilterInput
+}
+
+"A variant contains a specific configuration of a base design."
+input DesReleaseVariantFilterInput {
+  and: [DesReleaseVariantFilterInput!]
+  or: [DesReleaseVariantFilterInput!]
+  "The descriptive label for this design variant."
+  name: StringOperationFilterInput
+  "The list of schematic documents for this design variant."
+  schematics: ListFilterInputTypeOfDesSchematicFilterInput
+}
+
+input DesRemoveUsersFromGroupInput {
+  "The group node ID."
+  id: ID!
+  "User IDs."
+  userIds: [String!]!
+}
+
+"Revision details ID for later use or full details."
+input DesRevisionFilterInput {
+  and: [DesRevisionFilterInput!]
+  or: [DesRevisionFilterInput!]
+  "The revision details node ID for later use."
+  id: IdOperationFilterInput
+}
+
+input DesRevisionParameterInput {
+  name: String!
+  value: String!
+}
+
+"A schematic contains the design parts and logical connections."
+input DesSchematicFilterInput {
+  and: [DesSchematicFilterInput!]
+  or: [DesSchematicFilterInput!]
+  "The reference identifier for this schematic."
+  documentId: StringOperationFilterInput
+  "The document file name."
+  documentName: StringOperationFilterInput
+  parentIds: ListStringOperationFilterInput
+  units: IntOperationFilterInput
+}
+
+input DesTerminateWorkflowsInput {
+  workspaceUrl: String!
+  workflowIds: [String!]!
+}
+
+input DesTrackFilterInput {
+  and: [DesTrackFilterInput!]
+  or: [DesTrackFilterInput!]
+  layer: DesLayerFilterInput
+}
+
+input DesUpdateCommentInput {
+  entityId: ID!
+  commentThreadId: String!
+  commentId: String!
+  text: String!
+}
+
+input DesUpdateComponentRevisionParametersInput {
+  componentId: ID!
+  componentRevisionNamingSchemeId: String
+  releaseNote: String
+  "Tells to replace all existing parameters. By default parameters are added to existing."
+  replaceExisting: Boolean
+  parameters: [DesRevisionParameterInput!]!
+}
+
+"Input parameters for `desUpdateComponentTemplate`."
+input DesUpdateComponentTemplateInput {
+  "The node ID."
+  componentTemplateId: ID!
+  "The component template content (CMPT format JSON string)."
+  contentAsText: String!
+  "Optional comment."
+  comment: String
+  "Optional description."
+  description: String
+}
+
+input DesUpdateReuseBlockInput {
+  id: ID!
+  name: String
+  description: String
+}
+
+input DesUpdateTaskCommentInput {
+  "The task node ID."
+  taskId: ID!
+  "The comment ID."
+  commentId: String!
+  "New comment text."
+  text: String!
+}
+
+input DesUpdateTaskInput {
+  "The task node ID."
+  taskId: ID!
+  "New task name or null to keep old."
+  name: String
+  "New task description or null to keep old."
+  description: String
+  "New task priority or null to keep old."
+  priority: DesTaskPriority
+  "New task status or null to keep old."
+  status: DesTaskStatus
+}
+
+input DesUpdateUserGroupInput {
+  "The group node ID."
+  id: ID!
+  "The group name."
+  name: String!
+}
+
+input DesUpdateUserInput {
+  workspaceUrl: String!
+  userId: String!
+  firstName: String
+  lastName: String
+}
+
+input DesUploadCollaborationSimulationInput {
+  projectId: ID!
+  domain: String!
+  projectType: String!
+  revision: String!
+  comment: String!
+  files: [DesCollaborationSimulationFileInput!]!
+}
+
+input DesUploadProjectInput {
+  "The workspace URL."
+  workspaceUrl: String!
+  "The uploaded zip file ID."
+  fileId: String!
+  "The project name."
+  name: String!
+  "The project description."
+  description: String
+  "The project target folder path."
+  folderPath: String
+}
+
+"A variant contains a specific configuration of a base design."
+input DesWipVariantFilterInput {
+  and: [DesWipVariantFilterInput!]
+  or: [DesWipVariantFilterInput!]
+  "The descriptive label for this design variant."
+  name: StringOperationFilterInput
+  "The list of schematic documents for this design variant."
+  schematics: ListFilterInputTypeOfDesSchematicFilterInput
+}
+
+input DesWorkflowAttachmentVariableInput {
+  "The variable name."
+  name: String!
+  "Uploaded file references."
+  files: [String!]!
+}
+
+"A workflow definition contains a logical sequence of tasks."
+input DesWorkflowDefinitionFilterInput {
+  and: [DesWorkflowDefinitionFilterInput!]
+  or: [DesWorkflowDefinitionFilterInput!]
+  "The reference identifier for this workflow definition."
+  workflowDefinitionId: StringOperationFilterInput
+  "The label for this workflow definition."
+  name: StringOperationFilterInput
+  "The account information for who created this workflow definition."
+  createdBy: StringOperationFilterInput
+  "The `DateTime` for the creation of this workflow definition."
+  createdAt: DateTimeOperationFilterInput
+}
+
+"A workflow manages the execution of a logical sequence of tasks."
+input DesWorkflowFilterInput {
+  and: [DesWorkflowFilterInput!]
+  or: [DesWorkflowFilterInput!]
+  "The reference identifier for this workflow."
+  workflowId: StringOperationFilterInput
+  "The name of the active task(s) for this workflow."
+  state: StringOperationFilterInput
+  "The account information for the owner of any action or response needed for this workflow."
+  assignee: StringOperationFilterInput
+  "The account information for who created this workflow."
+  createdBy: StringOperationFilterInput
+  "The `DateTime` for the creation of this workflow."
+  createdAt: DateTimeOperationFilterInput
+  "The `DateTime` for the completion of this workflow."
+  endedAt: DateTimeOperationFilterInput
+  "The label for this workflow."
+  name: StringOperationFilterInput
+  "The reference identifier for definition of this workflow."
+  processDefinitionId: StringOperationFilterInput
+  "The label for the definition of this workflow."
+  processDefinitionName: StringOperationFilterInput
+  "The current condition of this workflow."
+  status: StringOperationFilterInput
+}
+
+input DesWorkflowVariableInput {
+  valueType: String
+  constraint: String
+  name: String!
+  value: String!
+}
+
+"A workspace provides a flexible and secure method for managing design, manufacturing and supply content."
+input DesWorkspaceFilterInput {
+  and: [DesWorkspaceFilterInput!]
+  or: [DesWorkspaceFilterInput!]
+  "The node identifier for the workspace (used by `DesWorkspaceById`)."
+  id: StringOperationFilterInput
+  "The descriptive label for this workspace."
+  name: StringOperationFilterInput
+  "The web address of this workspace."
+  url: StringOperationFilterInput
+  "The summary of this workspace content or purpose."
+  description: StringOperationFilterInput
+  "Tells if the workspace is the current user default."
+  isDefault: BooleanOperationFilterInput
+}
+
+input IdOperationFilterInput {
+  eq: ID
+  neq: ID
+  in: [ID]
+  nin: [ID]
+}
+
+input IntOperationFilterInput {
+  eq: Int
+  neq: Int
+  in: [Int]
+  nin: [Int]
+  gt: Int
+  ngt: Int
+  gte: Int
+  ngte: Int
+  lt: Int
+  nlt: Int
+  lte: Int
+  nlte: Int
+}
+
+input ListFilterInputTypeOfDesSchematicFilterInput {
+  all: DesSchematicFilterInput
+  none: DesSchematicFilterInput
+  some: DesSchematicFilterInput
+  any: Boolean
+}
+
+input ListStringOperationFilterInput {
+  all: StringOperationFilterInput
+  none: StringOperationFilterInput
+  some: StringOperationFilterInput
+  any: Boolean
+}
+
+input StringOperationFilterInput {
+  and: [StringOperationFilterInput!]
+  or: [StringOperationFilterInput!]
+  eq: String
+  neq: String
+  contains: String
+  ncontains: String
+  in: [String]
+  nin: [String]
+  startsWith: String
+  nstartsWith: String
+  endsWith: String
+  nendsWith: String
+}
+
+enum DesCommentContextType {
+  NONE
+  COMPONENT
+  TRACK
+  VIA
+  AREA
+}
+
+enum DesContentTypeKind {
+  COMPONENT
+  EMBEDDED_DESIGN
+  FPGA_DESIGN
+  OPEN_BUS
+  PART_CHOICE_LIST
+  PCB_COMPONENT
+  PCB_DESIGN
+  PCB_DOCUMENT
+  PCB_BLANK
+  PCB_ASSEMBLY
+  PCB_MODEL3D
+  SCHEMATIC_SHEET
+  SCHEMATIC_TEMPLATE
+  SIMULATION_MODEL
+  SI_MODEL
+  SYMBOL
+  OUTPUT_JOB
+  MORFIK_PACKAGE
+  MORFIK_WEB_RESOURCE
+  MORFIK_X_APP_DESIGN
+  MORFIK_X_APP_IMAGE
+  MORFIK_X_APP_SET
+  WEB_ITEM
+  DXP_ADDON
+  DATA_CLASS
+  DEVICE_CLASS
+  RICH_TEXT
+  PREFERENCES
+  MODEL3D
+  COMPONENT_TEMPLATE
+  LAYER_STACK
+  BOM_TEMPLATE
+  SCRIPT
+  PROJECT
+  PROJECT_TEMPLATE
+  DATA_SHEET
+  DRAFTSMAN_DOCUMENT_TEMPLATE
+  DRAFTSMAN_SHEET_TEMPLATE
+  PROJECT_REVIEW_PACKAGE
+  PLM_INSTANCE
+  PLM_PUBLISH_TEMPLATE
+  PCB_BLOCK
+  BINARY_FILE
+  DXP_PLATFORM
+  DXP_SDK
+  DXP_PLUGIN
+  BMS_AUTO_GENERATED_COMPONENTS
+}
+
+enum DesDocumentType {
+  SCHEMATIC
+  PCB
+}
+
+enum DesJobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  ERROR
+}
+
+enum DesLayerType {
+  ABSTRACT
+  UNKNOWN
+  PHYSICAL
+  DIELECTRIC
+  OVERLAY
+  SOLDER_MASK
+  BIKINI_COVERLAY
+  PASTE_MASK
+  MECHANICAL
+  FOIL
+  PLANE
+  SIGNAL
+  SURFACE_FINISH
+  CORE
+  PREPREG
+  PLATING
+  ADHESIVE
+  STIFFENER
+  MISC
+  PE_LAYER
+  CONDUCTIVE
+  NON_CONDUCTIVE
+}
+
+enum DesPadType {
+  SMD
+  FREE
+}
+
+enum DesParameterType {
+  NONE
+  TEXT
+  VOLTAGE
+  CURRENT
+  RESISTANCE
+  CONDUCTANCE
+  CAPACITANCE
+  CHARGE
+  INDUCTANCE
+  POWER
+  IMPEDANCE
+  FREQUENCY
+  TEMPERATURE
+  DECIBELS
+  PERCENT
+  LENGTH
+  MASS
+  TIME
+}
+
+enum DesPinElectricalType {
+  INPUT
+  IO
+  OUTPUT
+  OPEN_COLLECTOR
+  PASSIVE
+  HI_Z
+  OPEN_EMITTER
+  POWER
+}
+
+enum DesPrimitiveShape {
+  ROUND
+  RECTANGLE
+  ROUNDED_RECTANGLE
+}
+
+enum DesTaskPriority {
+  UNDEFINED
+  LOW
+  MEDIUM
+  HIGH
+  HIGHEST
+}
+
+enum DesTaskStatus {
+  UNDEFINED
+  TO_DO
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum DesUserPictureSize {
+  SIZE48X48
+  SIZE70X70
+  SIZE128X128
+  ORIGINAL
+}
+
+"Describes VCS item change kind."
+enum DesVcsChangeKind {
+  NONE
+  ADDED
+  DELETED
+  MODIFIED
+}
+
+enum SupPartLifeCycle {
+  UNKNOWN
+  NEW
+  ACTIVE
+  NRFND
+  EOL
+  DISCONTINUED
+  ACTIVE_UNCONFIRMED
+  DISCONTINUED_UNCONFIRMED
+  CONTACT_MFR
+  TRANSFERRED
+}
+
+"Used to show the filters that are applied to current search."
+type SupAppliedFilter {
+  "shortname is the key in the filters Map.  Usually an attribute shortname, or `manufacturerId`, `distributorId`, etc."
+  shortname: String!
+  "human readable name to display in the UI"
+  name: String!
+  "values in the filter Map."
+  values: [String!]!
+  "human readable values to display in the UI"
+  displayValues: [String!]!
+}
+
+"Defines an attribute like Capacitance or Resistance."
+type SupAttribute {
+  "Internal Octopart ID"
+  id: ID!
+  "display name"
+  name: String!
+  "use as key for `sort` or `filter` in part search"
+  shortname: String!
+  "use to group together similar attributes, e.g. Technical, Physical, Compliance"
+  group: String!
+  "The type of the value"
+  valueType: String!
+  "The short name of the units"
+  unitsName: String!
+  "The symbol of the units"
+  unitsSymbol: String!
+}
+
+"Groups similar attributes together, as can be seen with column groups in specs view"
+type SupAttributeGroup {
+  "Name of group, e.g. Technical, Physical, Compliance"
+  name: String!
+  "Attributes in group"
+  attributes: [SupAttribute!]!
+}
+
+"Information for use on \/electronic-parts Category pages."
+type SupBlurb {
+  "Category name."
+  name: String!
+  "Path to \/electronic-parts Category page."
+  pathName: String!
+  "Short description of Category."
+  description: String!
+  "Longer description of Category."
+  content: String!
+}
+
+"cadAgg produces a CadBucket with the count of parts that have CAD Symbol + Footprint and 3D model"
+type SupCadBucket {
+  cadState: String!
+  count: Int
+}
+
+"A Category exists in a Category tree.  Examples include Passive Components or Capacitors.  The `path` field is helpful to see where a category is in the tree.\nCategory id `4161` is the root of tree."
+type SupCategory {
+  "Octopart internal id.  Root id is 4161"
+  id: ID!
+  "ID of parent category."
+  parentId: ID!
+  "Display name"
+  name: String!
+  "List of all ancestor in category tree."
+  ancestors: [SupCategory!]!
+  "List of direct children in category tree."
+  children: [SupCategory!]!
+  "Slash separated path.  Can be used to visit URL for category page.  (e.g. `\/electronic-parts\/circuit-protection\/esd-and-circuit-protection-ics`)"
+  path: String!
+  "List of Attributes deemed to be relevant to this category.  (e.g. Resistance for Resistor category).  Useful for showing contextual filters in UI."
+  relevantAttributes: [SupAttribute!]!
+  "Blurb for Category, used on \/electronic-parts pages."
+  blurb: SupBlurb
+  "Number of parts in Category."
+  numParts: Int!
+}
+
+"categoryAgg produces a CategoryBucket with category + counts"
+type SupCategoryBucket {
+  category: SupCategory!
+  count: Int
+}
+
+"A company record represents a manufacturer or distributor, depending on context."
+type SupCompany {
+  "Octopart internal id"
+  id: ID!
+  "Display name of company"
+  name: String!
+  "Aliases of company"
+  aliases: [String!]!
+  "The country code for the display flag"
+  displayFlag: String
+  "Homepage URL of company"
+  homepageUrl: String
+  "Used for URLs like `\/manufacturers\/aimtec` or `\/distributors\/digi-key`"
+  slug: String!
+  "True if a manufacturer participates in Octopart's Verified Manufacturer program.  See [verified](https:\/\/octopart.com\/verified) for more information."
+  isVerified: Boolean!
+  "True if a distributor is a broker.  See [authorized](https:\/\/octopart.com\/authorized) for more information."
+  isBroker: Boolean! @deprecated(reason: "use `PartSeller.is_broker` instead")
+  "True if a distributor has an API integration with Octopart to provide latest pricing and stock data."
+  isDistributorApi: Boolean!
+}
+
+"manufacturerAgg and distributorAgg produce a CompanyBucket with company + counts"
+type SupCompanyBucket {
+  company: SupCompany!
+  count: Int
+}
+
+"A country's name, country code, and continent code."
+type SupCountry {
+  name: String!
+  countryCode: String!
+  continentCode: String!
+}
+
+"Textual description of a part"
+type SupDescription {
+  "Description text"
+  text: String!
+  "Source of description.  Used for attribution."
+  creditString: String!
+  "Source URL of description.  Used for attribution."
+  creditUrl: String!
+}
+
+"Document represents a PDF file and can be a Datasheet, Compliance Document, PCN, etc."
+type SupDocument {
+  name: String!
+  pageCount: Int
+  createdAt: Time
+  url: String!
+  creditString: String!
+  creditUrl: String!
+  mimeType: String!
+}
+
+"DocumentCollection groups documents together by type: Datasheets, Compliance Statements."
+type SupDocumentCollection {
+  "Name of group, e.g. Datasheets"
+  name: String!
+  "List of Documents in group"
+  documents: [SupDocument!]!
+}
+
+"Image of a part.  In the case of some symbol and footprint images, the scaled version may not actually be scaled and cropped, and may need to be scaled using CSS or other techniques."
+type SupImage {
+  urlLargest: String! @deprecated(reason: "use `url` instead")
+  url55px: String! @deprecated(reason: "use `url` instead")
+  url75px: String! @deprecated(reason: "use `url` instead")
+  url90px: String! @deprecated(reason: "use `url` instead")
+  "Image URL"
+  url: String!
+  "Source of description.  Used for attribution."
+  creditString: String!
+  "Source URL of description.  Used for attribution."
+  creditUrl: String!
+}
+
+"An offer is a specific buyable part from a distributor, with specific packaging, pricing, stock, moq."
+type SupOffer {
+  "Cache ID"
+  _cacheId: String!
+  "Octopart internal ID for this offer"
+  id: ID!
+  "Stock Keeping Unit used by internally by distributor"
+  sku: String!
+  "The code indicating the region(s) for which offer is valid"
+  eligibleRegion: String
+  "Number of units available to be shipped.  (aka Stock, Quantity)"
+  inventoryLevel: Int!
+  "Packaging of parts (eg Tape, Reel)"
+  packaging: String
+  "Minimum Order Quantity: smallest number of parts that can be purchased"
+  moq: Int
+  prices: [SupPricePoint!]!
+  "The URL to view offer on distributor website.  This will redirect via Octopart's server."
+  clickUrl: String!
+  "Octopart internal URL for this offer."
+  internalUrl: String!
+  "The last time data was received from distributor feed or API for this offer."
+  updated: Time!
+  "Number of days to acquire parts from factory."
+  factoryLeadDays: Int
+  "Number of parts on order from factory."
+  onOrderQuantity: Int
+  "Order multiple for factory orders."
+  factoryPackQuantity: Int
+  "Number of items which must be ordered together."
+  orderMultiple: Int
+  "The quantity of parts as packaged by the seller."
+  multipackQuantity: Int
+  "Whether this offer is specific to the customer making the request."
+  isCustomPricing: Boolean!
+}
+
+"Part model contains the relevant data around a part, including: datasheets, specs, sellers + offers, images, etc."
+type SupPart {
+  "Cache ID"
+  _cacheId: String!
+  "Octopart internal ID for this part.  Appears at the end of PDP URL \/ `slug` field."
+  id: ID!
+  "manufacturer + mpn for easy display"
+  name: String!
+  "Manufacturer Part Number"
+  mpn: String!
+  "Best guess at a generic MPN"
+  genericMpn: String!
+  "Company that manufactures this part"
+  manufacturer: SupCompany!
+  "A link to the manufacturer detail page for this part or series."
+  manufacturerUrl: String
+  "A link to a manufacturer page to request free sample kits for this part."
+  freeSampleUrl: String
+  "Documents including Datasheets, Compliance Documents, PCNs"
+  documentCollections: [SupDocumentCollection!]!
+  "Best description around 110 characters long, as can be seen on SERP or PDP.  May need truncation if all descriptions are long."
+  shortDescription: String!
+  "All part descriptions from sources"
+  descriptions: [SupDescription!]!
+  "All part images"
+  images: [SupImage!]!
+  "Attribute values for this part"
+  specs: [SupSpec!]!
+  "Path component of PDP URL (e.g. `\/ad7792bruz-analog+devices-402798`)"
+  slug: String!
+  "A link to the part page on Octopart. Do not include `rel=\"nofollow\"` when linking to this URL."
+  octopartUrl: String!
+  "Parts identified by Octopart to be similar in specs and functionality."
+  similarParts: [SupPart!]!
+  "Parts identified by the manufacturer as companion products."
+  companionProducts: [SupSponsoredPart!]!
+  category: SupCategory
+  series: SupPartSeries
+  bestImage: SupImage
+  bestDatasheet: SupDocument
+  referenceDesigns: [SupReferenceDesign!]!
+  "Data about part's CAD model.  If null `cadRequestUrl` can be used to request a CAD model be made."
+  cad: SupPartCad
+  "URL to request a CAD model from eeconcierge if a part doesn't already have a CAD model.  Will be null part is not eligible, e.g. a multimeter"
+  cadRequestUrl: String
+  "The UID from Octopart APIv3.  Provided for backwards compatibility, in general ID should be used."
+  v3uid: ID!
+  "A [Map](#map) of number of related objects.  Can be used to know the number of `images` or `descriptions` without having to request those related objects."
+  counts: Map!
+  "The median USD price at quantity 1,000, discarding outliers.  A reasonable estimate of average price for a part."
+  medianPrice1000: SupPricePoint
+  "Sum of stock available across all distributors"
+  totalAvail: Int!
+  "The average stock level at each distributor"
+  avgAvail: Float!
+  "Companies with Offers for this part"
+  sellers(includeBrokers: Boolean! = false authorizedOnly: Boolean! = false): [SupPartSeller!]!
+  "The estimated factory lead time in days derived from trusted distributor offers."
+  estimatedFactoryLeadDays: Int
+  "This part might be known by these alternate MPNs"
+  akaMpns: [String!]!
+  "Nexar supply part data for internal use only."
+  extras: SupPartExtras
+}
+
+type SupPartCad {
+  "URL to add this part to your Upverter library. Requires an Upverter account."
+  addToLibraryUrl: String
+  "If true, a STEP model will be included with the tool-specific downloads."
+  has3dModel: Boolean!
+  hasAltium: Boolean!
+  hasEagle: Boolean!
+  hasOrcad: Boolean!
+  hasKicad: Boolean!
+  downloadUrlAltium: String!
+  downloadUrlEagle: String!
+  downloadUrlOrcad: String!
+  downloadUrlKicad: String!
+  footprintImageUrl: String
+  symbolImageUrl: String
+}
+
+type SupPartMatch {
+  "Will match `reference` supplied in PartMatchQuery."
+  reference: String
+  "Number of parts matched"
+  hits: Int!
+  "Matched parts (may be subset, based on start + limit)"
+  parts: [SupPart!]!
+  "Possible error message"
+  error: String
+}
+
+type SupPartResult {
+  "Cache ID"
+  _cacheId: String!
+  "The part object"
+  part: SupPart!
+  explain: String! @deprecated(reason: "always empty")
+  "If the search `q` is an alternate MPN for this part, the `akaMpn` will be populated with this alternate MPN."
+  akaMpn: String
+  "Description with query terms highlighted.  Often this is the same as part.shortDescription,\nbut if the search `q` matched on a different description it may be longer than part.shortDescription and require truncation."
+  description: String!
+}
+
+"Result of part search."
+type SupPartResultSet {
+  total: Int! @deprecated(reason: "use `hits` instead")
+  "Number of parts in result set"
+  hits: Int!
+  "Contains nested part along side some fields specific to the query that explain reason for match."
+  results: [SupPartResult!]
+  "Grouped attributes used to render the columns in specs view."
+  specsViewAttributeGroups: [SupAttributeGroup!]!
+  "If an invalid query was modified or rejected, warnings indicate this fact to the user.  For example if query contained too many tokens, some tokens may be ignored."
+  warnings: [String!]
+  "Perform aggregations on Spec values across multiple Attributes.\nYou *must* specify `attributeNames` for this field to be populated.\n`attributeNames` should be a list of Attribute.shortname values (e.g. `capacitance` or `voltageRatingDc`)"
+  specAggs("a list of Attribute.shortname values to aggregate on (e.g. `capacitance` or `voltageRatingDc`)" attributeNames: [String!]! "number of spec value buckets to return (default 10)" size: Int! = 10): [SupSpecAgg!]!
+  "Aggregate on manufacturers for this result set"
+  manufacturerAgg("number of buckets to return (default 10)" size: Int! = 10): [SupCompanyBucket!]!
+  "Aggregate on distributors for this result set"
+  distributorAgg("number of buckets to return (default 10)" size: Int! = 10): [SupCompanyBucket!]!
+  "Aggregate on categories for this result set"
+  categoryAgg("number of buckets to return (default 10)" size: Int! = 10): [SupCategoryBucket!]!
+  "Aggregate on the availability of CAD models for the result set"
+  cadAgg: [SupCadBucket!]!
+  "Categories that are determined by search algo to be related to the search term.  Useful for suggesting a Category filter in the search UI."
+  suggestedCategories: [SupCategoryBucket!]!
+  "Attributes that are determined by search algo to be related to the search term.  Useful for suggesting most relevant filters in the search UI."
+  suggestedFilters: [SupAttribute!]!
+  "Full list of available Attributes in the result set"
+  allFilters: [SupAttribute!]!
+  "If a Category filter is applied, this will be the Category"
+  appliedCategory: SupCategory
+  "If filters are applied, this will contain display information"
+  appliedFilters: [SupAppliedFilter!]!
+}
+
+"A company with offers for a given part"
+type SupPartSeller {
+  "Cache ID"
+  _cacheId: String!
+  "The distributor"
+  company: SupCompany!
+  "Distributor's country"
+  country: String
+  "List of offers.  Multiple offers may exist in different packaging.\nWhile multiple geo-targeted offers may exist, currently the API only exposes one geo-targeted offer at a time based on `country` parameter.\nPlease contact us if you have a need to see all geo-targeted offer variants."
+  offers: [SupOffer!]!
+  "True if the distributor is an authorized distributor for this manufacturer.  See [authorized](https:\/\/octopart.com\/authorized) for more information."
+  isAuthorized: Boolean!
+  "True if the distributor is a Non-Authorized Dealer.  See [authorized](https:\/\/octopart.com\/authorized) for more information."
+  isBroker: Boolean!
+  "True if you can request a quote from this seller."
+  isRfq: Boolean!
+  "List of countries the seller ships to. An empty list represents zero shipping restrictions."
+  shipsToCountries: [SupCountry!]!
+}
+
+"A Part can be a member of a PartSeries, which represents a product line or \"family\" of parts from the manufacturer.\n\nSee [series](https:\/\/octopart.com\/series) page for examples."
+type SupPartSeries {
+  "Octopart internal ID for this series"
+  id: ID!
+  "Name of the part series"
+  name: String!
+  "Octopart URL for this series, specific to the parent part"
+  url: String!
+}
+
+"Price in a specific currency + quantity.  By supplying a `currency` parameter the API will populate an estimated convertedPrice in the user's desired currency."
+type SupPricePoint {
+  "Cache ID"
+  _cacheId: String!
+  "Minimum purchase quantity to get this price (aka price break)"
+  quantity: Int!
+  "Price in currency"
+  price: Float!
+  "Currency for price"
+  currency: String!
+  "Price converted to user's currency using foreign exchange rates.\n\nSince this is an estimate, an indicator should be shown to user if currency != convertedCurrency."
+  convertedPrice: Float!
+  "Currency for `convertedPrice`.  Will match value of `currency` argument."
+  convertedCurrency: String!
+  "The exchange rate used to calculate convertedPrice"
+  conversionRate: Float!
+}
+
+type SupReferenceDesign {
+  name: String!
+  url: String!
+}
+
+"Represents a specific value of an Attribute for a given Part"
+type SupSpec {
+  attribute: SupAttribute!
+  "The actual value"
+  value: String!
+  "The value of the spec in SI base units"
+  siValue: String!
+  "The type of the value"
+  valueType: String!
+  "The units of the value"
+  units: String!
+  "The short name of the units"
+  unitsName: String!
+  "The symbol of the units"
+  unitsSymbol: String!
+  "The formatted display value"
+  displayValue: String!
+}
+
+type SupSpecAgg {
+  attribute: SupAttribute!
+  buckets: [SupSpecBucket!]!
+  "min is the lowest spec value in this result set for numerical attributes"
+  min: Float
+  "max is the greatest spec value in this result set for numerical attributes"
+  max: Float
+  "The min value in SI base units"
+  siMin: String
+  "The max value in SI base units"
+  siMax: String
+  "displayMin is the formatted string of min"
+  displayMin: String
+  "displayMax is the formatted string of max"
+  displayMax: String
+  "The type of the value"
+  valueType: String!
+  "The units of the spec"
+  units: String
+  "The short name of the units"
+  unitsName: String
+  "The symbol of the units"
+  unitsSymbol: String
+}
+
+type SupSpecBucket {
+  "displayValue is the string value. For numerical attributes it is the formatted version of floatValue"
+  displayValue: String!
+  "floatValue is populated if the attribute is numeric"
+  floatValue: Float
+  "count will be null if aggregation timed out"
+  count: Int
+}
+
+type SupSpellingCorrection {
+  correctionString: String!
+  hits: Int!
+}
+
+"Part identified by manufacturer as being a companion part, for instance a mated connector pair."
+type SupSponsoredPart {
+  "Cache ID"
+  _cacheId: String!
+  ppid: ID! @deprecated(reason: "use part.id instead")
+  sourceId: ID! @deprecated(reason: "unused")
+  "Related part"
+  part: SupPart!
+  "URL to visit for related part"
+  url: String!
+}
+
+"Suggests a query based on partial query input.  Used for autocomplete \/ typeahead UIs."
+type SupSuggestion {
+  "Suggested text of longer query"
+  text: String!
+  "If the suggestion should also apply a categoryId filter, this is the category name"
+  inCategoryName: String!
+  "If the suggestion should also apply a categoryId filter, this is the Category ID"
+  inCategoryId: String!
+}
+
+input SupApiCredentials {
+  "The name of the API that you are providing credentials for. An Octopart representative will give this value to you if needed."
+  apiName: String!
+  "Authentication details. `clientId` and `clientSecret` should be given together when an API requires them."
+  clientId: String
+  "Authentication details. `clientId` and `clientSecret` should be given together when an API requires them."
+  clientSecret: String
+  "Authentication details. `username` and `password` should be given together when an API requires them."
+  username: String
+  "Authentication details. `username` and `password` should be given together when an API requires them."
+  password: String
+}
+
+input SupPartMatchOptions {
+  "If true, only parts with at least one authorized seller will be returned."
+  requireAuthorizedSellers: Boolean = false
+  "If true, only parts with stock available will be returned."
+  requireStockAvailable: Boolean = false
+  "a key: value map of filters. See [filter values](https:\/\/octopart.com\/api\/v4\/values#attributes)"
+  filters: Map
+}
+
+input SupPartMatchQuery {
+  mpn: String
+  sku: String
+  mpnOrSku: String
+  manufacturer: String
+  seller: String
+  start: Int! = 0
+  limit: Int! = 3
+  reference: String
+}
+
+enum SupNexarFeatureID {
+  LEAD_TIME
+  LIFECYCLE
+  DATASHEETS
+  TECH_SPECS
+  CAD_MODELS
+  SIMILAR_PARTS
+  SUGGESTIONS
+  SPELLING_CORRECTIONS
+  INVENTORY_HISTORY
+}
+
+enum SupPlanTier {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SupRole {
+  DISTRIBUTOR
+  CADMODELS
+  INTERNAL
+  NEXARINTERNAL
+}
+
+enum SupSortDirection {
+  asc
+  desc
+}
+
+interface ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManAABB {
+  topLeft: ManPoint2D
+  bottomRight: ManPoint2D
+  area: ManArea
+}
+
+type ManAngle {
+  native: Int
+  radians: Float
+  degrees: Float
+}
+
+type ManArea {
+  native: Int
+  mm2: Float
+  mil2: Float
+  inSq: Float
+}
+
+type ManAssembly {
+  id: ID
+  boardMeta: ManBoardMeta
+  projectId: ID
+  commitId: ID
+  variant: String
+  bomSelection: ID
+  package: ManPackageJob
+}
+
+type ManBoardDetails {
+  path: [ManPathSegment]
+  polygon(quant: Int!): [ManPoint2D]
+  aabb: ManAABB
+}
+
+type ManBoardMeta {
+  id: ID
+  projectId: String
+  boardDetails: ManBoardDetails
+  parts: [ManPart]
+  consignmentCount: Int!
+  bomIssues: ManBomIssues!
+  placementStats: ManPlacementInfo
+  minClearance: ManLength
+  minAnnularRing: ManLength
+  stackUp: [ManLayer]
+}
+
+type ManBomIssues {
+  issueCount: Int!
+  warningCount: Int!
+}
+
+type ManBomResolution {
+  parts: [ManPart!]!
+}
+
+type ManConsignmentDocs {
+  pdf: String!
+  html: String!
+}
+
+type ManCreateAssemblyResponse {
+  assembly: ManAssembly
+}
+
+type ManCreateOrderResponse {
+  order: ManOrder
+}
+
+type ManFeatures {
+  availablePaymentOptions: [ManPaymentMethod!]!
+}
+
+type ManLayer {
+  type: ManLayerType
+  thickness: ManLength
+  copperWeight: Float
+  overlayColour: ManSilkScreenColour
+  maskColour: ManSolderMaskColour
+  process: String
+  material: String
+}
+
+type ManLength {
+  mm: Float
+  mil: Float
+  inch: Float
+  "native units of 1\/10000 of a mil"
+  native: Int
+}
+
+type ManOffer {
+  price: ManPrice
+  minQty: Int
+}
+
+type ManOrder {
+  id: ID
+  reference: String
+  createdBy: ManUser
+  createdAt: DateTime
+  shipDate: DateTime
+  boardName: String
+  boardPreview: String
+  stripeSecret: ID
+  checkoutURL: String
+  rapidQuote: ManQuoteInfo
+  assembly: ManAssembly
+  shipping: ManShippingDetails
+  status: ManOrderStatus
+  events: [ManOrderEvent]
+}
+
+type ManOrderAcceptedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+  paymentSelection: ManPaymentSelection!
+}
+
+type ManOrderBatchedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderCancelEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderConsignmentDetailsEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+  shipping: ManShippingDetails!
+  receiveBy: DateTime!
+  consignmentId: ID!
+  documents: ManConsignmentDocs!
+  parts: [ManPartQuantity!]!
+}
+
+type ManOrderCreatedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderEmsAcceptedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderInvoicedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+  invoiceId: String!
+  poReference: String!
+}
+
+type ManOrderPaidEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderPartsOrderedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderPartsReceivedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderPcbsOrderedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderPcbsReceivedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderProcessStartEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderReceivedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderReviewedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderShipEstimateEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+}
+
+type ManOrderShippedEvent implements ManOrderEvent {
+  id: ID!
+  order: ManOrder!
+  eventType: ManOrderEventType!
+  timestamp: Int!
+  trackingNumber: String!
+  carrier: ManShippingCarrier!
+  trackingLink: String!
+}
+
+type ManPackageJob {
+  id: ID
+  status: String
+  errors: [String]
+}
+
+type ManPart {
+  id: ID
+  pinCount: Int
+  type: ManMountingType
+  partChoices: [ManPartChoice]
+  selectedChoice: ManPartChoice
+  name: String
+  comment: String
+  description: String
+  sourcing: ManSourcing!
+  placements: [ManPlacement]
+  placementCount: Int
+  issues: [ManPartIssue!]!
+  status: ManPartStatus
+}
+
+type ManPartChoice {
+  mpn: String
+  manufacturer: String
+  suppliers: [ManPurchaseOption]
+  description: String
+  lifecycle: String
+  octopartId: String
+  image: String
+  octopartUrl: String
+}
+
+type ManPartQuantity {
+  reference: String!
+  quantity: Int!
+  linkedPart: ManPartChoice
+  placements: [ManPlacement!]!
+}
+
+type ManPathSegment {
+  type: ManPathType
+  vertex: ManPoint2D
+  startAngle: ManAngle
+  endAngle: ManAngle
+  radius: ManLength
+}
+
+type ManPaymentSelection {
+  method: ManPaymentMethod!
+  purchaseOrderReference: String
+}
+
+type ManPlacement {
+  refdes: String
+  location: ManPoint2D
+  side: ManSide
+  size: ManPoint2D
+  aabb: ManAABB
+}
+
+type ManPlacementInfo {
+  bomLines: Int
+  totalPlacements: Int
+  thPlacements: Int
+  smtPlacements: Int
+  topPlacements: Int
+  botPlacements: Int
+  dualSided: Boolean
+}
+
+type ManPoint2D {
+  x: ManLength
+  y: ManLength
+}
+
+type ManPrice {
+  amount: Decimal
+  currency: ManCurrency
+}
+
+type ManPurchaseOption {
+  supplier: String
+  inventory: Int
+  sku: String
+  offers: [ManOffer]
+}
+
+type ManQuote {
+  id: ID!
+  type: String
+  items: [ManQuoteItem]
+  leadtime: Int
+  total: Decimal
+  violations: [ManViolation]
+  valid: Boolean
+}
+
+type ManQuoteInfo {
+  selectedQuote: ManQuote
+  quoteRequest: ManRapidQuoteRequest
+  response: ManRapidQuoteResponse
+}
+
+type ManQuoteItem {
+  category: ManQuoteCategory
+  amount: Decimal
+  ident: String
+}
+
+type ManRapidQuoteRequest {
+  id: ID
+  qty: Int
+  meta: ManBoardMeta
+  shipping: ManShippingDetails
+  bomResolutionUrl: String
+  requestorId: ID
+}
+
+type ManRapidQuoteResponse {
+  id: ID
+  request: ManRapidQuoteRequest
+  quotes(wait: Int = 5): [ManQuote]
+}
+
+type ManShippingDetails {
+  name: String
+  email: String
+  phone: String
+  line1: String
+  line2: String
+  country: String
+  city: String
+  state: String
+  postal: String
+  method: ManShippingMethod
+}
+
+type ManShippingMethod {
+  carrier: String
+  service: String
+}
+
+type ManUser {
+  "The internal user ID."
+  userId: String!
+  "Null if the user no longer exists."
+  userName: String
+  "Null if the user no longer exists."
+  email: String
+  "Null if the user no longer exists."
+  firstName: String
+  "Null if the user no longer exists."
+  lastName: String
+}
+
+type ManViolation {
+  "dot delimited string describing location of issue \nlayers.[1].process  "
+  field: String
+  type: ManViolationType
+  description: String
+}
+
+input ManAABBInput {
+  topLeft: ManPoint2DInput
+  bottomRight: ManPoint2DInput
+}
+
+input ManBoardMetaInput {
+  projectId: String
+  boardOutline: [ManPathSegmentInput]
+  parts: [ManPartInput]
+  minClearance: Int
+  minAnnularRing: Int
+  stackUp: [ManLayerInput]
+}
+
+input ManLayerInput {
+  type: ManLayerType
+  thickness: Int
+  copperWeight: Float
+  overlayColour: ManSilkScreenColour
+  maskColour: ManSolderMaskColour
+  process: String
+  material: String
+}
+
+input ManOfferInput {
+  price: ManPriceInput
+  minQty: Int
+}
+
+input ManOrderBatchedInput {
+  orderId: ID!
+}
+
+input ManOrderConsignmentDetailsInput {
+  orderId: ID!
+  shipping: ManShippingDetailsInput!
+  receiveBy: DateTime!
+  consignmentId: ID!
+  partQuantities: [ManPartQuantityInput!]!
+}
+
+input ManOrderEmsAcceptInput {
+  orderId: ID!
+  emsReference: String
+}
+
+input ManOrderPartsOrderedInput {
+  orderId: ID!
+}
+
+input ManOrderPartsReceivedInput {
+  orderId: ID!
+}
+
+input ManOrderPcbsOrderedInput {
+  orderId: ID!
+}
+
+input ManOrderPcbsReceivedInput {
+  orderId: ID!
+}
+
+input ManOrderProcessStartInput {
+  orderId: ID!
+}
+
+input ManOrderReviewInput {
+  orderId: ID!
+}
+
+input ManOrderShipEstimateInput {
+  orderId: ID!
+  estimateDate: DateTime!
+}
+
+input ManOrderShippedInput {
+  orderId: ID!
+  trackingNumber: String
+  carrier: ManShippingCarrier
+}
+
+input ManPartChoiceInput {
+  mpn: String
+  manufacturer: String
+  octopartId: String
+  suppliers: [ManPurchaseOptionInput]
+}
+
+input ManPartInput {
+  id: ID
+  componentId: ID
+  type: ManMountingType
+  pinCount: Int
+  partChoices: [ManPartChoiceInput]
+  placements: [ManPlacementInput]
+}
+
+input ManPartQuantityInput {
+  id: ID!
+  amount: Int!
+}
+
+input ManPartSelectionInput {
+  part: ID!
+  selection: ID!
+  sourcing: ManSourcing!
+}
+
+input ManPathSegmentInput {
+  type: ManPathType
+  "Either center of a circle for the arc, or the vertex location"
+  vertex: ManPoint2DInput
+  "start point of arc in billionth of a rotation (range from 0 to 999999999)"
+  startAngle: Int
+  "end point of arc in billionth of a rotation (range from 0 to 999999999)"
+  endAngle: Int
+  "radius of the circle if an arc"
+  radius: Int
+}
+
+input ManPaymentSelectionInput {
+  method: ManPaymentMethod!
+  purchaseOrderReference: String
+}
+
+input ManPlacementInput {
+  "schematic refdes"
+  refdes: String
+  "Location of the part"
+  location: ManPoint2DInput
+  "Side of the board"
+  side: ManSide
+  "aabb of the part"
+  aabb: ManAABBInput
+}
+
+input ManPoint2DInput {
+  x: Int!
+  y: Int!
+}
+
+input ManPriceInput {
+  amount: Decimal
+}
+
+input ManProjectFeatureInput {
+  projectId: ID!
+}
+
+input ManPurchaseOptionInput {
+  supplier: String
+  inventory: Int
+  offers: [ManOfferInput]
+}
+
+input ManQuoteInput {
+  id: ID!
+  type: String
+  "the quote line items"
+  items: [ManQuoteInputItem]
+  "leadtime in business days"
+  leadtime: Int
+  "any parameter violation which invalidate the quote"
+  violations: [ManViolationInput]
+}
+
+input ManQuoteInputItem {
+  category: ManQuoteCategory
+  amount: Decimal
+  ident: String
+}
+
+input ManShippingDetailsInput {
+  name: String
+  email: String
+  phone: String
+  line1: String
+  line2: String
+  country: String
+  city: String
+  state: String
+  postal: String
+  method: ManShippingMethodInput
+}
+
+input ManShippingMethodInput {
+  carrier: String
+  service: String
+}
+
+input ManViolationInput {
+  "dot delimited string describing location of issue \nlayers.[1].process  "
+  field: String
+  type: ManViolationType
+  description: String
+}
+
+enum ManAccess {
+  ALLOW_MPN
+  IS_EMS
+  IS_CREATOR
+}
+
+enum ManCurrency {
+  USD
+}
+
+enum ManLayerType {
+  COVERLAY
+  SURFACE_FINISH
+  SIGNAL
+  PLANE
+  CORE
+  PRE_PREG
+  SOLDER_MASK
+  OVERLAY
+}
+
+enum ManMountingType {
+  THROUGH_HOLE
+  SURFACE_MOUNT
+}
+
+enum ManOrderEventType {
+  CREATED
+  ACCEPTED
+  EMS_ACCEPTED
+  PAID
+  INVOICED
+  CONSIGNMENT_DETAILS
+  TIME_ESTIMATION
+  REVIEWED
+  BATCHED
+  PARTS_ORDERED
+  PCBS_ORDERED
+  PARTS_RECEIVED
+  PCBS_RECEIVED
+  PROCESS_START
+  SHIPPED
+  RECEIVED
+  CANCEL
+}
+
+enum ManOrderStatus {
+  QUOTING
+  PAYMENT_PROCESSING
+  PLACED
+  PROCESSING
+  MANUFACTURING
+  SHIPPING
+  CANCELLED
+  COMPLETE
+}
+
+enum ManPartIssue {
+  BAD_LIFECYCLE
+  NO_SELECTION
+  UNAVAILABLE
+  NOT_FOUND
+  INSUFFICIENT_STOCK
+  STOCK_LOW
+}
+
+enum ManPartStatus {
+  GOOD
+  WARN
+  ISSUE
+}
+
+enum ManPathType {
+  ARC
+  VERTEX
+}
+
+enum ManPaymentMethod {
+  CREDIT_CARD
+  DIRECT_APPROVAL
+}
+
+enum ManQuoteCategory {
+  FABRICATION
+  ASSEMBLY
+  BOM
+  SHIPPING
+  NRE
+}
+
+enum ManShippingCarrier {
+  USPS
+  UPS
+}
+
+enum ManSide {
+  TOP
+  BOTTOM
+}
+
+enum ManSilkScreenColour {
+  YELLOW
+  RED
+  GREEN
+  BLUE
+  BLACK
+  WHITE
+}
+
+enum ManSolderMaskColour {
+  BLUE
+  RED
+  GREEN
+  LIGHT_GREEN
+  MATTE_GREEN
+  YELLOW
+  BLACK
+  MATTE_BLACK
+  WHITE
+  DARK_BROWN
+  TRANSPARENT
+}
+
+enum ManSourcing {
+  ALTIMADE
+  CONSIGN
+  DNP
+}
+
+enum ManViolationType {
+  INCONSISTENT
+  TOO_BIG
+  TOO_SMALL
+  UNKNOWN
+  UNSUPPORTED
+}
+
+"An application belonging to an organization which facilitates access. Users interact with the Nexar API through applications."
+type AdmApplication {
+  "The scopes assigned to this application."
+  scopes: [AdmApplicationScope!]!
+  "Information about supply quota if this application has the supply scope."
+  supplyCounts: AdmSupplyCounts
+  "Security detail for this application, such as its client id and secret."
+  security: AdmApplicationSecurity!
+  "The organization to which this application belongs."
+  organizationId: String
+  "The name of this application."
+  name: String!
+  "The description of this application."
+  description: String
+  "Whether or not this application has been deleted."
+  deleted: Boolean!
+  "When this application was created."
+  createdDate: DateTime!
+  "A unique identifier for the application."
+  id: String!
+}
+
+"A scope for an application, e.g. design, supply or manufacturing."
+type AdmApplicationScope {
+  "The application to which this scope applies."
+  applicationId: String!
+  "The scope to which the application has been granted access."
+  scope: String!
+}
+
+"Security access details for an application."
+type AdmApplicationSecurity {
+  "The application to which this scope applies."
+  applicationId: String!
+  "The unique client id for this application."
+  clientId: String!
+  "The unique client secret for this application. Guard this secret carefully!"
+  clientSecret: String!
+}
+
+"An `AdmEvtCustomEvent` is an entity representing a message generaged from the API."
+type AdmEvtCustomEvent {
+  "The unique Identifier for this message."
+  id: String!
+  "Identifier of the application which generated the event (null if system generated)."
+  senderApplicationId: String
+  "Identifier of the application to receive the event."
+  destinationApplicationId: String!
+  "Identifier of object which the event was generated for (project, workspace, part, etc)."
+  subject: String
+  "Unique global identifier of the user generating the event (null if client credentials are used)."
+  userId: String
+  "Time of event creation."
+  createdAt: DateTime!
+  type: AdmEventType!
+  "`customData` is extra user specified data attached to the a Custom Event."
+  customData: String
+}
+
+"An `AdmEvtSendAppNotificationPayload` is the return value for the `admEvtSendAppNotification` mutation."
+type AdmEvtSendAppNotificationPayload {
+  "`event` is the underlying sent event if available."
+  event: AdmEvtCustomEvent
+  "`errors` found during execution."
+  errors: [AdmRequestError!]
+}
+
+"An Organization is an entity representing a partner, company or individual engaging with Nexar."
+type AdmOrganization {
+  "The users belonging to this organization."
+  users: [AdmUser!]!
+  "Invitations sent for others to join this organization."
+  invitations: [AdmUserInvitation!]!
+  "The applications belonging to this organization through which users interact with the API."
+  applications: [AdmApplication!]!
+  "Whether this is the current user's default organization."
+  isDefault: Boolean!
+  "The name of this organization."
+  name: String!
+  "When this organization was created."
+  createdDate: DateTime!
+  "A unique identifier for the organization."
+  id: String!
+}
+
+type AdmRequestError {
+  message: String!
+  code: String!
+}
+
+"Supply count information for supply applications."
+type AdmSupplyCounts {
+  "The count of supply parts used this month."
+  partCounter: Int!
+  "The monthly quota of parts which can be returned through supply API queries."
+  partLimit: Int!
+}
+
+"A user represents and individual who can login to Nexar and interact with API through applications of this organization."
+type AdmUser {
+  "The email address for the user used as their username."
+  userName: String!
+  "The user's first name."
+  firstName: String!
+  "The user's last name."
+  lastName: String!
+  "When the user was created in the system."
+  createdDate: DateTime!
+  "A unique identifier for the user."
+  id: String!
+}
+
+"An invitation sent for a user to join an invitation."
+type AdmUserInvitation {
+  "The organization to which the user has been invited."
+  organizationId: String
+  "The email of the user receiving the invitation to join the organization."
+  email: String
+  "Whether or not the user accepted the invitation to join the organization."
+  accepted: Boolean!
+}
+
+"An `AdmEvtSendAppNotificationInput` the input object for the `admEvtSendAppNotification` mutation."
+input AdmEvtSendAppNotificationInput {
+  "Identifier of application to send notification event."
+  destinationApplicationId: String!
+  "Identifier of object the event is generate for (project, workspace, part, etc)."
+  subject: String
+  "customData is destination application specified extra data."
+  customData: Any
+}
+
+enum AdmEventType {
+  API_CUSTOM_EVENT
+}
+
+"A generic `dat` domain error."
+interface DatError {
+  "A short description of the error."
+  message: String!
+}
+
+type DatBomAnalysis {
+  items: [DatBomPartItem!]!
+  level: DatBomAnalysisLevel!
+  message: String!
+}
+
+type DatBomPart {
+  partId: String!
+  confidence: Float!
+  strategy: DatBomPartSearchStrategy!
+}
+
+type DatBomPartHistory {
+  threeMonthGrowthPercentage: Float!
+}
+
+type DatBomPartItem {
+  itemRefId: String
+  partId: String!
+  alternateCandidatePartIds: [String!]
+  quantity: Int!
+}
+
+type DatBomPartsResult {
+  itemRefId: String
+  parts: [DatBomPart!]!
+}
+
+type DatEddiCategory {
+  id: Int!
+  name: String!
+}
+
+type DatEddiEdition {
+  eddiTimeSeries(where: DatEddiTimeSeriesFilterInput): [DatEddiTimeSeries!]!
+  id: Int!
+  title: String!
+  releaseDate: DateTime!
+}
+
+type DatEddiIndex {
+  indexDate: DateTime!
+  supplyIndex: Float
+  demandIndex: Float
+}
+
+type DatEddiTimeSeries {
+  children(where: DatEddiTimeSeriesFilterInput): [DatEddiTimeSeries!]
+  indices(where: DatEddiIndexFilterInput): [DatEddiIndex!]!
+  category: DatEddiCategory
+}
+
+"Error indicating that the SCR processing run could not be deleted."
+type DatScrCouldNotDeleteJobError implements DatError {
+  message: String!
+  "Job to be deleted."
+  job: DatScrJob!
+}
+
+type DatScrCreateJobPayload {
+  datScrJob: DatScrJob
+  errors: [DatScrCreateJobError!]
+}
+
+type DatScrDeleteJobPayload {
+  datScrJob: DatScrJob
+  errors: [DatScrDeleteJobError!]
+}
+
+"Contains information about an SCR processing job."
+type DatScrJob {
+  "The ID of the user who owns the job."
+  userId: String!
+  "The ID of this job."
+  jobId: String!
+  "An optional label to easily identify the job."
+  label: String
+  "The date and time of when the job was requested."
+  uploadDatetime: DateTime!
+  "The current state of the job."
+  jobState: DatScrJobState!
+  "A small message relating to running of the job."
+  jobMessage: String
+  "Statistics relating to the running of this job."
+  runStats: DatScrRunStats
+}
+
+"Error indicates that the user has exceeded their quota."
+type DatScrQuotaExceededError implements DatError {
+  message: String!
+  "The number of distinct parts resolved for the user in the current period."
+  usage: Int!
+  "The number of allowed parts resolved for the current period."
+  quota: Int!
+}
+
+"A supply-chain resilience report."
+type DatScrReport {
+  "The SCR job that created this report."
+  jobId: String!
+  "A URL to download this report."
+  downloadUrl: String!
+}
+
+"Statistics relating to the running of a job. Procurability here is with respect to a given EAU (estimated annual usage)."
+type DatScrRunStats {
+  "Total number of parts requested for processing."
+  numTotalParts: Int
+  "Total number of parts resolved."
+  numResolvedParts: Int
+  "Number of parts with no historical procurability."
+  numHpZeroParts: Int
+  "Number of parts with a historical procurability between zero and one."
+  numHpIntervalParts: Int
+  "Number of parts with complete historical procurability."
+  numHpOneParts: Int
+  "Number of parts that are currently procurable."
+  numProcCurrent: Int
+  "Number of parts that were procurable seven days ago."
+  numProc7dAgo: Int
+  "Number of parts that were procurable 14 days ago."
+  numProc14dAgo: Int
+  "Number of parts that were procurable 21 days ago."
+  numProc21dAgo: Int
+  "Number of parts that were procurable 28 days ago."
+  numProc28dAgo: Int
+  "Number of parts that were not procurable last week that are now procurable."
+  numRestocked: Int
+  "Number of parts that were procurable last week that are now non-procurable."
+  numDestocked: Int
+}
+
+"User's metered usage statistics."
+type DatScrUsage {
+  "Total number of distinct resolved parts within the current period."
+  countDistinctParts: Int!
+  "The start date of the current period."
+  fromDate: String!
+  "Allowed quota of the user within the current period."
+  quota: Int!
+}
+
+union DatScrCreateJobError = DatScrQuotaExceededError
+
+union DatScrDeleteJobError = DatScrCouldNotDeleteJobError
+
+input ComparableDateTimeOperationFilterInput {
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime!]
+  nin: [DateTime!]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
+}
+
+input ComparableInt32OperationFilterInput {
+  eq: Int
+  neq: Int
+  in: [Int!]
+  nin: [Int!]
+  gt: Int
+  ngt: Int
+  gte: Int
+  ngte: Int
+  lt: Int
+  nlt: Int
+  lte: Int
+  nlte: Int
+}
+
+input ComparableNullableOfDoubleOperationFilterInput {
+  eq: Float
+  neq: Float
+  in: [Float]
+  nin: [Float]
+  gt: Float
+  ngt: Float
+  gte: Float
+  ngte: Float
+  lt: Float
+  nlt: Float
+  lte: Float
+  nlte: Float
+}
+
+input DatBomItemInput {
+  itemRefId: String
+  manufacturerName: String
+  mpn: String
+}
+
+input DatBomPartItemInput {
+  itemRefId: String
+  partId: String!
+  alternateCandidatePartIds: [String!]
+  quantity: Int!
+}
+
+input DatEddiCategoryFilterInput {
+  and: [DatEddiCategoryFilterInput!]
+  or: [DatEddiCategoryFilterInput!]
+  id: ComparableInt32OperationFilterInput
+  name: StringOperationFilterInput
+}
+
+input DatEddiEditionFilterInput {
+  and: [DatEddiEditionFilterInput!]
+  or: [DatEddiEditionFilterInput!]
+  id: ComparableInt32OperationFilterInput
+  title: StringOperationFilterInput
+  releaseDate: ComparableDateTimeOperationFilterInput
+}
+
+input DatEddiIndexFilterInput {
+  and: [DatEddiIndexFilterInput!]
+  or: [DatEddiIndexFilterInput!]
+  indexDate: ComparableDateTimeOperationFilterInput
+  supplyIndex: ComparableNullableOfDoubleOperationFilterInput
+  demandIndex: ComparableNullableOfDoubleOperationFilterInput
+}
+
+input DatEddiTimeSeriesFilterInput {
+  and: [DatEddiTimeSeriesFilterInput!]
+  or: [DatEddiTimeSeriesFilterInput!]
+  category: DatEddiCategoryFilterInput
+}
+
+"A mapping to rename column headers in the CSV to known fields"
+input DatScrColumnMapInput {
+  "Name of the CSV column that corresponds to an internal part number"
+  pn: String
+  "Name of the CSV column that corresponds to the manufacturer's part number"
+  mpn: String
+  "Name of the CSV column that corresponds to the name of the manufacturer"
+  manufacturer: String
+  "Name of the CSV column that corresponds to the estimated annual usage"
+  eau: String
+}
+
+"Input data to create an SCR job."
+input DatScrCreateJobInput {
+  "The Nexar file ID which contains the data to process in CSV format."
+  fileId: String!
+  "A label to add to the job for easier reference."
+  label: String
+  "The name remapping of the CSV columns."
+  columnMapping: DatScrColumnMapInput
+}
+
+"Input data to delete an SCR job."
+input DatScrDeleteJobInput {
+  "The ID of the job to delete."
+  jobId: String!
+}
+
+enum DatBomAnalysisLevel {
+  ERROR
+  WARNING
+  SUGGESTION
+}
+
+enum DatBomPartSearchStrategy {
+  EXACT
+  PARTIAL
+  FUZZY
+}
+
+"Possible states of an SCR processing run."
+enum DatScrJobState {
+  "Job has completed successfully."
+  COMPLETED
+  "The job has failed to process the data."
+  FAILED
+  "The job is still processing the data."
+  RUNNING
+  "Job is in an unknown state."
+  UNKNOWN
+}
+
+enum ApplyPolicy {
+  BEFORE_RESOLVER
+  AFTER_RESOLVER
+  VALIDATION
+}
+
+"The built-in `Decimal` scalar type."
+scalar Decimal
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
+
+"The multiplier path scalar represents a valid GraphQL multiplier path string."
+scalar MultiplierPath
+
+"Delegates a resolver to a remote schema."
+directive @delegate("The path to the field on the remote schema." path: String "The name of the schema to which this field shall be delegated to." schema: String!) on FIELD_DEFINITION
+
+directive @computed("Specifies the fields on which a computed field is dependent on." dependantOn: [String!]) on FIELD_DEFINITION
+
+"Annotates the original name of a type."
+directive @source("The original name of the annotated type." name: String! "The name of the schema to which this type belongs to." schema: String!) repeatable on OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+directive @BlockAll(roles: [SupRole!]!) on FIELD_DEFINITION
+
+directive @Expensive on FIELD_DEFINITION
+
+directive @HasPlanTier(tier: SupPlanTier!) on FIELD_DEFINITION
+
+directive @NexarEnterprise(feature: SupNexarFeatureID!) on FIELD_DEFINITION
+
+directive @NexarRequire(feature: SupNexarFeatureID!) on FIELD_DEFINITION
+
+directive @RequireAny(roles: [SupRole!]!) on FIELD_DEFINITION
+
+directive @auth(access: [ManAccess!]!) on FIELD_DEFINITION
+
+"The cost directives is used to express the complexity of a field."
+directive @cost("Defines the complexity of the field." complexity: Int! = 1 "Defines field arguments that act as complexity multipliers." multipliers: [MultiplierPath!] defaultMultiplier: Int) on FIELD_DEFINITION

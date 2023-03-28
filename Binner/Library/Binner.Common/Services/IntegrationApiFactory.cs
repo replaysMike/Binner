@@ -60,9 +60,9 @@ namespace Binner.Common.Services
                 if (resultTyped != null)
                     return resultTyped;
             }
-            if (apiType == typeof(OctopartApi))
+            if (apiType == typeof(NexarApi))
             {
-                var result = CreateGlobalOctopartApi();
+                var result = CreateGlobalNexarApi();
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
@@ -120,9 +120,9 @@ namespace Binner.Common.Services
                     ArrowApiKey = _webHostServiceConfiguration.Integrations.Arrow.ApiKey,
                     ArrowApiUrl = _webHostServiceConfiguration.Integrations.Arrow.ApiUrl,
                     
-                    OctopartEnabled = _webHostServiceConfiguration.Integrations.Octopart.Enabled,
-                    OctopartApiKey = _webHostServiceConfiguration.Integrations.Octopart.ApiKey,
-                    OctopartApiUrl = _webHostServiceConfiguration.Integrations.Octopart.ApiUrl,
+                    NexarEnabled = _webHostServiceConfiguration.Integrations.Nexar.Enabled,
+                    NexarClientId = _webHostServiceConfiguration.Integrations.Nexar.ClientId,
+                    NexarClientSecret = _webHostServiceConfiguration.Integrations.Nexar.ClientSecret,
                 };
 
                 // build the credentials list
@@ -167,13 +167,13 @@ namespace Binner.Common.Services
                 };
                 credentials.Add(new ApiCredential(userId, arrowConfiguration, nameof(ArrowApi)));
 
-                var octopartConfiguration = new Dictionary<string, object>
+                var nexarConfiguration = new Dictionary<string, object>
                 {
-                    { "Enabled", userIntegrationConfiguration.OctopartEnabled },
-                    { "ApiKey", userIntegrationConfiguration.OctopartApiKey ?? string.Empty },
-                    { "ApiUrl", userIntegrationConfiguration.OctopartApiUrl }
+                    { "Enabled", userIntegrationConfiguration.NexarEnabled },
+                    { "ClientId", userIntegrationConfiguration.NexarClientId ?? string.Empty },
+                    { "ClientSecret", userIntegrationConfiguration.NexarClientSecret ?? string.Empty },
                 };
-                credentials.Add(new ApiCredential(userId, octopartConfiguration, nameof(OctopartApi)));
+                credentials.Add(new ApiCredential(userId, nexarConfiguration, nameof(NexarApi)));
 
                 return new ApiCredentialConfiguration(userId, credentials);
             };
@@ -215,9 +215,9 @@ namespace Binner.Common.Services
                 if (resultTyped != null)
                     return resultTyped;
             }
-            if (apiType == typeof(OctopartApi))
+            if (apiType == typeof(NexarApi))
             {
-                var result = await CreateOctopartApiAsync(credentialKey, getCredentialsMethod, cache);
+                var result = await CreateNexarApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
@@ -337,33 +337,33 @@ namespace Binner.Common.Services
             return api;
         }
 
-        private OctopartApi CreateGlobalOctopartApi()
+        private NexarApi CreateGlobalNexarApi()
         {
             var configuration = new OctopartConfiguration
             {
                 // system settings
-                Enabled = _integrationConfiguration.Octopart.Enabled,
-                ApiKey = _integrationConfiguration.Octopart.ApiKey,
-                ApiUrl = _integrationConfiguration.Octopart.ApiUrl,
+                Enabled = _integrationConfiguration.Nexar.Enabled,
+                ClientId = _integrationConfiguration.Nexar.ClientId,
+                ClientSecret = _integrationConfiguration.Nexar.ClientSecret,
             };
-            var api = new OctopartApi(configuration, _httpContextAccessor);
+            var api = new NexarApi(configuration, _httpContextAccessor);
             return api;
         }
 
-        private async Task<OctopartApi> CreateOctopartApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
+        private async Task<NexarApi> CreateNexarApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
         {
             ApiCredential? credentials = null;
             if (cache)
-                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(OctopartApi), getCredentialsMethod);
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(NexarApi), getCredentialsMethod);
             else
-                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(OctopartApi), getCredentialsMethod);
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(NexarApi), getCredentialsMethod);
             var configuration = new OctopartConfiguration
             {
                 Enabled = credentials.GetCredentialBool("Enabled"),
-                ApiKey = credentials.GetCredentialString("ApiKey"),
-                ApiUrl = credentials.GetCredentialString("ApiUrl"),
+                ClientId = credentials.GetCredentialString("ClientId"),
+                ClientSecret = credentials.GetCredentialString("ClientSecret"),
             };
-            var api = new OctopartApi(configuration, _httpContextAccessor);
+            var api = new NexarApi(configuration, _httpContextAccessor);
             return api;
         }
 

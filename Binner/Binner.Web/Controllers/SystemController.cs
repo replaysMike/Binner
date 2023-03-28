@@ -61,14 +61,12 @@ namespace Binner.Web.Controllers
                 if (string.IsNullOrEmpty(request.Digikey.ApiUrl)) request.Digikey.ApiUrl = "https://api.digikey.com";
                 if (string.IsNullOrEmpty(request.Digikey.oAuthPostbackUrl)) request.Digikey.oAuthPostbackUrl = "https://localhost:8090/Authorization/Authorize";
                 if (string.IsNullOrEmpty(request.Mouser.ApiUrl)) request.Mouser.ApiUrl = "https://api.mouser.com";
-                if (string.IsNullOrEmpty(request.Arrow.ApiUrl)) request.Octopart.ApiUrl = "https://api.arrow.com";
-                if (string.IsNullOrEmpty(request.Octopart.ApiUrl)) request.Octopart.ApiUrl = "https://octopart.com";
+                if (string.IsNullOrEmpty(request.Arrow.ApiUrl)) request.Arrow.ApiUrl = "https://api.arrow.com";
                 request.Binner.ApiUrl = $"https://{request.Binner.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Digikey.ApiUrl = $"https://{request.Digikey.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Digikey.oAuthPostbackUrl = $"https://{request.Digikey.oAuthPostbackUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Mouser.ApiUrl = $"https://{request.Mouser.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Arrow.ApiUrl = $"https://{request.Arrow.ApiUrl.Replace("https://", "").Replace("http://", "")}";
-                request.Octopart.ApiUrl = $"https://{request.Octopart.ApiUrl.Replace("https://", "").Replace("http://", "")}";
 
                 // clear the credentials cache for the apis
                 var user = _requestContext.GetUserContext();
