@@ -426,7 +426,7 @@ export function Inventory(props) {
       };
       const existingPartNumber = _.find(scannedPartsRef.current, { partNumber: cleanPartNumber });
       if (existingPartNumber) {
-        console.log('existing part number found in scanned parts', existingPartNumber, cleanPartNumber);
+        // console.log('existing part number found in scanned parts', existingPartNumber, cleanPartNumber);
         existingPartNumber.quantity += existingPartNumber.scannedQuantity || 1;
         localStorage.setItem("scannedPartsSerialized", JSON.stringify(scannedPartsRef.current));
         setShowBarcodeBeingScanned(false);
@@ -456,12 +456,12 @@ export function Inventory(props) {
         }, (scannedPart) => {
           // no barcode info found, try searching the part number
           //searchDebounced(scannedPart.partNumber, scannedPart);
-          console.log('no barcode found, getting partInfo');
+          // console.log('no barcode found, getting partInfo');
           getPartMetadata(scannedPart.partNumber, scannedPart).then((data) => {
-            console.log('partInfo received', data);
+            // console.log('partInfo received', data);
             if (data.response.parts.length > 0) {
               const firstPart = data.response.parts[0];
-              console.log('adding part', firstPart);
+              // console.log('adding part', firstPart);
               const newScannedParts = [...scannedPartsRef.current];
               const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === firstPart.manufacturerPartNumber || i.barcode === scannedPart.barcode);
               if (scannedPartIndex >= 0) {
@@ -479,7 +479,7 @@ export function Inventory(props) {
       }
     } else {
       // scan single part
-      console.log('bulk scan is NOT open', cleanPartNumber);
+      // console.log('bulk scan is NOT open', cleanPartNumber);
       // fetch metadata on the barcode, don't await, do a background update
       const scannedPart = {
         partNumber: cleanPartNumber,
@@ -487,7 +487,7 @@ export function Inventory(props) {
       };
       fetchBarcodeMetadata(e, scannedPart, (partInfo) => {
         // barcode found
-        console.log("Barcode info found!", partInfo);
+        // console.log("Barcode info found!", partInfo);
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
           setPartMetadataError(null);
@@ -500,7 +500,7 @@ export function Inventory(props) {
           setIsDirty(true);
         }
       }, (scannedPart) => {
-        console.log("No barcode info found, searching part number");
+        // console.log("No barcode info found, searching part number");
         // no barcode info found, try searching the part number
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
@@ -963,7 +963,7 @@ export function Inventory(props) {
 
     // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
     if (control && control.value && typeof control.value === "string" && control.value.includes("[)>")) {
-      console.log('barcode input detected, switching mode');
+      // console.log('barcode input detected, switching mode');
       enableKeyboardListening();
       setKeyboardPassThrough("[)>");
       updatedPart[control.name] = "";
@@ -983,7 +983,6 @@ export function Inventory(props) {
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
       case "mountingTypeId":
-        console.log('mounting type', control.value);
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastMountingTypeId: control.value});
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
@@ -1040,7 +1039,7 @@ export function Inventory(props) {
       status: suggestedPart.status,
       quantity: suggestedPart.barcodeQuantity || 1,
     };
-    console.log('suggestedPart', mappedPart);
+    // console.log('suggestedPart', mappedPart);
     entity.partNumber = mappedPart.partNumber;
     entity.supplier = mappedPart.supplier;
     entity.supplierPartNumber = mappedPart.supplierPartNumber;
