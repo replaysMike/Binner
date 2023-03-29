@@ -177,7 +177,6 @@ export function OrderImport(props) {
   const handleArrowEmail = (e, order) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('order', order);
     if (!order.username || !order.password || order.username.length === 0 || order.password.length === 0){
       setError("Please fill out the username/password fields first. We will encode them correctly for the email.");
       return;
@@ -259,16 +258,8 @@ export function OrderImport(props) {
   };
 
   const handleChecked = (e, p) => {
-    //const newResults = [...results];
-    //const foundPart = _.find(newResults.parts, { supplierPartNumber: p.supplierPartNumber });
-    //newResults.selected = !foundPart.selected;
-    //console.log('handleChecked', newResults, foundPart);
-    //setResults(newResults);
-    //const otherResults = _.filter(results.parts, x => x.supplierPartNumber !== p.supplierPartNumber);
     p.selected = !p.selected;
-    //const newResults = {...results, parts: [...otherResults, p]};
     setResults({...results});
-    //console.log('newResults', newResults);
   };
 
   const formatTrackingNumber = (trackingNumber) => {
