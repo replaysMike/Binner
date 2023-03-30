@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Binner.Common.Integrations.Models;
+﻿using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Nexar;
 using Binner.Common.Models.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Nexar.Client;
 using Nexar.Client.Token;
-using NPOI.OpenXmlFormats;
-using NPOI.SS.Formula.Functions;
 using StrawberryShake;
-using TypeSupport.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Binner.Common.Integrations
 {

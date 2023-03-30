@@ -202,3 +202,13 @@ div.outofstock>input {
 	font-weight: 600;
 	height: 30px;
 }
+
+.textvalignmiddle {
+	line-height: 20px;
+}
+
+.textvalignmiddle > span {
+	display: inline-block;
+	vertical-align: middle;
+	line-height: 1em; /*set line height back to normal*/
+}

@@ -9,13 +9,13 @@ import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
 import { formatCurrency } from "../common/Utils";
 import {format, parseJSON} from "date-fns";
-import "./Bom.css";
 import { AddBomPartModal } from "../components/AddBomPartModal";
 import { AddPcbModal } from "../components/AddPcbModal";
 import { ProducePcbModal } from "../components/ProducePcbModal";
 import { Clipboard } from "../components/Clipboard";
 import { FormatFullDateTime } from "../common/datetime";
-import { getProduciblePcbCount, getOutOfStockPartsCount, getInStockPartsCount, getProjectColor } from "../common/bomTools";
+import { getProduciblePcbCount, getTotalOutOfStockParts, getTotalInStockParts, getProjectColor } from "../common/bomTools";
+import "./Bom.css";
 
 export function Bom(props) {
   const PopupDelayMs = 500;
@@ -484,7 +484,7 @@ export function Bom(props) {
   const getInventoryMessage = (project, pcb) => {
     if (pcb && pcb.pcbId > 0) {
       const pcbParts = _.filter(project.parts, p => p.pcbId === pcb.pcbId);
-      const pcbCount = getProduciblePcbCount(pcbParts, pcb);
+      const pcbCount = getProduciblePcbCount(project.parts, pcb);
       if (pcbParts.length > 0 && pcbCount.count === 0) {
         return <div className="inventorymessage">You do not have enough parts to produce this PCB.</div>;
       } else if(pcbParts.length === 0){
@@ -495,12 +495,12 @@ export function Bom(props) {
 
     const pcbCount = getProduciblePcbCount(project.parts, pcb);
     if (pcbCount.count === 0) {
-      return <div className="inventorymessage">You do not have enough parts to produce your BOM.</div>;
+      return <div className="inventorymessage">You do not have enough parts to produce your entire BOM.</div>;
     }
     const limitingPcb = _.find(project.pcbs, x => x.pcbId === pcbCount.limitingPcb);
     return (<div className="inventorymessage">
-      <div>You can produce your BOM <b>{pcbCount.count}</b> times with your current inventory.</div>
-      {limitingPcb && <div><Icon name="microchip" color="blue"/><i>{limitingPcb?.name}</i> is the lowest on inventory.</div>}
+      <div>You can produce your entire BOM <b>{pcbCount.count}</b> times with your current inventory.</div>
+      {limitingPcb && <div className="textvalignmiddle"><i className="pcb-icon tiny" /><span><i>{limitingPcb?.name}</i> is the lowest on inventory.</span></div>}
     </div>);
   };
 
@@ -729,8 +729,8 @@ export function Bom(props) {
   };
 
   // stats at top of page
-  const outOfStock = getOutOfStockPartsCount(project?.parts);
-  const inStock = getInStockPartsCount(project?.parts);
+  const outOfStock = getTotalOutOfStockParts(project?.parts).length;
+  const inStock = getTotalInStockParts(project?.parts).length;
   const producibleCount = getProduciblePcbCount(project?.parts);
 
   const tabs = [{ menuItem: (

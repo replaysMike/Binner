@@ -1,24 +1,43 @@
-import React, { useState, useEffect } from "react";
-import { Icon, Button, Form, Modal, Image, Header, Popup, Input, Table, Tab } from "semantic-ui-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Button, Form, Modal, Image, Header, Popup, Input, Table, Icon } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import NumberPicker from "./NumberPicker";
 import _ from "underscore";
+import { getProduciblePcbCount, getProducibleUnassociatedCount, getOutOfStockParts } from "../common/bomTools";
 
 export function ProducePcbModal(props) {
   ProducePcbModal.abortController = new AbortController();
   const defaultForm = { pcbs: [], quantity: 1 };
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
-  const [pcbs, setPcbs] = useState([]);
+  const [project, setProject] = useState({ parts:[], pcbs: []});
+  const [pcbOptions, setPcbOptions] = useState([]);
 
-  const pcbOptions = [
-    { key: -1, text: 'All', description: 'Produce the entire BOM', value: -1 },
-    { key: 0, text: 'Unassociated', description: 'Produce parts not associated to a PCB', value: 0 },
-  ];
-  if (pcbs && pcbs.length > 0) {
-    for(let i = 0; i < pcbs.length; i++)
-      pcbOptions.push({ key: i + 1, text: pcbs[i].name, description: pcbs[i].description, value: pcbs[i].pcbId});
-  }
+  const canProducePcb = (pcb) => {
+    const formQuantity = parseInt(form.quantity) || 1;
+    if (pcb && pcb.pcbId > 0) {
+      const pcbParts = _.filter(project.parts, p => p.pcbId === pcb.pcbId);
+      const pcbCount = getProduciblePcbCount(pcbParts, pcb);
+      return pcbCount.count >= formQuantity;
+    }
+    // unassociated
+    const pcbCount = getProducibleUnassociatedCount(project.parts);
+    return pcbCount >= formQuantity;
+  };
+
+  const createPcbOptions = (project) => {
+    const options = [
+      { key: -1, text: 'All', description: 'Produce the entire BOM', value: -1 },
+      { key: 0, text: 'Unassociated', description: 'Produce parts not associated to a PCB', value: 0, icon: !canProducePcb() && "warning circle", disabled: getProducibleUnassociatedCount(project.parts) === 0 },
+    ];
+  
+    if (project && project.pcbs && project.pcbs.length > 0) {
+      for(let i = 0; i < project.pcbs.length; i++) {
+        options.push({ key: i + 1, text: project.pcbs[i].name, description: project.pcbs[i].description, value: project.pcbs[i].pcbId, icon: !canProducePcb(project.pcbs[i]) && "warning circle",  disabled: !canProducePcb(project.pcbs[i])});
+      }
+    }
+    return options;
+  };
 
   const generateSerialNumber = (p) => {
     const format = p.serialNumberFormat;
@@ -56,9 +75,11 @@ export function ProducePcbModal(props) {
   }, [props.isOpen]);
 
   useEffect(() => {
-    const newPcbs = props.pcbs.map(p => ( {...p, serialNumber: generateSerialNumber(p)}));
-    setPcbs(newPcbs);
-  }, [props.pcbs]);
+    const newPcbs = props.project.pcbs.map(p => ( {...p, serialNumber: generateSerialNumber(p)}));
+    const newProject = {...props.project, pcbs: newPcbs};
+    setProject(newProject);
+    setPcbOptions(createPcbOptions(newProject));
+  }, [props.project]);
 
   const handleModalClose = (e) => {
     setIsOpen(false);
@@ -71,19 +92,33 @@ export function ProducePcbModal(props) {
   };
 
   const handleSerialNumberChange = (e, control) => {
-    const p = _.find(pcbs, x => x.pcbId === control.id);
+    const p = _.find(project.pcbs, x => x.pcbId === control.id);
     p[control.name] = control.value;
-    setPcbs([...pcbs]);
+    setProject({...project});
   };
 
   const handleSubmit = (e) => {
     if (props.onSubmit) {
-      let pcbsToProcess = _.filter(pcbs, x => form.pcbs.includes(x.pcbId));
+      let pcbsToProcess = _.filter(project.pcbs, x => form.pcbs.includes(x.pcbId));
       if (form.pcbs.includes(-1))
-        pcbsToProcess = pcbs;
+        pcbsToProcess = project.pcbs;
+      
+      // ensure we don't pass any pcb's to produce that don't have enough parts
+      const validPcbsToProcess = [];
+      for(let i = 0; i < pcbsToProcess.length; i++){
+        if (canProducePcb(pcbsToProcess[i])){
+          validPcbsToProcess.push(pcbsToProcess[i]);
+        }
+      }
+
+      // only process unassociated if parts are available
+      let processUnassociated = false;
+      if ((form.pcbs.includes(0) || form.pcbs.includes(-1)) && canProducePcb())
+        processUnassociated = true;
+
       props.onSubmit(e, { ...form,
-        unassociated: form.pcbs.includes(0) || form.pcbs.includes(-1),
-        pcbs: pcbsToProcess 
+        unassociated: processUnassociated,
+        pcbs: validPcbsToProcess 
       });
     } else {
       console.error("No onSubmit handler defined!");
@@ -94,9 +129,24 @@ export function ProducePcbModal(props) {
     setForm({ ...form, quantity: e.value.toString() });
   };
 
-  let pcbsToDisplay = _.filter(pcbs, x => form.pcbs.includes(x.pcbId));
-  if (form.pcbs.includes(-1))
-    pcbsToDisplay = pcbs;
+  const getTotalPartsOutOfStock = (pcb) => {
+    return getOutOfStockParts(project.parts, pcb).length;
+  };
+
+  const getPcbsToDisplay = useCallback((project) => {
+    if (!project) return [];
+    let pcbsToDisplay = [..._.filter(project.pcbs, x => form.pcbs.includes(x.pcbId))];
+    if (form.pcbs.includes(-1)) {
+      // include all pcbs
+      pcbsToDisplay = [...project.pcbs];
+    }
+  
+    if (form.pcbs.includes(-1) || form.pcbs.includes(0)) {
+      // include unassociated
+      pcbsToDisplay.push({ name: 'Unassociated' });
+    }
+    return pcbsToDisplay;
+  }, [form]);
 
   return (
     <div>
@@ -125,7 +175,7 @@ export function ProducePcbModal(props) {
                       control={NumberPicker}
                       label="Quantity"
                       placeholder="10"
-                      min={0}
+                      min={1}
                       value={form.quantity || ""}
                       onChange={updateNumberPicker}
                       name="quantity"
@@ -134,29 +184,37 @@ export function ProducePcbModal(props) {
                   }
                 />
               </Form.Field>
-              {pcbsToDisplay.length > 0 &&
+              {getPcbsToDisplay(project).length > 0 &&
                 <Table className="small">
                   <Table.Header>
                     <Table.Row>
-                      <Table.HeaderCell>PCB</Table.HeaderCell>
-                      <Table.HeaderCell>Next Serial Number</Table.HeaderCell>
+                      <Table.HeaderCell width={3}>PCB</Table.HeaderCell>
+                      <Table.HeaderCell width={3}><Popup position="top left" content="The next serial number assigned to the board" trigger={<div>Next Serial Number</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center"><Popup wide position="top center" content="The maximum number of boards you can produce" trigger={<div>Max Qty</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center"><Popup position="top center" content="The number of parts on the board" trigger={<div>Parts</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center"><Popup wide position="top center" content="The number of parts on the board that are out of stock" trigger={<div>Out of Stock</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell width={3}></Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                  {pcbsToDisplay.map((p, key) => (
-                    <Table.Row key={key}>
+                  {getPcbsToDisplay(project).map((p, key) => (
+                    <Table.Row key={key} className={!canProducePcb(p) ? "disabled" : ""}>
                       <Table.Cell>{p.name}</Table.Cell>
                       <Table.Cell>
-                        <Form.Field>
+                        {p.pcbId && <Form.Field>
                           <Popup
                             wide
                             content="The next PCB will have it's serial number started at this value."
                             trigger={
-                              <Input style={{display: 'inline-block', width: '200px'}} placeholder="SN00000000" name="serialNumber" value={p.serialNumber || ''} id={p.pcbId} onChange={handleSerialNumberChange} />
+                              <Input disabled={!canProducePcb(p)} style={{display: 'inline-block', width: '200px'}} placeholder="SN00000000" name="serialNumber" value={p.serialNumber || ''} id={p.pcbId} onChange={handleSerialNumberChange} />
                             }
                           />
-                        </Form.Field>
+                        </Form.Field>}
                       </Table.Cell>
+                      <Table.Cell textAlign="center">{p.pcbId > 0 ? getProduciblePcbCount(project.parts, p).count : getProducibleUnassociatedCount(project.parts)}</Table.Cell>
+                      <Table.Cell textAlign="center">{p.pcbId > 0 ? _.filter(project.parts, x => x.pcbId === p.pcbId).length : _.filter(project.parts, x => x.pcbId === null).length}</Table.Cell>
+                      <Table.Cell textAlign="center">{getTotalPartsOutOfStock(p.pcbId && p.pcbId > 0 ? p : null)}</Table.Cell>
+                      <Table.Cell>{!canProducePcb(p) && <span><Icon name="warning circle" color="red" /> Not enough parts</span>}</Table.Cell>
                     </Table.Row>
                   ))}
                   </Table.Body>
@@ -179,8 +237,8 @@ export function ProducePcbModal(props) {
 ProducePcbModal.propTypes = {
   /** Event handler when adding a new part */
   onSubmit: PropTypes.func.isRequired,
-  /** The array of pcb's for the project */
-  pcbs: PropTypes.array.isRequired,
+  /** The project */
+  project: PropTypes.object.isRequired,
   /** Event handler when closing modal */
   onClose: PropTypes.func,
   /** Set this to true to open model */

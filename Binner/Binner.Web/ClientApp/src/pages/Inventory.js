@@ -798,16 +798,20 @@ export function Inventory(props) {
    */
   const handleForceSubmit = (e) => {
     setDuplicatePartModalOpen(false);
-    setPart({ ...part, allowPotentialDuplicate: true });
-    onSubmit(e);
+    const updatedPart = { ...part, allowPotentialDuplicate: true };
+    setPart(updatedPart);
+    onSubmit(e, updatedPart);
   };
 
   /**
    * Save the part
    *
-   * @param {any} e
+   * @param {any} e Event
+   * @param {object} part The part to submit
    */
-  const onSubmit = async (e) => {
+  const onSubmit = async (e, part) => {
+    e.preventDefault();
+    e.stopPropagation();
     const isExisting = part.partId > 0;
 
     const request = { ...part };
