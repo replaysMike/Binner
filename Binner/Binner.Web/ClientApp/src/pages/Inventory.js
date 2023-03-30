@@ -1013,6 +1013,7 @@ export function Inventory(props) {
 
   const printLabel = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     await fetchApi(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: "POST" });
   };
 
@@ -1675,10 +1676,11 @@ export function Inventory(props) {
 
       {/* FORM START */}
 
-      <Form onSubmit={onSubmit} className="inventory">
+      <Form onSubmit={e => onSubmit(e, part)} className="inventory">
         {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} passThrough={keyboardPassThrough} minInputLength={3} /> }
         {part && part.partId > 0 && (
           <Button
+            type="button"
             animated="vertical"
             circular
             floated="right"
