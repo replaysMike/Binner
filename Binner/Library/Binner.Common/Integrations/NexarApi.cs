@@ -22,7 +22,7 @@ namespace Binner.Common.Integrations
         private static DateTime _nexarTokenExpiresAt;
         private static string _nexarToken;
 
-        public bool IsEnabled { get; }
+        public bool IsEnabled => _configuration.Enabled;
         
         public IApiConfiguration Configuration => _configuration;
 
