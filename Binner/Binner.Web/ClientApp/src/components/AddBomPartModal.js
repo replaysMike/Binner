@@ -115,7 +115,9 @@ export function AddBomPartModal(props) {
 				quantity: form.quantity,
 				notes: form.notes,
 				referenceId: form.referenceId,
-        partName: selectedPart?.partNumber || form.keyword
+        partName: selectedPart?.partNumber || form.keyword,
+        schematicReferenceId: form.schematicReferenceId,
+        customDescription: form.customDescription
 			});
     } else {
       console.error("No onAdd handler defined!");
