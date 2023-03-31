@@ -74,8 +74,8 @@ namespace Binner.Common.Services
                 var arrowConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
-                    { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
                     { "Username", request.Configuration.Where(x => x.Key.Equals("Username", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
                     { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty },
                 };
                 credentials.Add(new ApiCredential(user?.UserId ?? 0, arrowConfiguration, nameof(ArrowApi)));

@@ -41,8 +41,18 @@
 	min-height: 245px;
 }
 
-#datasheets .carousel-inner {
-	height: 375.28px;
+.product-images, .datasheets, .pinout-images, .circuit-images {
+	cursor: pointer;
+}
+
+.product-images .carousel-item img, .pinout-images .carousel-item img, .circuit-images .carousel-item img {
+	min-height: 247px;
+	max-height: 247px;
+}
+
+.datasheets .carousel-inner {
+	min-height: 247px;
+	max-height: 247px;
 }
 
 .ui.menu.shortcuts {

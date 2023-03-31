@@ -546,3 +546,10 @@ code {
     padding: 0;
     margin-top: 0px;
 }
+
+.footer .promo {
+    margin-top: 4px;
+    margin-bottom: 20px;
+    font-size: 0.8em;
+
+}

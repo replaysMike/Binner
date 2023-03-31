@@ -1,4 +1,4 @@
-.mdblock {
+.help .mdblock {
 	font-family: 'Source Code Pro', monospace;
 	color: #000;
 	font-size: 0.7em;
@@ -9,51 +9,51 @@
 	margin: 20px 10px;
 }
 
-.definitions {
+.help .definitions {
 	padding: 20px;
 	margin: 10px 10px;
 	border: 1px solid #aaa;
 }
 
-.definition {
+.help .definition {
 	margin-bottom: 20px;
 }
 
-.definition.optional span:after {
+.help .definition.optional span:after {
 	content: 'optional';
 	margin: 0 10px 0 0px;
 	font-style: italic;
 	font-weight: 500;
 }
 
-.definition span:nth-child(1) {
+.help .definition span:nth-child(1) {
 	font-weight: 700;
 }
 
-table.excel {
+.help table.excel {
 	font-size: 0.8em;
 	margin-top: 20px;
 	margin-bottom: 50px;
 }
 
-table.excel tr:nth-child(1) {
+.help table.excel tr:nth-child(1) {
 	border: 1px solid #000;
 	padding: 0 5px;
 	text-align: center;
 	background-color: #ddd !important;
 }
 
-table.excel tr:nth-child(1) td {
+.help table.excel tr:nth-child(1) td {
 	border: 1px solid #000;
 	background-color: #ddd !important;
 	font-weight: 800;
 }
 
-table.excel tr:nth-child(2) td {
+.help table.excel tr:nth-child(2) td {
 	font-weight: 800;
 }
 
-table.excel td:nth-child(1) {
+.help table.excel td:nth-child(1) {
 	border: 1px solid #000;
 	font-weight: 800;
 	padding: 0 10px;
@@ -61,18 +61,18 @@ table.excel td:nth-child(1) {
 	background-color: #ddd;
 }
 
-table.excel td {
+.help table.excel td {
 	font-size: 0.9em;
 	border: 1px dotted #aaa;
 	padding: 2px 6px;
 	background-color: #fff;
 }
 
-table.excel tr:last-child td {
+.help table.excel tr:last-child td {
 	text-align: left;
 }
 
-table.excel tr:last-child td span.active {
+.help table.excel tr:last-child td span.active {
 	background-color: #fff;
 	margin-left: 20px;
 	right: 0;
@@ -83,7 +83,7 @@ table.excel tr:last-child td span.active {
 	top: 1px;
 }
 
-table.excel tr:last-child td span {
+.help table.excel tr:last-child td span {
 	background-color: #dadada;
 	border-right: 1px solid #aaa;
 	padding: 1px 15px;
@@ -91,19 +91,19 @@ table.excel tr:last-child td span {
 	top: 1px;
 }
 
-.helpcontainer {
+.help .helpcontainer {
   margin: auto;
   width: 90%;
 }
 
-.helpcontainer ul {
+.help .helpcontainer ul {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   width: 100%;
 }
 
-.helpcontainer li {
+.help .helpcontainer li {
   list-style: none;
   display: inline-block;
   border: 1px solid #ccc;
@@ -116,23 +116,25 @@ table.excel tr:last-child td span {
   color: #666;
   font-size: 0.9em;
   padding: 10px;
+	cursor: pointer;
 }
 
-.helpcontainer li:HOVER{
+.help .helpcontainer li:HOVER{
   background-color: #f6f6f6;
   border-top: 5px solid #DF1461;
 }
 
-.helpcontainer a {
-  display: inline-block;
+.help .helpcontainer li h1 {
+  display: block;
   color: #000;
   font-weight: 800;
   font-size: 1.1em;
   min-height: 50px;
   padding: 10px;
+	text-decoration: underline;
 }
 
-div.helpvideo {
+.help div.helpvideo {
   color: #666;
   font-size: 0.9em;
   margin-bottom: 10px;
@@ -140,7 +142,7 @@ div.helpvideo {
   background-color: #f6f6f6;
 }
 
-.helpvideo img {
+.help .helpvideo img {
   display: block;
   border: 1px dotted #666;
   padding: 5px;
@@ -148,33 +150,33 @@ div.helpvideo {
   height: auto;
 }
 
-img.helpvideo {
+.help img.helpvideo {
   border: 1px dotted #666;
   padding: 5px;
   width: 700px;
   height: auto;
 }
 
-.imagegroup {
+.help .imagegroup {
 	display: flex;
 }
 
-.imagegroup div {
+.help .imagegroup div {
 	margin: 10px 50px;
 }
 
-.imagegroup img {
+.help .imagegroup img {
 	display: block;
   border: 1px dotted #666;
   padding: 5px;
 }
 
-textarea {
+.help textarea {
 	width: 75%;
 	height: 200px;
 }
 
-code {
+.help code {
 	background: #f4f4f4;
 	border: 1px solid #ddd;
 	border-left: 3px solid #f36d33;
@@ -191,23 +193,32 @@ code {
 	white-space: pre-line !important;
 }
 
-pre {
+.help pre {
 	white-space: pre !important;
 }
 
-p > b, li > b, .bullet > b {
+.help p > b, li > b, .bullet > b {
 	font-weight: 600;
 	color: rgb(0, 115, 204);
 }
 
-li {
+.help li {
 	padding: 10px 0;
 	margin-left: 30px;
 }
 
-.bullet {
+.help .bullet {
 	border-left: 2px solid #3340f3;
 	padding: 10px;
 	margin-left: 30px;
 	margin-bottom: 15px;
+}
+
+.help .bullet.highlight {
+	background-color: #eee;
+}
+
+.help hr {
+	margin-top: 75px;
+	margin-bottom: 30px;
 }
