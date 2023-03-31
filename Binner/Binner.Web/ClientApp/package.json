@@ -50,6 +50,7 @@
     "react-router-dom": "^6.9.0",
     "react-scripts": "^5.0.1",
     "react-spinners": "^0.13.8",
+    "react-string-replace": "^1.1.0",
     "react-toastify": "^9.1.2",
     "reactstrap": "^9.1.6",
     "rimraf": "^4.4.1",
