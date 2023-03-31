@@ -422,7 +422,7 @@ export function Inventory(props) {
         binNumber2: (lastPart && lastPart.binNumber2) || "",
         origin: (input.value.countryOfOrigin && input.value.countryOfOrigin.toLowerCase()) || "",
         description: input.value.description || "",
-        barcode: input.rawValue
+        barcode: input.correctedValue
       };
       const existingPartNumber = _.find(scannedPartsRef.current, { partNumber: cleanPartNumber });
       if (existingPartNumber) {
@@ -483,7 +483,7 @@ export function Inventory(props) {
       // fetch metadata on the barcode, don't await, do a background update
       const scannedPart = {
         partNumber: cleanPartNumber,
-        barcode: input.rawValue
+        barcode: input.correctedValue
       };
       fetchBarcodeMetadata(e, scannedPart, (partInfo) => {
         // barcode found

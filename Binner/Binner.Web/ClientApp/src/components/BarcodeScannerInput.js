@@ -86,17 +86,22 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   const processBarcodeInformation = (e, value) => {
     let barcodeType = "code128";
     let parsedValue = {};
+		let correctedValue = value;
 		let gsDetected = false;
 		let rsDetected = false;
 		let eotDetected = false;
-    if (value.startsWith("[)>") || value.startsWith("[)\u25B2")) {
+		let invalidBarcodeDetected = false;
+    if (value.startsWith("[)>")) {
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
       const parseResult = parseDataMatrix(value);
+			console.log('parseResult', parseResult);
 			parsedValue = parseResult.value;
 			gsDetected = parseResult.gsDetected;
 			rsDetected = parseResult.rsDetected;
 			eotDetected = parseResult.eotDetected;
+			invalidBarcodeDetected = parseResult.invalidBarcodeDetected;
+			correctedValue = parseResult.correctedValue;
     } else {
       // 1D barcode
       parsedValue = value.replace("\n", "").replace("\r", "");
@@ -105,18 +110,20 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		return {
 			type: barcodeType,
 			value: parsedValue,
+			correctedValue: correctedValue,
 			rawValue: value,
 			rsDetected,
 			gsDetected,
-			eotDetected
+			eotDetected,
+			invalidBarcodeDetected
 		};
   };
 
   const parseDataMatrix = (value) => {
     let parsedValue = {};
-		const gsCharCodes = [29, 93];
-		const rsCharCodes = [30, 94];
-    const eotCharCodes = [4, 68];
+		const gsCharCodes = ["\u001d", "\u005d", "\u241d"];
+		const rsCharCodes = ["\u001e", "\u005e", "\u241e"];
+    const eotCharCodes = ["\u0004", "^\u0044", "\u2404"];
     const header = "[)>";
     const expectedFormatNumber = 6; /** 22z22 barcode */
     const controlChars = ["P", "1P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z"];
@@ -128,12 +135,18 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     let buffer = "";
     let i;
     let formatNumberIndex = 0;
+		let correctedValue = value.toString();
+
+		gsCodePresent = gsCharCodes.some(v => value.includes(v));
+		rsCodePresent = rsCharCodes.some(v => value.includes(v));
+		eotCodePresent = eotCharCodes.some(v => value.includes(v));
+
+		// read in the format number first. For Digikey 2d barcodes, this should be 6 (expectedFormatNumber)
     for (i = 0; i < value.length; i++) {
       buffer += value[i];
       if (buffer === header) {
-        if (rsCharCodes.includes(value.charCodeAt(i + 1))) {
+        if (rsCharCodes.includes(value[i + 1])) {
           // read the character after the RS token (sometimes not present)
-					rsCodePresent = true;
           formatNumberIndex = i + 2;
         } else {
           formatNumberIndex = i + 1;
@@ -143,6 +156,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
         break;
       }
     }
+		// assert expected barcode format number
     if (formatNumber !== expectedFormatNumber) {
       // error
 			console.error(`Expected the 2D barcode format number of ${expectedFormatNumber} but was ${formatNumber}`);
@@ -152,10 +166,10 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     let lastPosition = i;
 		const gsLines = [];
 		let gsLine = '';
+		// break each group separator into an array
 		for (i = lastPosition; i < value.length; i++) {
 			const ch = value[i];
-			if (gsCharCodes.includes(ch.charCodeAt(0))) {
-				gsCodePresent = true;
+			if (gsCharCodes.includes(ch)) {
 				// start of a new line. read until next gsCharCode or EOT
 				if (gsLine.length > 0)
 					gsLines.push(gsLine);
@@ -163,16 +177,30 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			} else {
 				gsLine += ch;
 			}
-			if (eotCharCodes.includes(ch.charCodeAt(0))) {
-				eotCodePresent = true;
-			}
 		}
 		if (gsLine.length > 0)
 			gsLines.push(gsLine);
 
-		for (i = 0; i < gsLines.length; i++) {
+		let readLength = gsLines.length;
+		let invalidBarcodeDetected = false;
+		// some older DigiKey barcodes are encoded incorrectly, and have a blank GSRS at the end. Filter them out.
+		// https://github.com/replaysMike/Binner/issues/132
+		if (correctedValue.endsWith("\u005e\u0044\r") || correctedValue.endsWith("\u005d\u005e\u0044")) {
+			invalidBarcodeDetected = true;
+			readLength--;
+			// apply correction to the raw value
+			if (correctedValue.endsWith("\r")){
+				correctedValue = correctedValue.substring(0, correctedValue.length - 4) + "\r";
+			} else {
+				correctedValue = correctedValue.substring(0, correctedValue.length - 3);
+			}
+		}
+		const filteredGsLines = [];
+		// read each group separator
+		for (i = 0; i < readLength; i++) {
 			// read until we see a control char
 			const line = gsLines[i];
+			filteredGsLines.push(line);
 			let readCommandType = "";
 			let readValue = "";
 			let readControlChars = true;
@@ -236,10 +264,14 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			}
 		}
     return {
+			rawValue: value,
 			value: parsedValue,
+			correctedValue: correctedValue,
 			gsDetected: gsCodePresent,
 			rsDetected: rsCodePresent,
-			eotDetected: eotCodePresent
+			eotDetected: eotCodePresent,
+			gsLines: filteredGsLines,
+			invalidBarcodeDetected
 		};
   };
 

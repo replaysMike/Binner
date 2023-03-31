@@ -43,3 +43,24 @@ pre {
 	color: #fff;
 	font-weight: 600;
 }
+
+.block-container .block.active.red {
+	background-color: rgb(128, 0, 0);
+}
+
+.gs {
+	font-size: 1.5em;
+	font-weight: 700;
+	color:rgb(255, 0, 0);
+}
+.rs {
+	font-size: 1.5em;
+	font-weight: 700;
+	color:rgb(50, 50, 150);
+}
+
+.eot {
+	font-size: 1.5em;
+	font-weight: 700;
+	color:rgb(0, 100, 0);
+}

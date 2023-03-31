@@ -608,6 +608,7 @@ namespace Binner.Common.Services
         {
             const int maxImagesPerSupplier = 5;
             const int maxImagesTotal = 10;
+            var response = new PartResults();
             var totalImages = 0;
             var user = _requestContext.GetUserContext();
             //var context = await _contextFactory.CreateDbContextAsync();
@@ -616,9 +617,32 @@ namespace Binner.Common.Services
             var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
             var nexarApi = await _integrationApiFactory.CreateAsync<Integrations.NexarApi>(user?.UserId ?? 0);
             var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0);
+            if (partNumber.StartsWith("[)>"))
+            {
+                if (digikeyApi.Configuration.IsConfigured)
+                {
+                    // 2d barcode scan requires decode first
+                    var barcodeInfo = await GetBarcodeInfoAsync(partNumber, ScannedBarcodeType.Product);
+                    if (barcodeInfo.Response?.Parts.Any() == true)
+                    {
+                        var firstPartMatch = barcodeInfo.Response.Parts.First();
+                        if(!string.IsNullOrEmpty(firstPartMatch.ManufacturerPartNumber))
+                            partNumber = firstPartMatch.ManufacturerPartNumber;
+                        else if(!string.IsNullOrEmpty(firstPartMatch.BasePartNumber))
+                            partNumber = firstPartMatch.BasePartNumber;
+
+                    }
+                }
+
+                // continue with lookup
+            }
+            if (string.IsNullOrEmpty(partNumber))
+            {
+                // return empty result, invalid request
+                return ServiceResult<PartResults>.Create(response);
+            }
 
             var datasheets = new List<string>();
-            var response = new PartResults();
             var swarmResponse = new SwarmApi.Response.SearchPartResponse();
             var digikeyResponse = new KeywordSearchResponse();
             var mouserResponse = new SearchResultsResponse();

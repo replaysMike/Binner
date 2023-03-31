@@ -2,6 +2,7 @@
 import { Form, Popup } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
+import reactStringReplace from "react-string-replace";
 import "./BarcodeScanner.css";
 
 export function BarcodeScanner(props) {
@@ -13,6 +14,7 @@ export function BarcodeScanner(props) {
   const [rsDetected, setRsDetected] = useState(false);
   const [gsDetected, setGsDetected] = useState(false);
   const [eotDetected, setEotDetected] = useState(false);
+  const [invalidBarcodeDetected, setInvalidBarcodeDetected] = useState(false);
 
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
@@ -20,25 +22,33 @@ export function BarcodeScanner(props) {
     setRsDetected(false);
     setGsDetected(false);
     setEotDetected(false);
+    setInvalidBarcodeDetected(false);
 
     if (input && input.rawValue) {
       const rawValueFormatted = input.rawValue
-        .replaceAll("\u001e","<RS>")
-        .replaceAll("\u005e","<RS>")
-        .replaceAll("\u001d", "<GS>")
-        .replaceAll("\u005d", "<GS>")
-        .replaceAll("<RS>\u0004", "<RS><EOT>")
-        .replaceAll("<RS>\u0044", "<RS><EOT>");
+        .replaceAll("^\u0044", "\u241e\u2404") // ^EOT
+        .replaceAll("\u0004", "\u2404") // EOT
+        .replaceAll("\u001e","\u241e") // RS (30)
+        .replaceAll("\u005e","\u241e") // RS (94) ^
+        .replaceAll("\u001d", "\u241d") // GS (29)
+        .replaceAll("\u005d", "\u241d") // GS (93) ]
+        ;
       const json = {...input, rawValueFormatted: rawValueFormatted};
       setBarcodeValue(JSON.stringify(json, null, 2));
       setRsDetected(input.rsDetected);
       setGsDetected(input.gsDetected);
       setEotDetected(input.eotDetected);
+      setInvalidBarcodeDetected(input.invalidBarcodeDetected);
     } else{
       setBarcodeValue(JSON.stringify(input, null, 2));
     }
     toast.info(`Barcode type ${input.type} received`);
   };
+
+  //let barcodeObject = barcodeValue;
+  let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={i*2} className="rs">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={i*3} className="gs">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u2404", (match, i) => (<span key={i*4} className="eot">{match}</span>));
 
   return (
     <div>
@@ -47,7 +57,7 @@ export function BarcodeScanner(props) {
       <p>Test your barcode scanner to see what values it outputs.</p>
       <Form>
         <div>
-          <code><pre>{barcodeValue}</pre></code>
+          <code><pre>{barcodeObject}</pre></code>
           <div className="block-container">
             <label>Detected:</label>
             <Popup 
@@ -63,6 +73,10 @@ export function BarcodeScanner(props) {
             <Popup 
               content={<p>EOT, or end of transmission (ASCII 04, unicode \u0004) separator is a hidden data code indicating the end of a barcode transmission. It is optional for barcodes.</p>}
               trigger={<div className={`block ${eotDetected ? 'active' : ''}`}>EOT</div>}
+            />
+            <Popup 
+              content={<p>Some older DigiKey barcodes are encoded incorrectly. If an older part label that was encoded incorrectly is detected it will be indicated here, and Binner has corrected for it.</p>}
+              trigger={<div className={`block ${invalidBarcodeDetected ? 'active red' : ''}`}>Invalid</div>}
             />
           </div>
         </div>
