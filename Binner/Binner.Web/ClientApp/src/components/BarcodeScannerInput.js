@@ -89,7 +89,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		let gsDetected = false;
 		let rsDetected = false;
 		let eotDetected = false;
-    if (value.startsWith("[)>")) {
+    if (value.startsWith("[)>") || value.startsWith("[)\u25B2")) {
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
       const parseResult = parseDataMatrix(value);
