@@ -47,7 +47,6 @@ export function NavMenu(props) {
                     content="Help"
                     trigger={<Link to="/help" className="help-icon"><Icon name="help circle" /></Link>}
                   />
-                  
                 </NavItem>
                 <NavItem>
                   <Input

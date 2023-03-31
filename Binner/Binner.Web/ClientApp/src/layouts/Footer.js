@@ -15,7 +15,8 @@ export function Footer(props) {
 
   return (
     <div className='footer centered'>
-      {version ? <span>Version: {version}</span> : ""}
+      <div>{version ? <span>Version: {version}</span> : ""}</div>
+      <div className='promo'>Try <a href="https://binner.io">Binner Cloud Free</a></div>
     </div>
   );
 }

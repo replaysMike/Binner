@@ -1502,6 +1502,13 @@ export function Inventory(props) {
     setShowAddPartSupplier(!showAddPartSupplier);
   };
 
+  const getDatasheetAttributes = (datasheet) => {
+    return {
+      'data-id': datasheet.id || '0',
+      'data-resourceid': datasheet.value.resourceId,
+    };
+  };
+
   const renderScannedParts = (scannedParts, highlightScannedPart) => {
     if (highlightScannedPart) {
       // reset the css highlight animation
@@ -2162,8 +2169,8 @@ export function Inventory(props) {
               <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.ProductImage)}>
                 <Card color="blue">
                   {infoResponse && infoResponse.productImages && infoResponse.productImages.length > 0 ? (
-                    <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered">
-                      {infoResponse.productImages.map((productImage, imageKey) => (
+                    <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered product-images">
+                      {infoResponse.productImages?.filter(x => x.value.length > 0)?.map((productImage, imageKey) => (
                         <Carousel.Item key={imageKey}>
                           <Image src={productImage.value} size="large" />
                           {productImage.id && (
@@ -2210,9 +2217,9 @@ export function Inventory(props) {
                 <Card id="datasheets" color="green">
                   {infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0 ? (
                     <div>
-                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }} onSelect={onCurrentDatasheetChanged}>
+                      <Carousel variant="dark" interval={null} onSelect={onCurrentDatasheetChanged} className="datasheets">
                         {infoResponse.datasheets.map((datasheet, datasheetKey) => (
-                          <Carousel.Item key={datasheetKey} onClick={(e) => handleVisitLink(e, datasheet.value.datasheetUrl)} data={datasheet}>
+                          <Carousel.Item key={datasheetKey} onClick={(e) => handleVisitLink(e, datasheet.value.datasheetUrl)} {...getDatasheetAttributes(datasheet)}>
                             <Image src={datasheet.value.imageUrl} size="large" />
                             {datasheet.id && (
                               <Popup
@@ -2267,7 +2274,7 @@ export function Inventory(props) {
                 <Card id="pinout" color="purple">
                   {infoResponse && infoResponse.pinoutImages && infoResponse.pinoutImages.length > 0 ? (
                     <div>
-                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
+                      <Carousel variant="dark" interval={null} className="pinout-images">
                         {infoResponse.pinoutImages.map((pinout, pinoutKey) => (
                           <Carousel.Item key={pinoutKey}>
                             <Image src={pinout.value} size="large" />
@@ -2315,7 +2322,7 @@ export function Inventory(props) {
                 <Card id="circuits" color="violet">
                   {infoResponse && infoResponse.circuitImages && infoResponse.circuitImages.length > 0 ? (
                     <div>
-                      <Carousel variant="dark" interval={null} style={{ cursor: "pointer" }}>
+                      <Carousel variant="dark" interval={null} className="circuit-images">
                         {infoResponse.circuitImages.map((circuit, circuitKey) => (
                           <Carousel.Item key={circuitKey}>
                             <Image src={circuit.value} size="large" />

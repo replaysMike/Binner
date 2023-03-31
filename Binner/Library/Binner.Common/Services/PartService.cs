@@ -738,7 +738,8 @@ namespace Binner.Common.Services
 
             if (swarmApi.Configuration.IsConfigured)
             {
-                var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
+                //var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
+                var apiResponse = await swarmApi.SearchAsync(partNumber);
                 if (apiResponse.Warnings?.Any() == true)
                 {
                     _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
@@ -978,10 +979,17 @@ namespace Binner.Common.Services
                                 if (!string.IsNullOrEmpty(datasheetUrl) && !datasheetUrls.Any(x =>
                                         x.Value.DatasheetUrl.Equals(datasheetUrl, ComparisonType)))
                                 {
-                                    datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPart.Name,
-                                        new DatasheetSource(datasheetCoverImageUrl, datasheetUrl,
-                                            datasheet.Title ?? manufacturerPart.Name, datasheet?.ShortDescription ?? string.Empty,
-                                            datasheet?.ManufacturerName ?? string.Empty)));
+                                    var datasheetSource = new DatasheetSource(datasheet.ResourceId,
+                                        datasheet.ImageCount,
+                                        datasheet.PageCount,
+                                        datasheetCoverImageUrl,
+                                        datasheetUrl,
+                                        datasheet.Title ?? manufacturerPart.Name,
+                                        datasheet?.ShortDescription,
+                                        datasheet?.ManufacturerName,
+                                        datasheet.OriginalUrl,
+                                        datasheet.ProductUrl);
+                                    datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPart.Name, datasheetSource));
                                 }
                             }
 
@@ -1119,7 +1127,9 @@ namespace Binner.Common.Services
                     // if there is a datasheet that hasn't been added, add it
                     if (!string.IsNullOrEmpty(part.PrimaryDatasheet) && !datasheetUrls.Any(x => x.Value?.DatasheetUrl?.Equals(part.PrimaryDatasheet, ComparisonType) == true))
                     {
-                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.PrimaryDatasheet, part.ManufacturerPartNumber, "", part.Manufacturer?.Value ?? string.Empty)));
+                        var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.PrimaryDatasheet,
+                            part.ManufacturerPartNumber, "", part.Manufacturer?.Value ?? string.Empty);
+                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, datasheetSource));
                     }
                     response.Parts.Add(new CommonPart
                     {
@@ -1192,7 +1202,8 @@ namespace Binner.Common.Services
                     if (!string.IsNullOrEmpty(part.DataSheetUrl)
                         && !datasheetUrls.Any(x => x.Value.DatasheetUrl.Equals(part.DataSheetUrl, ComparisonType)))
                     {
-                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.DataSheetUrl, part.ManufacturerPartNumber ?? basePart, "", part.Manufacturer ?? string.Empty)));
+                        var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.DataSheetUrl, part.ManufacturerPartNumber ?? basePart, "", part.Manufacturer ?? string.Empty);
+                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, datasheetSource));
                     }
 
                     response.Parts.Add(new CommonPart
@@ -1276,7 +1287,8 @@ namespace Binner.Common.Services
                         var arrowDatasheets = part.Resources.Where(x => x.Type == "datasheet" && !string.IsNullOrEmpty(x.Uri)).Select(x => x.Uri.ToString()).ToList();
                         foreach (var datasheetUri in arrowDatasheets)
                         {
-                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", datasheetUri, manufacturerPartNumber, "", part.Manufacturer?.MfrName ?? string.Empty)));
+                            var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", datasheetUri, manufacturerPartNumber, "", part.Manufacturer?.MfrName ?? string.Empty);
+                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, datasheetSource));
                         }
 
                         var source = part.InvOrg.WebSites
@@ -1376,10 +1388,23 @@ namespace Binner.Common.Services
 
                         if (part.BestDatasheet != null)
                             datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.BestDatasheet.Url, manufacturerPartNumber, "", part.Manufacturer?.Name ?? string.Empty)));
-                        var nexarDatasheets = part.Documents.Where(x => x.Name == "Datasheet" && !string.IsNullOrEmpty(x.Url)).Select(x => x.Url.ToString()).ToList();
+                        var nexarDatasheets = part.Documents.Where(x => x.Name == "Datasheet" && !string.IsNullOrEmpty(x.Url)).ToList();
                         foreach (var datasheetUri in nexarDatasheets)
                         {
-                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", datasheetUri, manufacturerPartNumber, "", part.Manufacturer?.Name ?? string.Empty)));
+                            if (!string.IsNullOrEmpty(datasheetUri.Url))
+                            {
+                                var datasheetSource = new DatasheetSource(Guid.Empty, 
+                                    0, 
+                                    datasheetUri.PageCount,
+                                    $"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", 
+                                    datasheetUri.Url, 
+                                    manufacturerPartNumber,
+                                    "", 
+                                    part.Manufacturer?.Name, 
+                                    datasheetUri.SourceUrl, 
+                                    null);
+                                datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, datasheetSource));
+                            }
                         }
 
                         var partCost = part.MedianPrice1000?.Price ?? 0d;
@@ -1405,7 +1430,7 @@ namespace Binner.Common.Services
                                     ManufacturerPartNumber = manufacturerPartNumber,
                                     Cost = partCost,
                                     Currency = currency,
-                                    DatasheetUrls = nexarDatasheets,
+                                    DatasheetUrls = nexarDatasheets.Select(x => x.Url).ToList(),
                                     Description = part.ShortDescription,
                                     ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
                                     PackageType = packageType,
@@ -1435,7 +1460,7 @@ namespace Binner.Common.Services
                                 ManufacturerPartNumber = manufacturerPartNumber,
                                 Cost = partCost,
                                 Currency = currency,
-                                DatasheetUrls = nexarDatasheets,
+                                DatasheetUrls = nexarDatasheets.Select(x => x.Url).ToList(),
                                 Description = part.ShortDescription,
                                 ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
                                 PackageType = packageType,
