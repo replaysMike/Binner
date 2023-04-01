@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace Binner.Common.Integrations.Models
 {
@@ -70,14 +69,14 @@ namespace Binner.Common.Integrations.Models
 
         public static ApiResponse Create(string error, string apiName)
         {
-            return new ApiResponse(Enumerable.Repeat(error, 1), apiName);
+            return new ApiResponse(new List<string> { error }, apiName);
         }
 
         public static ApiResponse CreateWarning(string warning, string apiName)
         {
             return new ApiResponse(apiName)
             {
-                Warnings = Enumerable.Repeat(warning, 1).ToList()
+                Warnings = new List<string> { warning }
             };
         }
 
@@ -96,7 +95,7 @@ namespace Binner.Common.Integrations.Models
 
         public static ApiResponse Create(bool requiresAuthentication, string redirectUrl, string error, string apiName)
         {
-            return new ApiResponse(requiresAuthentication, redirectUrl, Enumerable.Repeat(error, 1).ToList(), apiName);
+            return new ApiResponse(requiresAuthentication, redirectUrl, new List<string> { error }, apiName);
         }
 
         public static ApiResponse Create(bool requiresAuthentication, string redirectUrl, ICollection<string> errors, string apiName)
