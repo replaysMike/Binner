@@ -41,7 +41,9 @@ if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
 Write-Host "Building the UI..." -ForegroundColor cyan
 cd .\Binner\Binner.Web\ClientApp
 npm install
+if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
 npm run build
+if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
 cd ..\..\..\
 
 robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s

@@ -98,7 +98,7 @@
     "sass": "^1.59.3",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.1"
   },
   "eslintConfig": {
     "extends": "react-app"
