@@ -27,7 +27,9 @@ namespace Binner.Common.Services
         {
             var user = _requestContext.GetUserContext();
 
+#pragma warning disable CS1998
             var getCredentialsMethod = async () =>
+#pragma warning restore CS1998
             {
                 // create a db context
                 //using var context = await _contextFactory.CreateDbContextAsync();
@@ -203,8 +205,10 @@ namespace Binner.Common.Services
             return new TestApiResponse(request.Name, $"Unknown api name!");
         }
 
-        private static string WrapUrl(string url)
+        private static string WrapUrl(string? url)
         {
+            if (url == null)
+                return string.Empty;
             if (!url.Contains("http://") && !url.Contains("https://"))
                 url = $"https://{url}";
             return url;

@@ -2,7 +2,7 @@
 import { Form, Popup } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
-import reactStringReplace from "react-string-replace";
+//import reactStringReplace from "react-string-replace";
 import "./BarcodeScanner.css";
 
 export function BarcodeScanner(props) {
@@ -45,10 +45,10 @@ export function BarcodeScanner(props) {
     toast.info(`Barcode type ${input.type} received`);
   };
 
-  //let barcodeObject = barcodeValue;
-  let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={i*2} className="rs">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={i*3} className="gs">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u2404", (match, i) => (<span key={i*4} className="eot">{match}</span>));
+  let barcodeObject = barcodeValue;
+  //let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={i*2} className="rs">{match}</span>));
+  //barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={i*3} className="gs">{match}</span>));
+  //barcodeObject = reactStringReplace(barcodeObject, "\u2404", (match, i) => (<span key={i*4} className="eot">{match}</span>));
 
   return (
     <div>

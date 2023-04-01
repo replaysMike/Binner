@@ -87,7 +87,9 @@ namespace Binner.Common.Services
         public async Task<T> CreateAsync<T>(int userId)
             where T : class
         {
+#pragma warning disable CS1998
             var getCredentialsMethod = async () =>
+#pragma warning restore CS1998
             {
                 // create a db context
                 //using var context = await _contextFactory.CreateDbContextAsync();

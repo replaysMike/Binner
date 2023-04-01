@@ -101,7 +101,7 @@ namespace Binner.Common.Integrations.Models.Arrow
         public int FohQty { get; set; }
         public string? AvailabilityCd { get; set; }
         public string? AvailabilityMessage { get; set; }
-        public ICollection<Pipeline> Pipeline { get; set; }
+        public ICollection<Pipeline> Pipeline { get; set; } = new List<Pipeline>();
     }
 
     public class Pipeline
@@ -119,7 +119,7 @@ namespace Binner.Common.Integrations.Models.Arrow
 
     public class EnvData
     {
-        public ICollection<ComplianceValue> Compliance { get; set; }
+        public ICollection<ComplianceValue> Compliance { get; set; } = new List<ComplianceValue>();
     }
 
     public class ComplianceValue

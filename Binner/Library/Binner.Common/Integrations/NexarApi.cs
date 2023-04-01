@@ -20,7 +20,7 @@ namespace Binner.Common.Integrations
         private readonly IHttpContextAccessor _httpContextAccessor;
         private static readonly TimeSpan TokenLifetime = TimeSpan.FromDays(1);
         private static DateTime _nexarTokenExpiresAt;
-        private static string _nexarToken;
+        private static string? _nexarToken;
 
         public bool IsEnabled => _configuration.Enabled;
         
@@ -80,7 +80,7 @@ namespace Binner.Common.Integrations
 
             var partResults = new NexarPartResults();
             // return empty response
-            if (result.Data.SupSearch.Results == null)
+            if (result.Data?.SupSearch.Results == null)
                 return new ApiResponse(partResults, nameof(NexarApi));
 
             foreach (var it in result.Data.SupSearch.Results)

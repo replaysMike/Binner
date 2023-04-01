@@ -736,7 +736,7 @@ namespace Binner.Common.Services
                 }
                 if (apiResponse.Errors?.Any() == true)
                 {
-                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 }
 
@@ -754,7 +754,7 @@ namespace Binner.Common.Services
                 }
                 if (apiResponse.Errors?.Any() == true)
                 {
-                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
                     return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 }
                 nexarResponse = (NexarPartResults?)apiResponse.Response;

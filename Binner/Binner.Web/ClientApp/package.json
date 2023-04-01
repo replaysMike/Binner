@@ -50,7 +50,6 @@
     "react-router-dom": "^6.9.0",
     "react-scripts": "^5.0.1",
     "react-spinners": "^0.13.8",
-    "react-string-replace": "^1.1.0",
     "react-toastify": "^9.1.2",
     "reactstrap": "^9.1.6",
     "rimraf": "^4.4.1",
@@ -98,7 +97,7 @@
     "sass": "^1.59.3",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "typescript": "^5.0.1"
+    "typescript": "^5.0.2"
   },
   "eslintConfig": {
     "extends": "react-app"

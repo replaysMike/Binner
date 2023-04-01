@@ -121,7 +121,7 @@ namespace Binner.Common.IO
 
                                         var name = GetQuoted(cellValue)?.Trim();
                                         // part types need to have a unique name for the user and can not be part of global part types
-                                        if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
+                                        if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name != null && x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
                                         {
                                             var partType = new PartType
                                             {
