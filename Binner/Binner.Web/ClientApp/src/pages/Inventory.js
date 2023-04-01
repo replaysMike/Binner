@@ -1741,17 +1741,19 @@ export function Inventory(props) {
           />
         }
 
-        {partMetadataIsSubscribed && (
-          <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
-            <Icon name="close" /> No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when
-            the part is indexed.
-          </div>
-        )}
-        {partMetadataError && (
-          <div className="page-error" onClick={() => setPartMetadataError(null)}>
-            <Icon name="close" /> {partMetadataError}
-          </div>
-        )}
+        <div className="page-banner">
+          {partMetadataIsSubscribed && (
+            <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
+              <Icon name="close" /> No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when
+              the part is indexed.
+            </div>
+          )}
+          {partMetadataError && (
+            <div className="page-error" onClick={() => setPartMetadataError(null)}>
+              <Icon name="close" /> {partMetadataError}
+            </div>
+          )}
+        </div>
 
         <Grid celled className="inventory-container">
           <Grid.Row>

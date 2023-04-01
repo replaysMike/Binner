@@ -474,6 +474,10 @@ code {
     font-family: 'Source Code Pro', monospace;
 }
 
+.page-banner {
+    height: 30px;
+}
+
 .page-notice {
     background-color: #fcf7c9;
     padding: 2px 10px;

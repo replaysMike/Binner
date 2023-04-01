@@ -155,3 +155,7 @@
 	position: relative;
 	top: 3px;
 }
+
+.ui.celled.grid.inventory-container {
+	margin: 0.3em 0 1em 0;
+}
