@@ -190,7 +190,6 @@ namespace Binner.Common.IO
             headerFont.IsBold = true;
             headerFont.Color = HSSFColor.White.Index;
             headerFont.FontHeightInPoints = 14;
-            headerFont.Boldweight = 700;
             headerStyle.SetFont(headerFont);
 
             headerStyle.FillForegroundColor = HSSFColor.SkyBlue.Index;
@@ -209,7 +208,6 @@ namespace Binner.Common.IO
             oosFont.IsBold = true;
             oosFont.Color = HSSFColor.Red.Index;
             oosFont.FontHeightInPoints = 11;
-            oosFont.Boldweight = 700;
             outOfStockStyle.SetFont(oosFont);
 
             return new Dictionary<string, ICellStyle> {

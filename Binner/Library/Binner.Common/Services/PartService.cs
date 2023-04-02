@@ -1105,82 +1105,84 @@ namespace Binner.Common.Services
                 foreach (var part in digikeyResponse.Products)
                 {
                     var additionalPartNumbers = new List<string>();
-                    var basePart = part.Parameters
-                        .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
-                        .Select(x => x.Value)
-                        .FirstOrDefault();
-                    if (!string.IsNullOrEmpty(basePart))
-                        additionalPartNumbers.Add(basePart);
-                    else
+                    if (part.Parameters != null)
                     {
-                        if (part.ManufacturerPartNumber.Contains(partNumber, ComparisonType))
-                            basePart = partNumber;
-                    }
+                        var basePart = part.Parameters
+                            .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
+                            .Select(x => x.Value)
+                            .FirstOrDefault();
+                        if (!string.IsNullOrEmpty(basePart))
+                            additionalPartNumbers.Add(basePart);
+                        else
+                        {
+                            if (part.ManufacturerPartNumber.Contains(partNumber, ComparisonType))
+                                basePart = partNumber;
+                        }
 
-                    if (string.IsNullOrEmpty(basePart))
-                        basePart = part.ManufacturerPartNumber;
-                    var mountingTypeId = MountingType.None;
-                    Enum.TryParse<MountingType>(part.Parameters
-                        .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
-                        .Select(x => x.Value?.Replace(" ", ""))
-                        .FirstOrDefault(), out mountingTypeId);
-                    var currency = digikeyResponse.SearchLocaleUsed.Currency;
-                    if (string.IsNullOrEmpty(currency))
-                        currency = "USD";
-                    var packageType = part.Parameters
+                        if (string.IsNullOrEmpty(basePart))
+                            basePart = part.ManufacturerPartNumber;
+                        var mountingTypeId = MountingType.None;
+                        Enum.TryParse<MountingType>(part.Parameters
+                            .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
+                            .Select(x => x.Value?.Replace(" ", ""))
+                            .FirstOrDefault(), out mountingTypeId);
+                        var currency = digikeyResponse.SearchLocaleUsed.Currency;
+                        if (string.IsNullOrEmpty(currency))
+                            currency = "USD";
+                        var packageType = part.Parameters
                             ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                             .Select(x => x.Value)
                             .FirstOrDefault();
-                    if (string.IsNullOrEmpty(packageType))
-                        packageType = part.Parameters
-                            ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
-                            .Select(x => x.Value)
-                            .FirstOrDefault();
-                    if (!string.IsNullOrEmpty(part.PrimaryPhoto)
-                        && !productImageUrls.Any(x => x.Value?.Equals(part.PrimaryPhoto, ComparisonType) == true)
-                        && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
-                    {
-                        productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber, part.PrimaryPhoto));
-                        imagesAdded++;
-                        totalImages++;
-                    }
+                        if (string.IsNullOrEmpty(packageType))
+                            packageType = part.Parameters
+                                ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                                .Select(x => x.Value)
+                                .FirstOrDefault();
+                        if (!string.IsNullOrEmpty(part.PrimaryPhoto)
+                            && !productImageUrls.Any(x => x.Value?.Equals(part.PrimaryPhoto, ComparisonType) == true)
+                            && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
+                        {
+                            productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber, part.PrimaryPhoto));
+                            imagesAdded++;
+                            totalImages++;
+                        }
 
-                    // if there is a datasheet that hasn't been added, add it
-                    if (!string.IsNullOrEmpty(part.PrimaryDatasheet) && !datasheetUrls.Any(x => x.Value?.DatasheetUrl?.Equals(part.PrimaryDatasheet, ComparisonType) == true))
-                    {
-                        var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.PrimaryDatasheet,
-                            part.ManufacturerPartNumber, "", part.Manufacturer?.Value ?? string.Empty);
-                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, datasheetSource));
+                        // if there is a datasheet that hasn't been added, add it
+                        if (!string.IsNullOrEmpty(part.PrimaryDatasheet) && !datasheetUrls.Any(x => x.Value?.DatasheetUrl?.Equals(part.PrimaryDatasheet, ComparisonType) == true))
+                        {
+                            var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.PrimaryDatasheet,
+                                part.ManufacturerPartNumber, "", part.Manufacturer?.Value ?? string.Empty);
+                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, datasheetSource));
+                        }
+                        response.Parts.Add(new CommonPart
+                        {
+                            Rank = 1,
+                            SwarmPartNumberManufacturerId = null,
+                            Supplier = "DigiKey",
+                            SupplierPartNumber = part.DigiKeyPartNumber,
+                            BasePartNumber = basePart,
+                            AdditionalPartNumbers = additionalPartNumbers,
+                            Manufacturer = part.Manufacturer?.Value ?? string.Empty,
+                            ManufacturerPartNumber = part.ManufacturerPartNumber,
+                            Cost = (double)part.UnitPrice,
+                            Currency = currency,
+                            DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
+                            Description = part.ProductDescription + Environment.NewLine + part.DetailedDescription,
+                            ImageUrl = part.PrimaryPhoto,
+                            PackageType = part.Parameters
+                                ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
+                                .Select(x => x.Value)
+                                .FirstOrDefault(),
+                            MountingTypeId = (int)mountingTypeId,
+                            PartType = "",
+                            ProductUrl = part.ProductUrl,
+                            Status = part.ProductStatus,
+                            QuantityAvailable = part.QuantityAvailable,
+                            MinimumOrderQuantity = part.MinimumOrderQuantity,
+                            //FactoryStockAvailable = factoryStockAvailable,
+                            //FactoryLeadTime = part.LeadTime
+                        });
                     }
-                    response.Parts.Add(new CommonPart
-                    {
-                        Rank = 1,
-                        SwarmPartNumberManufacturerId = null,
-                        Supplier = "DigiKey",
-                        SupplierPartNumber = part.DigiKeyPartNumber,
-                        BasePartNumber = basePart,
-                        AdditionalPartNumbers = additionalPartNumbers,
-                        Manufacturer = part.Manufacturer?.Value ?? string.Empty,
-                        ManufacturerPartNumber = part.ManufacturerPartNumber,
-                        Cost = (double)part.UnitPrice,
-                        Currency = currency,
-                        DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
-                        Description = part.ProductDescription + Environment.NewLine + part.DetailedDescription,
-                        ImageUrl = part.PrimaryPhoto,
-                        PackageType = part.Parameters
-                            ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
-                            .Select(x => x.Value)
-                            .FirstOrDefault(),
-                        MountingTypeId = (int)mountingTypeId,
-                        PartType = "",
-                        ProductUrl = part.ProductUrl,
-                        Status = part.ProductStatus,
-                        QuantityAvailable = part.QuantityAvailable,
-                        MinimumOrderQuantity = part.MinimumOrderQuantity,
-                        //FactoryStockAvailable = factoryStockAvailable,
-                        //FactoryLeadTime = part.LeadTime
-                    });
-
                 }
                 return Task.CompletedTask;
             }
@@ -1189,69 +1191,71 @@ namespace Binner.Common.Services
             {
                 if (mouserResponse == null || mouserResponse.SearchResults == null) return Task.CompletedTask;
                 var imagesAdded = 0;
-                var mouserDatasheetUrls = mouserResponse.SearchResults.Parts
-                    .Select(x => x.DataSheetUrl)
-                    .ToList();
-                foreach (var part in mouserResponse.SearchResults.Parts)
+                if (mouserResponse.SearchResults.Parts != null)
                 {
-                    var mountingTypeId = MountingType.None;
-                    var basePart = string.Empty;
-                    if (part.ManufacturerPartNumber?.Contains(partNumber, ComparisonType) == true)
-                        basePart = partNumber;
-                    if (string.IsNullOrEmpty(basePart))
-                        basePart = partNumber;
-
-                    var currency = part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Currency;
-                    if (string.IsNullOrEmpty(currency))
-                        currency = "USD";
-                    int.TryParse(part.Min, out var minimumOrderQuantity);
-                    int.TryParse(part.FactoryStock, out var factoryStockAvailable);
-                    if (!string.IsNullOrEmpty(part.ImagePath)
-                        && !productImageUrls.Any(x => x.Value?.Equals(part.ImagePath, ComparisonType) == true)
-                        && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
+                    foreach (var part in mouserResponse.SearchResults.Parts)
                     {
-                        if (!string.IsNullOrEmpty(part.ManufacturerPartNumber))
+                        var mountingTypeId = MountingType.None;
+                        var basePart = string.Empty;
+                        if (part.ManufacturerPartNumber?.Contains(partNumber, ComparisonType) == true)
+                            basePart = partNumber;
+                        if (string.IsNullOrEmpty(basePart))
+                            basePart = partNumber;
+
+                        var currency = part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Currency;
+                        if (string.IsNullOrEmpty(currency))
+                            currency = "USD";
+                        int.TryParse(part.Min, out var minimumOrderQuantity);
+                        int.TryParse(part.FactoryStock, out var factoryStockAvailable);
+                        if (!string.IsNullOrEmpty(part.ImagePath)
+                            && !productImageUrls.Any(x => x.Value?.Equals(part.ImagePath, ComparisonType) == true)
+                            && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
                         {
-                            productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber,
-                                part.ImagePath));
-                            imagesAdded++;
-                            totalImages++;
+                            if (!string.IsNullOrEmpty(part.ManufacturerPartNumber))
+                            {
+                                productImageUrls.Add(new NameValuePair<string>(part.ManufacturerPartNumber,
+                                    part.ImagePath));
+                                imagesAdded++;
+                                totalImages++;
+                            }
                         }
-                    }
 
-                    // if there is a datasheet that hasn't been added, add it
-                    if (!string.IsNullOrEmpty(part.DataSheetUrl)
-                        && !datasheetUrls.Any(x => x.Value?.DatasheetUrl.Equals(part.DataSheetUrl, ComparisonType) == true))
-                    {
-                        var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.DataSheetUrl, part.ManufacturerPartNumber ?? basePart, "", part.Manufacturer ?? string.Empty);
-                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber ?? partNumber, datasheetSource));
-                    }
+                        // if there is a datasheet that hasn't been added, add it
+                        if (!string.IsNullOrEmpty(part.DataSheetUrl)
+                            && !datasheetUrls.Any(x => x.Value?.DatasheetUrl.Equals(part.DataSheetUrl, ComparisonType) == true))
+                        {
+                            var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.DataSheetUrl,
+                                part.ManufacturerPartNumber ?? basePart, "", part.Manufacturer ?? string.Empty);
+                            datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber ?? partNumber, datasheetSource));
+                        }
 
-                    response.Parts.Add(new CommonPart
-                    {
-                        Rank = 2,
-                        SwarmPartNumberManufacturerId = null,
-                        Supplier = "Mouser",
-                        SupplierPartNumber = part.MouserPartNumber,
-                        BasePartNumber = basePart,
-                        Manufacturer = part.Manufacturer,
-                        ManufacturerPartNumber = part.ManufacturerPartNumber,
-                        Cost = (part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Cost) ?? 0d,
-                        Currency = currency,
-                        DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
-                        Description = part.Description,
-                        ImageUrl = part.ImagePath,
-                        PackageType = "",
-                        MountingTypeId = (int)mountingTypeId,
-                        PartType = "",
-                        ProductUrl = part.ProductDetailUrl,
-                        Status = part.LifecycleStatus,
-                        QuantityAvailable = part.AvailabilityInteger,
-                        MinimumOrderQuantity = minimumOrderQuantity,
-                        FactoryStockAvailable = factoryStockAvailable,
-                        FactoryLeadTime = part.LeadTime
-                    });
+                        response.Parts.Add(new CommonPart
+                        {
+                            Rank = 2,
+                            SwarmPartNumberManufacturerId = null,
+                            Supplier = "Mouser",
+                            SupplierPartNumber = part.MouserPartNumber,
+                            BasePartNumber = basePart,
+                            Manufacturer = part.Manufacturer,
+                            ManufacturerPartNumber = part.ManufacturerPartNumber,
+                            Cost = (part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Cost) ?? 0d,
+                            Currency = currency,
+                            DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
+                            Description = part.Description,
+                            ImageUrl = part.ImagePath,
+                            PackageType = "",
+                            MountingTypeId = (int)mountingTypeId,
+                            PartType = "",
+                            ProductUrl = part.ProductDetailUrl,
+                            Status = part.LifecycleStatus,
+                            QuantityAvailable = part.AvailabilityInteger,
+                            MinimumOrderQuantity = minimumOrderQuantity,
+                            FactoryStockAvailable = factoryStockAvailable,
+                            FactoryLeadTime = part.LeadTime
+                        });
+                    }
                 }
+
                 return Task.CompletedTask;
             }
 
@@ -1411,7 +1415,7 @@ namespace Binner.Common.Services
                             }
                         }
 
-                        if (part.BestDatasheet != null)
+                        if (part.BestDatasheet != null && !string.IsNullOrEmpty(part.BestDatasheet.Url))
                             datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.BestDatasheet.Url, manufacturerPartNumber, "", part.Manufacturer?.Name ?? string.Empty)));
                         var nexarDatasheets = part.Documents
                             .Where(x => x.Name == "Datasheet" && !string.IsNullOrEmpty(x.Url))
