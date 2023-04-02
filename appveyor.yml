@@ -20,7 +20,7 @@ environment:
 cache:
 - C:\ProgramData\chocolatey\bin
 - C:\ProgramData\chocolatey\lib
-#- C:\projects\binner\Binner\Binner.Web\ClientApp\node_modules
+- C:\projects\binner\Binner\Binner.Web\ClientApp\node_modules
 - packages -> **\packages.config
 build_script:
 - ps: >-

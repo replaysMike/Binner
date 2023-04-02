@@ -497,6 +497,32 @@ code {
     cursor: pointer;
 }
 
+.version-banner {
+    position: fixed;
+	left: 25%;
+    top: 5px;
+    z-index: 999;
+    width: 50vw;
+    height: 40px;
+    line-height: 2em;
+    background-color: #c9dbfc;
+    padding: 2px 10px;
+    border: 1px dotted #bec07b;
+    font-weight: 400;
+    box-shadow: 0 2px 2px 0 rgb(34 36 38 / 15%);
+    margin: 0 auto;
+    vertical-align: middle;
+    border-radius: 4px;
+}
+
+.version-banner .button {
+    height: 30px;
+    padding: 0 0.75em;
+    margin: 0 5px;
+    border-radius: 4px;
+    border: 1px solid #666;
+}
+
 .helpimage {
     padding: 10px;
     font-size: 0.8em;
@@ -556,4 +582,29 @@ code {
     margin-bottom: 20px;
     font-size: 0.8em;
 
+}
+
+.ui.modal.release-notes .description p {
+    color: #0366d6;
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.ui.modal.release-notes .content {
+    background-color: #ccc;
+}
+
+.ui.modal.release-notes .content h2 {
+    display: inline-block;
+    font-size: 1.2em;
+    line-height: 1.2em;
+    font-weight: 700;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.ui.modal.release-notes .content .bullet {
+    font-size: 1.25em;
+    font-weight: 700;
+    margin-right: 10px;
 }

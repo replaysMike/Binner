@@ -32,8 +32,9 @@ namespace Binner.Web.Controllers
         private readonly IServiceContainer _container;
         private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
         private readonly RequestContextAccessor _requestContext;
+        private readonly VersionManagementService _versionManagementService;
 
-        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider)
+        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider, VersionManagementService versionManagementService)
         {
             _mapper = mapper;
             _container = container;
@@ -45,6 +46,7 @@ namespace Binner.Web.Controllers
             _fontManager = fontManager;
             _requestContext = requestContextAccessor;
             _credentialProvider = credentialProvider;
+            _versionManagementService = versionManagementService;
         }
 
         /// <summary>
@@ -148,6 +150,25 @@ namespace Binner.Web.Controllers
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
+
+        }
+
+        /// <summary>
+        /// Get the latest Binner version info available
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("version")]
+        public async Task<IActionResult> GetVersionAsync()
+        {
+            try
+            {
+                var result = await _versionManagementService.GetLatestVersionAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Get version error! ", ex));
             }
 
         }

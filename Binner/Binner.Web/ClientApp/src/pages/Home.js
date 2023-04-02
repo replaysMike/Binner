@@ -1,11 +1,43 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Statistic, Segment, Icon } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
+import { VersionBanner } from "../components/VersionBanner";
+import semver from "semver";
+import customEvents from '../common/customEvents';
 
 export function Home(props) {
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
+  const [versionData, setVersionData] = useState({});
+  const [newVersionBannerIsOpen, setNewVersionBannerIsOpen] = useState(false);
+  const [subscription, setSubscription] = useState(null);
+  const [version, setVersion] = useState(null);
+
+  const getLatestVersion = useCallback(async (installedVersionData) => {
+    const response = await fetch("system/version");
+    if (response.ok) {
+      const latestVersionData = await response.json();
+      setVersionData(latestVersionData);
+      const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
+      if (semver.gt(latestVersionData.version, installedVersionData.version) && semver.gt(latestVersionData.version, skipVersion)) {
+        // new version is available, and hasn't been skipped
+        setNewVersionBannerIsOpen(true);
+      }
+    }
+  }, []);
+
+  const updateVersion = useCallback((installedVersionData, subscriptionId) => {
+    setVersion(installedVersionData.version);
+    
+    getLatestVersion(installedVersionData);
+
+  }, [getLatestVersion]);
+
+  useEffect(() => {
+    setSubscription(customEvents.subscribe("version", (data, subscriptionId) => updateVersion(data, subscriptionId)));
+  }, [updateVersion, setSubscription]);
+
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -149,6 +181,7 @@ export function Home(props) {
           </Statistic>
         </Statistic.Group>
       </Segment>
+      <VersionBanner isOpen={newVersionBannerIsOpen} version={versionData}></VersionBanner>
     </div>
   );
 }

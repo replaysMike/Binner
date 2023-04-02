@@ -9,6 +9,7 @@ export function Layout(props) {
   return (
     <div className="centered" style={{marginBottom: '50px'}}>
       <ToastContainer newestOnTop={true} autoClose={2500} />
+      <div id="banner" />
       <Container>
       <Header />
         <div style={{textAlign: 'left'}}>
