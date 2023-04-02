@@ -158,3 +158,17 @@
 .ui.celled.grid.inventory-container {
 	margin: 0.3em 0 1em 0;
 }
+
+.suggested-part {
+	font-size: 0.8em;
+	height: 19px;
+}
+
+.suggested-part span {
+	font-style: italic;
+}
+
+.suggested-part a {
+	font-weight: 500;
+	font-style: normal;
+}

@@ -62,6 +62,8 @@ export function Inventory(props) {
     rememberLast: true
   };
 
+  const [inputPartNumber, setInputPartNumber] = useState("");
+  const [suggestedPartNumber, setSuggestedPartNumber] = useState(null);
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
   const [infoResponse, setInfoResponse] = useState({});
   const [datasheetTitle, setDatasheetTitle] = useState("");
@@ -152,7 +154,7 @@ export function Inventory(props) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [dragOverClass, setDragOverClass] = useState("");
-  const [partNumberRef, setPartNumberFocus] = useFocus();
+  const [partInputPartNumberRef, setInputPartNumberFocus] = useFocus();
   const [isEditing, setIsEditing] = useState((part && part.partId > 0) || (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0));
   const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
   const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
@@ -175,6 +177,7 @@ export function Inventory(props) {
       await fetchRecentRows();
       if (partNumberStr) {
         var loadedPart = await fetchPart(partNumberStr);
+        if (isEditing) setInputPartNumber(partNumberStr);
         await fetchPartMetadata(partNumberStr, loadedPart || part);
       } else {
         resetForm();
@@ -195,7 +198,7 @@ export function Inventory(props) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     try {
-      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+      const response = await fetchApi(`part/info?partNumber=${input}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
       const data = response.data;
@@ -815,6 +818,7 @@ export function Inventory(props) {
     const isExisting = part.partId > 0;
 
     const request = { ...part };
+    request.partNumber = inputPartNumber;
     request.partTypeId = part.partTypeId.toString();
     request.mountingTypeId = part.mountingTypeId.toString();
     request.quantity = Number.parseInt(part.quantity) || 0;
@@ -903,7 +907,7 @@ export function Inventory(props) {
     if (clearAll && viewPreferences.rememberLast) {
       updateViewPreferences({ lastQuantity: clearedPart.quantity, lowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId, lastProjectId: clearedPart.projectId });
     }
-    setPartNumberFocus();
+    setInputPartNumberFocus();
   };
 
   const clearForm = (e) => {
@@ -939,7 +943,7 @@ export function Inventory(props) {
     updateViewPreferences({ rememberLast: control.checked });
   };
 
-  const handlePartNumberKeyDown = (e) => {
+  const handleInputPartNumberKeyDown = (e) => {
     // this logic is used to prevent barcode scanners from submitting the form with the enter key, when input has focus
     // here we are using window instead of a state object for performance reasons :-0
     if (window) {
@@ -956,6 +960,31 @@ export function Inventory(props) {
     e.stopPropagation();
     partSupplier[control.name] = control.value;
     setPartSupplier({ ...partSupplier });
+  };
+
+  const handleInputPartNumberChange = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPartMetadataIsSubscribed(false);
+    setPartMetadataError(null);
+    let searchPartNumber = control.value;
+
+    // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
+    if (searchPartNumber && typeof control.value === "string" && control.value.includes("[)>")) {
+      // console.log('barcode input detected, switching mode');
+      enableKeyboardListening();
+      setKeyboardPassThrough("[)>");
+      control.value = "";
+      return;
+    }
+
+    if (searchPartNumber && searchPartNumber.length > 0) {
+      searchPartNumber = control.value.replace("\t", "");
+      searchDebounced(searchPartNumber, part, partTypes);
+    }
+
+    setInputPartNumber(searchPartNumber);
+    setIsDirty(true);
   };
 
   const handleChange = (e, control) => {
@@ -1509,6 +1538,12 @@ export function Inventory(props) {
     };
   };
 
+  const handleSetSuggestedPartNumber = (e, value) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setInputPartNumber(value);
+  };
+
   const renderScannedParts = (scannedParts, highlightScannedPart) => {
     if (highlightScannedPart) {
       // reset the css highlight animation
@@ -1760,22 +1795,26 @@ export function Inventory(props) {
             <Grid.Column width={12} className="left-column">
               {/** LEFT COLUMN */}
               <Form.Group>
-                <Form.Input
-                  label="Part"
-                  required
-                  placeholder="LM358"
-                  focus
-                  value={part.partNumber || ""}
-                  onChange={handleChange}
-                  name="partNumber"
-                  onFocus={disableKeyboardListening}
-                  onBlur={enableKeyboardListening}
-                  onKeyDown={handlePartNumberKeyDown}
-                  icon
-                >
-                  <input ref={partNumberRef} />
-                  <Icon name="search" />
-                </Form.Input>
+                <Form.Field>
+                  <Form.Input
+                    label="Part"
+                    required
+                    placeholder="LM358"
+                    focus
+                    /* this should be the only field that is not updated on an info update */
+                    value={inputPartNumber || ""}
+                    onChange={handleInputPartNumberChange}
+                    name="inputPartNumber"
+                    onFocus={disableKeyboardListening}
+                    onBlur={enableKeyboardListening}
+                    onKeyDown={handleInputPartNumberKeyDown}
+                    icon
+                  >
+                    <input ref={partInputPartNumberRef} />
+                    <Icon name="search" />
+                  </Form.Input>
+                  {!isEditing && <div className="suggested-part">{part.partNumber && <span>Suggested part number: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
+                </Form.Field>
                 <Form.Dropdown
                   label="Part Type"
                   placeholder="Part Type"
