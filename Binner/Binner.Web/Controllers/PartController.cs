@@ -465,8 +465,12 @@ namespace Binner.Web.Controllers
                     part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
                     part.PartNumber = commonPart.ManufacturerPartNumber;
 
-                    var partType = await GetPartTypeAsync(commonPart.PartType);
-                    part.PartTypeId = partType?.PartTypeId ?? 0;
+                    PartType? partType = null;
+                    if (!string.IsNullOrEmpty(commonPart.PartType))
+                    {
+                        partType = await GetPartTypeAsync(commonPart.PartType);
+                        part.PartTypeId = partType?.PartTypeId ?? 0;
+                    }
 
                     part.DateCreatedUtc = DateTime.UtcNow;
                     part = await _partService.AddPartAsync(part);

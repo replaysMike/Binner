@@ -307,7 +307,7 @@ namespace Binner.Common.Services
 
                     if (performUpdates)
                     {
-                        pcbEntity.LastSerialNumber = IncrementSerialNumber(pcb.SerialNumber, numberOfPcbsProduced);
+                        pcbEntity.LastSerialNumber = IncrementSerialNumber(pcb.SerialNumber ?? string.Empty, numberOfPcbsProduced);
                         await _storageProvider.UpdatePcbAsync(pcbEntity, user);
                     }
                 }

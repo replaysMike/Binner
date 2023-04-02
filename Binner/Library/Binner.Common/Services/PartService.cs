@@ -984,10 +984,9 @@ namespace Binner.Common.Services
                                          .ThenBy(x => x.ImageType))
                             {
                                 var imageUrl = GetImageUrl(image);
-                                if (!string.IsNullOrEmpty(imageUrl) && !productImageUrls.Any(x =>
-                                                                        x.Value.Equals(imageUrl, ComparisonType))
-                                                                    && imagesAdded < maxImagesPerSupplier &&
-                                                                    totalImages < maxImagesTotal)
+                                if (!string.IsNullOrEmpty(imageUrl) 
+                                    && !productImageUrls.Any(x => x.Value?.Equals(imageUrl, ComparisonType) == true)
+                                    && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
                                 {
                                     imagesAdded++;
                                     totalImages++;
@@ -995,13 +994,11 @@ namespace Binner.Common.Services
                                 }
                             }
 
-                            foreach (var datasheet in manufacturerPart.Datasheets.OrderByDescending(x =>
-                                         x.DatasheetId == manufacturerPart.PrimaryDatasheetId))
+                            foreach (var datasheet in manufacturerPart.Datasheets.OrderByDescending(x => x.DatasheetId == manufacturerPart.PrimaryDatasheetId))
                             {
                                 var datasheetUrl = GetDatasheetUrl(datasheet);
                                 var datasheetCoverImageUrl = GetDatasheetCoverImageUrl(datasheet);
-                                if (!string.IsNullOrEmpty(datasheetUrl) && !datasheetUrls.Any(x =>
-                                        x.Value.DatasheetUrl.Equals(datasheetUrl, ComparisonType)))
+                                if (!string.IsNullOrEmpty(datasheetUrl) && !datasheetUrls.Any(x => x.Value?.DatasheetUrl.Equals(datasheetUrl, ComparisonType) == true))
                                 {
                                     var datasheetSource = new DatasheetSource(datasheet.ResourceId,
                                         datasheet.ImageCount,
@@ -1011,8 +1008,8 @@ namespace Binner.Common.Services
                                         datasheet.Title ?? manufacturerPart.Name,
                                         datasheet?.ShortDescription,
                                         datasheet?.ManufacturerName,
-                                        datasheet.OriginalUrl,
-                                        datasheet.ProductUrl);
+                                        datasheet?.OriginalUrl,
+                                        datasheet?.ProductUrl);
                                     datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPart.Name, datasheetSource));
                                 }
                             }
@@ -1021,7 +1018,7 @@ namespace Binner.Common.Services
                                 .Where(x => x.Name.Equals("Mounting Type", ComparisonType))
                                 .Select(x => x.ValueAsString)
                                 .FirstOrDefault();
-                            var mountingTypeId = MountingType.ThroughHole;
+                            var mountingTypeId = MountingType.None;
                             Enum.TryParse<MountingType>(mountingType, out mountingTypeId);
 
                             foreach (var supplierPart in manufacturerPart.Suppliers)
@@ -1210,7 +1207,7 @@ namespace Binner.Common.Services
                     int.TryParse(part.Min, out var minimumOrderQuantity);
                     int.TryParse(part.FactoryStock, out var factoryStockAvailable);
                     if (!string.IsNullOrEmpty(part.ImagePath)
-                        && !productImageUrls.Any(x => x.Value.Equals(part.ImagePath, ComparisonType))
+                        && !productImageUrls.Any(x => x.Value?.Equals(part.ImagePath, ComparisonType) == true)
                         && imagesAdded < maxImagesPerSupplier && totalImages < maxImagesTotal)
                     {
                         if (!string.IsNullOrEmpty(part.ManufacturerPartNumber))
@@ -1224,10 +1221,10 @@ namespace Binner.Common.Services
 
                     // if there is a datasheet that hasn't been added, add it
                     if (!string.IsNullOrEmpty(part.DataSheetUrl)
-                        && !datasheetUrls.Any(x => x.Value.DatasheetUrl.Equals(part.DataSheetUrl, ComparisonType)))
+                        && !datasheetUrls.Any(x => x.Value?.DatasheetUrl.Equals(part.DataSheetUrl, ComparisonType) == true))
                     {
                         var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.DataSheetUrl, part.ManufacturerPartNumber ?? basePart, "", part.Manufacturer ?? string.Empty);
-                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, datasheetSource));
+                        datasheetUrls.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber ?? partNumber, datasheetSource));
                     }
 
                     response.Parts.Add(new CommonPart
@@ -1308,14 +1305,18 @@ namespace Binner.Common.Services
                             }
                         }
 
-                        var arrowDatasheets = part.Resources.Where(x => x.Type == "datasheet" && !string.IsNullOrEmpty(x.Uri)).Select(x => x.Uri.ToString()).ToList();
+                        var arrowDatasheets = part.Resources
+                            .Where(x => x.Type == "datasheet" && !string.IsNullOrEmpty(x.Uri))
+                            .Select(x => x.Uri ?? string.Empty)
+                            .ToList();
                         foreach (var datasheetUri in arrowDatasheets)
                         {
-                            var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", datasheetUri, manufacturerPartNumber, "", part.Manufacturer?.MfrName ?? string.Empty);
+                            var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", datasheetUri,
+                                manufacturerPartNumber, "", part.Manufacturer?.MfrName ?? string.Empty);
                             datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, datasheetSource));
                         }
 
-                        var source = part.InvOrg.WebSites
+                        var source = part.InvOrg?.WebSites
                             .Where(x => x.Code == "arrow.com")
                             .SelectMany(x => x.Sources)
                             .FirstOrDefault(x => x.SourceCd == "ACNA");
@@ -1412,7 +1413,9 @@ namespace Binner.Common.Services
 
                         if (part.BestDatasheet != null)
                             datasheetUrls.Add(new NameValuePair<DatasheetSource>(manufacturerPartNumber, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", part.BestDatasheet.Url, manufacturerPartNumber, "", part.Manufacturer?.Name ?? string.Empty)));
-                        var nexarDatasheets = part.Documents.Where(x => x.Name == "Datasheet" && !string.IsNullOrEmpty(x.Url)).ToList();
+                        var nexarDatasheets = part.Documents
+                            .Where(x => x.Name == "Datasheet" && !string.IsNullOrEmpty(x.Url))
+                            .ToList();
                         foreach (var datasheetUri in nexarDatasheets)
                         {
                             if (!string.IsNullOrEmpty(datasheetUri.Url))
@@ -1454,7 +1457,7 @@ namespace Binner.Common.Services
                                     ManufacturerPartNumber = manufacturerPartNumber,
                                     Cost = partCost,
                                     Currency = currency,
-                                    DatasheetUrls = nexarDatasheets.Select(x => x.Url).ToList(),
+                                    DatasheetUrls = nexarDatasheets.Select(x => x.Url ?? string.Empty).ToList(),
                                     Description = part.ShortDescription,
                                     ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
                                     PackageType = packageType,
@@ -1484,7 +1487,7 @@ namespace Binner.Common.Services
                                 ManufacturerPartNumber = manufacturerPartNumber,
                                 Cost = partCost,
                                 Currency = currency,
-                                DatasheetUrls = nexarDatasheets.Select(x => x.Url).ToList(),
+                                DatasheetUrls = nexarDatasheets.Select(x => x.Url ?? string.Empty).ToList(),
                                 Description = part.ShortDescription,
                                 ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
                                 PackageType = packageType,
