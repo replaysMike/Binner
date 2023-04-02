@@ -488,6 +488,7 @@ export function Inventory(props) {
         partNumber: cleanPartNumber,
         barcode: input.correctedValue
       };
+      setInputPartNumber(cleanPartNumber);
       fetchBarcodeMetadata(e, scannedPart, (partInfo) => {
         // barcode found
         // console.log("Barcode info found!", partInfo);
@@ -971,7 +972,7 @@ export function Inventory(props) {
 
     // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
     if (searchPartNumber && typeof control.value === "string" && control.value.includes("[)>")) {
-      // console.log('barcode input detected, switching mode');
+      console.log('barcode input detected, switching mode');
       enableKeyboardListening();
       setKeyboardPassThrough("[)>");
       control.value = "";
@@ -1813,7 +1814,7 @@ export function Inventory(props) {
                     <input ref={partInputPartNumberRef} />
                     <Icon name="search" />
                   </Form.Input>
-                  {!isEditing && <div className="suggested-part">{part.partNumber && <span>Suggested part number: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
+                  {!isEditing && <div className="suggested-part">{part.partNumber && part.PartNumber !== inputPartNumber && <span>Suggested part number: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
                 </Form.Field>
                 <Form.Dropdown
                   label="Part Type"
