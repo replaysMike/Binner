@@ -540,6 +540,17 @@ code {
 .barcode-support {
     box-shadow: 2px 2px 3px 1px rgb(34 36 38 / 20%);
     border-radius: 12px;
+    transition-delay: 0s;
+    transition-duration: 0.5s;
+    transition-property: filter;
+    transition-timing-function: ease-out;
+    outline: 4px solid transparent;
+    outline-offset: 4px;
+    filter: none;
+}
+
+.barcode-support.receiving {
+    filter: invert(76%) sepia(30%) saturate(3461%) hue-rotate(177deg) brightness(98%) contrast(91%);
 }
 
 .help-icon {

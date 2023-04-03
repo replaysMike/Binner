@@ -871,6 +871,7 @@ export function Inventory(props) {
     setMetadataParts([]);
     setDuplicateParts([]);
     setPartMetadataIsSubscribed(false);
+    setInputPartNumber("");
     const clearedPart = {
       partId: 0,
       partNumber: "",

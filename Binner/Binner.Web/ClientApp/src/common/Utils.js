@@ -1,6 +1,15 @@
 ﻿import { MD5 as encryptMD5 } from "crypto-js";
 
 /**
+ * Copy/clone a string
+ * @param {string} str input string
+ * @returns copied string
+ */
+export const copyString = (str) => {
+  return (' ' + str).slice(1); // force clone string
+};
+
+/**
  * Encode a number to resistance value
  * @param {any} number the ohms value
  * @param {any} decimals the number of decimal places to display
