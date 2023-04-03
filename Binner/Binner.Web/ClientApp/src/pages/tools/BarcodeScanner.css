@@ -48,19 +48,30 @@ pre {
 	background-color: rgb(128, 0, 0);
 }
 
-.gs {
+.control {
 	font-size: 1.5em;
 	font-weight: 700;
+}
+
+.control.gs {
 	color:rgb(255, 0, 0);
 }
-.rs {
-	font-size: 1.5em;
-	font-weight: 700;
+.control.rs {
 	color:rgb(50, 50, 150);
 }
 
-.eot {
-	font-size: 1.5em;
-	font-weight: 700;
+.control.eot {
 	color:rgb(0, 100, 0);
+}
+
+.control.cr {
+	color:rgb(97, 0, 100);
+}
+
+.control.lf {
+	color:rgb(97, 0, 100);
+}
+
+.control.fs {
+	color:rgb(9, 215, 9);
 }

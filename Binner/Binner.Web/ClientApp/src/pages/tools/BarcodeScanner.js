@@ -32,6 +32,9 @@ export function BarcodeScanner(props) {
         .replaceAll("\u005e","\u241e") // RS (94) ^
         .replaceAll("\u001d", "\u241d") // GS (29)
         .replaceAll("\u005d", "\u241d") // GS (93) ]
+        .replaceAll("\r", "\u240d") // CR
+        .replaceAll("\n", "\u240a") // LF
+        .replaceAll("\u001c", "\u241c") // FS
         ;
       const json = {...input, rawValueFormatted: rawValueFormatted};
       setBarcodeValue(JSON.stringify(json, null, 2));
@@ -45,9 +48,12 @@ export function BarcodeScanner(props) {
     toast.info(`Barcode type ${input.type} received`);
   };
 
-  let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={i*2} className="rs">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={i*3} className="gs">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u2404", (match, i) => (<span key={i*4} className="eot">{match}</span>));
+  let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={i*2} className="control rs">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={i*3} className="control gs">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u2404", (match, i) => (<span key={i*4} className="control eot">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u240d", (match, i) => (<span key={i*5} className="control cr">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u240a", (match, i) => (<span key={i*6} className="control lf">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u241c", (match, i) => (<span key={i*7} className="control fs">{match}</span>));
 
   return (
     <div>

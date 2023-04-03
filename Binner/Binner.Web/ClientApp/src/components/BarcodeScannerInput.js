@@ -6,6 +6,7 @@ import debounce from "lodash.debounce";
 import { Events } from "../common/events";
 import useSound from 'use-sound';
 import boopSfx from '../audio/softbeep.mp3';
+import { copyString } from "../common/Utils";
 
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
@@ -16,6 +17,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
 	const [previousIsKeyboardListeningState, setPreviousIsKeyboardListeningState] = useState(listening || true);
 	const [playScanSound] = useSound(boopSfx, { soundEnabled: true, volume: 1 });
+	const [isReceiving, setIsReceiving] = useState(false);
 	const listeningRef = useRef();
 	listeningRef.current = isKeyboardListening;
 	const keyBufferRef = useRef();
@@ -28,7 +30,6 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			keyBufferRef.current.length = 0;
     	return; // drop and ignore input
 		}
-
     const value = processKeyBuffer(buffer);
 		// reset key buffer
 		keyBufferRef.current.length = 0;
@@ -38,6 +39,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		if (enableSound) playScanSoundRef.current();
 		// fire an event that we received data
 		onReceived(e, input);
+		setIsReceiving(false);
   };
 
   const processKeyBuffer = (buffer) => {
@@ -95,7 +97,6 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
       const parseResult = parseDataMatrix(value);
-			console.log('parseResult', parseResult);
 			parsedValue = parseResult.value;
 			gsDetected = parseResult.gsDetected;
 			rsDetected = parseResult.rsDetected;
@@ -121,9 +122,16 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 
   const parseDataMatrix = (value) => {
     let parsedValue = {};
-		const gsCharCodes = ["\u001d", "\u005d", "\u241d"];
-		const rsCharCodes = ["\u001e", "\u005e", "\u241e"];
-    const eotCharCodes = ["\u0004", "^\u0044", "\u2404"];
+		// https://honeywellaidc.force.com/supportppr/s/article/What-do-Control-Characters-SOH-STX-etc-mean-when-scanning
+		const gsCharCodes = ["\u001d", "\u005d", "\u241d"]; // CTRL-], \u001d, GROUP SEPARATOR
+		const rsCharCodes = ["\u001e", "\u005e", "\u241e"]; // CTRL-^, \u001e, RECORD SEPARATOR
+    const eotCharCodes = ["\u0004", "^\u0044", "\u2404"]; // CTRL-D, \u0004, END OF TRANSMISSION
+		const crCharCodes = ["\r", "\u240d"]; // 13, line feed
+		const lfCharCodes = ["\n", "\u240a"]; // 10, carriage return
+		const fileSeparatorCharCodes = ["\u001c", "\u241c"]; // ctl-\, \u001c FILE SEPARATOR 
+		const sohCharCodes = ["\u0001"]; // CTRL-A, \u0001 START OF HEADER
+		const stxCharCodes = ["\u0002"]; // CTRL-B, \u0002 START OF TEXT
+		const etxCharCodes = ["\u0003"]; // CTRL-C, \u0003 END OF TEXT
     const header = "[)>";
     const expectedFormatNumber = 6; /** 22z22 barcode */
     const controlChars = ["P", "1P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z"];
@@ -136,22 +144,32 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     let i;
     let formatNumberIndex = 0;
 		let correctedValue = value.toString();
+		// normalize the control codes so we don't have multiple values to worry about
+		correctedValue = normalizeControlCharacters(correctedValue);
 
-		gsCodePresent = gsCharCodes.some(v => value.includes(v));
-		rsCodePresent = rsCharCodes.some(v => value.includes(v));
-		eotCodePresent = eotCharCodes.some(v => value.includes(v));
+		correctedValue = correctedValue.replaceAll("\u001d", "\u241d"); // GS
+		correctedValue = correctedValue.replaceAll("\u005d", "\u241d"); // GS
+
+		correctedValue = correctedValue.replaceAll("\u001e", "\u241e"); // RS
+		correctedValue = correctedValue.replaceAll("\u005e", "\u241e"); // RS
+		correctedValue = correctedValue.replaceAll("\u0004", "\u2404"); // EOT
+		correctedValue = correctedValue.replaceAll("^\u0044", "\u2404"); // EOT
+
+		gsCodePresent = gsCharCodes.some(v => correctedValue.includes(v));
+		rsCodePresent = rsCharCodes.some(v => correctedValue.includes(v));
+		eotCodePresent = eotCharCodes.some(v => correctedValue.includes(v));
 
 		// read in the format number first. For Digikey 2d barcodes, this should be 6 (expectedFormatNumber)
-    for (i = 0; i < value.length; i++) {
-      buffer += value[i];
+    for (i = 0; i < correctedValue.length; i++) {
+      buffer += correctedValue[i];
       if (buffer === header) {
-        if (rsCharCodes.includes(value[i + 1])) {
+        if (rsCharCodes.includes(correctedValue[i + 1])) {
           // read the character after the RS token (sometimes not present)
           formatNumberIndex = i + 2;
         } else {
           formatNumberIndex = i + 1;
         }
-        formatNumber = parseInt(value[formatNumberIndex] + value[formatNumberIndex + 1]);
+        formatNumber = parseInt(correctedValue[formatNumberIndex] + correctedValue[formatNumberIndex + 1]);
 				i += formatNumberIndex + 1;
         break;
       }
@@ -164,11 +182,11 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
     }
 
     let lastPosition = i;
-		const gsLines = [];
+		let gsLines = [];
 		let gsLine = '';
 		// break each group separator into an array
-		for (i = lastPosition; i < value.length; i++) {
-			const ch = value[i];
+		for (i = lastPosition; i < correctedValue.length; i++) {
+			const ch = correctedValue[i];
 			if (gsCharCodes.includes(ch)) {
 				// start of a new line. read until next gsCharCode or EOT
 				if (gsLine.length > 0)
@@ -181,26 +199,18 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		if (gsLine.length > 0)
 			gsLines.push(gsLine);
 
-		let readLength = gsLines.length;
 		let invalidBarcodeDetected = false;
 		// some older DigiKey barcodes are encoded incorrectly, and have a blank GSRS at the end. Filter them out.
 		// https://github.com/replaysMike/Binner/issues/132
-		if (correctedValue.endsWith("\u005e\u0044\r") || correctedValue.endsWith("\u005d\u005e\u0044")) {
+		if (isInvalidBarcode(gsLines)) {
+			gsLines = fixInvalidBarcode(gsLines);
 			invalidBarcodeDetected = true;
-			readLength--;
-			// apply correction to the raw value
-			if (correctedValue.endsWith("\r")){
-				correctedValue = correctedValue.substring(0, correctedValue.length - 4) + "\r";
-			} else {
-				correctedValue = correctedValue.substring(0, correctedValue.length - 3);
-			}
 		}
-		const filteredGsLines = [];
+		let readLength = gsLines.length;
 		// read each group separator
 		for (i = 0; i < readLength; i++) {
 			// read until we see a control char
 			const line = gsLines[i];
-			filteredGsLines.push(line);
 			let readCommandType = "";
 			let readValue = "";
 			let readControlChars = true;
@@ -263,6 +273,8 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 					break;
 			}
 		}
+
+		correctedValue = buildBarcode(expectedFormatNumber, gsLines);
     return {
 			rawValue: value,
 			value: parsedValue,
@@ -270,10 +282,58 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 			gsDetected: gsCodePresent,
 			rsDetected: rsCodePresent,
 			eotDetected: eotCodePresent,
-			gsLines: filteredGsLines,
+			gsLines: gsLines,
 			invalidBarcodeDetected
 		};
   };
+
+	const buildBarcode = (formatNumber, gsLines) => {
+		let barcode = `[)>\u241e${formatNumber.toString().padStart(2, '0')}`; // Header + RS + formatNumber
+		for(let i = 0; i < gsLines.length; i++){
+			barcode = barcode + "\u241d" + gsLines[i]; // GS
+		}
+		barcode = barcode + "\u2404\r"; // EOT + CR
+		return barcode;
+	};
+
+	const normalizeControlCharacters = (str) => {
+		// convert all variations of the control code to their equiv unicode value
+		let normalizedStr = copyString(str);
+		normalizedStr = normalizedStr.replaceAll("\u001d", "\u241d"); // GS
+		normalizedStr = normalizedStr.replaceAll("\u005d", "\u241d"); // GS
+
+		normalizedStr = normalizedStr.replaceAll("\u001e", "\u241e"); // RS
+		normalizedStr = normalizedStr.replaceAll("\u005e", "\u241e"); // RS
+		normalizedStr = normalizedStr.replaceAll("\u0004", "\u2404"); // EOT
+		normalizedStr = normalizedStr.replaceAll("^\u0044", "\u2404"); // EOT
+		return normalizedStr;
+	};
+
+	const isInvalidBarcode = (gsLines) => {
+		for(let i = 0; i < gsLines.length; i++){ 
+			if (gsLines[i].includes("\u241e")) { // RS
+				return true;
+			}
+		}
+		return false;
+	};
+
+	const fixInvalidBarcode = (gsLines) => {
+		const newGsLines = [];
+		for(let i = 0; i < gsLines.length; i++){ 
+			if (gsLines[i].includes("\u241e")) { // RS
+				// is there data before the RS character?
+				const rsIndex = gsLines[i].indexOf("\u241e");
+				if (rsIndex > 0) {
+					const data = gsLines[i].substring(0, rsIndex);
+					newGsLines.push(data);
+				}
+				continue;
+			}
+			newGsLines.push(gsLines[i]);
+		}
+		return newGsLines;
+	};
 
   const scannerDebounced = useMemo(() => debounce(onReceivedBarcodeInput, BufferTimeMs), []);
 
@@ -340,11 +400,24 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 					&& !(e.ctrlKey && (e.key === "c" || e.key === "v" || e.key === "x"))
 					&& !(e.shiftKey && (e.key === "Insert"))
 					) {
-				// console.log('swallowing', e);
 				e.preventDefault();
 				e.stopPropagation();
 			}
+			// special case, swallow CTRL-SHIFT-D which changes the inspector dock window position
+			if (e.code === "KeyD" && e.shiftKey && e.ctrlKey) {
+				e.preventDefault();
+				e.stopPropagation();
+				return;
+			}
 			keyBufferRef.current.push(e);
+			// visual indicator of input received
+			setTimeout(() => { 
+				if (keyBufferRef.current.length > 5) {
+					setIsReceiving(true);
+		 		} else {
+					setIsReceiving(false);
+				}
+			}, 500);
       scannerDebounced(e, keyBufferRef.current);
     } else {
 			// dropped key, not listening
@@ -362,7 +435,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
             This page supports barcode scanning. <Link to={helpUrl}>More Info</Link>
           </p>
         }
-        trigger={<Image src="/image/barcode.png" width={35} height={35} className="barcode-support" />}
+        trigger={<Image src="/image/barcode.png" width={35} height={35} className={`barcode-support ${isReceiving ? "receiving" : ""}`} />}
       />
     </div>
   );
