@@ -101,9 +101,9 @@ class App extends Component {
             <Route exact path="/inventory/add" element={<Inventory />} />
             <Route exact path="/inventory/:partNumber" element={<Inventory />} />
             <Route exact path="/inventory" element={<Search />} />
-            <Route exact path="/bom/:project" element={<Bom />} />
             <Route exact path="/project/:project" element={<Project />} />
-            <Route path="/bom" element={<Boms />} />
+            <Route exact path="/bom/:project" element={<Bom />} />
+            <Route exact path="/bom" element={<Boms />} />
             <Route path="/datasheets" element={<Datasheets />} />
             <Route path="/lowstock" element={<LowInventory />} />
             <Route path="/import" element={<OrderImport />} />

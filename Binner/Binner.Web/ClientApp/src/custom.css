@@ -35,6 +35,10 @@ code {
   color: #E01A76;
 }
 
+.header {
+    position: relative;
+}
+
 .header .navbar-light .navbar-brand {
     display: block;
     width: 200px;
@@ -49,6 +53,35 @@ code {
     height: 54px;
     background-size: 200px 54px;
     background-image: url('../public/image/logo-light-200x54.png');
+}
+
+.header .language-selection {
+    font-size: 0.8em;
+    float: right;
+    position: absolute;
+    right: 4px;
+    z-index: 1000;
+}
+
+.header .language-selection .ui.selection.dropdown {
+    padding: 0.5em 0.5em;
+    min-width: 100px;
+    width: 100px;
+}
+
+.header .language-selection .ui.selection.dropdown .menu {
+    min-width: 100px;
+    width: 100px;
+}
+
+.header .language-selection .ui.selection.dropdown .menu>.item {
+    padding: 0.5em !important;
+    min-width: none;
+}
+
+.header .language-selection .ui.selection.dropdown .menu>.item .text {
+    font-size: 0.8em;
+    padding: 2px 2px;
 }
 
 .footer {

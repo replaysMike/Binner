@@ -1,0 +1,39 @@
+{
+  "bom": {
+    "bc": {
+      "home": "Home",
+      "boms": "BOMs",
+      "bom": "BOM"
+    },
+    "header": {
+      "title": "Bill of Materials ZZZ",
+      "description": "Manage your BOM by creating PCB(s) and adding your parts." 
+    }
+  },
+  "boms": {
+    "header": {
+      "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>Choose or create the project to manage BOM for.<br/>" 
+    },
+    "buttons": {
+      "addBomProject": "Add BOM Project",
+      "save": "Save"
+    }
+  },
+  "labels": {
+    "name": "Name",
+    "description": "Description",
+    "location": "Location",
+    "color": "Color",
+    "project": "Project",
+    "parts": "Parts",
+    "pcbs": "Pcbs",
+    "deleteProject": "Delete Project"
+  },
+  "confirms": {
+    "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
+    "permanent": "This action is <i>permanent and cannot be recovered</i>."
+  },
+  "errors": {
+    "deleteProjectFailed": "Failed to delete project!"
+  }
+}
