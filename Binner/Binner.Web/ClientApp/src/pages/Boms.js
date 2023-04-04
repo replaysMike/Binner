@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Breadcrumb, Pagination, Dropdown, Confirm } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import _ from 'underscore';
@@ -8,6 +9,7 @@ import { fetchApi } from '../common/fetchApi';
 import { ProjectColors } from "../common/Types";
 
 export function Boms (props) {
+  const { t } = useTranslation();
   const defaultProject = {
     name: '',
     description: '',
@@ -28,7 +30,7 @@ export function Boms (props) {
   const [direction, setDirection] = useState(null);
   const [noRemainingData, setNoRemainingData] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
-  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete the entire project?");
+  const [confirmPartDeleteContent, setConfirmProjectDeleteContent] = useState(null);
   const [confirmDeleteSelectedProject, setConfirmDeleteSelectedProject] = useState(null);
 
   const [colors] = useState(_.map(ProjectColors, function (c) {
@@ -206,9 +208,9 @@ export function Boms (props) {
     e.stopPropagation();
     setConfirmDeleteSelectedProject(p);
     setConfirmDeleteIsOpen(true);
-    setConfirmPartDeleteContent(
+    setConfirmProjectDeleteContent(
       <p>
-        Are you sure you want to delete this project and your entire BOM?
+        {t('confirms.deleteProject', 'Are you sure you want to delete this project and your entire BOM?')}
         <br />
         <br />
         <b>
@@ -216,7 +218,7 @@ export function Boms (props) {
         </b>
         <br />
         <br />
-        This action is <i>permanent and cannot be recovered</i>.
+        {t('confirms.permanent', 'This action is <i>permanent and cannot be recovered</i>.')}
       </p>
     );
   };
@@ -236,7 +238,7 @@ export function Boms (props) {
       setConfirmDeleteIsOpen(false);
       await loadProjects(page, pageSize, true);   
     } else {
-      toast.error('Failed to delete project!');
+      toast.error(t('deleteProjectFailed', 'Failed to delete project!'));
     }
   };
 
@@ -255,38 +257,40 @@ export function Boms (props) {
   return (
     <div>
       <Breadcrumb>
-        <Breadcrumb.Section link onClick={() => props.history("/")}>Home</Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/")}><Trans i18nKey="bom.bc.home">Home</Trans></Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section active>BOM</Breadcrumb.Section>
+        <Breadcrumb.Section active><Trans i18nKey="bom.bc.bom">BOM</Trans></Breadcrumb.Section>
       </Breadcrumb>
       <Confirm
         className="confirm"
-        header="Delete Project"
+        header={t('labels.deleteProject', 'Delete Project')}
         open={confirmDeleteIsOpen}
         onCancel={confirmDeleteClose}
         onConfirm={handleDeleteProject}
         content={confirmPartDeleteContent}
       />
 
-      <FormHeader name="Bill of Materials" to="..">
+      <FormHeader name={t('bom.header.title', 'Bill of Materials')} to="..">
+        <Trans i18nKey="boms.header.description">
         Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>
         Choose or create the project to manage BOM for.<br/>
+        </Trans>
 			</FormHeader>
 
       <div style={{ minHeight: '35px' }}>
-        <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> Add BOM Project</Button>
+        <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="boms.buttons.addBomProject">Add BOM Project</Trans></Button>
       </div>
       <div>
         {addVisible &&
           <Segment style={{marginBottom: '10px'}}>
             <Form onSubmit={onCreateProject}>
-              <Form.Input width={6} label='Name' required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
-              <Form.Field width={10} control={TextArea} label='Description' value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
+              <Form.Input width={6} label={t('labels.name', 'Name')} required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
+              <Form.Field width={10} control={TextArea} label={t('labels.description', 'Description')} value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
               <Form.Group>
-                <Form.Input width={6} label='Location' placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
-                <Form.Dropdown width={4} label='Color' selection value={project.color} options={colors} onChange={handleChange} name='color' />
+                <Form.Input width={6} label={t('labels.location', 'Location')} placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
+                <Form.Dropdown width={4} label={t('labels.color', 'Color')} selection value={project.color} options={colors} onChange={handleChange} name='color' />
               </Form.Group>
-              <Button primary type='submit' icon><Icon name='save' /> Save</Button>
+              <Button primary type='submit' icon><Icon name='save' /> <Trans i18nKey="boms.buttons.save">Save</Trans></Button>
             </Form>
           </Segment>
         }
@@ -308,11 +312,11 @@ export function Boms (props) {
             <Table.Header>
               <Table.Row>
                 <Table.HeaderCell></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}>Project</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}>Description</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}>Location</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'partCount' ? direction : null} onClick={handleSort('partCount')}>Parts</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'pcbCount' ? direction : null} onClick={handleSort('pcbCount')}>Pcbs</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}><Trans i18nKey="labels.project">Project</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}><Trans i18nKey="labels.description">Description</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}><Trans i18nKey="labels.location">Location</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'partCount' ? direction : null} onClick={handleSort('partCount')}><Trans i18nKey="labels.parts">Parts</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'pcbCount' ? direction : null} onClick={handleSort('pcbCount')}><Trans i18nKey="labels.pcbs">Pcbs</Trans></Table.HeaderCell>
                 <Table.HeaderCell width={2}></Table.HeaderCell>
               </Table.Row>
             </Table.Header>

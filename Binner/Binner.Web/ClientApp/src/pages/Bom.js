@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { Icon, Input, Tab, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb, Statistic, Menu, Label } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import axios from "axios";
@@ -18,6 +19,7 @@ import { getProduciblePcbCount, getTotalOutOfStockParts, getTotalInStockParts, g
 import "./Bom.css";
 
 export function Bom(props) {
+  const { t } = useTranslation();
   const PopupDelayMs = 500;
   const defaultProject = {
     projectId: null,
@@ -769,17 +771,27 @@ export function Bom(props) {
     <div>
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => props.history("/")}>
+          <Trans i18nKey="bom.bc.home">
           Home
+          </Trans>
         </Breadcrumb.Section>
         <Breadcrumb.Divider />
         <Breadcrumb.Section link onClick={() => props.history("/bom")}>
+          <Trans i18nKey="bom.bc.boms">
           BOMs
+          </Trans>
         </Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section active>BOM</Breadcrumb.Section>
+        <Breadcrumb.Section active>
+          <Trans i18nKey="bom.bc.bom">
+          BOM
+          </Trans>
+        </Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name="Bill of Materials" to="..">
+      <FormHeader name={t('bom.header.title', 'Bill of Materials')} to="..">
+        <Trans i18nKey="bom.header.description">
         Manage your BOM by creating PCB(s) and adding your parts.
+        </Trans>
       </FormHeader>
       <AddBomPartModal isOpen={addPartModalOpen} onAdd={handleAddPart} onClose={() => setAddPartModalOpen(false)} pcbs={project.pcbs || []} />
       <AddPcbModal isOpen={addPcbModalOpen} onAdd={handleAddPcb} onClose={() => setAddPcbModalOpen(false)} />
