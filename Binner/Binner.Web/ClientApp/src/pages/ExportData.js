@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import { Button, Form, Divider, Grid, Segment } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -6,6 +7,7 @@ import { useDropzone } from "react-dropzone";
 import { getAuthToken } from "../common/authentication";
 
 export const ExportData = (props) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [exportFormat, setExportFormat] = useState("");
   const [isDirty, setIsDirty] = useState(false);
@@ -121,8 +123,8 @@ export const ExportData = (props) => {
 
   return (
     <div>
-      <h1>Import/Export Data</h1>
-      <p>Import or Export your Binner database to a human-readable format.</p>
+      <h1>{t('page.exportData.title', "Import/Export Data")}</h1>
+      <p>{t('page.exportData.description', "Import or Export your Binner database to a human-readable format.")}</p>
       <Segment loading={loading}>
         <Grid columns={2}>
           <Grid.Column className="centered" style={{ padding: "50px" }}>
@@ -131,19 +133,19 @@ export const ExportData = (props) => {
                 style={{ border: "1px dashed #000", padding: "50px", marginBottom: "20px", backgroundColor: "#f5f5f5" }}
                 {...getRootProps({ className: "dropzone" })}
               >
-                <span style={{ fontSize: "0.6em" }}>Drag a document to upload, or click to select files</span>
+                <span style={{ fontSize: "0.6em" }}>{t('page.exportData.uploadNote', "Drag a document to upload, or click to select files")}</span>
                 <input {...getInputProps()} />
-                <div style={{ fontSize: "0.6em" }}>Accepted file types: "*.sql, *.xls, *.xlsx, *.csv"</div>
+                <div style={{ fontSize: "0.6em" }}>{t('page.exportData.acceptedFileTypes', "Accepted file types: \"*.sql, *.xls, *.xlsx, *.csv\"")}</div>
               </div>
               {error && (
                 <div className="error small">
-                  <b>Error:</b> {error}
+                  <b>{t('label.error', "Error")}:</b> {error}
                 </div>
               )}
               <aside>
                 <ol>{acceptedFileItems}</ol>
               </aside>
-              <Button primary>Import</Button>
+              <Button primary>{t('button.import', "Import")}</Button>
             </Form>
           </Grid.Column>
           <Grid.Column className="centered" style={{ padding: "50px" }}>
@@ -160,29 +162,29 @@ export const ExportData = (props) => {
                   style={{ maxWidth: "50%" }}
                 />
               </div>
-              <Button primary>Export</Button>
+              <Button primary>{t('button.export', "Export")}</Button>
             </Form>
           </Grid.Column>
         </Grid>
 
-        <Divider vertical>Or</Divider>
+        <Divider vertical>{t('label.or', "Or")}</Divider>
       </Segment>
 
       {importResult && (
         <div style={{ border: "1px dashed #666", padding: "10px" }}>
-          <h5>Import Result</h5>
+          <h5>{t('page.exportData.importResult', "Import Result")}</h5>
           <div>
-            Status: <b>{importResult.success ? "Success" : "Failed"}</b>
+            {t('label.status', "Status")}: <b>{importResult.success ? t('label.success', "Success") : t('label.failed', "Failed")}</b>
           </div>
-          <div>Total Rows Imported: {importResult.totalRowsImported}</div>
+          <div>{t('page.exportData.totalRowsImported', "Total Rows Imported")}: {importResult.totalRowsImported}</div>
           <br />
-          <div>Projects Imported: {importResult.rowsImportedByTable.Projects}</div>
-          <div>Part Types Imported: {importResult.rowsImportedByTable.PartTypes}</div>
-          <div>Parts Imported: {importResult.rowsImportedByTable.Parts}</div>
+          <div>{t('page.exportData.totalProjectsImported', "Projects Imported")}: {importResult.rowsImportedByTable.Projects}</div>
+          <div>{t('page.exportData.totalPartTypesImported', "Part Types Imported")}: {importResult.rowsImportedByTable.PartTypes}</div>
+          <div>{t('page.exportData.totalPartsImported', "Parts Imported")}: {importResult.rowsImportedByTable.Parts}</div>
 
           {importResult.errors && importResult.errors.length > 0 && (
             <div style={{ marginTop: "20px" }}>
-              <h6>Errors:</h6>
+              <h6>{t('label.errors', "Errors")}:</h6>
               <ul>
                 {importResult.errors.map((msg, k) => {
                   <li key={k}>{msg}</li>;
@@ -193,7 +195,7 @@ export const ExportData = (props) => {
 
           {importResult.warnings && importResult.warnings.length > 0 && (
             <div style={{ marginTop: "20px" }}>
-              <h6>Warnings:</h6>
+              <h6>{t('label.warnings', "Warnings")}:</h6>
               <ul>
                 {importResult.warnings.map((msg, k) => (
                   <li key={k}>{msg}</li>
