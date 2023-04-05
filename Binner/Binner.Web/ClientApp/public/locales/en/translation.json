@@ -248,6 +248,32 @@
       "placeholder": {
         "pcbs": "Choose PCB(s) to produce"
       }
+    },
+    "chooseAlternatePartModal": {
+      "title": "Matching Parts"
+    },
+    "lineTemplate": {
+      "label": {
+        "content": "Content",
+        "font": "Font",
+        "fontSize": "Font Size",
+        "fontColor": "Font Color",
+        "textPosition": "Text Position",
+        "upperCaseText": "UpperCase Text",
+        "lowerCaseText": "LowerCase Text",
+        "barcode": "Barcode",
+        "marginLeft": "Margin Left",
+        "marginTop": "Margin Top",
+        "rotateDegrees": "Rotate Degrees"  
+      },
+      "popup": {
+        "content": "Template can reference any part field, example: &#123;partNumber&#125;, &#123;description&#125;, &#123;manufacturer&#125;, &#123;location&#125;, &#123;binNumber&#125;, &#123;cost&#125; etc. See <1>Wiki</1> for all available tags.",
+        "autoSize": "Text size will be automatically determined.",
+        "upperCaseText": "Render the text as all upper-case characters.",
+        "lowerCaseText": "Render the text as all lower-case characters.",
+        "barcode": "Render the Content value encoded as a barcode.",
+        "rotateDegrees": "Rotate the text in degrees. Example: 90"
+      }
     }
   },
   "button": {
@@ -347,7 +373,12 @@
     "unspecified": "Unspecified",
     "viewTracking": "View Tracking",
     "preview": "Preview",
-    "serialNumberFormat": "Serial Number Format"
+    "serialNumberFormat": "Serial Number Format",
+    "family": "Family",
+    "source": "Source",
+    "qtyAvail": "QTY Avail.",
+    "keywords": "Keywords",
+    "apiEndpoint": "Api Endpoint"
   },
   "message": {
     "noPartsAdded": "No parts added.",
