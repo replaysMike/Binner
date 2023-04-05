@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavMenu } from "./NavMenu";
-import { Dropdown, Icon, Label } from "semantic-ui-react";
-
-import { useTranslation, Trans } from 'react-i18next';
+import { Dropdown, Icon } from "semantic-ui-react";
+import { useTranslation } from 'react-i18next';
 
 // import i18n
 import '../i18n';
@@ -15,12 +14,12 @@ const lngs = {
     zh: { nativeName: '中文' },         // chinese
 };
 
-export function Header(props) {
+export function Header() {
   const { t, i18n } = useTranslation();
   const [language, setLanguage] = useState(localStorage.getItem('language') || i18n.resolvedLanguage || 'en');
 
   useEffect(() => {
-    console.log('init', localStorage.getItem('language'), i18n.resolvedLanguage);
+    // console.log('init', localStorage.getItem('language'), i18n.resolvedLanguage);
     setLanguage(localStorage.getItem('language') || i18n.resolvedLanguage || 'en');
   }, []);
 
