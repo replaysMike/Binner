@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useTranslation } from "react-i18next";
 import _ from 'underscore';
@@ -6,64 +6,41 @@ import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Table, Form, Segment } from 'semantic-ui-react';
 import { fetchApi } from '../common/fetchApi';
 
-export class Datasheets extends Component {
-  static displayName = Datasheets.name;
+export function Datasheets (props) {
+  const { t } = useTranslation();
+  Datasheets.abortController = new AbortController();
+  const [parts, setParts] = useState([]);
+  const [part, setPart] = useState({ partNumber: '', partType: '', mountingType: '' });
+  const [column, setColumn] = useState(null);
+  const [direction, setDirection] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [partTypes, setPartTypes] = useState([]);
+  const [mountingTypes] = useState([
+    {
+      key: 999,
+      value: null,
+      text: '',
+    },
+    {
+      key: 1,
+      value: 'through hole',
+      text: 'Through Hole',
+    },
+    {
+      key: 2,
+      value: 'surface mount',
+      text: 'Surface Mount',
+    },
+  ]);
 
-  static abortController = new AbortController();
+  useEffect(() => {
+    fetchPartTypes();
+  }, []);
 
-  constructor(props) {
-    super(props);
-    this.searchDebounced = AwesomeDebouncePromise(this.fetchPartMetadata.bind(this), 500);
-    this.state = {
-      parts: [],
-      part: {
-        partNumber: '',
-        partType: '',
-        mountingType: '',
-      },
-      partTypes: [],
-      keyword: '',
-      page: 1,
-      records: 10,
-      column: null,
-      direction: null,
-      noRemainingData: false,
-      changeTracker: [],
-      loading: false,
-      mountingTypes: [
-        {
-          key: 999,
-          value: null,
-          text: '',
-        },
-        {
-          key: 1,
-          value: 'through hole',
-          text: 'Through Hole',
-        },
-        {
-          key: 2,
-          value: 'surface mount',
-          text: 'Surface Mount',
-        },
-      ],
-    };
-    this.fetchPartTypes = this.fetchPartTypes.bind(this);
-    this.handleSort = this.handleSort.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleVisitLink = this.handleVisitLink.bind(this);
-    this.handleHighlightAndVisit = this.handleHighlightAndVisit.bind(this);
-  }
-
-  async componentDidMount() {
-    await this.fetchPartTypes();
-  }
-
-  async fetchPartMetadata(input) {
+  const fetchPartMetadata = async (input) => {
     Datasheets.abortController.abort(); // Cancel the previous request
     Datasheets.abortController = new AbortController();
-    const { part } = this.state;
-    this.setState({ loading: true });
+    setLoading(true);
     try {
       const response = await fetchApi(`part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
         signal: Datasheets.abortController.signal
@@ -75,16 +52,20 @@ export class Datasheets extends Component {
         return;
       }
       const { response: data } = responseData;
-      this.setState({ parts: data.parts, loading: false });
+      setParts(data.parts);
     } catch (ex) {
       if (ex.name === 'AbortError') {
         return; // Continuation logic has already been skipped, so return normally
       }
       throw ex;
     }
-  }
+    setLoading(false);
+  };
 
-  async fetchPartTypes() {
+  const searchDebounced = AwesomeDebouncePromise(fetchPartMetadata, 500);
+
+  const fetchPartTypes = async () => {
+    setLoading(true);
     const response = await fetchApi('partType/list');
     const { data } = response;
     const blankRow = { key: 999, value: null, text: '' };
@@ -96,66 +77,50 @@ export class Datasheets extends Component {
       };
     }), 'text');
     partTypes.unshift(blankRow);
-    this.setState({ partTypes, loading: false });
-  }
+    setPartTypes(partTypes);
+    setLoading(false);
+  };
 
-  handleSort = (clickedColumn) => () => {
-    const { column, parts, direction } = this.state
-
+  const handleSort = (clickedColumn) => () => {
     if (column !== clickedColumn) {
-      this.setState({
-        column: clickedColumn,
-        parts: _.sortBy(parts, [clickedColumn]),
-        direction: 'ascending',
-      })
+      setColumn(clickedColumn);
+      setParts(_.sortBy(parts, [clickedColumn]));
+      setDirection('ascending');
     } else {
-      this.setState({
-        parts: parts.reverse(),
-        direction: direction === 'ascending' ? 'descending' : 'ascending',
-      })
+      setParts(parts.reverse());
+      setDirection(direction === 'ascending' ? 'descending' : 'ascending');
     }
-  }
+  };
 
-  handleChange(e, control) {
-    const { part } = this.state;
+  const handleChange = (e, control) => {
     part[control.name] = control.value;
     switch (control.name) {
       case 'partNumber':
         if (control.value && control.value.length > 0)
-          this.searchDebounced(control.value);
+          searchDebounced(control.value);
         break;
       case 'partType':
         if (control.value && control.value.length > 0 && part.partNumber.length > 0)
-          this.searchDebounced(control.value);
+          searchDebounced(control.value);
         break;
       case 'mountingType':
         if (control.value && control.value.length > 0 && part.partNumber.length > 0)
-          this.searchDebounced(control.value);
+          searchDebounced(control.value);
         break;
       default:
         break;
     }
-    this.setState({ part });
-  }
+    setPart({...part});
+  };
 
-  getMountingTypeById(mountingTypeId) {
-    switch (mountingTypeId) {
-      default:
-      case 1:
-        return 'through hole';
-      case 2:
-        return 'surface mount';
-    }
-  }
-
-  handleVisitLink(e, url) {
+  const handleVisitLink = (e, url) => {
     e.preventDefault();
     e.stopPropagation();
     window.open(url, '_blank');
-  }
+  };
 
-  handleHighlightAndVisit(e, url) {
-    this.handleVisitLink(e, url);
+  const handleHighlightAndVisit = (e, url) => {
+    handleVisitLink(e, url);
     // this handles highlighting of parent row
     const parentTable = ReactDOM.findDOMNode(e.target).parentNode.parentNode.parentNode;
     const targetNode = ReactDOM.findDOMNode(e.target).parentNode.parentNode;
@@ -164,37 +129,36 @@ export class Datasheets extends Component {
       if (row.classList.contains('positive')) row.classList.remove('positive');
     }
     targetNode.classList.toggle('positive');
-  }
+  };
 
-  getHostnameFromRegex(url) {
+  const getHostnameFromRegex = (url) => {
     // run against regex
     const matches = url.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i);
     // extract hostname (will be null if no match is found)
     return matches && matches[1];
-  }
+  };
 
-  renderParts(parts, column, direction) {
-    const { part, partTypes, mountingTypes, loading } = this.state;
+  const renderParts = (parts, column, direction) => {
     const partsWithDatasheets = _.filter(parts, function (x) { return x.datasheetUrls.length > 0 && _.first(x.datasheetUrls).length > 0; });
     return (
       <div>
         <Form>
           <Form.Group>
-            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={this.handleChange} name='partNumber' />
-            <Form.Dropdown label='Part Type' placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={this.handleChange} name='partType' />
-            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={this.handleChange} name='mountingType' />
+            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={handleChange} name='partNumber' />
+            <Form.Dropdown label='Part Type' placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={handleChange} name='partType' />
+            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={handleChange} name='mountingType' />
           </Form.Group>
         </Form>
         <Segment loading={loading}>
           <Table compact celled sortable selectable striped size='small'>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={this.handleSort('manufacturerPartNumber')}>Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'manufacturer' ? direction : null} onClick={this.handleSort('manufacturer')}>Manufacturer</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'website' ? direction : null} onClick={this.handleSort('website')}>Website</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={this.handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'package' ? direction : null} onClick={this.handleSort('package')}>Package</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'status' ? direction : null} onClick={this.handleSort('status')}>Status</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={handleSort('manufacturerPartNumber')}>Part</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'manufacturer' ? direction : null} onClick={handleSort('manufacturer')}>Manufacturer</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'website' ? direction : null} onClick={handleSort('website')}>Website</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'package' ? direction : null} onClick={handleSort('package')}>Package</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'status' ? direction : null} onClick={handleSort('status')}>Status</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -202,9 +166,9 @@ export class Datasheets extends Component {
                 <Table.Row key={i}>
                   <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
                   <Table.Cell>{p.manufacturer}</Table.Cell>
-                  <Table.Cell>{this.getHostnameFromRegex(_.first(p.datasheetUrls))}</Table.Cell>
+                  <Table.Cell>{getHostnameFromRegex(_.first(p.datasheetUrls))}</Table.Cell>
                   <Table.Cell>{p.datasheetUrls.map((url, dindex) =>
-                    <a href={url} alt={url} key={dindex} onClick={e => this.handleHighlightAndVisit(e, url)}>View Datasheet</a>
+                    <a href={url} alt={url} key={dindex} onClick={e => handleHighlightAndVisit(e, url)}>View Datasheet</a>
                   )}
                   </Table.Cell>
                   <Table.Cell>{p.packageType.replace(/\([^()]*\)/g, '')}</Table.Cell>
@@ -216,17 +180,14 @@ export class Datasheets extends Component {
         </Segment>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { parts, column, direction } = this.state;
-    let contents = this.renderParts(parts, column, direction);
+  const contents = renderParts(parts, column, direction);
 
-    return (
-      <div>
-        <h1>Datasheet Search</h1>
-        {contents}
-      </div>
-    );
-  }
+  return (
+    <div>
+      <h1>Datasheet Search</h1>
+      {contents}
+    </div>
+  );
 }
