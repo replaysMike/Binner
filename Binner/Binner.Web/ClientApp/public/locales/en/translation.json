@@ -25,6 +25,10 @@
       "search":"Seach",
       "noResults":"No matching results."
     },
+    "lowInventory": {
+      "title": "Low Inventory",
+      "description": "Use this page to reorder parts you are low on.<1/>You can define a custom <3>Low Stock</3> value per part in your inventory."
+    },
     "bom": {
       "bc": {
         "home": "Home",
@@ -47,6 +51,37 @@
         "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>Choose or create the project to manage BOM for.<br/>" 
       }
     }  
+  },
+  "comp": {
+    "partsGrid": {
+      "recordsPerPage": "records per page",
+      "parts": "Parts",
+      "part": "Part",
+      "quantity": "Quantity",
+      "lowStock": "Low Stock",
+      "mfrPart": "Manufacturer Part",
+      "description": "Description",
+      "location": "Location",
+      "binNumber": "Bin Number",
+      "binNumber2": "Bin Number 2",
+      "cost": "Cost",
+      "digikeyPart": "DigiKey Part",
+      "mouserPart": "Mouser Part",
+      "arrowPart": "Arrow Part",
+      "datasheet": "Datasheet",
+      "noResults": "No results.",
+      "ok": "Ok",
+      "popup": {
+        "lowStock": "Quantities below this value will indicate the part is low on stock.",
+        "quantity": "The quantity of parts currently in stock."
+      },
+      "confirm": {
+        "deletePart": "Are you sure you want to delete part {{partNumber}}?"
+      },
+      "error": {
+        "failedSave": "Error saving part {{partNumber}} - {{statusText}}"
+      }
+    }
   },
   "button": {
     "addBomProject": "Add BOM Project",
@@ -134,6 +169,19 @@
       "editSchematicReferenceId": "Edit your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
       "customDescription": "Provide a custom description",
       "customNote": "Provide a custom note"
+    }
+  },
+  "footer": {
+    "version": "Version",
+    "promo": "Try <1>Binner Cloud Free</1>"
+  },
+  "notification": {
+    "versionBanner": {
+      "newVersion": "A new version of Binner <1>{{version}}</1> is available!",
+      "releaseNotes": "Release Notes",
+      "view": "View",
+      "skip": "Skip",
+      "close": "Close"
     }
   }
 }

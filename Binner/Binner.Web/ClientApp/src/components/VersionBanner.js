@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
-import ReactDOMServer from "react-dom/server";
-import { Icon, Button, Form, Modal, Popup, TextArea, Header, Confirm } from "semantic-ui-react";
+import { useTranslation, Trans } from "react-i18next";
+import { Icon, Button, Modal } from "semantic-ui-react";
 import reactStringReplace from "react-string-replace";
 import PropTypes from "prop-types";
 
 export function VersionBanner(props) {
+	const { t } = useTranslation();
 	const [isOpen, setIsOpen] = useState(false);
 	const [version, setVersion] = useState('');
 	const [description, setDescription] = useState('');
@@ -53,22 +54,24 @@ export function VersionBanner(props) {
 		{isOpen && <div className="version-banner">
 			<span>
 				<Icon name="close" style={{marginRight: '20px', cursor: 'pointer'}} onClick={handleSkip} />
-				A new version of Binner <b>{version}</b> is available!
+				<Trans i18nKey="notification.versionBanner.newVersion" version={version}>
+					A new version of Binner <b>{version}</b> is available!
+				</Trans>
 			</span>
 			<div style={{float: 'right'}}>
-				<Button primary onClick={handleViewReleaseNotesModalOpen} size="tiny">Release Notes</Button>
-				<Button primary onClick={handleView} size="tiny">View</Button>
-				<Button onClick={handleSkip} size="tiny">Skip</Button>
+				<Button primary onClick={handleViewReleaseNotesModalOpen} size="tiny">{t('notification.versionBanner.releaseNotes', "Release Notes")}</Button>
+				<Button primary onClick={handleView} size="tiny">{t('notification.versionBanner.view', "View")}</Button>
+				<Button onClick={handleSkip} size="tiny">{t('notification.versionBanner.skip', "Skip")}</Button>
 			</div>
 			<Modal centered open={isReleaseNotesOpen || false} onClose={handleReleaseNotesModalClose} className="release-notes">
-        <Modal.Header>Release Notes</Modal.Header>
+        <Modal.Header>{t('notification.versionBanner.releaseNotes', "Release Notes")}</Modal.Header>
 				<Modal.Description><p style={{padding: '0 10px', marginLeft: '10px'}}>{version}</p></Modal.Description>
         <Modal.Content scrolling>
 					{descriptionObject}
         </Modal.Content>
         <Modal.Actions>
-					<Button primary onClick={handleView}>View {version}</Button>
-					<Button onClick={handleReleaseNotesModalClose}>Close</Button>
+					<Button primary onClick={handleView}>{t('notification.versionBanner.view', "View")} {version}</Button>
+					<Button onClick={handleReleaseNotesModalClose}>{t('notification.versionBanner.close', "Close")}</Button>
         </Modal.Actions>
       </Modal>
 		</div>}
