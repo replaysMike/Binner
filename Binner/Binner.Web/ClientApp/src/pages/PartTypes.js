@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Table, Input, Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
@@ -6,6 +7,7 @@ import { toast } from "react-toastify";
 import { FormHeader } from "../components/FormHeader";
 
 export function PartTypes(props) {
+  const { t } = useTranslation();
   const defaultPartType = {
     partTypeId: 0,
     name: "",
@@ -26,7 +28,7 @@ export function PartTypes(props) {
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [selectedPartType, setSelectedPartType] = useState(null);
   const [chkHideEmptyTypes, setChkHideEmptyTypes] = useState(false);
-  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete this part?");
+  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setLoading(true);
@@ -111,10 +113,10 @@ export function PartTypes(props) {
       // reset form
       setPartType(defaultPartType);
       setAddVisible(false);
-      toast.success(`Added part type '${response.data.name}'`);
+      toast.success(t('success.addedPartType', "Added part type {{name}}", { name: response.data.name }));
       loadPartTypes(response.data.parentPartType);
     } else {
-      toast.error(`Failed to add part type '${partType.name}'`);
+      toast.error(t('error.failedAddedPartType', "Failed to add part type {{name}}", { name: partType.name }));
     }
   };
 
@@ -136,9 +138,9 @@ export function PartTypes(props) {
           loadPartTypes(parentPartType.name);
         else
           loadPartTypes();
-        toast.success(`Deleted part type '${partType.name}'`);
+        toast.success(t('success.deletedPartType', "Deleted part type {{name}}", { name: partType.name }));
       }else {
-        toast.error(`Failed to delete part type '${partType.name}'`);
+        toast.error(t('error.failedDeletedPartType', "Failed to delete part type {{name}}", { name: partType.name }));
       }
       setConfirmDeleteIsOpen(false);
       setSelectedPartType(null);
@@ -174,9 +176,9 @@ export function PartTypes(props) {
     });
     if (response.responseObject.status === 200) {
       lastSavedPartTypeId = partType.partTypeId;
-      toast.success(`Saved part type '${response.data.name}'`);
+      toast.success(t('success.savedPartType', "Saved part type {{name}}", {name: response.data.name}));
     } else {
-      toast.error("failed to save partType");
+      toast.error(t('error.failedSavePartType', "Failed to save Part Type!"));
     }
     p.loading = false;
     setPartTypes(partTypes);
@@ -218,7 +220,16 @@ export function PartTypes(props) {
     e.stopPropagation();
     setConfirmDeleteIsOpen(true);
     setSelectedPartType(partType);
-    setConfirmPartDeleteContent(<p>Are you sure you want to delete part type <b>{partType.name}</b>?<br/><br/>This action is <i>permanent and cannot be recovered</i>.</p>);
+    setConfirmPartDeleteContent(
+      <p>
+        <Trans i18nKey='confirm.deletePartType' name={partType.name}>
+          Are you sure you want to delete part type <i>{partType.name}</i>?
+        </Trans>
+        <br/><br/>
+        <Trans i18nKey='confirm.permanent'>
+        This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
+      </p>);
   };
 
   const confirmDeleteClose = (e) => {
@@ -231,46 +242,48 @@ export function PartTypes(props) {
   return (
     <div>
       <Breadcrumb>
-        <Breadcrumb.Section href="/">Home</Breadcrumb.Section>
+        <Breadcrumb.Section href="/">{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
         {parentPartType 
           ? <React.Fragment>
-            <Breadcrumb.Section href="/partTypes" onClick={handleUnsetParentPartType}>Part Types</Breadcrumb.Section>
+            <Breadcrumb.Section href="/partTypes" onClick={handleUnsetParentPartType}>{t('bc.partTypes', "Part Types")}</Breadcrumb.Section>
             <Breadcrumb.Divider />
             <Breadcrumb.Section active>{parentPartType.name}</Breadcrumb.Section>
             </React.Fragment> 
-          : <Breadcrumb.Section active>Part Types</Breadcrumb.Section>}
+          : <Breadcrumb.Section active>{t('bc.partTypes', "Part Types")}</Breadcrumb.Section>}
       </Breadcrumb>
-      <FormHeader name="Part Types" to="..">
+      <FormHeader name={t('page.partTypes.title', "Part Types")} to="..">
+        <Trans i18nKey="page.partTypes.description">
         Part Types allow you to separate your parts by type. <i>Parent</i> types allow for unlimited part type hierarchy.
         <br />
         For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.
+        </Trans>
 			</FormHeader>
       <p>
       </p>
-      <Confirm className="confirm" header='Delete Part' open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDelete} content={confirmPartDeleteContent} />
+      <Confirm className="confirm" header={t('confirm.deletePart', "Delete Part")} open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDelete} content={confirmPartDeleteContent} />
 
       <Segment loading={loading}>
         <div style={{float: 'left'}}>
           <Popup 
             content="Hide part types that have no parts assigned"
-            trigger={<Form.Checkbox toggle label="Hide Empty Types" name="filterEmpty" onChange={(e, control) => setChkHideEmptyTypes(!chkHideEmptyTypes)} />}
+            trigger={<Form.Checkbox toggle label={t('label.hideEmptyTypes', "Hide Empty Types")} name="filterEmpty" onChange={(e, control) => setChkHideEmptyTypes(!chkHideEmptyTypes)} />}
           />          
         </div>
         <div style={{ minHeight: "35px" }}>
           <Button onClick={handleShowAdd} icon size="mini" floated="right">
-            <Icon name="file" /> Add Part Type
+            <Icon name="file" /> {t('button.addPartType', "Add Part Type")}
           </Button>
         </div>
-        {parentPartType && <Button size="mini" onClick={handleUnsetParentPartType}><Icon name="arrow alternate circle left"/> Back</Button>}
+        {parentPartType && <Button size="mini" onClick={handleUnsetParentPartType}><Icon name="arrow alternate circle left"/> {t('button.back', "Back")}</Button>}
         <div>
           {addVisible && (
             <Segment>
               <Form onSubmit={onSubmit}>
-                <Form.Input width={6} label="Name" required placeholder="Resistors" focus value={partType.name} onChange={handleChange} name="name" />
+                <Form.Input width={6} label={t('label.name', "Name")} required placeholder={t('label.resistors', "Resistors")} focus value={partType.name} onChange={handleChange} name="name" />
                 <Form.Dropdown
                   width={6}
-                  label="Parent"
+                  label={t('label.parent', "Parent")}
                   selection
                   fluid
                   value={partType.parentPartTypeId}
@@ -279,7 +292,7 @@ export function PartTypes(props) {
                   name="parentPartTypeId"
                 />
                 <Button primary type="submit" icon>
-                  <Icon name="save" /> Save
+                  <Icon name="save" /> {t('button.save', "Save")}
                 </Button>
               </Form>
             </Segment>
@@ -289,13 +302,13 @@ export function PartTypes(props) {
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell sorted={column === "name" ? direction : null} onClick={handleSort("name")}>
-                Part Type
+                {t('label.partType', "Part Type")}
               </Table.HeaderCell>
               <Table.HeaderCell width={3} sorted={column === "parentPartTypeId" ? direction : null} onClick={handleSort("location")}>
-                Parent
+                {t('label.parent', "Parent")}
               </Table.HeaderCell>
               <Table.HeaderCell width={2} sorted={column === "parts" ? direction : null} onClick={handleSort("parts")}>
-                Parts Count
+                {t('label.partsCount', "Parts Count")}
               </Table.HeaderCell>
               <Table.HeaderCell width={2}></Table.HeaderCell>
             </Table.Row>
@@ -303,7 +316,7 @@ export function PartTypes(props) {
           <Table.Body>
             {parentPartType && 
             <Table.Row key={-1}>
-              <Table.Cell colSpan={2} style={{fontSize: '1.2em', marginLeft: '5px'}}><div style={{border: '1px solid #0d3d61', borderRadius: '4px', fontSize: '0.8em', color: '#fff', backgroundColor: '#2185d0', display: 'inline-block', padding: '1px 5px', marginRight: '10px'}}>Parent</div> <b>{parentPartType.name}</b></Table.Cell>
+              <Table.Cell colSpan={2} style={{fontSize: '1.2em', marginLeft: '5px'}}><div style={{border: '1px solid #0d3d61', borderRadius: '4px', fontSize: '0.8em', color: '#fff', backgroundColor: '#2185d0', display: 'inline-block', padding: '1px 5px', marginRight: '10px'}}>{t('label.parent', "Parent")}</div> <b>{parentPartType.name}</b></Table.Cell>
               <Table.Cell>{parentPartType.parts}</Table.Cell>
               <Table.Cell></Table.Cell>
             </Table.Row>
@@ -334,13 +347,13 @@ export function PartTypes(props) {
                 <Table.Cell>{p.parentPartType}</Table.Cell>
                 <Table.Cell>{p.parts}</Table.Cell>
                 <Table.Cell textAlign="center">
-                  {!p.isSystem ? <Button icon="delete" size="tiny" onClick={(e) => confirmDeleteOpen(e, p)} /> : "System Type"}
+                  {!p.isSystem ? <Button icon="delete" size="tiny" onClick={(e) => confirmDeleteOpen(e, p)} /> : t('label.systemType', "System Type")}
                 </Table.Cell>
               </Table.Row>
             ))
             : <Table.Row>
               <Table.Cell colSpan={4} textAlign='center'>
-                There are no child part types.
+                {t('message.noChildPartTypes', "There are no child part types.")}
               </Table.Cell>
               </Table.Row>}
           </Table.Body>

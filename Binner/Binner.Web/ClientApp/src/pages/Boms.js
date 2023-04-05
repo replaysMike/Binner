@@ -257,9 +257,9 @@ export function Boms (props) {
   return (
     <div>
       <Breadcrumb>
-        <Breadcrumb.Section link onClick={() => props.history("/")}><Trans i18nKey="page.bom.bc.home">Home</Trans></Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section active><Trans i18nKey="page.bom.bc.bom">BOM</Trans></Breadcrumb.Section>
+        <Breadcrumb.Section active>{t('bc.bom', "BOM")}</Breadcrumb.Section>
       </Breadcrumb>
       <Confirm
         className="confirm"
