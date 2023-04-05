@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import ReactDOM from "react-dom";
+import { useTranslation, Trans } from "react-i18next";
 import { Link } from "react-router-dom";
 import _ from "underscore";
 import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Popup, Icon } from "semantic-ui-react";
@@ -12,8 +13,9 @@ import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import sha256 from 'crypto-js/sha256';
 
 export function OrderImport(props) {
+  const { t } = useTranslation();
   OrderImport.abortController = new AbortController();
-  const [orderLabel, setOrderLabel] = useState("Sales Order #");
+  const [orderLabel, setOrderLabel] = useState(t('page.orderImport.salesOrderNum', "Sales Order #"));
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState({});
   const [error, setError] = useState(null);
@@ -52,7 +54,7 @@ export function OrderImport(props) {
       if (input.value.salesOrder) {
         orderNumber = input.value.salesOrder;
       } else {
-        toast.error(`Hmmm, I don't recognize that 2D barcode!`, { autoClose: 10000 });
+        toast.error(t('error.invalid2dBarcode', "Hmmm, I don't recognize that 2D barcode!"), { autoClose: 10000 });
         return;
       }
     }
@@ -61,13 +63,13 @@ export function OrderImport(props) {
       orderNumber = input.value;
     } else if (input.value.length > 5) {
       // handle invalid input if it's not keyboard typing
-      toast.error(`Hmmm, that doesn't look like a valid order number!`, { autoClose: 10000 });
+      toast.error(t('error.invalidOrder', "Hmmm, that doesn't look like a valid order number!"), { autoClose: 10000 });
       return;
     }
 
     const newOrder = { ...order, orderId: orderNumber };
     setOrder({ ...newOrder });
-    toast.info(`Loading order# ${orderNumber}`, { autoClose: 10000 });
+    toast.info(t('messasge.loadingOrder', "Loading order# {{order}}", { order: orderNumber }), { autoClose: 10000 });
     getPartsToImport(e, newOrder);
   };
 
@@ -101,7 +103,7 @@ export function OrderImport(props) {
       // reset form
       setLoading(false);
       setResults({});
-      toast.success(`${data.length} parts were imported!`);
+      toast.success(t('success.partsImported', "{{count}} parts were imported!", { count: data.length }));
     });
   };
 
@@ -196,23 +198,27 @@ export function OrderImport(props) {
         newOrder.supplier = control.value;
         switch(newOrder.supplier) {
           case "Mouser":
-            setOrderLabel("Web Order #");
+            setOrderLabel(t('page.orderImport.webOrderNum', "Web Order #"));
             setMessage(
               <div>
+                <Trans i18nKey="page.orderImport.mouserNote">
                 <i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i>
+                </Trans>
               </div>
             );
             break;
           case "DigiKey":
-            setOrderLabel("Sales Order #");
+            setOrderLabel(t('page.orderImport.salesOrderNum', "Sales Order #"));
             setMessage("");
             break;
           case "Arrow":
-            setOrderLabel("Order Number");
+            setOrderLabel(t('page.orderImport.orderNum', "Order Number"));
             setEnableArrowPrepareEmail(true);
             setMessage(
               <div>
-                <i>Note:</i> Arrow requires that you first request access to their Order API by sending them an email. See <a href="https://developers.arrow.com/api/index.php/site/page?view=orderApi" target="_blank" rel="noreferer">Arrow Order Api</a>
+                <Trans i18nKey="page.orderImport.arrowNote">
+                <i>Note:</i> Arrow requires that you first request access to their Order API by sending them an email. See <a href="https://developers.arrow.com/api/index.php/site/page?view=orderApi" target="_blank" rel="noreferrer">Arrow Order Api</a>
+                </Trans>
               </div>
             );
             break;
@@ -225,18 +231,6 @@ export function OrderImport(props) {
         break;
     }
     setOrder({ ...newOrder });
-  };
-
-  const getMountingTypeById = (mountingTypeId) => {
-    switch (mountingTypeId) {
-      default:
-      case 0:
-        return "none";
-      case 1:
-        return "through hole";
-      case 2:
-        return "surface mount";
-    }
   };
 
   const handleHighlightAndVisit = (e, url) => {
@@ -266,10 +260,10 @@ export function OrderImport(props) {
     if (trackingNumber && trackingNumber.includes("https:"))
       return (
         <a href={trackingNumber} target="_blank" rel="noreferrer">
-          View Tracking
+          {t('label.viewTracking', "View Tracking")}
         </a>
       );
-    return trackingNumber || "Unspecified";
+    return trackingNumber || t('label.unspecified', "Unspecified");
   };
 
   const renderAllMatchingParts = (order) => {
@@ -284,18 +278,18 @@ export function OrderImport(props) {
                     <Table.Body>
                       <Table.Row>
                         <Table.Cell>
-                          <Label>Customer Id:</Label>
+                          <Label>{t('label.customerId', "Customer Id")}:</Label>
                           {order.customerId || "Unspecified"}
                         </Table.Cell>
                         <Table.Cell>
-                          <Label>Order Amount:</Label>${order.amount.toFixed(2)} {order.currency}
+                          <Label>{t('label.orderAmount', "Order Amount")}:</Label>${order.amount.toFixed(2)} {order.currency}
                         </Table.Cell>
                         <Table.Cell>
-                          <Label>Order Date:</Label>
+                          <Label>{t('label.orderDate', "Order Date")}:</Label>
                           {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
                         </Table.Cell>
                         <Table.Cell>
-                          <Label>Tracking Number:</Label>
+                          <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
                           {formatTrackingNumber(order.trackingNumber)}
                         </Table.Cell>
                       </Table.Row>
@@ -304,15 +298,15 @@ export function OrderImport(props) {
                 </Table.HeaderCell>
               </Table.Row>
               <Table.Row>
-                <Table.HeaderCell>Import?</Table.HeaderCell>
-                <Table.HeaderCell>Part</Table.HeaderCell>
-                <Table.HeaderCell>Part#</Table.HeaderCell>
-                <Table.HeaderCell>Manufacturer</Table.HeaderCell>
-                <Table.HeaderCell>Part Type</Table.HeaderCell>
-                <Table.HeaderCell>Supplier Part</Table.HeaderCell>
-                <Table.HeaderCell>Cost</Table.HeaderCell>
-                <Table.HeaderCell>Qty</Table.HeaderCell>
-                <Table.HeaderCell>Image</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.supplierPart', "Supplier Part")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.quantityShort', "Qty")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
                 <Table.HeaderCell></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
@@ -339,7 +333,7 @@ export function OrderImport(props) {
                   <Table.Cell>
                     {p.datasheetUrls.map((d, dindex) => (
                       <Link key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)} to="">
-                        View Datasheet
+                        {t('button.viewDatasheet', "View Datasheet")}
                       </Link>
                     ))}
                   </Table.Cell>
@@ -347,7 +341,7 @@ export function OrderImport(props) {
               ))}
             </Table.Body>
           </Table>
-          <Button primary disabled={_.filter(results.parts, i => i.selected).length === 0}>Import Parts</Button>
+          <Button primary disabled={_.filter(results.parts, i => i.selected).length === 0}>{t('button.importParts', "Import Parts")}</Button>
         </Form>
       </div>
     );
@@ -356,7 +350,7 @@ export function OrderImport(props) {
   return (
     <div>
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} />
-      <h1>Order Import</h1>
+      <h1>{t('page.orderImport.title', "Order Import")}</h1>
       <Form onSubmit={(e) => getPartsToImport(e, order)}>
         <Form.Group>
           <Form.Dropdown label="Supplier" selection value={order.supplier} options={supplierOptions} onChange={handleChange} name="supplier" />
@@ -365,12 +359,15 @@ export function OrderImport(props) {
             wide
             content={
               <div>
-                Enter your order number for the supplier.
+                {t('page.orderImport.enterOrderNumber', "Enter your order number for the supplier.")}
+                
                 <br />
                 <br />
+                <Trans i18nKey="page.orderImport.instructions">
                 For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br />
                 For <b>Mouser</b> orders, this is the <i>Web Order #</i>.<br />
                 For <b>Arrow</b> orders, this is the <i>Order Number</i>.
+                </Trans>
               </div>
             }
             trigger={
@@ -419,10 +416,10 @@ export function OrderImport(props) {
         </Form.Group>
         <div style={{ height: "30px" }}>{message}</div>
         <Button primary disabled={loading || order.orderId.length === 0}>
-          Search
+          {t('button.search', "Search")}
         </Button>
         <Button onClick={handleClear} disabled={!(results.parts && results.parts.length > 0)}>
-          Clear
+        {t('button.clear', "Clear")}
         </Button>
       </Form>
       <div style={{ marginTop: "20px" }}>
@@ -434,7 +431,7 @@ export function OrderImport(props) {
           {(!loading && results && results.parts && renderAllMatchingParts(results)) 
           || <div style={{ lineHeight: "100px" }}>
               {enableArrowPrepareEmail && <div><Popup wide='very' position="top center" hoverable content={<p>Clicking this button will open an email template in your default mail application. You will need to send this email to api@arrow.com</p>} trigger={<Button primary onClick={e => handleArrowEmail(e, order)}><Icon name="mail" /> Create Arrow Email</Button>}/></div>}
-              No Results
+              {t('message.noResults', "No Results")}
             </div>}
         </Segment>
       </div>

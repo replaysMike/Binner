@@ -115,6 +115,16 @@
     },
     "datasheet": {
       "title": "Datasheet Search"
+    },
+    "orderImport": {
+      "title": "Order Import",
+      "enterOrderNumber": "Enter your order number for the supplier.",
+      "webOrderNum": "Web Order #",
+      "salesOrderNum": "Sales Order #",
+      "orderNum": "Order Number",
+      "instructions": "For <1>DigiKey</1> orders, this is the <3>Sales Order #</3>.<4 />For <6>Mouser</6> orders, this is the <8>Web Order #</8>.<10 />For <12>Arrow</12> orders, this is the <14>Order Number</14>.",
+      "mouserNote": "<0>Note:</0> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <2>not the Sales Order #</2>",
+      "arrowNote": "<0>Note:</0> Arrow requires that you first request access to their Order API by sending them an email. See <2>Arrow Order Api</2>"
     }
   },
   "bc": {
@@ -171,7 +181,10 @@
     "export": "Export",
     "testApi": "Test Api",
     "forgetCredentials": "Forget Credentials",
-    "viewDatasheet": "View Datasheet"
+    "viewDatasheet": "View Datasheet",
+    "search": "Search",
+    "clear": "Clear",
+    "importParts": "Import Parts"
   },
   "label": {
     "name": "Name",
@@ -189,11 +202,17 @@
     "outOfStock": "Out of Stock",
     "totalParts": "Total Parts",
     "producible": "Producible",
+    "part": "Part", 
     "partNumber": "Part Number",
+    "partNumberShort": "Part#",
+    "supplierPart": "Supplier Part",
     "mfrPart": "Mfr Part",
+    "manufacturer": "Manufacturer",
     "partType": "Part Type",
+    "mountingType": "Mounting Type",
     "cost": "Cost",
     "quantity": "Quantity",
+    "quantityShort": "Qty",
     "leadTime": "Lead Time",
     "referenceIds": "Reference Id(s)",
     "schematicReferenceIds": "Schematic Reference Id(s)",
@@ -219,11 +238,24 @@
     "timeout": "Timeout",
     "postbackUrl": "Postback Url",
     "username": "Username",
-    "password": "Password"
+    "password": "Password",
+    "website": "Website",
+    "datasheet": "Datasheet",
+    "package": "Package",
+    "importQuestion": "Import?",
+    "image": "Image",
+    "customerId": "Customer Id",
+    "orderAmount": "Order Amount",
+    "orderDate": "Order Date",
+    "trackingNumber": "Tracking Number",
+    "unspecified": "Unspecified",
+    "viewTracking": "View Tracking"
   },
   "message": {
     "noPartsAdded": "No parts added.",
-    "noChildPartTypes": "There are no child part types."
+    "noChildPartTypes": "There are no child part types.",
+    "noResults": "No Results",
+    "loadingOrder": "Loading order# {{order}}"
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
@@ -248,7 +280,9 @@
     "failedDeletedPartType": "Failed to delete part type {{name}}",
     "failedAddedPartType": "Failed to add part type {{name}}",
     "failedClearedCredentials": "Failed to clear cached credentials for {{apiName}}",
-    "testFailed": "Test failed"
+    "testFailed": "Test failed",
+    "invalidOrder": "Hmmm, that doesn't look like a valid order number!",
+    "invalid2dBarcode": "Hmmm, I don't recognize that 2D barcode!"
   },
   "success": {
     "producedPcbs": "{{quantity}} PCB's were produced!",
@@ -258,7 +292,8 @@
     "barcodeTypeReceived": "Barcode type {{type}} received",
     "systemSettingsSaved": "System settings were saved.",
     "clearedCredentials": "Successfully cleared cached credentials for {{apiName}}",
-    "testPassed": "Test passed"
+    "testPassed": "Test passed",
+    "partsImported": "{{count}} parts were imported!"
   },
   "popup": {
     "bom": {
