@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation, Trans } from "react-i18next";
 import customEvents from '../common/customEvents';
 
 export function Footer(props) {
+  const { t } = useTranslation();
   const [subscription, setSubscription] = useState(null);
   const [version, setVersion] = useState(null);
 
@@ -15,8 +17,12 @@ export function Footer(props) {
 
   return (
     <div className='footer centered'>
-      <div>{version ? <span>Version: {version}</span> : ""}</div>
-      <div className='promo'>Try <a href="https://binner.io">Binner Cloud Free</a></div>
+      <div>{version ? <span>{t('footer.version', "Version")}: {version}</span> : ""}</div>
+      <div className='promo'>
+        <Trans i18nKey="footer.promo">
+        Try <a href="https://binner.io">Binner Cloud Free</a>
+        </Trans>
+      </div>
     </div>
   );
 }

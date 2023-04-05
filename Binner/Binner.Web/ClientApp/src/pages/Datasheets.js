@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { useTranslation } from "react-i18next";
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { Table, Form, Segment } from 'semantic-ui-react';

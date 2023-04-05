@@ -88,7 +88,7 @@ export function Home(props) {
             <Statistic.Value>
               <Icon name="search" />
             </Statistic.Value>
-            <Statistic.Label>{t('searchInventory', "Search Inventory")}</Statistic.Label>
+            <Statistic.Label>{t('page.home.searchInventory', "Search Inventory")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/bom")} style={{ cursor: "pointer" }}>
             <Statistic.Value>

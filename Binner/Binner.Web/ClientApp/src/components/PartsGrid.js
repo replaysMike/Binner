@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useTranslation, Trans } from "react-i18next";
 import { createMedia } from "@artsy/fresnel";
 import { Table, Icon, Input, Label, Button, Confirm, Modal, Header, Dropdown, Pagination, Popup, Dimmer, Loader } from 'semantic-ui-react';
 import _ from 'underscore';
@@ -21,6 +22,7 @@ const mediaStyles = AppMedia.createMediaStyle();
 const { Media, MediaContextProvider } = AppMedia;
 
 export default function PartsGrid(props) {
+  const { t } = useTranslation();
   const [parts, setParts] = useState(props.parts);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -36,7 +38,7 @@ export default function PartsGrid(props) {
   const [lastSavedPartId, setLastSavedPartId] = useState(0);
   const [saveMessage, setSaveMessage] = useState('');
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
-  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState('Are you sure you want to delete this part?');
+  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
   const [modalHeader, setModalHeader] = useState('');
   const [modalContent, setModalContent] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -100,7 +102,7 @@ export default function PartsGrid(props) {
     }
     else {
       console.error('failed to save part', response.data);
-      saveMessage = `Error saving part ${part.partNumber} - ${response.statusText}!`;
+      saveMessage = t('comp.partsGrid.error.failedSave', "Error saving part {{partNumber}} - {{statusText}}", { partNumber: part.partNumber, statusText: response.statusText });
       displayModalContent(saveMessage, 'Error');
     }
     setLoading(false);
@@ -171,7 +173,7 @@ export default function PartsGrid(props) {
     e.stopPropagation();
     setConfirmDeleteIsOpen(true);
     setSelectedPart(part);
-    setConfirmPartDeleteContent(`Are you sure you want to delete part ${part.partNumber}?`);
+    setConfirmPartDeleteContent(t('comp.partsGrid.confirm.deletePart', "Are you sure you want to delete part {{partNumber}}?", { partNumber: part.partNumber }));
   };
 
   const confirmDeleteClose = (e) => {
@@ -220,26 +222,26 @@ export default function PartsGrid(props) {
               className='small labeled'
               onChange={handlePageSizeChange}
             />
-            <span>records per page</span>
+            <span>{t('comp.partsGrid.recordsPerPage', "records per page")}</span>
           </div>
           <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
 
           <Dimmer.Dimmable as={Table} dimmed={loading} id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
             <Table.Header>
               <Table.Row>
-                {col.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={handleSort('partNumber')}>Part</Table.HeaderCell>}
-                {col.quantity && <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={handleSort('quantity')}>Quantity</Table.HeaderCell>}
-                {col.lowstockthreshold && <Table.HeaderCell sorted={column === 'lowstockthreshold' ? direction : null} onClick={handleSort('lowstockthreshold')}>Low Stock</Table.HeaderCell>}
-                {col.manufacturerpartnumber && <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={handleSort('manufacturerPartNumber')}>Manufacturer Part</Table.HeaderCell> }
-                {col.description && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'description' ? direction : null} onClick={handleSort('description')}>{renderChildren ? "Description" : null}</Table.HeaderCell>)}}</Media>}              
-                {col.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'location' ? direction : null} onClick={handleSort('location')}>{renderChildren ? "Location" : null}</Table.HeaderCell>)}}</Media> }
-                {col.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber' ? direction : null} onClick={handleSort('binNumber')}>{renderChildren ? "Bin Number" : null}</Table.HeaderCell>)}}</Media> }
-                {col.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber2' ? direction : null} onClick={handleSort('binNumber2')}>{renderChildren ? "Bin Number 2" : null}</Table.HeaderCell>)}}</Media> }
-                {col.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'cost' ? direction : null} onClick={handleSort('cost')}>{renderChildren ? "Cost" : null}</Table.HeaderCell>)}}</Media> }
-                {col.digikeypartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={handleSort('digiKeyPartNumber')}>{renderChildren ? "DigiKey Part" : null}</Table.HeaderCell>)}}</Media> }
-                {col.mouserpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'mouserPartNumber' ? direction : null} onClick={handleSort('mouserPartNumber')}>{renderChildren ? "Mouser Part" : null}</Table.HeaderCell>)}}</Media> }
-                {col.arrowpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'arrowPartNumber' ? direction : null} onClick={handleSort('arrowPartNumber')}>{renderChildren ? "Arrow Part" : null}</Table.HeaderCell>)}}</Media> }
-                {col.datasheeturl && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'datasheetUrl' ? direction : null} onClick={handleSort('datasheetUrl')}>{renderChildren ? "Datasheet" : null}</Table.HeaderCell>)}}</Media> }
+                {col.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={handleSort('partNumber')}>{t('comp.partsGrid.part', "Part")}</Table.HeaderCell>}
+                {col.quantity && <Table.HeaderCell sorted={column === 'quantity' ? direction : null} onClick={handleSort('quantity')}>{t('comp.partsGrid.quantity', "Quantity")}</Table.HeaderCell>}
+                {col.lowstockthreshold && <Table.HeaderCell sorted={column === 'lowstockthreshold' ? direction : null} onClick={handleSort('lowstockthreshold')}>{t('comp.partsGrid.lowStock', "Low Stock")}</Table.HeaderCell>}
+                {col.manufacturerpartnumber && <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={handleSort('manufacturerPartNumber')}>{t('comp.partsGrid.mfrPart', "Manufacturer Part")}</Table.HeaderCell> }
+                {col.description && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'description' ? direction : null} onClick={handleSort('description')}>{renderChildren ? t('comp.partsGrid.description', "Description") : null}</Table.HeaderCell>)}}</Media>}              
+                {col.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'location' ? direction : null} onClick={handleSort('location')}>{renderChildren ? t('comp.partsGrid.location', "Location") : null}</Table.HeaderCell>)}}</Media> }
+                {col.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber' ? direction : null} onClick={handleSort('binNumber')}>{renderChildren ? t('comp.partsGrid.binNumber', "Bin Number") : null}</Table.HeaderCell>)}}</Media> }
+                {col.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber2' ? direction : null} onClick={handleSort('binNumber2')}>{renderChildren ? t('comp.partsGrid.binNumber2', "Bin Number 2") : null}</Table.HeaderCell>)}}</Media> }
+                {col.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'cost' ? direction : null} onClick={handleSort('cost')}>{renderChildren ? t('comp.partsGrid.cost', "Cost") : null}</Table.HeaderCell>)}}</Media> }
+                {col.digikeypartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'digiKeyPartNumber' ? direction : null} onClick={handleSort('digiKeyPartNumber')}>{renderChildren ? t('comp.partsGrid.digikeyPart', "DigiKey Part") : null}</Table.HeaderCell>)}}</Media> }
+                {col.mouserpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'mouserPartNumber' ? direction : null} onClick={handleSort('mouserPartNumber')}>{renderChildren ? t('comp.partsGrid.mouserPart', "Mouser Part") : null}</Table.HeaderCell>)}}</Media> }
+                {col.arrowpartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'arrowPartNumber' ? direction : null} onClick={handleSort('arrowPartNumber')}>{renderChildren ? t('comp.partsGrid.arrowPart', "Arrow Part") : null}</Table.HeaderCell>)}}</Media> }
+                {col.datasheeturl && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'datasheetUrl' ? direction : null} onClick={handleSort('datasheetUrl')}>{renderChildren ? t('comp.partsGrid.datasheet', "Datasheet") : null}</Table.HeaderCell>)}}</Media> }
                 {col.print && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className}></Table.HeaderCell>)}}</Media> }
                 {col.delete && <Table.HeaderCell></Table.HeaderCell>}
               </Table.Row>
@@ -257,7 +259,7 @@ export default function PartsGrid(props) {
                     <Popup 
                       hideOnScroll
                       position="bottom left"
-                      content={`The quantity of parts currently in stock.`}
+                      content={t('comp.partsGrid.popup.quantity', "The quantity of parts currently in stock.")}
                       trigger={editable ? <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} /> : <span>{p.quantity}</span>}
                     />                      
                   </Table.Cell>}
@@ -265,7 +267,7 @@ export default function PartsGrid(props) {
                     <Popup 
                       hideOnScroll
                       position="bottom left"
-                      content={`Quantities below this value will indicate the part is low on stock.`}
+                      content={t('comp.partsGrid.popup.lowStock', "Quantities below this value will indicate the part is low on stock.")}
                       trigger={<Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} />}
                     />                      
                   </Table.Cell>}
@@ -307,7 +309,7 @@ export default function PartsGrid(props) {
                   </Table.Cell>}
                 </Table.Row>
               )
-            : (<Table.Row><Table.Cell colSpan={13} textAlign="center">{props.children && props.children.length > 0 ? props.children : "No results."}</Table.Cell></Table.Row>)}
+            : (<Table.Row><Table.Cell colSpan={13} textAlign="center">{props.children && props.children.length > 0 ? props.children : t('comp.partsGrid.noResults', "No results.")}</Table.Cell></Table.Row>)}
             </Table.Body>
           </Dimmer.Dimmable>
           <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
@@ -316,7 +318,7 @@ export default function PartsGrid(props) {
         <Modal open={modalIsOpen} onCancel={handleModalClose} onClose={handleModalClose}>
           {modalHeader && <Header>{modalHeader}</Header>}
           <Modal.Content>{modalContent}</Modal.Content>
-          <Modal.Actions><Button onClick={handleModalClose}>OK</Button></Modal.Actions>
+          <Modal.Actions><Button onClick={handleModalClose}>{('comp.partsGrid.ok')}</Button></Modal.Actions>
         </Modal>
       </div>
     );

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import PartsGrid from "../components/PartsGrid";
 import { fetchApi } from '../common/fetchApi';
 
 export function LowInventory (props) {
+  const { t } = useTranslation();
   const [parts, setParts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -47,10 +49,12 @@ export function LowInventory (props) {
   const columns =  'partNumber,quantity,lowStockThreshold,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,delete';
   return (
     <div>
-      <h1>Low Inventory</h1>
+      <h1>{t('page.lowInventory.title', "Low Inventory")}</h1>
       <p>
-        Use this page to reorder parts you are low on.<br/>
-        You can define a custom <i>Low Stock</i> value per part in your inventory.
+        <Trans i18nKey="page.lowInventory.description">
+          Use this page to reorder parts you are low on.<br/>
+          You can define a custom <i>Low Stock</i> value per part in your inventory.
+        </Trans>
       </p>
       <PartsGrid parts={parts} columns={columns} page={page} totalPages={totalPages} loading={loading} loadPage={handleNextPage} onPartClick={handlePartClick} onPageSizeChange={handlePageSizeChange} name='partsGrid' />
     </div>
