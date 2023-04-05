@@ -210,7 +210,7 @@ export function Boms (props) {
     setConfirmDeleteIsOpen(true);
     setConfirmProjectDeleteContent(
       <p>
-        {t('confirms.deleteProject', 'Are you sure you want to delete this project and your entire BOM?')}
+        {t('confirm.deleteProject', 'Are you sure you want to delete this project and your entire BOM?')}
         <br />
         <br />
         <b>
@@ -218,7 +218,7 @@ export function Boms (props) {
         </b>
         <br />
         <br />
-        {t('confirms.permanent', 'This action is <i>permanent and cannot be recovered</i>.')}
+        {t('confirm.permanent', 'This action is <i>permanent and cannot be recovered</i>.')}
       </p>
     );
   };
@@ -257,40 +257,40 @@ export function Boms (props) {
   return (
     <div>
       <Breadcrumb>
-        <Breadcrumb.Section link onClick={() => props.history("/")}><Trans i18nKey="bom.bc.home">Home</Trans></Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/")}><Trans i18nKey="page.bom.bc.home">Home</Trans></Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section active><Trans i18nKey="bom.bc.bom">BOM</Trans></Breadcrumb.Section>
+        <Breadcrumb.Section active><Trans i18nKey="page.bom.bc.bom">BOM</Trans></Breadcrumb.Section>
       </Breadcrumb>
       <Confirm
         className="confirm"
-        header={t('labels.deleteProject', 'Delete Project')}
+        header={t('label.deleteProject', 'Delete Project')}
         open={confirmDeleteIsOpen}
         onCancel={confirmDeleteClose}
         onConfirm={handleDeleteProject}
         content={confirmPartDeleteContent}
       />
 
-      <FormHeader name={t('bom.header.title', 'Bill of Materials')} to="..">
-        <Trans i18nKey="boms.header.description">
+      <FormHeader name={t('page.bom.header.title', 'Bill of Materials')} to="..">
+        <Trans i18nKey="page.boms.header.description">
         Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>
         Choose or create the project to manage BOM for.<br/>
         </Trans>
 			</FormHeader>
 
       <div style={{ minHeight: '35px' }}>
-        <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="boms.buttons.addBomProject">Add BOM Project</Trans></Button>
+        <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="button.addBomProject">Add BOM Project</Trans></Button>
       </div>
       <div>
         {addVisible &&
           <Segment style={{marginBottom: '10px'}}>
             <Form onSubmit={onCreateProject}>
-              <Form.Input width={6} label={t('labels.name', 'Name')} required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
-              <Form.Field width={10} control={TextArea} label={t('labels.description', 'Description')} value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
+              <Form.Input width={6} label={t('label.name', 'Name')} required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
+              <Form.Field width={10} control={TextArea} label={t('label.description', 'Description')} value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
               <Form.Group>
-                <Form.Input width={6} label={t('labels.location', 'Location')} placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
-                <Form.Dropdown width={4} label={t('labels.color', 'Color')} selection value={project.color} options={colors} onChange={handleChange} name='color' />
+                <Form.Input width={6} label={t('label.location', 'Location')} placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
+                <Form.Dropdown width={4} label={t('label.color', 'Color')} selection value={project.color} options={colors} onChange={handleChange} name='color' />
               </Form.Group>
-              <Button primary type='submit' icon><Icon name='save' /> <Trans i18nKey="boms.buttons.save">Save</Trans></Button>
+              <Button primary type='submit' icon><Icon name='save' /> <Trans i18nKey="button.save">Save</Trans></Button>
             </Form>
           </Segment>
         }
@@ -312,11 +312,11 @@ export function Boms (props) {
             <Table.Header>
               <Table.Row>
                 <Table.HeaderCell></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}><Trans i18nKey="labels.project">Project</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}><Trans i18nKey="labels.description">Description</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}><Trans i18nKey="labels.location">Location</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'partCount' ? direction : null} onClick={handleSort('partCount')}><Trans i18nKey="labels.parts">Parts</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'pcbCount' ? direction : null} onClick={handleSort('pcbCount')}><Trans i18nKey="labels.pcbs">Pcbs</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}><Trans i18nKey="label.project">Project</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}><Trans i18nKey="label.description">Description</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}><Trans i18nKey="label.location">Location</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'partCount' ? direction : null} onClick={handleSort('partCount')}><Trans i18nKey="label.parts">Parts</Trans></Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'pcbCount' ? direction : null} onClick={handleSort('pcbCount')}><Trans i18nKey="label.pcbs">Pcbs</Trans></Table.HeaderCell>
                 <Table.HeaderCell width={2}></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
