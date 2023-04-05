@@ -18,9 +18,12 @@
       "parts": "Parts",
       "uniqueParts": "Unique Parts",
       "value": "Value",
-      "projects": "Projects",
-      "": "",
-      "": "",
+      "projects": "Projects"
+    },
+    "search": {
+      "title":"Inventory",
+      "search":"Seach",
+      "noResults":"No matching results."
     },
     "bom": {
       "bc": {

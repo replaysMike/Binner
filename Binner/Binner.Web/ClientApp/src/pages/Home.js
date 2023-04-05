@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { Statistic, Segment, Icon } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
 import { VersionBanner } from "../components/VersionBanner";
