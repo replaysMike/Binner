@@ -1,39 +1,114 @@
 {
-  "bom": {
-    "bc": {
-      "home": "Home",
-      "boms": "BOMs",
-      "bom": "BOM"
+  "page": {
+    "bom": {
+      "bc": {
+        "home": "Home",
+        "boms": "BOMs",
+        "bom": "BOM"
+      },
+      "header": {
+        "title": "Bill of Materials",
+        "description": "Manage your BOM by creating PCB(s) and adding your parts." 
+      },
+      "notEnoughPartsToProducePcb": "You do not have enough parts to produce this PCB.",
+      "notEnoughPartsToProduceBom": "You do not have enough parts to produce your entire BOM.",
+      "noPartsAssigned": "Assign parts to get a count of how many times you can produce this PCB.",
+      "pcbProduceCount": "You can produce this PCB <b>{{count}}</b> times with your current inventory.",
+      "bomProduceCount": "You can produce your entire BOM <b>{{count}}</b> times with your current inventory.",
+      "lowestPcb": "<i>{{name}}</i> is the lowest on inventory."
     },
-    "header": {
-      "title": "Bill of Materials ZZZ",
-      "description": "Manage your BOM by creating PCB(s) and adding your parts." 
-    }
+    "boms": {
+      "header": {
+        "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>Choose or create the project to manage BOM for.<br/>" 
+      }
+    }  
   },
-  "boms": {
-    "header": {
-      "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>Choose or create the project to manage BOM for.<br/>" 
-    },
-    "buttons": {
-      "addBomProject": "Add BOM Project",
-      "save": "Save"
-    }
+  "button": {
+    "addBomProject": "Add BOM Project",
+    "addPart": "Add Part",
+    "save": "Save",
+    "download": "Download",
+    "addPcb": "Add PCB",
+    "producePcb": "Produce PCB",
+    "removePart": "Remove Part",
+    "removeXParts": "Remove ({{checkboxesChecked}}) Parts",
+    "addFirstPart": "Add your first part!",
+    "all": "All"
   },
-  "labels": {
+  "label": {
     "name": "Name",
     "description": "Description",
     "location": "Location",
     "color": "Color",
     "project": "Project",
     "parts": "Parts",
+    "pcb": "Pcb",
     "pcbs": "Pcbs",
-    "deleteProject": "Delete Project"
+    "deleteProject": "Delete Project",
+    "editProject": "Edit Project",
+    "lastModified": "Last modified",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "totalParts": "Total Parts",
+    "producible": "Producible",
+    "partNumber": "Part Number",
+    "mfrPart": "Mfr Part",
+    "partType": "Part Type",
+    "cost": "Cost",
+    "quantity": "Quantity",
+    "leadTime": "Lead Time",
+    "referenceIds": "Reference Id(s)",
+    "schematicReferenceIds": "Schematic Reference Id(s)",
+    "customDescription": "Custom Description",
+    "note": "Note",
+    "recordsPerPage": "records per page"
   },
-  "confirms": {
+  "message": {
+    "noPartsAdded": "No parts added."
+  },
+  "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
-    "permanent": "This action is <i>permanent and cannot be recovered</i>."
+    "removeBomParts": "Are you sure you want to remove these <b>{{quantity}}</b> part(s) from your BOM?",
+    "permanent": "This action is <i>permanent and cannot be recovered</i>.",
+    "header": {
+      "removeBomPart": "Remove Part from BOM"
+    }
   },
-  "errors": {
-    "deleteProjectFailed": "Failed to delete project!"
+  "error": {
+    "deleteProjectFailed": "Failed to delete project!",
+    "failedToRemoveBomParts": "Failed to remove parts from BOM!",
+    "projectNotFound": "Could not find project named {{projectName}}",
+    "failedSaveProject": "Failed to save project change!",
+    "noPartSelected": "No part selected!",
+    "failedAddPart": "Failed to add part!",
+    "failedAddPcb": "Failed to add pcb!",
+    "failedBomExport": "BOM export failed!"
+  },
+  "success": {
+    "producedPcbs": "{{quantity}} PCB's were produced!",
+    "bomExported": "BOM exported successfully!"
+  },
+  "popup": {
+    "bom": {
+      "addPart": "Add a part to the BOM",
+      "downloadBom": "Download a BOM part list",
+      "removePart": "Remove selected parts from the BOM",
+      "addPcb": "Add a PCB to this project",
+      "producePcb": "Reduce inventory quantities when a PCB is assembled",
+      "filterOutOfStock": "Select to only show out of stock parts",
+      "pcb": "Indicates which PCB your part is assigned to. A PCB assignment is optional, all unassigned parts will appear in the <1>All</1> tab.",
+      "quantity": "The quantity of parts required for a single PCB",
+      "inventoryQuantity": "The quantity of parts currently in inventory",
+      "referenceId": "Your custom <1 />reference Id(s) you can use for identifying this part.",
+      "schematicReferenceId": "Your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3/>Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
+      "displayAll": "Displays all parts including parts not associated with a PCB.",
+      "unassociatedPartName": "Edit the name of your unassociated <1 /> part",
+      "bomQuantity": "Edit the <1 />BOM quantity required",
+      "quantityAvailable": "Edit the quantity available in your <1 />inventory",
+      "editReferenceId": "Edit your custom <1 />reference Id(s) you can use for identifying this part.",
+      "editSchematicReferenceId": "Edit your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
+      "customDescription": "Provide a custom description",
+      "customNote": "Provide a custom note"
+    }
   }
 }
