@@ -1,5 +1,27 @@
 {
   "page": {
+    "home": {
+      "title": "Dashboard",
+      "description": "Binner is an inventory management app for makers, hobbyists and professionals.",
+      "addInventory": "Add Inventory",
+      "searchInventory": "Search Inventory",
+      "bom": "BOM",
+      "datasheets": "Datasheets",
+      "viewLowStock": "View Low Stock",
+      "partTypes": "Part Types",
+      "importExport": "Import/Export",
+      "printLabels": "Print Labels",
+      "tools": "Tools",
+      "settings": "Settings",
+      "yourOverview": "Your Overview",
+      "lowStock": "Low Stock",
+      "parts": "Parts",
+      "uniqueParts": "Unique Parts",
+      "value": "Value",
+      "projects": "Projects",
+      "": "",
+      "": "",
+    },
     "bom": {
       "bc": {
         "home": "Home",

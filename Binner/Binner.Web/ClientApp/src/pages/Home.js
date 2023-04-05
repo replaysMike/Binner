@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { Statistic, Segment, Icon } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
 import { VersionBanner } from "../components/VersionBanner";
@@ -7,6 +8,7 @@ import semver from "semver";
 import customEvents from '../common/customEvents';
 
 export function Home(props) {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
   const [versionData, setVersionData] = useState({});
@@ -72,33 +74,33 @@ export function Home(props) {
 
   return (
     <div>
-      <h1>Dashboard</h1>
-      <p>Binner is an inventory management app for makers, hobbyists and professionals.</p>
+      <h1>{t('page.home.title', "Dashboard")}</h1>
+      <p>{t('page.home.description', "Binner is an inventory management app for makers, hobbyists and professionals.")}</p>
       <Segment>
         <Statistic.Group widths="four">
           <Statistic onClick={(e) => route(e, "/inventory/add")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="plus" />
             </Statistic.Value>
-            <Statistic.Label>Add Inventory</Statistic.Label>
+            <Statistic.Label>{t('page.home.addInventory', "Add Inventory")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/inventory")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="search" />
             </Statistic.Value>
-            <Statistic.Label>Search Inventory</Statistic.Label>
+            <Statistic.Label>{t('searchInventory', "Search Inventory")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/bom")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="list alternate outline" />
             </Statistic.Value>
-            <Statistic.Label>BOM</Statistic.Label>
+            <Statistic.Label>{t('page.home.bom', "BOM")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/datasheets")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="file alternate" />
             </Statistic.Value>
-            <Statistic.Label>Datasheets</Statistic.Label>
+            <Statistic.Label>{t('page.home.datasheets', "Datasheets")}</Statistic.Label>
           </Statistic>
         </Statistic.Group>
         <Statistic.Group widths="three" size="tiny" style={{ marginTop: "50px" }}>
@@ -106,42 +108,42 @@ export function Home(props) {
             <Statistic.Value>
               <Icon name="battery low" />
             </Statistic.Value>
-            <Statistic.Label>View Low Stock</Statistic.Label>
+            <Statistic.Label>{t('page.home.viewLowStock', "View Low Stock")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/partTypes")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="sitemap" />
             </Statistic.Value>
-            <Statistic.Label>Part Types</Statistic.Label>
+            <Statistic.Label>{t('page.home.partTypes', "Part Types")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/exportData")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="cloud download" />
             </Statistic.Value>
-            <Statistic.Label>Import/Export</Statistic.Label>
+            <Statistic.Label>{t('page.home.importExport', "Import/Export")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/print")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="print" />
             </Statistic.Value>
-            <Statistic.Label>Print Labels</Statistic.Label>
+            <Statistic.Label>{t('page.home.printLabels', "Print Labels")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/tools")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="wrench" />
             </Statistic.Value>
-            <Statistic.Label>Tools</Statistic.Label>
+            <Statistic.Label>{t('page.home.tools', "Tools")}</Statistic.Label>
           </Statistic>
           <Statistic onClick={(e) => route(e, "/settings")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="cog" />
             </Statistic.Value>
-            <Statistic.Label>Settings</Statistic.Label>
+            <Statistic.Label>{t('page.home.settings', "Settings")}</Statistic.Label>
           </Statistic>
         </Statistic.Group>
       </Segment>
 
-      <h2>Your Overview</h2>
+      <h2>{t('page.home.yourOverview', "Your Overview")}</h2>
       <Segment inverted loading={loading} textAlign="center">
         <Statistic.Group widths="five">
           <Statistic color="red" inverted>
@@ -149,35 +151,35 @@ export function Home(props) {
               <Icon name="battery low" />
               {summary.lowStockCount}
             </Statistic.Value>
-            <Statistic.Label>Low Stock</Statistic.Label>
+            <Statistic.Label>{t('page.home.lowStock', "Low Stock")}</Statistic.Label>
           </Statistic>
           <Statistic color="orange" inverted>
             <Statistic.Value>
               <Icon name="microchip" />
               {summary.partsCount}
             </Statistic.Value>
-            <Statistic.Label>Parts</Statistic.Label>
+            <Statistic.Label>{t('page.home.parts', "Parts")}</Statistic.Label>
           </Statistic>
           <Statistic color="orange" inverted>
             <Statistic.Value>
               <Icon name="microchip" />
               {summary.uniquePartsCount}
             </Statistic.Value>
-            <Statistic.Label>Unique Parts</Statistic.Label>
+            <Statistic.Label>{t('page.home.uniqueParts', "Unique Parts")}</Statistic.Label>
           </Statistic>
           <Statistic color="green" inverted>
             <Statistic.Value>
               <Icon name="dollar" />
               {(summary.partsCost || 0).toFixed(2)}
             </Statistic.Value>
-            <Statistic.Label>Value</Statistic.Label>
+            <Statistic.Label>{t('page.home.value', "Value")}</Statistic.Label>
           </Statistic>
           <Statistic color="blue" inverted>
             <Statistic.Value>
               <Icon name="folder open" />
               {summary.projectsCount}
             </Statistic.Value>
-            <Statistic.Label>Projects</Statistic.Label>
+            <Statistic.Label>{t('page.home.projects', "Projects")}</Statistic.Label>
           </Statistic>
         </Statistic.Group>
       </Segment>
