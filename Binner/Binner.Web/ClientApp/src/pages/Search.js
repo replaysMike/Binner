@@ -204,7 +204,7 @@ export function Search(props) {
         onPartClick={handlePartClick}
         onPageSizeChange={handlePageSizeChange}
         name="partsGrid"
-      >{t('page.search.noResults', "No matching results.")}</PartsGrid>
+      >{t('message.noMatchingResults', "No matching results.")}</PartsGrid>
     </div>
   );
 }

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, TextArea, Input, Image, Header, Popup } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import NumberPicker from "./NumberPicker";
 
 export function AddPcbModal(props) {
+  const { t } = useTranslation();
   AddPcbModal.abortController = new AbortController();
   const defaultForm = { name: "", description: "", quantity: "1", cost: 0, serialNumberFormat: 'SN00000000' };
   const [isOpen, setIsOpen] = useState(false);
@@ -55,10 +57,10 @@ export function AddPcbModal(props) {
   return (
     <div>
       <Modal centered open={isOpen || false} onClose={handleModalClose}>
-        <Modal.Header>BOM Management</Modal.Header>
+        <Modal.Header>{t('comp.addPcbModal.title', "BOM Management")}</Modal.Header>
         <Modal.Description style={{ width: "100%", padding: '5px 25px' }}>
-        <Header style={{marginBottom: '2px'}}>Add PCB</Header>
-          <p>Adding a PCB allows you to associate your parts with a specific PCB, and even multiple PCBs within a project.</p>
+        <Header style={{marginBottom: '2px'}}>{t('comp.addPcbModal.header', "Add PCB")}</Header>
+          <p>{t('comp.addPcbModal.description', "Adding a PCB allows you to associate your parts with a specific PCB, and even multiple PCBs within a project.")}</p>
         </Modal.Description>
         <Modal.Content scrolling image style={{width: "100%"}}>
           <Image size="medium" src="/image/pcb.png" wrapped />
@@ -66,23 +68,27 @@ export function AddPcbModal(props) {
             <Form.Field width={8}>
               <Popup
                 wide
-                content="Enter the name of your pcb board or module"
+                content={t('comp.addPcbModal.popup.name', "Enter the name of your pcb board or module")}
                 trigger={
-                  <Form.Input required label="Name" placeholder="Main Board or module name" name="name" value={form.name || ''} onChange={handleChange} />
+                  <Form.Input required label={t('label.name', "Name")} placeholder={t('comp.addPcbModal.placeholder.name', "Main Board or module name")} name="name" value={form.name || ''} onChange={handleChange} />
                 }
               />
             </Form.Field>
             <Form.Field width={8}>
               <Popup
                 wide
-                content={<p>Enter a description describing what your pcb does. (<i>optional</i>)</p>}
+                content={<p>
+                  <Trans i18nKey="comp.addPcbModal.popup.description">
+                  Enter a description describing what your pcb does. (<i>optional</i>)
+                  </Trans>
+                  </p>}
                 trigger={
                   <Form.Field
                     type="text"
                     control={TextArea}
                     style={{ height: "50px", minHeight: "50px", padding: "5px" }}
-                    label="Description"
-                    placeholder="Description of pcb"
+                    label={t('label.description', "Description")}
+                    placeholder={t('comp.addPcbModal.placeholder.description', "Description of pcb")}
                     name="description"
                     value={form.description || ''}
                     onChange={handleChange}
@@ -94,11 +100,15 @@ export function AddPcbModal(props) {
               <Form.Field width={4}>
                 <Popup
                   wide
-                  content={<p>Enter a quantity (multiplier) of PCB's produced each time you create a PCB. This should normally be 1, unless you require several copies of the same PCB for producing your BOM project.<br/><br/><i>Example:</i> An audio amplifier may require 2 of the same PCB's, one for each left/right channel each time you produce the entire assembly.</p>}
+                  content={<p>
+                    <Trans i18nKey="comp.addPcbModal.popup.quantity">
+                    Enter a quantity (multiplier) of PCB's produced each time you create a PCB. This should normally be 1, unless you require several copies of the same PCB for producing your BOM project.<br/><br/><i>Example:</i> An audio amplifier may require 2 of the same PCB's, one for each left/right channel each time you produce the entire assembly.
+                    </Trans>
+                  </p>}
                   trigger={
                     <Form.Field
                       control={NumberPicker}
-                      label="Quantity"
+                      label={t('label.quantity', "Quantity")}
                       placeholder="1"
                       min={0}
                       value={form.quantity || ""}
@@ -112,9 +122,9 @@ export function AddPcbModal(props) {
               <Form.Field width={4}>
                 <Popup
                   wide
-                  content={<p>The cost to produce a single PCB board (without components). If using quantity, only specify the cost for a single board as quantity will be taken into consideration.</p>}
+                  content={<p>{t('comp.addPcbModal.popup.name', "The cost to produce a single PCB board (without components). If using quantity, only specify the cost for a single board as quantity will be taken into consideration.")}</p>}
                   trigger={<Form.Field>
-                    <label>Cost</label>
+                    <label>{t('label.cost', "Cost")}</label>
                     <Input
                       label="$"
                       placeholder="0.00"
@@ -131,10 +141,14 @@ export function AddPcbModal(props) {
             <Form.Field width={8}>
               <Popup
                 wide
-                content={<p>Enter your serial number format as a string. The left-most portion of the string will be incremented by 1 each time you produce a PCB. (<i>optional</i>)<br/>Example: <i>SN00000000</i></p>}
+                content={<p>
+                  <Trans i18nKey="comp.addPcbModal.popup.serialNumberFormat">
+                  Enter your serial number format as a string. The left-most portion of the string will be incremented by 1 each time you produce a PCB. (<i>optional</i>)<br/>Example: <i>SN00000000</i>
+                  </Trans>
+                </p>}
                 trigger={
                   <Form.Input
-                    label="Serial Number Format"
+                    label={t('label.serialNumberFormat', "Serial Number Format")}
                     placeholder="SN00000000"
                     name="serialNumberFormat"
                     value={form.serialNumberFormat || ''}
@@ -146,9 +160,9 @@ export function AddPcbModal(props) {
           </Form>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={handleModalClose}>Cancel</Button>
+          <Button onClick={handleModalClose}>{t('button.cancel', "Cancel")}</Button>
           <Button primary onClick={handleAdd}>
-            <Icon name="plus" /> Add
+            <Icon name="plus" /> {t('button.add', "Add")}
           </Button>
         </Modal.Actions>
       </Modal>

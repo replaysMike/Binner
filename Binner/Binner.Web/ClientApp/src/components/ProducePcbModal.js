@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation, Trans } from 'react-i18next';
 import { Button, Form, Modal, Image, Header, Popup, Input, Table, Icon } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import NumberPicker from "./NumberPicker";
@@ -6,6 +7,7 @@ import _ from "underscore";
 import { getProduciblePcbCount, getProducibleUnassociatedCount, getOutOfStockParts } from "../common/bomTools";
 
 export function ProducePcbModal(props) {
+  const { t } = useTranslation();
   ProducePcbModal.abortController = new AbortController();
   const defaultForm = { pcbs: [], quantity: 1 };
   const [isOpen, setIsOpen] = useState(false);
@@ -27,8 +29,8 @@ export function ProducePcbModal(props) {
 
   const createPcbOptions = (project) => {
     const options = [
-      { key: -1, text: 'All', description: 'Produce the entire BOM', value: -1 },
-      { key: 0, text: 'Unassociated', description: 'Produce parts not associated to a PCB', value: 0, icon: !canProducePcb() && "warning circle", disabled: getProducibleUnassociatedCount(project.parts) === 0 },
+      { key: -1, text: t('comp.producePcbModal.options.all', "All"), description: t('comp.producePcbModal.options.allDescription', "Produce the entire BOM"), value: -1 },
+      { key: 0, text: t('comp.producePcbModal.options.unassociated', "Unassociated"), description: t('comp.producePcbModal.options.unassociatedDescription', "Produce parts not associated to a PCB"), value: 0, icon: !canProducePcb() && "warning circle", disabled: getProducibleUnassociatedCount(project.parts) === 0 },
     ];
   
     if (project && project.pcbs && project.pcbs.length > 0) {
@@ -151,29 +153,29 @@ export function ProducePcbModal(props) {
   return (
     <div>
       <Modal centered open={isOpen || false} onClose={handleModalClose} className="producePcbModal">
-        <Modal.Header>BOM Management</Modal.Header>
+        <Modal.Header>{t('comp.producePcbModal.title', "BOM Management")}</Modal.Header>
         <Modal.Content scrolling image>
           <Image size="medium" src="/image/pcb.png" wrapped />
           <Modal.Description style={{ width: "100%" }}>
-            <Header>Produce Pcb</Header>
+            <Header>{t('comp.producePcbModal.header', "Produce Pcb")}</Header>
             <Form style={{ marginBottom: "10px" }}>
               <Form.Field width={10}>
                 <Popup
                   wide
-                  content="Select the pcb(s) you would like to produce. If you don't define PCB's, choose Unassociated or All."
+                  content={t('comp.producePcbModal.popup.pcbs', "Select the pcb(s) you would like to produce. If you don't define PCB's, choose Unassociated or All.")}
                   trigger={
-                    <Form.Dropdown label='Select PCB(s)' placeholder="Choose PCB(s) to produce" multiple selection value={form.pcbs || []} options={pcbOptions} onChange={handleChange} name='pcbs' />
+                    <Form.Dropdown label={t('comp.producePcbModal.label.pcbs', "Select PCB(s)")} placeholder={t('comp.producePcbModal.placeholder.pcbs', "Choose PCB(s) to produce")} multiple selection value={form.pcbs || []} options={pcbOptions} onChange={handleChange} name='pcbs' />
                   }
                 />
               </Form.Field>
               <Form.Field width={4}>
                 <Popup
                   wide
-                  content={<p>Enter the quantity of PCBs you are producing.</p>}
+                  content={<p>{t('comp.producePcbModal.popup.quantity', "Enter the quantity of PCBs you are producing.")}</p>}
                   trigger={
                     <Form.Field
                       control={NumberPicker}
-                      label="Quantity"
+                      label={t('label.quantity', "Quantity")}
                       placeholder="10"
                       min={1}
                       value={form.quantity || ""}
@@ -189,10 +191,10 @@ export function ProducePcbModal(props) {
                   <Table.Header>
                     <Table.Row>
                       <Table.HeaderCell width={3}>PCB</Table.HeaderCell>
-                      <Table.HeaderCell width={3}><Popup position="top left" content="The next serial number assigned to the board" trigger={<div>Next Serial Number</div>}/></Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center"><Popup wide position="top center" content="The maximum number of boards you can produce" trigger={<div>Max Qty</div>}/></Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center"><Popup position="top center" content="The number of parts on the board" trigger={<div>Parts</div>}/></Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center"><Popup wide position="top center" content="The number of parts on the board that are out of stock" trigger={<div>Out of Stock</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell width={3}><Popup position="top left" content={t('comp.producePcbModal.popup.nextSerialNumber', "The next serial number assigned to the board")} trigger={<div>{t('comp.producePcbModal.nextSerialNumber', "Next Serial Number")}</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center"><Popup wide position="top center" content={t('comp.producePcbModal.popup.maxQty', "The maximum number of boards you can produce")} trigger={<div>{t('comp.producePcbModal.maxQty', "Max Qty")}</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center"><Popup position="top center" content={t('comp.producePcbModal.popup.parts', "The number of parts on the board")} trigger={<div>{t('label.parts', "Parts")}</div>}/></Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center"><Popup wide position="top center" content={t('comp.producePcbModal.popup.outOfStock', "The number of parts on the board that are out of stock")} trigger={<div>{t('label.outOfStock', "Out of Stock")}</div>}/></Table.HeaderCell>
                       <Table.HeaderCell width={3}></Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
@@ -204,7 +206,7 @@ export function ProducePcbModal(props) {
                         {p.pcbId && <Form.Field>
                           <Popup
                             wide
-                            content="The next PCB will have it's serial number started at this value."
+                            content={t('comp.producePcbModal.popup.serialNumber', "The next PCB will have it's serial number started at this value.")}
                             trigger={
                               <Input disabled={!canProducePcb(p)} style={{display: 'inline-block', width: '200px'}} placeholder="SN00000000" name="serialNumber" value={p.serialNumber || ''} id={p.pcbId} onChange={handleSerialNumberChange} />
                             }
@@ -214,7 +216,7 @@ export function ProducePcbModal(props) {
                       <Table.Cell textAlign="center">{p.pcbId > 0 ? getProduciblePcbCount(project.parts, p).count : getProducibleUnassociatedCount(project.parts)}</Table.Cell>
                       <Table.Cell textAlign="center">{p.pcbId > 0 ? _.filter(project.parts, x => x.pcbId === p.pcbId).length : _.filter(project.parts, x => x.pcbId === null).length}</Table.Cell>
                       <Table.Cell textAlign="center">{getTotalPartsOutOfStock(p.pcbId && p.pcbId > 0 ? p : null)}</Table.Cell>
-                      <Table.Cell>{!canProducePcb(p) && <span><Icon name="warning circle" color="red" /> Not enough parts</span>}</Table.Cell>
+                      <Table.Cell>{!canProducePcb(p) && <span><Icon name="warning circle" color="red" /> {t('message.notEnoughParts', "Not enough parts")}</span>}</Table.Cell>
                     </Table.Row>
                   ))}
                   </Table.Body>
@@ -224,9 +226,9 @@ export function ProducePcbModal(props) {
           </Modal.Description>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={handleModalClose}>Cancel</Button>
+          <Button onClick={handleModalClose}>{t('button.cancel', "Cancel")}</Button>
           <Button primary onClick={handleSubmit} disabled={form.pcbs.length === 0}>
-            <i className="pcb-icon tiny" /> Produce
+            <i className="pcb-icon tiny" /> {t('button.produce', "Produce")}
           </Button>
         </Modal.Actions>
       </Modal>
