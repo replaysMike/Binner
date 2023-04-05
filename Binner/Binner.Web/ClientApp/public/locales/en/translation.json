@@ -125,6 +125,24 @@
       "instructions": "For <1>DigiKey</1> orders, this is the <3>Sales Order #</3>.<4 />For <6>Mouser</6> orders, this is the <8>Web Order #</8>.<10 />For <12>Arrow</12> orders, this is the <14>Order Number</14>.",
       "mouserNote": "<0>Note:</0> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <2>not the Sales Order #</2>",
       "arrowNote": "<0>Note:</0> Arrow requires that you first request access to their Order API by sending them an email. See <2>Arrow Order Api</2>"
+    },
+    "printLabels": {
+      "title": "Print Labels",
+      "description": "Print custom multi-line labels for your storage bins.<1 />Print history is kept so you can reuse templates for your labels.",
+      "printHistory": "Print History",
+      "label": {
+        "labelType": "Label Type",
+        "paperSource": "Paper Source",
+        "labelNum": "Label #",
+        "text": "Text",
+        "fontSize": "FontSize",
+        "alignment": "Alignment",
+        "topMargin": "Top Margin",
+        "leftMargin": "Left Margin",
+        "font": "Font",
+        "isBarcode": "Is Barcode",
+        "center": "Center"
+      }
     }
   },
   "bc": {
@@ -184,7 +202,12 @@
     "viewDatasheet": "View Datasheet",
     "search": "Search",
     "clear": "Clear",
-    "importParts": "Import Parts"
+    "reset": "Reset",
+    "importParts": "Import Parts",
+    "preview": "Preview",
+    "print": "Print",
+    "load": "Load",
+    "addLine": "Add Line"
   },
   "label": {
     "name": "Name",
@@ -195,6 +218,7 @@
     "parts": "Parts",
     "pcb": "Pcb",
     "pcbs": "Pcbs",
+    "delete": "Delete",
     "deleteProject": "Delete Project",
     "editProject": "Edit Project",
     "lastModified": "Last modified",
@@ -249,7 +273,8 @@
     "orderDate": "Order Date",
     "trackingNumber": "Tracking Number",
     "unspecified": "Unspecified",
-    "viewTracking": "View Tracking"
+    "viewTracking": "View Tracking",
+    "preview": "Preview"
   },
   "message": {
     "noPartsAdded": "No parts added.",
