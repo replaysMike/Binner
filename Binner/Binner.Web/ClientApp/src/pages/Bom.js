@@ -461,7 +461,9 @@ export function Bom(props) {
     setConfirmDeleteIsOpen(true);
     setConfirmPartDeleteContent(
       <p>
-        {t('confirm.removeBomParts', 'Are you sure you want to remove these <b>{{quantity}}</b> part(s) from your BOM?', { quantity: checkboxesChecked.length })}
+        <Trans i18nKey="confirm.removeBomParts" quantity={checkboxesChecked.length}>
+          Are you sure you want to remove these <b>checkboxesChecked.length</b> part(s) from your BOM?
+        </Trans>
         <br />
         <br />
         <b>
@@ -472,7 +474,9 @@ export function Bom(props) {
         </b>
         <br />
         <br />
-        {t('confirm.permanent', "This action is <i>permanent and cannot be recovered</i>")}.
+        <Trans i18nKey="confirm.permanent">
+          This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
       </p>
     );
   };
@@ -818,23 +822,11 @@ export function Bom(props) {
   return (
     <div>
       <Breadcrumb>
-        <Breadcrumb.Section link onClick={() => props.history("/")}>
-          <Trans i18nKey="page.bom.bc.home">
-          Home
-          </Trans>
-        </Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section link onClick={() => props.history("/bom")}>
-          <Trans i18nKey="page.bom.bc.boms">
-          BOMs
-          </Trans>
-        </Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/bom")}>{t('bc.boms', "BOMs")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section active>
-          <Trans i18nKey="page.bom.bc.bom">
-          BOM
-          </Trans>
-        </Breadcrumb.Section>
+        <Breadcrumb.Section active>{t('bc.bom', "BOM")}</Breadcrumb.Section>
       </Breadcrumb>
       <FormHeader name={t('page.bom.header.title', 'Bill of Materials')} to="..">
         <Trans i18nKey="page.bom.header.description">
