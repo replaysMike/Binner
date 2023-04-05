@@ -112,6 +112,9 @@
       "partLabelTemplateDescription": "Part labels are printed according to this template.",
       "lineX": "Line {{number}}",
       "identifierX": "Identifier {{number}}"
+    },
+    "datasheet": {
+      "title": "Datasheet Search"
     }
   },
   "bc": {
@@ -167,7 +170,8 @@
     "import": "Import",
     "export": "Export",
     "testApi": "Test Api",
-    "forgetCredentials": "Forget Credentials"
+    "forgetCredentials": "Forget Credentials",
+    "viewDatasheet": "View Datasheet"
   },
   "label": {
     "name": "Name",

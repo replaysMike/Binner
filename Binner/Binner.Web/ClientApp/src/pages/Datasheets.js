@@ -144,21 +144,21 @@ export function Datasheets (props) {
       <div>
         <Form>
           <Form.Group>
-            <Form.Input label='Part' required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={handleChange} name='partNumber' />
-            <Form.Dropdown label='Part Type' placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={handleChange} name='partType' />
-            <Form.Dropdown label='Mounting Type' placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={handleChange} name='mountingType' />
+            <Form.Input label={t('label.part', "Part")} required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={handleChange} name='partNumber' />
+            <Form.Dropdown label={t('label.partType', "Part Type")} placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={handleChange} name='partType' />
+            <Form.Dropdown label={t('label.mountingType', "Mounting Type")} placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={handleChange} name='mountingType' />
           </Form.Group>
         </Form>
         <Segment loading={loading}>
           <Table compact celled sortable selectable striped size='small'>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={handleSort('manufacturerPartNumber')}>Part</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'manufacturer' ? direction : null} onClick={handleSort('manufacturer')}>Manufacturer</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'website' ? direction : null} onClick={handleSort('website')}>Website</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={handleSort('datasheetUrl')}>Datasheet</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'package' ? direction : null} onClick={handleSort('package')}>Package</Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'status' ? direction : null} onClick={handleSort('status')}>Status</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={handleSort('manufacturerPartNumber')}>{t('label.part', "Part")}</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'manufacturer' ? direction : null} onClick={handleSort('manufacturer')}>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'website' ? direction : null} onClick={handleSort('website')}>{t('label.website', "Website")}</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'datasheetUrl' ? direction : null} onClick={handleSort('datasheetUrl')}>{t('label.datasheet', "Datasheet")}</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'package' ? direction : null} onClick={handleSort('package')}>{t('label.package', "Package")}</Table.HeaderCell>
+                <Table.HeaderCell sorted={column === 'status' ? direction : null} onClick={handleSort('status')}>{t('label.status', "Status")}</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -168,7 +168,7 @@ export function Datasheets (props) {
                   <Table.Cell>{p.manufacturer}</Table.Cell>
                   <Table.Cell>{getHostnameFromRegex(_.first(p.datasheetUrls))}</Table.Cell>
                   <Table.Cell>{p.datasheetUrls.map((url, dindex) =>
-                    <a href={url} alt={url} key={dindex} onClick={e => handleHighlightAndVisit(e, url)}>View Datasheet</a>
+                    <a href={url} alt={url} key={dindex} onClick={e => handleHighlightAndVisit(e, url)}>{t('button.viewDatasheet', "View Datasheet")}</a>
                   )}
                   </Table.Cell>
                   <Table.Cell>{p.packageType.replace(/\([^()]*\)/g, '')}</Table.Cell>
@@ -186,7 +186,7 @@ export function Datasheets (props) {
 
   return (
     <div>
-      <h1>Datasheet Search</h1>
+      <h1>{t('page.datasheet.title', "Datasheet Search")}</h1>
       {contents}
     </div>
   );
