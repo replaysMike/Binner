@@ -52,8 +52,19 @@
       }
     },
     "partTypes": {
-      "title": "",
+      "title": "Part Types",
       "description": "Part Types allow you to separate your parts by type. <1>Parent</1> types allow for unlimited part type hierarchy.<3 />For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC."
+    },
+    "exportData": {
+      "title": "Import/Export Data",
+      "description": "Import or Export your Binner database to a human-readable format.",
+      "uploadNote": "Drag a document to upload, or click to select files",
+      "acceptedFileTypes": "Accepted file types: \"*.sql, *.xls, *.xlsx, *.csv\"",
+      "importResult": "Import Result",
+      "totalRowsImported": "Total Rows Imported",
+      "totalProjectsImported": "Projects Imported",
+      "totalPartTypesImported": "Part Types Imported",
+      "totalPartsImported": "Parts Imported"
     }
   },
   "bc": {
@@ -105,7 +116,9 @@
     "addFirstPart": "Add your first part!",
     "all": "All",
     "addPartType": "Add Part Type",
-    "back": "Back"
+    "back": "Back",
+    "import": "Import",
+    "export": "Export"
   },
   "label": {
     "name": "Name",
@@ -138,7 +151,14 @@
     "partsCount": "Parts Count",
     "systemType": "System Type",
     "resistors": "Resistors",
-    "hideEmptyTypes": "Hide Empty Types"
+    "hideEmptyTypes": "Hide Empty Types",
+    "error": "Error",
+    "errors": "Errors",
+    "or": "Or",
+    "status": "Status",
+    "success": "Success",
+    "failed": "Failed",
+    "warnings": "Warnings"
   },
   "message": {
     "noPartsAdded": "No parts added.",
