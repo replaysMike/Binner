@@ -11,7 +11,7 @@ export default class ErrorBoundary extends Component {
     this.setState({ hasError: true });
     // You can also log the error to an error reporting service
     // logErrorToMyService(error, info);
-	console.log('Custom error', error, info);
+	  console.error('Custom error', error, info);
   }
 
   render() {

@@ -1,18 +1,14 @@
 import React, { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import ReactDOM from "react-dom";
-import { Label, Button, Icon, Image, Table, Modal, Popup } from "semantic-ui-react";
+import { Label, Button, Image, Table, Modal, Popup } from "semantic-ui-react";
 import _ from "underscore";
 import { formatCurrency, formatNumber } from "../common/Utils";
 
 export function ChooseAlternatePartModal(props) {
-
+  const { t } = useTranslation();
 	const { metadataParts, part, onPartChosen, isOpen, trigger } = props;
 	const [partModalOpen, setPartModalOpen] = useState(isOpen === true ? true : false);
-
-	const handleOpenModal = (e) => {
-    e.preventDefault();
-		setPartModalOpen(true);
-	};
 
 	const handlePartModalClose = (e) => {
     setPartModalOpen(false);
@@ -68,17 +64,17 @@ export function ChooseAlternatePartModal(props) {
       <Table compact celled selectable striped size="small">
         <Table.Header>
           <Table.Row>
-						<Table.HeaderCell>Family</Table.HeaderCell>
-            <Table.HeaderCell>Mfr Part</Table.HeaderCell>
-            <Table.HeaderCell>Manufacturer</Table.HeaderCell>
-            <Table.HeaderCell style={{width: '100px'}}>Part Type</Table.HeaderCell>
-            <Table.HeaderCell>Source</Table.HeaderCell>
-            <Table.HeaderCell style={{width: '110px'}}>Package Type</Table.HeaderCell>
-            <Table.HeaderCell>Mounting Type</Table.HeaderCell>
-            <Table.HeaderCell>QTY Avail.</Table.HeaderCell>
-            <Table.HeaderCell>Cost</Table.HeaderCell>
-            <Table.HeaderCell>Image</Table.HeaderCell>
-            <Table.HeaderCell>Datasheet</Table.HeaderCell>
+						<Table.HeaderCell>{t('label.family', "Family")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.mfrPart', "Mfr Part")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+            <Table.HeaderCell style={{width: '100px'}}>{t('label.partType', "Part Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.source', "Source")}</Table.HeaderCell>
+            <Table.HeaderCell style={{width: '110px'}}>{t('label.mfrPart', "Package Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.mountingType', "Mounting Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.qtyAvail', "QTY Avail.")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.datasheet', "Datasheet")}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -90,8 +86,8 @@ export function ChooseAlternatePartModal(props) {
               content={<div className="part-metadata-info">
                   <h1>{p.manufacturer}</h1> <h2>{p.manufacturerPartNumber}</h2><br/>
                   <div style={{padding: '5px'}}>{p.description}</div>
-                  <b>Keywords:</b> <i>{p.keywords.join(' ')}</i><br/>
-                  <b>Status:</b> {p.status === 'Inactive' ? <span className="inactive">Inactive</span> : p.status}<br/>
+                  <b>{t('label.keywords', "Keywods")}:</b> <i>{p.keywords.join(' ')}</i><br/>
+                  <b>{t('label.status', "Status")}:</b> {p.status === 'Inactive' ? <span className="inactive">Inactive</span> : p.status}<br/>
                   via <b>{p.supplier}</b> <a href={p.productUrl} target="_blank" rel="noreferrer">{p.supplierPartNumber}</a>
                 </div>}
               position='top center'
@@ -147,7 +143,7 @@ export function ChooseAlternatePartModal(props) {
 		open={partModalOpen}
 		onClose={handlePartModalClose}
 	>
-		<Modal.Header>Matching Parts</Modal.Header>
+		<Modal.Header>{t('comp.chooseAlternatePartModal.title', "Matching Parts")}</Modal.Header>
 		<Modal.Content scrolling>
 			<Modal.Description>{matchingPartsList}</Modal.Description>
 		</Modal.Content>
