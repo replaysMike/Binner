@@ -1,4 +1,5 @@
 ﻿import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Form, Popup } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
@@ -6,11 +7,12 @@ import reactStringReplace from "react-string-replace";
 import "./BarcodeScanner.css";
 
 export function BarcodeScanner(props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
-  const [barcodeValue, setBarcodeValue] = useState('Waiting for input...');
+  const [barcodeValue, setBarcodeValue] = useState(t('page.barcodeScanner.waitingForInput', "Waiting for input..."));
   const [rsDetected, setRsDetected] = useState(false);
   const [gsDetected, setGsDetected] = useState(false);
   const [eotDetected, setEotDetected] = useState(false);
@@ -45,7 +47,7 @@ export function BarcodeScanner(props) {
     } else{
       setBarcodeValue(JSON.stringify(input, null, 2));
     }
-    toast.info(`Barcode type ${input.type} received`);
+    toast.info(t('success.barcodeTypeReceived', "Barcode type {{type}} received", { type: input.type }));
   };
 
   let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={i*2} className="control rs">{match}</span>));
@@ -58,13 +60,13 @@ export function BarcodeScanner(props) {
   return (
     <div>
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} swallowKeyEvent={false} />
-      <h1>Barcode Scanner</h1>
-      <p>Test your barcode scanner to see what values it outputs.</p>
+      <h1>{t('page.barcodeScanner.title', "Barcode Scanner")}</h1>
+      <p>{t('page.barcodeScanner.description', "Test your barcode scanner to see what values it outputs.")}</p>
       <Form>
         <div>
           <code><pre>{barcodeObject}</pre></code>
           <div className="block-container">
-            <label>Detected:</label>
+            <label>{t('page.barcodeScanner.detected', "Detected")}:</label>
             <Popup 
               wide
               content={<p>RS, or record separator (<i>ASCII 30, unicode \u001e or ASCII 94, unicode \u005e</i>) is a hidden data code indicating the start of a record. It is optional for barcodes.</p>}

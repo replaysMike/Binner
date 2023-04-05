@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm } from "semantic-ui-react";
 import LineTemplate from "../components/LineTemplate";
@@ -9,6 +10,7 @@ import { toast } from "react-toastify";
 import "./Settings.css";
 
 export const Settings = (props) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [fonts, setFonts] = useState([]);
@@ -253,7 +255,7 @@ export const Settings = (props) => {
       },
       body: JSON.stringify(settings),
     }).then((response) => {
-      const saveMessage = "System settings were saved.";
+      const saveMessage = t('success.savedSystemSettings', "System settings were saved.");
       toast.success(saveMessage);
       setSaveMessage(saveMessage);
       navigate(-1);
@@ -372,9 +374,9 @@ export const Settings = (props) => {
     }).then((response) => {
       const { data } = response;
       if (data.success) {
-        toast.success(`Successfully cleared cached credentials for ${apiName}`);
+        toast.success(t('clearedCredentials', "Successfully cleared cached credentials for {{apiName}}", { apiName }));
       } else {
-        toast.error(`Failed to clear cached credentials for ${apiName}`);
+        toast.error(t('failedClearedCredentials', "Failed to clear cached credentials for {{apiName}}", { apiName }));
       }
     }).catch((err) => {
       toast.error(`Error: ${err}`);
@@ -471,13 +473,13 @@ export const Settings = (props) => {
               style={{ marginLeft: "5px" }}
               name="check circle"
               color="green"
-            /> Test passed
+            /> {t('success.testPassed', "Test passed")}
           </span>
         );
       } else {
         return (
           <span>
-            <Icon style={{ marginLeft: "5px" }} name="dont" color="red" /> Test failed - {testResult.message}
+            <Icon style={{ marginLeft: "5px" }} name="dont" color="red" /> {t('error.testFailed', "Test failed")} - {testResult.message}
           </span>
         );
       }
@@ -487,65 +489,65 @@ export const Settings = (props) => {
 
   return (
     <div>
-      <h1>Settings</h1>
+      <h1>{t('page.settings.title', "Settings")}</h1>
       <p>
-        Configure your integrations, printer configuration, as well as label
-        part templates.
-        <br />
-        Additional help can be found on the{" "}
-        <a
-          href="https://github.com/replaysMike/Binner/wiki/Configuration"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Wiki
-        </a>
+        <Trans i18nKey="page.settings.description">
+          Configure your integrations, printer configuration, as well as label
+          part templates.
+          <br />
+          Additional help can be found on the 
+          <a
+            href="https://github.com/replaysMike/Binner/wiki/Configuration"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Wiki
+          </a>
+        </Trans>
       </p>
       <Confirm
         className="confirm"
-        header="Must Authenticate"
+        header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
         open={confirmAuthIsOpen}
         onCancel={() => setConfirmAuthIsOpen(false)}
         onConfirm={handleAuthRedirect}
-        content="External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider."
+        content={t('page.settings.confirm.mustAuthenticate', "External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.")}
       />
       <Form onSubmit={onSubmit}>
         <Segment loading={loading} color="blue" raised padded>
           <Header dividing as="h3">
-            Integrations
+            {t('page.settings.integrations', "Integrations")}
           </Header>
           <p>
             <i>
+              <Trans i18nKey="page.settings.integrationsDescription">
               To integrate with DigiKey, Mouser, Arrow or Octopart/Nexar API's you must
               obtain API keys for each service you wish to use.
               <br />
               Adding integrations will greatly enhance your experience.
+              </Trans>
             </i>
           </p>
 
           <Segment loading={loading} color="green" secondary>
             <Header dividing as="h3">
-              Swarm
+              {t('page.settings.swarm', "Swarm")}
             </Header>
             <p>
+              <Trans i18nKey="page.settings.swarmDescription">
               Swarm is a free API service provided by{" "}
               <a href="https://binner.io" target="_blank" rel="noreferrer">
                 Binner's cloud service
-              </a>{" "}
+              </a>
               that contains part metadata from many aggregate sources. It is the
               primary source of part, media and datasheet information.
               Registering for your own API Keys will give you higher request
               limits and can be obtained at{" "}
-              <a
-                href="https://binner.io/swarm"
-                target="_blank"
-                rel="noreferrer"
-              >
-                https://binner.io/swarm
-              </a>
+              <a href="https://binner.io/swarm" target="_blank" rel="noreferrer">https://binner.io/swarm</a>
+              </Trans>
             </p>
             <Form.Field width={10}>
-              <label>Swarm Support</label>
+              <label>{t('page.settings.swarmSupport', "Swarm Support")}</label>
               <Popup
                 wide
                 position="top left"
@@ -569,7 +571,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Key</label>
+              <label>{t('label.apiKey', "Api Key")}</label>
               <Popup
                 wide
                 position="top left"
@@ -593,7 +595,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Url</label>
+              <label>{t('label.apiUrl', "Api Url")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -616,7 +618,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Timeout</label>
+              <label>{t('label.timeout', "Timeout")}</label>
               <Popup
                 wide
                 position="top left"
@@ -646,7 +648,7 @@ export const Settings = (props) => {
                 onClick={(e) => handleTestApi(e, "swarm")}
                 disabled={testing}
               >
-                Test Api
+                {t('button.testApi', "Test Api")}
               </Button>
               {getTestResultIcon("swarm")}
             </Form.Field>
@@ -654,7 +656,7 @@ export const Settings = (props) => {
 
           <Segment loading={loading} color="green" secondary>
             <Header dividing as="h3">
-              DigiKey
+              {t('page.settings.digikey', "DigiKey")}
             </Header>
             <p>
               Digikey API Keys are free and can be obtained at{" "}
@@ -667,7 +669,7 @@ export const Settings = (props) => {
               </a>
             </p>
             <Form.Field width={10}>
-              <label>DigiKey Support</label>
+              <label>{t('page.settings.digikeySupport', "DigiKey Support")}</label>
               <Popup
                 wide
                 position="top left"
@@ -693,7 +695,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Client Id</label>
+              <label>{t('label.clientId', "Client Id")}</label>
               <Popup
                 wide
                 position="top left"
@@ -723,7 +725,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Client Secret</label>
+              <label>{t('label.clientSecret', "Client Secret")}</label>
               <Popup
                 wide
                 position="top left"
@@ -753,7 +755,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Url</label>
+              <label>{t('label.apiUrl', "Api Url")}</label>
               <Popup
                 wide
                 position="top left"
@@ -783,7 +785,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Postback Url</label>
+              <label>{t('label.postbackUrl', "Postback Url")}</label>
               <Popup
                 wide="very"
                 position="top left"
@@ -837,7 +839,7 @@ export const Settings = (props) => {
                   onClick={(e) => handleForgetCredentials(e, "digikey")}
                   disabled={testing}
                 >
-                  Forget Credentials
+                  {t('button.forgetCredentials', "Forget Credentials")}
                 </Button>}
               />              
             </Form.Field>
@@ -849,7 +851,7 @@ export const Settings = (props) => {
                 onClick={(e) => handleTestApi(e, "digikey")}
                 disabled={testing}
               >
-                Test Api
+                {t('button.testApi', "Test Api")}
               </Button>
               {getTestResultIcon("digikey")}
             </Form.Field>
@@ -857,7 +859,7 @@ export const Settings = (props) => {
 
           <Segment loading={loading} color="green" secondary>
             <Header dividing as="h3">
-              Mouser
+              {t('page.settings.mouser', "Mouser")}
             </Header>
             <p>
               Mouser API Keys can be obtained at{" "}
@@ -870,7 +872,7 @@ export const Settings = (props) => {
               </a>
             </p>
             <Form.Field width={10}>
-              <label>Mouser Support</label>
+              <label>{t('page.settings.mouserSupport', "Mouser Support")}</label>
               <Popup
                 wide
                 position="top left"
@@ -892,7 +894,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Search Api Key</label>
+              <label>{t('page.settings.searchApiKey', "Search Api Key")}</label>
               <Popup
                 position="top left"
                 offset={[110, 0]}
@@ -910,7 +912,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Orders Api Key</label>
+              <label>{t('page.settings.ordersApiKey', "Orders Api Key")}</label>
               <Popup
                 position="top left"
                 offset={[110, 0]}
@@ -928,7 +930,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Cart Api Key</label>
+              <label>{t('page.settings.cartApiKey', "Cart Api Key")}</label>
               <Popup
                 position="top left"
                 offset={[90, 0]}
@@ -948,7 +950,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Url</label>
+              <label>{t('label.apiUrl', "Api Url")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -978,7 +980,7 @@ export const Settings = (props) => {
                 onClick={(e) => handleTestApi(e, "mouser")}
                 disabled={testing}
               >
-                Test Api
+                {t('button.testApi', "Test Api")}
               </Button>
               {getTestResultIcon("mouser")}
             </Form.Field>
@@ -986,7 +988,7 @@ export const Settings = (props) => {
 
           <Segment loading={loading} color="green" secondary>
             <Header dividing as="h3">
-              Arrow
+              {t('page.settings.arrow', "Arrow")}
             </Header>
             <p>
               Arrow API Keys can be obtained at{" "}
@@ -999,7 +1001,7 @@ export const Settings = (props) => {
               </a>
             </p>
             <Form.Field width={10}>
-              <label>Arrow Support</label>
+              <label>{t('page.settings.arrowSupport', "Arrow Support")}</label>
               <Popup
                 wide
                 position="top left"
@@ -1021,7 +1023,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Username</label>
+              <label>{t('label.username', "Username")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1039,7 +1041,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Key</label>
+              <label>{t('label.apiKey', "Api Key")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1057,7 +1059,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Api Url</label>
+              <label>{t('label.apiUrl', "Api Url")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1088,7 +1090,7 @@ export const Settings = (props) => {
                 onClick={(e) => handleTestApi(e, "arrow")}
                 disabled={testing}
               >
-                Test Api
+                {t('button.testApi', "Test Api")}
               </Button>
               {getTestResultIcon("arrow")}
             </Form.Field>
@@ -1096,7 +1098,7 @@ export const Settings = (props) => {
 
           <Segment loading={loading} color="green" secondary>
             <Header dividing as="h3">
-              Octopart/Nexar
+              {t('page.settings.octopartNexar', "Octopart/Nexar")}
             </Header>
             <p>
               Octopart/Nexar API Keys can be obtained at{" "}
@@ -1109,7 +1111,7 @@ export const Settings = (props) => {
               </a>
             </p>
             <Form.Field width={10}>
-              <label>Octopart/Nexar Support</label>
+              <label>{t('page.settings.octopartNexarSupport', "Octopart/Nexar Support")}</label>
               <Popup
                 wide
                 position="top left"
@@ -1131,7 +1133,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Client Id</label>
+              <label>{t('label.ClientId', "Client Id")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1149,7 +1151,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>Client Secret</label>
+              <label>{t('label.ClientSecret', "Client Secret")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1174,7 +1176,7 @@ export const Settings = (props) => {
                 onClick={(e) => handleTestApi(e, "octopart")}
                 disabled={testing}
               >
-                Test Api
+                {t('button.testApi', "Test Api")}
               </Button>
               {getTestResultIcon("octopart")}
             </Form.Field>
@@ -1183,12 +1185,11 @@ export const Settings = (props) => {
 
         <Segment loading={loading} color="blue" raised padded>
           <Header dividing as="h3">
-            Printer Configuration
+            {t('page.settings.printerConfiguration', "Printer Configuration")}
           </Header>
           <p>
             <i>
-              Configure your printer name as it shows up in your environment
-              (Windows Printers or CUPS Printer Name)
+              {t('page.settings.printerConfigDescription', "Configure your printer name as it shows up in your environment (Windows Printers or CUPS Printer Name)")}
             </i>
           </p>
           <Popup
@@ -1197,7 +1198,7 @@ export const Settings = (props) => {
             }
             trigger={
               <Form.Field width={10}>
-                <label>Printer Name</label>
+                <label>{t('page.settings.printerName', "Printer Name")}</label>
                 <Input
                   className="labeled"
                   placeholder="DYMO LabelWriter 450 Twin Turbo"
@@ -1212,7 +1213,7 @@ export const Settings = (props) => {
             content={<p>The label paper source to use.</p>}
             trigger={
               <Form.Field width={10}>
-                <label>Part Label Source</label>
+                <label>{t('page.settings.partLabelSource', "Part Label Source")}</label>
                 <Dropdown
                   name="printerPartLabelSource"
                   placeholder="Right"
@@ -1237,7 +1238,7 @@ export const Settings = (props) => {
             }
             trigger={
               <Form.Field width={10}>
-                <label>Part Label Name</label>
+                <label>{t('page.settings.partLabelName', "Part Label Name")}</label>
                 <Input
                   className="labeled"
                   placeholder="30346"
@@ -1251,16 +1252,16 @@ export const Settings = (props) => {
 
           <Segment loading={loading} color="green" stacked secondary>
             <Header dividing as="h3">
-              Part Label Template
+              {t('page.settings.partLabelTemplate', "Part Label Template")}
             </Header>
             <p>
-              <i>Part labels are printed according to this template.</i>
+              <i>{t('page.settings.partLabelTemplateDescription', "Part labels are printed according to this template.")}</i>
             </p>
 
             <LineTemplate
               name="printerLine1"
               line={settings.printer.lines[0]}
-              title="Line 1"
+              title={t('page.settings.lineX', "Line {{number}}", { number: 1 })}
               color="red"
               fonts={fonts}
               font={font}
@@ -1270,7 +1271,7 @@ export const Settings = (props) => {
             <LineTemplate
               name="printerLine2"
               line={settings.printer.lines[1]}
-              title="Line 2"
+              title={t('page.settings.lineX', "Line {{number}}", { number: 2 })}
               color="red"
               fonts={fonts}
               font={font}
@@ -1280,7 +1281,7 @@ export const Settings = (props) => {
             <LineTemplate
               name="printerLine3"
               line={settings.printer.lines[2]}
-              title="Line 3"
+              title={t('page.settings.lineX', "Line {{number}}", { number: 3 })}
               color="red"
               fonts={fonts}
               font={font}
@@ -1290,7 +1291,7 @@ export const Settings = (props) => {
             <LineTemplate
               name="printerLine4"
               line={settings.printer.lines[3]}
-              title="Line 4"
+              title={t('page.settings.lineX', "Line {{number}}", { number: 4 })}
               color="red"
               fonts={fonts}
               font={font}
@@ -1300,7 +1301,7 @@ export const Settings = (props) => {
             <LineTemplate
               name="printerIdentifier1"
               line={settings.printer.identifiers[0]}
-              title="Identifier 1"
+              title={t('page.settings.identifierX', "Identifier {{number}}", { number: 1 })}
               color="red"
               fonts={fonts}
               font={font}
@@ -1310,7 +1311,7 @@ export const Settings = (props) => {
             <LineTemplate
               name="printerIdentifier2"
               line={settings.printer.identifiers[1]}
-              title="Identifier 2"
+              title={t('page.settings.identifierX', "Identifier {{number}}", { number: 2 })}
               color="red"
               fonts={fonts}
               font={font}
@@ -1322,7 +1323,7 @@ export const Settings = (props) => {
         <Form.Field inline>
           <Button type="submit" primary style={{ marginTop: "10px" }}>
             <Icon name="save" />
-            Save
+            {t('button.save', "Save")}
           </Button>
           {saveMessage.length > 0 && (
             <Label pointing="left">{saveMessage}</Label>

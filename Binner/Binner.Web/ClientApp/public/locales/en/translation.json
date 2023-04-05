@@ -65,6 +65,53 @@
       "totalProjectsImported": "Projects Imported",
       "totalPartTypesImported": "Part Types Imported",
       "totalPartsImported": "Parts Imported"
+    },
+    "tools": {
+      "title": "Tools",
+      "description": "Binner includes a suite of free utilities common to daily life in electrical engineering.",
+      "resistorColorCodeCalc": "Resistor Color Code Calculator",
+      "ohmsLawCalc": "Ohms Law Calculator",
+      "voltageDividerCalc": "Voltage Divider Calculator",
+      "barcodeScanner": "Barcode Scanner"
+    },
+    "barcodeScanner": {
+      "title": "Barcode Scanner",
+      "description": "Test your barcode scanner to see what values it outputs.",
+      "detected": "Detected",
+      "waitingForInput": "Waiting for input..."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Configure your integrations, printer configuration, as well as label part templates. <1 /> Additional help can be found on the <3>Wiki</3>",
+      "confirm": {
+        "mustAuthenticateHeader": "Must Authenticate",
+        "mustAuthenticate": "External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider."
+      },
+      "integrations": "Integrations",
+      "integrationsDescription": "To integrate with DigiKey, Mouser, Arrow or Octopart/Nexar API's you must obtain API keys for each service you wish to use. <1 /> Adding integrations will greatly enhance your experience.",
+      "swarm": "Swarm",
+      "swarmDescription": "Swarm is a free API service provided by <1>Binner's cloud service</1> that contains part metadata from many aggregate sources. It is the primary source of part, media and datasheet information. Registering for your own API Keys will give you higher request limits and can be obtained at <3>https://binner.io/swarm</3>",
+      "swarmSupport": "Swarm Support",
+      "digikey": "DigiKey",
+      "digikeySupport": "DigiKey Support",
+      "mouser": "Mouser",
+      "mouserSupport": "Mouser Support",
+      "searchApiKey": "Search Api Key",
+      "ordersApiKey": "Orders Api Key",
+      "cartApiKey": "Cart Api Key",
+      "arrow": "Arrow",
+      "arrowSupport": "Arrow Support",
+      "octopartNexar": "Octopart/Nexar",
+      "octopartNexarSupport": "Octopart/Nexar Support",
+      "printerConfiguration": "Printer Configuration",
+      "printerConfigDescription": "Configure your printer name as it shows up in your environment (Windows Printers or CUPS Printer Name)",
+      "printerName": "Printer Name",
+      "partLabelSource": "Part Label Source",
+      "partLabelName": "Part Label Name",
+      "partLabelTemplate": "Part Label Template",
+      "partLabelTemplateDescription": "Part labels are printed according to this template.",
+      "lineX": "Line {{number}}",
+      "identifierX": "Identifier {{number}}"
     }
   },
   "bc": {
@@ -118,7 +165,9 @@
     "addPartType": "Add Part Type",
     "back": "Back",
     "import": "Import",
-    "export": "Export"
+    "export": "Export",
+    "testApi": "Test Api",
+    "forgetCredentials": "Forget Credentials"
   },
   "label": {
     "name": "Name",
@@ -158,7 +207,15 @@
     "status": "Status",
     "success": "Success",
     "failed": "Failed",
-    "warnings": "Warnings"
+    "warnings": "Warnings",
+    "apiKey": "Api Key",
+    "apiUrl": "Api Url",
+    "clientId": "Client Id",
+    "clientSecret": "Client Secret",
+    "timeout": "Timeout",
+    "postbackUrl": "Postback Url",
+    "username": "Username",
+    "password": "Password"
   },
   "message": {
     "noPartsAdded": "No parts added.",
@@ -185,13 +242,19 @@
     "failedAddPcb": "Failed to add pcb!",
     "failedBomExport": "BOM export failed!",
     "failedDeletedPartType": "Failed to delete part type {{name}}",
-    "failedAddedPartType": "Failed to add part type {{name}}"
+    "failedAddedPartType": "Failed to add part type {{name}}",
+    "failedClearedCredentials": "Failed to clear cached credentials for {{apiName}}",
+    "testFailed": "Test failed"
   },
   "success": {
     "producedPcbs": "{{quantity}} PCB's were produced!",
     "bomExported": "BOM exported successfully!",
     "savedPartType": "Saved part type {{name}}",
-    "deletedPartType": "Deleted part type {{name}}"
+    "deletedPartType": "Deleted part type {{name}}",
+    "barcodeTypeReceived": "Barcode type {{type}} received",
+    "systemSettingsSaved": "System settings were saved.",
+    "clearedCredentials": "Successfully cleared cached credentials for {{apiName}}",
+    "testPassed": "Test passed"
   },
   "popup": {
     "bom": {
