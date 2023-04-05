@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import { Input, Button, Icon, Form, Popup } from "semantic-ui-react";
@@ -9,6 +10,7 @@ import { fetchApi } from "../common/fetchApi";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 
 export function Search(props) {
+  const { t } = useTranslation();
   Search.abortController = new AbortController();
   const [searchParams] = useSearchParams();
 
@@ -170,11 +172,11 @@ export function Search(props) {
   return (
     <div>
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={3} />
-      <h1>Inventory</h1>      
+      <h1>{t('page.search.title', "Inventory")}</h1>      
       <Form>
         <Form.Field width={5}>
           <Input            
-            placeholder="Search"
+            placeholder={t('page.search.search', "Search")}
             icon="search"
             focus
             value={keyword}
@@ -202,7 +204,7 @@ export function Search(props) {
         onPartClick={handlePartClick}
         onPageSizeChange={handlePageSizeChange}
         name="partsGrid"
-      >No matching results.</PartsGrid>
+      >{t('page.search.noResults', "No matching results.")}</PartsGrid>
     </div>
   );
 }
