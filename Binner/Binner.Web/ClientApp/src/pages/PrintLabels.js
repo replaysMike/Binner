@@ -1,151 +1,129 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Layout } from '../layouts/Layout';
-import {ErrorContext} from '../common/ErrorContext';
 import { DEFAULT_FONT } from '../common/Types';
 
 import { HandleBinaryResponse } from "../common/handleResponse.js";
 import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown } from "semantic-ui-react";
 
-export class PrintLabels extends Component {
-  static displayName = PrintLabels.name;
+export function PrintLabels(props) {
+  const { t } = useTranslation();
+  var quan = [];
+  for (var i = 1; i <= 10; i++) {
+    quan.push({ key: i, value: i, text: i.toString() });
+  }
 
-  constructor(props) {
-    super(props);
-    const printPreferences = JSON.parse(
-      localStorage.getItem("printPreferences")
-    ) || {
+  const [loading, setLoading] = useState(false);
+  const [printPreferences, setPrintPreferences] = useState(JSON.parse(localStorage.getItem("printPreferences")) 
+    || {
       lastLabelName: "30277",
       lastLabelSource: 0,
       lastFont: DEFAULT_FONT
-    };
-
-    const printLabelHistory =
-      JSON.parse(localStorage.getItem("printLabelHistory")) || [];
-    var quantities = [];
-    for (var i = 1; i <= 10; i++)
-      quantities.push({ key: i, value: i, text: i.toString() });
-
-    this.state = {
-      loading: false,
-      printPreferences,
-      printLabelHistory,
-      lines: [],
-      quantity: 1,
-      imgBase64: "",
-      labelName: printPreferences.lastLabelName || "30277",
-      labelSource: printPreferences.lastLabelSource || 0,
-      font: printPreferences.lastFont || DEFAULT_FONT,
-      quantities,
-      labelPositions: [
-        {
-          key: 1,
-          value: 0,
-          text: "Left"
-        },
-        {
-          key: 2,
-          value: 1,
-          text: "Right"
-        },
-        {
-          key: 3,
-          value: 2,
-          text: "Center"
-        }
-      ],
-      labelNames: [
-        {
-          key: 1,
-          value: "30277",
-          text: '30277 (Dual 9/16" x 3 7/16")',
-          defaults: {
-            label: 1, // use label 1,
-            fontSizes: [16, 7, 16],
-            topMargins: [0, 10, 0],
-            isBarcodes: [false, false, true],
-            fonts: [DEFAULT_FONT]
-          }
-        },
-        {
-          key: 2,
-          value: "30346",
-          text: '30346 (1/2" x 1 7/8")',
-          defaults: {
-            label: 2, // use label 2, there is no label 1,
-            fontSizes: [16, 6, 16],
-            topMargins: [0, 10, 0],
-            isBarcodes: [false, false, true],
-            fonts: [DEFAULT_FONT]
-          }
-        }
-      ],
-      labelSources: [
-        {
-          key: 1,
-          value: 0,
-          text: "Auto"
-        },
-        {
-          key: 2,
-          value: 1,
-          text: "Left"
-        },
-        {
-          key: 3,
-          value: 2,
-          text: "Right"
-        }
-      ],
-      fonts: [
-        {
-          key: 1,
-          value: 0,
-          text: "Loading"
-        }
-      ]
-    };
-    this.onSubmit = this.onSubmit.bind(this);
-    this.handlePreview = this.handlePreview.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleLineChange = this.handleLineChange.bind(this);
-    this.handleAdd = this.handleAdd.bind(this);
-    this.handleReset = this.handleReset.bind(this);
-    this.handleLoad = this.handleLoad.bind(this);
-    this.loadFonts = this.loadFonts.bind(this);
-  }
-
-  componentDidMount() {
-    this.loadFonts();
-  }
-
-  async loadFonts() {
-    const response = await fetch("print/fonts", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
+    });
+  const [printLabelHistory, setPrintLabelHistory] = useState(JSON.parse(localStorage.getItem("printLabelHistory")) || []);
+  const [lines, setLines] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [imgBase64, setImgBase64] = useState("");
+  const [labelName, setLabelName] = useState(printPreferences.lastLabelName || "30277");
+  const [labelSource, setLabelSource] = useState(printPreferences.lastLabelSource || 0);
+  const [font, setFont] = useState(printPreferences.lastFont || DEFAULT_FONT);
+  const [quantities, setQuantities] = useState(quan);
+  const [labelPositions, setLabelPositions] = useState([
+    {
+      key: 1,
+      value: 0,
+      text: "Left"
+    },
+    {
+      key: 2,
+      value: 1,
+      text: "Right"
+    },
+    {
+      key: 3,
+      value: 2,
+      text: "Center"
+    }
+  ]);
+  const [labelNames, setLabelNames] = useState([
+    {
+      key: 1,
+      value: "30277",
+      text: '30277 (Dual 9/16" x 3 7/16")',
+      defaults: {
+        label: 1, // use label 1,
+        fontSizes: [16, 7, 16],
+        topMargins: [0, 10, 0],
+        isBarcodes: [false, false, true],
+        fonts: [DEFAULT_FONT]
       }
-    });
-    const data = await response.json();
-    const newFonts = data.map((l, k) => {
-      return {
-        key: k,
-        value: l,
-        text: l
-      };
-    });
-    const selectedFont = _.find(newFonts, (x) => x && x.text === DEFAULT_FONT);
-    this.setState({
-      loading: false,
-      fonts: newFonts,
-      font: selectedFont.value
-    });
-  }
+    },
+    {
+      key: 2,
+      value: "30346",
+      text: '30346 (1/2" x 1 7/8")',
+      defaults: {
+        label: 2, // use label 2, there is no label 1,
+        fontSizes: [16, 6, 16],
+        topMargins: [0, 10, 0],
+        isBarcodes: [false, false, true],
+        fonts: [DEFAULT_FONT]
+      }
+    }
+  ]);
+  const [labelSources, setLabelSources] = useState([
+    {
+      key: 1,
+      value: 0,
+      text: "Auto"
+    },
+    {
+      key: 2,
+      value: 1,
+      text: "Left"
+    },
+    {
+      key: 3,
+      value: 2,
+      text: "Right"
+    }
+  ]);
+  const [fonts, setFonts] = useState([
+    {
+      key: 1,
+      value: 0,
+      text: "Loading"
+    }
+  ]);
 
-  async onSubmit(e) {
-    const { lines, labelSource, labelName, quantity, printLabelHistory } =
-      this.state;
-    this.setState({ loading: true });
+  useEffect(() => {
+    const loadFonts = async () => {
+      setLoading(true);
+      const response = await fetch("print/fonts", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await response.json();
+      const newFonts = data.map((l, k) => {
+        return {
+          key: k,
+          value: l,
+          text: l
+        };
+      });
+      const selectedFont = _.find(newFonts, (x) => x && x.text === DEFAULT_FONT);
+      setLoading(false);
+      setFonts(newFonts);
+      setFont(selectedFont.value);
+    };
+    
+    loadFonts();
+  }, []);  
+
+  const onSubmit = async (e) => {
+    setLoading(true);
     const maxLineHistory = 20;
 
     const entry = {
@@ -199,17 +177,14 @@ export class PrintLabels extends Component {
       });
     }
 
-    this.setState({
-      loading: false,
-      printLabelHistory: newPrintLabelHistory,
-      quantity: 1
-    });
-  }
+    setLoading(false);
+    setPrintLabelHistory(newPrintLabelHistory);
+    setQuantity(1);
+  };
 
-  async handlePreview(e) {
+  const handlePreview = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const { lines, labelSource, labelName } = this.state;
 
     const request = {
       showDiagnostic: true,
@@ -242,23 +217,21 @@ export class PrintLabels extends Component {
       .then(HandleBinaryResponse)
       .catch(HandleBinaryResponse)
       .then((response) => {
-        const base64 = this.arrayBufferToBase64(response);
-        this.setState({ imgBase64: base64 }); 
+        const base64 = arrayBufferToBase64(response);
+        setImgBase64(base64);
       });
-  }
+  };
 
-  arrayBufferToBase64(buffer) {
+  const arrayBufferToBase64 = (buffer) => {
     let binary = "";
     let bytes = [].slice.call(new Uint8Array(buffer));
 
     bytes.forEach((b) => (binary += String.fromCharCode(b)));
 
     return btoa(binary);
-  }
+  };
 
-  handleChange(e, control) {
-    const { labelName, labelSource, font, printPreferences, quantity } =
-      this.state;
+  const handleChange = (e, control) => {
     let newLabelName = labelName;
     let newLabelSource = labelSource;
     let newFont = font;
@@ -294,17 +267,14 @@ export class PrintLabels extends Component {
       default:
         break;
     }
-    this.setState({
-      labelName: newLabelName,
-      labelSource: newLabelSource,
-      font: newFont,
-      printPreferences,
-      quantity: newQuantity
-    });
-  }
+    setLabelName(newLabelName);
+    setLabelSource(newLabelSource);
+    setFont(newFont);
+    setPrintPreferences({...printPreferences});
+    setQuantity(newQuantity);
+  };
 
-  handleLineChange(e, control, line) {
-    const { lines } = this.state;
+  const handleLineChange = (e, control, line) => {
     switch (control.name) {
       case "barcode":
         line[control.name] = control.checked || false;
@@ -313,10 +283,10 @@ export class PrintLabels extends Component {
         line[control.name] = control.value;
         break;
     }
-    this.setState({ lines });
-  }
+    setLines([...lines])
+  };
 
-  handleLoad(e, entry) {
+  const handleLoad = (e, entry) => {
     e.preventDefault();
     e.stopPropagation();
     // dereference and copy
@@ -335,13 +305,12 @@ export class PrintLabels extends Component {
         barcode: x.barcode || false
       };
     });
-    this.setState({ lines: formatLines });
-  }
+    setLines(formatLines);
+  };
 
-  handleAdd(e) {
+  const handleAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const { lines, labelNames, labelName } = this.state;
     const label = _.find(labelNames, (x) => x && x.value === labelName);
     const lastLine = _.last(lines);
     const newLine = {
@@ -368,230 +337,215 @@ export class PrintLabels extends Component {
         (label.defaults.isBarcodes[lines.length] || false)
     };
     lines.push(newLine);
-    this.setState({ lines });
-  }
+    setLines([...lines]);
+  };
 
-  handleReset(e) {
+  const handleReset = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ lines: [] });
-  }
+    setLines([]);
+  };
 
-  removeLine(e, line, index) {
+  const removeLine = (e, line, index) => {
     e.preventDefault();
     e.stopPropagation();
-    const { lines } = this.state;
     lines.splice(lines.indexOf(line), 1);
-    this.setState({ lines });
-  }
+    setLines([...lines]);
+  };
 
-  render() {
-    const {
-      labelName,
-      labelNames,
-      labelPositions,
-      labelSource,
-      labelSources,
-      fonts,
-      quantity,
-      quantities,
-      lines,
-      loading,
-      imgBase64,
-      printLabelHistory
-    } = this.state;
-    return (
-      <div>
-        <h1>Print Label</h1>
-        <p>
-          Print custom multi-line labels for your storage bins.
-          <br />
-          Print history is kept so you can reuse templates for your labels.
-        </p>
-        <Form onSubmit={this.onSubmit} loading={loading}>
-          <Form.Group>
-            <Form.Dropdown
-              label="Label Type"
-              placeholder="30277"
-              selection
-              value={labelName}
-              options={labelNames}
-              onChange={this.handleChange}
-              name="labelName"
-            />
-            <Form.Dropdown
-              label="Paper Source"
-              placeholder="Auto"
-              selection
-              value={labelSource}
-              options={labelSources}
-              onChange={this.handleChange}
-              name="labelSource"
-            />
-          </Form.Group>
-          <Button onClick={this.handleAdd}>Add line</Button>
-          <Button onClick={this.handleReset}>Reset</Button>
+  return (
+    <div>
+      <h1>{t('page.printLabels.title', "Print Label")}</h1>
+      <p>
+        <Trans i18nKey="page.printLabels.description">
+        Print custom multi-line labels for your storage bins.
+        <br />
+        Print history is kept so you can reuse templates for your labels.
+        </Trans>
+      </p>
+      <Form onSubmit={onSubmit} loading={loading}>
+        <Form.Group>
+          <Form.Dropdown
+            label={t('page.printLabels.label.labelType', "Label Type")}
+            placeholder="30277"
+            selection
+            value={labelName}
+            options={labelNames}
+            onChange={handleChange}
+            name="labelName"
+          />
+          <Form.Dropdown
+            label={t('page.printLabels.label.paperSource', "Paper Source")}
+            placeholder="Auto"
+            selection
+            value={labelSource}
+            options={labelSources}
+            onChange={handleChange}
+            name="labelSource"
+          />
+        </Form.Group>
+        <Button onClick={handleAdd}>{t('button.addLine', "Add line")}</Button>
+        <Button onClick={handleReset}>{t('button.reset', "Reset")}</Button>
 
-          <Table compact celled size="small">
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell>Label #</Table.HeaderCell>
-                <Table.HeaderCell>Text</Table.HeaderCell>
-                <Table.HeaderCell>FontSize</Table.HeaderCell>
-                <Table.HeaderCell>Alignment</Table.HeaderCell>
-                <Table.HeaderCell>Top Margin</Table.HeaderCell>
-                <Table.HeaderCell>Left Margin</Table.HeaderCell>
-                <Table.HeaderCell>Font</Table.HeaderCell>
-                <Table.HeaderCell>Is Barcode</Table.HeaderCell>
-                <Table.HeaderCell></Table.HeaderCell>
+        <Table compact celled size="small">
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>{t('page.printLabels.label.labelNum', "Label #")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.printLabels.label.text', "Text")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.printLabels.label.fontSize', "FontSize")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.printLabels.label.alignment', "Alignment")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.printLabels.label.topMargin', "Top Margin")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.printLabels.label.leftMargin', "Left Margin")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.printLabels.label.font', "Font")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.printLabels.label.isBarcode', "Is Barcode")}</Table.HeaderCell>
+              <Table.HeaderCell></Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {lines.map((l, k) => (
+              <Table.Row key={k}>
+                <Table.Cell>
+                  <Input
+                    name="label"
+                    value={l.label}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Input
+                    name="content"
+                    value={l.content}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Input
+                    name="fontSize"
+                    value={l.fontSize}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Dropdown
+                    name="position"
+                    placeholder={t('page.printLabels.label.center', "Center")}
+                    selection
+                    value={l.position}
+                    options={labelPositions}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Input
+                    name="topMargin"
+                    value={l.topMargin}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Input
+                    name="leftMargin"
+                    value={l.leftMargin}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Dropdown
+                    name="font"
+                    selection
+                    value={l.font}
+                    options={fonts}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Checkbox
+                    toggle
+                    name="barcode"
+                    checked={l.barcode}
+                    onChange={(e, c) => handleLineChange(e, c, l)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Button
+                    circular
+                    size="mini"
+                    icon="delete"
+                    title={t('label.delete', "Delete")}
+                    onClick={(e) => removeLine(e, l, k)}
+                  />
+                </Table.Cell>
               </Table.Row>
-            </Table.Header>
+            ))}
+          </Table.Body>
+        </Table>
+        <Form.Group>
+          <Form.Dropdown
+            label={t('label.quantity', "Quantity")}
+            placeholder="1"
+            selection
+            value={quantity}
+            options={quantities}
+            onChange={handleChange}
+            name="quantity"
+          />
+        </Form.Group>
+        <Button onClick={handlePreview}>
+          <Icon name="eye" /> {t('button.preview', "Preview")}
+        </Button>
+        <Button primary>
+          <Icon name="print" /> {t('button.print', "Print")}
+        </Button>
+        <div>
+          {imgBase64 && (
+            <Image
+              label={{
+                color: "grey",
+                className: "transparent",
+                content: t('label.preview', "Preview"),
+                icon: "eye",
+                ribbon: true,
+                size: "tiny"
+              }}
+              name="previewImage"
+              src={`data:image/png;base64,${imgBase64}`}
+              size="medium"
+              style={{ marginTop: "20px" }}
+            />
+          )}
+        </div>
+        <div style={{ marginTop: "20px" }}>
+          <h2>{t('page.printLabels.printHistory', "Print History")}</h2>
+          <Table compact celled size="small">
             <Table.Body>
-              {lines.map((l, k) => (
-                <Table.Row key={k}>
-                  <Table.Cell>
-                    <Input
-                      name="label"
-                      value={l.label}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Input
-                      name="content"
-                      value={l.content}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Input
-                      name="fontSize"
-                      value={l.fontSize}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Dropdown
-                      name="position"
-                      placeholder="Center"
-                      selection
-                      value={l.position}
-                      options={labelPositions}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Input
-                      name="topMargin"
-                      value={l.topMargin}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Input
-                      name="leftMargin"
-                      value={l.leftMargin}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Dropdown
-                      name="font"
-                      selection
-                      value={l.font}
-                      options={fonts}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Checkbox
-                      toggle
-                      name="barcode"
-                      checked={l.barcode}
-                      onChange={(e, c) => this.handleLineChange(e, c, l)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Button
-                      circular
-                      size="mini"
-                      icon="delete"
-                      title="Delete"
-                      onClick={(e) => this.removeLine(e, l, k)}
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              ))}
+              {_.sortBy(
+                printLabelHistory.map((l, k) => (
+                  <Table.Row key={k}>
+                    <Table.Cell>
+                      {new Date(l.date).toLocaleString("en-US")}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {l.lines.length > 0 ? l.lines[0].content : ""}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {l.lines.length > 1 ? l.lines[1].content : ""}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {l.lines.length > 2 ? l.lines[2].content : ""}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Button onClick={(e) => handleLoad(e, l)}>
+                        <Icon name="folder open" /> {t('button.load', "Load")}
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                )),
+                "date"
+              ).reverse()}
             </Table.Body>
           </Table>
-          <Form.Group>
-            <Form.Dropdown
-              label="Quantity"
-              placeholder="1"
-              selection
-              value={quantity}
-              options={quantities}
-              onChange={this.handleChange}
-              name="quantity"
-            />
-          </Form.Group>
-          <Button onClick={this.handlePreview}>
-            <Icon name="eye" /> Preview
-          </Button>
-          <Button primary>
-            <Icon name="print" /> Print
-          </Button>
-          <div>
-            {imgBase64 && (
-              <Image
-                label={{
-                  color: "grey",
-                  className: "transparent",
-                  content: "Preview",
-                  icon: "eye",
-                  ribbon: true,
-                  size: "tiny"
-                }}
-                name="previewImage"
-                src={`data:image/png;base64,${imgBase64}`}
-                size="medium"
-                style={{ marginTop: "20px" }}
-              />
-            )}
-          </div>
-          <div style={{ marginTop: "20px" }}>
-            <h2>Print History</h2>
-            <Table compact celled size="small">
-              <Table.Body>
-                {_.sortBy(
-                  printLabelHistory.map((l, k) => (
-                    <Table.Row key={k}>
-                      <Table.Cell>
-                        {new Date(l.date).toLocaleString("en-US")}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {l.lines.length > 0 ? l.lines[0].content : ""}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {l.lines.length > 1 ? l.lines[1].content : ""}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {l.lines.length > 2 ? l.lines[2].content : ""}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Button onClick={(e) => this.handleLoad(e, l)}>
-                          <Icon name="folder open" /> Load
-                        </Button>
-                      </Table.Cell>
-                    </Table.Row>
-                  )),
-                  "date"
-                ).reverse()}
-              </Table.Body>
-            </Table>
-          </div>
-        </Form>
-      </div>
-    );
-  }
+        </div>
+      </Form>
+    </div>
+  );
 }
