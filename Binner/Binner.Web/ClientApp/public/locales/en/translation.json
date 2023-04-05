@@ -152,6 +152,13 @@
     "partTypes": "Part Types"
   },
   "comp": {
+    "navBar": {
+      "search": "Search",
+      "help": "Help",
+      "home": "Home",
+      "addInventory": "Add Inventory",
+      "orderImport": "Order Import"
+    },
     "partsGrid": {
       "recordsPerPage": "records per page",
       "parts": "Parts",

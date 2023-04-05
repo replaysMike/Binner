@@ -1,15 +1,16 @@
 import React, { useState } from "react";
-import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Form, Input, Icon, Popup } from "semantic-ui-react";
 import { AppEvents, Events } from "../common/events";
 import "./NavMenu.css";
 
 export function NavMenu(props) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
 
   const toggleNavbar = () => {
     setCollapsed(!collapsed);
@@ -44,7 +45,7 @@ export function NavMenu(props) {
                 <NavItem style={{lineHeight: '2.3'}}>
                   <Popup 
                     position="left center"
-                    content="Help"
+                    content={t('comp.navBar.help', "Help")}
                     trigger={<Link to="/help" className="help-icon"><Icon name="help circle" /></Link>}
                   />
                 </NavItem>
@@ -52,7 +53,7 @@ export function NavMenu(props) {
                   <Input
                     icon={{ name: "search", circular: true, link: true, onClick: onSubmit }}
                     size="mini"
-                    placeholder="Search"
+                    placeholder={t('comp.navBar.search', "Search")}
                     onChange={handleChange}
                     value={searchKeyword}
                     name="searchKeyword"
@@ -62,17 +63,17 @@ export function NavMenu(props) {
                 </NavItem>
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/">
-                    Home
+                  {t('comp.navBar.home', "Home")}
                   </NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/inventory/add">
-                    Add Inventory
+                  {t('comp.navBar.addInventory', "Add Inventory")}
                   </NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/import">
-                    Order Import
+                  {t('comp.navBar.orderImport', "Order Import")}
                   </NavLink>
                 </NavItem>
               </ul>
