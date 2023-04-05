@@ -22,8 +22,7 @@
     },
     "search": {
       "title":"Inventory",
-      "search":"Seach",
-      "noResults":"No matching results."
+      "search":"Seach"
     },
     "lowInventory": {
       "title": "Low Inventory",
@@ -187,6 +186,68 @@
       "error": {
         "failedSave": "Error saving part {{partNumber}} - {{statusText}}"
       }
+    },
+    "addBomPartModal": {
+      "title": "BOM Management",
+      "description": "Add a part to your BOM, optionally associating it with a particular PCB.",
+      "none": "None",
+      "confirmHeader": "Add Part",
+      "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part without associating it to a part in your inventory?<3/><4/><5>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</5>",
+      "selectPcb": "Select PCB",
+      "choosePcb": "Choose PCB",
+      "popup": {
+        "selectPcb": "Select the pcb you would like to add parts to. If you choose not to select a PCB, the part will be added to your BOM without PCB associations.",
+        "quantity": "Enter the quantity of this part required to produce a single PCB.",
+        "referenceIds": "Enter a custom Reference Id you can use for identifying this part.<1/>Examples: <3>Optoisolator1</3>, <5>Capacitor Array</5>",
+        "schematicReferenceIds": "Enter one or more Schematic Reference Ids you can use for identifying this part on the PCB silkscreen.<1/>Examples: <3>D1</3>, <5>C2</5>, <7>Q1</7>",
+        "notes": "Enter any custom notes for this part.",
+        "partNumber": "Search for a part in your inventory",
+        "customDescription": "Enter your own custom description for this part."
+      }
+    },
+    "addPcbModal": {
+      "title": "BOM Management",
+      "description": "Adding a PCB allows you to associate your parts with a specific PCB, and even multiple PCBs within a project.",
+      "header": "Add PCB",
+      "popup": {
+        "name": "Enter the name of your pcb board or module",
+        "description": "Enter a description describing what your pcb does. (<1>optional</1>)",
+        "quantity": "Enter a quantity (multiplier) of PCB's produced each time you create a PCB. This should normally be 1, unless you require several copies of the same PCB for producing your BOM project.<1/><2/><3>Example:</3> An audio amplifier may require 2 of the same PCB's, one for each left/right channel each time you produce the entire assembly.",
+        "cost": "The cost to produce a single PCB board (without components). If using quantity, only specify the cost for a single board as quantity will be taken into consideration.",
+        "serialNumberFormat": "Enter your serial number format as a string. The left-most portion of the string will be incremented by 1 each time you produce a PCB. (<1>optional</1>)<2/>Example: <4>SN00000000</4>"
+      },
+      "placeholder": {
+        "name": "Main Board or module name",
+        "description": "Description of pcb"
+      }
+    },
+    "producePcbModal": {
+      "title": "BOM Management",
+      "description": "",
+      "header": "Produce Pcb",
+      "nextSerialNumber": "Next Serial Number",
+      "maxQty": "Max Qty",
+      "options": {
+        "all": "All",
+        "allDescription": "Produce the entire BOM",
+        "unassociated": "Unassociated",
+        "unassociatedDescription": "Produce parts not associated to a PCB"
+      },
+      "popup": {
+        "pcbs": "Select the pcb(s) you would like to produce. If you don't define PCB's, choose Unassociated or All.",
+        "quantity": "Enter the quantity of PCBs you are producing.",
+        "nextSerialNumber": "The next serial number assigned to the board",
+        "maxQty": "The maximum number of boards you can produce",
+        "parts": "The number of parts on the board",
+        "outOfStock": "The number of parts on the board that are out of stock",
+        "serialNumber": "The next PCB will have it's serial number started at this value."
+      },
+      "label": {
+        "pcbs": "Select PCB(s)"
+      },
+      "placeholder": {
+        "pcbs": "Choose PCB(s) to produce"
+      }
     }
   },
   "button": {
@@ -214,7 +275,10 @@
     "preview": "Preview",
     "print": "Print",
     "load": "Load",
-    "addLine": "Add Line"
+    "addLine": "Add Line",
+    "add": "Add",
+    "cancel": "Cancel",
+    "produce": "Produce"
   },
   "label": {
     "name": "Name",
@@ -249,6 +313,7 @@
     "schematicReferenceIds": "Schematic Reference Id(s)",
     "customDescription": "Custom Description",
     "note": "Note",
+    "notes": "Notes",
     "recordsPerPage": "records per page",
     "parent": "Parent",
     "partsCount": "Parts Count",
@@ -281,13 +346,16 @@
     "trackingNumber": "Tracking Number",
     "unspecified": "Unspecified",
     "viewTracking": "View Tracking",
-    "preview": "Preview"
+    "preview": "Preview",
+    "serialNumberFormat": "Serial Number Format"
   },
   "message": {
     "noPartsAdded": "No parts added.",
     "noChildPartTypes": "There are no child part types.",
     "noResults": "No Results",
-    "loadingOrder": "Loading order# {{order}}"
+    "loadingOrder": "Loading order# {{order}}",
+    "noMatchingResults":"No matching results.",
+    "notEnoughParts": "Not enough parts"
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",

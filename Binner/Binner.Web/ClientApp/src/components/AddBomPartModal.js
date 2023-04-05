@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, Popup, TextArea, Header, Confirm } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import PartsGrid from "./PartsGrid";
@@ -6,6 +7,7 @@ import NumberPicker from "./NumberPicker";
 import debounce from "lodash.debounce";
 
 export function AddBomPartModal(props) {
+  const { t } = useTranslation();
   AddBomPartModal.abortController = new AbortController();
 	const defaultForm = { 
     keyword: "", 
@@ -27,7 +29,7 @@ export function AddBomPartModal(props) {
   const [form, setForm] = useState(defaultForm);
 	const [confirmAddPartIsOpen, setConfirmAddPartIsOpen] = useState(false);
 
-	const pcbOptions = [{key: 0, text: 'None', value: 0}];
+	const pcbOptions = [{key: 0, text: t('comp.addBomPartModal.none', "None"), value: 0}];
   if (pcbs && pcbs.length > 0) {
     for(let i = 0; i < pcbs.length; i++)
       pcbOptions.push({ key: i + 1, text: pcbs[i].name, description: pcbs[i].description, value: pcbs[i].pcbId});
@@ -142,17 +144,23 @@ export function AddBomPartModal(props) {
     <div className="addBomPartModal">
 			<Confirm
         className="confirm"
-        header="Add Part"
+        header={t('comp.addBomPartModal.confirmHeader', "Add Part")}
         open={confirmAddPartIsOpen}
         onCancel={confirmAddPartClose}
         onConfirm={handleAddPart}
-        content={<p>You have not selected a part from your inventory.<br/>Are you sure you want to add this part without associating it to a part in your inventory?<br/><br/><span className="small">Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</span></p>}
+        content={<p>
+          <Trans i18nKey="comp.addBomPartModal.confirmAddUnassociated">
+          You have not selected a part from your inventory.<br/>
+          Are you sure you want to add this part without associating it to a part in your inventory?<br/><br/>
+          <span className="small">Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</span>
+          </Trans>
+          </p>}            
       />
       <Modal centered open={isOpen || false} onClose={handleModalClose}>
-        <Modal.Header>BOM Management</Modal.Header>
+        <Modal.Header>{t('comp.addBomPartModal.title', "BOM Management")}</Modal.Header>
 				<Modal.Description style={{ width: "100%", padding: '5px 25px' }}>
-					<Header style={{marginBottom: '2px'}}>Add Part</Header>
-					<p>Add a part to your BOM, optionally associating it with a particular PCB.</p>
+					<Header style={{marginBottom: '2px'}}>{t('comp.addBomPartModal.confirmHeader', "Add Part")}</Header>
+					<p>{t('comp.addBomPartModal.description', "Add a part to your BOM, optionally associating it with a particular PCB.")}</p>
 				</Modal.Description>
         <Modal.Content scrolling style={{paddingTop: '0'}}>
           <Form style={{ marginBottom: "10px", width: '100%' }}>
@@ -160,20 +168,20 @@ export function AddBomPartModal(props) {
 							<Form.Field width={8}>
 								<Popup
 									wide
-									content="Select the pcb you would like to add parts to. If you choose not to select a PCB, the part will be added to your BOM without PCB associations."
+									content={t('comp.addBomPartModal.popup.selectPcb', "Select the pcb you would like to add parts to. If you choose not to select a PCB, the part will be added to your BOM without PCB associations.")}
 									trigger={
-											<Form.Dropdown label='Select PCB' placeholder="Choose PCB" selection value={form.pcbId || ''} options={pcbOptions} onChange={handleChange} name='pcbId' />
+											<Form.Dropdown label={t('comp.addBomPartModal.selectPcb', "Select PCB")} placeholder={t('comp.addBomPartModal.choosePcb', "Choose PCB")} selection value={form.pcbId || ''} options={pcbOptions} onChange={handleChange} name='pcbId' />
 									}
 								/>
 							</Form.Field>
 							<Form.Field width={4}>
 									<Popup
 										wide
-										content={<p>Enter the quantity of this part required to produce a single PCB.</p>}
+										content={<p>{t('comp.addBomPartModal.popup.quantity', "Enter the quantity of this part required to produce a single PCB.")}</p>}
 										trigger={
 											<Form.Field
 												control={NumberPicker}
-												label="Quantity"
+												label={t('label.quantity', "Quantity")}
 												placeholder="10"
 												min={0}
 												value={form.quantity || ""}
@@ -189,22 +197,30 @@ export function AddBomPartModal(props) {
 							<Form.Field width={4}>
 								<Popup 
 									wide
-									content={<p>Enter a custom Reference Id you can use for identifying this part.<br/>Examples: <i>Optoisolator1</i>, <i>Capacitor Array</i></p>}
-									trigger={<Form.Input label="Reference Id(s)" placeholder="Optoisolator1" name="referenceId" value={form.referenceId || ''} onChange={handleChange} icon="hashtag" />}
+									content={<p>
+                    <Trans i18nKey="comp.addBomPartModal.popup.referenceIds">
+                    Enter a custom Reference Id you can use for identifying this part.<br/>Examples: <i>Optoisolator1</i>, <i>Capacitor Array</i>
+                    </Trans>
+                  </p>}
+									trigger={<Form.Input label={t('label.referenceIds', "Reference Id(s)")} placeholder="Optoisolator1" name="referenceId" value={form.referenceId || ''} onChange={handleChange} icon="hashtag" />}
 								/>
 							</Form.Field>
               <Form.Field width={4}>
 								<Popup 
 									wide
-									content={<p>Enter one or more Schematic Reference Ids you can use for identifying this part on the PCB silkscreen.<br/>Examples: <i>D1</i>, <i>C2</i>, <i>Q1</i></p>}
-									trigger={<Form.Input label="Schematic Reference Id(s)" placeholder="D1,D2" name="schematicReferenceId" value={form.schematicReferenceId || ''} onChange={handleChange} icon="hashtag" />}
+									content={<p>
+                    <Trans i18nKey="comp.addBomPartModal.popup.schematicReferenceIds">
+                    Enter one or more Schematic Reference Ids you can use for identifying this part on the PCB silkscreen.<br/>Examples: <i>D1</i>, <i>C2</i>, <i>Q1</i>
+                    </Trans>
+                  </p>}
+									trigger={<Form.Input label={t('label.schematicReferenceIds', "Schematic Reference Id(s)")} placeholder="D1,D2" name="schematicReferenceId" value={form.schematicReferenceId || ''} onChange={handleChange} icon="hashtag" />}
 								/>
 							</Form.Field>
 							<Form.Field width={4}>
 								<Popup 
 										wide
-										content={<p>Enter any custom notes for this part.</p>}
-										trigger={<Form.Field label="Notes" placeholder="Used for full bridge rectifier" type='text' control={TextArea} style={{height: '43px', minHeight: '43px', padding: '5px'}} name='notes' onChange={handleChange} value={form.notes || ''} />}
+										content={<p>{t('comp.addBomPartModal.popup.notes', "Enter any custom notes for this part.")}</p>}
+										trigger={<Form.Field label={t('label.notes', "Notes")} type='text' control={TextArea} style={{height: '43px', minHeight: '43px', padding: '5px'}} name='notes' onChange={handleChange} value={form.notes || ''} />}
 									/>								
 							</Form.Field>
 						</Form.Group>
@@ -212,15 +228,15 @@ export function AddBomPartModal(props) {
               <Form.Field width={4}>
                 <Popup 
                   wide
-                  content={<p>Search for a part in your inventory</p>}
-                  trigger={<Form.Input label="Part Number" placeholder="LM358" name="keyword" value={form.keyword} onChange={handleChange} icon="microchip" />}
+                  content={<p>{t('comp.addBomPartModal.popup.partNumber', "Search for a part in your inventory")}</p>}
+                  trigger={<Form.Input label={t('label.partNumber', "Part Number")} placeholder="LM358" name="keyword" value={form.keyword} onChange={handleChange} icon="microchip" />}
                 />
               </Form.Field>
               <Form.Field width={4}>
 								<Popup 
 										wide
-										content={<p>Enter your own custom description for this part.</p>}
-										trigger={<Form.Field label="Custom Description" placeholder="LM358 is a general purpose op-amp" type='text' control={TextArea} style={{height: '43px', minHeight: '43px', padding: '5px'}} name='customDescription' onChange={handleChange} value={form.customDescription || ''} />}
+										content={<p>{t('comp.addBomPartModal.popup.customDescription', "Enter your own custom description for this part.")}</p>}
+										trigger={<Form.Field label={t('label.customDescription', "Custom Description")} type='text' control={TextArea} style={{height: '43px', minHeight: '43px', padding: '5px'}} name='customDescription' onChange={handleChange} value={form.customDescription || ''} />}
 									/>								
 							</Form.Field>
             </Form.Group>
@@ -240,13 +256,13 @@ export function AddBomPartModal(props) {
             visitable={false}
             name="partsGrid"
           >
-            No matching results.
+            {t('message.noMatchingResults', "No matching results.")}
           </PartsGrid>
         </Modal.Content>
         <Modal.Actions>
           <Button onClick={handleModalClose}>Cancel</Button>
           <Button primary onClick={handleConfirmPartSelection}>
-            <Icon name="plus" /> Add
+            <Icon name="plus" /> {t('button.add', "Add")}
           </Button>
         </Modal.Actions>
       </Modal>

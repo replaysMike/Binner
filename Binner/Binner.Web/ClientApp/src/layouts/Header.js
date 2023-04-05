@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { NavMenu } from "./NavMenu";
 import { Dropdown, Icon } from "semantic-ui-react";
-import { useTranslation } from 'react-i18next';
 
 // import i18n
 import '../i18n';
