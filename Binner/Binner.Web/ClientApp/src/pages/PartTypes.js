@@ -227,7 +227,8 @@ export function PartTypes(props) {
         <Trans i18nKey='confirm.deletePartType' name={partType.name}>
           Are you sure you want to delete part type <i>{partType.name}</i>?
         </Trans>
-        <br/><br/>
+        <br/>
+        <br/>
         <Trans i18nKey='confirm.permanent'>
         This action is <i>permanent and cannot be recovered</i>.
         </Trans>
@@ -263,7 +264,7 @@ export function PartTypes(props) {
 			</FormHeader>
       <p>
       </p>
-      <Confirm className="confirm" header={t('confirm.deletePart', "Delete Part")} open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDelete} content={confirmPartDeleteContent} />
+      <Confirm className="confirm" header={t('confirm.header.deletePart', "Delete Part")} open={confirmDeleteIsOpen} onCancel={confirmDeleteClose} onConfirm={handleDelete} content={confirmPartDeleteContent} />
 
       <Segment loading={loading}>
         <div style={{float: 'left'}}>

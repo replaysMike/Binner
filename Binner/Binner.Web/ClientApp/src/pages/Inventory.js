@@ -134,8 +134,8 @@ export function Inventory(props) {
   const [partModalOpen, setPartModalOpen] = useState(false);
   const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
-  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState("Are you sure you want to delete this part?");
-  const [confirmLocalFileDeleteContent, setConfirmLocalFileDeleteContent] = useState("Are you sure you want to delete this local file?");
+  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
+  const [confirmLocalFileDeleteContent, setConfirmLocalFileDeleteContent] = useState(null);
   const [confirmDeleteLocalFileIsOpen, setConfirmDeleteLocalFileIsOpen] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -1442,9 +1442,14 @@ export function Inventory(props) {
     setSelectedPart(part);
     setConfirmPartDeleteContent(
       <p>
-        Are you sure you want to delete part <b>{part.partNumber}</b>?<br />
+        <Trans i18nKey="confirm.deletePart" name={part.partNumber}>
+        Are you sure you want to delete part <b>{part.partNumber}</b>?
+        </Trans>
         <br />
+        <br />
+        <Trans i18nKey="confirm.permanent" partNumber={part.partNumber}>
         This action is <i>permanent and cannot be recovered</i>.
+        </Trans>        
       </p>
     );
   };
@@ -1463,9 +1468,14 @@ export function Inventory(props) {
     setSelectedLocalFile({ localFile, type });
     setConfirmLocalFileDeleteContent(
       <p>
-        Are you sure you want to delete this local file named <b>{localFile.name}</b>?<br />
+        <Trans i18nKey="confirm.deleteLocalFile" name={localFile.name}>
+        Are you sure you want to delete this local file named <b>{localFile.name}</b>?
+        </Trans>
         <br />
+        <br />
+        <Trans i18nKey="confirm.permanent" partNumber={part.partNumber}>
         This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
       </p>
     );
   };
@@ -1711,7 +1721,7 @@ export function Inventory(props) {
       </Modal>
       <Confirm
         className="confirm"
-        header="Delete Part"
+        header={t('confirm.deletePart', "Delete Part")}
         open={confirmDeleteIsOpen}
         onCancel={confirmDeleteClose}
         onConfirm={handleDeletePart}
@@ -1719,7 +1729,7 @@ export function Inventory(props) {
       />
       <Confirm
         className="confirm"
-        header="Delete File"
+        header={t('confirm.header.deleteFile', "Delete File")}
         open={confirmDeleteLocalFileIsOpen}
         onCancel={confirmDeleteLocalFileClose}
         onConfirm={handleDeleteLocalFile}
@@ -2002,7 +2012,7 @@ export function Inventory(props) {
                         trigger={
                           <Button secondary>
                             <Icon name="external alternate" color="blue" />
-                            {t('label.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) } )}
+                            {t('page.inventory.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) } )}
                           </Button>
                         }
                       />
