@@ -500,11 +500,14 @@
     "removeBomParts": "Are you sure you want to remove these <1>{{quantity}}</1> part(s) from your BOM?",
     "deletePcb": "Are you sure you want to delete this PCB and it's parts from your BOM?",
     "deletePartType": "Are you sure you want to delete part type <1>{{name}}</1>?",
+    "deletePart": "Are you sure you want to delete part <1>{{name}}</1>?",
+    "deleteLocalFile": "Are you sure you want to delete this local file named <1>{{name}}</1>?",
     "permanent": "This action is <1>permanent and cannot be recovered</1>.",
     "header": {
-      "removeBomPart": "Remove Part from BOM"
-    },
-    "deletePart": "Delete Part"
+      "removeBomPart": "Remove Part from BOM",
+      "deleteFile": "Delete File",
+      "deletePart": "Delete Part"
+    }    
   },
   "error": {
     "deleteProjectFailed": "Failed to delete project!",
