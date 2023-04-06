@@ -89,6 +89,10 @@ code {
     width: 100%;
 }
 
+section.formHeader {
+    margin-bottom: 20px;
+}
+
 .btn-primary {
   color: #fff;
   background-color: #1b6ec2;

@@ -15,7 +15,7 @@ export const FormHeader = function (props) {
 
 	if (to)
 		return (
-		<section>
+		<section className="formHeader">
 			<h1>{to !== ".." ? <Link to={to}><Icon name="arrow left" color="blue" /></Link> : <a href="/" onClick={goBack}><Icon name="arrow left" color="blue" /></a>} {name}</h1>
 			{props.children && <p>{props.children}</p>}
 		</section>

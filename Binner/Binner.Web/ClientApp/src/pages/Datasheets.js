@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import ReactDOM from 'react-dom';
 import { useTranslation } from "react-i18next";
 import _ from 'underscore';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { Table, Form, Segment } from 'semantic-ui-react';
+import { Table, Form, Segment, Breadcrumb } from 'semantic-ui-react';
+import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from '../common/fetchApi';
 
 export function Datasheets (props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   Datasheets.abortController = new AbortController();
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState({ partNumber: '', partType: '', mountingType: '' });
@@ -186,7 +189,13 @@ export function Datasheets (props) {
 
   return (
     <div>
-      <h1>{t('page.datasheet.title', "Datasheet Search")}</h1>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('page.datasheet.title', "Datasheet Search")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name={t('page.datasheet.title', "Datasheet Search")} to={".."}>
+			</FormHeader>
       {contents}
     </div>
   );

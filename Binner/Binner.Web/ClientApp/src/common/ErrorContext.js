@@ -1,6 +1,6 @@
-import React from "react";
+import { createContext } from "react";
 
-export const ErrorContext = React.createContext({
+export const ErrorContext = createContext({
   modalTitle: "",
   url: "",
   header: "",

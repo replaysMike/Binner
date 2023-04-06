@@ -1,13 +1,16 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { useTranslation, Trans } from "react-i18next";
-import { Button, Form, Divider, Grid, Segment } from "semantic-ui-react";
+import { Button, Form, Divider, Grid, Segment, Breadcrumb } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
+import { FormHeader } from "../components/FormHeader";
 import { getAuthToken } from "../common/authentication";
 
 export const ExportData = (props) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [exportFormat, setExportFormat] = useState("");
   const [isDirty, setIsDirty] = useState(false);
@@ -123,8 +126,14 @@ export const ExportData = (props) => {
 
   return (
     <div>
-      <h1>{t('page.exportData.title', "Import/Export Data")}</h1>
-      <p>{t('page.exportData.description', "Import or Export your Binner database to a human-readable format.")}</p>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('page.exportData.title', "Import/Export Data")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name={t('page.exportData.title', "Import/Export Data")} to={".."}>
+        {t('page.exportData.description', "Import or Export your Binner database to a human-readable format.")}
+			</FormHeader>
       <Segment loading={loading}>
         <Grid columns={2}>
           <Grid.Column className="centered" style={{ padding: "50px" }}>

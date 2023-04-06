@@ -1,12 +1,12 @@
 
 import { Modal } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
-import React from 'react';
+import React, { useContext } from 'react';
 import { ErrorContext } from '../common/ErrorContext';
 
-export function ErrorModal (props) {
+export default function ErrorModal (props) {
 	const { t } = useTranslation();
-	ErrorModal.contextType = ErrorContext;
+	const context = useContext(ErrorContext)
 
   const handleCloseErrorModal = () => {
 		window.showErrorWindow();
@@ -25,7 +25,7 @@ export function ErrorModal (props) {
 			<Modal.Description>
 			{header && <h1>{header}</h1>}
 			{errorMessage && <h3>{errorMessage}</h3>}
-			<hr/>
+			<hr style={{backgroundColor: '#c00', color: '#c00', border: 'none', height: '4px', opacity: '1.0', borderRadius: '4px'}}/>
 			{url && <h2>{t('label.apiEndpoint', "Api Endpoint")}: {url}</h2>}
 			{stackTrace && <p>{stackTrace}</p>}
 			</Modal.Description>
@@ -34,4 +34,3 @@ export function ErrorModal (props) {
 		)}
 	</ErrorContext.Consumer>);
 }
-ErrorModal.contextType = ErrorContext;

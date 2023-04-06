@@ -4,9 +4,9 @@ import { Input, Checkbox, Form, Segment, Header, Dropdown, Popup } from "semanti
 
 const TimeoutLength = 1500;
 
-export function LineTemplate(props) {
+export default function LineTemplate(props) {
   const { t } = useTranslation();
-  const [ line, fonts, title, color, font, name, onChange ] = props;
+  const { line, fonts, title, color, font, name, onChange } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [timeoutValue, setTimeoutValue] = useState(0);
   const [positionOptions] = useState([

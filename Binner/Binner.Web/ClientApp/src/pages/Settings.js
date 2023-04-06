@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm } from "semantic-ui-react";
+import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
 import LineTemplate from "../components/LineTemplate";
 import { DEFAULT_FONT } from "../common/Types";
+import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
 import "./Settings.css";
@@ -489,8 +490,12 @@ export const Settings = (props) => {
 
   return (
     <div>
-      <h1>{t('page.settings.title', "Settings")}</h1>
-      <p>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('page.settings.title', "Settings")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name={t('page.settings.title', "Settings")} to={".."}>
         <Trans i18nKey="page.settings.description">
           Configure your integrations, printer configuration, as well as label
           part templates.
@@ -504,7 +509,7 @@ export const Settings = (props) => {
             Wiki
           </a>
         </Trans>
-      </p>
+			</FormHeader>
       <Confirm
         className="confirm"
         header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
@@ -1133,7 +1138,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>{t('label.ClientId', "Client Id")}</label>
+              <label>{t('label.clientId', "Client Id")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1151,7 +1156,7 @@ export const Settings = (props) => {
               />
             </Form.Field>
             <Form.Field width={10}>
-              <label>{t('label.ClientSecret', "Client Secret")}</label>
+              <label>{t('label.clientSecret', "Client Secret")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}

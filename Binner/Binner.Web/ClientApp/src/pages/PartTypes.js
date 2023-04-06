@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Table, Input, Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup } from "semantic-ui-react";
@@ -8,6 +9,7 @@ import { FormHeader } from "../components/FormHeader";
 
 export function PartTypes(props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const defaultPartType = {
     partTypeId: 0,
     name: "",
@@ -242,7 +244,7 @@ export function PartTypes(props) {
   return (
     <div>
       <Breadcrumb>
-        <Breadcrumb.Section href="/">{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
         {parentPartType 
           ? <React.Fragment>
@@ -250,7 +252,7 @@ export function PartTypes(props) {
             <Breadcrumb.Divider />
             <Breadcrumb.Section active>{parentPartType.name}</Breadcrumb.Section>
             </React.Fragment> 
-          : <Breadcrumb.Section active>{t('bc.partTypes', "Part Types")}</Breadcrumb.Section>}
+          : <Breadcrumb.Section active>{t('page.partTypes.title', "Part Types")}</Breadcrumb.Section>}
       </Breadcrumb>
       <FormHeader name={t('page.partTypes.title', "Part Types")} to="..">
         <Trans i18nKey="page.partTypes.description">

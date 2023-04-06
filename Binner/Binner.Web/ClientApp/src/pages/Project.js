@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import {
   Icon,
   Input,
@@ -13,15 +14,14 @@ import {
   Confirm
 } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
-import axios from "axios";
 import _ from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
-import { formatCurrency } from "../common/Utils";
 import "./Bom.css";
 
 export function Project(props) {
+  const { t } = useTranslation();
   const defaultProject = {
     projectId: null,
     name: "",
@@ -40,8 +40,8 @@ export function Project(props) {
 	const [confirmDeletePcbIsOpen, setConfirmDeletePcbIsOpen] = useState(false);
 	const [btnDeleteProjectDisabled, setBtnDeleteProjectDisabled] = useState(true);
 	const [changeTracker, setChangeTracker] = useState([]);
-  const [confirmProjectDeleteContent, setConfirmDeleteProjectContent] = useState("Are you sure you want to delete this project?");
-	const [confirmPcbDeleteContent, setConfirmDeletePcbContent] = useState("Are you sure you want to delete this PCB and it's part(s) from your BOM?");
+  const [confirmProjectDeleteContent, setConfirmDeleteProjectContent] = useState(null);
+	const [confirmPcbDeleteContent, setConfirmDeletePcbContent] = useState(null);
 	const [selectedPcb, setSelectedPcb] = useState(null);
 	const [btnSubmitDisabled, setBtnSubmitDisabled] = useState(false);
 	const [btnDeleteDisabled, setBtnDeleteDisabled] = useState(false);
@@ -63,7 +63,7 @@ export function Project(props) {
     const response = await fetchApi(`bom?name=${projectName}`)
 			.catch(c => {
 				if (c.status === 404){
-					toast.error(`Could not find a project named '${projectName}'`);
+					toast.error(t('error.projectNotFound', "Could not find a project named {{projectName}}", { projectName }));
 					setBtnSubmitDisabled(true);
 					setBtnDeleteDisabled(true);
 					setPageDisabled(true);
@@ -97,11 +97,11 @@ export function Project(props) {
     }).catch(() => {
 		});
     if (response && response.responseObject.status === 200) {
-			toast.success('Project was deleted!');
+			toast.success(t('success.deletedProject', 'Project was deleted!'));
 			props.history(-1);
     }
     else
-      toast.error("Failed to remove project!");
+      toast.error(t('error.failedDeleteProject', "Failed to remove project!"));
     setLoading(false);
     setBtnDeleteProjectDisabled(true);
     setConfirmDeleteProjectIsOpen(false);
@@ -124,10 +124,10 @@ export function Project(props) {
     if (response && response.responseObject.status === 200) {
 			// remove pcb from list
 			setProject({...project, pcbs: _.filter(project.pcbs, x => x.pcbId !== selectedPcb.pcbId)});
-			toast.success('Pcb was deleted!');
+      toast.success(t('success.deletedPcb', 'Pcb was deleted!'));
     }
     else
-      toast.error("Failed to remove pcb!");
+      toast.error(t('error.failedDeletePcb', "Failed to remove pcb!"));
     setLoading(false);
     setConfirmDeletePcbIsOpen(false);
 		setSelectedPcb(null);
@@ -161,7 +161,7 @@ export function Project(props) {
       setProject({...project, pcbs: newPcbs});
     }
     else {
-      toast.error('Failed to save pcb!');
+      toast.error(t('error.failedSavePcb', "Failed to save pcb!"));
     }
   };
 
@@ -187,7 +187,7 @@ export function Project(props) {
 			props.history(`/project/${data.name}`);
 			toast.success('Project saved!');
     } else {
-      toast.error('Failed to save project!');
+      toast.error(t('error.failedSaveProject', "Failed to save project change!"));
     }
     setLoading(false);
 		setBtnDeleteProjectDisabled(false);
@@ -199,9 +199,12 @@ export function Project(props) {
     setConfirmDeleteProjectIsOpen(true);
     setConfirmDeleteProjectContent(
       <p>
-        Are you sure you want to delete this project and your entire BOM?<br />
+        {t('confirm.deleteProject', "Are you sure you want to delete this project and your entire BOM?")}
         <br />
+        <br />
+        <Trans i18nKey="confirm.permanent">
         This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
       </p>
     );
   };
@@ -219,9 +222,12 @@ export function Project(props) {
     setConfirmDeletePcbIsOpen(true);
     setConfirmDeletePcbContent(
       <p>
-        Are you sure you want to delete this PCB and it's parts from your BOM?<br />
+        {t('confirm.deletePcb', "Are you sure you want to delete this PCB and it's parts from your BOM?")}
         <br />
+        <br />
+        <Trans i18nKey='confirm.permanent'>
         This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
       </p>
     );
   };
@@ -260,20 +266,20 @@ export function Project(props) {
   return (
     <div>
 			<Breadcrumb>
-        <Breadcrumb.Section link onClick={() => props.history("/")}>Home</Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => props.history("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
-				<Breadcrumb.Section link onClick={() => props.history("/bom")}>BOMs</Breadcrumb.Section>
+				<Breadcrumb.Section link onClick={() => props.history("/bom")}>{t('bc.boms', "BOMs")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
-				<Breadcrumb.Section link onClick={() => props.history(`/bom/${project.name}`)}>BOM</Breadcrumb.Section>
+				<Breadcrumb.Section link onClick={() => props.history(`/bom/${project.name}`)}>{t('bc.bom', "BOM")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
-        <Breadcrumb.Section active>Edit Project</Breadcrumb.Section>
+        <Breadcrumb.Section active>{t('bc.editProject', "Edit Project")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name="Edit Project" to={`/bom/${project.name}`}>
-        Projects are used as part of your BOM, allowing you to associate parts to multiple PCBs.
+      <FormHeader name={t('page.project.title', "Edit Project")} to={`/bom/${project.name}`}>
+      {t('page.project.description', "Projects are used as part of your BOM, allowing you to associate parts to multiple PCBs.")}
 			</FormHeader>
       <Confirm
         className="confirm"
-        header="Delete Project"
+        header={t('page.project.confirm.deleteProjectHeader', "Delete Project")}
         open={confirmDeleteProjectIsOpen}
         onCancel={confirmDeleteProjectClose}
         onConfirm={handleDeleteProject}
@@ -281,7 +287,7 @@ export function Project(props) {
       />
 			<Confirm
         className="confirm"
-        header="Delete Pcb"
+        header={t('page.project.confirm.deletePcbHeader', "Delete Pcb")}
         open={confirmDeletePcbIsOpen}
         onCancel={confirmDeletePcbClose}
         onConfirm={handleDeletePcb}
@@ -293,51 +299,55 @@ export function Project(props) {
           <Form.Field width={4}>
 						<Popup
                 wide
-                content="Enter the name of your project/BOM"
+                content={t('page.project.popup.name', "Enter the name of your project/BOM")}
                 trigger={
-                  <Form.Input required label="Name" placeholder="My Project" name="name" value={project.name || ''} onChange={handleChange} />
+                  <Form.Input required label={t('label.name', "Name")} placeholder={t('page.project.placeholder.name', "My Project")} name="name" value={project.name || ''} onChange={handleChange} />
                 }
               />
 					</Form.Field>
 					<Popup
 						wide
-						content="Enter a description that summarizes your project"
+						content={t('page.project.popup.description', "Enter a description that summarizes your project")}
 						trigger={
-							<Form.Field width={6} control={TextArea} label='Description' value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
+							<Form.Field width={6} control={TextArea} label={t('label.description', "Description")} value={project.description} onChange={handleChange} name='description' style={{height: '60px'}} />
 						}
 					/>
 					<Form.Group>
 						<Popup
 							wide
-							content={<p>Your project's location <i>(optional)</i></p>}
+							content={<p>
+                <Trans i18nKey="page.project.popup.location">
+                Your project's location <i>(optional)</i>
+                </Trans>
+              </p>}
 							trigger={
-								<Form.Input width={6} label='Location' required placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
+								<Form.Input width={6} label={t('label.location', "Location")} required placeholder={t('page.project.placeholder.location', "New York")} focus value={project.location} onChange={handleChange} name='location' />
 							}
 						/>
 						<Popup
 							wide
-							content="Associate a color with this project for easy identification"
+							content={t('page.project.popup.color', "Associate a color with this project for easy identification")}
 							trigger={
-								<Form.Dropdown width={4} label='Color' selection value={project.color} options={colors} onChange={handleChange} name='color' />
+								<Form.Dropdown width={4} label={t('label.color', "Color")} selection value={project.color} options={colors} onChange={handleChange} name='color' />
 							}
 						/>
 					</Form.Group>
-					<Button primary type="submit" disabled={btnSubmitDisabled}><Icon name="save" /> Save</Button>
-					<Button onClick={confirmDeleteProjectOpen} disabled={btnDeleteDisabled}><Icon name="trash" /> Delete</Button>
+					<Button primary type="submit" disabled={btnSubmitDisabled}><Icon name="save" /> {t('button.save', "Save")}</Button>
+					<Button onClick={confirmDeleteProjectOpen} disabled={btnDeleteDisabled}><Icon name="trash" /> {t('button.delete', "Delete")}</Button>
         </Segment>
 
 				<Segment disabled={pageDisabled}>
-					<h2>PCBs</h2>
+					<h2>{t('page.project.pcbs', "PCBs")}</h2>
 					<Table>
 						<Table.Header>
 							<Table.Row>
-								<Table.HeaderCell>Name</Table.HeaderCell>
-								<Table.HeaderCell>Description</Table.HeaderCell>
-                <Table.HeaderCell>Quantity</Table.HeaderCell>
-                <Table.HeaderCell>Cost</Table.HeaderCell>
-								<Table.HeaderCell>Serial Number Format</Table.HeaderCell>
-								<Table.HeaderCell>Last Serial Number</Table.HeaderCell>
-								<Table.HeaderCell>Parts Count</Table.HeaderCell>
+								<Table.HeaderCell>{t('label.name', "Name")}</Table.HeaderCell>
+								<Table.HeaderCell>{t('label.description', "Description")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
+								<Table.HeaderCell>{t('label.serialNumberFormat', "Serial Number Format")}</Table.HeaderCell>
+								<Table.HeaderCell>{t('label.lastSerialNumber', "Last Serial Number")}</Table.HeaderCell>
+								<Table.HeaderCell>{t('label.partsCount', "Parts Count")}</Table.HeaderCell>
 								<Table.HeaderCell></Table.HeaderCell>
 							</Table.Row>
 						</Table.Header>

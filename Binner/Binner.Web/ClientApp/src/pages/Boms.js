@@ -218,7 +218,9 @@ export function Boms (props) {
         </b>
         <br />
         <br />
-        {t('confirm.permanent', 'This action is <i>permanent and cannot be recovered</i>.')}
+        <Trans i18nKey="confirm.permanent">
+        This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
       </p>
     );
   };
