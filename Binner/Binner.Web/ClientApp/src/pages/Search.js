@@ -3,14 +3,16 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "underscore";
 import debounce from "lodash.debounce";
-import { Input, Button, Icon, Form, Popup } from "semantic-ui-react";
+import { Input, Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
 import { getQueryVariable } from "../common/query";
 import PartsGrid from "../components/PartsGrid";
 import { fetchApi } from "../common/fetchApi";
+import { FormHeader } from "../components/FormHeader";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 
 export function Search(props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   Search.abortController = new AbortController();
   const [searchParams] = useSearchParams();
 
@@ -172,7 +174,13 @@ export function Search(props) {
   return (
     <div>
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={3} />
-      <h1>{t('page.search.title', "Inventory")}</h1>      
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('page.search.title', "Inventory")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name={t('page.search.title', "Inventory")} to={".."}>
+			</FormHeader>
       <Form>
         <Form.Field width={5}>
           <Input            

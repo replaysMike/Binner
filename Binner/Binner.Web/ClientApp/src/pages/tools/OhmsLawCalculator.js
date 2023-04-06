@@ -1,40 +1,34 @@
-﻿import React, { Component } from 'react';
-import { Input, Segment, Form, Statistic } from 'semantic-ui-react';
+﻿import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
+import { Input, Segment, Form, Statistic, Breadcrumb } from 'semantic-ui-react';
 import { encodeResistance, decodeResistance } from '../../common/Utils';
 
-export class OhmsLawCalculator extends Component {
-  static displayName = OhmsLawCalculator.name;
+export function OhmsLawCalculator (props) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const ohmsLawPreferences = JSON.parse(localStorage.getItem('ohmsLawPreferences')) || {
+    inputVoltage: '120',
+    inputCurrent: '',
+    inputResistance: '100k',
+    inputPower: ''
+  };
+  const [inputVoltage,setInputVoltage] = useState(ohmsLawPreferences.inputVoltage);
+  const [inputCurrent,setInputCurrent] = useState(ohmsLawPreferences.inputCurrent);
+  const [inputResistance,setInputResistance] = useState(ohmsLawPreferences.inputResistance);
+  const [inputPower,setInputPower] = useState(ohmsLawPreferences.inputPower);
+  const [output,setOutput] = useState();
+  const [outputCalculation,setOutputCalculation] = useState();
+  const [outputUnits,setOutputUnits] = useState();
+  const [output2,setOutput2] = useState();
+  const [outputCalculation2,setOutputCalculation2] = useState();
+  const [outputUnits2,setOutputUnits2] = useState();
 
-  constructor(props) {
-    super(props);
-    const ohmsLawPreferences = JSON.parse(localStorage.getItem('ohmsLawPreferences')) || {
-      inputVoltage: '120',
-      inputCurrent: '',
-      inputResistance: '100k',
-      inputPower: ''
-    };
-    this.state = {
-      inputVoltage: ohmsLawPreferences.inputVoltage,
-      inputCurrent: ohmsLawPreferences.inputCurrent,
-      inputResistance: ohmsLawPreferences.inputResistance,
-      inputPower: ohmsLawPreferences.inputPower,
-      output: '',
-      outputCalculation: '',
-      outputUnits: '',
-      output2: '',
-      outputCalculation2: '',
-      outputUnits2: '',
-    };
-    this.handleChangeValue = this.handleChangeValue.bind(this);
-    this.calcOutput = this.calcOutput.bind(this);
-  }
+  useEffect(() => {
+    calcOutput(inputVoltage, inputCurrent, inputResistance, inputPower);
+  }, []);
 
-  componentDidMount() {
-    const { inputVoltage, inputCurrent, inputResistance, inputPower } = this.state;
-    this.calcOutput(inputVoltage, inputCurrent, inputResistance, inputPower);
-  }
-
-  handleChangeValue(e, control) {
+  const handleChangeValue = (e, control) => {
     const { inputVoltage, inputCurrent, inputResistance, inputPower } = this.state;
     let newInputVoltage = inputVoltage;
     let newInputCurrent = inputCurrent;
@@ -56,12 +50,16 @@ export class OhmsLawCalculator extends Component {
       default:
         break;
     }
-    this.setState({ inputVoltage: newInputVoltage, inputCurrent: newInputCurrent, inputResistance: newInputResistance, inputPower: newInputPower });
+    setInputVoltage(newInputVoltage);
+    setInputCurrent(newInputCurrent);
+    setInputResistance(newInputResistance);
+    setInputPower(newInputPower);
+
     localStorage.setItem('ohmsLawPreferences', JSON.stringify({ inputVoltage: newInputVoltage, inputCurrent: newInputCurrent, inputResistance: newInputResistance, inputPower: newInputPower }));
-    this.calcOutput(newInputVoltage, newInputCurrent, newInputResistance, newInputPower);
+    calcOutput(newInputVoltage, newInputCurrent, newInputResistance, newInputPower);
   }
 
-  calcOutput(inputVoltage, inputCurrent, inputResistance, inputPower) {
+  const calcOutput = (inputVoltage, inputCurrent, inputResistance, inputPower) => {
     let inputVoltageVal = Number.parseFloat(inputVoltage);
     let inputCurrentVal = Number.parseFloat(inputCurrent);
     let inputResistanceVal = decodeResistance(inputResistance);
@@ -116,60 +114,69 @@ export class OhmsLawCalculator extends Component {
       output2 = inputPowerVal / Math.pow(inputCurrentVal, 2);
     }
 
-    this.setState({ output, outputUnits, outputCalculation, output2, outputUnits2, outputCalculation2 });
-  }
+    setOutput(output);
+    setOutputUnits(outputUnits);
+    setOutputCalculation(outputCalculation);
+    setOutput2(output2);
+    setOutputUnits2(outputUnits2);
+    setOutputCalculation2(outputCalculation2);
+  };
 
-  render() {
-    const { inputVoltage, inputCurrent, inputResistance, inputPower, output, outputCalculation, outputUnits, output2, outputCalculation2, outputUnits2 } = this.state;
-    return (
-      <div>
-        <h1>Ohms Law Calculator</h1>
-        <p>Ohms Law explains the relationship between voltage, current and resistance. Input any 2 values to calculate the other 2 values.</p>
-        <code>
-          V = I * R
-        </code>
-        <Form>
-          <Segment>
-            <Form.Field>
-              <label>Voltage</label>
-              <Input label='V' name='inputVoltage' value={inputVoltage} onChange={this.handleChangeValue} />
-            </Form.Field>
-            <br />
-            <Form.Field>
-              <label>Current</label>
-              <Input label='A' name='inputCurrent' value={inputCurrent} onChange={this.handleChangeValue} />
-            </Form.Field>
-            <br />
-            <Form.Field>
-              <label>Resistance</label>
-              <Input label='Ω' name='inputResistance' value={inputResistance} onChange={this.handleChangeValue} />
-            </Form.Field>
-            <br />
-            <Form.Field>
-              <label>Power</label>
-              <Input label='W' name='inputPower' value={inputPower} onChange={this.handleChangeValue} />
-            </Form.Field>
-          </Segment>
-          <Segment style={{textAlign: 'center'}}>
-            <Statistic.Group widths='two' style={{textAlign: 'center'}}>
-              <Statistic>
-                <Statistic.Value>{output}</Statistic.Value>
-                <Statistic.Label>{outputUnits}</Statistic.Label>
-                <code>
-                  {outputCalculation}
-                </code>
-              </Statistic>
-              <Statistic>
-                <Statistic.Value>{output2}</Statistic.Value>
-                <Statistic.Label>{outputUnits2}</Statistic.Label>
-                <code>
-                  {outputCalculation2}
-                </code>
-              </Statistic>
-            </Statistic.Group>
-          </Segment>
-        </Form>
-      </div>
-    );
-  }
+  return (
+    <div>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+				<Breadcrumb.Section link onClick={() => navigate("/tools")}>{t('bc.tools', "Tools")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('bc.ohmsLaw', "Ohms Law Calculator")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <h1>{t('page.tool.ohmsLaw.title', "Ohms Law Calculator")}</h1>
+      <p>{t('page.tool.ohmsLaw.description', "Ohms Law explains the relationship between voltage, current and resistance. Input any 2 values to calculate the other 2 values.")}</p>
+      <code>
+        V = I * R
+      </code>
+      <Form>
+        <Segment>
+          <Form.Field>
+            <label>{t('page.tool.ohmsLaw.voltage', "Voltage")}</label>
+            <Input label='V' name='inputVoltage' value={inputVoltage} onChange={handleChangeValue} />
+          </Form.Field>
+          <br />
+          <Form.Field>
+            <label>{t('page.tool.ohmsLaw.current', "Current")}</label>
+            <Input label='A' name='inputCurrent' value={inputCurrent} onChange={handleChangeValue} />
+          </Form.Field>
+          <br />
+          <Form.Field>
+            <label>{t('page.tool.ohmsLaw.resistance', "Resistance")}</label>
+            <Input label='Ω' name='inputResistance' value={inputResistance} onChange={handleChangeValue} />
+          </Form.Field>
+          <br />
+          <Form.Field>
+            <label>{t('page.tool.ohmsLaw.power', "Power")}</label>
+            <Input label='W' name='inputPower' value={inputPower} onChange={handleChangeValue} />
+          </Form.Field>
+        </Segment>
+        <Segment style={{textAlign: 'center'}}>
+          <Statistic.Group widths='two' style={{textAlign: 'center'}}>
+            <Statistic>
+              <Statistic.Value>{output}</Statistic.Value>
+              <Statistic.Label>{outputUnits}</Statistic.Label>
+              <code>
+                {outputCalculation}
+              </code>
+            </Statistic>
+            <Statistic>
+              <Statistic.Value>{output2}</Statistic.Value>
+              <Statistic.Label>{outputUnits2}</Statistic.Label>
+              <code>
+                {outputCalculation2}
+              </code>
+            </Statistic>
+          </Statistic.Group>
+        </Segment>
+      </Form>
+    </div>
+  );
 }

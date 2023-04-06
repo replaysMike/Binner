@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Segment, Statistic, Icon } from "semantic-ui-react";
+import { FormHeader } from "../components/FormHeader";
+import { Segment, Statistic, Icon, Breadcrumb } from "semantic-ui-react";
 
 export function Tools(props) {
   const { t } = useTranslation();
@@ -14,8 +15,14 @@ export function Tools(props) {
 
   return (
     <div>
-      <h1>{t('page.tools.title', "Tools")}</h1>
-      <p>{t('page.tools.description', "Binner includes a suite of free utilities common to daily life in electrical engineering.")}</p>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('bc.tools', "Tools")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name={t('page.tools.title', "Tools")} to={".."}>
+        {t('page.tools.description', "Binner includes a suite of free utilities common to daily life in electrical engineering.")}
+			</FormHeader>
       <Segment style={{ padding: "40px 40px" }}>
         <Statistic.Group widths="three">
           <Statistic onClick={(e) => route(e, "/tools/resistor")} style={{ cursor: "pointer" }}>

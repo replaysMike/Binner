@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { DEFAULT_FONT } from '../common/Types';
-
+import { FormHeader } from "../components/FormHeader";
 import { HandleBinaryResponse } from "../common/handleResponse.js";
-import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown } from "semantic-ui-react";
+import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown, Breadcrumb } from "semantic-ui-react";
 
 export function PrintLabels(props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   var quan = [];
   for (var i = 1; i <= 10; i++) {
     quan.push({ key: i, value: i, text: i.toString() });
@@ -355,14 +357,18 @@ export function PrintLabels(props) {
 
   return (
     <div>
-      <h1>{t('page.printLabels.title', "Print Label")}</h1>
-      <p>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('page.printLabels.title', "Print Label")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name={t('page.printLabels.title', "Print Label")} to={".."}>
         <Trans i18nKey="page.printLabels.description">
-        Print custom multi-line labels for your storage bins.
-        <br />
-        Print history is kept so you can reuse templates for your labels.
+          Print custom multi-line labels for your storage bins.
+          <br />
+          Print history is kept so you can reuse templates for your labels.
         </Trans>
-      </p>
+			</FormHeader>
       <Form onSubmit={onSubmit} loading={loading}>
         <Form.Group>
           <Form.Dropdown

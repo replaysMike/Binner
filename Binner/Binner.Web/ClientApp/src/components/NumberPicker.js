@@ -105,7 +105,7 @@ export default class NumberPicker extends Component {
         let parsedVal = parseFloat(currentValue);
         if (currentValue === "-") this.setState({ buffer: "-" });
 
-        if (parsedVal > this.props.max || parsedVal < this.props.min) console.log("Invalid number specified");
+        if (parsedVal > this.props.max || parsedVal < this.props.min) console.error("Invalid number specified");
         else setVal = currentValue;
         break;
       default:
