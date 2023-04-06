@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from 'react-i18next';
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
-import { useParams, useNavigate } from "react-router-dom";
 import { useFocus } from "../hooks/useFocus";
 import _ from "underscore";
 import debounce from "lodash.debounce";
@@ -48,6 +49,7 @@ const ProductImageIntervalMs = 10 * 1000;
 
 export function Inventory(props) {
   const maxRecentAddedParts = 10;
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
@@ -1201,16 +1203,16 @@ export function Inventory(props) {
       <Table compact celled selectable size="small" className="partstable">
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Part</Table.HeaderCell>
-            <Table.HeaderCell>Manufacturer</Table.HeaderCell>
-            <Table.HeaderCell>Part Type</Table.HeaderCell>
-            <Table.HeaderCell>Supplier</Table.HeaderCell>
-            <Table.HeaderCell>Supplier Part</Table.HeaderCell>
-            <Table.HeaderCell>Package Type</Table.HeaderCell>
-            <Table.HeaderCell>Mounting Type</Table.HeaderCell>
-            <Table.HeaderCell>Cost</Table.HeaderCell>
-            <Table.HeaderCell>Image</Table.HeaderCell>
-            <Table.HeaderCell>Datasheet</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.supplier', "Supplier")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.supplierType', "Supplier Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.packageType', "Package Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.mountingType', "Mounting Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.datasheet', "Datasheet")}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -1243,7 +1245,7 @@ export function Inventory(props) {
                         d &&
                         d.length > 0 && (
                           <Button key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)}>
-                            View Datasheet
+                            {t('button.viewDatasheet', "View Datasheet")}
                           </Button>
                         )
                     )}
@@ -1262,17 +1264,17 @@ export function Inventory(props) {
       <Table compact celled selectable size="small" className="partstable">
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Part Number</Table.HeaderCell>
-            <Table.HeaderCell>Manufacturer Part</Table.HeaderCell>
-            <Table.HeaderCell>Manufacturer</Table.HeaderCell>
-            <Table.HeaderCell>Description</Table.HeaderCell>
-            <Table.HeaderCell>Part Type</Table.HeaderCell>
-            <Table.HeaderCell>Location</Table.HeaderCell>
-            <Table.HeaderCell>Bin Number</Table.HeaderCell>
-            <Table.HeaderCell>Bin Number 2</Table.HeaderCell>
-            <Table.HeaderCell>Mounting Type</Table.HeaderCell>
-            <Table.HeaderCell>Image</Table.HeaderCell>
-            <Table.HeaderCell>Datasheet</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.partNumber', "Part Number")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.manufacturerPart', "Manufacturer Part")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.description', "Description")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.location', "Location")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.binNumber', "Bin Number")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.binNumber2', "Bin Number 2")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.mountingType', "Mounting Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.datasheet', "Datasheet")}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -1562,13 +1564,13 @@ export function Inventory(props) {
         <Table compact celled striped size="small">
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>Part</Table.HeaderCell>
-              <Table.HeaderCell>Quantity</Table.HeaderCell>
-              <Table.HeaderCell>Description</Table.HeaderCell>
-              <Table.HeaderCell>Origin</Table.HeaderCell>
-              <Table.HeaderCell>Location</Table.HeaderCell>
-              <Table.HeaderCell>Bin Number</Table.HeaderCell>
-              <Table.HeaderCell>Bin Number 2</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.description', "Description")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.origin', "Origin")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.location', "Location")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.binNumber', "Bin Number")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.binNumber2', "Bin Number 2")}</Table.HeaderCell>
               <Table.HeaderCell width={1}></Table.HeaderCell>
             </Table.Row>
           </Table.Header>
@@ -1611,7 +1613,7 @@ export function Inventory(props) {
                 <Table.Cell collapsing>
                   <Form.Input
                     width={16}
-                    placeholder="Home lab"
+                    placeholder={t('page.inventory.placeholder.location', "Home lab")}
                     value={p.location || ''}
                     onChange={(e, c) => handleScannedPartChange(e, c, p)}
                     name="location"
@@ -1657,13 +1659,13 @@ export function Inventory(props) {
       <Table compact celled selectable striped>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Part</Table.HeaderCell>
-            <Table.HeaderCell>Quantity</Table.HeaderCell>
-            <Table.HeaderCell>Part Type</Table.HeaderCell>
-            <Table.HeaderCell>Manufacturer Part</Table.HeaderCell>
-            <Table.HeaderCell>Location</Table.HeaderCell>
-            <Table.HeaderCell>Bin Number</Table.HeaderCell>
-            <Table.HeaderCell>Bin Number 2</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.manufacturerPart', "Manufacturer Part")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.location', "Location")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.binNumber', "Bin Number")}</Table.HeaderCell>
+            <Table.HeaderCell>{t('label.binNumber2', "Bin Number 2")}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -1684,7 +1686,9 @@ export function Inventory(props) {
   };
 
   const matchingPartsList = renderAllMatchingParts(part, metadataParts);
-  const title = isEditing ? "Edit Inventory" : "Add Inventory";
+  const title = isEditing 
+    ? t('page.inventory.edittitle', "Edit Inventory") 
+    : t('page.inventory.addtitle', "Add Inventory");
 
   /* RENDER */
 
@@ -1736,7 +1740,7 @@ export function Inventory(props) {
             onClick={printLabel}
             style={{ marginTop: "5px", marginRight: "20px", width: "100px" }}
           >
-            <Button.Content hidden>Print</Button.Content>
+            <Button.Content hidden>{t('button.print', "Print")}</Button.Content>
             <Button.Content visible>
               <Icon name="print" />
             </Button.Content>
@@ -1748,7 +1752,7 @@ export function Inventory(props) {
         {!isEditing &&
           <Popup
             wide
-            content={<p>Bulk add parts using a barcode scanner</p>}
+            content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
             trigger={
               <div style={{ width: "132px", height: "30px", display: "inline-block", cursor: "pointer" }} className="barcodescan" onClick={handleBulkBarcodeScan}>
                 <div className="anim-box">
@@ -1781,8 +1785,10 @@ export function Inventory(props) {
         <div className="page-banner">
           {partMetadataIsSubscribed && (
             <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
-              <Icon name="close" /> No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when
-              the part is indexed.
+              <Icon name="close" /> 
+              <Trans i18nKey="message.noPartInfo" partNumber={part.partNumber}>
+              No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when the part is indexed.
+              </Trans>
             </div>
           )}
           {partMetadataError && (
@@ -1799,7 +1805,7 @@ export function Inventory(props) {
               <Form.Group>
                 <Form.Field>
                   <Form.Input
-                    label="Part"
+                    label={t('label.part', "Part")}
                     required
                     placeholder="LM358"
                     focus
@@ -1818,8 +1824,8 @@ export function Inventory(props) {
                   {!isEditing && <div className="suggested-part">{part.partNumber && part.PartNumber !== inputPartNumber && <span>Suggested part number: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
                 </Form.Field>
                 <Form.Dropdown
-                  label="Part Type"
-                  placeholder="Part Type"
+                  label={t('label.partType', "Part Type")}
+                  placeholder={t('label.partType', "Part Type")}
                   loading={loadingPartTypes}
                   search
                   selection
@@ -1831,8 +1837,8 @@ export function Inventory(props) {
                   onBlur={enableKeyboardListening}
                 />
                 <Form.Dropdown
-                  label="Mounting Type"
-                  placeholder="Mounting Type"
+                  label={t('label.mountingType', "Mounting Type")}
+                  placeholder={t('label.mountingType', "Mounting Type")}
                   search
                   selection
                   value={(part.mountingTypeId || "") + ""}
@@ -1848,11 +1854,11 @@ export function Inventory(props) {
                   hideOnScroll
                   disabled={viewPreferences.helpDisabled}
                   onOpen={disableHelp}
-                  content="Use the mousewheel and CTRL/ALT to change step size"
+                  content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
                   trigger={
                     <Form.Field
                       control={NumberPicker}
-                      label="Quantity"
+                      label={t('label.quantity', "Quantity")}
                       placeholder="10"
                       min={0}
                       value={part.quantity || ""}
@@ -1868,10 +1874,10 @@ export function Inventory(props) {
                   hideOnScroll
                   disabled={viewPreferences.helpDisabled}
                   onOpen={disableHelp}
-                  content="Alert when the quantity gets below this value"
+                  content={t('page.inventory.popup.lowStock', "Alert when the quantity gets below this value")}
                   trigger={
                     <Form.Input
-                      label="Low Stock"
+                      label={t('label.lowStock', "Low Stock")}
                       placeholder="10"
                       value={part.lowStockThreshold || ""}
                       onChange={handleChange}
@@ -1890,10 +1896,10 @@ export function Inventory(props) {
                     hideOnScroll
                     disabled={viewPreferences.helpDisabled}
                     onOpen={disableHelp}
-                    content="A custom value for identifying the parts location"
+                    content={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
                     trigger={
                       <Form.Input
-                        label="Location"
+                        label={t('label.location', "Location")}
                         placeholder="Home lab"
                         value={part.location || ""}
                         onChange={handleChange}
@@ -1908,11 +1914,11 @@ export function Inventory(props) {
                     hideOnScroll
                     disabled={viewPreferences.helpDisabled}
                     onOpen={disableHelp}
-                    content="A custom value for identifying the parts location"
+                    content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
                     trigger={
                       <Form.Input
-                        label="Bin Number"
-                        placeholder="IC Components 2"
+                        label={t('label.binNumber', "Bin Number")}
+                        placeholder={t('page.inventory.placeholder.binNumber', "IC Components 2")}
                         value={part.binNumber || ""}
                         onChange={handleChange}
                         name="binNumber"
@@ -1926,11 +1932,11 @@ export function Inventory(props) {
                     hideOnScroll
                     disabled={viewPreferences.helpDisabled}
                     onOpen={disableHelp}
-                    content="A custom value for identifying the parts location"
+                    content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
                     trigger={
                       <Form.Input
-                        label="Bin Number 2"
-                        placeholder="14"
+                        label={t('label.binNumber2', "Bin Number 2")}
+                        placeholder={t('page.inventory.placeholder.binNumber2', "14")}
                         value={part.binNumber2 || ""}
                         onChange={handleChange}
                         name="binNumber2"
@@ -1947,27 +1953,32 @@ export function Inventory(props) {
                   <Popup
                     wide="very"
                     position="top right"
-                    content={<p>Enable this toggle to remember the last selected values of: <i>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</i></p>}
-                    trigger={<Checkbox toggle label="Remember last selection" className="left small" style={{float: 'right'}} checked={viewPreferences.rememberLast || false} onChange={handleRememberLastSelection} />}
+                    content={
+                    <p>
+                      <Trans i18nKey="page.inventory.popup.rememberLastSelection">
+                      Enable this toggle to remember the last selected values of: <i>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</i>
+                      </Trans>
+                    </p>}
+                    trigger={<Checkbox toggle label={t('label.rememberLastSelection', "Remember last selection")} className="left small" style={{float: 'right'}} checked={viewPreferences.rememberLast || false} onChange={handleRememberLastSelection} />}
                   />
                 }
                 <Button.Group>
                   <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
                     <Icon name="save" />
-                    Save
+                    {t('button.save', "Save")}
                   </Button>
                   <Button.Or />
                   <Popup 
                     position="right center"
-                    content="Clear the form to default values"
-                    trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>Clear</Button>}
+                    content={t('page.inventory.popup.clear', "Clear the form to default values")}
+                    trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
                   />
                   
                 </Button.Group>
                 {part && part.partId > 0 && (
                   <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
                     <Icon name="delete" />
-                    Delete
+                    {t('button.delete', "Delete")}
                   </Button>
                 )}
                 {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
@@ -1977,7 +1988,7 @@ export function Inventory(props) {
 
               <Segment loading={loadingPartMetadata} color="blue">
                 <Header dividing as="h3">
-                  Part Metadata
+                  {t('page.inventory.partMetadata', "Part Metadata")}
                 </Header>
 
                 {metadataParts && metadataParts.length > 1 && (
@@ -1987,11 +1998,11 @@ export function Inventory(props) {
                         hideOnScroll
                         disabled={viewPreferences.helpDisabled}
                         onOpen={disableHelp}
-                        content="Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available."
+                        content={t('page.inventory.popup.alternateParts', "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.")}
                         trigger={
                           <Button secondary>
                             <Icon name="external alternate" color="blue" />
-                            Choose alternate part ({formatNumber(metadataParts.length)})
+                            {t('label.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) } )}
                           </Button>
                         }
                       />
@@ -2004,7 +2015,7 @@ export function Inventory(props) {
 
                 <Form.Group>
                   <Form.Field width={4}>
-                    <label>Cost</label>
+                    <label>{t('label.cost', "Cost")}</label>
                     <Input
                       label="$"
                       placeholder="0.00"
@@ -2017,7 +2028,7 @@ export function Inventory(props) {
                     />
                   </Form.Field>
                   <Form.Input
-                    label="Manufacturer"
+                    label={t('label.manufacturer', "Manufacturer")}
                     placeholder="Texas Instruments"
                     value={part.manufacturer || ""}
                     onChange={handleChange}
@@ -2027,7 +2038,7 @@ export function Inventory(props) {
                     onBlur={enableKeyboardListening}
                   />
                   <Form.Input
-                    label="Manufacturer Part"
+                    label={t('label.manufacturerPart', "Manufacturer Part")}
                     placeholder="LM358"
                     value={part.manufacturerPartNumber || ""}
                     onChange={handleChange}
@@ -2038,13 +2049,13 @@ export function Inventory(props) {
                   <Image src={part.imageUrl} size="tiny" />
                 </Form.Group>
                 <Form.Field width={10}>
-                  <label>Keywords</label>
+                  <label>{t('label.keywords', "Keywords")}</label>
                   <Input
                     icon="tags"
                     iconPosition="left"
-                    label={{ tag: true, content: "Add Keyword" }}
+                    label={{ tag: true, content: t('page.inventory.addKeyword', "Add Keyword") }}
                     labelPosition="right"
-                    placeholder="op amp"
+                    placeholder={t('page.inventory.placeholder.keywords', "op amp")}
                     onChange={handleChange}
                     value={part.keywords || ""}
                     name="keywords"
@@ -2053,7 +2064,7 @@ export function Inventory(props) {
                   />
                 </Form.Field>
                 <Form.Field width={4}>
-                  <label>Package Type</label>
+                  <label>{t('label.packageType', "Package Type")}</label>
                   <Input
                     placeholder="DIP8"
                     value={part.packageType || ""}
@@ -2066,7 +2077,7 @@ export function Inventory(props) {
                 <Form.Field
                   width={10}
                   control={TextArea}
-                  label="Description"
+                  label={t('label.description', "Description")}
                   value={part.description || ""}
                   onChange={handleChange}
                   name="description"
@@ -2078,12 +2089,12 @@ export function Inventory(props) {
               {/* Part Preferences */}
               <Segment loading={loadingPartMetadata} color="green">
                 <Header dividing as="h3">
-                  Private Part Information
+                  {t('page.inventory.privatePartInfo', "Private Part Information")}
                 </Header>
                 <p>These values can be set manually and will not be synchronized automatically via apis.</p>
 
                 <Form.Field>
-                  <label>Primary Datasheet Url</label>
+                  <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
                   <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
                     <Label>https://</Label>
                     <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
@@ -2091,7 +2102,7 @@ export function Inventory(props) {
                   </Input>
                 </Form.Field>
                 <Form.Field>
-                  <label>Product Url</label>
+                  <label>{t('label.productUrl', "Product Url")}</label>
                   <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
                     <Label>https://</Label>
                     <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
@@ -2100,15 +2111,15 @@ export function Inventory(props) {
                 </Form.Field>
                 <Form.Group>
                   <Form.Field width={4}>
-                    <label>DigiKey Part Number</label>
+                    <label>{t('label.digikeyPartNumber', "DigiKey Part Number")}</label>
                     <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                   </Form.Field>
                   <Form.Field width={4}>
-                    <label>Mouser Part Number</label>
+                    <label>{t('label.mouserPartNumber', "Mouser Part Number")}</label>
                     <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                   </Form.Field>
                   <Form.Field width={4}>
-                    <label>Arrow Part Number</label>
+                    <label>{t('label.arrowPartNumber', "Arrow Part Number")}</label>
                     <Input placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                   </Form.Field>
                 </Form.Group>
@@ -2118,29 +2129,29 @@ export function Inventory(props) {
 
               <Segment loading={loadingPartMetadata} color="violet">
                 <Header dividing as="h3">
-                  Suppliers
+                  {t('page.inventory.suppliers', "Suppliers")}
                 </Header>
                 <div style={{height: '35px'}}>
                   <div style={{float: 'right'}}>
                     <Popup 
                       wide
                       hoverable
-                      content={<p>{part.partId <= 0 ? <span><Icon name="warning sign" color="yellow" /> You must save the part before adding custom suppliers to it.</span> : <span>Add a manual supplier entry</span>}</p>}
+                      content={<p>{part.partId <= 0 ? <span><Icon name="warning sign" color="yellow" /> {t('page.inventory.popup.mustAddPart', "You must save the part before adding custom suppliers to it.")}</span> : <span>{t('page.inventory.popup.addSupplier', "Add a manual supplier entry")}</span>}</p>}
                       trigger={<span><Button primary onClick={handleShowAddPartSupplier} size='tiny' disabled={part.partId <= 0}><Icon name="plus" /> Add</Button></span>}
                     />
                   </div>
                 </div>
 
                 {showAddPartSupplier && <Segment raised>
-                  <Form.Input width={6} label='Supplier' required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                  <Form.Input width={6} label='Supplier Part Number' required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                  <Form.Input width={6} label={t('label.supplier', "Supplier")} required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                  <Form.Input width={6} label={t('label.supplierPartNumber', "Supplier Part Number")} required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                   <Form.Group>
-                    <Form.Input width={3} label='Cost' placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                    <Form.Input width={4} label='Quantity Available' placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                    <Form.Input width={5} label='Minimum Order Quantity' placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Form.Input width={3} label={t('label.cost', "Cost")} placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Form.Input width={4} label={t('label.quantityAvailable', "Quantity Available")} placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Form.Input width={5} label={t('label.minimumOrderQuantity', "Minimum Order Quantity")} placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                   </Form.Group>
                   <Form.Field width={12}>
-                    <label>Product Url</label>
+                    <label>{t('label.productUrl', "Product Url")}</label>
                     <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
                       <Label>https://</Label>
                       <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
@@ -2148,24 +2159,24 @@ export function Inventory(props) {
                     </Input>
                   </Form.Field>
                   <Form.Field width={12}>
-                    <label>Image Url</label>
+                    <label>{t('label.imageUrl', "Image Url")}</label>
                     <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
                       <Label>https://</Label>
                       <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
                       <Button onClick={e => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>Visit</Button>
                     </Input>
                   </Form.Field>
-                  <Button primary icon onClick={createPartSupplier} disabled={part.partId <= 0}><Icon name='save' /> Save</Button>
+                  <Button primary icon onClick={createPartSupplier} disabled={part.partId <= 0}><Icon name='save' /> {t('button.save', "Save")}</Button>
                 </Segment>}
 
                 <Table compact celled sortable selectable striped unstackable size="small">
                   <Table.Header>
                     <Table.Row>
-                      <Table.HeaderCell textAlign="center">Supplier</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">Supplier Part Number</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">Cost</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">Quantity Available</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">Minimum Order Quantity</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">{t('label.supplier', "Supplier")}</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">{t('label.supplierPartNumber', "Supplier Part Number")}</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">{t('label.cost', "Cost")}</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">{t('label.quantityAvailable', "Quantity Available")}</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">{t('label.minimumOrderQuantity', "Minimum Order Quantity")}</Table.HeaderCell>
                       <Table.HeaderCell></Table.HeaderCell>
                       <Table.HeaderCell></Table.HeaderCell>
                       <Table.HeaderCell></Table.HeaderCell>
@@ -2186,7 +2197,7 @@ export function Inventory(props) {
                           </Table.Cell>
                           <Table.Cell textAlign="center">
                             {supplier.productUrl && supplier.productUrl.length > 10 && supplier.productUrl.startsWith('http') && <a href={supplier.productUrl} target="_blank" rel="noreferrer">
-                              Visit
+                            {t('button.visit', "Visit")}
                             </a>}
                           </Table.Cell>
                           <Table.Cell textAlign="center">
@@ -2203,9 +2214,9 @@ export function Inventory(props) {
               {/** RIGHT COLUMN */}
 
               <Menu className="shortcuts">
-                <Menu.Item onClick={(e) => visitAnchor(e, "#datasheets")}>Datasheets</Menu.Item>
-                <Menu.Item onClick={(e) => visitAnchor(e, "#pinout")}>Pinout</Menu.Item>
-                <Menu.Item onClick={(e) => visitAnchor(e, "#circuits")}>Circuits</Menu.Item>
+                <Menu.Item onClick={(e) => visitAnchor(e, "#datasheets")}>{t('page.inventory.datasheets', "Datasheets")}</Menu.Item>
+                <Menu.Item onClick={(e) => visitAnchor(e, "#pinout")}>{t('page.inventory.pinout', "Pinout")}</Menu.Item>
+                <Menu.Item onClick={(e) => visitAnchor(e, "#circuits")}>{t('page.inventory.circuits', "Circuits")}</Menu.Item>
               </Menu>
 
               {/* Product Images Carousel */}
@@ -2219,7 +2230,7 @@ export function Inventory(props) {
                           {productImage.id && (
                             <Popup
                               position="top left"
-                              content="Delete this local file"
+                              content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
                               trigger={
                                 <Button
                                   onClick={(e) => confirmDeleteLocalFileOpen(e, productImage, "productImages")}
@@ -2249,7 +2260,7 @@ export function Inventory(props) {
                     <Loader active={loadingPartMetadata} inline size="small" as="i" style={{ float: "right" }} />
                     <Header as="h4">
                       <Icon name="images" />
-                      Product Images
+                      {t('page.inventory.productImages', "Product Images")}
                     </Header>
                   </Card.Content>
                 </Card>
@@ -2267,7 +2278,7 @@ export function Inventory(props) {
                             {datasheet.id && (
                               <Popup
                                 position="top left"
-                                content="Delete this local file"
+                                content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
                                 trigger={
                                   <Button
                                     onClick={(e) => confirmDeleteLocalFileOpen(e, datasheet, "datasheets")}
@@ -2305,7 +2316,7 @@ export function Inventory(props) {
                   <Card.Content extra>
                     <Header as="h4">
                       <Icon name="file pdf" />
-                      Datasheets
+                      {t('page.inventory.datasheets', "Datasheets")}
                     </Header>
                   </Card.Content>
                 </Card>
@@ -2324,7 +2335,7 @@ export function Inventory(props) {
                             {pinout.id && (
                               <Popup
                                 position="top left"
-                                content="Delete this local file"
+                                content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
                                 trigger={
                                   <Button
                                     onClick={(e) => confirmDeleteLocalFileOpen(e, pinout, "pinoutImages")}
@@ -2353,7 +2364,7 @@ export function Inventory(props) {
                   <Card.Content extra>
                     <Header as="h4">
                       <Icon name="pin" />
-                      Pinout
+                      {t('page.inventory.pinout', "Pinout")}
                     </Header>
                   </Card.Content>
                 </Card>
@@ -2372,7 +2383,7 @@ export function Inventory(props) {
                             {circuit.id && (
                               <Popup
                                 position="top left"
-                                content="Delete this local file"
+                                content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
                                 trigger={
                                   <Button
                                     onClick={(e) => confirmDeleteLocalFileOpen(e, circuit, "circuitImages")}
@@ -2401,7 +2412,7 @@ export function Inventory(props) {
                   <Card.Content extra>
                     <Header as="h4">
                       <Icon name="microchip" />
-                      Reference Designs
+                      {t('page.inventory.referenceDesigns', "Reference Designs")}
                     </Header>
                   </Card.Content>
                 </Card>
@@ -2413,7 +2424,7 @@ export function Inventory(props) {
         </Grid>
 
         <Modal centered open={bulkScanIsOpen} onClose={handleBulkScanClose}>
-          <Modal.Header>Bulk Scan</Modal.Header>
+          <Modal.Header>{t('page.inventory.bulkScan', "Bulk Scan")}</Modal.Header>
           <Modal.Content>
             <div style={{ width: "200px", height: "100px", margin: "auto" }}>
               <div className="anim-box">
@@ -2451,17 +2462,17 @@ export function Inventory(props) {
               </div>
             </div>
             <div style={{ textAlign: "center" }}>
-              <p>Start scanning parts...</p>
+              <p>{t('page.inventory.startScanning', "Start scanning parts...")}</p>
               <div style={{textAlign: 'right', height: '35px', width: '100%'}}>
-                <Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" /> Manual Add</Button>
+                <Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" /> {t('button.manualAdd', "Manual Add")}</Button>
               </div>
               {renderScannedParts(scannedParts, highlightScannedPart)}
             </div>
           </Modal.Content>
           <Modal.Actions>
-            <Button onClick={handleBulkScanClose}>Cancel</Button>
+            <Button onClick={handleBulkScanClose}>{t('button.cancel', "Cancel")}</Button>
             <Button primary onClick={onSubmitScannedParts} disabled={bulkScanSaving}>
-              Save
+            {t('button.save', "Save")}
             </Button>
           </Modal.Actions>
         </Modal>
@@ -2470,7 +2481,7 @@ export function Inventory(props) {
       <div style={{ marginTop: "20px" }}>
         <Segment style={{ minHeight: "50px" }} color="teal">
           <Header dividing as="h3">
-            Recently Added
+          {t('page.inventory.recentlyAdded', "Recently Added")}
           </Header>
           <Dimmer active={loadingRecent} inverted>
             <Loader inverted />
