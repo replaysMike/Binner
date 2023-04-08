@@ -32,6 +32,16 @@ namespace Binner.Common.Models
         public string? PartName { get; set; }
 
         /// <summary>
+        /// The cost of the part
+        /// </summary>
+        public double Cost { get; set; }
+
+        /// <summary>
+        /// Currency of part cost
+        /// </summary>
+        public string? Currency { get; set; }
+
+        /// <summary>
         /// The quantity of parts needed (BOM)
         /// </summary>
         public int Quantity { get; set; }

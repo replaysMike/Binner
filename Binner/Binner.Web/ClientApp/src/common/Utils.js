@@ -46,9 +46,21 @@ export const decodeResistance = (str) => {
  * @returns formatted number string
  */
 export const formatCurrency = (number, currency = 'USD', maxDecimals = 5) => {
-  const lang = getLocaleLanguage();
-  return number.toLocaleString(lang, { style: "currency", currency: currency, maximumFractionDigits: maxDecimals });
+  if (!number || typeof number !== "number") number = 0;
+  const locale = getLocaleLanguage();
+  return number.toLocaleString(locale, { style: "currency", currency: currency, maximumFractionDigits: maxDecimals });
 };
+
+/**
+ * Get the currency symbol
+ * @param {string} currency Currency to use, default: 'USD'
+ * @returns formatted number string
+ */
+export const getCurrencySymbol = (currency = 'USD') => {
+  const locale = getLocaleLanguage();
+  return (0).toLocaleString(locale, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).replace(/\d/g, '').trim();
+};
+  
 
 /**
  * Get the locale language of the browser
@@ -68,7 +80,6 @@ export const getLocaleLanguage = () => {
  * @returns formatted number string
  */
 export const formatNumber = (number) => {
-  // return number.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
   return number.toLocaleString();
 };
 

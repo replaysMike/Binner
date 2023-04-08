@@ -172,3 +172,21 @@
 	font-weight: 500;
 	font-style: normal;
 }
+
+.ui.dropdown.label.currency .menu {
+	width: 170px;
+}
+
+.ui.dropdown.label.currency .item {
+	font-size: 0.9em;
+}
+
+.ui.dropdown.label.currency .item.selected {
+	font-size: 0.9em;
+	color: #2185d0;
+}
+
+.ui.dropdown.label.currency .item .description {
+	font-size: 0.8em;
+	font-weight: normal;
+}

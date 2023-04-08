@@ -1,38 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavMenu } from "./NavMenu";
-import { Dropdown, Icon } from "semantic-ui-react";
+import { Dropdown, Icon, Flag } from "semantic-ui-react";
 
 // import i18n
 import '../i18n';
 
 const lngs = {
-    en: { nativeName: 'English' },      // english
-    de: { nativeName: 'Deutsch' },      // german
-    fr: { nativeName: 'Français ' },    // french
-    es: { nativeName: 'Español' },      // spanish
-    zh: { nativeName: '中文' },         // chinese
+    en: { nativeName: 'English', flag: 'gb' },      // english
+    // temporary: enable languages as the translations are finished.
+    //de: { nativeName: 'Deutsch', flag: 'de' },      // german
+    //fr: { nativeName: 'Français ', flag: 'fr' },    // french
+    //es: { nativeName: 'Español', flag: 'mx' },      // spanish
+    //zh: { nativeName: '中文', flag: 'cn' },         // chinese
 };
 
 export function Header() {
-  const { t, i18n } = useTranslation();
-  const [language, setLanguage] = useState(localStorage.getItem('language') || i18n.resolvedLanguage || 'en');
+  const { i18n } = useTranslation();
+  // console.log('resolved langauge', i18n.resolvedLanguage);
+  const [language, setLanguage] = useState(i18n.resolvedLanguage || 'en');
 
   useEffect(() => {
-    // console.log('init', localStorage.getItem('language'), i18n.resolvedLanguage);
-    setLanguage(localStorage.getItem('language') || i18n.resolvedLanguage || 'en');
+    setLanguage(i18n.resolvedLanguage || 'en');
   }, []);
 
   const langOptions = Object.keys(lngs).map((lng, key) => ({
     key,
     text: lngs[lng].nativeName,
     value: lng,
+    content: <span><Flag name={lngs[lng].flag} />{lngs[lng].nativeName}</span>
   }));
 
   const handleChange = (e, control) => {
     e.preventDefault();
     setLanguage(control.value);
-    localStorage.setItem('language', control.value);
+    // localStorage.setItem('i18nextLng', control.value);
     i18n.changeLanguage(control.value);
   };
 
@@ -42,6 +44,7 @@ export function Header() {
         <Icon name="world" />
         <Dropdown
           selection
+          inline
           value={language || 'en'}
           options={langOptions}
           onChange={handleChange}

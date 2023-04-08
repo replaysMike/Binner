@@ -28,6 +28,11 @@
         public decimal Cost { get; set; }
 
         /// <summary>
+        /// Currency of part cost
+        /// </summary>
+        public string? Currency { get; set; }
+
+        /// <summary>
         /// Project Id
         /// </summary>
         public long? ProjectId { get; set; }

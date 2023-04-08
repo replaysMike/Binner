@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Statistic, Segment, Icon } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
+import { formatCurrency } from "../common/Utils";
 import { VersionBanner } from "../components/VersionBanner";
 import semver from "semver";
 import customEvents from '../common/customEvents';
@@ -16,25 +17,29 @@ export function Home(props) {
   const [subscription, setSubscription] = useState(null);
   const [version, setVersion] = useState(null);
 
-  const getLatestVersion = useCallback(async (installedVersionData) => {
+  /**
+   * Fetch the latest Binner version from GitHub
+   */
+  const getLatestVersion = useCallback(async (installedVersion) => {
     const response = await fetch("system/version");
     if (response.ok) {
       const latestVersionData = await response.json();
       setVersionData(latestVersionData);
       const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
-      if (semver.gt(latestVersionData.version, installedVersionData.version) && semver.gt(latestVersionData.version, skipVersion)) {
+      if (semver.gt(latestVersionData.version, installedVersion) && semver.gt(latestVersionData.version, skipVersion)) {
         // new version is available, and hasn't been skipped
         setNewVersionBannerIsOpen(true);
       }
     }
   }, []);
 
+  /**
+   * When we receive a version header from an api request, update it.
+   * This callback will be called on all updates to version
+   */
   const updateVersion = useCallback((installedVersionData, subscriptionId) => {
     setVersion(installedVersionData.version);
-    
-    getLatestVersion(installedVersionData);
-
-  }, [getLatestVersion]);
+  }, []);
 
   useEffect(() => {
     setSubscription(customEvents.subscribe("version", (data, subscriptionId) => updateVersion(data, subscriptionId)));
@@ -65,6 +70,11 @@ export function Home(props) {
 
     load();
   }, [setLoading, setSummary]);
+
+  useEffect(() => {
+    // if we know the current version, fetch the latest version
+    if (version) getLatestVersion(version);
+  }, [version, getLatestVersion]);
 
   const route = (e, url) => {
     e.preventDefault();
@@ -169,8 +179,7 @@ export function Home(props) {
           </Statistic>
           <Statistic color="green" inverted>
             <Statistic.Value>
-              <Icon name="dollar" />
-              {(summary.partsCost || 0).toFixed(2)}
+              {formatCurrency(summary.partsCost, summary.currency, 2)}
             </Statistic.Value>
             <Statistic.Label>{t('page.home.value', "Value")}</Statistic.Label>
           </Statistic>

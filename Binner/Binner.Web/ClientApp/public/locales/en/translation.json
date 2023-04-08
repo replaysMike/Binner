@@ -558,6 +558,7 @@
       "displayAll": "Displays all parts including parts not associated with a PCB.",
       "unassociatedPartName": "Edit the name of your unassociated <1 /> part",
       "bomQuantity": "Edit the <1 />BOM quantity required",
+      "bomCost": "Edit the part cost",
       "quantityAvailable": "Edit the quantity available in your <1 />inventory",
       "editReferenceId": "Edit your custom <1 />reference Id(s) you can use for identifying this part.",
       "editSchematicReferenceId": "Edit your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
