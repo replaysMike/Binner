@@ -355,6 +355,7 @@ namespace Binner.Web.Controllers
                 PartsCost = partsCost,
                 LowStockCount = lowStockCount.Items.Count(),
                 ProjectsCount = projectsCount.Count,
+                Currency = "USD"
             });
         }
 

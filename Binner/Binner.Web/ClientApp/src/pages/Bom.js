@@ -461,8 +461,8 @@ export function Bom(props) {
     setConfirmDeleteIsOpen(true);
     setConfirmPartDeleteContent(
       <p>
-        <Trans i18nKey="confirm.removeBomParts" quantity={checkboxesChecked.length}>
-          Are you sure you want to remove these <b>checkboxesChecked.length</b> part(s) from your BOM?
+        <Trans i18nKey="confirm.removeBomParts">
+          Are you sure you want to remove these <b>{{quantity: checkboxesChecked.length}}</b> part(s) from your BOM?
         </Trans>
         <br />
         <br />

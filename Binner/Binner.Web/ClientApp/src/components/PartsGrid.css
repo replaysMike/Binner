@@ -2,6 +2,10 @@
 	background-color: rgb(179, 218, 255);
 }
 
+#partsGrid td {
+	vertical-align: middle;
+}
+
 .ui.selectable.table tbody tr.selected:hover {
 	background-color: rgb(63, 160, 250) !important;
 }
