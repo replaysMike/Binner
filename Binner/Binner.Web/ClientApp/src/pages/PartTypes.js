@@ -224,8 +224,8 @@ export function PartTypes(props) {
     setSelectedPartType(partType);
     setConfirmPartDeleteContent(
       <p>
-        <Trans i18nKey='confirm.deletePartType' name={partType.name}>
-          Are you sure you want to delete part type <i>{partType.name}</i>?
+        <Trans i18nKey='confirm.deletePartType'>
+          Are you sure you want to delete part type <i>{{name: partType.name}}</i>?
         </Trans>
         <br/>
         <br/>

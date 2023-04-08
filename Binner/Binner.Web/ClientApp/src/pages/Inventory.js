@@ -1442,12 +1442,12 @@ export function Inventory(props) {
     setSelectedPart(part);
     setConfirmPartDeleteContent(
       <p>
-        <Trans i18nKey="confirm.deletePart" name={part.partNumber}>
-        Are you sure you want to delete part <b>{part.partNumber}</b>?
+        <Trans i18nKey="confirm.deletePart">
+        Are you sure you want to delete part <b>{{name: inputPartNumber}}</b>?
         </Trans>
         <br />
         <br />
-        <Trans i18nKey="confirm.permanent" partNumber={part.partNumber}>
+        <Trans i18nKey="confirm.permanent">
         This action is <i>permanent and cannot be recovered</i>.
         </Trans>        
       </p>
@@ -1468,12 +1468,12 @@ export function Inventory(props) {
     setSelectedLocalFile({ localFile, type });
     setConfirmLocalFileDeleteContent(
       <p>
-        <Trans i18nKey="confirm.deleteLocalFile" name={localFile.name}>
-        Are you sure you want to delete this local file named <b>{localFile.name}</b>?
+        <Trans i18nKey="confirm.deleteLocalFile">
+        Are you sure you want to delete this local file named <b>{{name: localFile.name}}</b>?
         </Trans>
         <br />
         <br />
-        <Trans i18nKey="confirm.permanent" partNumber={part.partNumber}>
+        <Trans i18nKey="confirm.permanent">
         This action is <i>permanent and cannot be recovered</i>.
         </Trans>
       </p>
@@ -1721,7 +1721,7 @@ export function Inventory(props) {
       </Modal>
       <Confirm
         className="confirm"
-        header={t('confirm.deletePart', "Delete Part")}
+        header={t('confirm.header.deletePart', "Delete Part")}
         open={confirmDeleteIsOpen}
         onCancel={confirmDeleteClose}
         onConfirm={handleDeletePart}
@@ -1795,10 +1795,12 @@ export function Inventory(props) {
         <div className="page-banner">
           {partMetadataIsSubscribed && (
             <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
-              <Icon name="close" /> 
-              <Trans i18nKey="message.noPartInfo" partNumber={part.partNumber}>
-              No part information is available for '{part.partNumber}'. You are subscribed to updates and will be automatically updated when the part is indexed.
-              </Trans>
+              <div>
+                <Icon name="close" /> 
+                <Trans i18nKey="message.noPartInfo">
+                No part information is available for '{{partNumber: inputPartNumber}}'. You are subscribed to updates and will be automatically updated when the part is indexed.
+                </Trans>
+              </div>
             </div>
           )}
           {partMetadataError && (

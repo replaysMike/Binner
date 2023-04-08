@@ -6,6 +6,7 @@ import _ from 'underscore';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { fetchApi } from '../common/fetchApi';
+import { AppEvents, Events } from "../common/events";
 import "./PartsGrid.css";
 
 const AppMedia = createMedia({
@@ -128,7 +129,7 @@ export default function PartsGrid(props) {
       if (_.where(changes, { partId: part.partId }).length === 0)
         changes.push({ partId: part.partId });
     }
-    setParts(parts);
+    setParts([...parts]);
     setChangeTracker(changes);
   };
 
@@ -226,7 +227,7 @@ export default function PartsGrid(props) {
           </div>
           <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
 
-          <Dimmer.Dimmable as={Table} dimmed={loading} id="partsGrid" compact celled sortable selectable striped unstackable size='small'>
+          <Dimmer.Dimmable as={Table} dimmed={loading} id="partsGrid" compact celled sortable selectable striped unstackable size='small' className="partsGrid">
             <Table.Header>
               <Table.Row>
                 {col.partnumber && <Table.HeaderCell sorted={column === 'partNumber' ? direction : null} onClick={handleSort('partNumber')}>{t('comp.partsGrid.part', "Part")}</Table.HeaderCell>}
@@ -260,7 +261,18 @@ export default function PartsGrid(props) {
                       hideOnScroll
                       position="bottom left"
                       content={t('comp.partsGrid.popup.quantity', "The quantity of parts currently in stock.")}
-                      trigger={editable ? <Input value={p.quantity} data={p.partId} name='quantity' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} /> : <span>{p.quantity}</span>}
+                      trigger={editable 
+                        ? <Input 
+                            value={p.quantity} 
+                            data={p.partId} 
+                            name='quantity' 
+                            className='borderless fixed60 inline-editable' 
+                            onChange={handleChange} 
+                            onClick={e => e.stopPropagation()} 
+                            onFocus={() => AppEvents.sendEvent(Events.DisableBarcodeInput)} 
+                            onBlur={(e) => { AppEvents.sendEvent(Events.RestoreBarcodeInput); saveColumn(e); }} 
+                          /> 
+                        : <span>{p.quantity}</span>}
                     />                      
                   </Table.Cell>}
                   {col.lowstockthreshold && <Table.Cell>
@@ -268,7 +280,17 @@ export default function PartsGrid(props) {
                       hideOnScroll
                       position="bottom left"
                       content={t('comp.partsGrid.popup.lowStock', "Quantities below this value will indicate the part is low on stock.")}
-                      trigger={<Input value={p.lowStockThreshold} data={p.partId} name='lowStockThreshold' className='borderless fixed50' onChange={handleChange} onClick={e => e.stopPropagation()} onBlur={saveColumn} />}
+                      trigger={
+                        <Input 
+                          value={p.lowStockThreshold} 
+                          data={p.partId} 
+                          name='lowStockThreshold' 
+                          className='borderless fixed60 inline-editable' 
+                          onChange={handleChange} 
+                          onClick={e => e.stopPropagation()} 
+                          onFocus={() => AppEvents.sendEvent(Events.DisableBarcodeInput)} 
+                          onBlur={(e) => { AppEvents.sendEvent(Events.RestoreBarcodeInput); saveColumn(e); }} 
+                        />}
                     />                      
                   </Table.Cell>}
                   {col.manufacturerpartnumber && <Table.Cell>
