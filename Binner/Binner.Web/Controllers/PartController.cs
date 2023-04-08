@@ -445,9 +445,10 @@ namespace Binner.Web.Controllers
                 if (existingParts.Any())
                 {
                     var existingPart = existingParts.First();
-                    // update quantity
+                    // update quantity and cost
                     existingPart.Quantity += commonPart.QuantityAvailable;
                     existingPart.Cost = (decimal)commonPart.Cost;
+                    existingPart.Currency = commonPart.Currency;
                     existingPart = await _partService.UpdatePartAsync(existingPart);
                     parts.Add(Mapper.Map<Part, PartResponse>(existingPart));
                 }

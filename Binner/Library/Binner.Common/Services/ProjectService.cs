@@ -141,6 +141,8 @@ namespace Binner.Common.Services
                 Notes = request.Notes,
                 PartName = request.PartNumber,
                 PcbId = request.PcbId,
+                Cost = request.Cost,
+                Currency = request.Currency,
                 Quantity = request.Quantity,
                 QuantityAvailable = part == null ? request.QuantityAvailable : 0,
                 ReferenceId = request.ReferenceId,
@@ -182,20 +184,34 @@ namespace Binner.Common.Services
                 assignment.PartId = part?.PartId;
                 assignment.Notes = request.Notes;
                 assignment.ReferenceId = request.ReferenceId;
+                assignment.Cost = request.Cost;
+                assignment.Currency = request.Currency;
                 assignment.Quantity = request.Quantity;
                 assignment.CustomDescription = request.CustomDescription;
                 assignment.SchematicReferenceId = request.SchematicReferenceId;
 
                 if (part == null)
+                {
                     assignment.QuantityAvailable = request.QuantityAvailable;
+                    assignment.Cost = request.Cost;
+                    assignment.Currency = request.Currency;
+                }
                 else
+                {
                     assignment.QuantityAvailable = 0;
+                    assignment.Cost = 0;
+                    assignment.Currency = null;
+                }
+
                 await _storageProvider.UpdateProjectPartAssignmentAsync(assignment, user);
                 
-                // also update the part quantity if it has changed
-                if (request.Part != null && part != null && request.Part.Quantity >= 0 && request.Part.Quantity != part.Quantity)
+                // also update the part quantity and cost if it has changed
+                if (request.Part != null && part != null)
                 {
-                    part.Quantity = request.Part.Quantity;
+                    if (request.Part.Cost != part.Cost)
+                        part.Cost = request.Part.Cost;
+                    if (request.Part.Quantity >= 0 && request.Part.Quantity != part.Quantity)
+                        part.Quantity = request.Part.Quantity;
                     await _storageProvider.UpdatePartAsync(part, user);
                 }
 

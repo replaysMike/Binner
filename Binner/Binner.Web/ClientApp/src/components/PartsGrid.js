@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { fetchApi } from '../common/fetchApi';
 import { AppEvents, Events } from "../common/events";
+import { formatCurrency } from "../common/Utils";
 import "./PartsGrid.css";
 
 const AppMedia = createMedia({
@@ -309,7 +310,7 @@ export default function PartsGrid(props) {
                     {visitable ? (renderChildren ? <Link to={`/inventory?by=binNumber2&value=${p.binNumber2}`} onClick={handleSelfLink}>{p.binNumber2}</Link> : null) : <span>{p.binNumber2}</span>}
                   </Table.Cell>)}}</Media> }
                   {col.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                    {renderChildren ? "$" + p.cost.toFixed(2) : null}
+                    {renderChildren ? formatCurrency(p.cost, p.currency || "USD") : null}
                   </Table.Cell>)}}</Media> }
                   {col.digikeypartnumber && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
                     {renderChildren ? <span className='truncate'>{p.digiKeyPartNumber}</span> : null}

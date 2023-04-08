@@ -27,7 +27,8 @@ import {
   Menu,
   Placeholder,
   Flag,
-  Checkbox
+  Checkbox,
+  Dropdown
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
@@ -36,13 +37,14 @@ import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal
 import Dropzone from "../components/Dropzone";
 import { ProjectColors } from "../common/Types";
 import { fetchApi } from "../common/fetchApi";
-import { formatCurrency, formatNumber } from "../common/Utils";
+import { formatCurrency, formatNumber, getCurrencySymbol } from "../common/Utils";
 import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
 import axios from "axios";
 import { StoredFileType } from "../common/StoredFileType";
-import { GetTypeName, GetTypeValue } from "../common/Types";
+import { GetTypeName, GetTypeValue, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
+import { Currencies } from "../common/currency";
 import "./Inventory.css";
 
 const ProductImageIntervalMs = 10 * 1000;
@@ -160,6 +162,7 @@ export function Inventory(props) {
   const [isEditing, setIsEditing] = useState((part && part.partId > 0) || (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0));
   const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
   const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
+  const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
 
   // todo: find a better alternative, we shouldn't need to do this!
   const bulkScanIsOpenRef = useRef();
@@ -2029,7 +2032,7 @@ export function Inventory(props) {
                   <Form.Field width={4}>
                     <label>{t('label.cost', "Cost")}</label>
                     <Input
-                      label="$"
+                      className="labeled"
                       placeholder="0.00"
                       value={part.cost}
                       type="text"
@@ -2037,7 +2040,17 @@ export function Inventory(props) {
                       name="cost"
                       onFocus={disableKeyboardListening}
                       onBlur={formatField}
-                    />
+                    >
+                      <Dropdown 
+                        name="currency"
+                        className="label currency"
+                        placeholder="$"
+                        value={part.currency || 'USD'}
+                        options={currencyOptions}
+                        onChange={handleChange}
+                      />
+                      <input />
+                    </Input>
                   </Form.Field>
                   <Form.Input
                     label={t('label.manufacturer', "Manufacturer")}
@@ -2201,7 +2214,7 @@ export function Inventory(props) {
                         <Table.Row key={supplierKey}>
                           <Table.Cell textAlign="center">{supplier.supplier}</Table.Cell>
                           <Table.Cell textAlign="center">{supplier.supplierPartNumber}</Table.Cell>
-                          <Table.Cell textAlign="center">{formatCurrency(supplier.cost)}</Table.Cell>
+                          <Table.Cell textAlign="center">{formatCurrency(supplier.cost, supplier.currency)}</Table.Cell>
                           <Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
                           <Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
                           <Table.Cell textAlign="center">

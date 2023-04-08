@@ -325,7 +325,7 @@ export function OrderImport(props) {
                   </Table.Cell>
                   <Table.Cell>{p.partType}</Table.Cell>
                   <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-                  <Table.Cell>{formatCurrency(p.cost)}</Table.Cell>
+                  <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
                   <Table.Cell>{p.quantityAvailable}</Table.Cell>
                   <Table.Cell>
                     <Image src={p.imageUrl} size="mini"></Image>

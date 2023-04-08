@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System;
-
-namespace Binner.Common.Models.Requests
+﻿namespace Binner.Common.Models.Requests
 {
     public class UpdateBomPartRequest
     {
@@ -29,6 +26,16 @@ namespace Binner.Common.Models.Requests
         /// If a part number isn't matched, a custom part name can be added to identify the part by name only
         /// </summary>
         public string? PartName { get; set; }
+
+        /// <summary>
+        /// The cost of the part
+        /// </summary>
+        public double Cost { get; set; }
+
+        /// <summary>
+        /// Currency of part
+        /// </summary>
+        public string? Currency { get; set; }
 
         /// <summary>
         /// The quantity of parts needed (BOM)

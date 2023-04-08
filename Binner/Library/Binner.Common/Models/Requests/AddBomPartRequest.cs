@@ -13,6 +13,16 @@
         public int? PcbId { get; set; }
 
         /// <summary>
+        /// Cost of part (for parts without a part match)
+        /// </summary>
+        public double Cost { get; set; }
+
+        /// <summary>
+        /// Currency of part
+        /// </summary>
+        public string? Currency { get; set; }
+
+        /// <summary>
         /// Quantity of part required for BOM
         /// </summary>
         public int Quantity { get; set; }

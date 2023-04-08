@@ -59,14 +59,21 @@ code {
     font-size: 0.8em;
     float: right;
     position: absolute;
+	top: 2px;
     right: 4px;
     z-index: 1000;
+	
 }
 
 .header .language-selection .ui.selection.dropdown {
-    padding: 0.5em 0.5em;
     min-width: 100px;
     width: 100px;
+	min-height: 2em;
+	padding: 0.5em 2.1em 0.5em 1em;
+}
+
+.header .language-selection .ui.selection.dropdown .icon {
+	margin: -1em;
 }
 
 .header .language-selection .ui.selection.dropdown .menu {
@@ -305,8 +312,18 @@ section.formHeader {
     cursor: pointer;
 }
 
+.ui.input.labeled.inline-editable .ui.label{
+	background-color: #fff;
+	padding: 2px 1px;
+	margin-right: 1px;
+}
+
 .ui.input.inline-editable>input {
-    padding: 4px !important;
+    padding: 0 2px !important;
+}
+
+.ui.input.labeled.inline-editable>input {
+    padding: 0 0 0 1px !important;
 }
 
 .ui.input.inline-editable>input:hover {

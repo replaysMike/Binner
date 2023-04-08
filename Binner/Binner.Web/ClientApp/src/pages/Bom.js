@@ -8,7 +8,7 @@ import _ from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
-import { formatCurrency } from "../common/Utils";
+import { formatCurrency, formatNumber, getCurrencySymbol } from "../common/Utils";
 import {format, parseJSON} from "date-fns";
 import { AddBomPartModal } from "../components/AddBomPartModal";
 import { AddPcbModal } from "../components/AddPcbModal";
@@ -231,14 +231,16 @@ export function Bom(props) {
   const savePartInlineChange = async (bomPart) => {
     if (!isDirty) return;
     setLoading(true);
-    const request = { ...bomPart, 
+    const request = { ...bomPart,
+      cost: parseFloat(bomPart.cost) || 0,
       quantity: parseInt(bomPart.quantity) || 0, 
       quantityAvailable: bomPart.part ? 0 : (parseInt(bomPart.quantityAvailable) || 0), 
       // conditionally add the part if it's available
       ...(bomPart.part && 
         {part: { 
           ...bomPart.part, 
-          quantity: parseInt(bomPart.part.quantity) || 0 
+          cost: parseFloat(bomPart.part.cost) || 0,
+          quantity: parseInt(bomPart.part.quantity) || 0,
           }
         })
     };
@@ -266,21 +268,28 @@ export function Bom(props) {
       case "quantity":
         parsed = parseInt(control.value);
         if (!isNaN(parsed)) {
-          part[control.name] = parsed;
+          part.quantity = parsed;
         }
         break;
       case "quantityAvailable":
         parsed = parseInt(control.value);
         if (!isNaN(parsed)) {
           // special case, if editing a part change its quantity.
-          /// if no part is associated, set the quantityAvailable
+          /// if no part is associated, set the custom quantityAvailable
           if (part.part) {
-            part.part['quantity'] = parsed;
+            part.part.quantity = parsed;
           } else {
-            part[control.name] = parsed;
+            part.quantityAvailable = parsed;
           }
         }
         break;
+        case "cost":
+          if (part.part) {
+            part.part.cost = control.value;
+          } else {
+            part.cost = control.value;
+          }
+          break;
       default:
         part[control.name] = control.value;
         break;
@@ -543,7 +552,7 @@ export function Bom(props) {
                 </p>}
               trigger={<span>{t('label.pcb', "PCB")}</span>} />
           </Table.HeaderCell>}
-          <Table.HeaderCell width={3} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
+          <Table.HeaderCell width={2} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
             {t('label.partNumber', "Part Number")}
           </Table.HeaderCell>
           <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
@@ -552,13 +561,13 @@ export function Bom(props) {
           <Table.HeaderCell style={{ width: "100px" }} sorted={column === "partType" ? direction : null} onClick={handleSort("partType")}>
             {t('label.partType', "Part Type")}
           </Table.HeaderCell>
-          <Table.HeaderCell sorted={column === "cost" ? direction : null} onClick={handleSort("cost")}>
+          <Table.HeaderCell style={{width: '102px'}} sorted={column === "cost" ? direction : null} onClick={handleSort("cost")}>
             {t('label.cost', "Cost")}
           </Table.HeaderCell>
           <Table.HeaderCell sorted={column === "quantity" ? direction : null} onClick={handleSort("quantity")}>
             <Popup mouseEnterDelay={PopupDelayMs} content={<p>{t('popup.bom.quantity', "The quantity of parts required for a single PCB")}</p>} trigger={<span>{t('label.quantity', "Quantity")}</span>} />
           </Table.HeaderCell>
-          <Table.HeaderCell sorted={column === "stock" ? direction : null} onClick={handleSort("stock")}>
+          <Table.HeaderCell style={{width: '90px'}} sorted={column === "stock" ? direction : null} onClick={handleSort("stock")}>
             <Popup mouseEnterDelay={PopupDelayMs} content={<p>{t('popup.bom.inventoryQuantity', "The quantity of parts currently in inventory")}</p>} trigger={<span>{t('label.inStock', "In Stock")}</span>} />
           </Table.HeaderCell>
           <Table.HeaderCell sorted={column === "leadTime" ? direction : null} onClick={handleSort("leadTime")}>
@@ -632,7 +641,29 @@ export function Bom(props) {
             </Table.Cell>
             <Table.Cell>{bomPart.part?.manufacturerPartNumber && <><Clipboard text={bomPart.part?.manufacturerPartNumber} /> {bomPart.part?.manufacturerPartNumber}</>}</Table.Cell>
             <Table.Cell>{bomPart.part?.partType}</Table.Cell>
-            <Table.Cell>{formatCurrency(bomPart.part?.cost || 0)}</Table.Cell>
+            <Table.Cell>
+              <Popup 
+                wide
+                mouseEnterDelay={PopupDelayMs}
+                content={
+                  <p>
+                    <Trans i18nKey='popup.bom.bomCost'>
+                      Edit the part cost
+                    </Trans>
+                  </p>}
+                trigger={<Input
+                  label={getCurrencySymbol(bomPart.part?.currency || bomPart.currency || "USD")}
+                  type="text"
+                  transparent
+                  name="cost"
+                  onBlur={(e) => saveColumn(e, bomPart)}
+                  onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
+                  value={bomPart.part?.cost || bomPart.cost || 0}
+                  fluid
+                  className="inline-editable"
+                />}
+              />
+            </Table.Cell>
             <Table.Cell>
               <Popup 
                 wide
