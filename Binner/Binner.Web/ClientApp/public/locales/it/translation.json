@@ -1,0 +1,596 @@
+{
+	"page": {
+		"home": {
+			"title": "Dashboard",
+			"description": "Binner: l'app per gestire l'inventario dei componenti elettronici per makers, hobbisti e professionisti.",
+			"addInventory": "Nuovo componente",
+			"searchInventory": "Cerca componente",
+			"bom": "DBA",
+			"datasheets": "Datasheets",
+			"viewLowStock": "Elenco Sottoscorta",
+			"partTypes": "Categorie",
+			"importExport": "Importare/Esportare",
+			"printLabels": "Stampa Etichette",
+			"tools": "Strumenti",
+			"settings": "Impostazioni",
+			"yourOverview": "Panoramica",
+			"lowStock": "Sottoscorta",
+			"parts": "Tot. Componenti",
+			"uniqueParts": "Num. Componenti",
+			"value": "Valore",
+			"projects": "Progetti"
+		},
+		"search": {
+			"title":"Inventario",
+			"search":"Cerca"
+		},
+		"inventory": {
+			"addtitle": "Nuovo componente",
+			"edittitle": "Modifica componente",
+			"datasheets": "Datasheets",
+			"pinout": "Piedinatura",
+			"circuits": "Circuiti",
+			"productImages": "Immagine del prodotto",
+			"referenceDesigns": "Schema di riferimento",
+			"bulkScan": "Scansione codici a barre",
+			"startScanning": "Inizio scansione componenti...",
+			"recentlyAdded": "Aggiunti di recente",
+			"partMetadata": "Metadati del componente",
+			"privatePartInfo": "Informazioni private del componente",
+			"suppliers": "Fornitori",
+			"addKeyword": "Aggiungi parola chiave",
+			"chooseAlternatePart": "Sceglere un componente alternativo ({{count}})",
+			"placeholder": {
+				"location": "Laboratorio",
+				"keywords": "op amp",
+				"binNumber": "IC Components 2",
+				"binNumber2": "14"
+			},
+			"popup": {
+				"bulkAddParts": "Aggiungere componenti in massa usando un lettore di codici a barre",
+				"quantity": "Usare la rotellina del mouse e CTRL/ALT per aumentare il passo",               
+				"lowStock": "Avvisa quando la quantità è inferiore a questo valore",
+				"location": "La descrizione della posizione del componente",
+				"binNumber": "La descrizione del contenitore del componente",
+				"rememberLastSelection": "Se abilitato ripropone i valori precedenti di: <1>Categoria, Tipo Montaggio, Quantità, Scorta Minima, Progetto, Ubicazione, Contenitore, Contenitore 2</1>",
+				"clear": "Svuota i campi e inserisce i valori di default",
+				"alternateParts": "Scegliere un componente diverso da cui estrarre le informazioni per i metadati. Di default Binner sceglie il componente più simile e con la maggiore quantità disponibile.",
+				"mustAddPart": "Bisogna salvare il componente prima di poter aggiungere fornitori.",
+				"addSupplier": "Aggiungere un fornitore manualmente",
+				"deleteLocalFile": "Cancellare questo file locale"
+			}
+		},
+		"lowInventory": {
+			"title": "Sottoscorta",
+			"description": "Usare questa pagina per riordinare componenti in sottoscorta.<1/>Si può definire un valore di <3>Scorta Minima</3>per ogni componente dell'inventario."
+		},
+		"bom": {
+			"bc": {
+				"home": "Home",
+				"boms": "DBAs",
+				"bom": "DBA"
+			},
+			"header": {
+				"title": "Distinta Base",
+				"description": "Gestire una DBA creando i PCB e aggiungendo i componenti necessari." 
+			},
+			"notEnoughPartsToProducePcb": "Non ci sono componenti sufficienti per produrre questo PCB.",
+			"notEnoughPartsToProduceBom": "Non ci sono componenti sufficienti per produrre l'intera DBA.",
+			"noPartsAssigned": "Assegnare i componenti per contare quante volte puoi produrre questo PCB.",
+			"pcbProduceCount": "Con le attuali disponibilità in inventario si può produrre questo PCB <1>{{count}}</1> volte.",
+			"bomProduceCount": "Con le attuali disponibilità in inventario si può produrre l'intera DBA <1>{{count}}</1> volte.",
+			"lowestPcb": "<0>{{name}}</0> manda componenti in sottoscorta."
+		},
+		"boms": {
+			"header": {
+				"description": "La Distinta Base, (DBA), consente di gestire le quantità dei componenti per progetto. Si può ridurre le quantità di ogni PCB da produrre, verificare quali componenti occorre acquistare ancora e analizzare i costi.<br/><br/>Scegliere o creare il progetto di cui gestire la DBA.<br/>" 
+			}
+		},
+		"partTypes": {
+			"title": "Categorie",
+			"description": "Le categorie e le sottocategorie sono utilizzate per organizzare i componenti in modo logico e ordinato. Non c'è limite al numero di livelli nella gerarchia, basta collegare alla categoria <1>Parent</1> la sottocategoria voluta.<3 />Ad esempio: gli amplificatori operazionali possono essere un sottotipo dei Circuiti Integrati, quindi il <1>Parent</1> degli amplificatori operazionali è la categoria Circuiti Integrati."
+		},
+		"exportData": {
+			"title": "Importare/Esportare",
+			"description": "Importare o Esportare i dati di Binner in un formato leggibile.",
+			"uploadNote": "Trascinare un documento da caricare o cliccare per selezionare il file.",
+			"acceptedFileTypes": "File tipi accettati: \"*.sql, *.xls, *.xlsx, *.csv\"",
+			"importResult": "Risultato dell'import",
+			"totalRowsImported": "Righe totali importate",
+			"totalProjectsImported": "Progetti importati",
+			"totalPartTypesImported": "Categorie importate",
+			"totalPartsImported": "Compoonenti importati"
+		},
+		"tools": {
+			"title": "Strumenti",
+			"description": "Binner include una suite di utilità gratuite comuni nella vita quotidiana dell'ingegneria elettrica.",
+			"resistorColorCodeCalc": "Calcolatrice Codici Colore dei Resistori",
+			"ohmsLawCalc": "Calcolatrice Legge di Ohm",
+			"voltageDividerCalc": "Calcolo Partitore di Tensione",
+			"barcodeScanner": "Scanner di Codici a Barre"
+		},
+		"barcodeScanner": {
+			"title": "Scanner di Codici a Barre",
+			"description": "Provare il tuo scanner di codici a barre per controllare il suo output.",
+			"detected": "Rilevato",
+			"waitingForInput": "In attesa di input..."
+		},
+		"settings": {
+			"title": "Impostazioni",
+			"description": "Configurare le integrazioni, la configurazione della stampante e i modelli delle etichette dei tuoi componenti. <1/> Ulteriore assistenza può essere trovata sul <3>Wiki</3>.",
+			"confirm": {
+				"mustAuthenticateHeader": "Occorre l'autenticazione",
+				"mustAuthenticate": "L'External Api richiede l'autenticazione. Dopo l'autenticazione con il provider esterno, si verrà reindirizzati qui."
+			},
+			"integrations": "Integrazioni",
+			"integrationsDescription": "Per integrarsi con DigiKey, Mouser, Arrow or Octopart/Nexar API è necessario ottenere le API keys per ogni servizio da utilizzare. <1 /> Aggiungere integrazioni migliorerà notevolmente l'esperienza d'uso.",
+			"swarm": "Swarm",
+			"swarmDescription": "Swarm è un servizio API gratuito fornito da <1>Binner's cloud service</1>, che contiene metadati di parti provenienti da molte fonti aggregate. È la principale fonte di informazioni su parti, media e schede tecniche. Registrarsi per ottenere le proprie chiavi API consentirà di avere limiti di richiesta più elevati, le chiavi API possono essere ottenute su <3>https://binner.io/swarm</3>.",
+			"swarmSupport": "Supporto Swarm",
+			"digikey": "DigiKey",
+			"digikeySupport": "Supporto DigiKey",
+			"mouser": "Mouser",
+			"mouserSupport": "Supporto Mouser",
+			"searchApiKey": "Search Api Key",
+			"ordersApiKey": "Orders Api Key",
+			"cartApiKey": "Cart Api Key",
+			"arrow": "Arrow",
+			"arrowSupport": "Supporto Arrow",
+			"octopartNexar": "Octopart/Nexar",
+			"octopartNexarSupport": "Supporto Octopart/Nexar",
+			"printerConfiguration": "Configurazione Stampante",
+			"printerConfigDescription": "Indica il nome della stampante così come compare nell'ambiente (Windows Printers or CUPS Printer Name)",
+			"printerName": "Printer Name",
+			"partLabelSource": "Etichetta del componente",
+			"partLabelName": "Nome etichetta",
+			"partLabelTemplate": "Modello etichetta",
+			"partLabelTemplateDescription": "Le etichette dei componenti saranno stampate secondo questo modello.",
+			"lineX": "Line {{number}}",
+			"identifierX": "Identifier {{number}}"
+		},
+		"datasheet": {
+			"title": "Ricerca Datasheet"
+		},
+		"orderImport": {
+			"title": "Importazione Ordine",
+			"enterOrderNumber": "Inserire il numero d'ordine del fornitore.",
+			"webOrderNum": "Web Order #",
+			"salesOrderNum": "Sales Order #",
+			"orderNum": "Order Number",
+			"instructions": "Per gli ordini <1>DigiKey</1>, questo è il <3>Sales Order #</3>.<4 />Per glii ordini <6>Mouser</6>, questo è il <8>Web Order #</8>.<10 />Per gli ordini <12>Arrow</12>, questo è l'<14>Order Number</14>.",
+			"mouserNote": "<0>Nota:</0> Mouser supporta soltanto Web Order # quindi quando si importa assicurarsi di utilizzare il Web Order # e <2>non il Sales Order #</2>",
+			"arrowNote": "<0>Note:</0> Arrow richiede che sia richiesto via email l'accesso al loro Order API. Vedi <2>Arrow Order Api</2>"
+		},
+		"printLabels": {
+			"title": "Stampa Etichette",
+			"description": "Stampare le etichette multi-linea per i contenitori di componenti.<1 />La cronologia di stampa viene conservata in modo da poter riutilizzare i modelli per le etichette.",
+			"printHistory": "Cronologia di stampa",
+			"label": {
+				"labelType": "Tipo etichetta",
+				"paperSource": "Posizione della carta",
+				"labelNum": "Num.Etichetta",
+				"text": "Testo",
+				"fontSize": "Dim.carattere",
+				"alignment": "Allineamento",
+				"topMargin": "Margine Alto",
+				"leftMargin": "Margine Sinistro",
+				"font": "Font",
+				"isBarcode": "Codice a Barre",
+				"center": "Centro"
+			}
+		},
+		"project": {
+			"title": "Modifica Progetto",
+			"description": "I progetti vengono utilizzati come parte della DBA, permettendo di associare componenti a più PCB contemporaneamente.",
+			"pcbs": "PCBs",
+			"confirm": {
+				"deleteProjectHeader": "Cancella Progetto",
+				"deletePcbHeader": "Cancella Pcb"
+			},
+			"placeholder": {
+				"name": "Il mio Progetto",
+				"location": "Roma"
+			},
+			"popup": {
+				"name": "Digitare il nome del progetto/DBA",
+				"description": "Digitare una descrizione sommaria del progetto",
+				"location": "Località del progetto <1>(opzionale)</1>",
+				"color": "Assegnare un colore a questo progetto per una più semplice identificazione"
+			}
+		},
+		"tool": {
+			"ohmsLaw": {
+				"title": "Calcolatrice Legge di Ohm",
+				"description": "La legge di Ohm spiega la relazione tra tensione, corrente e resistenza. Inserire 2 valori qualsiasi per calcolare gli altri 2 valori.",
+				"voltage": "Tensione",
+				"current": "Corrente",
+				"resistance": "Resistenza",
+				"power": "Potenza"
+			},
+			"resistanceColorCalc": {
+				"title": "Calcolatrice Codici Colore dei Resistori",
+				"4band": "4 Bande",
+				"5band": "5 Bande",
+				"6band": "6 Bande",
+				"numOfBands": "Scegliere il numero di bande",
+				"chooseBands": "Scegliere le bande...",
+				"resistance": "Resistenza"
+			},
+			"voltDividerCalc": {
+				"title": "Calcolo Partitore di Tensione",
+				"description": "Un partitore di tensione utilizza 2 resistori per ridurre la tensione a una frazione della sua tensione iniziale.",
+				"voltageInput": "Tensione iniziale",
+				"resistor": "Resistore",
+				"outputVoltage": "Tensione di uscita"
+			}
+		}
+	},
+	"bc": {
+		"home": "Home",
+		"boms": "DBAs",
+		"bom": "DBA",
+		"editProject": "Modifica Progetto",
+		"tools": "Strumenti",
+		"ohmsLaw": "Calcolatrice Legge di Ohm",
+		"resistanceColorCalc": "Calcolatrice Codici Colore dei Resistori",
+		"voltDividerCalc": "Calcolo Partitore di Tensione"
+	},
+	"comp": {
+		"navBar": {
+			"search": "Cerca",
+			"help": "Aiuto",
+			"home": "Home",
+			"addInventory": "Nuovo componente",
+			"orderImport": "Importa Ordine"
+		},
+		"partsGrid": {
+			"recordsPerPage": "righe per pagina",
+			"parts": "Componenti",
+			"part": "Componente",
+			"quantity": "Quantità",
+			"lowStock": "Scorta Minima",
+			"mfrPart": "Codice del produttore",
+			"description": "Descrizione",
+			"location": "Ubicazione",
+			"binNumber": "Contenitore",
+			"binNumber2": "Contenitore 2",
+			"cost": "Costo",
+			"digikeyPart": "Codice DigiKey",
+			"mouserPart": "Codice Mouser",
+			"arrowPart": "Codice Arrow",
+			"datasheet": "Datasheet",
+			"noResults": "Nessun risultato.",
+			"ok": "Ok",
+			"popup": {
+				"lowStock": "Se la disponibilità del componente è inferiore a questo valore il componente sarà considerato sottoscorta.",
+				"quantity": "La quantità attualmente disponibile."
+			},
+			"confirm": {
+				"deletePart": "Sei sicuro di voler eliminare il componente {{partNumber}}?"
+			},
+			"error": {
+				"failedSave": "Erore nel salvataggio di {{partNumber}} - {{statusText}}"
+			}
+		},
+		"addBomPartModal": {
+			"title": "Gestione DBA",
+			"description": "Aggiungere un componente alla DBA, ed eventualmente associarlo a un particolare PCB.",
+			"none": "Nessuno",
+			"confirmHeader": "Aggiungere componente",
+			"confirmAddUnassociated": "Nonè stato selezionato alcun componente dall'inventario.<1/>Continuare ad aggiungere questo componente senza associarlo ad un componente dell'inventario?<3/><4/><5>Nota: se si procede si potrà comunque gestirne la quantità, ma non apparirà nell'inventario.</5>",
+			"selectPcb": "Selezionare un PCB",
+			"choosePcb": "Scegliere il PCB",
+			"popup": {
+				"selectPcb": "Selezionare il PCB a cui aggiungere questo componente. Se non si sceglie un PCB, il componente verrà aggiunto alla DBA senza associazione con un un PCB.",
+				"quantity": "Inserire la quantità di questo componente richiesta per produrre un singolo PCB.",
+				"referenceIds": "Inserire un riferimento personalizzato usato per identificare questo componente.<1/>Ad esempio: <3>Optoisolator1</3>, <5>Capacitor Array</5>",
+				"schematicReferenceIds": "Inserire uno o più riferimenti allo schema elettrico utilizzati sulla serigrafia del PCB per identificare questo componente.<1/>Ad esempio: <3>D1</3>, <5>C2</5>, <7>Q1</7>",
+				"notes": "Note personalizzate per questo componente.",
+				"partNumber": "Cercare un componente nell'inventario",
+				"customDescription": "Indicare una descrizione personalizzata per questo componente."
+			}
+		},
+		"addPcbModal": {
+			"title": "Gestione DBA",
+			"description": "L'aggiunta di un PCB consente di associare i componenti ad uno specifico PCB o anche a più PCB all'interno di un progetto.",
+			"header": "Aggiungere PCB",
+			"popup": {
+				"name": "Inserire il nome della scheda PCB o modulo.",
+				"description": "Inserire una descrizione che descriva cosa fa il PCB. (<1>opzionale</1>)",
+				"quantity": "Inserire una quantità (moltiplicatore) di PCB da produrre ogni volta che si crea un PCB. Normalmente è 1, a meno che non siano necessarie più copie dello stesso PCB per produrre il progetto DBA.<1/><2/><3>Ad esempio un amplificatore audio potrebbe richiedere 2 PCB uguali, uno per ciascun canale sinistro/destro ogni volta che si produce l'intero assieme.</3> ",
+				"cost": "Il costo per produrre una singola scheda PCB (senza componenti). Se occorron più schede PCB per progetto, specificare il costo per la singola scheda.",
+				"serialNumberFormat": "Indicare il serial number nel formato stringa. La parte di sinistra della stringa sarà incrementata di 1 ogni volta che si produrrà un PCB. (<1>opzionale</1>)<2/>Example: <4>SN00000000</4>"
+			},
+			"placeholder": {
+				"name": "Main Board o nome del modulo",
+				"description": "Descrizione del PCB"
+			}
+		},
+		"producePcbModal": {
+			"title": "Gestione Distinta Base (DBA)",
+			"description": "",
+			"header": "Produrre il PCB",
+			"nextSerialNumber": "Prossimo Serial Number",
+			"maxQty": "Max Qt.à",
+			"options": {
+				"all": "Tutto",
+				"allDescription": "Produrre l'intera DBA",
+				"unassociated": "Non associato",
+				"unassociatedDescription": "Produrre componenti non associate a un PCB"
+			},
+			"popup": {
+				"pcbs": "Selezionare le schede PCB che si intende produrre. Se non si definisce un PCB, scegliere Non associato oppure Tutto.",
+				"quantity": "Inserire la quantità di PCB che si intende produrre.",
+				"nextSerialNumber": "Il prossimo serial number assegnato alla scheda",
+				"maxQty": "Il massimo numero di schede che si potrà produrre",
+				"parts": "Il numero di componenti nella scheda", 
+				"outOfStock": "Il numero di componenti nella scheda che sono sottoscorta",
+				"serialNumber": "Il prossimo PCB avrà un numero di serie a partire da questo valore."
+			},
+			"label": {
+				"pcbs": "Selezionare i PCB"
+			},
+			"placeholder": {
+				"pcbs": "Scegliere i PCB da produrre"
+			}
+		},
+		"chooseAlternatePartModal": {
+			"title": "Componenti corrispondenti"
+		},
+		"lineTemplate": {
+			"label": {
+				"content": "Contenuto",
+				"font": "Font",
+				"fontSize": "Dimensione del Font",
+				"fontColor": "Colore del Font",
+				"textPosition": "Posizione del testo",
+				"upperCaseText": "Testo in maiuscolo",
+				"lowerCaseText": "Testo in minuscolo",
+				"barcode": "Codice a barre",
+				"marginLeft": "Margine Sinistro",
+				"marginTop": "Margine Superiore",
+				"rotateDegrees": "Gradi di rotazione"  
+			},
+			"popup": {
+				"content": "Il modello può riferirsi a qualunque campo del componente, ad esempio: &#123;Codice componente&#125;, &#123;Descrizione&#125;, &#123;Produttore&#125;, &#123;Ubicazione&#125;, &#123;Contenitore&#125;, &#123;Costo&#125; ecc. Vedi <1>Wiki</1> Per i campi disponibili.",
+				"autoSize": "La dimensione del testo verrà determinata automaticamente.",
+				"upperCaseText": "Trasforma il testo in caratteri maiuscoli",
+				"lowerCaseText": "Trasforma il testo in caratteri minuscoli",
+				"barcode": "Trasforma il testo in codice a barre.",
+				"rotateDegrees": "Ruotare il testo in gradi. Esempio: 90"
+			}
+		}
+	},
+	"button": {
+		"addBomProject": "Aggiungi un Progetto DBA",
+		"addPart": "Aggiungi componente",
+		"save": "Salva",
+		"download": "Download",
+		"addPcb": "Aggiungi PCB",
+		"producePcb": "Produrre PCB",
+		"removePart": "Eliminare componente",
+		"removeXParts": "Eliminare ({{checkboxesChecked}}) Componenti",
+		"addFirstPart": "Aggiungi il primo componente!",
+		"all": "Tutto",
+		"addPartType": "Aggiungi categoria",
+		"manualAdd": "Aggiungere manualmente",
+		"back": "Indietro",
+		"import": "Importare",
+		"export": "Esportare",
+		"testApi": "Test Api",
+		"forgetCredentials": "Dimentica le Credenziali",
+		"viewDatasheet": "Visualizzare il Datasheet",
+		"search": "Cerca",
+		"clear": "Pulisci",
+		"reset": "Reset",
+		"importParts": "Importare Componenti",
+		"preview": "Anteprima",
+		"print": "Stampa",
+		"load": "Caricare",
+		"addLine": "Aggiungere Linea",
+		"add": "Aggiungere",
+		"cancel": "Annulla",
+		"produce": "Produrre",
+		"delete": "Eliminare",
+		"visit": "Visitare"
+	},
+	"label": {
+		"name": "Nome",
+		"description": "Descrizione",
+		"location": "Ubicazione",
+		"color": "Colore",
+		"project": "Progetto",
+		"parts": "Componente",
+		"pcb": "PCB",
+		"pcbs": "PCBs",
+		"delete": "Eliminare",
+		"deleteProject": "Eliminare Progetto",
+		"editProject": "Modificare Progetto",
+		"lastModified": "Ultima modifica",
+		"inStock": "In Magazzino",
+		"outOfStock": "Esaurito",
+		"totalParts": "Totale Componenti",
+		"producible": "Fabbricabile",
+		"part": "Componente", 
+		"partNumber": "Codice componente",
+		"partNumberShort": "Componente#",
+		"supplierPart": "Codice Fornitore",
+		"mfrPart": "Codice Produttore",
+		"manufacturer": "Produttore",
+		"partType": "Categoria",
+		"mountingType": "Tipo montaggio",
+		"cost": "Costo",
+		"quantity": "Quantità",
+		"quantityShort": "Q.tà",
+		"leadTime": "Tempo di consegna",
+		"referenceIds": "Id(s) di riferimento",
+		"schematicReferenceIds": "Riferimento nello schema",
+		"customDescription": "Descrizione personalizzata",
+		"note": "Nota",
+		"notes": "Note",
+		"recordsPerPage": "records per pagina",
+		"parent": "Parent",
+		"partsCount": "Conteggio Componenti",
+		"systemType": "Tipo di sistema",
+		"resistors": "Resistori",
+		"hideEmptyTypes": "Nascondi categorie vuote",
+		"error": "Errore",
+		"errors": "Errori",
+		"or": "Oppure",
+		"status": "Stato",
+		"success": "Riuscito",
+		"failed": "Fallito",
+		"warnings": "Avvertimenti",
+		"apiKey": "Api Key",
+		"apiUrl": "Api Url",
+		"clientId": "Client Id",
+		"clientSecret": "Client Secret",
+		"timeout": "Timeout",
+		"postbackUrl": "Postback Url",
+		"username": "Username",
+		"password": "Password",
+		"website": "Sito Web",
+		"datasheet": "Datasheet",
+		"package": "Package",
+		"importQuestion": "Importare?",
+		"image": "Immagine",
+		"customerId": "Id Cliente",
+		"orderAmount": "Importo Ordine",
+		"orderDate": "Data Ordine",
+		"trackingNumber": "Tracking Number",
+		"unspecified": "Non specificato",
+		"viewTracking": "Visualizza Tracking",
+		"preview": "Anteprima",
+		"serialNumberFormat": "Formato del numero di serie",
+		"family": "Famiglia",
+		"source": "Source",
+		"qtyAvail": "Q.tà Dispon.",
+		"keywords": "Parole chiave",
+		"apiEndpoint": "Api Endpoint",
+		"lastSerialNumber": "Ultimo Serial Number",
+		"lowStock": "Scorta minima",
+		"binNumber": "Contenitore",
+		"binNumber2": "Contenitore 2",
+		"manufacturerPart": "Codice Produttore",
+		"packageType": "Tipo Confezione",
+		"primaryDatasheetUrl": "Datasheet Url Principale",
+		"productUrl": "Url del prodotto",
+		"digikeyPartNumber": "DigiKey Part Number",
+		"mouserPartNumber": "Mouser Part Number",
+		"arrowPartNumber": "Arrow Part Number",
+		"minimumOrderQuantity": "Quantità minima ordinabile",
+		"supplier": "Fornitore",
+		"supplierPartNumber": "Codice Fornitore",
+		"quantityAvailable": "Quantità disponibile",
+		"rememberLastSelection": "Ricorda ultima selezione",
+		"origin": "Origine",
+		"supplierType": "Tipo fornitore"
+	},
+	"message": {
+		"noPartsAdded": "Nessun componente aggiunto.",
+		"noChildPartTypes": "Non ci sono categorie figlie.",
+		"noResults": "Nessun risultato",
+		"loadingOrder": "Carico ordine# {{order}}",
+		"noMatchingResults":"Nessun risultato corrispondente.",
+		"notEnoughParts": "Componenti insufficienti",
+		"noPartInfo": "Non ci sono informaazioni per il componente '{{partNumber}}'. Quando il componente sarà indicizzato, verrà automaticamente aggiornato."
+	},
+	"confirm": {
+		"deleteProject": "Sicuro di voler eliminare questo progetto e l'intera DBA?",
+		"removeBomParts": "Sicuro di voler rimuovere questi <1>{{quantity}}</1> componenti dalla DBA?",
+		"deletePcb": "Sicuro di voler eliminare questo PCB e i suoi componenti dalla DBA?",
+		"deletePartType": "Sicuro di voler cancellare la categoria <1>{{name}}</1>?",
+		"deletePart": "Sicuro di voler cancellare il componente <1>{{name}}</1>?",
+		"deleteLocalFile": "Sicuro di voler cancellare questo file locale di nome <1>{{name}}</1>?",
+		"permanent": "Questa azione è <1>permanente e non può essere recuperata</1>.",
+		"header": {
+			"removeBomPart": "Elimina componenente dalla DBA",
+			"deleteFile": "Cancella File",
+			"deletePart": "Cancella Componente"
+		}    
+	},
+	"error": {
+		"deleteProjectFailed": "Impossibille eliminare il progetto!",
+		"failedToRemoveBomParts": "Impossibille eliminare componenti dalla DBA!",
+		"projectNotFound": "Impossibile trovare il progetto {{projectName}}",
+		"failedSaveProject": "Impossibile salvare le modifiche al progetto!",
+		"failedSavePcb": "Impossibile salvare il PCB!",
+		"failedDeleteProject": "Impossibille eliminare il progetto!",
+		"failedSavePartType": "Impossibile salvare la categoria!",
+		"failedDeletePcb": "Impossibille eliminare pcb!",
+		"noPartSelected": "Nessun componente selezionato!",
+		"failedAddPart": "Impossibile aggiungere il componente!",
+		"failedAddPcb": "Impossibile aggiungere il PCB!",
+		"failedBomExport": "Esportazione della DBA non riuscito!",
+		"failedDeletedPartType": "Impossibile eliminare la categoria {{name}}",
+		"failedAddedPartType": "Impossibile aggiungere la categoria {{name}}",
+		"failedClearedCredentials": "Impossibile eliminare le credenziali per {{apiName}}",
+		"testFailed": "Test fallito",
+		"invalidOrder": "Hmmm, questo non sembra un numero d'ordine valido!",
+		"invalid2dBarcode": "Hmmm, codice a barre 2D non riconosciuto!"
+	},
+	"success": {
+		"producedPcbs": "{{quantity}} PCB sono stati prodotti!",
+		"bomExported": "DBA esportata correttamente!",
+		"savedPartType": "Categoria {{name}} salvata",
+		"deletedPartType": "Categoria {{name}} cancellata",
+		"barcodeTypeReceived": "Ricevuto codice a barre tipo {{type}}",
+		"systemSettingsSaved": "Le impostazioni di sistema sono state salvate.",
+		"clearedCredentials": "Le credenziali per {{apiName}} sono state cancellate",
+		"testPassed": "Test superato",
+		"partsImported": "Sono stati importati {{count}} componenti!",
+		"deletedProject": "Il progetto è stato cancellato!",
+		"deletedPcb": "Il PCB è stato cancellato!"
+	},
+	"popup": {
+		"bom": {
+			"addPart": "Aggiungi componente alla DBA",
+			"downloadBom": "Download di una DBA",
+			"removePart": "Rimuovi i componenti selezionati dalla DBA",
+			"addPcb": "Aggiungi un PCB a questo progetto",
+			"producePcb": "Riduce la quantità in inventario quando un PCB viene assemblato",
+			"filterOutOfStock": "Selezionare solo per mostrare i componenti sottoscorta",
+			"pcb": "Indicare a quale PCB è assegnato il componente. L'assegnazione a un PCB è opzionale, tutti i componenti non assegnati appariranno nel tab <1>Tutto</1>.",
+			"quantity": "Il numero di componenti richiesti per un singolo PCB",
+			"inventoryQuantity": "La quantità di componenti attualmente in inventario",
+			"referenceId": "<1 />Id(s) di riferimento usato per identificare questo componente.",
+			"schematicReferenceId": "<1 />Id(s) di riferimento nello schema usato per identificare il componente sulla serigrafia del PCB. <3/>Ad esempio: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
+			"displayAll": "Visualizza tutti i componenti inclusi quelli non associati a un PCB.",
+			"unassociatedPartName": "Modifica il nome del componente non associato <1 /> part",
+			"bomQuantity": "Modifica la <1 />quantità richiesta nella DBA",
+			"bomCost": "Modifica il costo del componente",
+			"quantityAvailable": "Modifica la quantità disponibile nell'<1 />inventario",
+			"editReferenceId": "Modifica l' <1 />Id(s) di riferimento usato per identificare questo componente.",
+			"editSchematicReferenceId": "Modifica l' <1 />Id(s) di riferimento nello schema usato per identificare il componente sulla serigrafia del PCB. <3 />Ad esempio: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
+			"customDescription": "Fornire una descrizione personale",
+			"customNote": "Fornire una nota personale"
+		}
+	},
+	"footer": {
+		"version": "Version",
+		"promo": "Try <1>Binner Cloud Free</1>"
+	},
+	"notification": {
+		"versionBanner": {
+			"newVersion": "È disponibile una nuova versione di Binner <1>{{version}}</1>!",
+			"releaseNotes": "Note di Release",
+			"view": "Visualizza",
+			"skip": "Salta",
+			"close": "Chiudi"
+		}
+	},
+	"color": {
+		"black": "Nero",
+		"brown": "Marrone",
+		"red": "Rosso",
+		"orange": "Arancione",
+		"yellow": "Giallo",
+		"green": "Verde",
+		"blue": "Blu",
+		"violet": "Viola",
+		"grey": "Grigio",
+		"white": "Bianco",
+		"gold": "Oro",
+		"silver": "Argento"
+	}
+}

@@ -8,6 +8,7 @@ import '../i18n';
 
 const lngs = {
     en: { nativeName: 'English', flag: 'gb' },      // english
+    it: { nativeName: 'Italiano', flag: 'it' },      // italian
     // temporary: enable languages as the translations are finished.
     //de: { nativeName: 'Deutsch', flag: 'de' },      // german
     //fr: { nativeName: 'Français ', flag: 'fr' },    // french
