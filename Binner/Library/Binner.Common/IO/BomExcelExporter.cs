@@ -19,6 +19,64 @@ namespace Binner.Common.IO
 
             var rowIndex = 0;
             var columnIndex = 0;
+
+            // All parts tab
+            var allsheet = workbook.CreateSheet("All Parts");
+            allsheet.DefaultColumnWidth = 130;
+
+            // header
+            rowIndex = 0;
+            var allHeaderRow = allsheet.CreateRow(rowIndex);
+            rowIndex++;
+            columnIndex = 0;
+            CreateCell(allHeaderRow, "Pcb", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "OutOfStock", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "PartNumber", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Mfr Part", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Part Type", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Cost", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Currency", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Qty Required", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Qty In Stock", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Lead Time", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Reference Id", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Description", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Note", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "SchematicReferenceId", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "CustomDescription", "header", styles, ref columnIndex);
+
+            foreach (var part in data.Parts.OrderBy(x => x.PcbId).ThenBy(x => x.PartName))
+            {
+                var row = allsheet.CreateRow(rowIndex);
+                rowIndex++;
+                columnIndex = 0;
+                var outOfStock = part.Quantity > (part.Part?.Quantity ?? part.QuantityAvailable);
+                var rowStyle = outOfStock ? "outofstock" : null;
+
+                SetCellValue(row.CreateCell(columnIndex), data.Pcbs.Where(x => x.PcbId == part.PcbId).Select(x => x.Name).FirstOrDefault(), styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), outOfStock ? 1 : 0, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.ReferenceId, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Description, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.SchematicReferenceId, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.CustomDescription, styles, rowStyle); columnIndex++;
+            }
+            for (var i = 0; i < 10; i++)
+            {
+                //usheet.AutoSizeColumn(i);
+                allsheet.SetColumnWidth(i, 20 * 256);
+            }
+
+
+            // Unassociated parts tab
             if (data.Parts.Any(x => x.PcbId == null))
             {
                 var usheet = workbook.CreateSheet("Unassociated");
@@ -34,6 +92,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mfr Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Part Type", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Cost", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Currency", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty Required", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty In Stock", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Lead Time", "header", styles, ref columnIndex);
@@ -43,7 +102,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
 
-                foreach (var part in data.Parts.Where(x => x.PcbId == null))
+                foreach (var part in data.Parts.Where(x => x.PcbId == null).OrderBy(x => x.PartName))
                 {
                     var row = usheet.CreateRow(rowIndex);
                     rowIndex++;
@@ -54,7 +113,8 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
@@ -72,7 +132,8 @@ namespace Binner.Common.IO
             }
 
 
-            foreach (var pcb in data.Pcbs)
+            // By PCB tab
+            foreach (var pcb in data.Pcbs.OrderBy(x => x.Name))
             {
                 var sheet = workbook.CreateSheet(pcb.Name);
                 sheet.DefaultColumnWidth = 130;
@@ -86,6 +147,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mfr Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Part Type", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Cost", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Currency", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty Required", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty In Stock", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Lead Time", "header", styles, ref columnIndex);
@@ -95,7 +157,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
 
-                foreach (var part in data.Parts.Where(x => x.PcbId == pcb.PcbId))
+                foreach (var part in data.Parts.Where(x => x.PcbId == pcb.PcbId).OrderBy(x => x.PartName))
                 {
                     var row = sheet.CreateRow(rowIndex);
                     rowIndex++;
@@ -106,7 +168,8 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
@@ -123,10 +186,11 @@ namespace Binner.Common.IO
                 }
             }
 
+            // Out of Stock parts tab
             // create a sheet for all out of stock items
             if (data.Parts.Any(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)))
             {
-                var osheet = workbook.CreateSheet("OutOfStock");
+                var osheet = workbook.CreateSheet("Out Of Stock");
                 osheet.DefaultColumnWidth = 130;
 
                 // header
@@ -139,6 +203,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mfr Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Part Type", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Cost", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Currency", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty Required", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty In Stock", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Lead Time", "header", styles, ref columnIndex);
@@ -148,7 +213,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
 
-                foreach (var part in data.Parts.Where(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)))
+                foreach (var part in data.Parts.Where(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)).OrderBy(x => x.PcbId).ThenBy(x => x.PartName))
                 {
                     var row = osheet.CreateRow(rowIndex);
                     rowIndex++;
@@ -158,7 +223,8 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;

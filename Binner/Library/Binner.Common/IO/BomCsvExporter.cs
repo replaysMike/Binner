@@ -17,7 +17,56 @@ namespace Binner.Common.IO
             var lineBreak = Environment.NewLine;
 
             var streams = new Dictionary<StreamName, Stream>();
-            // first write the unassociated parts
+
+            // All parts
+            var allHeaderValues = new List<string>
+            {
+                "Pcb",
+                "PartNumber",
+                "Mfr Part",
+                "Part Type",
+                "Cost",
+                "Currency",
+                "Qty Required",
+                "Qty In Stock",
+                "Lead Time",
+                "Reference Id",
+                "Description",
+                "Note",
+                "SchematicReferenceId",
+                "CustomDescription",
+            };
+
+            var allStream = new MemoryStream();
+            using var allWriter = new StreamWriter(allStream, Encoding.UTF8, 4096, true);
+            allWriter.Write($"#{string.Join(delimiter, allHeaderValues)}{lineBreak}");
+            
+            foreach (var part in data.Parts.OrderBy(x => x.PcbId).ThenBy(x => x.PartName))
+            {
+                var rowValues = new List<string>
+                {
+                    $"{EscapeValue(data.Pcbs.Where(x => x.PcbId == part.PcbId).Select(x => x.Name).FirstOrDefault(), typeof(string))}",
+                    $"{EscapeValue(part.PartName, typeof(string))}",
+                    $"{EscapeValue(part.Part?.ManufacturerPartNumber, typeof(string))}",
+                    $"{EscapeValue(part.Part?.PartType, typeof(string))}",
+                    $"{(double?)part.Part?.Cost ?? part.Cost}",
+                    $"{part.Part?.Currency?? part.Currency}",
+                    $"{part.Quantity}",
+                    $"{part.Part?.Quantity ?? part.QuantityAvailable}",
+                    $"{EscapeValue("", typeof(string))}", // lead time
+                    $"{EscapeValue(part.ReferenceId, typeof(string))}",
+                    $"{EscapeValue(part.Part?.Description, typeof(string))}",
+                    $"{EscapeValue(part.Notes, typeof(string))}",
+                    $"{EscapeValue(part.SchematicReferenceId, typeof(string))}",
+                    $"{EscapeValue(part.CustomDescription, typeof(string))}",
+                };
+
+                allWriter.Write($"{string.Join(delimiter, rowValues)}{lineBreak}");
+            }
+            allStream.Seek(0, SeekOrigin.Begin);
+            streams.Add(new StreamName("AllParts", "csv"), allStream);
+
+            // Unassociated parts
             if (data.Parts.Any(x => x.PcbId == null))
             {
                 // write CSV header
@@ -28,6 +77,7 @@ namespace Binner.Common.IO
                     "Mfr Part",
                     "Part Type",
                     "Cost",
+                    "Currency",
                     "Qty Required",
                     "Qty In Stock",
                     "Lead Time",
@@ -42,7 +92,7 @@ namespace Binner.Common.IO
                 using var writer = new StreamWriter(stream, Encoding.UTF8, 4096, true);
                 writer.Write($"#{string.Join(delimiter, headerValues)}{lineBreak}");
                 
-                foreach (var part in data.Parts.Where(x => x.PcbId == null))
+                foreach (var part in data.Parts.Where(x => x.PcbId == null).OrderBy(x => x.PartName))
                 {
                     var outOfStock = part.Quantity > (part.Part?.Quantity ?? part.QuantityAvailable);
                     var rowValues = new List<string>
@@ -51,7 +101,8 @@ namespace Binner.Common.IO
                         $"{EscapeValue(part.PartName, typeof(string))}",
                         $"{EscapeValue(part.Part?.ManufacturerPartNumber, typeof(string))}",
                         $"{EscapeValue(part.Part?.PartType, typeof(string))}",
-                        $"{part.Part?.Cost}",
+                        $"{(double?)part.Part?.Cost ?? part.Cost}",
+                        $"{part.Part?.Currency?? part.Currency}",
                         $"{part.Quantity}",
                         $"{part.Part?.Quantity ?? part.QuantityAvailable}",
                         $"{EscapeValue("", typeof(string))}", // lead time
@@ -68,6 +119,7 @@ namespace Binner.Common.IO
                 streams.Add(new StreamName("Unassociated", "csv"), stream);
             }
 
+            // By PCB
             var pcbNum = 0;
             foreach (var pcb in data.Pcbs)
             {
@@ -80,6 +132,7 @@ namespace Binner.Common.IO
                     "Mfr Part",
                     "Part Type",
                     "Cost",
+                    "Currency",
                     "Qty Required",
                     "Qty In Stock",
                     "Lead Time",
@@ -94,7 +147,7 @@ namespace Binner.Common.IO
                 using var pcbWriter = new StreamWriter(pcbStream, Encoding.UTF8, 4096, true);
                 pcbWriter.Write($"#{string.Join(delimiter, headerValues)}{lineBreak}");
 
-                foreach (var part in data.Parts.Where(x => x.PcbId == pcb.PcbId))
+                foreach (var part in data.Parts.Where(x => x.PcbId == pcb.PcbId).OrderBy(x => x.PartName))
                 {
                     var outOfStock = part.Quantity > (part.Part?.Quantity ?? part.QuantityAvailable);
                     var rowValues = new List<string>
@@ -103,7 +156,8 @@ namespace Binner.Common.IO
                         $"{EscapeValue(part.PartName, typeof(string))}",
                         $"{EscapeValue(part.Part?.ManufacturerPartNumber, typeof(string))}",
                         $"{EscapeValue(part.Part?.PartType, typeof(string))}",
-                        $"{part.Part?.Cost}",
+                        $"{(double?)part.Part?.Cost ?? part.Cost}",
+                        $"{part.Part?.Currency?? part.Currency}",
                         $"{part.Quantity}",
                         $"{part.Part?.Quantity ?? part.QuantityAvailable}",
                         $"{EscapeValue("", typeof(string))}", // lead time
@@ -121,7 +175,7 @@ namespace Binner.Common.IO
                 streams.Add(new StreamName(pcb.Name ?? $"Pcb {pcbNum}", "csv"), pcbStream);
             }
 
-            // create a file for all out of stock items
+            // Out of Stock parts
             if (data.Parts.Any(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)))
             {
                 // write CSV header
@@ -132,6 +186,7 @@ namespace Binner.Common.IO
                     "Mfr Part",
                     "Part Type",
                     "Cost",
+                    "Currency",
                     "Qty Required",
                     "Qty In Stock",
                     "Lead Time",
@@ -146,7 +201,7 @@ namespace Binner.Common.IO
                 using var writer = new StreamWriter(stream, Encoding.UTF8, 4096, true);
                 writer.Write($"#{string.Join(delimiter, headerValues)}{lineBreak}");
                 
-                foreach (var part in data.Parts.Where(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)))
+                foreach (var part in data.Parts.Where(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)).OrderBy(x => x.PcbId).ThenBy(x => x.PartName))
                 {
                     var rowValues = new List<string>
                     {
@@ -154,7 +209,8 @@ namespace Binner.Common.IO
                         $"{EscapeValue(part.PartName, typeof(string))}",
                         $"{EscapeValue(part.Part?.ManufacturerPartNumber, typeof(string))}",
                         $"{EscapeValue(part.Part?.PartType, typeof(string))}",
-                        $"{part.Part?.Cost}",
+                        $"{(double?)part.Part?.Cost ?? part.Cost}",
+                        $"{part.Part?.Currency?? part.Currency}",
                         $"{part.Quantity}",
                         $"{part.Part?.Quantity ?? part.QuantityAvailable}",
                         $"{EscapeValue("", typeof(string))}", // lead time
