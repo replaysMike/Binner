@@ -1334,8 +1334,6 @@ export function Inventory(props) {
   const handleVisitLink = (e, url) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!url.includes('http://') && !url.includes('https://'))
-      url = `https://${url}`;
     window.open(url, "_blank");
   };
 
