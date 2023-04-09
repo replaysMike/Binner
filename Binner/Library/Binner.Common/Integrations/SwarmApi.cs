@@ -4,6 +4,7 @@ using Binner.Common.Services;
 using Binner.SwarmApi;
 using Binner.SwarmApi.Request;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace Binner.Common.Integrations
             try
             {
                 var response = await _client.SearchPartsAsync(new SearchPartRequest
-                { PartNumber = partNumber, PartType = partType, MountingType = mountingType });
+                    { PartNumber = partNumber, PartType = partType, MountingType = mountingType });
                 if (response.IsSuccessful && response.Response != null)
                 {
                     return new ApiResponse(response.Response, nameof(SwarmApi));
@@ -68,6 +69,16 @@ namespace Binner.Common.Integrations
             {
                 // treat timeouts as warnings
                 return ApiResponse.CreateWarning($"Api request timed out: {ex.Message}", nameof(SwarmApi));
+            }
+            catch (JsonReaderException ex)
+            {
+                // unexpected response, server down?
+                return ApiResponse.CreateWarning($"Server down! {ex.Message}", nameof(SwarmApi));
+            }
+            catch (Exception ex)
+            {
+                // unexpected error
+                return ApiResponse.CreateWarning($"Server not available. {ex.Message}", nameof(SwarmApi));
             }
         }
 
