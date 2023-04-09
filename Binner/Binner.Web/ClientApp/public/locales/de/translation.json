@@ -77,8 +77,8 @@
       "notEnoughPartsToProducePcb": "You do not have enough parts to produce this PCB.",
       "notEnoughPartsToProduceBom": "You do not have enough parts to produce your entire BOM.",
       "noPartsAssigned": "Assign parts to get a count of how many times you can produce this PCB.",
-      "pcbProduceCount": "You can produce this PCB <b>{{count}}</b> times with your current inventory.",
-      "bomProduceCount": "You can produce your entire BOM <b>{{count}}</b> times with your current inventory.",
+      "pcbProduceCount": "You can produce this PCB <1>{{count}}</1> times with your current inventory.",
+      "bomProduceCount": "You can produce your entire BOM <1>{{count}}</1> times with your current inventory.",
       "lowestPcb": "<i>{{name}}</i> is the lowest on inventory."
     },
     "boms": {

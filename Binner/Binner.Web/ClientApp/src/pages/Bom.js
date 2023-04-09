@@ -470,7 +470,7 @@ export function Bom(props) {
     setConfirmDeleteIsOpen(true);
     setConfirmPartDeleteContent(
       <p>
-        <Trans i18nKey="confirm.removeBomParts">
+        <Trans i18nKey="confirm.removeBomParts" quantity={checkboxesChecked.length}>
           Are you sure you want to remove these <b>{{quantity: checkboxesChecked.length}}</b> part(s) from your BOM?
         </Trans>
         <br />
@@ -505,7 +505,11 @@ export function Bom(props) {
       } else if(pcbParts.length === 0){
         return <div className="inventorymessage">{t('page.bom.noPartsAssigned', "Assign parts to get a count of how many times you can produce this PCB.")}</div>;
       }
-      return <span className="inventorymessage">{t('page.bom.pcbProduceCount', "You can produce this PCB <b>{{count}}</b> times with your current inventory.", { count: pcbCount.count} )}</span>; 
+      return <span className="inventorymessage">
+        <Trans i18nKey="page.bom.pcbProduceCount" count={pcbCount.count}>
+        You can produce this PCB <b>{{count: pcbCount.count}}</b> times with your current inventory.
+        </Trans>
+      </span>; 
     }
 
     const pcbCount = getProduciblePcbCount(project.parts, pcb);
@@ -514,8 +518,17 @@ export function Bom(props) {
     }
     const limitingPcb = _.find(project.pcbs, x => x.pcbId === pcbCount.limitingPcb);
     return (<div className="inventorymessage">
-      <div>{t('page.bom.bomProduceCount',"You can produce your entire BOM <b>{{count}}</b> times with your current inventory.", { count: pcbCount.count})}</div>
-      {limitingPcb && <div className="textvalignmiddle"><i className="pcb-icon tiny" /><span>{t('page.bom.lowestPcb', "<i>{{name}}</i> is the lowest on inventory.", { name: limitingPcb?.name })}</span></div>}
+      <div>
+        <Trans i18nKey="page.bom.bomProduceCount" count={pcbCount.count}>
+        You can produce your entire BOM <b>{{count: pcbCount.count}}</b> times with your current inventory.
+        </Trans>
+      </div>
+      {limitingPcb && <div className="textvalignmiddle"><i className="pcb-icon tiny" />
+      <span>
+        <Trans i18nKey="page.bom.lowestPcb" name={limitingPcb?.name}>
+        <i>{{name: limitingPcb?.name}}</i> is the lowest on inventory.
+        </Trans>
+      </span></div>}
     </div>);
   };
 

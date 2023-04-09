@@ -54,7 +54,7 @@ export function VersionBanner(props) {
 		{isOpen && <div className="version-banner">
 			<span>
 				<Icon name="close" style={{marginRight: '20px', cursor: 'pointer'}} onClick={handleSkip} />
-				<Trans i18nKey="notification.versionBanner.newVersion">
+				<Trans i18nKey="notification.versionBanner.newVersion" version={version}>
 					A new version of Binner <b>{{version: version}}</b> is available!
 				</Trans>
 			</span>

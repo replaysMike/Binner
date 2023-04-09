@@ -1445,7 +1445,7 @@ export function Inventory(props) {
     setSelectedPart(part);
     setConfirmPartDeleteContent(
       <p>
-        <Trans i18nKey="confirm.deletePart">
+        <Trans i18nKey="confirm.deletePart" name={inputPartNumber}>
         Are you sure you want to delete part <b>{{name: inputPartNumber}}</b>?
         </Trans>
         <br />
@@ -1471,7 +1471,7 @@ export function Inventory(props) {
     setSelectedLocalFile({ localFile, type });
     setConfirmLocalFileDeleteContent(
       <p>
-        <Trans i18nKey="confirm.deleteLocalFile">
+        <Trans i18nKey="confirm.deleteLocalFile" name={localFile.name}>
         Are you sure you want to delete this local file named <b>{{name: localFile.name}}</b>?
         </Trans>
         <br />
@@ -1800,7 +1800,7 @@ export function Inventory(props) {
             <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
               <div>
                 <Icon name="close" /> 
-                <Trans i18nKey="message.noPartInfo">
+                <Trans i18nKey="message.noPartInfo" partNumber={inputPartNumber}>
                 No part information is available for '{{partNumber: inputPartNumber}}'. You are subscribed to updates and will be automatically updated when the part is indexed.
                 </Trans>
               </div>
