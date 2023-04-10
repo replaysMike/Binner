@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>win10-x64;linux-arm;linux-arm64;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Library\Binner.Model\Binner.Model.csproj" />
+    <ProjectReference Include="..\Binner.Data.Model\Binner.Data.Model.csproj" />
+    <ProjectReference Include="..\Binner.Data\Binner.Data.csproj" />
+    <ProjectReference Include="..\Binner.Model.Common\Binner.Model.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
+    <PackageReference Include="TypeSupport" Version="1.2.0" />
+  </ItemGroup>
+
+</Project>

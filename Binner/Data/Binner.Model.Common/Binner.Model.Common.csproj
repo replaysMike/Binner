@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <TargetFramework>net7.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>Michael Brown</Authors>
+    <Company>Refactor Software</Company>
+    <Description>Binner common model library</Description>
+    <PackageProjectUrl>https://github.com/replaysMike/Binner.Model.Common</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/replaysMike/Binner.Model.Common</RepositoryUrl>
+    <PackageTags>binner model common refactor michael brown</PackageTags>
+    <PackageReleaseNotes>Binner common model library</PackageReleaseNotes>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageIcon>binner.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="binner.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TypeSupport" Version="1.2.0" />
+    <PackageReference Include="AnySerializer" Version="1.2.5" />
+  </ItemGroup>
+
+</Project>

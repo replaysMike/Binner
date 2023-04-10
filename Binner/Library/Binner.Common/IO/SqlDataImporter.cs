@@ -1,5 +1,4 @@
 ﻿using Binner.Common.Models;
-using Binner.Model;
 using Binner.Model.Common;
 using System;
 using System.Collections.Generic;
