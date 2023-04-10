@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.38</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win10-x64;linux-arm;linux-arm64;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
@@ -30,22 +29,6 @@
     <None Remove="Resources\**" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)'=='Debug' AND Exists('..\..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj')">
-    <ProjectReference Include="..\..\..\..\Binner.Model.Common\Binner.Model.Common\Binner.Model.Common.csproj" />
-    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql\Binner.StorageProvider.MySql.csproj" />
-    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql\Binner.StorageProvider.Postgresql.csproj" />
-    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite\Binner.StorageProvider.Sqlite.csproj" />
-    <ProjectReference Include="..\..\..\..\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer\Binner.StorageProvider.SqlServer.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)'!='Debug'">
-    <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
-    <PackageReference Include="Binner.StorageProvider.Sqlite" Version="$(LibraryVersion)" />
-    <PackageReference Include="Binner.StorageProvider.SqlServer" Version="$(LibraryVersion)" />
-    <PackageReference Include="Binner.StorageProvider.Postgresql" Version="$(LibraryVersion)" />
-    <PackageReference Include="Binner.StorageProvider.MySql" Version="$(LibraryVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
@@ -54,12 +37,12 @@
     <PackageReference Include="Binner.SwarmApi" Version="1.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Nexar.Client.Token" Version="0.1.1" />
     <PackageReference Include="NLog" Version="4.7.13" />
@@ -79,6 +62,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Data\Binner.Model.Common\Binner.Model.Common.csproj" />
+    <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Nexar.Client\Nexar.Client.csproj" />
   </ItemGroup>
 

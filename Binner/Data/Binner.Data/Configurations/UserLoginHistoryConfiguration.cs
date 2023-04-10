@@ -1,0 +1,21 @@
+﻿using Binner.Data.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Binner.Data.Configurations
+{
+    public class UserLoginHistoryConfiguration : IEntityTypeConfiguration<UserLoginHistory>
+    {
+        public void Configure(EntityTypeBuilder<UserLoginHistory> builder)
+        {
+            builder.HasOne(x => x.User)
+                .WithMany(x => x.UserLoginHistory)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(p => p.DateCreatedUtc)
+                .HasDefaultValueSql("getutcdate()");
+            builder.Property(p => p.Ip)
+                .HasDefaultValue(0);
+        }
+    }
+}
