@@ -174,7 +174,8 @@ bool PrintDbInfo()
         else
         {
             var factory = new StorageProviderFactory();
-            var storageProvider = factory.Create(storageConfig.Provider, storageConfig.ProviderConfiguration);
+            // todo: migrate
+            /*var storageProvider = factory.Create(storageConfig.Provider, storageConfig.ProviderConfiguration);
             var response = storageProvider.TestConnectionAsync().GetAwaiter().GetResult();
             PrintLabel("   Connection");
             if (response.IsSuccess)
@@ -192,7 +193,7 @@ bool PrintDbInfo()
                 Console.ForegroundColor = ConsoleColor.Gray;
                 foreach (var error in response.Errors) Console.WriteLine($"    - {error}");
                 Console.WriteLine();
-            }
+            }*/
         }
     }
 

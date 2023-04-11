@@ -60,6 +60,10 @@ namespace Binner.Data.Model
 
         public string? CustomDescription { get; set; }
 
+        public double Cost { get; set; }
+
+        public string? Currency { get; set; }
+
         /// <summary>
         /// Creation date
         /// </summary>

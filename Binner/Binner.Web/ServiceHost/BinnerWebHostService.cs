@@ -1,31 +1,32 @@
-﻿using Binner.Web.Configuration;
+﻿using Binner.Common;
+using Binner.Common.Configuration;
+using Binner.Common.Extensions;
+using Binner.Common.IO;
+using Binner.Model.Common;
 using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Web;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Binner.Common.StorageProviders;
+using Binner.Data;
+using Binner.Web.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Topshelf;
-using Topshelf.Runtime;
-using Binner.Common.IO;
-using System.Reflection;
-using Binner.Common.Configuration;
-using Binner.Common.Extensions;
-using NLog;
-using Microsoft.Extensions.Hosting;
-using NLog.Web;
-using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics;
-using Binner.Common;
-using TypeSupport.Extensions;
-using Binner.Model.Common;
-using NLog.Fluent;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Binner.Web.ServiceHost
 {
@@ -50,7 +51,6 @@ namespace Binner.Web.ServiceHost
 
         public bool Start(HostControl hostControl)
         {
-
             Task.Run(() => InitializeWebHostAsync()).ContinueWith(t =>
             {
                 if (t.Exception != null)
@@ -105,7 +105,26 @@ namespace Binner.Web.ServiceHost
             // use embedded certificate
             var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
             var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
-
+            
+            var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ?? throw new BinnerConfigurationException($"Configuration section '{nameof(StorageProviderConfiguration)}' does not exist!");
+            var migrationHostBuilder = HostBuilderFactory.Create(storageConfig);
+            var migrationHost = migrationHostBuilder.Build();
+            var context = migrationHost.Services.GetRequiredService<BinnerContext>();
+            var contextFactory = migrationHost.Services.GetRequiredService<IDbContextFactory<BinnerContext>>();
+            var migrationHandler = new MigrationHandler(_nlogLogger, storageConfig, contextFactory);
+            if (migrationHandler.TryDetectMigrateNeeded(out var db))
+            {
+                if (migrationHandler.MigrateDatabase(db))
+                {
+                    _nlogLogger.Info("Database was successfully migrated to Sqlite!");
+                }
+                else
+                {
+                    _nlogLogger.Error("Failed to migrate Binner Database!");
+                    return;
+                }
+            }
+            
             _nlogLogger.Info($"Building the WebHost on {ipAddress}:{_config.Port} ...");
             var host = Microsoft.AspNetCore.WebHost
             .CreateDefaultBuilder()

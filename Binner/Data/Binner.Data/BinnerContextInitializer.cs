@@ -11,7 +11,7 @@ namespace Binner.Data
         /// </summary>
         /// <param name="context">Database context</param>
         /// <param name="environment">Development environment</param>
-        /// <param name="passwordHasher">Password hasher for hasing passwords</param>
+        /// <param name="passwordHasher">Password hasher for hashing passwords</param>
         public static void Initialize(BinnerContext context, Environments environment, Func<string, string> passwordHasher)
         {
             if (environment == Environments.Development)
@@ -29,7 +29,6 @@ namespace Binner.Data
             {
                 // seed data
                 SeedSystemPartTypes(context);
-                SeedTestUsers(context, passwordHasher);
                 if (context.ChangeTracker.HasChanges())
                 {
                     context.SaveChanges();
@@ -41,22 +40,6 @@ namespace Binner.Data
                 transaction.Rollback();
                 throw;
             }
-        }
-
-        private static void SeedTestUsers(BinnerContext context, Func<string, string> passwordHasher)
-        {
-            var record = new Model.User
-            {
-                Name = "Default Account",
-                EmailAddress = "admin",
-                PhoneNumber = "555-555-1212",
-                PasswordHash = passwordHasher("admin"),
-                DateCreatedUtc = DateTime.Now,
-                DateModifiedUtc = DateTime.Now,
-                IsEmailConfirmed = true,
-                IsAdmin = true
-            };
-            context.Users.Add(record);
         }
 
         private static void SeedSystemPartTypes(BinnerContext context)

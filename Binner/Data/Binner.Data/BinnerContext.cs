@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Binner.Data.Model;
+using Binner.Model.Configuration;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using Binner.Data.Model;
 
 namespace Binner.Data
 {
@@ -86,9 +87,15 @@ namespace Binner.Data
         /// </summary>
         public DbSet<UserPrinterTemplateConfiguration> UserPrinterTemplateConfigurations { get; set; } = null!;
 
-        public BinnerContext() : base() { }
+        public BinnerContext()
+        {
 
-        public BinnerContext(DbContextOptions<BinnerContext> options) : base(options) { }
+        }
+
+        public BinnerContext(DbContextOptions<BinnerContext> options) : base(options)
+        {
+
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -104,8 +111,6 @@ namespace Binner.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                var connectionString = BinnerContextFactory.LoadConnectionString(nameof(BinnerContext));
-                optionsBuilder.UseSqlServer(connectionString);
             }
         }
     }

@@ -1,12 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.38</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>win10-x64;linux-arm;linux-arm64;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Library\Binner.Model\Binner.Model.csproj" />
     <ProjectReference Include="..\Binner.Data.Model\Binner.Data.Model.csproj" />
   </ItemGroup>
 
@@ -27,12 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </None>
+    <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
   </ItemGroup>
 
 </Project>
