@@ -1,5 +1,4 @@
-﻿using Binner.Model;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
@@ -29,7 +28,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// The type of file stored
         /// </summary>
-        public StoredFileType StoredFileType { get; set; } = StoredFileType.Other;
+        public Binner.Model.Common.StoredFileType StoredFileType { get; set; } = Binner.Model.Common.StoredFileType.Other;
 
         /// <summary>
         /// The associated part

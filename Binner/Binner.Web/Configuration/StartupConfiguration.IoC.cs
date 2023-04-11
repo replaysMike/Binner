@@ -1,17 +1,15 @@
-﻿using ApiClient.OAuth2;
+﻿using AutoMapper.Internal;
 using Binner.Common;
 using Binner.Common.Configuration;
 using Binner.Common.Integrations;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Common.StorageProviders;
-using Binner.Model.Common;
 using Binner.Web.ServiceHost;
-using Binner.Web.WebHost;
 using LightInject;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Binner.Model.Common;
 
 namespace Binner.Web.Configuration
 {
@@ -39,12 +37,18 @@ namespace Binner.Web.Configuration
             RegisterMappingProfiles(container);
 
             // register storage provider
-            // we are doing it this way because RegisterSingleton swallows the exception, we would like to shutdown the server if there is a configuration problem
+            var storageProviderConfig = container.GetInstance<StorageProviderConfiguration>();
             container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
             var providerFactory = container.GetInstance<IStorageProviderFactory>();
-            var storageProviderConfig = container.GetInstance<StorageProviderConfiguration>();
-            var storageProvider = providerFactory.Create(storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
-            container.RegisterInstance(storageProvider);
+
+            // register db context
+            HostBuilderFactory.RegisterDbContext(services, storageProviderConfig);
+
+            container.RegisterSingleton<IStorageProvider>((factory) =>
+            {
+                var storageProvider = providerFactory.Create(container, storageProviderConfig.ProviderConfiguration);
+                return storageProvider;
+            });
 
             // register the font manager
             container.Register<FontManager>(new PerContainerLifetime());
@@ -66,6 +70,8 @@ namespace Binner.Web.Configuration
             // register automapper
             var config = new AutoMapper.MapperConfiguration(cfg =>
             {
+                // see: https://github.com/AutoMapper/AutoMapper/issues/3988
+                cfg.Internal().MethodMappingEnabled = false; 
                 cfg.AddMaps(Assembly.Load("Binner.Common"));
             });
             config.AssertConfigurationIsValid();

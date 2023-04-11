@@ -1,5 +1,4 @@
 ﻿using Binner.Model.Common;
-using System;
 using System.Collections.Generic;
 
 namespace Binner.Common.StorageProviders
@@ -9,9 +8,9 @@ namespace Binner.Common.StorageProviders
         /// <summary>
         /// Create an instance of IStorageProvider
         /// </summary>
-        /// <param name="providerName">The registered provider name</param>
+        /// <param name="container">The service container</param>
         /// <param name="config">Configuration to pass to the storage provider</param>
         /// <returns></returns>
-        IStorageProvider Create(string providerName, IDictionary<string, string> config);
+        IStorageProvider Create(LightInject.IServiceContainer container, IDictionary<string, string> config);
     }
 }

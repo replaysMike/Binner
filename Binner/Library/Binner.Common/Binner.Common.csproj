@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.38</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win10-x64;linux-arm;linux-arm64;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
@@ -35,6 +36,7 @@
     <PackageReference Include="AnySerializer" Version="1.2.5" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
     <PackageReference Include="Binner.SwarmApi" Version="1.0.5" />
+    <PackageReference Include="LightInject" Version="6.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.1" />
@@ -43,6 +45,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Nexar.Client.Token" Version="0.1.1" />
     <PackageReference Include="NLog" Version="4.7.13" />
@@ -55,6 +58,7 @@
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
     <PackageReference Include="TypeSupport" Version="1.2.0" />
+    <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,7 +66,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Data\Binner.Model.Common\Binner.Model.Common.csproj" />
+    <ProjectReference Include="..\..\Data\Binner.Data\Binner.Data.csproj" />
+    <!--<ProjectReference Include="..\..\Data\Binner.Model.Common\Binner.Model.Common.csproj" />-->
     <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Nexar.Client\Nexar.Client.csproj" />
   </ItemGroup>

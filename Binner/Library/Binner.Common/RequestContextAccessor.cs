@@ -54,7 +54,14 @@ namespace Binner.Common
                     PhoneNumber = context.User.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault()
                 };
             }
-            return null;
+            // todo: migrate
+            return new UserContext
+            {
+                UserId = 1,
+                Name = "Admin",
+                EmailAddress = "admin"
+            };
+            //return null;
         }
 
         /// <summary>

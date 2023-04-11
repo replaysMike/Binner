@@ -23,10 +23,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Library\Binner.Common\Binner.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
@@ -36,6 +32,11 @@
     <PackageReference Include="NLog" Version="4.7.13" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
     <PackageReference Include="Topshelf" Version="4.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -87,6 +88,14 @@
     <None Include="appsettings.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Data\Binner.Data.Migrations.MySql\Binner.Data.Migrations.MySql.csproj" />
+    <ProjectReference Include="..\Data\Binner.Data.Migrations.Postgresql\Binner.Data.Migrations.Postgresql.csproj" />
+    <ProjectReference Include="..\Data\Binner.Data.Migrations.Sqlite\Binner.Data.Migrations.Sqlite.csproj" />
+    <ProjectReference Include="..\Data\Binner.Data.Migrations.SqlServer\Binner.Data.Migrations.SqlServer.csproj" />
+    <ProjectReference Include="..\Library\Binner.Common\Binner.Common.csproj" />
   </ItemGroup>
 
   <Target Name="RenameAppsettings" BeforeTargets="Publish">

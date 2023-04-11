@@ -1,22 +1,26 @@
-﻿using Binner.Data;
+﻿using AutoMapper;
+using Binner.Data;
+using Binner.Model.Common;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Binner.Model;
 using TypeSupport.Extensions;
+using static Azure.Core.HttpHeader;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.StorageProvider.EntityFrameworkCore
 {
-    public class EntityFrameworkStorageProvider
+    public class EntityFrameworkStorageProvider : IStorageProvider
     {
         public const string ProviderName = "EntityFramework";
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IDictionary<string, string> _config;
+        private readonly IMapper _mapper;
 
-        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IDictionary<string, string> config)
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IDictionary<string, string> config)
         {
             _contextFactory = contextFactory;
+            _mapper = mapper;
             _config = config;
         }
 
@@ -79,7 +83,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             return true;
         }
 
-        public async Task<ICollection<Model.SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext? userContext)
+        public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext? userContext)
         {
             // todo: this search is inefficient in EF but don't know how to convert it yet
             var query =
@@ -139,11 +143,11 @@ INNER JOIN (
             var userId = userContext.UserId;
             var result = await context.Parts.FromSqlRaw(query, new SqlParameter("Keywords", keywords), new SqlParameter("UserId", userId))
                 .ToListAsync();
-            return result.Select(x => new Model.SearchResult<Part>(Map(x, userContext), 0)).ToList();
+            return result.Select(x => new SearchResult<Part>(Map(x, userContext), 0)).ToList();
         }
 
         // todo: migrate
-        /*public async Task<IBinnerDb> GetDatabaseAsync(IUserContext? userContext)
+        public async Task<IBinnerDb> GetDatabaseAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var parts = await GetPartsAsync(userContext);
@@ -157,7 +161,73 @@ INNER JOIN (
                 FirstPartId = parts.OrderBy(x => x.PartId).First().PartId,
                 LastPartId = parts.OrderBy(x => x.PartId).Last().PartId,
             };
-        }*/
+        }
+
+        public async Task<ConnectionResponse> TestConnectionAsync()
+        {
+            try
+            {
+                using var context = await _contextFactory.CreateDbContextAsync();
+                var entity = await context.PartTypes.FirstOrDefaultAsync();
+                if (entity != null)
+                    return new ConnectionResponse { IsSuccess = true, DatabaseExists = true, Errors = new List<string>() };
+            }
+            catch (Exception ex)
+            {
+                return new ConnectionResponse { IsSuccess = false, Errors = new List<string>() { ex.GetBaseException().Message } };
+            }
+
+            return new ConnectionResponse { IsSuccess = false, Errors = new List<string>() { "No data returned! "} };
+        }
+
+        public async Task<OAuthAuthorization> CreateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            var entity = new DataModel.OAuthRequest
+            {
+                AuthorizationCode = authRequest.AuthorizationCode,
+                AuthorizationReceived = authRequest.AuthorizationReceived,
+                Error = authRequest.Error,
+                ErrorDescription = authRequest.ErrorDescription,
+                Provider = authRequest.Provider,
+                RequestId = authRequest.Id,
+                ReturnToUrl = authRequest.ReturnToUrl,
+                UserId = userContext.UserId,
+                DateCreatedUtc = DateTime.UtcNow,
+                DateModifiedUtc = DateTime.UtcNow
+            };
+            using var context = await _contextFactory.CreateDbContextAsync();
+            context.OAuthRequests.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<OAuthAuthorization>(entity);
+        }
+
+        public async Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.OAuthRequests
+                .FirstOrDefaultAsync(x => x.Provider == authRequest.Provider && x.UserId == userContext.UserId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(authRequest, entity);
+                entity.DateModifiedUtc = DateTime.UtcNow;
+                entity.UserId = userContext.UserId;
+                await context.SaveChangesAsync();
+                return _mapper.Map<OAuthAuthorization>(entity);
+            }
+            return null;
+        }
+
+        public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.OAuthRequests
+                .Where(x => x.RequestId == requestId && x.UserId == userContext.UserId)
+                .FirstOrDefaultAsync();
+            return _mapper.Map<OAuthAuthorization>(entity);
+        }
 
         private async Task<ICollection<Part>> GetPartsAsync(IUserContext userContext)
         {
@@ -189,7 +259,7 @@ INNER JOIN (
             return result;
         }
 
-        public async Task<Model.Responses.PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext? userContext)
+        public async Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
@@ -203,7 +273,368 @@ INNER JOIN (
                 .Select(x => Map(x, userContext))
                 .ToListAsync();
             // map entities to parts
-            return new Model.Responses.PaginatedResponse<Part>(totalItems, request.Results, request.Page, parts);
+            return new PaginatedResponse<Part>(totalItems, request.Results, request.Page, parts);
+        }
+
+        public async Task<StoredFile> AddStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            var entity = _mapper.Map<DataModel.StoredFile>(storedFile);
+            entity.UserId = userContext.UserId;
+            using var context = await _contextFactory.CreateDbContextAsync();
+            context.StoredFiles.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<StoredFile>(entity);
+        }
+
+        public async Task<StoredFile?> GetStoredFileAsync(long storedFileId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.StoredFiles
+                .FirstOrDefaultAsync(x => x.StoredFileId == storedFileId && x.UserId == userContext.UserId);
+            return _mapper.Map<StoredFile?>(entity);
+        }
+
+        public async Task<StoredFile?> GetStoredFileAsync(string filename, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.StoredFiles
+                .FirstOrDefaultAsync(x => x.FileName == filename && x.UserId == userContext.UserId);
+            return _mapper.Map<StoredFile?>(entity);
+        }
+
+        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(long partId, StoredFileType? fileType, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.StoredFiles
+                .Where(x => x.PartId == partId && x.StoredFileType == fileType && x.UserId == userContext.UserId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<StoredFile>>(entities);
+        }
+
+        public async Task<ICollection<StoredFile>> GetStoredFilesAsync(PaginatedRequest request, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
+            var entities = await context.StoredFiles
+                //.OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "ProjectPartAssignmentId" : request.OrderBy, request.Direction) // todo: ordering
+                .Skip(pageRecords)
+                .Take(request.Results)
+                .ToListAsync();
+            return _mapper.Map<ICollection<StoredFile>>(entities);
+        }
+
+        public async Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.StoredFiles
+                .FirstOrDefaultAsync(x => x.StoredFileId == storedFile.StoredFileId && x.UserId == userContext.UserId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(storedFile, entity);
+                entity.DateModifiedUtc = DateTime.UtcNow;
+                entity.UserId = userContext.UserId;
+                await context.SaveChangesAsync();
+                return _mapper.Map<StoredFile>(entity);
+            }
+            return null;
+        }
+
+        public async Task<bool> DeleteStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = context.StoredFiles.FirstOrDefault(x => x.StoredFileId == storedFile.StoredFileId && x.UserId == userContext.UserId);
+            if (entity == null)
+                return false;
+            context.StoredFiles.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<Pcb?> GetPcbAsync(long pcbId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Pcbs
+                .FirstOrDefaultAsync(x => x.PcbId == pcbId && x.UserId == userContext.UserId);
+            return _mapper.Map<Pcb?>(entity);
+        }
+
+        public async Task<ICollection<Pcb>> GetPcbsAsync(long projectId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.ProjectPcbAssignments
+                .Include(x => x.Pcb)
+                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
+                .Select(x => x.Pcb)
+                .ToListAsync();
+            return _mapper.Map<ICollection<Pcb>>(entities);
+        }
+
+        public async Task<Pcb> AddPcbAsync(Pcb pcb, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            var entity = _mapper.Map<DataModel.Pcb>(pcb);
+            entity.UserId = userContext.UserId;
+            using var context = await _contextFactory.CreateDbContextAsync();
+            context.Pcbs.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<Pcb>(entity);
+        }
+
+        public async Task<Pcb> UpdatePcbAsync(Pcb pcb, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Pcbs
+                .FirstOrDefaultAsync(x => x.PcbId == pcb.PcbId && x.UserId == userContext.UserId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(pcb, entity);
+                entity.DateModifiedUtc = DateTime.UtcNow;
+                entity.UserId = userContext.UserId;
+                await context.SaveChangesAsync();
+                return _mapper.Map<Pcb>(entity);
+            }
+            return null;
+        }
+
+        public async Task<bool> DeletePcbAsync(Pcb pcb, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = context.Pcbs.FirstOrDefault(x => x.PcbId == pcb.PcbId && x.UserId == userContext.UserId);
+            if (entity == null)
+                return false;
+            context.Pcbs.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<PcbStoredFileAssignment?> GetPcbStoredFileAssignmentAsync(long pcbStoredFileAssignmentId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PcbStoredFileAssignments
+                .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == pcbStoredFileAssignmentId && x.UserId == userContext.UserId);
+            return _mapper.Map<PcbStoredFileAssignment?>(entity);
+        }
+
+        public async Task<ICollection<PcbStoredFileAssignment>> GetPcbStoredFileAssignmentsAsync(long pcbId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.PcbStoredFileAssignments
+                .Where(x => x.PcbId == pcbId && x.UserId == userContext.UserId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<PcbStoredFileAssignment>>(entities);
+        }
+
+        public async Task<PcbStoredFileAssignment> AddPcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            var entity = _mapper.Map<DataModel.PcbStoredFileAssignment>(assignment);
+            entity.UserId = userContext.UserId;
+            using var context = await _contextFactory.CreateDbContextAsync();
+            context.PcbStoredFileAssignments.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<PcbStoredFileAssignment>(entity);
+        }
+
+        public async Task<PcbStoredFileAssignment> UpdatePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PcbStoredFileAssignments
+                .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.UserId == userContext.UserId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(assignment, entity);
+                entity.DateModifiedUtc = DateTime.UtcNow;
+                entity.UserId = userContext.UserId;
+                await context.SaveChangesAsync();
+                return _mapper.Map<PcbStoredFileAssignment>(entity);
+            }
+            return null;
+        }
+
+        public async Task<bool> RemovePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = context.PcbStoredFileAssignments.FirstOrDefault(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.UserId == userContext.UserId);
+            if (entity == null)
+                return false;
+            context.PcbStoredFileAssignments.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<ICollection<ProjectPartAssignment>> GetPartAssignmentsAsync(long partId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.ProjectPartAssignments
+                .Where(x => x.PartId == partId && x.UserId == userContext.UserId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<ProjectPartAssignment>>(entities);
+        }
+
+        public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectPartAssignmentId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectPartAssignments
+                .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == projectPartAssignmentId && x.UserId == userContext.UserId);
+            return _mapper.Map<ProjectPartAssignment?>(entity);
+        }
+
+        public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectId, long partId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectPartAssignments
+                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartId == partId && x.UserId == userContext.UserId);
+            return _mapper.Map<ProjectPartAssignment?>(entity);
+        }
+
+        public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectId, string partName, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectPartAssignments
+                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartName == partName && x.UserId == userContext.UserId);
+            return _mapper.Map<ProjectPartAssignment?>(entity);
+        }
+
+        public async Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(long projectId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.ProjectPartAssignments
+                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<ProjectPartAssignment>>(entities);
+        }
+
+        public async Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(long projectId, PaginatedRequest request, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
+            var entities = await context.ProjectPartAssignments
+                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
+                //.OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "ProjectPartAssignmentId" : request.OrderBy, request.Direction) // todo: ordering
+                .Skip(pageRecords)
+                .Take(request.Results)
+                .ToListAsync();
+            return _mapper.Map<ICollection<ProjectPartAssignment>>(entities);
+        }
+
+        public async Task<ProjectPartAssignment> AddProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            var entity = _mapper.Map<DataModel.ProjectPartAssignment>(assignment);
+            entity.UserId = userContext.UserId;
+            using var context = await _contextFactory.CreateDbContextAsync();
+            context.ProjectPartAssignments.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<ProjectPartAssignment>(entity);
+        }
+
+        public async Task<ProjectPartAssignment> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectPartAssignments
+                .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.UserId == userContext.UserId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(assignment, entity);
+                entity.DateModifiedUtc = DateTime.UtcNow;
+                entity.UserId = userContext.UserId;
+                await context.SaveChangesAsync();
+                return _mapper.Map<ProjectPartAssignment>(entity);
+            }
+            return null;
+        }
+
+        public async Task<bool> RemoveProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = context.ProjectPartAssignments.FirstOrDefault(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.UserId == userContext.UserId);
+            if (entity == null)
+                return false;
+            context.ProjectPartAssignments.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<ProjectPcbAssignment?> GetProjectPcbAssignmentAsync(long projectPcbAssignmentId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectPcbAssignments
+                .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == projectPcbAssignmentId && x.UserId == userContext.UserId);
+            return _mapper.Map<ProjectPcbAssignment?>(entity);
+        }
+
+        public async Task<ICollection<ProjectPcbAssignment>> GetProjectPcbAssignmentsAsync(long projectId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.ProjectPcbAssignments
+                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<ProjectPcbAssignment>>(entities);
+        }
+
+        public async Task<ProjectPcbAssignment> AddProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            var entity = _mapper.Map<DataModel.ProjectPcbAssignment>(assignment);
+            entity.UserId = userContext.UserId;
+            using var context = await _contextFactory.CreateDbContextAsync();
+            context.ProjectPcbAssignments.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<ProjectPcbAssignment>(entity);
+        }
+
+        public async Task<ProjectPcbAssignment> UpdateProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectPcbAssignments
+                .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.UserId == userContext.UserId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(assignment, entity);
+                entity.DateModifiedUtc = DateTime.UtcNow;
+                entity.UserId = userContext.UserId;
+                await context.SaveChangesAsync();
+                return _mapper.Map<ProjectPcbAssignment>(entity);
+            }
+            return null;
+        }
+
+        public async Task<bool> RemoveProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = context.ProjectPcbAssignments.FirstOrDefault(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.UserId == userContext.UserId);
+            if (entity == null)
+                return false;
+            context.ProjectPcbAssignments.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName, IUserContext? userContext)
@@ -261,7 +692,7 @@ INNER JOIN (
             return Map(entity, userContext);
         }
 
-        public async Task<Model.Responses.PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
+        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             if (request == null) throw new ArgumentNullException(nameof(request));
@@ -276,7 +707,7 @@ INNER JOIN (
                 .Take(request.Results)
                 .Select(entity => Map(entity, userContext))
                 .ToListAsync();
-            return new Model.Responses.PaginatedResponse<Part>(parts.Count, pageRecords, request.Page, parts);
+            return new PaginatedResponse<Part>(parts.Count, pageRecords, request.Page, parts);
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext? userContext)
@@ -349,9 +780,9 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Parts
+            return (decimal)await context.Parts
                 .Where(x => x.UserId == userContext.UserId)
-                .SumAsync(x => (decimal)(x.Cost * x.Quantity));
+                .SumAsync(x => x.Cost * x.Quantity);
         }
 
         public async Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext? userContext)
@@ -577,7 +1008,8 @@ INNER JOIN (
                 ImageUrl = entity.ImageUrl,
                 MinimumOrderQuantity = entity.MinimumOrderQuantity,
                 Name = entity.Name,
-                Part = Map(entity.Part, userContext),
+                // todo: migrate
+                // Part = Map(entity.Part, userContext),
                 PartId = entity.PartId,
                 PartSupplierId = entity.PartSupplierId,
                 ProductUrl = entity.ProductUrl,
@@ -627,7 +1059,8 @@ INNER JOIN (
             {
                 BinNumber = entity.BinNumber,
                 BinNumber2 = entity.BinNumber2,
-                Cost = entity.Cost,
+                Cost = (decimal)entity.Cost,
+                Currency = entity.Currency,
                 DatasheetUrl = entity.DatasheetUrl,
                 DateCreatedUtc = entity.DateCreatedUtc,
                 Description = entity.Description,
@@ -650,7 +1083,8 @@ INNER JOIN (
                 ProductUrl = entity.ProductUrl,
                 ProjectId = entity.ProjectId,
                 Quantity = entity.Quantity,
-                SwarmPartNumberManufacturerId = entity.SwarmPartNumberManufacturerId,
+                // todo: migrate
+                //SwarmPartNumberManufacturerId = entity.SwarmPartNumberManufacturerId,
                 UserId = entity.UserId,
             } : new Part();
 
@@ -659,7 +1093,8 @@ INNER JOIN (
             {
                 BinNumber = model.BinNumber,
                 BinNumber2 = model.BinNumber2,
-                Cost = model.Cost,
+                Cost = (double)model.Cost,
+                Currency = model.Currency,
                 DatasheetUrl = model.DatasheetUrl,
                 DateCreatedUtc = model.DateCreatedUtc,
                 Description = model.Description,
@@ -682,7 +1117,8 @@ INNER JOIN (
                 ProductUrl = model.ProductUrl,
                 ProjectId = model.ProjectId,
                 Quantity = model.Quantity,
-                SwarmPartNumberManufacturerId = model.SwarmPartNumberManufacturerId,
+                // todo: migrate
+                //SwarmPartNumberManufacturerId = model.SwarmPartNumberManufacturerId,
                 UserId = userContext.UserId,
             };
 
@@ -690,7 +1126,8 @@ INNER JOIN (
         {
             entity.BinNumber = model.BinNumber;
             entity.BinNumber2 = model.BinNumber2;
-            entity.Cost = model.Cost;
+            entity.Cost = (double)model.Cost;
+            entity.Currency = model.Currency;
             entity.DatasheetUrl = model.DatasheetUrl;
             entity.DateCreatedUtc = model.DateCreatedUtc;
             entity.Description = model.Description;
@@ -713,7 +1150,8 @@ INNER JOIN (
             entity.ProductUrl = model.ProductUrl;
             entity.ProjectId = model.ProjectId;
             entity.Quantity = model.Quantity;
-            entity.SwarmPartNumberManufacturerId = model.SwarmPartNumberManufacturerId;
+            // todo: migrate
+            //entity.SwarmPartNumberManufacturerId = model.SwarmPartNumberManufacturerId;
             entity.UserId = userContext.UserId;
             return entity;
         }
@@ -727,8 +1165,9 @@ INNER JOIN (
                 DateModifiedUtc = DateTime.UtcNow,
                 Description = model.Description,
                 Location = model.Location,
+                Notes = model.Notes,
                 Name = model.Name,
-                UserId = userContext.UserId
+                UserId = userContext.UserId,
             };
 
         private static Project Map(DataModel.Project entity, IUserContext userContext)
@@ -739,6 +1178,7 @@ INNER JOIN (
                 DateCreatedUtc = entity.DateCreatedUtc,
                 Description = entity.Description,
                 Location = entity.Location,
+                Notes = entity.Notes,
                 Name = entity.Name,
                 UserId = entity.UserId
             };
@@ -752,6 +1192,7 @@ INNER JOIN (
             entity.Color = model.Color;
             entity.Description = model.Description;
             entity.Location = model.Location;
+            entity.Notes = model.Notes;
             return entity;
         }
 

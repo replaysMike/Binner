@@ -37,6 +37,11 @@ namespace Binner.Data.Model
         public double Cost { get; set; }
 
         /// <summary>
+        /// Currency of part cost
+        /// </summary>
+        public string? Currency { get; set; }
+
+        /// <summary>
         /// The main part number
         /// </summary>
         [MaxLength(64)]
