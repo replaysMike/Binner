@@ -37,5 +37,8 @@ dotnet ef --startup-project ..\..\Binner.Web\Binner.Web.csproj migrations bundle
 *Run on the server*
 Run the `efbundle.exe --connection "(connection string here)" --verbose --force` package on the server. Ensure that a configured `appsettings.json` is provided so it knows the connection string to use.
 
-[EF Core Migrations](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli)
-[EF Core Migration Bundles](https://devblogs.microsoft.com/dotnet/introducing-devops-friendly-ef-core-migration-bundles/)
+* [EF Core Migrations](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli)
+* [EF Core Migration Bundles](https://devblogs.microsoft.com/dotnet/introducing-devops-friendly-ef-core-migration-bundles/)
+* [Using one context with multiple providers](https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli)
+* [Two & Three project setups for multiple migration projects](https://github.com/dotnet/EntityFramework.Docs/tree/main/samples/core/Schemas)
+

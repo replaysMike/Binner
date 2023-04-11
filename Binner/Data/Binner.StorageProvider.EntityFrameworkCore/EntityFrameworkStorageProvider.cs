@@ -5,7 +5,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TypeSupport.Extensions;
-using static Azure.Core.HttpHeader;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.StorageProvider.EntityFrameworkCore
@@ -28,7 +27,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = Map(part, userContext);
+            var entity = _mapper.Map<DataModel.Part>(part);
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
             part.PartId = entity.PartId;
@@ -39,7 +38,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = Map(project, userContext);
+            var entity = _mapper.Map<DataModel.Project>(project);
             context.Projects.Add(entity);
             await context.SaveChangesAsync();
             project.ProjectId = entity.ProjectId;
@@ -85,6 +84,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
 
         public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords, IUserContext? userContext)
         {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             // todo: this search is inefficient in EF but don't know how to convert it yet
             var query =
 $@"WITH PartsExactMatch (PartId, Rank) AS
@@ -140,26 +140,25 @@ INNER JOIN (
 ) pm ON pm.PartId = p.PartId ORDER BY pm.Rank ASC;
 ;";
             using var context = await _contextFactory.CreateDbContextAsync();
-            var userId = userContext.UserId;
-            var result = await context.Parts.FromSqlRaw(query, new SqlParameter("Keywords", keywords), new SqlParameter("UserId", userId))
+            var entities = await context.Parts.FromSqlRaw(query, new SqlParameter("Keywords", keywords), new SqlParameter("UserId", userContext.UserId))
                 .ToListAsync();
-            return result.Select(x => new SearchResult<Part>(Map(x, userContext), 0)).ToList();
+            return entities.Select(x => new SearchResult<Part>(_mapper.Map<Part>(x), 0)).ToList();
         }
 
         // todo: migrate
         public async Task<IBinnerDb> GetDatabaseAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            var parts = await GetPartsAsync(userContext);
+            var entities = await GetPartsAsync(userContext);
             return new Binner.Model.Common.BinnerDbV7
             {
                 OAuthCredentials = await GetOAuthCredentialAsync(userContext),
-                Parts = parts,
+                Parts = entities,
                 PartTypes = await GetPartTypesAsync(userContext),
                 Projects = await GetProjectsAsync(userContext),
-                Count = parts.Count,
-                FirstPartId = parts.OrderBy(x => x.PartId).First().PartId,
-                LastPartId = parts.OrderBy(x => x.PartId).Last().PartId,
+                Count = entities.Count,
+                FirstPartId = entities.OrderBy(x => x.PartId).First().PartId,
+                LastPartId = entities.OrderBy(x => x.PartId).Last().PartId,
             };
         }
 
@@ -232,31 +231,28 @@ INNER JOIN (
         private async Task<ICollection<Part>> GetPartsAsync(IUserContext userContext)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            var result = await context.Parts
+            var entities = await context.Parts
                 .Where(x => x.UserId == userContext.UserId)
-                .Select(x => Map(x, userContext))
                 .ToListAsync();
-            return result;
+            return _mapper.Map<ICollection<Part>>(entities);
         }
 
         private async Task<ICollection<OAuthCredential>> GetOAuthCredentialAsync(IUserContext userContext)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            var result = await context.OAuthCredentials
+            var entities = await context.OAuthCredentials
                 .Where(x => x.UserId == userContext.UserId)
-                .Select(x => Map(x, userContext))
                 .ToListAsync();
-            return result;
+            return _mapper.Map<ICollection<OAuthCredential>>(entities);;
         }
 
         private async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            var result = await context.Projects
+            var entities = await context.Projects
                 .Where(x => x.UserId == userContext.UserId)
-                .Select(x => Map(x, userContext))
                 .ToListAsync();
-            return result;
+            return _mapper.Map<ICollection<Project>>(entities);
         }
 
         public async Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext? userContext)
@@ -265,15 +261,14 @@ INNER JOIN (
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
             var totalItems = await context.Parts.CountAsync(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext.UserId);
-            var parts = await context.Parts
+            var entities = await context.Parts
                 .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext.UserId)
                 //.OrderBy(request.OrderBy, request.Direction) // todo: ordering
                 .Skip(pageRecords)
                 .Take(request.Results)
-                .Select(x => Map(x, userContext))
                 .ToListAsync();
             // map entities to parts
-            return new PaginatedResponse<Part>(totalItems, request.Results, request.Page, parts);
+            return new PaginatedResponse<Part>(totalItems, request.Results, request.Page, _mapper.Map<ICollection<Part>>(entities));
         }
 
         public async Task<StoredFile> AddStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
@@ -646,7 +641,7 @@ INNER JOIN (
                 .FirstOrDefaultAsync();
             if (entity == null)
                 return null;
-            return Map(entity, userContext);
+            return _mapper.Map<OAuthCredential?>(entity);
         }
 
         public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext? userContext)
@@ -669,7 +664,7 @@ INNER JOIN (
                 context.PartTypes.Add(existingEntity);
                 await context.SaveChangesAsync();
             }
-            return Map(existingEntity, userContext);
+            return _mapper.Map<PartType>(existingEntity);
         }
 
         public async Task<Part?> GetPartAsync(long partId, IUserContext? userContext)
@@ -679,7 +674,7 @@ INNER JOIN (
             var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == partId && x.UserId == userContext.UserId);
             if (entity == null)
                 return null;
-            return Map(entity, userContext);
+            return _mapper.Map<Part?>(entity);
         }
 
         public async Task<Part?> GetPartAsync(string partNumber, IUserContext? userContext)
@@ -689,7 +684,7 @@ INNER JOIN (
             var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.UserId == userContext.UserId);
             if (entity == null)
                 return null;
-            return Map(entity, userContext);
+            return _mapper.Map<Part?>(entity);
         }
 
         public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
@@ -705,9 +700,8 @@ INNER JOIN (
                 // .OrderBy(request.OrderBy, request.Direction) // todo: ordering
                 .Skip(pageRecords)
                 .Take(request.Results)
-                .Select(entity => Map(entity, userContext))
                 .ToListAsync();
-            return new PaginatedResponse<Part>(parts.Count, pageRecords, request.Page, parts);
+            return new PaginatedResponse<Part>(parts.Count, pageRecords, request.Page, _mapper.Map<ICollection<Part>>(parts));
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext? userContext)
@@ -754,9 +748,7 @@ INNER JOIN (
                 .Where(newPredicate as Expression<Func<DataModel.Part, bool>>)
                 .ToListAsync();
 
-            return entities
-                .Select(x => Map(x, userContext))
-                .ToList();
+            return _mapper.Map<ICollection<Part>>(entities);
         }
 
         public async Task<long> GetPartsCountAsync(IUserContext? userContext)
@@ -793,7 +785,7 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PartTypeId == partTypeId && (x.UserId == userContext.UserId || x.UserId == null));
             if (entity == null)
                 return null;
-            return Map(entity, userContext);
+            return _mapper.Map<PartType?>(entity);
 
         }
 
@@ -807,7 +799,7 @@ INNER JOIN (
                 .ThenBy(x => x.ParentPartType.Name)
                 .ThenBy(x => x.Name)
                 .ToListAsync();
-            return entities.Select(x => Map(x, userContext)).ToList();
+            return _mapper.Map<ICollection<PartType>>(entities);
         }
 
         public async Task<Project?> GetProjectAsync(long projectId, IUserContext? userContext)
@@ -818,7 +810,7 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.UserId == userContext.UserId);
             if (entity == null)
                 return null;
-            return Map(entity, userContext);
+            return _mapper.Map<Project?>(entity);
         }
 
         public async Task<Project?> GetProjectAsync(string projectName, IUserContext? userContext)
@@ -829,7 +821,7 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.Name == projectName && x.UserId == userContext.UserId);
             if (entity == null)
                 return null;
-            return Map(entity, userContext);
+            return _mapper.Map<Project?>(entity);
         }
 
         public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext? userContext)
@@ -838,14 +830,14 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Projects
+            var entities = await context.Projects
                 .Where(x => x.UserId == userContext.UserId)
                 .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value)
                 // .OrderBy(request.OrderBy, request.Direction) // todo: ordering
                 .Skip(pageRecords)
                 .Take(request.Results)
-                .Select(entity => Map(entity, userContext))
                 .ToListAsync();
+            return _mapper.Map<ICollection<Project>>(entities);
         }
 
         public async Task RemoveOAuthCredentialAsync(string providerName, IUserContext? userContext)
@@ -878,11 +870,11 @@ INNER JOIN (
             else
             {
                 // insert
-                entity = Map(credential, userContext);
+                entity = _mapper.Map<DataModel.OAuthCredential>(credential);
                 context.OAuthCredentials.Add(entity);
             }
             await context.SaveChangesAsync();
-            return Map(entity, userContext);
+            return _mapper.Map<OAuthCredential?>(entity);
         }
 
         public async Task<Part> UpdatePartAsync(Part part, IUserContext? userContext)
@@ -893,10 +885,10 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PartId == part.PartId && x.UserId == userContext.UserId);
             if (entity != null)
             {
-                entity = Map(entity, part, userContext);
+                entity = _mapper.Map(part, entity);
                 entity.DateModifiedUtc = DateTime.UtcNow;
                 await context.SaveChangesAsync();
-                return Map(entity, userContext);
+                return _mapper.Map<Part>(entity);
             }
             return null;
         }
@@ -909,10 +901,10 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PartTypeId == partType.PartTypeId && x.UserId == userContext.UserId);
             if (entity != null)
             {
-                entity = Map(entity, partType, userContext);
+                entity = _mapper.Map(partType, entity);
                 entity.DateModifiedUtc = DateTime.UtcNow;
                 await context.SaveChangesAsync();
-                return Map(entity, userContext);
+                return _mapper.Map<PartType?>(entity);
             }
             return null;
         }
@@ -928,10 +920,10 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.UserId == userContext.UserId);
             if (entity != null)
             {
-                entity = Map(entity, project, userContext);
+                entity = _mapper.Map(project, entity);
                 entity.DateModifiedUtc = DateTime.UtcNow;
                 await context.SaveChangesAsync();
-                return Map(entity, userContext);
+                return _mapper.Map<Project?>(entity);
             }
             return null;
         }
@@ -940,7 +932,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = Map(partSupplier, userContext);
+            var entity = _mapper.Map<DataModel.PartSupplier?>(partSupplier);
             context.PartSuppliers.Add(entity);
             await context.SaveChangesAsync();
             partSupplier.PartSupplierId = entity.PartSupplierId;
@@ -953,9 +945,8 @@ INNER JOIN (
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartSuppliers
                 .Where(x => x.PartSupplierId == partSupplierId && x.UserId == userContext.UserId)
-                .Select(x => Map(x, userContext))
                 .FirstOrDefaultAsync();
-            return entity;
+            return _mapper.Map<PartSupplier?>(entity);
         }
 
         public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId, IUserContext? userContext)
@@ -965,9 +956,8 @@ INNER JOIN (
             var entities = await context.PartSuppliers
                 .Include(x => x.Part)
                 .Where(x => x.PartId == partId && x.UserId == userContext.UserId)
-                .Select(x => Map(x, userContext))
                 .ToListAsync();
-            return entities;
+            return _mapper.Map<ICollection<PartSupplier>>(entities);
         }
 
         public async Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
@@ -978,10 +968,10 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PartSupplierId == partSupplier.PartSupplierId && x.UserId == userContext.UserId);
             if (entity != null)
             {
-                entity = Map(entity, partSupplier, userContext);
+                entity = _mapper.Map(partSupplier, entity);
                 entity.DateModifiedUtc = DateTime.UtcNow;
                 await context.SaveChangesAsync();
-                return Map(entity, userContext);
+                return _mapper.Map<PartSupplier>(entity);
             }
             return null;
         }
@@ -997,258 +987,6 @@ INNER JOIN (
             await context.SaveChangesAsync();
             return true;
         }
-
-        private static PartSupplier Map(DataModel.PartSupplier entity, IUserContext userContext)
-        {
-            return new PartSupplier
-            {
-                Cost = entity.Cost,
-                DateCreatedUtc = entity.DateCreatedUtc,
-                DateModifiedUtc = entity.DateModifiedUtc,
-                ImageUrl = entity.ImageUrl,
-                MinimumOrderQuantity = entity.MinimumOrderQuantity,
-                Name = entity.Name,
-                // todo: migrate
-                // Part = Map(entity.Part, userContext),
-                PartId = entity.PartId,
-                PartSupplierId = entity.PartSupplierId,
-                ProductUrl = entity.ProductUrl,
-                QuantityAvailable = entity.QuantityAvailable,
-                SupplierPartNumber = entity.SupplierPartNumber
-            };
-        }
-
-        private static DataModel.PartSupplier Map(PartSupplier model, IUserContext userContext)
-        {
-            return new DataModel.PartSupplier
-            {
-                Cost = model.Cost,
-                DateCreatedUtc = model.DateCreatedUtc,
-                DateModifiedUtc = DateTime.UtcNow,
-                ImageUrl = model.ImageUrl,
-                MinimumOrderQuantity = model.MinimumOrderQuantity,
-                Name = model.Name,
-                PartId = model.PartId,
-                PartSupplierId = model.PartSupplierId,
-                ProductUrl = model.ProductUrl,
-                QuantityAvailable = model.QuantityAvailable,
-                SupplierPartNumber = model.SupplierPartNumber,
-                UserId = userContext.UserId
-            };
-        }
-
-        private static DataModel.PartSupplier Map(DataModel.PartSupplier entity, PartSupplier model, IUserContext userContext)
-        {
-            entity.Cost = model.Cost;
-            entity.DateCreatedUtc = model.DateCreatedUtc;
-            entity.DateModifiedUtc = DateTime.UtcNow;
-            entity.ImageUrl = model.ImageUrl;
-            entity.MinimumOrderQuantity = model.MinimumOrderQuantity;
-            entity.Name = model.Name;
-            entity.PartId = model.PartId;
-            entity.PartSupplierId = model.PartSupplierId;
-            entity.ProductUrl = model.ProductUrl;
-            entity.QuantityAvailable = model.QuantityAvailable;
-            entity.SupplierPartNumber = model.SupplierPartNumber;
-            entity.UserId = userContext.UserId;
-            return entity;
-        }
-
-        private static Part Map(DataModel.Part? entity, IUserContext userContext)
-            => entity != null ? new Part
-            {
-                BinNumber = entity.BinNumber,
-                BinNumber2 = entity.BinNumber2,
-                Cost = (decimal)entity.Cost,
-                Currency = entity.Currency,
-                DatasheetUrl = entity.DatasheetUrl,
-                DateCreatedUtc = entity.DateCreatedUtc,
-                Description = entity.Description,
-                DigiKeyPartNumber = entity.DigiKeyPartNumber,
-                ImageUrl = entity.ImageUrl,
-                Keywords = entity?.Keywords.Split(",").ToList() ?? new List<string>(),
-                Location = entity.Location,
-                LowestCostSupplier = entity.LowestCostSupplier,
-                LowestCostSupplierUrl = entity.LowestCostSupplierUrl,
-                LowStockThreshold = entity.LowStockThreshold,
-                Manufacturer = entity.Manufacturer,
-                ManufacturerPartNumber = entity.ManufacturerPartNumber,
-                MountingTypeId = entity.MountingTypeId,
-                MouserPartNumber = entity.MouserPartNumber,
-                ArrowPartNumber = entity.ArrowPartNumber,
-                PackageType = entity.PackageType,
-                PartId = entity.PartId,
-                PartNumber = entity.PartNumber,
-                PartTypeId = entity.PartTypeId,
-                ProductUrl = entity.ProductUrl,
-                ProjectId = entity.ProjectId,
-                Quantity = entity.Quantity,
-                // todo: migrate
-                //SwarmPartNumberManufacturerId = entity.SwarmPartNumberManufacturerId,
-                UserId = entity.UserId,
-            } : new Part();
-
-        private static DataModel.Part Map(Part model, IUserContext userContext)
-            => new DataModel.Part
-            {
-                BinNumber = model.BinNumber,
-                BinNumber2 = model.BinNumber2,
-                Cost = (double)model.Cost,
-                Currency = model.Currency,
-                DatasheetUrl = model.DatasheetUrl,
-                DateCreatedUtc = model.DateCreatedUtc,
-                Description = model.Description,
-                DigiKeyPartNumber = model.DigiKeyPartNumber,
-                ImageUrl = model.ImageUrl,
-                Keywords = model.Keywords != null ? string.Join(",", model.Keywords) : string.Empty,
-                Location = model.Location,
-                LowestCostSupplier = model.LowestCostSupplier,
-                LowestCostSupplierUrl = model.LowestCostSupplierUrl,
-                LowStockThreshold = model.LowStockThreshold,
-                Manufacturer = model.Manufacturer,
-                ManufacturerPartNumber = model.ManufacturerPartNumber,
-                MountingTypeId = model.MountingTypeId,
-                MouserPartNumber = model.MouserPartNumber,
-                ArrowPartNumber = model.ArrowPartNumber,
-                PackageType = model.PackageType,
-                PartId = model.PartId,
-                PartNumber = model.PartNumber,
-                PartTypeId = model.PartTypeId,
-                ProductUrl = model.ProductUrl,
-                ProjectId = model.ProjectId,
-                Quantity = model.Quantity,
-                // todo: migrate
-                //SwarmPartNumberManufacturerId = model.SwarmPartNumberManufacturerId,
-                UserId = userContext.UserId,
-            };
-
-        private static DataModel.Part Map(DataModel.Part entity, Part model, IUserContext userContext)
-        {
-            entity.BinNumber = model.BinNumber;
-            entity.BinNumber2 = model.BinNumber2;
-            entity.Cost = (double)model.Cost;
-            entity.Currency = model.Currency;
-            entity.DatasheetUrl = model.DatasheetUrl;
-            entity.DateCreatedUtc = model.DateCreatedUtc;
-            entity.Description = model.Description;
-            entity.DigiKeyPartNumber = model.DigiKeyPartNumber;
-            entity.ImageUrl = model.ImageUrl;
-            entity.Keywords = model.Keywords != null ? string.Join(",", model.Keywords) : string.Empty;
-            entity.Location = model.Location;
-            entity.LowestCostSupplier = model.LowestCostSupplier;
-            entity.LowestCostSupplierUrl = model.LowestCostSupplierUrl;
-            entity.LowStockThreshold = model.LowStockThreshold;
-            entity.Manufacturer = model.Manufacturer;
-            entity.ManufacturerPartNumber = model.ManufacturerPartNumber;
-            entity.MountingTypeId = model.MountingTypeId;
-            entity.MouserPartNumber = model.MouserPartNumber;
-            entity.ArrowPartNumber = model.ArrowPartNumber;
-            entity.PackageType = model.PackageType;
-            entity.PartId = model.PartId;
-            entity.PartNumber = model.PartNumber;
-            entity.PartTypeId = model.PartTypeId;
-            entity.ProductUrl = model.ProductUrl;
-            entity.ProjectId = model.ProjectId;
-            entity.Quantity = model.Quantity;
-            // todo: migrate
-            //entity.SwarmPartNumberManufacturerId = model.SwarmPartNumberManufacturerId;
-            entity.UserId = userContext.UserId;
-            return entity;
-        }
-
-
-        private static DataModel.Project Map(Project model, IUserContext userContext)
-            => new DataModel.Project
-            {
-                Color = model.Color,
-                DateCreatedUtc = model.DateCreatedUtc,
-                DateModifiedUtc = DateTime.UtcNow,
-                Description = model.Description,
-                Location = model.Location,
-                Notes = model.Notes,
-                Name = model.Name,
-                UserId = userContext.UserId,
-            };
-
-        private static Project Map(DataModel.Project entity, IUserContext userContext)
-            => new Project
-            {
-                ProjectId = entity.ProjectId,
-                Color = entity.Color,
-                DateCreatedUtc = entity.DateCreatedUtc,
-                Description = entity.Description,
-                Location = entity.Location,
-                Notes = entity.Notes,
-                Name = entity.Name,
-                UserId = entity.UserId
-            };
-
-        private static DataModel.Project Map(DataModel.Project entity, Project model, IUserContext userContext)
-        {
-            entity.DateCreatedUtc = model.DateCreatedUtc;
-            entity.Name = model.Name;
-            entity.UserId = userContext.UserId;
-            entity.DateModifiedUtc = DateTime.UtcNow;
-            entity.Color = model.Color;
-            entity.Description = model.Description;
-            entity.Location = model.Location;
-            entity.Notes = model.Notes;
-            return entity;
-        }
-
-        private static OAuthCredential Map(DataModel.OAuthCredential entity, IUserContext userContext)
-            => new OAuthCredential
-            {
-                AccessToken = entity.AccessToken,
-                DateCreatedUtc = entity.DateCreatedUtc,
-                DateExpiresUtc = entity.DateExpiresUtc,
-                Provider = entity.Provider,
-                RefreshToken = entity.RefreshToken,
-                UserId = entity.UserId,
-            };
-
-        private static DataModel.OAuthCredential Map(OAuthCredential model, IUserContext userContext)
-            => new DataModel.OAuthCredential
-            {
-                AccessToken = model.AccessToken,
-                DateCreatedUtc = model.DateCreatedUtc,
-                DateExpiresUtc = model.DateExpiresUtc,
-                DateModifiedUtc = DateTime.UtcNow,
-                Provider = model.Provider,
-                RefreshToken = model.RefreshToken,
-                UserId = userContext.UserId,
-            };
-
-        private static DataModel.PartType Map(DataModel.PartType entity, PartType model, IUserContext userContext)
-        {
-            entity.DateCreatedUtc = model.DateCreatedUtc;
-            entity.Name = model.Name;
-            entity.ParentPartTypeId = model.ParentPartTypeId;
-            entity.PartTypeId = model.PartTypeId;
-            entity.UserId = userContext.UserId;
-            entity.DateModifiedUtc = DateTime.UtcNow;
-            return entity;
-        }
-
-        private static PartType Map(DataModel.PartType entity, IUserContext userContext) => new PartType
-        {
-            DateCreatedUtc = entity.DateCreatedUtc,
-            Name = entity.Name,
-            ParentPartTypeId = entity.ParentPartTypeId,
-            PartTypeId = entity.PartTypeId,
-            UserId = entity.UserId
-        };
-
-        private static DataModel.PartType Map(PartType model, IUserContext userContext)
-            => new DataModel.PartType
-            {
-                DateCreatedUtc = model.DateCreatedUtc,
-                Name = model.Name,
-                ParentPartTypeId = model.ParentPartTypeId,
-                PartTypeId = model.PartTypeId,
-                DateModifiedUtc = DateTime.UtcNow,
-                UserId = userContext.UserId
-            };
 
         public void Dispose()
         {
