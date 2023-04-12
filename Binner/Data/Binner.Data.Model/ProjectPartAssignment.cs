@@ -60,8 +60,14 @@ namespace Binner.Data.Model
 
         public string? CustomDescription { get; set; }
 
+        /// <summary>
+        /// Cost of part
+        /// </summary>
         public double Cost { get; set; }
 
+        /// <summary>
+        /// Currency of part
+        /// </summary>
         public string? Currency { get; set; }
 
         /// <summary>
@@ -77,7 +83,12 @@ namespace Binner.Data.Model
         /// <summary>
         /// Optional user id to associate
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
+
+#if INITIALCREATE
+        [ForeignKey(nameof(UserId))]
+        public User? User { get; set; }
+#endif
 
         public Part? Part { get; set; }
 

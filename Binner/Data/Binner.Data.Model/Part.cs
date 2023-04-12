@@ -7,7 +7,13 @@ namespace Binner.Data.Model
     /// <summary>
     /// A Part
     /// </summary>
-    public class Part : IEntity, IUserData
+    public class Part 
+#if INITIALCREATE
+        : IEntity,
+#else
+        : IPartialEntity,
+#endif
+        IUserData
     {
         /// <summary>
         /// Primary key
@@ -19,7 +25,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// Associated user
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// The number of items in stock
@@ -149,19 +155,19 @@ namespace Binner.Data.Model
         public string? ManufacturerPartNumber { get; set; }
 
         /// <summary>
-        /// Add a link to the part number manufacturer (Swarm)
-        /// </summary>
-        public int? SwarmPartNumberManufacturerId { get; set; }
-
-        /// <summary>
         /// The date the record was created
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
 
+#if INITIALCREATE
+        /// <summary>
+        /// The date the record was modified
+        /// </summary>
         public DateTime DateModifiedUtc { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
+#endif
 
         [ForeignKey(nameof(ProjectId))]
         public Project? Project { get; set; }

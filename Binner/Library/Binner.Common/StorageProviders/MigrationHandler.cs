@@ -7,11 +7,11 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Binner.Common.Authentication;
-using System.Linq;
-using System.Collections;
+using Microsoft.Data.Sqlite;
 
 namespace Binner.Common.StorageProviders
 {
@@ -33,78 +33,244 @@ namespace Binner.Common.StorageProviders
         public bool TryDetectMigrateNeeded(out IBinnerDb? binnerDb)
         {
             binnerDb = null;
-            if (_config.Provider == BinnerFileStorageProvider.ProviderName)
-            {
-                var fsConfig = new BinnerFileStorageConfiguration(_config.ProviderConfiguration);
-                // check if the database is a Binner File storage db, or a sqlite db
-                if (File.Exists(fsConfig.Filename))
-                {
-                    try
-                    {
-                        using (var stream = File.Open(fsConfig.Filename, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-                        {
-                            var version = ReadDbVersion(stream);
-                            if (version == null)
-                            {
-                                _logger.Info("Binner file database is Sqlite format, no migration required.");
-                                return false;
-                            }
 
-                            if (version.Version >= 1 && version.Version <= 7)
+            switch (_config.Provider.ToLower())
+            {
+                case "binner":
+                    {
+                        var fsConfig = new BinnerFileStorageConfiguration(_config.ProviderConfiguration);
+                        // check if the database is a Binner File storage db, or a sqlite db
+                        if (File.Exists(fsConfig.Filename))
+                        {
+                            try
                             {
-                                // it's a valid db.
-                                try
+                                using (var stream = File.Open(fsConfig.Filename, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                                 {
-                                    // copy the rest of the bytes
-                                    var bytes = new byte[stream.Length - stream.Position];
-                                    stream.Read(bytes, 0, bytes.Length);
-                                    var db = LoadDatabaseByVersion(version, bytes);
-                                    if (ValidateChecksum(db))
+                                    var version = ReadDbVersion(stream);
+                                    if (version == null)
                                     {
-                                        binnerDb = db;
-                                        _logger.Info("Migrating Binner file database to Sqlite...");
-                                        // must migrate this database
-                                        return true;
+                                        _logger.Info("Binner file database is Sqlite format, no migration required.");
+                                        return false;
+                                    }
+
+                                    if (version.Version >= 1 && version.Version <= 7)
+                                    {
+                                        // it's a valid db.
+                                        try
+                                        {
+                                            // copy the rest of the bytes
+                                            var bytes = new byte[stream.Length - stream.Position];
+                                            stream.Read(bytes, 0, bytes.Length);
+                                            var db = LoadDatabaseByVersion(version, bytes);
+                                            if (ValidateChecksum(db))
+                                            {
+                                                binnerDb = db;
+                                                _logger.Info("Migrating Binner file database to Sqlite...");
+                                                // must migrate this database
+                                                return true;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            // something failed, not a valid Binner db
+                                        }
                                     }
                                 }
-                                catch (Exception ex)
-                                {
-                                    // something failed, not a valid Binner db
-                                }
                             }
+                            catch (UnauthorizedAccessException ex)
+                            {
+                                // file is locked, cannot continue.
+                                _logger.Error(ex, "Database is locked by another process.");
+                                throw;
+                            }
+                            catch (ArgumentException ex)
+                            {
+                                // not a binner db
+                                _logger.Warn(ex, "Database not a Binner format database.");
+                            }
+                            catch (Exception ex)
+                            {
+                                // invalid format or could not read
+                                _logger.Warn(ex, "Refusing to migrate database, probably not a Binner formatted database file. An exception occurred.");
+                            }
+
+                        }
+
+                        return false;
+                    }
+                case "mysql":
+                    {
+                        using var context = _contextFactory.CreateDbContext();
+                        using var conn = context.Database.GetDbConnection();
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_NAME='__EFMigrationsHistory' AND TABLE_TYPE = 'BASE TABLE'";
+                        conn.Open();
+                        var exists = (long?)cmd.ExecuteScalar();
+                        // if it doesn't exist, a migration is required
+                        return !(exists > 0);
+                    }
+                case "postgresql":
+                    {
+                        using var context = _contextFactory.CreateDbContext();
+                        using var conn = context.Database.GetDbConnection();
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "SELECT COUNT(*) FROM pg_tables WHERE schemaname='dbo' AND tablename = '__EFMigrationsHistory'";
+                        conn.Open();
+                        var exists = (long?)cmd.ExecuteScalar();
+                        // if it doesn't exist, a migration is required
+                        return !(exists > 0);
+                    }
+                case "sqlite":
+                    {
+                        using var context = _contextFactory.CreateDbContext();
+                        using var conn = context.Database.GetDbConnection();
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "SELECT COUNT(*) FROM __EFMigrationsHistory";
+                        conn.Open();
+                        try
+                        {
+                            cmd.ExecuteScalar();
+                            // no exception, table exists
+                            return false;
+                        }
+                        catch (SqliteException)
+                        {
+                            // table does not exist
+                            return true;
                         }
                     }
-                    catch (UnauthorizedAccessException ex)
+                case "sqlserver":
                     {
-                        // file is locked, cannot continue.
-                        _logger.Error(ex, "Database is locked by another process.");
-                        throw;
+                        using var context = _contextFactory.CreateDbContext();
+                        using var conn = context.Database.GetDbConnection();
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "SELECT COUNT(*) FROM sysobjects WHERE name='__EFMigrationsHistory' and xtype='U'";
+                        conn.Open();
+                        var exists = (int?)cmd.ExecuteScalar();
+                        // if it doesn't exist, a migration is required
+                        return !(exists > 0);
                     }
-                    catch (ArgumentException ex)
-                    {
-                        // not a binner db
-                        _logger.Warn(ex, "Database not a Binner format database.");
-                    }
-                    catch (Exception ex)
-                    {
-                        // invalid format or could not read
-                        _logger.Warn(ex, "Refusing to migrate database, probably not a Binner formatted database file. An exception occurred.");
-                    }
-
-                }
             }
 
+
             // no migration needed
+
 
             return false;
         }
 
         public bool MigrateDatabase(IBinnerDb binnerDb)
         {
+            // all new users have an id=1 as no users existed prior to this migration
+            var userId = 1;
+#if INITIALCREATE
+            var defaultUser = new Data.Model.User
+            {
+                Name = "Admin",
+                EmailAddress = "admin",
+                PasswordHash = PasswordHasher.GeneratePasswordHash("admin").GetBase64EncodedPasswordHash(),
+                DateCreatedUtc = DateTime.UtcNow,
+                DateModifiedUtc = DateTime.UtcNow,
+                IsEmailConfirmed = true,
+                IsAdmin = true
+            };
+#endif
+
+            switch (_config.Provider.ToLower())
+            {
+                case "binner":
+                    {
+                        return MigrateBinnerToSqlite(binnerDb, userId);
+                    }
+                case "mysql":
+                    {
+                        var context = _contextFactory.CreateDbContext();
+                        var migrationName = "20230412193145_InitialCreate";
+                        var efVersion = "7.0.4";
+                        context.Database.ExecuteSql($@"CREATE TABLE __EFMigrationsHistory(MigrationId nvarchar(150) NOT NULL primary key, ProductVersion nvarchar(32) NOT NULL)");
+                        context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion});");
+                        // run the next migration which will apply most recent schema
+                        context.Database.Migrate();
+                        // seed the default user
+#if INITIALCREATE
+                        context.Users.Add(defaultUser);
+#endif
+                        context.SaveChanges();
+                        context.Database.ExecuteSql($"UPDATE OAuthCredentials SET UserId={userId};UPDATE OAuthRequests SET UserId={userId};UPDATE Parts SET UserId={userId};UPDATE PartSuppliers SET UserId={userId};UPDATE PartTypes SET UserId={userId};UPDATE Pcbs SET UserId={userId};UPDATE PcbStoredFileAssignments SET UserId={userId};UPDATE ProjectPartAssignments SET UserId={userId};UPDATE ProjectPcbAssignments SET UserId={userId};UPDATE Projects SET UserId={userId};UPDATE StoredFiles SET UserId={userId};");
+                    }
+                    break;
+                case "postgresql":
+                    {
+                        try
+                        {
+                            var context = _contextFactory.CreateDbContext();
+                            var migrationName = "20230412193100_InitialCreate";
+                            var efVersion = "7.0.4";
+                            context.Database.ExecuteSql(
+                                $@"CREATE TABLE dbo.""__EFMigrationsHistory"" (""MigrationId"" varchar(150) NOT NULL PRIMARY KEY, ""ProductVersion"" varchar(32) NOT NULL);");
+                            context.Database.ExecuteSql($@"INSERT INTO dbo.""__EFMigrationsHistory"" (""MigrationId"", ""ProductVersion"") VALUES({migrationName}, {efVersion});");
+                            // run the next migration which will apply most recent schema
+                            context.Database.Migrate();
+                            // seed the default user
+#if INITIALCREATE
+                            context.Users.Add(defaultUser);
+#endif
+                            context.SaveChanges();
+                            context.Database.ExecuteSql(
+                                $@"UPDATE dbo.""OAuthCredentials"" SET ""UserId""={userId};UPDATE dbo.""OAuthRequests"" SET ""UserId""={userId};UPDATE dbo.""Parts"" SET ""UserId""={userId};UPDATE dbo.""PartSuppliers"" SET ""UserId""={userId};UPDATE dbo.""PartTypes"" SET ""UserId""={userId};UPDATE dbo.""Pcbs"" SET ""UserId""={userId};UPDATE dbo.""PcbStoredFileAssignments"" SET ""UserId""={userId};UPDATE dbo.""ProjectPartAssignments"" SET ""UserId""={userId};UPDATE dbo.""ProjectPcbAssignments"" SET ""UserId""={userId};UPDATE dbo.""Projects"" SET ""UserId""={userId};UPDATE dbo.""StoredFiles"" SET ""UserId""={userId};");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "Could not migrate Postgresql database!");
+                            return false;
+                        }
+                    }
+                    break;
+                case "sqlite":
+                    {
+                        var context = _contextFactory.CreateDbContext();
+                        var migrationName = "20230412171856_InitialCreate";
+                        var efVersion = "7.0.4";
+                        context.Database.ExecuteSql($@"CREATE TABLE __EFMigrationsHistory(MigrationId TEXT NOT NULL PRIMARY KEY, ProductVersion TEXT NOT NULL)");
+                        context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion})");
+                        // run the next migration which will apply most recent schema
+                        context.Database.Migrate();
+                        // seed the default user
+#if INITIALCREATE
+                        context.Users.Add(defaultUser);
+#endif
+                        context.SaveChanges();
+                        context.Database.ExecuteSql($"UPDATE OAuthCredentials SET UserId={userId};UPDATE OAuthRequests SET UserId={userId};UPDATE Parts SET UserId={userId};UPDATE PartSuppliers SET UserId={userId};UPDATE PartTypes SET UserId={userId};UPDATE Pcbs SET UserId={userId};UPDATE PcbStoredFileAssignments SET UserId={userId};UPDATE ProjectPartAssignments SET UserId={userId};UPDATE ProjectPcbAssignments SET UserId={userId};UPDATE Projects SET UserId={userId};UPDATE StoredFiles SET UserId={userId};");
+                    }
+                    break;
+                case "sqlserver":
+                    {
+                        // create a __EFMigrationsHistory table, and add the InitialCreate record
+                        var context = _contextFactory.CreateDbContext();
+                        var migrationName = "20230412193201_InitialCreate";
+                        var efVersion = "7.0.4";
+                        context.Database.ExecuteSql($@"IF NOT EXISTS (select * from sysobjects where name='__EFMigrationsHistory' and xtype='U') CREATE TABLE [dbo].[__EFMigrationsHistory]([MigrationId] [nvarchar](150) NOT NULL, [ProductVersion] [nvarchar](32) NOT NULL, CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY CLUSTERED ([MigrationId] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]) ON [PRIMARY]");
+                        context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion});");
+                        // run the next migration which will apply most recent schema
+                        context.Database.Migrate();
+                        // seed the default user
+#if INITIALCREATE
+                        context.Users.Add(defaultUser);
+#endif
+                        context.SaveChanges();
+                        context.Database.ExecuteSql($"UPDATE OAuthCredentials SET UserId={userId};UPDATE OAuthRequests SET UserId={userId};UPDATE Parts SET UserId={userId};UPDATE PartSuppliers SET UserId={userId};UPDATE PartTypes SET UserId={userId};UPDATE Pcbs SET UserId={userId};UPDATE PcbStoredFileAssignments SET UserId={userId};UPDATE ProjectPartAssignments SET UserId={userId};UPDATE ProjectPcbAssignments SET UserId={userId};UPDATE Projects SET UserId={userId};UPDATE StoredFiles SET UserId={userId};");
+                    }
+                    break;
+            }
+
+            return true;
+        }
+
+        private bool MigrateBinnerToSqlite(IBinnerDb binnerDb, int userId)
+        {
             // steps for migration:
             // 1) backup existing db
             // 2) 
-
             var fsConfig = new BinnerFileStorageConfiguration(_config.ProviderConfiguration);
             var backupFile = Path.Combine(Path.GetDirectoryName(fsConfig.Filename), $"{Path.GetFileName(fsConfig.Filename)}.BinnerFileStorageProvider.backup");
             if (File.Exists(fsConfig.Filename))
@@ -113,6 +279,9 @@ namespace Binner.Common.StorageProviders
                 {
                     try
                     {
+                        _logger.Info("Preparing to migrate Binner database to Sqlite...");
+
+                        _logger.Info($"Backing up BinnerDbV7 database to '{backupFile}'");
                         // create backup
                         File.Copy(fsConfig.Filename, backupFile);
 
@@ -125,19 +294,28 @@ namespace Binner.Common.StorageProviders
                                 { "ConnectionString", $@"Data Source={fsConfig.Filename};" }
                             }
                         };
-                        using var context = _contextFactory.CreateDbContext();
 
-                        // remove the original database file
+                        // remove the original database file (it's been backed up)
+                        _logger.Info($"Deleting existing BinnerDbV7 database");
                         File.Delete(fsConfig.Filename);
 
+                        using var context = _contextFactory.CreateDbContext();
+                        _logger.Info($"Creating migrations table '__EFMigrationsHistory'");
+                        //var migrationName = "20230412171856_InitialCreate";
+                        //var efVersion = "7.0.4";
+                        //context.Database.ExecuteSql($@"CREATE TABLE __EFMigrationsHistory(MigrationId TEXT NOT NULL PRIMARY KEY, ProductVersion TEXT NOT NULL);");
+                        //context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion});");
+
                         // create the Sqlite database
+                        _logger.Info("Migrating Binner database to Sqlite...");
                         context.Database.Migrate();
 
                         // import data
-                        ImportBinnerDb(binnerDb, context);
+                        ImportBinnerDb(binnerDb, context, userId);
 
-
+                        _logger.Info("Successfully migrated Binner database to Sqlite!");
                         // success!
+                        return true;
                     }
                     catch (Exception ex)
                     {
@@ -145,20 +323,27 @@ namespace Binner.Common.StorageProviders
                         File.Move(backupFile, fsConfig.Filename);
                         _logger.Error(ex, $"Failed to migrate database.");
                     }
+                    finally
+                    {
+                        if (!File.Exists(fsConfig.Filename) && File.Exists(backupFile))
+                            File.Move(backupFile, fsConfig.Filename);
+                    }
                 }
                 else
                 {
-                    _logger.Error($"Refusing to migrate database. Binner database file has already been backed up to {backupFile}, indicating a previous failure. Delete or move this file to try again.");
+                    _logger.Error($"Refusing to migrate database to new format. Binner database file has already been backed up to '{backupFile}', indicating a possible previous failure. Delete or move this file to try again.");
                     return false;
                 }
             }
             else
             {
-                _logger.Error($"Refusing to migrate database. File does not exist at {fsConfig.Filename}.");
+                if (File.Exists(backupFile))
+                    _logger.Error($"Refusing to migrate database. Binner database file does not exist at '{fsConfig.Filename}'. Rename or move the backup file '{backupFile}' to '{fsConfig.Filename}' to retry.");
+                else
+                    _logger.Error($"Refusing to migrate database. Binner database file does not exist at '{fsConfig.Filename}'.");
                 return false;
             }
-
-            return true;
+            return false;
         }
 
         private IBinnerDb LoadDatabaseByVersion(BinnerDbVersion version, byte[] bytes)
@@ -193,7 +378,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        private bool ImportBinnerDb(IBinnerDb binnerDb, BinnerContext context)
+        private bool ImportBinnerDb(IBinnerDb binnerDb, BinnerContext context, int userId)
         {
             var db = binnerDb as BinnerDbV7 ?? throw new Exception("Error - BinnerDb must be Version 7. An upgrade of the database was not performed before migrating to Sqlite.");
             using var transaction = context.Database.BeginTransaction();
@@ -201,7 +386,6 @@ namespace Binner.Common.StorageProviders
             {
                 // DisableIdentityInsert not required for Sqlite
 
-                var userId = 1;
                 context.Users.Add(new Data.Model.User
                 {
                     UserId = userId,
@@ -249,7 +433,7 @@ namespace Binner.Common.StorageProviders
                     var partType = db.PartTypes.Where(x => x.PartTypeId == e.PartTypeId).FirstOrDefault();
                     long partTypeId;
                     if (partType == null)
-                        partTypeId = (long)SystemDefaults.DefaultPartTypes.Other; 
+                        partTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
                     else
                         partTypeId = partType.PartTypeId;
 
@@ -279,7 +463,6 @@ namespace Binner.Common.StorageProviders
                         ProductUrl = e.ProductUrl,
                         ProjectId = e.ProjectId,
                         Quantity = e.Quantity,
-                        SwarmPartNumberManufacturerId = null,
                         DateCreatedUtc = e.DateCreatedUtc,
                         DateModifiedUtc = e.DateCreatedUtc,
                         UserId = userId
@@ -324,7 +507,7 @@ namespace Binner.Common.StorageProviders
                     });
                 }
 
-                
+
                 foreach (var e in db.OAuthRequests)
                 {
                     context.OAuthRequests.Add(new Data.Model.OAuthRequest
@@ -343,7 +526,7 @@ namespace Binner.Common.StorageProviders
                         UserId = userId
                     });
                 }
-                
+
                 foreach (var e in db.Pcbs)
                 {
                     context.Pcbs.Add(new Data.Model.Pcb
@@ -401,8 +584,8 @@ namespace Binner.Common.StorageProviders
 
                 foreach (var e in db.ProjectPartAssignments)
                 {
-                    if ((e.PartId == null || db.Parts.Any(x => x.PartId == e.PartId)) 
-                        && db.Projects.Any(x => x.ProjectId == e.ProjectId) 
+                    if ((e.PartId == null || db.Parts.Any(x => x.PartId == e.PartId))
+                        && db.Projects.Any(x => x.ProjectId == e.ProjectId)
                         && (e.PcbId == null || db.Pcbs.Any(x => x.PcbId == e.PcbId)))
                     {
                         context.ProjectPartAssignments.Add(new Data.Model.ProjectPartAssignment

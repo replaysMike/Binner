@@ -3,10 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
+#if INITIALCREATE
     /// <summary>
     /// A user login entry
     /// </summary>
-    public class UserLoginHistory
+    public class UserLoginHistory : IEntity
     {
         /// <summary>
         /// User Id
@@ -42,6 +43,8 @@ namespace Binner.Data.Model
 
         public DateTime DateCreatedUtc { get; set; }
 
+        public DateTime DateModifiedUtc { get; set; }
+
         /// <summary>
         /// The ReCaptcha score during login
         /// </summary>
@@ -52,8 +55,8 @@ namespace Binner.Data.Model
         /// </summary>
         public long Ip { get; set; }
 
-
+        [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
-
     }
+#endif
 }

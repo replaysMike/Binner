@@ -16,14 +16,15 @@ namespace Binner.Data.Migrations.MySql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
-                    b.Property<int>("OAuthCredentialId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Provider")
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<string>("AccessToken")
                         .HasColumnType("longtext");
@@ -46,22 +47,17 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
-
                     b.Property<string>("RefreshToken")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("OAuthCredentialId");
+                    b.HasKey("Provider");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OAuthCredentials");
+                    b.ToTable("OAuthCredentials", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.OAuthRequest", b =>
@@ -109,14 +105,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("ReturnToUrl")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("OAuthRequestId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OAuthRequests");
+                    b.ToTable("OAuthRequests", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -208,10 +204,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("SwarmPartNumberManufacturerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PartId");
@@ -242,7 +235,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("PartTypeId", "UserId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("Parts", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
@@ -285,7 +278,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("SupplierPartNumber")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PartSupplierId");
@@ -294,7 +287,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PartSuppliers");
+                    b.ToTable("PartSuppliers", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartType", b =>
@@ -330,7 +323,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("PartTypes");
+                    b.ToTable("PartTypes", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Pcb", b =>
@@ -367,12 +360,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("SerialNumberFormat")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PcbId");
 
-                    b.ToTable("Pcbs");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Pcbs", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
@@ -403,7 +398,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<long>("StoredFileId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PcbStoredFileAssignmentId");
@@ -412,7 +407,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("StoredFileId");
 
-                    b.ToTable("PcbStoredFileAssignments");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PcbStoredFileAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -446,7 +443,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ProjectId");
@@ -455,7 +452,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPartAssignment", b =>
@@ -510,7 +507,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("SchematicReferenceId")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ProjectPartAssignmentId");
@@ -519,7 +516,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPartAssignments");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectPartAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPcbAssignment", b =>
@@ -544,7 +543,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<long>("ProjectId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ProjectPcbAssignmentId");
@@ -553,7 +552,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPcbAssignments");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectPcbAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -592,14 +593,16 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int>("StoredFileType")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("StoredFileId");
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("StoredFiles");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StoredFiles", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.User", b =>
@@ -686,7 +689,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("PhoneNumber");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
@@ -769,14 +772,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("time(6)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("UserIntegrationConfigurationId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserIntegrationConfigurations");
+                    b.ToTable("UserIntegrationConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -789,6 +792,11 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
@@ -817,7 +825,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLoginHistory");
+                    b.ToTable("UserLoginHistory", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
@@ -850,14 +858,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("RemoteAddressUrl")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("UserPrinterConfigurationId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserPrinterConfigurations");
+                    b.ToTable("UserPrinterConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserPrinterTemplateConfiguration", b =>
@@ -925,7 +933,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<bool>("UpperCase")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserPrinterConfigurationId")
@@ -937,7 +945,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("UserPrinterConfigurationId");
 
-                    b.ToTable("UserPrinterTemplateConfigurations");
+                    b.ToTable("UserPrinterTemplateConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserToken", b =>
@@ -977,14 +985,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int>("TokenTypeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("UserTokenId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserToken");
+                    b.ToTable("UserTokens", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
@@ -992,8 +1000,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("OAuthCredentials")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1003,8 +1010,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("OAuthRequests")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1025,8 +1031,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("Parts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("PartType");
 
@@ -1046,8 +1051,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("PartSuppliers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Part");
 
@@ -1071,6 +1075,16 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.Pcb", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("Pcbs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
                 {
                     b.HasOne("Binner.Data.Model.Pcb", "Pcb")
@@ -1085,9 +1099,16 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PcbStoredFileAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Pcb");
 
                     b.Navigation("StoredFile");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -1095,8 +1116,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("Projects")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1114,9 +1134,16 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectPartAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Part");
 
                     b.Navigation("Project");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPcbAssignment", b =>
@@ -1133,9 +1160,16 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectPcbAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Pcb");
 
                     b.Navigation("Project");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -1145,7 +1179,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasForeignKey("PartId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("StoredFiles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Part");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
@@ -1153,8 +1194,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserIntegrationConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1174,8 +1214,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("User");
                 });
@@ -1185,8 +1224,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
                         .WithMany("UserPrinterTemplateConfigurations")
@@ -1204,8 +1242,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserTokens")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1257,7 +1294,17 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Navigation("Parts");
 
+                    b.Navigation("PcbStoredFileAssignments");
+
+                    b.Navigation("Pcbs");
+
+                    b.Navigation("ProjectPartAssignments");
+
+                    b.Navigation("ProjectPcbAssignments");
+
                     b.Navigation("Projects");
+
+                    b.Navigation("StoredFiles");
 
                     b.Navigation("UserIntegrationConfigurations");
 

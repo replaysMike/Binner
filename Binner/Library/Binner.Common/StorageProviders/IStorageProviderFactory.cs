@@ -9,8 +9,9 @@ namespace Binner.Common.StorageProviders
         /// Create an instance of IStorageProvider
         /// </summary>
         /// <param name="container">The service container</param>
+        /// <param name="providerName">The name of the storage provider</param>
         /// <param name="config">Configuration to pass to the storage provider</param>
         /// <returns></returns>
-        IStorageProvider Create(LightInject.IServiceContainer container, IDictionary<string, string> config);
+        IStorageProvider Create(LightInject.IServiceContainer container, string providerName, IDictionary<string, string> config);
     }
 }

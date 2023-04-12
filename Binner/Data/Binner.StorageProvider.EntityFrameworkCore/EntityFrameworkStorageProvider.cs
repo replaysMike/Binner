@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Binner.Data;
 using Binner.Model.Common;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
 using DataModel = Binner.Data.Model;
 
@@ -13,13 +13,15 @@ namespace Binner.StorageProvider.EntityFrameworkCore
     {
         public const string ProviderName = "EntityFramework";
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
+        private readonly string _providerName;
         private readonly IDictionary<string, string> _config;
         private readonly IMapper _mapper;
 
-        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IDictionary<string, string> config)
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
+            _providerName = providerName;
             _config = config;
         }
 
@@ -28,6 +30,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.Part>(part);
+            EnforceIntegrityCreate(entity, userContext);
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
             part.PartId = entity.PartId;
@@ -39,6 +42,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.Project>(project);
+            EnforceIntegrityCreate(entity, userContext);
             context.Projects.Add(entity);
             await context.SaveChangesAsync();
             project.ProjectId = entity.ProjectId;
@@ -49,9 +53,10 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.Parts.FirstOrDefault(x => x.PartId == part.PartId && x.UserId == userContext.UserId);
+            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == part.PartId && x.UserId == userContext.UserId);
             if (entity == null)
                 return false;
+            EnforceIntegrityCreate(entity, userContext);
             context.Parts.Remove(entity);
             await context.SaveChangesAsync();
             return true;
@@ -76,7 +81,6 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             var entity = await context.Projects.FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.UserId == userContext.UserId);
             if (entity == null)
                 return false;
-
             context.Projects.Remove(entity);
             await context.SaveChangesAsync();
             return true;
@@ -86,45 +90,66 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             // todo: this search is inefficient in EF but don't know how to convert it yet
-            var query =
-$@"WITH PartsExactMatch (PartId, Rank) AS
+            var query = GetFindPartsQueryForProvider(keywords, userContext);
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.Parts.FromSql(query)
+                .ToListAsync();
+            return entities.Select(x => new SearchResult<Part>(_mapper.Map<Part>(x), 0)).ToList();
+        }
+
+        private FormattableString GetFindPartsQueryForProvider(string keywords, IUserContext userContext)
+        {
+            switch (_providerName.ToLower())
+            {
+                case "postgresql":
+                    return GetPostgresqlFindPartsQuery(keywords, userContext);
+                default:
+                    return GetDefaultFindPartsQuery(keywords, userContext);
+            }
+        }
+
+        private FormattableString GetDefaultFindPartsQuery(string keywords, IUserContext userContext)
+        {
+            // note: this is not injectable, using a formattable string which is a special case for FromSql()
+            return FormattableStringFactory.Create(
+                $@"WITH PartsExactMatch (PartId, Rank) AS
 (
-SELECT PartId, 10 as Rank FROM Parts WHERE UserId = @UserId AND (
-PartNumber = @Keywords 
-OR DigiKeyPartNumber = @Keywords 
-OR MouserPartNumber = @Keywords
-OR ManufacturerPartNumber = @Keywords
-OR Description = @Keywords 
-OR Keywords = @Keywords 
-OR Location = @Keywords 
-OR BinNumber = @Keywords 
-OR BinNumber2 = @Keywords)
+SELECT PartId, 10 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber = '{keywords}'
+ OR DigiKeyPartNumber = '{keywords}'
+ OR MouserPartNumber = '{keywords}'
+ OR ManufacturerPartNumber = '{keywords}'
+ OR Description = '{keywords}'
+ OR Keywords = '{keywords}'
+ OR Location = '{keywords}'
+ OR BinNumber = '{keywords}'
+ OR BinNumber2 = '{keywords}')
 ),
 PartsBeginsWith (PartId, Rank) AS
 (
-SELECT PartId, 100 as Rank FROM Parts WHERE UserId = @UserId AND (
-PartNumber LIKE @Keywords + '%'
-OR DigiKeyPartNumber LIKE @Keywords + '%'
-OR MouserPartNumber LIKE @Keywords + '%'
-OR ManufacturerPartNumber LIKE @Keywords + '%'
-OR Description LIKE @Keywords + '%'
-OR Keywords LIKE @Keywords + '%'
-OR Location LIKE @Keywords + '%'
-OR BinNumber LIKE @Keywords + '%'
-OR BinNumber2 LIKE @Keywords+ '%')
+SELECT PartId, 100 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber LIKE '{keywords}'  + '%'
+ OR DigiKeyPartNumber LIKE '{keywords}' + '%'
+ OR MouserPartNumber LIKE '{keywords}' + '%'
+ OR ManufacturerPartNumber LIKE '{keywords}' + '%'
+ OR Description LIKE '{keywords}' + '%'
+ OR Keywords LIKE '{keywords}' + '%'
+ OR Location LIKE '{keywords}' + '%'
+ OR BinNumber LIKE '{keywords}' + '%'
+ OR BinNumber2 LIKE '{keywords}'+ '%')
 ),
 PartsAny (PartId, Rank) AS
 (
-SELECT PartId, 200 as Rank FROM Parts WHERE UserId = @UserId AND (
-PartNumber LIKE '%' + @Keywords + '%'
-OR DigiKeyPartNumber LIKE '%' + @Keywords + '%'
-OR MouserPartNumber LIKE '%' + @Keywords + '%'
-OR ManufacturerPartNumber LIKE '%' + @Keywords + '%'
-OR Description LIKE '%' + @Keywords + '%'
-OR Keywords LIKE '%' + @Keywords + '%'
-OR Location LIKE '%' + @Keywords + '%'
-OR BinNumber LIKE '%' + @Keywords + '%'
-OR BinNumber2 LIKE '%' + @Keywords + '%')
+SELECT PartId, 200 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber LIKE '%' + '{keywords}' + '%'
+ OR DigiKeyPartNumber LIKE '%' + '{keywords}' + '%'
+ OR MouserPartNumber LIKE '%' + '{keywords}' + '%'
+ OR ManufacturerPartNumber LIKE '%' + '{keywords}' + '%'
+ OR Description LIKE '%' + '{keywords}' + '%'
+ OR Keywords LIKE '%' + '{keywords}' + '%'
+ OR Location LIKE '%' + '{keywords}' + '%'
+ OR BinNumber LIKE '%' + '{keywords}' + '%'
+ OR BinNumber2 LIKE '%' + '{keywords}' + '%')
 ),
 PartsMerged (PartId, Rank) AS
 (
@@ -138,11 +163,68 @@ SELECT p.* FROM Parts p
 INNER JOIN (
   SELECT PartId, MIN(Rank) Rank FROM PartsMerged GROUP BY PartId
 ) pm ON pm.PartId = p.PartId ORDER BY pm.Rank ASC;
-;";
-            using var context = await _contextFactory.CreateDbContextAsync();
-            var entities = await context.Parts.FromSqlRaw(query, new SqlParameter("Keywords", keywords), new SqlParameter("UserId", userContext.UserId))
-                .ToListAsync();
-            return entities.Select(x => new SearchResult<Part>(_mapper.Map<Part>(x), 0)).ToList();
+;");
+        }
+
+        private FormattableString GetPostgresqlFindPartsQuery(string keywords, IUserContext userContext)
+        {
+            // note: this is not injectable, using a formattable string which is a special case for FromSql()
+            return FormattableStringFactory.Create(
+                $@"WITH ""PartsExactMatch"" (""PartId"", ""Rank"") AS
+(
+SELECT ""PartId"", 10 as ""Rank"" FROM dbo.""Parts"" WHERE ""UserId"" = {userContext.UserId} AND (
+""PartNumber"" ILIKE '{keywords}' 
+OR ""DigiKeyPartNumber"" ILIKE '{keywords}' 
+OR ""MouserPartNumber"" ILIKE '{keywords}'
+OR ""ArrowPartNumber"" ILIKE '{keywords}'
+OR ""ManufacturerPartNumber"" ILIKE '{keywords}'
+OR ""Description"" ILIKE '{keywords}' 
+OR ""Keywords"" ILIKE '{keywords}' 
+OR ""Location"" ILIKE '{keywords}' 
+OR ""BinNumber"" ILIKE '{keywords}' 
+OR ""BinNumber2"" ILIKE '{keywords}')
+),
+""PartsBeginsWith"" (""PartId"", ""Rank"") AS
+(
+SELECT ""PartId"", 100 as ""Rank"" FROM dbo.""Parts"" WHERE ""UserId"" = {userContext.UserId} AND (
+""PartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR ""DigiKeyPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR ""MouserPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR ""ArrowPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR ""ManufacturerPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR ""Description"" ILIKE CONCAT('{keywords}', '%')
+OR ""Keywords"" ILIKE CONCAT('{keywords}', '%')
+OR ""Location"" ILIKE CONCAT('{keywords}', '%')
+OR ""BinNumber"" ILIKE CONCAT('{keywords}', '%')
+OR ""BinNumber2"" ILIKE CONCAT('{keywords}', '%'))
+),
+""PartsAny"" (""PartId"", ""Rank"") AS
+(
+SELECT ""PartId"", 200 as ""Rank"" FROM dbo.""Parts"" WHERE ""UserId"" = {userContext.UserId} AND (
+""PartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""DigiKeyPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""MouserPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""ArrowPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""ManufacturerPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""Description"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""Keywords"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""Location"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""BinNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""BinNumber2"" ILIKE CONCAT('%', '{keywords}', '%'))
+),
+""PartsMerged"" (""PartId"", ""Rank"") AS
+(
+	SELECT ""PartId"", ""Rank"" FROM ""PartsExactMatch""
+	UNION
+	SELECT ""PartId"", ""Rank"" FROM ""PartsBeginsWith""
+	UNION
+	SELECT ""PartId"", ""Rank"" FROM ""PartsAny""
+)
+SELECT pm.""Rank"", p.* FROM dbo.""Parts"" p
+INNER JOIN (
+  SELECT ""PartId"", MIN(""Rank"") ""Rank"" FROM ""PartsMerged"" GROUP BY ""PartId""
+) pm ON pm.""PartId"" = p.""PartId"" ORDER BY pm.""Rank"" ASC;
+;");
         }
 
         // todo: migrate
@@ -176,7 +258,7 @@ INNER JOIN (
                 return new ConnectionResponse { IsSuccess = false, Errors = new List<string>() { ex.GetBaseException().Message } };
             }
 
-            return new ConnectionResponse { IsSuccess = false, Errors = new List<string>() { "No data returned! "} };
+            return new ConnectionResponse { IsSuccess = false, Errors = new List<string>() { "No data returned! " } };
         }
 
         public async Task<OAuthAuthorization> CreateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext)
@@ -190,12 +272,10 @@ INNER JOIN (
                 ErrorDescription = authRequest.ErrorDescription,
                 Provider = authRequest.Provider,
                 RequestId = authRequest.Id,
-                ReturnToUrl = authRequest.ReturnToUrl,
-                UserId = userContext.UserId,
-                DateCreatedUtc = DateTime.UtcNow,
-                DateModifiedUtc = DateTime.UtcNow
+                ReturnToUrl = authRequest.ReturnToUrl
             };
             using var context = await _contextFactory.CreateDbContextAsync();
+            EnforceIntegrityCreate(entity, userContext);
             context.OAuthRequests.Add(entity);
             await context.SaveChangesAsync();
             return _mapper.Map<OAuthAuthorization>(entity);
@@ -210,8 +290,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(authRequest, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
-                entity.UserId = userContext.UserId;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<OAuthAuthorization>(entity);
             }
@@ -243,7 +322,7 @@ INNER JOIN (
             var entities = await context.OAuthCredentials
                 .Where(x => x.UserId == userContext.UserId)
                 .ToListAsync();
-            return _mapper.Map<ICollection<OAuthCredential>>(entities);;
+            return _mapper.Map<ICollection<OAuthCredential>>(entities); ;
         }
 
         private async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
@@ -261,9 +340,16 @@ INNER JOIN (
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
             var totalItems = await context.Parts.CountAsync(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext.UserId);
-            var entities = await context.Parts
-                .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext.UserId)
-                //.OrderBy(request.OrderBy, request.Direction) // todo: ordering
+            var entitiesQueryable = context.Parts
+                .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext.UserId);
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                if (request.Direction == SortDirection.Descending)
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                else
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+            }
+            var entities = await entitiesQueryable
                 .Skip(pageRecords)
                 .Take(request.Results)
                 .ToListAsync();
@@ -275,8 +361,8 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var entity = _mapper.Map<DataModel.StoredFile>(storedFile);
-            entity.UserId = userContext.UserId;
             using var context = await _contextFactory.CreateDbContextAsync();
+            EnforceIntegrityCreate(entity, userContext);
             context.StoredFiles.Add(entity);
             await context.SaveChangesAsync();
             return _mapper.Map<StoredFile>(entity);
@@ -315,9 +401,16 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
-            var entities = await context.StoredFiles
-                //.OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "ProjectPartAssignmentId" : request.OrderBy, request.Direction) // todo: ordering
-                .Skip(pageRecords)
+            var entitiesQueryable = context.StoredFiles.Where(x => x.UserId == userContext.UserId);
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                if (request.Direction == SortDirection.Descending)
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                else
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+            }
+
+            var entities = await entitiesQueryable.Skip(pageRecords)
                 .Take(request.Results)
                 .ToListAsync();
             return _mapper.Map<ICollection<StoredFile>>(entities);
@@ -332,8 +425,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(storedFile, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
-                entity.UserId = userContext.UserId;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<StoredFile>(entity);
             }
@@ -376,9 +468,9 @@ INNER JOIN (
         public async Task<Pcb> AddPcbAsync(Pcb pcb, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            var entity = _mapper.Map<DataModel.Pcb>(pcb);
-            entity.UserId = userContext.UserId;
             using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.Pcb>(pcb);
+            EnforceIntegrityCreate(entity, userContext);
             context.Pcbs.Add(entity);
             await context.SaveChangesAsync();
             return _mapper.Map<Pcb>(entity);
@@ -393,8 +485,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(pcb, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
-                entity.UserId = userContext.UserId;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<Pcb>(entity);
             }
@@ -435,9 +526,9 @@ INNER JOIN (
         public async Task<PcbStoredFileAssignment> AddPcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            var entity = _mapper.Map<DataModel.PcbStoredFileAssignment>(assignment);
-            entity.UserId = userContext.UserId;
             using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.PcbStoredFileAssignment>(assignment);
+            EnforceIntegrityCreate(entity, userContext);
             context.PcbStoredFileAssignments.Add(entity);
             await context.SaveChangesAsync();
             return _mapper.Map<PcbStoredFileAssignment>(entity);
@@ -452,8 +543,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(assignment, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
-                entity.UserId = userContext.UserId;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<PcbStoredFileAssignment>(entity);
             }
@@ -524,9 +614,16 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
-            var entities = await context.ProjectPartAssignments
-                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
-                //.OrderBy(string.IsNullOrEmpty(request.OrderBy) ? "ProjectPartAssignmentId" : request.OrderBy, request.Direction) // todo: ordering
+            var entitiesQueryable = context.ProjectPartAssignments
+                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId);
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                if (request.Direction == SortDirection.Descending)
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                else
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+            }
+            var entities = await entitiesQueryable
                 .Skip(pageRecords)
                 .Take(request.Results)
                 .ToListAsync();
@@ -536,9 +633,9 @@ INNER JOIN (
         public async Task<ProjectPartAssignment> AddProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            var entity = _mapper.Map<DataModel.ProjectPartAssignment>(assignment);
-            entity.UserId = userContext.UserId;
             using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.ProjectPartAssignment>(assignment);
+            EnforceIntegrityCreate(entity, userContext);
             context.ProjectPartAssignments.Add(entity);
             await context.SaveChangesAsync();
             return _mapper.Map<ProjectPartAssignment>(entity);
@@ -553,8 +650,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(assignment, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
-                entity.UserId = userContext.UserId;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<ProjectPartAssignment>(entity);
             }
@@ -595,9 +691,9 @@ INNER JOIN (
         public async Task<ProjectPcbAssignment> AddProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            var entity = _mapper.Map<DataModel.ProjectPcbAssignment>(assignment);
-            entity.UserId = userContext.UserId;
             using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.ProjectPcbAssignment>(assignment);
+            EnforceIntegrityCreate(entity, userContext);
             context.ProjectPcbAssignments.Add(entity);
             await context.SaveChangesAsync();
             return _mapper.Map<ProjectPcbAssignment>(entity);
@@ -612,8 +708,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(assignment, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
-                entity.UserId = userContext.UserId;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<ProjectPcbAssignment>(entity);
             }
@@ -655,7 +750,7 @@ INNER JOIN (
                 existingEntity = new DataModel.PartType
                 {
                     DateCreatedUtc = DateTime.UtcNow,
-                    DateModifiedUtc = DateTime.UtcNow,
+                    //DateModifiedUtc = DateTime.UtcNow,
                     Name = partType.Name,
                     ParentPartTypeId = partType.ParentPartTypeId,
                     PartTypeId = partType.PartTypeId,
@@ -694,14 +789,23 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
-            var parts = await context.Parts
+            var totalParts = await context.Parts.CountAsync(x => x.UserId == userContext.UserId);
+            var entitiesQueryable = context.Parts
                 .Where(x => x.UserId == userContext.UserId)
-                .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value)
-                // .OrderBy(request.OrderBy, request.Direction) // todo: ordering
+                .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value);
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                if (request.Direction == SortDirection.Descending)
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                else
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+            }
+
+            var entities = await entitiesQueryable
                 .Skip(pageRecords)
                 .Take(request.Results)
                 .ToListAsync();
-            return new PaginatedResponse<Part>(parts.Count, pageRecords, request.Page, _mapper.Map<ICollection<Part>>(parts));
+            return new PaginatedResponse<Part>(totalParts, pageRecords, request.Page, _mapper.Map<ICollection<Part>>(entities));
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext? userContext)
@@ -830,10 +934,17 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entities = await context.Projects
+            var entitiesQueryable = context.Projects
                 .Where(x => x.UserId == userContext.UserId)
-                .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value)
-                // .OrderBy(request.OrderBy, request.Direction) // todo: ordering
+                .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value);
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                if (request.Direction == SortDirection.Descending)
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                else
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+            }
+            var entities = await entitiesQueryable
                 .Skip(pageRecords)
                 .Take(request.Results)
                 .ToListAsync();
@@ -865,12 +976,13 @@ INNER JOIN (
                 entity.RefreshToken = credential.RefreshToken;
                 entity.DateCreatedUtc = credential.DateCreatedUtc;
                 entity.DateExpiresUtc = credential.DateExpiresUtc;
-                entity.DateModifiedUtc = DateTime.UtcNow;
+                EnforceIntegrityModify(entity, userContext);
             }
             else
             {
                 // insert
                 entity = _mapper.Map<DataModel.OAuthCredential>(credential);
+                EnforceIntegrityCreate(entity, userContext);
                 context.OAuthCredentials.Add(entity);
             }
             await context.SaveChangesAsync();
@@ -886,7 +998,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(part, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<Part>(entity);
             }
@@ -902,7 +1014,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(partType, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<PartType?>(entity);
             }
@@ -921,7 +1033,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(project, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<Project?>(entity);
             }
@@ -932,7 +1044,8 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = _mapper.Map<DataModel.PartSupplier?>(partSupplier);
+            var entity = _mapper.Map<DataModel.PartSupplier>(partSupplier);
+            EnforceIntegrityCreate(entity, userContext);
             context.PartSuppliers.Add(entity);
             await context.SaveChangesAsync();
             partSupplier.PartSupplierId = entity.PartSupplierId;
@@ -969,7 +1082,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(partSupplier, entity);
-                entity.DateModifiedUtc = DateTime.UtcNow;
+                EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<PartSupplier>(entity);
             }
@@ -986,6 +1099,23 @@ INNER JOIN (
             context.PartSuppliers.Remove(entity);
             await context.SaveChangesAsync();
             return true;
+        }
+
+
+
+        public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)
+            where T : DataModel.IEntity, DataModel.IUserData
+        {
+            entity.UserId = userContext.UserId;
+            entity.DateCreatedUtc = DateTime.UtcNow;
+            entity.DateModifiedUtc = DateTime.UtcNow;
+        }
+
+        public void EnforceIntegrityModify<T>(T entity, IUserContext userContext)
+            where T : DataModel.IEntity, DataModel.IUserData
+        {
+            entity.UserId = userContext.UserId;
+            entity.DateModifiedUtc = DateTime.UtcNow;
         }
 
         public void Dispose()

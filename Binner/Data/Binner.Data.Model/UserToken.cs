@@ -4,10 +4,11 @@ using Binner.Model.Authentication;
 
 namespace Binner.Data.Model
 {
+#if INITIALCREATE
     /// <summary>
     /// Tracks different kinds of authentication tokens
     /// </summary>
-    public class UserToken : IEntity
+    public class UserToken : IEntity, IUserData
     {
         /// <summary>
         /// Primary key
@@ -19,7 +20,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// User associated with the token
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// The type of token
@@ -48,13 +49,15 @@ namespace Binner.Data.Model
 
         public DateTime DateCreatedUtc { get; set; }
 
-        public DateTime DateModifiedUtc { get; set; }
-
         /// <summary>
         /// Ip that created the token
         /// </summary>
         public long Ip { get; set; }
 
+        public DateTime DateModifiedUtc { get; set; }
+
+        [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
     }
+#endif
 }

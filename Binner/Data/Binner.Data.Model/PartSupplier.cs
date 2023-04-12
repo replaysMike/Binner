@@ -58,19 +58,21 @@ namespace Binner.Data.Model
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Creation date
+        /// Last modified date
         /// </summary>
         public DateTime DateModifiedUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Optional user id to associate
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         [ForeignKey(nameof(PartId))]
         public Part? Part { get; set; }
 
+#if INITIALCREATE
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
+#endif
     }
 }

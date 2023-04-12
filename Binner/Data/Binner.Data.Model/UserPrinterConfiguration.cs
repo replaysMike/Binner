@@ -4,6 +4,7 @@ using Binner.Model.IO.Printing;
 
 namespace Binner.Data.Model
 {
+#if INITIALCREATE
     /// <summary>
     /// Stores user defined printer configurations
     /// </summary>
@@ -19,7 +20,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// Associated user
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// If using a remote printer, specify the address Url.
@@ -51,8 +52,10 @@ namespace Binner.Data.Model
 
         public DateTime DateModifiedUtc { get; set; }
 
+        [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
 
         public ICollection<UserPrinterTemplateConfiguration>? UserPrinterTemplateConfigurations { get; set; }
     }
+#endif
 }

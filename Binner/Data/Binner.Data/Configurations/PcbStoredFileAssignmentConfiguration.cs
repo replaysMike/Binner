@@ -8,6 +8,11 @@ namespace Binner.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<PcbStoredFileAssignment> builder)
         {
+#if INITIALCREATE
+            builder.HasOne(p => p.User)
+                .WithMany(p => p.PcbStoredFileAssignments)
+                .OnDelete(DeleteBehavior.Restrict);
+#endif
             builder.HasOne(p => p.Pcb)
                 .WithMany(b => b.PcbStoredFileAssignments)
                 .OnDelete(DeleteBehavior.Restrict);

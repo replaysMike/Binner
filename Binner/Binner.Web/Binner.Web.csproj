@@ -85,12 +85,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="appsettings.json">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Data\Binner.Data.Migrations.MySql\Binner.Data.Migrations.MySql.csproj" />
     <ProjectReference Include="..\Data\Binner.Data.Migrations.Postgresql\Binner.Data.Migrations.Postgresql.csproj" />
     <ProjectReference Include="..\Data\Binner.Data.Migrations.Sqlite\Binner.Data.Migrations.Sqlite.csproj" />

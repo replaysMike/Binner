@@ -8,6 +8,14 @@ namespace Binner.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<ProjectPcbAssignment> builder)
         {
+#if INITIALCREATE
+
+            builder.HasOne(p => p.User)
+                .WithMany(p => p.ProjectPcbAssignments)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(p => p.DateModifiedUtc)
+                .HasDefaultValueSql("getutcdate()");
+#endif
             builder.HasOne(p => p.Pcb)
                 .WithMany(b => b.ProjectPcbAssignments)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -16,8 +24,6 @@ namespace Binner.Data.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(p => p.DateCreatedUtc)
-                .HasDefaultValueSql("getutcdate()");
-            builder.Property(p => p.DateModifiedUtc)
                 .HasDefaultValueSql("getutcdate()");
         }
     }

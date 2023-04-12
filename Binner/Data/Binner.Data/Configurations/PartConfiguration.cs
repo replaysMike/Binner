@@ -8,9 +8,13 @@ namespace Binner.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Part> builder)
         {
+#if INITIALCREATE
             builder.HasOne(p => p.User)
                 .WithMany(b => b.Parts)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(p => p.DateModifiedUtc)
+                .HasDefaultValueSql("getutcdate()");
+#endif
             builder.HasOne(p => p.Project)
                 .WithMany(b => b.Parts)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -21,8 +25,6 @@ namespace Binner.Data.Configurations
             builder.Property(p => p.Cost)
                 .HasColumnType("decimal(18,4)");
             builder.Property(p => p.DateCreatedUtc)
-                .HasDefaultValueSql("getutcdate()");
-            builder.Property(p => p.DateModifiedUtc)
                 .HasDefaultValueSql("getutcdate()");
 
             builder.HasIndex(p => new { p.PartNumber, p.UserId });

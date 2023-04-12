@@ -8,9 +8,11 @@ namespace Binner.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Project> builder)
         {
+#if INITIALCREATE
             builder.HasOne(p => p.User)
                 .WithMany(b => b.Projects)
                 .OnDelete(DeleteBehavior.Restrict);
+#endif
 
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");

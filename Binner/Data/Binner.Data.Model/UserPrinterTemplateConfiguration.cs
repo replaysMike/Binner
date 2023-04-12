@@ -4,6 +4,7 @@ using Binner.Model.IO.Printing;
 
 namespace Binner.Data.Model
 {
+#if INITIALCREATE
     /// <summary>
     /// Stores user defined printer template configurations
     /// </summary>
@@ -19,7 +20,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// Associated user
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// The printer configuration
@@ -119,6 +120,8 @@ namespace Binner.Data.Model
         [ForeignKey(nameof(UserPrinterConfigurationId))]
         public UserPrinterConfiguration? UserPrinterConfiguration { get; set; }
 
+        [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
     }
+#endif
 }

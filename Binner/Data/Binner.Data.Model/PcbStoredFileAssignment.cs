@@ -42,7 +42,12 @@ namespace Binner.Data.Model
         /// <summary>
         /// Optional user id to associate
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
+
+#if INITIALCREATE
+        [ForeignKey(nameof(UserId))]
+        public User? User { get; set; }
+#endif
 
         public Pcb? Pcb { get; set; }
 

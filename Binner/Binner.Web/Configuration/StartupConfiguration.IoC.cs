@@ -46,7 +46,7 @@ namespace Binner.Web.Configuration
 
             container.RegisterSingleton<IStorageProvider>((factory) =>
             {
-                var storageProvider = providerFactory.Create(container, storageProviderConfig.ProviderConfiguration);
+                var storageProvider = providerFactory.Create(container, storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
                 return storageProvider;
             });
 

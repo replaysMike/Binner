@@ -8,6 +8,11 @@ namespace Binner.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<ProjectPartAssignment> builder)
         {
+#if INITIALCREATE
+            builder.HasOne(p => p.User)
+                .WithMany(p => p.ProjectPartAssignments)
+                .OnDelete(DeleteBehavior.Restrict);
+#endif
             builder.HasOne(p => p.Project)
                 .WithMany(b => b.ProjectPartAssignments)
                 .OnDelete(DeleteBehavior.Restrict);

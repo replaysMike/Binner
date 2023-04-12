@@ -8,9 +8,13 @@ namespace Binner.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<OAuthRequest> builder)
         {
+#if INITIALCREATE
             builder.HasOne(p => p.User)
                 .WithMany(b => b.OAuthRequests)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(p => p.Ip)
+                .HasDefaultValue(0);
+#endif
 
             builder.Property(p => p.AuthorizationReceived)
                 .HasDefaultValue(false);
@@ -18,8 +22,6 @@ namespace Binner.Data.Configurations
                 .HasDefaultValueSql("getutcdate()");
             builder.Property(p => p.DateModifiedUtc)
                 .HasDefaultValueSql("getutcdate()");
-            builder.Property(p => p.Ip)
-                .HasDefaultValue(0);
         }
     }
 }

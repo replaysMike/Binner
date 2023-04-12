@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Binner.Data.Migrations.MySql.Migrations
 {
     [DbContext(typeof(BinnerContext))]
-    [Migration("20230411023455_InitialCreate")]
+    [Migration("20230412193145_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -19,14 +19,15 @@ namespace Binner.Data.Migrations.MySql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
-                    b.Property<int>("OAuthCredentialId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Provider")
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<string>("AccessToken")
                         .HasColumnType("longtext");
@@ -39,32 +40,15 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<DateTime>("DateExpiresUtc")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
-
                     b.Property<string>("RefreshToken")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("OAuthCredentialId");
+                    b.HasKey("Provider");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OAuthCredentials");
+                    b.ToTable("OAuthCredentials", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.OAuthRequest", b =>
@@ -97,11 +81,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("ErrorDescription")
                         .HasColumnType("longtext");
 
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -112,14 +91,12 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("ReturnToUrl")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("OAuthRequestId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OAuthRequests");
+                    b.ToTable("OAuthRequests", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -147,11 +124,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
@@ -211,17 +183,12 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("SwarmPartNumberManufacturerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PartId");
 
                     b.HasIndex("ProjectId");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("BinNumber", "UserId");
 
@@ -245,7 +212,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("PartTypeId", "UserId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("Parts", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
@@ -288,16 +255,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("SupplierPartNumber")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PartSupplierId");
 
                     b.HasIndex("PartId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PartSuppliers");
+                    b.ToTable("PartSuppliers", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartType", b =>
@@ -307,11 +272,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
@@ -329,11 +289,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("ParentPartTypeId");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("PartTypes");
+                    b.ToTable("PartTypes", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Pcb", b =>
@@ -370,12 +328,12 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("SerialNumberFormat")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PcbId");
 
-                    b.ToTable("Pcbs");
+                    b.ToTable("Pcbs", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
@@ -406,7 +364,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<long>("StoredFileId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("PcbStoredFileAssignmentId");
@@ -415,7 +373,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("StoredFileId");
 
-                    b.ToTable("PcbStoredFileAssignments");
+                    b.ToTable("PcbStoredFileAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -449,16 +407,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ProjectId");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPartAssignment", b =>
@@ -513,7 +469,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("SchematicReferenceId")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ProjectPartAssignmentId");
@@ -522,7 +478,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPartAssignments");
+                    b.ToTable("ProjectPartAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPcbAssignment", b =>
@@ -536,18 +492,13 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
                     b.Property<long>("PcbId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("ProjectId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ProjectPcbAssignmentId");
@@ -556,7 +507,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPcbAssignments");
+                    b.ToTable("ProjectPcbAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -569,11 +520,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
@@ -595,421 +541,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int>("StoredFileType")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("StoredFileId");
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("StoredFiles");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.User", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime?>("DateEmailConfirmedUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DateLastActiveUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DateLastLoginUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DateLockedUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("EmailAddress")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("EmailConfirmationToken")
-                        .HasColumnType("longtext");
-
-                    b.Property<long>("EmailConfirmedIp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsEmailConfirmed")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsEmailSubscribed")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<long>("LastSetPasswordIp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<byte[]>("ProfileImage")
-                        .HasColumnType("longblob");
-
-                    b.Property<double?>("ReCaptchaScore")
-                        .HasColumnType("double");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("EmailAddress");
-
-                    b.HasIndex("Name");
-
-                    b.HasIndex("PhoneNumber");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.Property<int>("UserIntegrationConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("ArrowApiKey")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ArrowApiUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("ArrowEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("ArrowUsername")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("DigiKeyApiUrl")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("DigiKeyClientId")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("DigiKeyClientSecret")
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("DigiKeyEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("DigiKeyOAuthPostbackUrl")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("MouserApiUrl")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("MouserCartApiKey")
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("MouserEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("MouserOrderApiKey")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("MouserSearchApiKey")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("OctopartClientId")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("OctopartClientSecret")
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("OctopartEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("SwarmApiKey")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("SwarmApiUrl")
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("SwarmEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<TimeSpan?>("SwarmTimeout")
-                        .HasColumnType("time(6)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserIntegrationConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserIntegrationConfigurations");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
-                {
-                    b.Property<int>("UserLoginHistoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<bool>("CanLogin")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("EmailAddress")
-                        .HasColumnType("longtext");
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<bool>("IsSuccessful")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("longtext");
-
-                    b.Property<double?>("ReCaptchaScore")
-                        .HasColumnType("double");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserLoginHistoryId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserLoginHistory");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
-                {
-                    b.Property<int>("UserPrinterConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("PartLabelName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("PartLabelSource")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PrinterName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("RemoteAddressUrl")
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserPrinterConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserPrinterConfigurations");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterTemplateConfiguration", b =>
-                {
-                    b.Property<int>("UserPrinterTemplateConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<bool>("AutoSize")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("Barcode")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Color")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Content")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("FontName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("FontSize")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Label")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Line")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("LowerCase")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("MarginBottom")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MarginLeft")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MarginRight")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MarginTop")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rotate")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("UpperCase")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserPrinterConfigurationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserPrinterTemplateConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserPrinterConfigurationId");
-
-                    b.ToTable("UserPrinterTemplateConfigurations");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserToken", b =>
-                {
-                    b.Property<int>("UserTokenId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime?>("DateExpiredUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime?>("DateRevokedUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<string>("ReplacedByToken")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("TokenTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserTokenId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserToken");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("OAuthCredentials")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.OAuthRequest", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("OAuthRequests")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                    b.ToTable("StoredFiles", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -1025,17 +564,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("Parts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("PartType");
 
                     b.Navigation("Project");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
@@ -1046,15 +577,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("PartSuppliers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Part");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartType", b =>
@@ -1064,14 +587,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasForeignKey("ParentPartTypeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("PartTypes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("ParentPartType");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
@@ -1091,17 +607,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Navigation("Pcb");
 
                     b.Navigation("StoredFile");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.Project", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("Projects")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPartAssignment", b =>
@@ -1151,68 +656,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Navigation("Part");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserIntegrationConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserLoginHistory")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserPrinterConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterTemplateConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserPrinterTemplateConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
-                        .WithMany("UserPrinterTemplateConfigurations")
-                        .HasForeignKey("UserPrinterConfigurationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("UserPrinterConfiguration");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserToken", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.Navigation("PartSuppliers");
@@ -1246,36 +689,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
                 {
                     b.Navigation("PcbStoredFileAssignments");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.User", b =>
-                {
-                    b.Navigation("OAuthCredentials");
-
-                    b.Navigation("OAuthRequests");
-
-                    b.Navigation("PartSuppliers");
-
-                    b.Navigation("PartTypes");
-
-                    b.Navigation("Parts");
-
-                    b.Navigation("Projects");
-
-                    b.Navigation("UserIntegrationConfigurations");
-
-                    b.Navigation("UserLoginHistory");
-
-                    b.Navigation("UserPrinterConfigurations");
-
-                    b.Navigation("UserPrinterTemplateConfigurations");
-
-                    b.Navigation("UserTokens");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
-                {
-                    b.Navigation("UserPrinterTemplateConfigurations");
                 });
 #pragma warning restore 612, 618
         }

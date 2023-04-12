@@ -25,7 +25,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// User Id
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// True if an oAuth callback was received from Digikey
@@ -56,11 +56,14 @@ namespace Binner.Data.Model
 
         public DateTime DateModifiedUtc { get; set; }
 
+#if INITIALCREATE
         /// <summary>
         /// Ip address who created the request
         /// </summary>
         public long Ip { get; set; }
 
-        public User User { get; set; } = null!;
+        [ForeignKey(nameof(UserId))]
+        public User? User { get; set; }
+#endif
     }
 }

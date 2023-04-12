@@ -6,7 +6,13 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user uploaded file
     /// </summary>
-    public class StoredFile : IEntity, IUserData
+    public class StoredFile 
+#if INITIALCREATE
+        : IEntity,
+#else
+        : IPartialEntity,
+#endif
+            IUserData
     {
         /// <summary>
         /// Primary key
@@ -50,13 +56,17 @@ namespace Binner.Data.Model
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
 
-        public DateTime DateModifiedUtc { get; set; }
-
         /// <summary>
         /// Optional user id to associate
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
+#if INITIALCREATE
+        public DateTime DateModifiedUtc { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        public User? User { get; set; }
+#endif
         public Part? Part { get;set; }
 
         public ICollection<PcbStoredFileAssignment>? PcbStoredFileAssignments { get; set; }

@@ -18,7 +18,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// Associated user
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// Project name
@@ -52,8 +52,10 @@ namespace Binner.Data.Model
 
         public DateTime DateModifiedUtc { get; set; }
 
+#if INITIALCREATE
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
+#endif
 
         public ICollection<Part>? Parts { get; set; }
         public ICollection<ProjectPcbAssignment>? ProjectPcbAssignments { get; set; }

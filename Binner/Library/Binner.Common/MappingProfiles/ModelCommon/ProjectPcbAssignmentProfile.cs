@@ -14,9 +14,12 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
                 .ForMember(x => x.ProjectPcbAssignmentId, options => options.MapFrom(x => x.ProjectPcbAssignmentId))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
-                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.Pcb, options => options.Ignore())
                 .ForMember(x => x.Project, options => options.Ignore())
+#if INITIALCREATE
+                .ForMember(x => x.User, options => options.Ignore())
+                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+#endif
                 ;
 
             CreateMap<DataModel.ProjectPcbAssignment, ProjectPcbAssignment>()
