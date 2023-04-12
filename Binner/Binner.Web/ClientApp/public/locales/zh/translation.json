@@ -79,7 +79,7 @@
       "noPartsAssigned": "Assign parts to get a count of how many times you can produce this PCB.",
       "pcbProduceCount": "You can produce this PCB <1>{{count}}</1> times with your current inventory.",
       "bomProduceCount": "You can produce your entire BOM <1>{{count}}</1> times with your current inventory.",
-      "lowestPcb": "<i>{{name}}</i> is the lowest on inventory."
+      "lowestPcb": "<0>{{name}}</0> is the lowest on inventory."
     },
     "boms": {
       "header": {
@@ -277,7 +277,7 @@
       "description": "Add a part to your BOM, optionally associating it with a particular PCB.",
       "none": "None",
       "confirmHeader": "Add Part",
-      "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part without associating it to a part in your inventory?<3/><4/><5>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</5>",
+      "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part <3>{{keyword}}</3> without associating it to a part in your inventory?<5/><6/><7>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</7>",
       "selectPcb": "Select PCB",
       "choosePcb": "Choose PCB",
       "popup": {

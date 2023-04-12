@@ -277,7 +277,7 @@
       "description": "Add a part to your BOM, optionally associating it with a particular PCB.",
       "none": "None",
       "confirmHeader": "Add Part",
-      "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part without associating it to a part in your inventory?<3/><4/><5>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</5>",
+      "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part <3>{{keyword}}</3> without associating it to a part in your inventory?<5/><6/><7>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</7>",
       "selectPcb": "Select PCB",
       "choosePcb": "Choose PCB",
       "popup": {

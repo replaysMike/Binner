@@ -112,7 +112,7 @@ export function AddBomPartModal(props) {
 		confirmAddPartClose();
     if (props.onAdd) {
       props.onAdd(e, { 
-        part: selectedPart, 
+        part: {...selectedPart}, 
 				pcbId: form.pcbId,
 				quantity: form.quantity,
 				notes: form.notes,
@@ -121,6 +121,7 @@ export function AddBomPartModal(props) {
         schematicReferenceId: form.schematicReferenceId,
         customDescription: form.customDescription
 			});
+      setSelectedPart(null);
     } else {
       console.error("No onAdd handler defined!");
     }
@@ -149,9 +150,9 @@ export function AddBomPartModal(props) {
         onCancel={confirmAddPartClose}
         onConfirm={handleAddPart}
         content={<p>
-          <Trans i18nKey="comp.addBomPartModal.confirmAddUnassociated">
+          <Trans i18nKey="comp.addBomPartModal.confirmAddUnassociated" keyword={form.keyword}>
           You have not selected a part from your inventory.<br/>
-          Are you sure you want to add this part without associating it to a part in your inventory?<br/><br/>
+          Are you sure you want to add this part <b>{{keyword: form.keyword}}</b> without associating it to a part in your inventory?<br/><br/>
           <span className="small">Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</span>
           </Trans>
           </p>}            
