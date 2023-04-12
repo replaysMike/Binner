@@ -1,6 +1,8 @@
 ﻿using Binner.Common.Configuration;
 using Binner.Data;
+using Binner.Data.Generators;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -30,17 +32,37 @@ namespace Binner.Web.Configuration
                 .Where(x => x.Key == "ConnectionString")
                 .Select(x => x.Value)
                 .FirstOrDefault();
+            var filename = configuration.ProviderConfiguration
+                .Where(x => x.Key == "Filename")
+                .Select(x => x.Value)
+                .FirstOrDefault();
 
             services.AddDbContext<BinnerContext>(options => _ = configuration.Provider.ToLower() switch
             {
                 // binner and sqlite are now the same
-                "binner" => options.UseSqlite(connectionString, x => x.MigrationsAssembly(SqlLiteMigrationsAssemblyName)),
-                "sqlite" => options.UseSqlite(connectionString, x => x.MigrationsAssembly(SqlLiteMigrationsAssemblyName)),
+                "binner" => options.UseSqlite($"Data Source={filename}", x =>
+                {
+                    x.MigrationsAssembly(SqlLiteMigrationsAssemblyName);
+                }).ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>(),
+
+                "sqlite" => options.UseSqlite(connectionString, x =>
+                {
+                    x.MigrationsAssembly(SqlLiteMigrationsAssemblyName);
+                }).ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>(),
 
                 // alternative storage provider registrations
                 "sqlserver" => options.UseSqlServer(connectionString, x => x.MigrationsAssembly(SqlServerMigrationsAssemblyName)),
-                "postgresql" => options.UseNpgsql(connectionString, x => x.MigrationsAssembly(PostgresqlMigrationsAssemblyName)),
-                "mysql" => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), x => x.MigrationsAssembly(MySqlMigrationsAssemblyName)),
+
+                "postgresql" => options.UseNpgsql(connectionString, x =>
+                {
+                    x.MigrationsAssembly(PostgresqlMigrationsAssemblyName);
+                    x.MigrationsHistoryTable("__EFMigrationsHistory", "dbo");
+                }).ReplaceService<IMigrationsSqlGenerator, PostgresqlCustomMigrationsSqlGenerator>(),
+
+                "mysql" => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), x =>
+                {
+                    x.MigrationsAssembly(MySqlMigrationsAssemblyName);
+                }).ReplaceService<IMigrationsSqlGenerator, MySqlCustomMigrationsSqlGenerator>(),
                 _ => throw new NotSupportedException($"Unsupported provider: {configuration.Provider}")
             });
             services.AddDbContextFactory<BinnerContext>(lifetime: ServiceLifetime.Scoped);

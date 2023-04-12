@@ -6,7 +6,13 @@ namespace Binner.Data.Model
     /// <summary>
     /// Defines a type of part or category/sub-category
     /// </summary>
-    public class PartType : IEntity
+    public class PartType 
+#if INITIALCREATE
+        : IEntity,
+#else
+        : IPartialEntity,
+#endif
+        IUserData
     {
         /// <summary>
         /// Primary key
@@ -35,10 +41,12 @@ namespace Binner.Data.Model
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
 
+#if INITIALCREATE
         public DateTime DateModifiedUtc { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
+#endif
 
         [ForeignKey(nameof(ParentPartTypeId))]
         public PartType? ParentPartType { get; set; }

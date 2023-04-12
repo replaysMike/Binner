@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Binner.Data.Configurations
 {
+#if INITIALCREATE
     public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         public void Configure(EntityTypeBuilder<User> builder)
@@ -26,4 +27,5 @@ namespace Binner.Data.Configurations
             builder.HasIndex(p => p.PhoneNumber);
         }
     }
+#endif
 }

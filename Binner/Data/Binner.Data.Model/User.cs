@@ -3,10 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
+#if INITIALCREATE
+
     /// <summary>
     /// A user context
     /// </summary>
-    public class User : IEntity, IUserData
+    public class User : IEntity
     {
         /// <summary>
         /// User Id
@@ -104,15 +106,26 @@ namespace Binner.Data.Model
         /// </summary>
         public long LastSetPasswordIp { get; set; }
 
+
         public ICollection<UserToken>? UserTokens { get; set; }
 
         public ICollection<UserLoginHistory>? UserLoginHistory { get; set; }
+
+        public ICollection<Pcb>? Pcbs{ get; set; }
+
+        public ICollection<PcbStoredFileAssignment>? PcbStoredFileAssignments { get; set; }
 
         public ICollection<Part>? Parts { get; set; }
 
         public ICollection<PartType>? PartTypes { get; set; }
 
         public ICollection<Project>? Projects { get; set; }
+
+        public ICollection<ProjectPartAssignment>? ProjectPartAssignments { get; set; }
+
+        public ICollection<ProjectPcbAssignment>? ProjectPcbAssignments { get; set; }
+
+        public ICollection<StoredFile>? StoredFiles { get; set; }
 
         public ICollection<OAuthCredential>? OAuthCredentials { get; set; }
 
@@ -125,5 +138,7 @@ namespace Binner.Data.Model
         public ICollection<UserPrinterConfiguration>? UserPrinterConfigurations { get; set; }
 
         public ICollection<UserPrinterTemplateConfiguration>? UserPrinterTemplateConfigurations { get; set; }
+
     }
+#endif
 }

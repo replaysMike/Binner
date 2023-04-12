@@ -8,9 +8,11 @@ namespace Binner.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<PartSupplier> builder)
         {
+#if INITIALCREATE
             builder.HasOne(p => p.User)
                 .WithMany(b => b.PartSuppliers)
                 .OnDelete(DeleteBehavior.Restrict);
+#endif
             builder.HasOne(p => p.Part)
                 .WithMany(b => b.PartSuppliers)
                 .OnDelete(DeleteBehavior.Restrict);

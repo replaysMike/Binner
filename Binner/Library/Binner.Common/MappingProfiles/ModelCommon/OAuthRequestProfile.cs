@@ -20,7 +20,9 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 .ForMember(x => x.DateModifiedUtc, options => options.MapFrom(x => x.DateModifiedUtc))
                 .ForMember(x => x.RequestId, options => options.MapFrom(x => x.RequestId))
+#if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
+#endif
                 .ForMember(x => x.Ip, options => options.Ignore())
                 .ReverseMap();
 
@@ -36,7 +38,9 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.OAuthRequestId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+#if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
+#endif
                 .ForMember(x => x.Ip, options => options.Ignore())
                 .ReverseMap();
         }

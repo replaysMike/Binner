@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
+#if INITIALCREATE
     /// <summary>
     /// Stores user defined integration configurations
     /// </summary>
@@ -18,7 +19,7 @@ namespace Binner.Data.Model
         /// <summary>
         /// Associated user
         /// </summary>
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// Binner Swarm api enabled
@@ -132,6 +133,8 @@ namespace Binner.Data.Model
 
         public DateTime DateModifiedUtc { get; set; }
 
+        [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
     }
+#endif
 }

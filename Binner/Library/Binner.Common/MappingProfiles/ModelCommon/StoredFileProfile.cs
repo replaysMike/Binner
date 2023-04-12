@@ -17,10 +17,13 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.StoredFileType, options => options.MapFrom(x => x.StoredFileType))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
-                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.Part, options => options.Ignore())
                 .ForMember(x => x.PcbStoredFileAssignments, options => options.Ignore())
+#if INITIALCREATE
+                .ForMember(x => x.User, options => options.Ignore())
+                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+#endif
                 .ReverseMap();
         }
     }

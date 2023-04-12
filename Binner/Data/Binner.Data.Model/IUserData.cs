@@ -1,10 +1,10 @@
 ﻿namespace Binner.Data.Model
 {
-    internal interface IUserData
+    public interface IUserData
     {
         /// <summary>
         /// Associated User Id
         /// </summary>
-        int UserId { get; set; }
+        int? UserId { get; set; }
     }
 }

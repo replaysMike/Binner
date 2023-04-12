@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Binner.Data.Migrations.Postgresql.Migrations
 {
     [DbContext(typeof(BinnerContext))]
-    [Migration("20230411023446_InitialCreate")]
+    [Migration("20230412193100_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,6 +20,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -27,11 +28,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
-                    b.Property<int>("OAuthCredentialId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OAuthCredentialId"));
+                    b.Property<string>("Provider")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("AccessToken")
                         .HasColumnType("text");
@@ -44,32 +43,15 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<DateTime>("DateExpiresUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
-                    b.HasKey("OAuthCredentialId");
+                    b.HasKey("Provider");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OAuthCredentials");
+                    b.ToTable("OAuthCredentials", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.OAuthRequest", b =>
@@ -104,11 +86,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("ErrorDescription")
                         .HasColumnType("text");
 
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasColumnType("text");
@@ -119,14 +96,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("ReturnToUrl")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("OAuthRequestId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OAuthRequests");
+                    b.ToTable("OAuthRequests", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -156,11 +131,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
@@ -220,17 +190,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("SwarmPartNumberManufacturerId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PartId");
 
                     b.HasIndex("ProjectId");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("BinNumber", "UserId");
 
@@ -254,7 +219,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("PartTypeId", "UserId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("Parts", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
@@ -299,16 +264,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("SupplierPartNumber")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PartSupplierId");
 
                     b.HasIndex("PartId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PartSuppliers");
+                    b.ToTable("PartSuppliers", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartType", b =>
@@ -320,11 +283,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartTypeId"));
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
@@ -342,11 +300,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("ParentPartTypeId");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("PartTypes");
+                    b.ToTable("PartTypes", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Pcb", b =>
@@ -385,12 +341,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("SerialNumberFormat")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PcbId");
 
-                    b.ToTable("Pcbs");
+                    b.ToTable("Pcbs", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
@@ -423,7 +379,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<long>("StoredFileId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PcbStoredFileAssignmentId");
@@ -432,7 +388,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("StoredFileId");
 
-                    b.ToTable("PcbStoredFileAssignments");
+                    b.ToTable("PcbStoredFileAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -468,16 +424,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("ProjectId");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPartAssignment", b =>
@@ -534,7 +488,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("SchematicReferenceId")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("ProjectPartAssignmentId");
@@ -543,7 +497,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPartAssignments");
+                    b.ToTable("ProjectPartAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPcbAssignment", b =>
@@ -559,18 +513,13 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
 
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
                     b.Property<long>("PcbId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("ProjectId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("ProjectPcbAssignmentId");
@@ -579,7 +528,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPcbAssignments");
+                    b.ToTable("ProjectPcbAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -594,11 +543,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
@@ -620,433 +564,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("StoredFileType")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("StoredFileId");
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("StoredFiles");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.User", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime?>("DateEmailConfirmedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DateLastActiveUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DateLastLoginUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DateLockedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("EmailAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("EmailConfirmationToken")
-                        .HasColumnType("text");
-
-                    b.Property<long>("EmailConfirmedIp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsEmailConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsEmailSubscribed")
-                        .HasColumnType("boolean");
-
-                    b.Property<long>("LastSetPasswordIp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<byte[]>("ProfileImage")
-                        .HasColumnType("bytea");
-
-                    b.Property<double?>("ReCaptchaScore")
-                        .HasColumnType("double precision");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("EmailAddress");
-
-                    b.HasIndex("Name");
-
-                    b.HasIndex("PhoneNumber");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.Property<int>("UserIntegrationConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserIntegrationConfigurationId"));
-
-                    b.Property<string>("ArrowApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ArrowApiUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("ArrowEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ArrowUsername")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("DigiKeyApiUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DigiKeyClientId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DigiKeyClientSecret")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("DigiKeyEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("DigiKeyOAuthPostbackUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MouserApiUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MouserCartApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("MouserEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("MouserOrderApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MouserSearchApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OctopartClientId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OctopartClientSecret")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("OctopartEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SwarmApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SwarmApiUrl")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("SwarmEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<TimeSpan?>("SwarmTimeout")
-                        .HasColumnType("interval");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserIntegrationConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserIntegrationConfigurations");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
-                {
-                    b.Property<int>("UserLoginHistoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserLoginHistoryId"));
-
-                    b.Property<bool>("CanLogin")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("EmailAddress")
-                        .HasColumnType("text");
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<bool>("IsSuccessful")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<double?>("ReCaptchaScore")
-                        .HasColumnType("double precision");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserLoginHistoryId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserLoginHistory");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
-                {
-                    b.Property<int>("UserPrinterConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserPrinterConfigurationId"));
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("PartLabelName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("PartLabelSource")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PrinterName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("RemoteAddressUrl")
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserPrinterConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserPrinterConfigurations");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterTemplateConfiguration", b =>
-                {
-                    b.Property<int>("UserPrinterTemplateConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserPrinterTemplateConfigurationId"));
-
-                    b.Property<bool>("AutoSize")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Barcode")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Color")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("FontName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("FontSize")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Label")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Line")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("LowerCase")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("MarginBottom")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MarginLeft")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MarginRight")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MarginTop")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Rotate")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("UpperCase")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserPrinterConfigurationId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserPrinterTemplateConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserPrinterConfigurationId");
-
-                    b.ToTable("UserPrinterTemplateConfigurations");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserToken", b =>
-                {
-                    b.Property<int>("UserTokenId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserTokenId"));
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime?>("DateExpiredUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime?>("DateRevokedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("Ip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L);
-
-                    b.Property<string>("ReplacedByToken")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("TokenTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserTokenId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserToken");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("OAuthCredentials")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.OAuthRequest", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("OAuthRequests")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                    b.ToTable("StoredFiles", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -1062,17 +587,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("Parts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("PartType");
 
                     b.Navigation("Project");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
@@ -1083,15 +600,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("PartSuppliers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Part");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartType", b =>
@@ -1101,14 +610,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasForeignKey("ParentPartTypeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("PartTypes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("ParentPartType");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
@@ -1128,17 +630,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("Pcb");
 
                     b.Navigation("StoredFile");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.Project", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("Projects")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPartAssignment", b =>
@@ -1188,68 +679,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("Part");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserIntegrationConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserLoginHistory")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserPrinterConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterTemplateConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserPrinterTemplateConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
-                        .WithMany("UserPrinterTemplateConfigurations")
-                        .HasForeignKey("UserPrinterConfigurationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("UserPrinterConfiguration");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserToken", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.Navigation("PartSuppliers");
@@ -1283,36 +712,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
                 {
                     b.Navigation("PcbStoredFileAssignments");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.User", b =>
-                {
-                    b.Navigation("OAuthCredentials");
-
-                    b.Navigation("OAuthRequests");
-
-                    b.Navigation("PartSuppliers");
-
-                    b.Navigation("PartTypes");
-
-                    b.Navigation("Parts");
-
-                    b.Navigation("Projects");
-
-                    b.Navigation("UserIntegrationConfigurations");
-
-                    b.Navigation("UserLoginHistory");
-
-                    b.Navigation("UserPrinterConfigurations");
-
-                    b.Navigation("UserPrinterTemplateConfigurations");
-
-                    b.Navigation("UserTokens");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
-                {
-                    b.Navigation("UserPrinterTemplateConfigurations");
                 });
 #pragma warning restore 612, 618
         }

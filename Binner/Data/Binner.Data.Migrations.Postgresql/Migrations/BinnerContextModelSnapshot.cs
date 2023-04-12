@@ -17,6 +17,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -24,11 +25,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
-                    b.Property<int>("OAuthCredentialId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OAuthCredentialId"));
+                    b.Property<string>("Provider")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("AccessToken")
                         .HasColumnType("text");
@@ -51,22 +50,17 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
-                    b.HasKey("OAuthCredentialId");
+                    b.HasKey("Provider");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OAuthCredentials");
+                    b.ToTable("OAuthCredentials", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.OAuthRequest", b =>
@@ -116,14 +110,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("ReturnToUrl")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("OAuthRequestId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OAuthRequests");
+                    b.ToTable("OAuthRequests", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -217,10 +211,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("SwarmPartNumberManufacturerId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PartId");
@@ -251,7 +242,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("PartTypeId", "UserId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("Parts", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
@@ -296,7 +287,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("SupplierPartNumber")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PartSupplierId");
@@ -305,7 +296,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PartSuppliers");
+                    b.ToTable("PartSuppliers", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartType", b =>
@@ -343,7 +334,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("PartTypes");
+                    b.ToTable("PartTypes", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Pcb", b =>
@@ -382,12 +373,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("SerialNumberFormat")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PcbId");
 
-                    b.ToTable("Pcbs");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Pcbs", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
@@ -420,7 +413,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<long>("StoredFileId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("PcbStoredFileAssignmentId");
@@ -429,7 +422,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("StoredFileId");
 
-                    b.ToTable("PcbStoredFileAssignments");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PcbStoredFileAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -465,7 +460,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("ProjectId");
@@ -474,7 +469,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("Name", "UserId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPartAssignment", b =>
@@ -531,7 +526,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("SchematicReferenceId")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("ProjectPartAssignmentId");
@@ -540,7 +535,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPartAssignments");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectPartAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPcbAssignment", b =>
@@ -567,7 +564,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<long>("ProjectId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("ProjectPcbAssignmentId");
@@ -576,7 +573,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectPcbAssignments");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectPcbAssignments", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -617,14 +616,16 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("StoredFileType")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("StoredFileId");
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("StoredFiles");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StoredFiles", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.User", b =>
@@ -713,7 +714,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("PhoneNumber");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
@@ -798,14 +799,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("interval");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("UserIntegrationConfigurationId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserIntegrationConfigurations");
+                    b.ToTable("UserIntegrationConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -820,6 +821,11 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
@@ -848,7 +854,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLoginHistory");
+                    b.ToTable("UserLoginHistory", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserPrinterConfiguration", b =>
@@ -883,14 +889,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("RemoteAddressUrl")
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("UserPrinterConfigurationId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserPrinterConfigurations");
+                    b.ToTable("UserPrinterConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserPrinterTemplateConfiguration", b =>
@@ -960,7 +966,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<bool>("UpperCase")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.Property<int>("UserPrinterConfigurationId")
@@ -972,7 +978,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("UserPrinterConfigurationId");
 
-                    b.ToTable("UserPrinterTemplateConfigurations");
+                    b.ToTable("UserPrinterTemplateConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserToken", b =>
@@ -1014,14 +1020,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("TokenTypeId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("UserTokenId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserToken");
+                    b.ToTable("UserTokens", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
@@ -1029,8 +1035,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("OAuthCredentials")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1040,8 +1045,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("OAuthRequests")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1062,8 +1066,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("Parts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("PartType");
 
@@ -1083,8 +1086,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("PartSuppliers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Part");
 
@@ -1108,6 +1110,16 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.Pcb", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("Pcbs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.PcbStoredFileAssignment", b =>
                 {
                     b.HasOne("Binner.Data.Model.Pcb", "Pcb")
@@ -1122,9 +1134,16 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PcbStoredFileAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Pcb");
 
                     b.Navigation("StoredFile");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -1132,8 +1151,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("Projects")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1151,9 +1169,16 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectPartAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Part");
 
                     b.Navigation("Project");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.ProjectPcbAssignment", b =>
@@ -1170,9 +1195,16 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectPcbAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Pcb");
 
                     b.Navigation("Project");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -1182,7 +1214,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasForeignKey("PartId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("StoredFiles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Part");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
@@ -1190,8 +1229,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserIntegrationConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1211,8 +1249,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("User");
                 });
@@ -1222,8 +1259,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
                         .WithMany("UserPrinterTemplateConfigurations")
@@ -1241,8 +1277,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserTokens")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1294,7 +1329,17 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Navigation("Parts");
 
+                    b.Navigation("PcbStoredFileAssignments");
+
+                    b.Navigation("Pcbs");
+
+                    b.Navigation("ProjectPartAssignments");
+
+                    b.Navigation("ProjectPcbAssignments");
+
                     b.Navigation("Projects");
+
+                    b.Navigation("StoredFiles");
 
                     b.Navigation("UserIntegrationConfigurations");
 

@@ -27,6 +27,9 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.Part, options => options.Ignore())
                 .ForMember(x => x.Project, options => options.Ignore())
+#if INITIALCREATE
+                .ForMember(x => x.User, options => options.Ignore())
+#endif
                 ;
 
             CreateMap<DataModel.ProjectPartAssignment, ProjectPartAssignment>()

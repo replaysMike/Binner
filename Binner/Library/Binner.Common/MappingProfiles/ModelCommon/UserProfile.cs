@@ -5,6 +5,7 @@ using DataModel = Binner.Data.Model;
 
 namespace Binner.Common.MappingProfiles.ModelCommon
 {
+#if INITIALCREATE
     public class UserProfile : Profile
     {
         public UserProfile()
@@ -41,6 +42,11 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.UserLoginHistory, options => options.Ignore())
                 .ForMember(x => x.ReCaptchaScore, options => options.Ignore())
                 .ForMember(x => x.PartSuppliers, options => options.Ignore())
+                .ForMember(x => x.Pcbs, options => options.Ignore())
+                .ForMember(x => x.PcbStoredFileAssignments, options => options.Ignore())
+                .ForMember(x => x.ProjectPartAssignments, options => options.Ignore())
+                .ForMember(x => x.ProjectPcbAssignments, options => options.Ignore())
+                .ForMember(x => x.StoredFiles, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.User, User>()
@@ -76,4 +82,5 @@ namespace Binner.Common.MappingProfiles.ModelCommon
             }
         }
     }
+#endif
 }

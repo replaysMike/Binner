@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Binner.Data.Configurations
 {
+#if INITIALCREATE
     public class UserPrinterTemplateConfigurationConfiguration : IEntityTypeConfiguration<UserPrinterTemplateConfiguration>
     {
         public void Configure(EntityTypeBuilder<UserPrinterTemplateConfiguration> builder)
@@ -23,4 +24,5 @@ namespace Binner.Data.Configurations
                 .HasDefaultValueSql("getutcdate()");
         }
     }
+#endif
 }

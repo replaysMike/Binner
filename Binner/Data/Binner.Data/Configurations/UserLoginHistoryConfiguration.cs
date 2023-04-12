@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Binner.Data.Configurations
 {
+#if INITIALCREATE
     public class UserLoginHistoryConfiguration : IEntityTypeConfiguration<UserLoginHistory>
     {
         public void Configure(EntityTypeBuilder<UserLoginHistory> builder)
@@ -14,8 +15,11 @@ namespace Binner.Data.Configurations
 
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");
+            builder.Property(p => p.DateModifiedUtc)
+                .HasDefaultValueSql("getutcdate()");
             builder.Property(p => p.Ip)
                 .HasDefaultValue(0);
         }
     }
+#endif
 }

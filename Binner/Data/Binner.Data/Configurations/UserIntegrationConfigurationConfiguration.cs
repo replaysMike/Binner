@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Binner.Data.Configurations
 {
+#if INITIALCREATE
     public class UserIntegrationConfigurationConfiguration : IEntityTypeConfiguration<UserIntegrationConfiguration>
     {
         public void Configure(EntityTypeBuilder<UserIntegrationConfiguration> builder)
@@ -18,4 +19,5 @@ namespace Binner.Data.Configurations
                 .HasDefaultValueSql("getutcdate()");
         }
     }
+#endif
 }

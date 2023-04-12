@@ -15,9 +15,10 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.RefreshToken, options => options.MapFrom(x => x.RefreshToken))
                 .ForMember(x => x.DateExpiresUtc, options => options.MapFrom(x => x.DateExpiresUtc))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
-                .ForMember(x => x.OAuthCredentialId, options => options.Ignore())
+#if INITIALCREATE
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.User, options => options.Ignore())
+#endif
                 .ForMember(x => x.Ip, options => options.Ignore())
                 .ReverseMap();
         }

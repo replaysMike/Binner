@@ -109,7 +109,6 @@ namespace Binner.Web.ServiceHost
             var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ?? throw new BinnerConfigurationException($"Configuration section '{nameof(StorageProviderConfiguration)}' does not exist!");
             var migrationHostBuilder = HostBuilderFactory.Create(storageConfig);
             var migrationHost = migrationHostBuilder.Build();
-            var context = migrationHost.Services.GetRequiredService<BinnerContext>();
             var contextFactory = migrationHost.Services.GetRequiredService<IDbContextFactory<BinnerContext>>();
             var migrationHandler = new MigrationHandler(_nlogLogger, storageConfig, contextFactory);
             if (migrationHandler.TryDetectMigrateNeeded(out var db))
@@ -153,6 +152,21 @@ namespace Binner.Web.ServiceHost
             ApplicationLogging.LoggerFactory = _webHost.Services.GetRequiredService<ILoggerFactory>();
             _logger = _webHost.Services.GetRequiredService<ILogger<BinnerWebHostService>>();
             _logger.LogInformation($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
+
+            using (var context = migrationHost.Services.GetRequiredService<BinnerContext>())
+            {
+                try
+                {
+                    _logger.LogInformation($"Migrating {storageConfig.Provider} database...");
+                    context.Database.Migrate();
+                    _logger.LogInformation($"{storageConfig.Provider} database migration complete!");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to migrate {storageConfig.Provider} database!");
+                    return;
+                }
+            }
 
             await _webHost.RunAsync(_cancellationTokenSource.Token);
 
