@@ -277,7 +277,7 @@
 			"description": "Aggiungere un componente alla DBA, ed eventualmente associarlo a un particolare PCB.",
 			"none": "Nessuno",
 			"confirmHeader": "Aggiungere componente",
-			"confirmAddUnassociated": "Nonè stato selezionato alcun componente dall'inventario.<1/>Continuare ad aggiungere questo componente senza associarlo ad un componente dell'inventario?<3/><4/><5>Nota: se si procede si potrà comunque gestirne la quantità, ma non apparirà nell'inventario.</5>",
+			"confirmAddUnassociated": "Nonè stato selezionato alcun componente dall'inventario.<1/>Continuare ad aggiungere questo componente <3>{{keyword}}</3> senza associarlo ad un componente dell'inventario?<5/><6/><7>Nota: se si procede si potrà comunque gestirne la quantità, ma non apparirà nell'inventario.</7>",
 			"selectPcb": "Selezionare un PCB",
 			"choosePcb": "Scegliere il PCB",
 			"popup": {

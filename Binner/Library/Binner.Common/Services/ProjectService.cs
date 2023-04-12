@@ -301,23 +301,34 @@ namespace Binner.Common.Services
                     var pcbParts = parts.Where(x => x.PcbId != null && x.PcbId == pcb.PcbId).ToList();
                     foreach (var pcbPart in pcbParts)
                     {
-                        if (pcbPart.Part == null)
-                            throw new ArgumentNullException($"Invalid request: Part object cannot be null!");
-
                         // get the quantity to remove, which is the number of parts used on this pcb X the number of pcb boards produced
                         var quantityToRemove = pcbPart.Quantity * numberOfPcbsProduced;
-                        if (quantityToRemove > pcbPart.Part.Quantity)
-                            throw new InvalidOperationException($"There are not enough parts in inventory for part: {pcbPart.PartName}. In Stock: {pcbPart.Part.Quantity}, Quantity needed: {quantityToRemove}");
+                        if (quantityToRemove > (pcbPart.Part?.Quantity ?? pcbPart.QuantityAvailable))
+                            throw new InvalidOperationException($"There are not enough parts in inventory for part: {pcbPart.PartName}. In Stock: {pcbPart.Part?.Quantity ?? pcbPart.QuantityAvailable}, Quantity needed: {quantityToRemove}");
 
                         if (performUpdates)
                         {
                             // if the pcb has a quantity > 1, it acts as a multiplier for BOMs that produce multiples of a single PCB
                             // a value of 0 is invalid
                             if (pcbEntity.Quantity > 1)
-                                pcbPart.Part.Quantity -= (quantityToRemove * pcbEntity.Quantity);
+                            {
+                                if (pcbPart.Part != null)
+                                    pcbPart.Part.Quantity -= (quantityToRemove * pcbEntity.Quantity);
+                                else
+                                    pcbPart.QuantityAvailable -= (quantityToRemove * pcbEntity.Quantity);
+                            }
                             else
-                                pcbPart.Part.Quantity -= quantityToRemove;
-                            await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(pcbPart.Part), user);
+                            {
+                                if (pcbPart.Part != null)
+                                    pcbPart.Part.Quantity -= quantityToRemove;
+                                else
+                                    pcbPart.QuantityAvailable -= quantityToRemove;
+                            }
+
+                            if (pcbPart.Part != null)
+                                await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(pcbPart.Part), user);
+                            else
+                                await _storageProvider.UpdateProjectPartAssignmentAsync(Mapper.Map<ProjectPartAssignment>(pcbPart), user);
                         }
                     }
 
@@ -333,19 +344,22 @@ namespace Binner.Common.Services
             {
                 foreach (var part in parts.Where(x => x.PcbId == null))
                 {
-                    if (part.Part == null)
-                        throw new ArgumentNullException($"Invalid request: Part object cannot be null!");
-
                     // get the quantity to remove, which is the number of parts used on this pcb X the number of pcb boards produced
                     var quantityToRemove = part.Quantity * numberOfPcbsProduced;
-                    if (quantityToRemove > part.Part.Quantity)
+                    if (quantityToRemove > (part.Part?.Quantity ?? part.QuantityAvailable))
                         throw new InvalidOperationException(
-                            $"There are not enough parts in inventory for part: {part.PartName}. In Stock: {part.Part.Quantity}, Quantity needed: {quantityToRemove}");
+                            $"There are not enough parts in inventory for part: {part.PartName}. In Stock: {part.Part?.Quantity ?? part.QuantityAvailable}, Quantity needed: {quantityToRemove}");
 
                     if (performUpdates)
                     {
-                        part.Part.Quantity -= quantityToRemove;
-                        await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(part.Part), user);
+                        if (part.Part != null)
+                            part.Part.Quantity -= quantityToRemove;
+                        else
+                            part.QuantityAvailable -= quantityToRemove;
+                        if (part.Part != null)
+                            await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(part.Part), user);
+                        else
+                            await _storageProvider.UpdateProjectPartAssignmentAsync(Mapper.Map<ProjectPartAssignment>(part), user);
                     }
                 }
             }

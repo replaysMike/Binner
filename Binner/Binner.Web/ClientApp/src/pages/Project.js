@@ -341,8 +341,8 @@ export function Project(props) {
 					<Table>
 						<Table.Header>
 							<Table.Row>
-								<Table.HeaderCell>{t('label.name', "Name")}</Table.HeaderCell>
-								<Table.HeaderCell>{t('label.description', "Description")}</Table.HeaderCell>
+								<Table.HeaderCell width={2}>{t('label.name', "Name")}</Table.HeaderCell>
+								<Table.HeaderCell width={2}>{t('label.description', "Description")}</Table.HeaderCell>
                 <Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
                 <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
 								<Table.HeaderCell>{t('label.serialNumberFormat', "Serial Number Format")}</Table.HeaderCell>
