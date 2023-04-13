@@ -37,15 +37,20 @@
 			"recentlyAdded": "Aggiunti di recente",
 			"partMetadata": "Metadati del componente",
 			"privatePartInfo": "Informazioni private del componente",
+			"privatePartInfoMessage": "These values can be set manually and will not be synchronized automatically via apis.",
 			"suppliers": "Fornitori",
 			"addKeyword": "Aggiungi parola chiave",
 			"chooseAlternatePart": "Sceglere un componente alternativo ({{count}})",
+			"suggestedPart": "Suggested part number",
 			"placeholder": {
 				"location": "Laboratorio",
 				"keywords": "op amp",
 				"binNumber": "IC Components 2",
 				"binNumber2": "14"
 			},
+			"message": {
+        "uploadWait": "Files can't be uploaded until the part is saved."
+      },
 			"popup": {
 				"bulkAddParts": "Aggiungere componenti in massa usando un lettore di codici a barre",
 				"quantity": "Usare la rotellina del mouse e CTRL/ALT per aumentare il passo",               
@@ -77,9 +82,9 @@
 			"notEnoughPartsToProducePcb": "Non ci sono componenti sufficienti per produrre questo PCB.",
 			"notEnoughPartsToProduceBom": "Non ci sono componenti sufficienti per produrre l'intera DBA.",
 			"noPartsAssigned": "Assegnare i componenti per contare quante volte puoi produrre questo PCB.",
-			"pcbProduceCount": "Con le attuali disponibilità in inventario si può produrre questo PCB <1>{{count}}</1> volte.",
-			"bomProduceCount": "Con le attuali disponibilità in inventario si può produrre l'intera DBA <1>{{count}}</1> volte.",
-			"lowestPcb": "<0>{{name}}</0> manda componenti in sottoscorta."
+			"pcbProduceCount": "Con le attuali disponibilità in inventario si può produrre questo PCB <b>{{count}}</b> volte.",
+			"bomProduceCount": "Con le attuali disponibilità in inventario si può produrre l'intera DBA <b>{{count}}</b> volte.",
+			"lowestPcb": "<i>{{name}}</i> manda componenti in sottoscorta."
 		},
 		"boms": {
 			"header": {
@@ -123,30 +128,61 @@
 				"mustAuthenticate": "L'External Api richiede l'autenticazione. Dopo l'autenticazione con il provider esterno, si verrà reindirizzati qui."
 			},
 			"integrations": "Integrazioni",
-			"integrationsDescription": "Per integrarsi con DigiKey, Mouser, Arrow or Octopart/Nexar API è necessario ottenere le API keys per ogni servizio da utilizzare. <1 /> Aggiungere integrazioni migliorerà notevolmente l'esperienza d'uso.",
+			"integrationsDescription": "Per integrarsi con DigiKey, Mouser, Arrow o Octopart/Nexar API è necessario ottenere le API keys per ogni servizio da utilizzare. <1 /> Aggiungere integrazioni migliorerà notevolmente l'esperienza d'uso.",
 			"swarm": "Swarm",
 			"swarmDescription": "Swarm è un servizio API gratuito fornito da <1>Binner's cloud service</1>, che contiene metadati di parti provenienti da molte fonti aggregate. È la principale fonte di informazioni su parti, media e schede tecniche. Registrarsi per ottenere le proprie chiavi API consentirà di avere limiti di richiesta più elevati, le chiavi API possono essere ottenute su <3>https://binner.io/swarm</3>.",
 			"swarmSupport": "Supporto Swarm",
 			"digikey": "DigiKey",
+			"digikeyDescription": "Digikey API Keys are free and can be obtained at <1>https://developer.digikey.com/</1>",
 			"digikeySupport": "Supporto DigiKey",
 			"mouser": "Mouser",
+			"mouserDescription": "Mouser API Keys can be obtained at <1>https://www.mouser.com/api-hub/</1>",
 			"mouserSupport": "Supporto Mouser",
 			"searchApiKey": "Search Api Key",
 			"ordersApiKey": "Orders Api Key",
 			"cartApiKey": "Cart Api Key",
 			"arrow": "Arrow",
+			"arrowDescription": "Arrow API Keys can be obtained at <1>https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey</1>",
 			"arrowSupport": "Supporto Arrow",
 			"octopartNexar": "Octopart/Nexar",
+			"octopartNexarDescription": "Octopart/Nexar API Keys can be obtained at <1>https://portal.nexar.com/sign-up</1>",
 			"octopartNexarSupport": "Supporto Octopart/Nexar",
 			"printerConfiguration": "Configurazione Stampante",
-			"printerConfigDescription": "Indica il nome della stampante così come compare nell'ambiente (Windows Printers or CUPS Printer Name)",
+			"printerConfigDescription": "Indica il nome della stampante così come compare nell'ambiente (Windows Printers o CUPS Printer Name)",
 			"printerName": "Printer Name",
 			"partLabelSource": "Etichetta del componente",
 			"partLabelName": "Nome etichetta",
 			"partLabelTemplate": "Modello etichetta",
 			"partLabelTemplateDescription": "Le etichette dei componenti saranno stampate secondo questo modello.",
 			"lineX": "Line {{number}}",
-			"identifierX": "Identifier {{number}}"
+			"identifierX": "Identifier {{number}}",
+			"popup": {
+        "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
+        "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
+        "swarmApiKey": "Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.",
+        "swarmApiUrl": "Swarm's API Url",
+        "swarmTimeout": "Swarm api request timeout. Default: '00:00:05' (5 seconds)",
+        "digikeyEnabled": "Choose if you would like to enable DigiKey support. You will occasionally be asked to login to your DigiKey account to allow Binner to access your information.",
+        "digikeyClientId": "Your DigiKey <1>Client ID</1>.<3><4/>Figure 1. DigiKey Client Id settings</3>",
+        "digikeyClientSecret": "Your DigiKey <1>Client Secret</1>.<3><4/>Figure 1. DigiKey Client Secret settings</3>",
+        "digikeyApiUrl": "DigiKey's API Url. This will either be <1>api.digikey.com</1> (live) or <3>sandbox-api.digikey.com</3> (for testing only)",
+        "digikeyOAuthPostbackUrl": "Binner's postback url must be registered with DigiKey exactly as specified here, on DigiKey this is named <1>Callback URL</1>. This should almost always be localhost, and no firewall settings are required as your web browser will be making the request.<3/><4/><5>Example: </5><6>localhost:8090/Authorization/Authorize</6><7/><8><9/>Figure 1. DigiKey Callback URL</8>",
+        "mouserEnabled": "Choose if you would like to enable Mouser support.",
+        "mouserSearchApiKey": "Your api key for accessing the search api.",
+        "mouserOrderApiKey": "Your api key for accessing the orders api.",
+        "mouserCartApiKey": "Your api key for accessing the shopping cart api.",
+        "mouserApiUrl": "Mouser's API Url. This will be api.mouser.com",
+        "arrowEnabled": "Choose if you would like to enable Arrow support.",
+        "arrowUsername": "Your username/login for Arrow.",
+        "arrowApiKey": "Your api key for Arrow.",
+        "arrowApiUrl": "Arrow's API Url. This will be api.arrow.com",
+        "octopartEnabled": "Choose if you would like to enable Octopart/Nexar support.",
+        "octopartClientId": "Your Client Id for Octopart/Nexar.",
+        "octopartClientSecret": "Your Client Secret for Octopart/Nexar.",
+        "printerPrinterName": "Your printer name as it appears in Windows, or CUPS (Unix).",
+        "printerPartLabelSource": "The label paper source to use.",
+        "partLabelName": "The name of the label model installed in your printer. This will be specific to your printer, and must be defined in your appsettings.json under <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>"
+      }
 		},
 		"datasheet": {
 			"title": "Ricerca Datasheet"
@@ -243,13 +279,16 @@
 			"addInventory": "Nuovo componente",
 			"orderImport": "Importa Ordine"
 		},
+		"barcodeScannerInput": {
+      "supportsBarcodeScanning": "This page supports barcode scanning. <1>More Info</1>"
+    },
 		"partsGrid": {
 			"recordsPerPage": "righe per pagina",
 			"parts": "Componenti",
 			"part": "Componente",
 			"quantity": "Quantità",
-			"lowStock": "Scorta Minima",
-			"mfrPart": "Codice del produttore",
+			"lowStock": "Scorta Min.",
+			"mfrPart": "Codice produt.",
 			"description": "Descrizione",
 			"location": "Ubicazione",
 			"binNumber": "Contenitore",
@@ -392,12 +431,15 @@
 		"cancel": "Annulla",
 		"produce": "Produrre",
 		"delete": "Eliminare",
-		"visit": "Visitare"
+		"visit": "Visitare",
+		"or": "O",
+		"view": "View",
+		"saveAnyway": "Save Anyway"
 	},
 	"label": {
 		"name": "Nome",
 		"description": "Descrizione",
-		"location": "Ubicazione",
+		"location": "Località",
 		"color": "Colore",
 		"project": "Progetto",
 		"parts": "Componente",
@@ -415,7 +457,7 @@
 		"partNumber": "Codice componente",
 		"partNumberShort": "Componente#",
 		"supplierPart": "Codice Fornitore",
-		"mfrPart": "Codice Produttore",
+		"mfrPart": "Codice Produtt.",
 		"manufacturer": "Produttore",
 		"partType": "Categoria",
 		"mountingType": "Tipo montaggio",
@@ -471,8 +513,8 @@
 		"lowStock": "Scorta minima",
 		"binNumber": "Contenitore",
 		"binNumber2": "Contenitore 2",
-		"manufacturerPart": "Codice Produttore",
-		"packageType": "Tipo Confezione",
+		"manufacturerPart": "Codice Produtt.",
+		"packageType": "Tipo di package",
 		"primaryDatasheetUrl": "Datasheet Url Principale",
 		"productUrl": "Url del prodotto",
 		"digikeyPartNumber": "DigiKey Part Number",
@@ -493,7 +535,17 @@
 		"loadingOrder": "Carico ordine# {{order}}",
 		"noMatchingResults":"Nessun risultato corrispondente.",
 		"notEnoughParts": "Componenti insufficienti",
-		"noPartInfo": "Non ci sono informaazioni per il componente '{{partNumber}}'. Quando il componente sarà indicizzato, verrà automaticamente aggiornato."
+		"noPartInfo": "Non ci sono informaazioni per il componente '{{partNumber}}'. Quando il componente sarà indicizzato, verrà automaticamente aggiornato.",
+		"uploadFailed": "Failed to upload file!",
+		"uploadSuccess": "File uploaded.",
+		"uploadSuccessX": "{{count}} files uploaded.",
+		"unableToUpload": "Unable to upload. Check that the file is not locked or deleted.",
+		"noFilesSelected": "No files selected for upload!",
+		"failedToDeleteSupplierPart": "Failed to delete supplier part!",
+    "addXParts": "Added {{count}} new parts!",
+    "savedPart": "Saved part {{partNumber}}!",
+    "addedPart": "Added part {{partNumber}}!",
+    "failedSavePart": "Failed to update, check Part Type and Mounting Type"
 	},
 	"confirm": {
 		"deleteProject": "Sicuro di voler eliminare questo progetto e l'intera DBA?",
@@ -545,7 +597,7 @@
 	"popup": {
 		"bom": {
 			"addPart": "Aggiungi componente alla DBA",
-			"downloadBom": "Download di una DBA",
+			"downloadBom": "Download della DBA",
 			"removePart": "Rimuovi i componenti selezionati dalla DBA",
 			"addPcb": "Aggiungi un PCB a questo progetto",
 			"producePcb": "Riduce la quantità in inventario quando un PCB viene assemblato",

@@ -498,16 +498,7 @@ export const Settings = (props) => {
       <FormHeader name={t('page.settings.title', "Settings")} to={".."}>
         <Trans i18nKey="page.settings.description">
           Configure your integrations, printer configuration, as well as label
-          part templates.
-          <br />
-          Additional help can be found on the 
-          <a
-            href="https://github.com/replaysMike/Binner/wiki/Configuration"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Wiki
-          </a>
+          part templates.<br />Additional help can be found on the <a href="https://github.com/replaysMike/Binner/wiki/Configuration" target="_blank" rel="noreferrer">Wiki</a>
         </Trans>
 			</FormHeader>
       <Confirm
@@ -540,15 +531,10 @@ export const Settings = (props) => {
             </Header>
             <p>
               <Trans i18nKey="page.settings.swarmDescription">
-              Swarm is a free API service provided by{" "}
-              <a href="https://binner.io" target="_blank" rel="noreferrer">
-                Binner's cloud service
-              </a>
-              that contains part metadata from many aggregate sources. It is the
-              primary source of part, media and datasheet information.
-              Registering for your own API Keys will give you higher request
-              limits and can be obtained at{" "}
-              <a href="https://binner.io/swarm" target="_blank" rel="noreferrer">https://binner.io/swarm</a>
+              Swarm is a free API service provided by <a href="https://binner.io" target="_blank" rel="noreferrer">Binner's cloud service</a> that 
+              contains part metadata from many aggregate sources. It is the primary source of part, media and datasheet information. 
+              Registering for your own API Keys will give you higher request limits and can be obtained
+              at <a href="https://binner.io/swarm" target="_blank" rel="noreferrer">https://binner.io/swarm</a>
               </Trans>
             </p>
             <Form.Field width={10}>
@@ -560,7 +546,7 @@ export const Settings = (props) => {
                 hoverable
                 content={
                   <p>
-                    Choose if you would like to enable Binner Swarm support.
+                    {t('page.settings.popup.swarmEnabled', "Choose if you would like to enable Binner Swarm support.")}
                   </p>
                 }
                 trigger={
@@ -583,9 +569,8 @@ export const Settings = (props) => {
                 offset={[65, 0]}
                 hoverable
                 content={
-                  <p>
-                    Swarm api key is optional. By registering a free or paid api
-                    key you will receive higher request limits accordingly.
+                  <p>{t('page.settings.popup.swarmApiKey', "Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.")}
+                    
                   </p>
                 }
                 trigger={
@@ -605,7 +590,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Swarm's API Url</p>}
+                content={<p>{t('page.settings.popup.swarmApiUrl', "Swarm's API Url")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -630,9 +615,7 @@ export const Settings = (props) => {
                 offset={[65, 0]}
                 hoverable
                 content={
-                  <p>
-                    Swarm api request timeout. Default: '00:00:05' (5 seconds)
-                  </p>
+                  <p>{t('page.settings.popup.swarmTimeout', "Swarm api request timeout. Default: '00:00:05' (5 seconds)")}</p>
                 }
                 trigger={
                   <Input
@@ -664,14 +647,9 @@ export const Settings = (props) => {
               {t('page.settings.digikey', "DigiKey")}
             </Header>
             <p>
-              Digikey API Keys are free and can be obtained at{" "}
-              <a
-                href="https://developer.digikey.com/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                https://developer.digikey.com/
-              </a>
+            <Trans i18nKey="page.settings.digikeyDescription">
+            Digikey API Keys are free and can be obtained at <a href="https://developer.digikey.com/" target="_blank" rel="noreferrer">https://developer.digikey.com/</a>
+            </Trans>
             </p>
             <Form.Field width={10}>
               <label>{t('page.settings.digikeySupport', "DigiKey Support")}</label>
@@ -681,11 +659,7 @@ export const Settings = (props) => {
                 offset={[130, 0]}
                 hoverable
                 content={
-                  <p>
-                    Choose if you would like to enable DigiKey support. You will
-                    occasionally be asked to login to your DigiKey account to
-                    allow Binner to access your information.
-                  </p>
+                    <p>{t('page.settings.popup.digikeyEnabled', "Choose if you would like to enable DigiKey support. You will occasionally be asked to login to your DigiKey account to allow Binner to access your information.")}</p>
                 }
                 trigger={
                   <Dropdown
@@ -708,14 +682,16 @@ export const Settings = (props) => {
                 hoverable
                 content={
                   <div>
-                    Your DigiKey <b>Client ID</b>.
-                    <div className="helpimage">
-                      <img
-                        src="/image/help/digikey-apikeys.png"
-                        alt="DigiKey Client ID"
-                      />
-                      Figure 1. DigiKey Api Key settings
-                    </div>
+                    <Trans i18nKey={"page.settings.popup.digikeyClientId"}>
+                      Your DigiKey <b>Client ID</b>.
+                      <div className="helpimage">
+                        <img
+                          src="/image/help/digikey-apikeys.png"
+                          alt="DigiKey Client ID"
+                        />
+                        Figure 1. DigiKey Client Id settings
+                      </div>
+                    </Trans>
                   </div>
                 }
                 trigger={
@@ -738,14 +714,16 @@ export const Settings = (props) => {
                 hoverable
                 content={
                   <div>
-                    Your DigiKey <b>Client Secret</b>.
-                    <div className="helpimage">
-                      <img
-                        src="/image/help/digikey-apikeys.png"
-                        alt="DigiKey Client Secret"
-                      />
-                      Figure 1. DigiKey Api Key settings
-                    </div>
+                    <Trans i18nKey={"page.settings.popup.digikeyClientSecret"}>
+                      Your DigiKey <b>Client Secret</b>.
+                      <div className="helpimage">
+                        <img
+                          src="/image/help/digikey-apikeys.png"
+                          alt="DigiKey Client Secret"
+                        />
+                        Figure 1. DigiKey Client Secret settings
+                      </div>
+                    </Trans>
                   </div>
                 }
                 trigger={
@@ -768,9 +746,9 @@ export const Settings = (props) => {
                 hoverable
                 content={
                   <p>
-                    DigiKey's API Url. This will either be{" "}
-                    <i>api.digikey.com</i> (live) or{" "}
-                    <i>sandbox-api.digikey.com</i> (for testing only)
+                    <Trans i18nKey={"page.settings.popup.digikeyApiUrl"}>
+                      DigiKey's API Url. This will either be <i>api.digikey.com</i> (live) or <i>sandbox-api.digikey.com</i> (for testing only)
+                    </Trans>
                   </p>
                 }
                 trigger={
@@ -798,23 +776,20 @@ export const Settings = (props) => {
                 hoverable
                 content={
                   <div>
-                    Binner's postback url must be registered with DigiKey
-                    exactly as specified here, on DigiKey this is named{" "}
-                    <b>Callback URL</b>. This should almost always be localhost,
-                    and no firewall settings are required as your web browser
-                    will be making the request.
-                    <br />
-                    <br />
-                    <b>Example:</b>{" "}
-                    <i>localhost:8090/Authorization/Authorize</i>
+                    <Trans i18nKey={"page.settings.popup.digikeyOAuthPostbackUrl"}>
+                    Binner's postback url must be registered with DigiKey exactly as specified here, on DigiKey this is named <b>Callback URL</b>.
+                    This should almost always be localhost, and no firewall settings are required as your web browser will be making the request.
+                    <br /><br />
+                    <b>Example: </b><i>localhost:8090/Authorization/Authorize</i>
                     <br />
                     <div className="helpimage">
                       <img
                         src="/image/help/digikey-callbackurl.png"
                         alt="DigiKey Callback URL"
                       />
-                      Figure 1. DigiKey Api settings
+                      Figure 1. DigiKey Callback URL
                     </div>
+                    </Trans>
                   </div>
                 }
                 trigger={
@@ -836,7 +811,7 @@ export const Settings = (props) => {
             <Form.Field>
               <Popup 
                 wide
-                content="Forget any cached credentials and force reauthentication with DigiKey"
+                content={<p>{t('page.settings.popup.forgetCredentials', "Forget any cached credentials and force reauthentication with DigiKey")}</p>}
                 trigger={<Button
                   secondary
                   className="test"
@@ -867,14 +842,9 @@ export const Settings = (props) => {
               {t('page.settings.mouser', "Mouser")}
             </Header>
             <p>
-              Mouser API Keys can be obtained at{" "}
-              <a
-                href="https://www.mouser.com/api-hub/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                https://www.mouser.com/api-hub/
-              </a>
+              <Trans i18nKey="page.settings.mouserDescription">
+              Mouser API Keys can be obtained at <a href="https://www.mouser.com/api-hub/" target="_blank" rel="noreferrer">https://www.mouser.com/api-hub/</a>
+              </Trans>
             </p>
             <Form.Field width={10}>
               <label>{t('page.settings.mouserSupport', "Mouser Support")}</label>
@@ -884,7 +854,7 @@ export const Settings = (props) => {
                 offset={[120, 0]}
                 hoverable
                 content={
-                  <p>Choose if you would like to enable Mouser support.</p>
+                  <p>{t('page.settings.popup.mouserEnabled', "Choose if you would like to enable Mouser support.")}</p>
                 }
                 trigger={
                   <Dropdown
@@ -904,7 +874,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[110, 0]}
                 hoverable
-                content={<p>Your api key for accessing the search api.</p>}
+                content={<p>{t('page.settings.popup.mouserSearchApiKey', "Your api key for accessing the search api.")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -922,7 +892,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[110, 0]}
                 hoverable
-                content={<p>Your api key for accessing the orders api.</p>}
+                content={<p>{t('page.settings.popup.mouserOrderApiKey', "Your api key for accessing the orders api.")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -941,7 +911,7 @@ export const Settings = (props) => {
                 offset={[90, 0]}
                 hoverable
                 content={
-                  <p>Your api key for accessing the shopping cart api.</p>
+                  <p>{t('page.settings.popup.mouserCartApiKey', "Your api key for accessing the shopping cart api.")}</p>
                 }
                 trigger={
                   <Input
@@ -960,7 +930,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Mouser's API Url. This will be api.mouser.com</p>}
+                content={<p>{t('page.settings.popup.mouserApiUrl', "Mouser's API Url. This will be api.mouser.com")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -996,14 +966,9 @@ export const Settings = (props) => {
               {t('page.settings.arrow', "Arrow")}
             </Header>
             <p>
-              Arrow API Keys can be obtained at{" "}
-              <a
-                href="https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey"
-                target="_blank"
-                rel="noreferrer"
-              >
-                https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey
-              </a>
+              <Trans i18nKey="page.settings.arrowDescription">
+              Arrow API Keys can be obtained at <a href="https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey" target="_blank" rel="noreferrer">https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey</a>
+              </Trans>
             </p>
             <Form.Field width={10}>
               <label>{t('page.settings.arrowSupport', "Arrow Support")}</label>
@@ -1013,7 +978,7 @@ export const Settings = (props) => {
                 offset={[130, 0]}
                 hoverable
                 content={
-                  <p>Choose if you would like to enable Arrow support.</p>
+                  <p>{t('page.settings.popup.arrowEnabled', "Choose if you would like to enable Arrow support.")}</p>
                 }
                 trigger={
                   <Dropdown
@@ -1033,7 +998,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Your username/login for Arrow.</p>}
+                content={<p>{t('page.settings.popup.arrowUsername', "Your username/login for Arrow.")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -1051,7 +1016,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Your api key for Arrow.</p>}
+                content={<p>{t('page.settings.popup.arrowApiKey', "Your api key for Arrow.")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -1069,7 +1034,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Arrow's API Url. This will be api.arrow.com</p>}
+                content={<p>{t('page.settings.popup.arrowApiUrl', "Arrow's API Url. This will be api.arrow.com")}</p>}
                 trigger={
                   <Input
                     action
@@ -1106,14 +1071,9 @@ export const Settings = (props) => {
               {t('page.settings.octopartNexar', "Octopart/Nexar")}
             </Header>
             <p>
-              Octopart/Nexar API Keys can be obtained at{" "}
-              <a
-                href="https://portal.nexar.com/sign-up"
-                target="_blank"
-                rel="noreferrer"
-              >
-                https://portal.nexar.com/sign-up
-              </a>
+              <Trans i18nKey="page.settings.octopartNexarDescription">
+              Octopart/Nexar API Keys can be obtained at <a href="https://portal.nexar.com/sign-up" target="_blank" rel="noreferrer">https://portal.nexar.com/sign-up</a>
+              </Trans>              
             </p>
             <Form.Field width={10}>
               <label>{t('page.settings.octopartNexarSupport', "Octopart/Nexar Support")}</label>
@@ -1123,7 +1083,7 @@ export const Settings = (props) => {
                 offset={[130, 0]}
                 hoverable
                 content={
-                  <p>Choose if you would like to enable Octopart/Nexar support.</p>
+                  <p>{t('page.settings.popup.octopartEnabled', "Choose if you would like to enable Octopart/Nexar support.")}</p>
                 }
                 trigger={
                   <Dropdown
@@ -1143,7 +1103,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Your ClientId for Octopart/Nexar.</p>}
+                content={<p>{t('page.settings.popup.octopartClientId', "Your Client Id for Octopart/Nexar.")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -1161,7 +1121,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>Your ClientSecret for Octopart/Nexar.</p>}
+                content={<p>{t('page.settings.popup.octopartClientSecret', "Your Client Secret for Octopart/Nexar.")}</p>}
                 trigger={
                   <Input
                     className="labeled"
@@ -1199,7 +1159,7 @@ export const Settings = (props) => {
           </p>
           <Popup
             content={
-              <p>Your printer name as it appears in Windows, or CUPS (Unix).</p>
+              <p>{t('page.settings.popup.printerPrinterName', "Your printer name as it appears in Windows, or CUPS (Unix).")}</p>
             }
             trigger={
               <Form.Field width={10}>
@@ -1215,7 +1175,7 @@ export const Settings = (props) => {
             }
           />
           <Popup
-            content={<p>The label paper source to use.</p>}
+            content={<p>{t('page.settings.popup.printerPartLabelSource', "Your printer name as it appears in Windows, or CUPS (Unix).")}</p>}
             trigger={
               <Form.Field width={10}>
                 <label>{t('page.settings.partLabelSource', "Part Label Source")}</label>
@@ -1233,12 +1193,11 @@ export const Settings = (props) => {
           <Popup
             content={
               <p>
+                <Trans i18nKey="page.settings.popup.partLabelName">
                 The name of the label model installed in your printer. This will
                 be specific to your printer, and must be defined in your
-                appsettings.json under{" "}
-                <i>
-                  WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions
-                </i>
+                appsettings.json under <i>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</i>
+                </Trans>
               </p>
             }
             trigger={

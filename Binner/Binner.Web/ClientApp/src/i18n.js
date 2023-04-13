@@ -23,7 +23,7 @@ i18n
   // for all options read: https://www.i18next.com/overview/configuration-options
   .init({
     debug: true,
-    fallbackLng: 'en',
+    fallbackLng: false,
     ns: 'translation',
     defaultNS: 'translation',
     interpolation: {
@@ -31,9 +31,12 @@ i18n
     },
     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
+      addPath: '/locale/missing?language={{lng}}',
+      jsonIndent: 2
     },
+    saveMissing: true,
+    saveMissingTo: "current",
     detection: detectionOptions,
-    saveMissing: true
   });
 
 export default i18n;
