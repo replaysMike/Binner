@@ -618,18 +618,18 @@ section.formHeader {
     border: 1px solid #666;
 }
 
-.helpimage {
-    padding: 10px;
-    font-size: 0.8em;
-    font-style: italic;
+.popupimage {
+	padding: 10px;
+	font-size: 0.8em;
+	font-style: italic;
 }
 
-.helpimage img {
-    border: 1px dashed #eee;
-    padding: 10px;
-    max-width: 500px;
-    height: auto;
-    display: block;
+.popupimage img {
+	border: 1px dashed #eee;
+	padding: 10px;
+	max-width: 500px;
+	height: auto;
+	display: block;
 }
 
 .barcode-support {

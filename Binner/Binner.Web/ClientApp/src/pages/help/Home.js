@@ -31,6 +31,10 @@ export const Help = () => {
               <h1>Api Integrations</h1>
               <p>Configuring Api integrations are an important part of using Binner effectively.</p>
             </li>
+            <li onClick={() => navigate("/help/bom")}>
+              <h1>BOM</h1>
+              <p>Learn how to configure BOM (Bill of Materials) projects to aid in managing your inventory usage.</p>
+            </li>
             <li onClick={() => window.open("https://github.com/replaysMike/Binner/wiki", "_blank")}>
               <h1>Wiki</h1>
               <p>Get more help from the wiki on GitHub</p>

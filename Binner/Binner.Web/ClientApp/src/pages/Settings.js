@@ -713,7 +713,7 @@ export const Settings = (props) => {
                   <div>
                     <Trans i18nKey={"page.settings.popup.digikeyClientId"}>
                       Your DigiKey <b>Client ID</b>.
-                      <div className="helpimage">
+                      <div className="popupimage">
                         <img
                           src="/image/help/digikey-apikeys.png"
                           alt="DigiKey Client ID"
@@ -745,7 +745,7 @@ export const Settings = (props) => {
                   <div>
                     <Trans i18nKey={"page.settings.popup.digikeyClientSecret"}>
                       Your DigiKey <b>Client Secret</b>.
-                      <div className="helpimage">
+                      <div className="popupimage">
                         <img
                           src="/image/help/digikey-apikeys.png"
                           alt="DigiKey Client Secret"
@@ -811,7 +811,7 @@ export const Settings = (props) => {
                     <br /><br />
                     <b>Example: </b><i>localhost:8090/Authorization/Authorize</i>
                     <br />
-                    <div className="helpimage">
+                    <div className="popupimage">
                       <img
                         src="/image/help/digikey-callbackurl.png"
                         alt="DigiKey Callback URL"

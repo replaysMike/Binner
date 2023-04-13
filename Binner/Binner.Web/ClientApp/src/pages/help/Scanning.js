@@ -65,7 +65,7 @@ export const Scanning = () => {
             <li>Bulk import new parts on the Add Inventory page</li>
           </ul>
           <div className="helpvideo">
-            <img src="/image/help/digikey-label.jpg" alt="DigiKey DotMatrix 2D Barcode" style={{ width: "400px", height: "auto" }} />
+            <img src="/image/help/digikey-label.jpg" alt="DigiKey DotMatrix 2D Barcode" style={{ width: "60%", height: "auto" }} />
             Example 1. This is a 2D DotMatrix barcode on a standard DigiKey part label.
           </div>
           <h5>Importing Orders</h5>
@@ -76,7 +76,7 @@ export const Scanning = () => {
             Sales Order Number manually easily as well.
           </p>
           <div className="helpvideo">
-            <img src="/image/help/digikey-packinglist.jpg" alt="DigiKey DotMatrix 2D Barcode" style={{ width: "600px", height: "auto" }} />
+            <img src="/image/help/digikey-packinglist.jpg" alt="DigiKey DotMatrix 2D Barcode" style={{ width: "80%", height: "auto" }} />
             Example 2. There are multiple 1D code-128 barcodes, and several 2D DotMatrix barcodes on a standard DigiKey packing list.
           </div>
           <p>
