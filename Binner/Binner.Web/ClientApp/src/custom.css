@@ -648,6 +648,16 @@ section.formHeader {
     filter: invert(76%) sepia(30%) saturate(3461%) hue-rotate(177deg) brightness(98%) contrast(91%);
 }
 
+.ui.button.svg {
+    padding: .5em 1.25em;
+}
+
+.ui.button svg {
+    position: relative;
+    top: -1px;
+    font-size: 1.5em;
+}
+
 .help-icon {
     font-size: 1.1em;
     color: #aaa;

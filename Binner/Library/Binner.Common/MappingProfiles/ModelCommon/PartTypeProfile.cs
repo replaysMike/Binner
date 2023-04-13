@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Binner.Common.Models;
 using Binner.Model.Common;
 using DataModel = Binner.Data.Model;
 
@@ -14,6 +15,14 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                ;
+
+            CreateMap<DataModel.PartType, PartTypeResponse>()
+                .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
+                .ForMember(x => x.ParentPartTypeId, options => options.MapFrom(x => x.ParentPartTypeId))
+                .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
+                .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.Parts, options => options.MapFrom(x => x.Parts != null ? x.Parts.Count : 0))
                 ;
         }
     }

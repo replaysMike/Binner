@@ -4,10 +4,13 @@ using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models.Arrow;
 using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Integrations.Models.Mouser;
+using Binner.Common.Integrations.Models.Nexar;
 using Binner.Common.Models;
 using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Models.Responses;
+using Binner.Data;
 using Binner.Model.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,7 +19,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Binner.Common.Integrations.Models.Nexar;
 using Part = Binner.Model.Common.Part;
 
 namespace Binner.Common.Services
@@ -26,6 +28,7 @@ namespace Binner.Common.Services
         private const string MissingDatasheetCoverName = "datasheetcover.png";
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
 
+        private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly WebHostServiceConfiguration _configuration;
         private readonly IStorageProvider _storageProvider;
         private readonly IMapper _mapper;
@@ -34,8 +37,9 @@ namespace Binner.Common.Services
         private readonly ISwarmService _swarmService;
         private readonly ILogger<PartService> _logger;
 
-        public PartService(WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
+        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
         {
+            _contextFactory = contextFactory;
             _configuration = configuration;
             _logger = logger;
             _storageProvider = storageProvider;
@@ -143,6 +147,20 @@ namespace Binner.Common.Services
         public async Task<ICollection<PartType>> GetPartTypesAsync()
         {
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+        }
+
+        public async Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync()
+        {
+            var userContext = _requestContext.GetUserContext();
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.PartTypes
+                .Include(x => x.Parts)
+                .Where(x => x.UserId == userContext.UserId || x.UserId == null)
+                .OrderBy(x => x.ParentPartType != null ? x.ParentPartType.Name : "")
+                .ThenBy(x => x.Name)
+                .ToListAsync();
+            return _mapper.Map<ICollection<PartTypeResponse>>(entities);
         }
 
         public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId)
