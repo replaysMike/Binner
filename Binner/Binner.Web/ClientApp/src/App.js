@@ -37,6 +37,7 @@ import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { Help } from './pages/help/Home';
 import { Scanning } from './pages/help/Scanning';
 import { ApiIntegrations } from './pages/help/ApiIntegrations';
+import { BOM } from "./pages/help/BOM";
 
 function withSearchParams(Component) {
   return props => <Component {...props} searchParams={useSearchParams()} />;
@@ -129,6 +130,7 @@ class App extends Component {
             <Route exact path="/help" element={<Help />} />
             <Route path="/help/scanning" element={<Scanning />} />
             <Route path="/help/api-integrations" element={<ApiIntegrations />} />
+            <Route path="/help/bom" element={<BOM />} />
           </Routes>
         </Layout>
         <ErrorContext.Provider value={this.state}>

@@ -176,6 +176,28 @@
 	height: 200px;
 }
 
+.helpimage {
+	padding: 10px;
+	font-size: 0.8em;
+	font-style: italic;
+}
+
+.helpimage img {
+	border: 1px dashed #eee;
+	padding: 10px;
+	max-width: 90%;
+	height: auto;
+	display: block;
+}
+
+.helpimage.large img {
+	max-width: 90%;
+}
+
+.help .bullet.highlight > .helpimage img {
+	border: 1px dashed #aaa;
+}
+
 .help code {
 	background: #f4f4f4;
 	border: 1px solid #ddd;
@@ -207,11 +229,17 @@
 	margin-left: 30px;
 }
 
+.help .segment {
+	padding: 40px;
+}
+
 .help .bullet {
 	border-left: 2px solid #3340f3;
-	padding: 10px;
+	padding: 20px;
 	margin-left: 30px;
-	margin-bottom: 15px;
+	margin-top: 30px;
+	margin-bottom: 50px;
+	font-weight: 500;
 }
 
 .help .bullet.highlight {
