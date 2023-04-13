@@ -69,7 +69,7 @@ export function ChooseAlternatePartModal(props) {
             <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
             <Table.HeaderCell style={{width: '100px'}}>{t('label.partType', "Part Type")}</Table.HeaderCell>
             <Table.HeaderCell>{t('label.source', "Source")}</Table.HeaderCell>
-            <Table.HeaderCell style={{width: '110px'}}>{t('label.mfrPart', "Package Type")}</Table.HeaderCell>
+            <Table.HeaderCell style={{width: '110px'}}>{t('label.packageType', "Package Type")}</Table.HeaderCell>
             <Table.HeaderCell>{t('label.mountingType', "Mounting Type")}</Table.HeaderCell>
             <Table.HeaderCell>{t('label.qtyAvail', "QTY Avail.")}</Table.HeaderCell>
             <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>

@@ -283,7 +283,7 @@ export function Inventory(props) {
   const onUploadSubmit = async (uploadFiles, type) => {
     setUploading(true);
     if (!part.partId) {
-      toast.warn("Files can't be uploaded until the part is saved.");
+      toast.warn(t('message.uploadWait', "Files can't be uploaded until the part is saved."));
       return;
     }
     if (uploadFiles && uploadFiles.length > 0) {
@@ -304,12 +304,12 @@ export function Inventory(props) {
           toast.dismiss();
           if (data.errors && data.errors.length > 0) {
             errorMessage = data.errors.map((err, key) => <li key={key}>{err.message}</li>);
-            toast.error(`Failed to upload file!`, { autoClose: 10000 });
+            toast.error(t('message.uploadFailed', "Failed to upload file!"), { autoClose: 10000 });
             setError(<ul className="errors">{errorMessage}</ul>);
           } else {
             // success uploading
-            if (uploadFiles.length === 1) toast.success(`File uploaded.`);
-            else toast.success(`${uploadFiles.length} files uploaded.`);
+            if (uploadFiles.length === 1) toast.success(t('message.uploadSuccess', "File uploaded."));
+            else toast.success(t('message.uploadSuccessX', "{{count}} files uploaded.", {count: uploadFiles.length}));
 
             // add it to the local data
             var typeValue = GetTypeValue(StoredFileType, type);
@@ -380,11 +380,11 @@ export function Inventory(props) {
           toast.dismiss();
           console.error("error", error);
           if (error.code === "ERR_NETWORK") {
-            const msg = "Unable to upload. Check that the file is not locked or deleted.";
+            const msg = t('message.unableToUpload', "Unable to upload. Check that the file is not locked or deleted.");
             toast.error(msg, { autoClose: 10000 });
             setError(msg);
           } else {
-            toast.error(`Import upload failed!`);
+            toast.error(t('message.uploadFailed', "Failed to upload file!"));
             setError(error.message);
           }
           setIsDirty(false);
@@ -392,7 +392,7 @@ export function Inventory(props) {
           setFiles([]);
         });
     } else {
-      toast.error("No files selected for upload!");
+      toast.error(t('message.noFilesSelected', "No files selected for upload!"));
     }
   };
 
@@ -737,7 +737,7 @@ export function Inventory(props) {
         const newMetadataParts = [...metadataParts.filter(x => x.partSupplierId !== request.partSupplierId)];
         setMetadataParts(newMetadataParts);
       }else{
-        toast.error('Failed to delete supplier part!');
+        toast.error(t('message.failedToDeleteSupplierPart', "Failed to delete supplier part!"));
       }
     }
     setLoadingPartMetadata(false);
@@ -850,11 +850,11 @@ export function Inventory(props) {
     } else if (response.status === 200) {
       // reset form if it was a new part
       if (isExisting) {
-        saveMessage = `Saved part ${request.partNumber}!`;
+        saveMessage = t('message.savedPart', "Saved part {{partNumber}}!", { partNumber: request.partNumber });
         setSaveMessage(saveMessage);
         toast.info(saveMessage);
       } else {
-        saveMessage = `Added part ${request.partNumber}!`;
+        saveMessage = t('message.addedPart', "Added part {{partNumber}}!", { partNumber: request.partNumber });
         resetForm(saveMessage);
         toast.success(saveMessage);
       }
@@ -863,7 +863,7 @@ export function Inventory(props) {
       await fetchRecentRows();
     } else if (response.status === 400) {
       // other error (invalid part type, mounting type, etc.)
-      saveMessage = `Failed to update, check Part Type and Mounting Type`;
+      saveMessage = t('message.failedSavePart', "Failed to update, check Part Type and Mounting Type");
       setSaveMessage(saveMessage);
       toast.error(saveMessage);
     }
@@ -1296,7 +1296,7 @@ export function Inventory(props) {
                 <Image src={p.imageUrl} size="mini"></Image>
               </Table.Cell>
               <Table.Cell>
-                <Button onClick={(e) => handleHighlightAndVisit(e, p.datasheetUrl)}>View Datasheet</Button>
+                <Button onClick={(e) => handleHighlightAndVisit(e, p.datasheetUrl)}>{t('button.viewDatasheet', "View Datasheet")}</Button>
               </Table.Cell>
             </Table.Row>
           ))}
@@ -1359,7 +1359,7 @@ export function Inventory(props) {
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
-      toast.success(`Added ${data.length} new parts!`);
+      toast.success(t('message.addXParts', "Added {{count}} new parts!", {count: data.length}));
     }
     localStorage.setItem("scannedPartsSerialized", JSON.stringify([]));
     setBulkScanIsOpen(false);
@@ -1714,9 +1714,9 @@ export function Inventory(props) {
           </Modal.Description>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={handleDuplicatePartModalClose}>Cancel</Button>
+          <Button onClick={handleDuplicatePartModalClose}>{t('button.cancel', "Cancel")}</Button>
           <Button primary onClick={handleForceSubmit}>
-            Save Anyways
+          {t('button.saveAnyway', "Save Anyway")}
           </Button>
         </Modal.Actions>
       </Modal>
@@ -1834,7 +1834,7 @@ export function Inventory(props) {
                     <input ref={partInputPartNumberRef} />
                     <Icon name="search" />
                   </Form.Input>
-                  {!isEditing && <div className="suggested-part">{part.partNumber && part.PartNumber !== inputPartNumber && <span>Suggested part number: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
+                  {!isEditing && <div className="suggested-part">{part.partNumber && part.PartNumber !== inputPartNumber && <span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
                 </Form.Field>
                 <Form.Dropdown
                   label={t('label.partType', "Part Type")}
@@ -1980,7 +1980,7 @@ export function Inventory(props) {
                     <Icon name="save" />
                     {t('button.save', "Save")}
                   </Button>
-                  <Button.Or />
+                  <Button.Or text={t('button.or', "Or")} />
                   <Popup 
                     position="right center"
                     content={t('page.inventory.popup.clear', "Clear the form to default values")}
@@ -2114,14 +2114,14 @@ export function Inventory(props) {
                 <Header dividing as="h3">
                   {t('page.inventory.privatePartInfo', "Private Part Information")}
                 </Header>
-                <p>These values can be set manually and will not be synchronized automatically via apis.</p>
+                <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via apis.")}</p>
 
                 <Form.Field>
                   <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
                   <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
                     <Label>https://</Label>
                     <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                    <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>View</Button>
+                    <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>{t('button.view', "View")}</Button>
                   </Input>
                 </Form.Field>
                 <Form.Field>
@@ -2129,7 +2129,7 @@ export function Inventory(props) {
                   <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
                     <Label>https://</Label>
                     <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                    <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>Visit</Button>
+                    <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
                   </Input>
                 </Form.Field>
                 <Form.Group>
@@ -2160,7 +2160,7 @@ export function Inventory(props) {
                       wide
                       hoverable
                       content={<p>{part.partId <= 0 ? <span><Icon name="warning sign" color="yellow" /> {t('page.inventory.popup.mustAddPart', "You must save the part before adding custom suppliers to it.")}</span> : <span>{t('page.inventory.popup.addSupplier', "Add a manual supplier entry")}</span>}</p>}
-                      trigger={<span><Button primary onClick={handleShowAddPartSupplier} size='tiny' disabled={part.partId <= 0}><Icon name="plus" /> Add</Button></span>}
+                      trigger={<span><Button primary onClick={handleShowAddPartSupplier} size='tiny' disabled={part.partId <= 0}><Icon name="plus" /> {t('button.add', "Add")}</Button></span>}
                     />
                   </div>
                 </div>
@@ -2178,7 +2178,7 @@ export function Inventory(props) {
                     <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
                       <Label>https://</Label>
                       <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                      <Button onClick={e => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>Visit</Button>
+                      <Button onClick={e => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
                     </Input>
                   </Form.Field>
                   <Form.Field width={12}>
@@ -2186,7 +2186,7 @@ export function Inventory(props) {
                     <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
                       <Label>https://</Label>
                       <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                      <Button onClick={e => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>Visit</Button>
+                      <Button onClick={e => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>{t('button.visit', "Visit")}</Button>
                     </Input>
                   </Form.Field>
                   <Button primary icon onClick={createPartSupplier} disabled={part.partId <= 0}><Icon name='save' /> {t('button.save', "Save")}</Button>

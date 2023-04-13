@@ -131,6 +131,7 @@ namespace Binner.Web.ServiceHost
             })
             .UseNLog();
             _webHost = host.Build();
+            ApplicationLogging.LoggerFactory = _webHost.Services.GetRequiredService<ILoggerFactory>();
             _logger = _webHost.Services.GetRequiredService<ILogger<BinnerWebHostService>>();
             _logger.LogInformation($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
 
