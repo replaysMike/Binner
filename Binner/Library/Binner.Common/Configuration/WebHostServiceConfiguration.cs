@@ -60,14 +60,19 @@ namespace Binner.Common.Configuration
         public string? CorsAllowOrigin { get; set; }
 
         /// <summary>
+        /// Locale configuration
+        /// </summary>
+        public LocaleConfiguration Locale { get; set; } = new ();
+
+        /// <summary>
         /// Digikey configuration
         /// </summary>
-        public IntegrationConfiguration Integrations { get; set; } = new IntegrationConfiguration();
+        public IntegrationConfiguration Integrations { get; set; } = new ();
 
         /// <summary>
         /// Printer configuration
         /// </summary>
-        public PrinterConfiguration PrinterConfiguration { get; set; } = new PrinterConfiguration();
+        public PrinterConfiguration PrinterConfiguration { get; set; } = new ();
     }
 
     public enum Environments

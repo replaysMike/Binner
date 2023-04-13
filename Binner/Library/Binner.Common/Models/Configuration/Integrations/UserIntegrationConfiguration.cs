@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Binner.Common.Integrations.Models.DigiKey;
+using System;
 
 namespace Binner.Common.Models.Configuration.Integrations
 {
@@ -45,8 +46,12 @@ namespace Binner.Common.Models.Configuration.Integrations
         /// <summary>
         /// DigiKey client Id
         /// </summary>
-        public string? DigiKeyClientId { get; set; }
+        public DigikeyLocaleSite DigiKeySite { get; set; } = DigikeyLocaleSite.US;
 
+        /// <summary>
+        /// DigiKey client Id
+        /// </summary>
+        public string? DigiKeyClientId { get; set; }
 
         /// <summary>
         /// DigiKey client secret

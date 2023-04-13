@@ -1,4 +1,5 @@
-﻿using Binner.Common.Integrations.Models;
+﻿using Binner.Common.Configuration;
+using Binner.Common.Integrations.Models;
 using Binner.Common.Integrations.Models.Nexar;
 using Binner.Common.Models.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,7 @@ namespace Binner.Common.Integrations
     public class NexarApi : IIntegrationApi
     {
         private readonly OctopartConfiguration _configuration;
+        private readonly LocaleConfiguration _localeConfiguration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private static readonly TimeSpan TokenLifetime = TimeSpan.FromDays(1);
         private static DateTime _nexarTokenExpiresAt;
@@ -26,9 +28,10 @@ namespace Binner.Common.Integrations
         
         public IApiConfiguration Configuration => _configuration;
 
-        public NexarApi(OctopartConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public NexarApi(OctopartConfiguration configuration, LocaleConfiguration localeConfiguration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
+            _localeConfiguration = localeConfiguration;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -135,7 +138,7 @@ namespace Binner.Common.Integrations
                     ManufacturerUrl = it.Part.ManufacturerUrl,
                     MedianPrice1000 = new PriceValue
                     {
-                      Currency = it.Part.MedianPrice1000?.Currency ?? "USD",
+                      Currency = it.Part.MedianPrice1000?.Currency ?? _localeConfiguration.Currency.ToString().ToUpper(),
                       Price = it.Part.MedianPrice1000?.Price ?? 0,
                       Quantity = it.Part.MedianPrice1000?.Quantity ?? 0
                     },

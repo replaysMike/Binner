@@ -4,7 +4,8 @@ import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
 import LineTemplate from "../components/LineTemplate";
-import { DEFAULT_FONT } from "../common/Types";
+import { DEFAULT_FONT, GetTypeDropdown, GetAdvancedTypeDropdown } from "../common/Types";
+import { DigiKeySites } from "../common/digiKeySites";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
@@ -49,6 +50,7 @@ export const Settings = (props) => {
       text: "Enabled",
     },
   ]);
+  const digikeySites = GetAdvancedTypeDropdown(DigiKeySites);
   const [settings, setSettings] = useState({
     binner: {
       enabled: true,
@@ -58,6 +60,7 @@ export const Settings = (props) => {
     },
     digikey: {
       enabled: false,
+      site: 0,
       clientId: "",
       clientSecret: "",
       oAuthPostbackUrl: "",
@@ -397,6 +400,7 @@ export const Settings = (props) => {
         break;
       case "digikey":
         configuration.push({ key: "enabled", value: settings.digikey.enabled + "" });
+        configuration.push({ key: "site", value: settings.digikey.site });
         configuration.push({ key: "clientId", value: settings.digikey.clientId });
         configuration.push({ key: "clientSecret", value: settings.digikey.clientSecret });
         configuration.push({ key: "apiUrl", value: settings.digikey.apiUrl });
@@ -668,6 +672,31 @@ export const Settings = (props) => {
                     selection
                     value={settings.digikey.enabled ? 1 : 0}
                     options={enabledSources}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>{t('label.site', "Site")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={
+                  <div>
+                    <Trans i18nKey={"page.settings.popup.digikeySite"}>
+                      Choose the DigiKey site to use.
+                    </Trans>
+                  </div>
+                }
+                trigger={
+                  <Dropdown 
+                    name="digikeySite"
+                    selection
+                    value={settings.digikey.site || 0}
+                    options={digikeySites}
                     onChange={handleChange}
                   />
                 }
