@@ -28,6 +28,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.SwarmApiUrl, options => options.MapFrom(x => x.Binner.ApiUrl))
                 .ForMember(x => x.SwarmTimeout, options => options.MapFrom(x => x.Binner.Timeout))
                 .ForMember(x => x.DigiKeyEnabled, options => options.MapFrom(x => x.Digikey.Enabled))
+                .ForMember(x => x.DigiKeySite, options => options.MapFrom(x => x.Digikey.Site))
                 .ForMember(x => x.DigiKeyClientId, options => options.MapFrom(x => x.Digikey.ClientId))
                 .ForMember(x => x.DigiKeyClientSecret, options => options.MapFrom(x => x.Digikey.ClientSecret))
                 .ForMember(x => x.DigiKeyApiUrl, options => options.MapFrom(x => x.Digikey.ApiUrl))

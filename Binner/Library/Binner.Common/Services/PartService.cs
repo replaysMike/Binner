@@ -254,7 +254,7 @@ namespace Binner.Common.Services
                         .FirstOrDefault(), out var mountingTypeId);
                     var currency = digikeyResponse.Currency;
                     if (string.IsNullOrEmpty(currency))
-                        currency = "USD";
+                        currency = _configuration.Locale.Currency.ToString().ToUpper();
                     var packageType = part.Parameters
                             ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                             .Select(x => x.Value)
@@ -544,7 +544,7 @@ namespace Binner.Common.Services
                                 .FirstOrDefault(), out var mountingTypeId);
                             var currency = string.Empty;
                             if (string.IsNullOrEmpty(currency))
-                                currency = "USD";
+                                currency = _configuration.Locale.Currency.ToString().ToUpper();
                             var packageType = part.Parameters
                                 ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                                 .Select(x => x.Value)
@@ -818,7 +818,7 @@ namespace Binner.Common.Services
                             ManufacturerPartNumber = inventoryPart.ManufacturerPartNumber,
                             BasePartNumber = inventoryPart.PartNumber,
                             Cost = supplier.Cost ?? 0,
-                            Currency = "USD",
+                            Currency = _configuration.Locale.Currency.ToString().ToUpper(),
                             ImageUrl = supplier.ImageUrl,
                             ProductUrl = supplier.ProductUrl,
                             QuantityAvailable = supplier.QuantityAvailable,
@@ -1128,7 +1128,7 @@ namespace Binner.Common.Services
                             .FirstOrDefault(), out mountingTypeId);
                         var currency = digikeyResponse.SearchLocaleUsed.Currency;
                         if (string.IsNullOrEmpty(currency))
-                            currency = "USD";
+                            currency = _configuration.Locale.Currency.ToString().ToUpper();
                         var packageType = part.Parameters
                             ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                             .Select(x => x.Value)
@@ -1204,7 +1204,7 @@ namespace Binner.Common.Services
 
                         var currency = part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Currency;
                         if (string.IsNullOrEmpty(currency))
-                            currency = "USD";
+                            currency = _configuration.Locale.Currency.ToString().ToUpper();
                         int.TryParse(part.Min, out var minimumOrderQuantity);
                         int.TryParse(part.FactoryStock, out var factoryStockAvailable);
                         if (!string.IsNullOrEmpty(part.ImagePath)
@@ -1328,7 +1328,7 @@ namespace Binner.Common.Services
                         var partCost = 0d;
                         var minimumOrderQuantity = 1;
                         var quantityAvailable = 0;
-                        var currency = source?.Currency ?? "USD";
+                        var currency = source?.Currency ?? _configuration.Locale.Currency.ToString().ToUpper();
                         if (source != null)
                         {
                             var sourcePart = source.SourceParts
@@ -1441,7 +1441,7 @@ namespace Binner.Common.Services
                         var partCost = part.MedianPrice1000?.Price ?? 0d;
                         var minimumOrderQuantity = 1;
                         var quantityAvailable = part.TotalAvail;
-                        var currency = part.MedianPrice1000?.Currency ?? "USD";
+                        var currency = part.MedianPrice1000?.Currency ?? _configuration.Locale.Currency.ToString().ToUpper();
 
                         if (part.Sellers.Any())
                         {

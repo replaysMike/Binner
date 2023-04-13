@@ -1,4 +1,6 @@
-﻿namespace Binner.Common.Models.Configuration.Integrations
+﻿using Binner.Common.Integrations.Models.DigiKey;
+
+namespace Binner.Common.Models.Configuration.Integrations
 {
     /// <summary>
     /// Digikey Api user configuration settings
@@ -26,5 +28,10 @@
         /// Path to the Digikey Api
         /// </summary>
         public string ApiUrl { get; set; } = "https://api.digikey.com";
+
+        /// <summary>
+        /// Specifies which site to default the Api to
+        /// </summary>
+        public DigikeyLocaleSite Site { get; set; } = DigikeyLocaleSite.US;
     }
 }

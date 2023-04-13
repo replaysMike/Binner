@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Binner.Common.Configuration;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.Integrations
@@ -39,6 +40,7 @@ namespace Binner.Common.Integrations
 
         // the full url to the Api
         private readonly DigikeyConfiguration _configuration;
+        private readonly LocaleConfiguration _localeConfiguration;
         private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -61,9 +63,10 @@ namespace Binner.Common.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public DigikeyApi(DigikeyConfiguration configuration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext)
+        public DigikeyApi(DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext)
         {
             _configuration = configuration;
+            _localeConfiguration = localeConfiguration;
             _oAuth2Service = new OAuth2Service(configuration);
             _credentialService = credentialService;
             _httpContextAccessor = httpContextAccessor;
@@ -679,9 +682,9 @@ namespace Binner.Common.Integrations
             var message = new HttpRequestMessage(method, url);
             message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
             message.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
-            message.Headers.Add("X-DIGIKEY-Locale-Site", "CA");
-            message.Headers.Add("X-DIGIKEY-Locale-Language", "en");
-            message.Headers.Add("X-DIGIKEY-Locale-Currency", "CAD");
+            message.Headers.Add("X-DIGIKEY-Locale-Site", _configuration.Site.ToString());
+            message.Headers.Add("X-DIGIKEY-Locale-Language", _localeConfiguration.Language.ToString().ToLower());
+            message.Headers.Add("X-DIGIKEY-Locale-Currency", _localeConfiguration.Currency.ToString().ToUpper());
             return message;
         }
 
@@ -690,9 +693,9 @@ namespace Binner.Common.Integrations
             var message = new HttpRequestMessage(method, uri);
             message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
             message.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
-            message.Headers.Add("X-DIGIKEY-Locale-Site", "CA");
-            message.Headers.Add("X-DIGIKEY-Locale-Language", "en");
-            message.Headers.Add("X-DIGIKEY-Locale-Currency", "CAD");
+            message.Headers.Add("X-DIGIKEY-Locale-Site", _configuration.Site.ToString());
+            message.Headers.Add("X-DIGIKEY-Locale-Language", _localeConfiguration.Language.ToString().ToLower());
+            message.Headers.Add("X-DIGIKEY-Locale-Currency", _localeConfiguration.Currency.ToString().ToUpper());
             return message;
         }
 

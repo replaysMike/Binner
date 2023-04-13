@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useTranslation, Trans } from 'react-i18next';
 import { Link } from "react-router-dom";
 import { Popup, Image } from "semantic-ui-react";
 import PropTypes from "prop-types";
@@ -432,7 +433,9 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
         hoverable
         content={
           <p>
-            This page supports barcode scanning. <Link to={helpUrl}>More Info</Link>
+						<Trans i18nKey="comp.barcodeScannerInput.supportsBarcodeScanning">
+						This page supports barcode scanning. <Link to={helpUrl}>More Info</Link>
+						</Trans>
           </p>
         }
         trigger={<Image src="/image/barcode.png" width={35} height={35} className={`barcode-support ${isReceiving ? "receiving" : ""}`} />}

@@ -18,7 +18,7 @@
       "parts": "Parts",
       "uniqueParts": "Unique Parts",
       "value": "Value",
-      "projects": "Projects"
+      "projects": "BOM Projects"
     },
     "search": {
       "title":"Inventory",
@@ -37,14 +37,19 @@
       "recentlyAdded": "Recently Added",
       "partMetadata": "Part Metadata",
       "privatePartInfo": "Private Part Information",
+      "privatePartInfoMessage": "These values can be set manually and will not be synchronized automatically via apis.",
       "suppliers": "Suppliers",
       "addKeyword": "Add Keyword",
       "chooseAlternatePart": "Choose alternate part ({{count}})",
+      "suggestedPart": "Suggested part number",
       "placeholder": {
         "location": "Home lab",
         "keywords": "op amp",
         "binNumber": "IC Components 2",
         "binNumber2": "14"
+      },
+      "message": {
+        "uploadWait": "Files can't be uploaded until the part is saved."
       },
       "popup": {
         "bulkAddParts": "Bulk add parts using a barcode scanner",
@@ -128,15 +133,19 @@
       "swarmDescription": "Swarm is a free API service provided by <1>Binner's cloud service</1> that contains part metadata from many aggregate sources. It is the primary source of part, media and datasheet information. Registering for your own API Keys will give you higher request limits and can be obtained at <3>https://binner.io/swarm</3>",
       "swarmSupport": "Swarm Support",
       "digikey": "DigiKey",
+      "digikeyDescription": "Digikey API Keys are free and can be obtained at <1>https://developer.digikey.com/</1>",
       "digikeySupport": "DigiKey Support",
       "mouser": "Mouser",
+      "mouserDescription": "Mouser API Keys can be obtained at <1>https://www.mouser.com/api-hub/</1>",
       "mouserSupport": "Mouser Support",
       "searchApiKey": "Search Api Key",
       "ordersApiKey": "Orders Api Key",
       "cartApiKey": "Cart Api Key",
       "arrow": "Arrow",
+      "arrowDescription": "Arrow API Keys can be obtained at <1>https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey</1>",
       "arrowSupport": "Arrow Support",
       "octopartNexar": "Octopart/Nexar",
+      "octopartNexarDescription": "Octopart/Nexar API Keys can be obtained at <1>https://portal.nexar.com/sign-up</1>",
       "octopartNexarSupport": "Octopart/Nexar Support",
       "printerConfiguration": "Printer Configuration",
       "printerConfigDescription": "Configure your printer name as it shows up in your environment (Windows Printers or CUPS Printer Name)",
@@ -146,7 +155,35 @@
       "partLabelTemplate": "Part Label Template",
       "partLabelTemplateDescription": "Part labels are printed according to this template.",
       "lineX": "Line {{number}}",
-      "identifierX": "Identifier {{number}}"
+      "identifierX": "Identifier {{number}}",
+      "popup": {
+        "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
+        "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
+        "swarmApiKey": "Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.",
+        "swarmApiUrl": "Swarm's API Url",
+        "swarmTimeout": "Swarm api request timeout. Default: '00:00:05' (5 seconds)",
+        "digikeyEnabled": "Choose if you would like to enable DigiKey support. You will occasionally be asked to login to your DigiKey account to allow Binner to access your information.",
+        "digikeySite": "Choose the DigiKey site to use.",
+        "digikeyClientId": "Your DigiKey <1>Client ID</1>.<3><4/>Figure 1. DigiKey Client Id settings</3>",
+        "digikeyClientSecret": "Your DigiKey <1>Client Secret</1>.<3><4/>Figure 1. DigiKey Client Secret settings</3>",
+        "digikeyApiUrl": "DigiKey's API Url. This will either be <1>api.digikey.com</1> (live) or <3>sandbox-api.digikey.com</3> (for testing only)",
+        "digikeyOAuthPostbackUrl": "Binner's postback url must be registered with DigiKey exactly as specified here, on DigiKey this is named <1>Callback URL</1>. This should almost always be localhost, and no firewall settings are required as your web browser will be making the request.<3/><4/><5>Example: </5><6>localhost:8090/Authorization/Authorize</6><7/><8><9/>Figure 1. DigiKey Callback URL</8>",
+        "mouserEnabled": "Choose if you would like to enable Mouser support.",
+        "mouserSearchApiKey": "Your api key for accessing the search api.",
+        "mouserOrderApiKey": "Your api key for accessing the orders api.",
+        "mouserCartApiKey": "Your api key for accessing the shopping cart api.",
+        "mouserApiUrl": "Mouser's API Url. This will be api.mouser.com",
+        "arrowEnabled": "Choose if you would like to enable Arrow support.",
+        "arrowUsername": "Your username/login for Arrow.",
+        "arrowApiKey": "Your api key for Arrow.",
+        "arrowApiUrl": "Arrow's API Url. This will be api.arrow.com",
+        "octopartEnabled": "Choose if you would like to enable Octopart/Nexar support.",
+        "octopartClientId": "Your Client Id for Octopart/Nexar.",
+        "octopartClientSecret": "Your Client Secret for Octopart/Nexar.",
+        "printerPrinterName": "Your printer name as it appears in Windows, or CUPS (Unix).",
+        "printerPartLabelSource": "The label paper source to use.",
+        "partLabelName": "The name of the label model installed in your printer. This will be specific to your printer, and must be defined in your appsettings.json under <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>"
+      }
     },
     "datasheet": {
       "title": "Datasheet Search"
@@ -243,6 +280,9 @@
       "addInventory": "Add Inventory",
       "orderImport": "Order Import"
     },
+    "barcodeScannerInput": {
+      "supportsBarcodeScanning": "This page supports barcode scanning. <1>More Info</1>"
+    },
     "partsGrid": {
       "recordsPerPage": "records per page",
       "parts": "Parts",
@@ -277,7 +317,7 @@
       "description": "Add a part to your BOM, optionally associating it with a particular PCB.",
       "none": "None",
       "confirmHeader": "Add Part",
-      "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part without associating it to a part in your inventory?<3/><4/><5>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</5>",
+      "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part <3>{{keyword}}</3> without associating it to a part in your inventory?<5/><6/><7>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</7>",
       "selectPcb": "Select PCB",
       "choosePcb": "Choose PCB",
       "popup": {
@@ -392,7 +432,10 @@
     "cancel": "Cancel",
     "produce": "Produce",
     "delete": "Delete",
-    "visit": "Visit"
+    "visit": "Visit",
+    "or": "Or",
+    "view": "View",
+    "saveAnyway": "Save Anyway"
   },
   "label": {
     "name": "Name",
@@ -443,6 +486,7 @@
     "warnings": "Warnings",
     "apiKey": "Api Key",
     "apiUrl": "Api Url",
+    "site": "Site",
     "clientId": "Client Id",
     "clientSecret": "Client Secret",
     "timeout": "Timeout",
@@ -493,7 +537,17 @@
     "loadingOrder": "Loading order# {{order}}",
     "noMatchingResults":"No matching results.",
     "notEnoughParts": "Not enough parts",
-    "noPartInfo": "No part information is available for '{{partNumber}}'. You are subscribed to updates and will be automatically updated when the part is indexed."
+    "noPartInfo": "No part information is available for '{{partNumber}}'. You are subscribed to updates and will be automatically updated when the part is indexed.",
+    "uploadFailed": "Failed to upload file!",
+    "uploadSuccess": "File uploaded.",
+    "uploadSuccessX": "{{count}} files uploaded.",
+    "unableToUpload": "Unable to upload. Check that the file is not locked or deleted.",
+    "noFilesSelected": "No files selected for upload!",
+    "failedToDeleteSupplierPart": "Failed to delete supplier part!",
+    "addXParts": "Added {{count}} new parts!",
+    "savedPart": "Saved part {{partNumber}}!",
+    "addedPart": "Added part {{partNumber}}!",
+    "failedSavePart": "Failed to update, check Part Type and Mounting Type"
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
