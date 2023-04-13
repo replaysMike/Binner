@@ -1,5 +1,6 @@
 ﻿using Binner.Common.Configuration;
 using Binner.Common.Integrations;
+using Binner.Common.Integrations.Models.DigiKey;
 using Binner.Common.Models.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -106,6 +107,7 @@ namespace Binner.Common.Services
                     SwarmTimeout = _webHostServiceConfiguration.Integrations.Swarm.Timeout,
 
                     DigiKeyEnabled = _webHostServiceConfiguration.Integrations.Digikey.Enabled,
+                    DigiKeySite = _webHostServiceConfiguration.Integrations.Digikey.Site,
                     DigiKeyClientId = _webHostServiceConfiguration.Integrations.Digikey.ClientId,
                     DigiKeyClientSecret = _webHostServiceConfiguration.Integrations.Digikey.ClientSecret,
                     DigiKeyOAuthPostbackUrl = _webHostServiceConfiguration.Integrations.Digikey.oAuthPostbackUrl,
@@ -143,6 +145,7 @@ namespace Binner.Common.Services
                 var digikeyConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", userIntegrationConfiguration.DigiKeyEnabled },
+                    { "Site", (int)userIntegrationConfiguration.DigiKeySite },
                     { "ClientId", userIntegrationConfiguration.DigiKeyClientId ?? string.Empty },
                     { "ClientSecret", userIntegrationConfiguration.DigiKeyClientSecret ?? string.Empty },
                     { "oAuthPostbackUrl", userIntegrationConfiguration.DigiKeyOAuthPostbackUrl },
@@ -271,12 +274,13 @@ namespace Binner.Common.Services
             {
                 // system settings
                 Enabled = _integrationConfiguration.Digikey.Enabled,
+                Site = _integrationConfiguration.Digikey.Site,
                 ClientId = _integrationConfiguration.Digikey.ClientId,
                 ClientSecret = _integrationConfiguration.Digikey.ClientSecret,
                 ApiUrl = _integrationConfiguration.Digikey.ApiUrl,
                 oAuthPostbackUrl = _integrationConfiguration.Digikey.oAuthPostbackUrl,
             };
-            var api = new DigikeyApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext);
             return api;
         }
 
@@ -290,12 +294,13 @@ namespace Binner.Common.Services
             var configuration = new DigikeyConfiguration
             {
                 Enabled = credentials.GetCredentialBool("Enabled"),
+                Site = (DigikeyLocaleSite)credentials.GetCredentialInt32("Site"),
                 ClientId = credentials.GetCredentialString("ClientId"),
                 ClientSecret = credentials.GetCredentialString("ClientSecret"),
                 oAuthPostbackUrl = credentials.GetCredentialString("oAuthPostbackUrl"),
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
-            var api = new DigikeyApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext);
             return api;
         }
 
@@ -348,7 +353,7 @@ namespace Binner.Common.Services
                 ClientId = _integrationConfiguration.Nexar.ClientId,
                 ClientSecret = _integrationConfiguration.Nexar.ClientSecret,
             };
-            var api = new NexarApi(configuration, _httpContextAccessor);
+            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
             return api;
         }
 
@@ -365,7 +370,7 @@ namespace Binner.Common.Services
                 ClientId = credentials.GetCredentialString("ClientId"),
                 ClientSecret = credentials.GetCredentialString("ClientSecret"),
             };
-            var api = new NexarApi(configuration, _httpContextAccessor);
+            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
             return api;
         }
 

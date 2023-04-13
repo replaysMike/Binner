@@ -33,6 +33,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Digikey, options => options.MapFrom(x => new DigiKeyUserConfiguration
                 {
                     Enabled = x.DigiKeyEnabled,
+                    Site = x.DigiKeySite,
                     ClientId = x.DigiKeyClientId,
                     ClientSecret = x.DigiKeyClientSecret,
                     ApiUrl = x.DigiKeyApiUrl,
@@ -114,6 +115,7 @@ namespace Binner.Common.MappingProfiles
                 .ReverseMap();
             CreateMap<DigikeyConfiguration, DigiKeyUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
+                .ForMember(x => x.Site, options => options.MapFrom(x => x.Site))
                 .ForMember(x => x.ClientId, options => options.MapFrom(x => x.ClientId))
                 .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.ClientSecret))
                 .ForMember(x => x.oAuthPostbackUrl, options => options.MapFrom(x => x.oAuthPostbackUrl))
@@ -147,6 +149,7 @@ namespace Binner.Common.MappingProfiles
 
             CreateMap<UserIntegrationConfiguration, DigiKeyUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.DigiKeyEnabled))
+                .ForMember(x => x.Site, options => options.MapFrom(x => x.DigiKeySite))
                 .ForMember(x => x.ClientId, options => options.MapFrom(x => x.DigiKeyClientId))
                 .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.DigiKeyClientSecret))
                 .ForMember(x => x.oAuthPostbackUrl, options => options.MapFrom(x => x.DigiKeyOAuthPostbackUrl))

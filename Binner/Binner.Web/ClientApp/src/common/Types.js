@@ -145,7 +145,8 @@ export const GetAdvancedTypeDropdown = (type, showDescription = false, keyIndex 
       key: type[t].value + keyIndex,
       value: type[t].value,
       text: type[t].text || type[t].name,
-      description: showDescription ? type[t].description : null
+      description: showDescription ? type[t].description : null,
+      ...(type[t].flag && {flag: type[t].flag.toLowerCase() })
     };
   });
 };
