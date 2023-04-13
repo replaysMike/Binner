@@ -136,6 +136,12 @@ namespace Binner.Common.Services
         Task<ICollection<PartType>> GetPartTypesAsync();
 
         /// <summary>
+        /// Get all part types and the number of parts in each type
+        /// </summary>
+        /// <returns></returns>
+        Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync();
+
+        /// <summary>
         /// Get count of all unique parts
         /// </summary>
         /// <returns></returns>

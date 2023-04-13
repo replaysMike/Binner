@@ -321,7 +321,7 @@ export function Project(props) {
                 </Trans>
               </p>}
 							trigger={
-								<Form.Input width={6} label={t('label.location', "Location")} required placeholder={t('page.project.placeholder.location', "New York")} focus value={project.location} onChange={handleChange} name='location' />
+								<Form.Input width={6} label={t('label.location', "Location")} placeholder={t('page.project.placeholder.location', "New York")} focus value={project.location} onChange={handleChange} name='location' />
 							}
 						/>
 						<Popup

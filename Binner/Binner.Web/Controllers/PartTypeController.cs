@@ -42,23 +42,14 @@ namespace Binner.Web.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAllPartTypesAsync()
         {
-            var partTypes = await _partService.GetPartTypesAsync();
-            var partTypesResponse = Mapper.Map<ICollection<PartType>, ICollection<PartTypeResponse>>(partTypes);
-            foreach (var partType in partTypesResponse)
-            {
-                // todo: extend part service to support this more efficiently
-                partType.ParentPartType = partTypes
-                    .Where(x => x.ParentPartTypeId == partType.ParentPartTypeId)
-                    .Select(x => x.Name)
-                    .FirstOrDefault();
-            }
-            return Ok(partTypesResponse);
+            var partTypes = await _partService.GetPartTypesWithPartCountsAsync();
+            return Ok(partTypes);
         }
 
         /// <summary>
         /// Get a list of part types
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="parent"></param>
         /// <returns></returns>
         [HttpGet("list")]
         public async Task<IActionResult> GetPartTypesAsync([FromQuery] string? parent)
