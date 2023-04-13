@@ -23,7 +23,7 @@ export function Tools(props) {
       <FormHeader name={t('page.tools.title', "Tools")} to={".."}>
         {t('page.tools.description', "Binner includes a suite of free utilities common to daily life in electrical engineering.")}
 			</FormHeader>
-      <Segment style={{ padding: "40px 40px" }}>
+      <Segment style={{ padding: "40px 40px" }} className="tools">
         <Statistic.Group widths="three">
           <Statistic onClick={(e) => route(e, "/tools/resistor")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
