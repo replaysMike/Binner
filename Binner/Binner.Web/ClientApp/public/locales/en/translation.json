@@ -18,7 +18,7 @@
       "parts": "Parts",
       "uniqueParts": "Unique Parts",
       "value": "Value",
-      "projects": "Projects"
+      "projects": "BOM Projects"
     },
     "search": {
       "title":"Inventory",

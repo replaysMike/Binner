@@ -147,6 +147,18 @@ section.formHeader {
     display: table-row-group;
 }
 
+.dashboard .ui.statistic .value, .tools .ui.statistic .value {
+    transition: color 0.25s ease-in-out;
+}
+
+.dashboard .ui.statistic:hover .value {
+    color: #0366d6 !important;
+}
+
+.tools .ui.statistic:hover .value {
+    color: #d62303 !important;
+}
+
 .ui.grid {
     margin-left: 0px !important;
     margin-right: 0px !important;

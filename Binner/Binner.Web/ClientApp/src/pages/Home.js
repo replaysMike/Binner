@@ -86,7 +86,7 @@ export function Home(props) {
     <div>
       <h1>{t('page.home.title', "Dashboard")}</h1>
       <p>{t('page.home.description', "Binner is an inventory management app for makers, hobbyists and professionals.")}</p>
-      <Segment>
+      <Segment className="dashboard">
         <Statistic.Group widths="four">
           <Statistic onClick={(e) => route(e, "/inventory/add")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
@@ -188,7 +188,7 @@ export function Home(props) {
               <Icon name="folder open" />
               {summary.projectsCount}
             </Statistic.Value>
-            <Statistic.Label>{t('page.home.projects', "Projects")}</Statistic.Label>
+            <Statistic.Label>{t('page.home.projects', "BOM Projects")}</Statistic.Label>
           </Statistic>
         </Statistic.Group>
       </Segment>
