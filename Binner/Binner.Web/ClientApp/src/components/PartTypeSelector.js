@@ -33,11 +33,9 @@ export default function PartTypeSelector(props) {
 		return _.find(partTypes, (i) => i.partTypeId === partTypeIdInt);
 	}, [partTypes]);
 
-	const getPartTypeNameFromId = (partTypeId) => {
-		const partType = getPartTypeFromId(partTypeId);
-		if (partType)
-			return partType.name;
-		return "";
+	const getPartTypeFromName = (name) => {
+		const lcName = name.toLowerCase();
+		return _.find(partTypes, (i) => i.name.toLowerCase() === lcName)
 	};
 
   useEffect(() => {
@@ -195,8 +193,8 @@ export default function PartTypeSelector(props) {
     }
 	};
 
-  const handleOnNodeSelect = (e, selectedPartTypeId) => {
-    const selectedPartType = getPartTypeFromId(selectedPartTypeId);
+  const handleOnNodeSelect = (e, selectedPartTypeName) => {
+    const selectedPartType = getPartTypeFromName(selectedPartTypeName);
     if (selectedPartType) {
       setPartType(selectedPartType);
       // fire event
