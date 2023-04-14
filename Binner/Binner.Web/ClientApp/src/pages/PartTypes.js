@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup } from "semantic-ui-react";
+import { Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup, Modal } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
 import { FormHeader } from "../components/FormHeader";
@@ -42,6 +42,9 @@ export function PartTypes(props) {
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
   const [expandedNodeIds, setExpandedNodeIds] = useState([]);
   const [search, setSearch] = useState("");
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [newPartTypeName, setNewPartTypeName] = useState('');
+  const [modalContext, setModalContext] = useState(null);
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setLoading(true);
@@ -97,6 +100,10 @@ export function PartTypes(props) {
     }else{
       setExpandedNodeIds([]);
     }
+  };
+
+  const handleNewPartTypeNameChange = (e, control) => {
+    setModalContext({ ...modalContext, name: control.value });
   };
 
   const handleInlineChange = async (e, control, partType) => {
@@ -164,26 +171,10 @@ export function PartTypes(props) {
     }
   };
 
-  const saveColumn = async (e) => {
-    changeTracker.forEach(async (val) => {
-      const partType = _.where(partTypes, { partTypeId: val.partTypeId }) || [];
-      if (partType.length > 0) await save(partType[0]);
-    });
-    setPartTypes(partTypes);
-    setPartTypesFiltered(partTypes);
-    setChangeTracker([]);
-  };
-
-  const save = async (partType) => {
-    const p = _.where(partTypes, { partTypeId: partType.partTypeId });
-    p.loading = false;
-    setPartTypes(partTypes);
-    setPartTypesFiltered(partTypes);
-    let lastSavedPartTypeId = 0;
+  const handleRenamePartType = async (e) => {
     const request = {
-      partTypeId: Number.parseInt(partType.partTypeId),
-      name: partType.name,
-      parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
+      partTypeId: modalContext.partTypeId,
+      name: modalContext.name,
     };
     const response = await fetchApi("partType", {
       method: "PUT",
@@ -193,15 +184,17 @@ export function PartTypes(props) {
       body: JSON.stringify(request)
     });
     if (response.responseObject.status === 200) {
-      lastSavedPartTypeId = partType.partTypeId;
+      const newPartTypes = [..._.filter(partTypes, i => i.partTypeId !== modalContext.partTypeId), modalContext];
+      const sortedPartTypes = _.sortBy(newPartTypes, i => i.name);
+      setPartTypes(sortedPartTypes);
+      setPartTypesFiltered(sortedPartTypes);
+
       toast.success(t("success.savedPartType", "Saved part type {{name}}", { name: response.data.name }));
     } else {
       toast.error(t("error.failedSavePartType", "Failed to save Part Type!"));
     }
-    p.loading = false;
-    setPartTypes(partTypes);
-    setPartTypesFiltered(partTypes);
-    setLastSavedPartTypeId(lastSavedPartTypeId);
+    setModalContext(null);
+    setIsRenameModalOpen(false);
   };
 
   const handleShowAdd = (e) => {
@@ -305,13 +298,24 @@ export function PartTypes(props) {
             </Typography>
             <Popup
               position="left center"
+              content={<p>{t("button.rename", "Rename")}</p>}
+              trigger={
+                <Button
+                  size="tiny"
+                  style={{ fontSize: "0.6em", padding: '0.5em 1.5em', marginLeft: "40px", marginTop: "-3px" }}
+                  onClick={(e) => handleOpenRenamePartModal(e, data)}
+                >{t("button.rename", "Rename")}</Button>
+              }
+            />
+            <Popup
+              position="left center"
               content={<p>{t("button.delete", "Delete")}</p>}
               trigger={
                 <Button
                   circular
                   icon="delete"
                   size="tiny"
-                  style={{ fontSize: "0.4em", marginLeft: "40px", marginTop: "-3px" }}
+                  style={{ fontSize: "0.4em", marginLeft: "10px", marginTop: "-3px" }}
                   onClick={(e) => confirmDeleteOpen(e, data)}
                 />
               }
@@ -400,6 +404,11 @@ export function PartTypes(props) {
     return childrenComponents;
   };
 
+  const handleOpenRenamePartModal = (e, pt) => {
+    setModalContext(pt);
+    setIsRenameModalOpen(true);
+  };
+
   return (
     <div>
       <Breadcrumb>
@@ -434,6 +443,24 @@ export function PartTypes(props) {
         onConfirm={handleDelete}
         content={confirmPartDeleteContent}
       />
+      <Modal 
+        open={isRenameModalOpen}
+      >
+        <Modal.Header>{t('page.partTypes.rename', "Rename Part Type")}</Modal.Header>
+        <Modal.Content>
+          <Form>
+            <Form.Field>
+              <Form.Input label="New Name" name="name" value={modalContext?.name || ''} onChange={handleNewPartTypeNameChange} />
+            </Form.Field>
+          </Form>
+        </Modal.Content>
+        <Modal.Actions>
+        <Button onClick={() => setIsRenameModalOpen(false) }>Cancel</Button>
+          <Button primary onClick={handleRenamePartType}>
+            <Icon name="save" /> {t('button.save', "Save")}
+          </Button>
+        </Modal.Actions>
+      </Modal>
 
       <Segment loading={loading} style={{ marginBottom: "50px" }}>
         <Form>
