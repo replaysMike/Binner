@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
-import { Form, Input, Icon, Popup } from "semantic-ui-react";
+import { Form, Input, Menu, Dropdown, Icon, Popup } from "semantic-ui-react";
+import { isAuthenticated, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
 import { AppEvents, Events } from "../common/events";
 import "./NavMenu.css";
 
@@ -24,6 +25,16 @@ export function NavMenu(props) {
       default:
         break;
     }
+  };
+
+  const logout = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await logoutUserAccountAsync().then(async (response) => {
+      deAuthenticateUserAccount();
+      // navigate("/", { replace: true, state: { } });
+      window.location.href = "/";
+    });
   };
 
   const onSubmit = async (e) => {
@@ -76,6 +87,18 @@ export function NavMenu(props) {
                   {t('comp.navBar.orderImport', "Order Import")}
                   </NavLink>
                 </NavItem>
+                <NavItem>
+                    <Menu stackable style={{ minHeight: "2.4em", marginTop: "5px" }}>
+                      <Dropdown direction="left" item trigger={<Icon name="user" style={{ color: "#042173" }} />}>
+                        <Dropdown.Menu>
+                          <Dropdown.Item icon="edit" text="Account Settings" as={Link} to="/account" />
+                          <Dropdown.Item icon="help circle" text="Help" as={Link} to="/help" />
+                          <Dropdown.Item icon="bug" text="Report a Bug" as={Link} to="https://github.com/replaysMike/Binner/issues" target="_blank" />
+                          <Dropdown.Item icon="sign out" text="Logout" onClick={logout} />
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </Menu>
+                  </NavItem>
               </ul>
             </Form>
           </Collapse>
