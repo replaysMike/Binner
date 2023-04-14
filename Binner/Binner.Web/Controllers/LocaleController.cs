@@ -14,7 +14,7 @@ using System.Timers;
 
 namespace Binner.Web.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class LocaleController : ControllerBase

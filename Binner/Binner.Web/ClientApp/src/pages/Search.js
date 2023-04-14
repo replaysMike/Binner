@@ -55,7 +55,7 @@ export function Search(props) {
     if (pageSizeParameter === null) pageSizeParameter = pageSize;
 
     const response = await fetchApi(
-      `part/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSizeParameter}&page=${page}&by=${byParameter}&value=${byValueParameter}`
+      `api/part/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSizeParameter}&page=${page}&by=${byParameter}&value=${byValueParameter}`
     );
     const { data } = response;
     const pageOfData = data.items;
@@ -81,18 +81,23 @@ export function Search(props) {
     setLoading(true);
 
     try {
-      const response = await fetch(`part/search?keywords=${keyword}`, {
-        signal: Search.abortController.signal
+      await fetchApi(`api/part/search?keywords=${keyword}`, {
+        signal: Search.abortController.signal,
+      }).then((response) => {
+        const { data } = response;
+        if (response.responseObject.status === 200) {
+          setParts(data || []);
+          setLoading(false);
+        } else {
+          setParts([]);
+          setLoading(false);
+        }
+      }).catch((response) => {
+        if (response.status === 404){
+          // part not found
+          this.setState({ parts: [], loading: false, noRemainingData: true });
+        }
       });
-
-      if (response.status === 200) {
-        const data = await response.json();
-        setParts(data || []);
-        setLoading(false);
-      } else {
-        setParts([]);
-        setLoading(false);
-      }
     } catch (ex) {
       if (ex.name === "AbortError") {
         return; // Continuation logic has already been skipped, so return normally

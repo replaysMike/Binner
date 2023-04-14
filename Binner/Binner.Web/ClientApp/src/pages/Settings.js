@@ -206,7 +206,7 @@ export const Settings = (props) => {
 
   useEffect(() => {
     const loadFonts = async () => {
-      await fetchApi("print/fonts", {
+      await fetchApi("api/print/fonts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -230,7 +230,7 @@ export const Settings = (props) => {
     };
 
     const loadSettings = async () => {
-      await fetchApi("system/settings", {
+      await fetchApi("api/system/settings", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -252,7 +252,7 @@ export const Settings = (props) => {
    * @param {any} e
    */
   const onSubmit = async (e) => {
-    await fetchApi("system/settings", {
+    await fetchApi("api/system/settings", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -369,7 +369,7 @@ export const Settings = (props) => {
     const request = {
       name: apiName
     };
-    fetchApi("settings/forgetcredentials", {
+    fetchApi("api/settings/forgetcredentials", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -432,7 +432,7 @@ export const Settings = (props) => {
       configuration
     };
     setTesting(true);
-    fetchApi("settings/testapi", {
+    fetchApi("api/settings/testapi", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

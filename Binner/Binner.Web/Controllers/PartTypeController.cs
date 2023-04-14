@@ -9,15 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Net.Mime;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class PartTypeController : ControllerBase

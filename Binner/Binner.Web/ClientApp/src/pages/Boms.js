@@ -53,7 +53,7 @@ export function Boms (props) {
   const loadProjects = async (page, pageSize, reset = false) => {
     setLoading(true);
     let endOfData = false;
-    const response = await fetchApi(`bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
+    const response = await fetchApi(`api/bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
     const pageOfData = response.data;
     pageOfData.forEach(function (element) {
       element.loading = true;
@@ -128,7 +128,7 @@ export function Boms (props) {
       location: project.location,
       color: Number.parseInt(project.color) || 0
     };
-    const response = await fetchApi('project', {
+    const response = await fetchApi('api/project', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -175,7 +175,7 @@ export function Boms (props) {
       location: project.location,
       color: project.color,
     };
-    const response = await fetchApi('project', {
+    const response = await fetchApi('api/project', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -229,7 +229,7 @@ export function Boms (props) {
     if (!confirmDeleteSelectedProject)
       return null;
 
-    const response = await fetchApi('project', {
+    const response = await fetchApi('api/project', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'

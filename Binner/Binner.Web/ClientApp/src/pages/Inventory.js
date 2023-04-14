@@ -209,7 +209,7 @@ export function Inventory(props) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     try {
-      const response = await fetchApi(`part/info?partNumber=${input}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${input}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
       const data = response.data;
@@ -258,7 +258,7 @@ export function Inventory(props) {
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     try {
-      const response = await fetchApi(`part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
       const data = response.data;
@@ -539,7 +539,7 @@ export function Inventory(props) {
   const fetchBarcodeMetadata = async (e, scannedPart, onSuccess, onFailure) => {
     e.preventDefault();
     e.stopPropagation();
-    const response = await fetchApi(`part/barcode/info?barcode=${scannedPart.barcode}`, {
+    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -589,7 +589,7 @@ export function Inventory(props) {
     Inventory.partAbortController = new AbortController();
     setLoadingPartMetadata(true);
     try {
-      const response = await fetchApi(`part?partNumber=${partNumber}`, {
+      const response = await fetchApi(`api/part?partNumber=${partNumber}`, {
         signal: Inventory.partAbortController.signal
       });
       const { data } = response;
@@ -609,7 +609,7 @@ export function Inventory(props) {
 
   const fetchRecentRows = async () => {
     setLoadingRecent(true);
-    const response = await fetchApi(`part/list?orderBy=DateCreatedUtc&direction=Descending&results=${maxRecentAddedParts}`);
+    const response = await fetchApi(`api/part/list?orderBy=DateCreatedUtc&direction=Descending&results=${maxRecentAddedParts}`);
     const { data } = response;
     setRecentParts(data.items);
     setLoadingRecent(false);
@@ -617,7 +617,7 @@ export function Inventory(props) {
 
   const fetchPartTypes = async () => {
     setLoadingPartTypes(true);
-    const response = await fetchApi("partType/all");
+    const response = await fetchApi("api/partType/all");
     const { data } = response;
     const partTypes = _.sortBy(
       data.map((item) => {
@@ -636,7 +636,7 @@ export function Inventory(props) {
 
   const fetchProjects = async () => {
     setLoadingProjects(true);
-    const response = await fetchApi("project/list?orderBy=DateCreatedUtc&direction=Descending&results=99");
+    const response = await fetchApi("api/project/list?orderBy=DateCreatedUtc&direction=Descending&results=99");
     const { data } = response;
     const projects = _.sortBy(
       data.map((item) => {
@@ -676,15 +676,15 @@ export function Inventory(props) {
       productUrl: partSupplier.productUrl && partSupplier.productUrl.length > 4 ? `https://${partSupplier.productUrl.replace('https://', '').replace('http://', '')}` : null,
       imageUrl: partSupplier.imageUrl && partSupplier.imageUrl.length > 4 ? `https://${partSupplier.imageUrl.replace('https://', '').replace('http://', '')}` : null
     };
-    const response = await fetch("part/partSupplier", {
+    const response = await fetchApi("api/part/partSupplier", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
-    if (response && response.status === 200) {
-      const data = await response.json();
+    if (response && response.responseObject.status === 200) {
+      const data = response.data;
       // add part supplier to ui
       const newMetadataParts = [...metadataParts];
       newMetadataParts.push({
@@ -730,15 +730,15 @@ export function Inventory(props) {
     const request = {
       partSupplierId: partSupplier.partSupplierId,
     };
-    const response = await fetch("part/partSupplier", {
+    const response = await fetchApi("api/part/partSupplier", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
-    if (response && response.status === 200) {
-      const isSuccess = await response.json();
+    if (response && response.responseObject.status === 200) {
+      const isSuccess = response.data;
       // add part supplier to ui
       if (isSuccess){
         const newMetadataParts = [...metadataParts.filter(x => x.partSupplierId !== request.partSupplierId)];
@@ -840,21 +840,23 @@ export function Inventory(props) {
     request.projectId = Number.parseInt(part.projectId) || null;
 
     const saveMethod = isExisting ? "PUT" : "POST";
-    const response = await fetch("part", {
+    const response = await fetchApi("api/part", {
       method: saveMethod,
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
+      // swallow any errors, we will handle them below
+      catchErrors: true
     });
 
     let saveMessage = "";
-    if (response.status === 409) {
+    if (response.responseObject.status === 409) {
       // possible duplicate
       const data = await response.json();
       setDuplicateParts(data.parts);
       setDuplicatePartModalOpen(true);
-    } else if (response.status === 200) {
+    } else if (response.responseObject.status === 200) {
       // reset form if it was a new part
       if (isExisting) {
         saveMessage = t('message.savedPart', "Saved part {{partNumber}}!", { partNumber: request.partNumber });
@@ -868,7 +870,7 @@ export function Inventory(props) {
       setIsDirty(false);
       // refresh recent parts list
       await fetchRecentRows();
-    } else if (response.status === 400) {
+    } else if (response.responseObject.status === 400) {
       // other error (invalid part type, mounting type, etc.)
       saveMessage = t('message.failedSavePart', "Failed to update, check Part Type and Mounting Type");
       setSaveMessage(saveMessage);
@@ -1067,7 +1069,7 @@ export function Inventory(props) {
   const printLabel = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: "POST" });
+    await fetchApi(`api/part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: "POST" });
   };
 
   const setPartFromMetadata = (metadataParts, suggestedPart) => {
@@ -1363,7 +1365,7 @@ export function Inventory(props) {
     const request = {
       parts: scannedParts
     };
-    const response = await fetchApi("part/bulk", {
+    const response = await fetchApi("api/part/bulk", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -1399,7 +1401,7 @@ export function Inventory(props) {
   const handleDeletePart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`part`, {
+    await fetchApi(`api/part`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -1416,7 +1418,7 @@ export function Inventory(props) {
   const handleDeleteLocalFile = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`storedfile`, {
+    await fetchApi(`api/storedfile`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"

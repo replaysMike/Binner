@@ -77,7 +77,7 @@ export function Bom(props) {
 
   const loadProject = async (projectName) => {
     setLoading(true);
-    const response = await fetchApi(`bom?name=${projectName}`).catch((c) => {
+    const response = await fetchApi(`api/bom?name=${projectName}`).catch((c) => {
       if (c.status === 404) {
         toast.error(t('error.projectNotFound', "Could not find project named {{projectName}}"), { projectName });
         setPageDisabled(true);
@@ -158,7 +158,7 @@ export function Bom(props) {
       projectId: project.projectId,
       ids: checkedValues
     };
-    const response = await fetchApi("bom/part", {
+    const response = await fetchApi("api/bom/part", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -244,7 +244,7 @@ export function Bom(props) {
           }
         })
     };
-    const response = await fetchApi("bom/part", {
+    const response = await fetchApi("api/bom/part", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -341,15 +341,15 @@ export function Bom(props) {
       schematicReferenceId: addPartSelectedPart.schematicReferenceId,
       customDescription: addPartSelectedPart.customDescription,
     };
-    const response = await fetch("bom/part", {
+    const response = await fetchApi("api/bom/part", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
-    if (response.ok) {
-      const newPart = await response.json();
+    if (response.responseObject.ok) {
+      const newPart = response.data;
       const newProject = {...project, parts: [...project.parts, newPart]};
       setProject(newProject);
       const newTotalPages = Math.ceil(newProject.parts.length / pageSize);
@@ -368,15 +368,15 @@ export function Bom(props) {
     setAddPcbModalOpen(false);
     setLoading(true);
     const request = { ...pcb, projectId: project.projectId };
-    const response = await fetch("bom/pcb", {
+    const response = await fetchApi("api/bom/pcb", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
-    if (response.ok) {
-      const data = await response.json();
+    if (response.responseObject.ok) {
+      const data = response.data;
       project.pcbs.push(data);
       toast.success(`Added ${pcb.name} pcb to project!`);
       setProject({ ...project });
@@ -393,15 +393,16 @@ export function Bom(props) {
     setProducePcbModalOpen(false);
     setLoading(true);
     const request = { ...producePcbRequest, projectId: project.projectId };
-    const response = await fetch("bom/produce", {
+    const response = await fetchApi("api/bom/produce", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
+      catchErrors: true
     });
-    if (response.ok) {
-      const data = await response.json();
+    if (response.responseObject.ok) {
+      const data = response.data;
       setProject(data);
       setInventoryMessage(getInventoryMessage(data));
       toast.success(t('success.producedPcbs', "{{quantity}} PCB's were produced!", {quantity: producePcbRequest.quantity}));

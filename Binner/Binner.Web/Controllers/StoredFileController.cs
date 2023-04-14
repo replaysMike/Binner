@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class StoredFileController : ControllerBase

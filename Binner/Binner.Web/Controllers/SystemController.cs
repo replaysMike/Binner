@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using Binner.Common;
+﻿using Binner.Common;
 using Binner.Common.Configuration;
 using Binner.Common.Integrations;
 using Binner.Common.IO.Printing;
@@ -16,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class SystemController : ControllerBase
@@ -112,7 +111,7 @@ namespace Binner.Web.Controllers
         /// Test api settings
         /// </summary>
         /// <returns></returns>
-        [HttpPut("/settings/testapi")]
+        [HttpPut("settings/testapi")]
         public async Task<IActionResult> TestApiAsync(TestApiRequest request)
         {
             try

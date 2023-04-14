@@ -60,7 +60,7 @@ export function Project(props) {
 
   const loadProject = async (projectName) => {
     setLoading(true);
-    const response = await fetchApi(`bom?name=${projectName}`)
+    const response = await fetchApi(`api/bom?name=${projectName}`)
 			.catch(c => {
 				if (c.status === 404){
 					toast.error(t('error.projectNotFound', "Could not find a project named {{projectName}}", { projectName }));
@@ -88,7 +88,7 @@ export function Project(props) {
     const request = {
       projectId: project.projectId,
     };
-    const response = await fetchApi('project', {
+    const response = await fetchApi('api/project', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -113,7 +113,7 @@ export function Project(props) {
       projectId: project.projectId,
 			pcbId: selectedPcb.pcbId
     };
-    const response = await fetchApi('bom/pcb', {
+    const response = await fetchApi('api/bom/pcb', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -139,7 +139,7 @@ export function Project(props) {
 			...pcb,
       projectId: project.projectId,		
     };
-    const response = await fetchApi('bom/pcb', {
+    const response = await fetchApi('api/bom/pcb', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -174,15 +174,15 @@ export function Project(props) {
     setLoading(true);
 		setBtnDeleteProjectDisabled(true);
     const request = {...project};
-    const response = await fetch("project", {
+    const response = await fetchApi("api/api/project", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(request)
     });
-    if (response.ok) {
-      const data = await response.json();
+    if (response.responseObject.ok) {
+      const data = response.data;
 			// redirect if name changed to new name
 			props.history(`/project/${data.name}`);
 			toast.success('Project saved!');
