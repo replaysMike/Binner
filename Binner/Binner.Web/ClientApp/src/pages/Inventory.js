@@ -32,6 +32,7 @@ import {
 } from "semantic-ui-react";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
+import PartTypeSelector from "../components/PartTypeSelector";
 import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
 import Dropzone from "../components/Dropzone";
@@ -48,6 +49,7 @@ import { Currencies } from "../common/currency";
 import "./Inventory.css";
 
 const ProductImageIntervalMs = 10 * 1000;
+const IcPartType = 14;
 
 export function Inventory(props) {
   const maxRecentAddedParts = 10;
@@ -55,7 +57,7 @@ export function Inventory(props) {
   const navigate = useNavigate();
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
-    lastPartTypeId: 14, // IC
+    lastPartTypeId: IcPartType, // IC
     lastMountingTypeId: "0", // None
     lastQuantity: 1,
     lastProjectId: null,
@@ -75,14 +77,15 @@ export function Inventory(props) {
   const [datasheetDescription, setDatasheetDescription] = useState("");
   const [datasheetManufacturer, setDatasheetManufacturer] = useState("");
   const scannedPartsSerialized = JSON.parse(localStorage.getItem("scannedPartsSerialized")) || [];
+  const hasParameters = (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0);
   const defaultPart = {
     partId: 0,
     partNumber: props.params.partNumber || "",
     allowPotentialDuplicate: false,
-    quantity: viewPreferences.lastQuantity + "",
-    lowStockThreshold: viewPreferences.lowStockThreshold + "",
-    partTypeId: viewPreferences.lastPartTypeId || 14,
-    mountingTypeId: (viewPreferences.lastMountingTypeId || 0) + "",
+    quantity: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) + "",
+    lowStockThreshold: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) + "",
+    partTypeId: (!hasParameters && viewPreferences.rememberLast && (viewPreferences.lastPartTypeId || IcPartType)) || 0 ,
+    mountingTypeId: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) || 0 + "",
     packageType: "",
     keywords: "",
     description: "",
@@ -90,9 +93,9 @@ export function Inventory(props) {
     digiKeyPartNumber: "",
     mouserPartNumber: "",
     arrowPartNumber: "",
-    location: viewPreferences.lastLocation || "",
-    binNumber: viewPreferences.lastBinNumber || "",
-    binNumber2: viewPreferences.lastBinNumber2 || "",
+    location: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastLocation) || "",
+    binNumber: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber) || "",
+    binNumber2: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber2) || "",
     cost: "",
     lowestCostSupplier: "",
     lowestCostSupplierUrl: "",
@@ -105,6 +108,7 @@ export function Inventory(props) {
     supplierPartNumber: "",
     storedFiles: []
   };
+  console.log('defaultPart', defaultPart);
   const defaultPartSupplier = { name: '', supplierPartNumber: '', cost: '0', quantityAvailable: '0', minimumOrderQuantity: '0', productUrl: '', imageUrl: ''};
   const defaultMountingTypes = [
     {
@@ -123,8 +127,10 @@ export function Inventory(props) {
       text: "Surface Mount"
     }
   ];
+
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState(defaultPart);
+  const [isEditing, setIsEditing] = useState((part && part.partId > 0) || hasParameters);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedPart, setSelectedPart] = useState(null);
   const [selectedLocalFile, setSelectedLocalFile] = useState(null);
@@ -140,6 +146,7 @@ export function Inventory(props) {
   const [confirmLocalFileDeleteContent, setConfirmLocalFileDeleteContent] = useState(null);
   const [confirmDeleteLocalFileIsOpen, setConfirmDeleteLocalFileIsOpen] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
+  const [allPartTypes, setAllPartTypes] = useState([]);
   const [projects, setProjects] = useState([]);
   const [mountingTypes] = useState(defaultMountingTypes);
   const [loadingPartMetadata, setLoadingPartMetadata] = useState(true);
@@ -159,7 +166,6 @@ export function Inventory(props) {
   const [uploading, setUploading] = useState(false);
   const [dragOverClass, setDragOverClass] = useState("");
   const [partInputPartNumberRef, setInputPartNumberFocus] = useFocus();
-  const [isEditing, setIsEditing] = useState((part && part.partId > 0) || (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0));
   const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
   const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
@@ -624,6 +630,7 @@ export function Inventory(props) {
       "text"
     );
     setPartTypes(partTypes);
+    setAllPartTypes(data);
     setLoadingPartTypes(false);
   };
 
@@ -883,7 +890,7 @@ export function Inventory(props) {
       allowPotentialDuplicate: false,
       quantity: (clearAll || !viewPreferences.rememberLast) ? "1" : viewPreferences.lastQuantity + "",
       lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? "10" : viewPreferences.lowStockThreshold + "",
-      partTypeId: (clearAll || !viewPreferences.rememberLast) ? 14 : viewPreferences.lastPartTypeId,
+      partTypeId: (clearAll || !viewPreferences.rememberLast) ? 0 : viewPreferences.lastPartTypeId,
       mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? "0" : viewPreferences.lastMountingTypeId + "",
       packageType: "",
       keywords: "",
@@ -993,6 +1000,13 @@ export function Inventory(props) {
     setInputPartNumber(searchPartNumber);
     setIsDirty(true);
   };
+
+  const handlePartTypeChange = (e, partType) => { 
+    console.log('part type selected!', partType.name, partType.partTypeId); 
+    if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastPartTypeId: partType.partTypeId});
+    setPart({...part, partTypeId: partType.partTypeId});
+    setIsDirty(true); 
+  }
 
   const handleChange = (e, control) => {
     e.preventDefault();
@@ -1836,7 +1850,18 @@ export function Inventory(props) {
                   </Form.Input>
                   {!isEditing && <div className="suggested-part">{part.partNumber && part.PartNumber !== inputPartNumber && <span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
                 </Form.Field>
-                <Form.Dropdown
+                <Form.Field width={6}>
+                  <PartTypeSelector 
+                    label={t('label.partType', "Part Type")}
+                    name="partTypeId"
+                    value={part.partTypeId || ""}
+                    partTypes={allPartTypes} 
+                    onSelect={handlePartTypeChange}
+                    onFocus={disableKeyboardListening}
+                    onBlur={enableKeyboardListening}
+                  />
+                </Form.Field>
+                {/*<Form.Dropdown
                   label={t('label.partType', "Part Type")}
                   placeholder={t('label.partType', "Part Type")}
                   loading={loadingPartTypes}
@@ -1848,7 +1873,7 @@ export function Inventory(props) {
                   name="partTypeId"
                   onFocus={disableKeyboardListening}
                   onBlur={enableKeyboardListening}
-                />
+                />*/}
                 <Form.Dropdown
                   label={t('label.mountingType', "Mounting Type")}
                   placeholder={t('label.mountingType', "Mounting Type")}
