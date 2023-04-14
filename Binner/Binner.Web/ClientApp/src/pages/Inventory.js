@@ -108,7 +108,7 @@ export function Inventory(props) {
     supplierPartNumber: "",
     storedFiles: []
   };
-  console.log('defaultPart', defaultPart);
+
   const defaultPartSupplier = { name: '', supplierPartNumber: '', cost: '0', quantityAvailable: '0', minimumOrderQuantity: '0', productUrl: '', imageUrl: ''};
   const defaultMountingTypes = [
     {
@@ -1002,7 +1002,6 @@ export function Inventory(props) {
   };
 
   const handlePartTypeChange = (e, partType) => { 
-    console.log('part type selected!', partType.name, partType.partTypeId); 
     if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastPartTypeId: partType.partTypeId});
     setPart({...part, partTypeId: partType.partTypeId});
     setIsDirty(true); 

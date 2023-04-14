@@ -14,7 +14,6 @@ import TreeView from "@mui/lab/TreeView";
 import TreeItem, { treeItemClasses } from "@mui/lab/TreeItem";
 import Typography from "@mui/material/Typography";
 import { Memory as MemoryTwoTone } from "@mui/icons-material";
-import Label from "@mui/icons-material/Label";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 
@@ -29,19 +28,20 @@ export function PartTypes(props) {
   };
   const [parentPartType, setParentPartType] = useState(null);
   const [partTypeOptions, setPartTypeOptions] = useState([]);
+  const [partTypesFiltered, setPartTypesFiltered] = useState([]);
   const [partTypes, setPartTypes] = useState([]);
   const [partType, setPartType] = useState(defaultPartType);
   const [changeTracker, setChangeTracker] = useState([]);
   const [lastSavedPartTypeId, setLastSavedPartTypeId] = useState(0);
   const [addVisible, setAddVisible] = useState(false);
-  const [column, setColumn] = useState(null);
-  const [direction, setDirection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingAllPartTypes, setLoadingAllPartTypes] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [selectedPartType, setSelectedPartType] = useState(null);
   const [chkHideEmptyTypes, setChkHideEmptyTypes] = useState(false);
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
+  const [expandedNodeIds, setExpandedNodeIds] = useState([]);
+  const [search, setSearch] = useState("");
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setLoading(true);
@@ -50,6 +50,7 @@ export function PartTypes(props) {
       const { data } = response;
 
       setPartTypes(data);
+      setPartTypesFiltered(data);
       //setPartTypes([]);
       setLoading(false);
     });
@@ -58,17 +59,6 @@ export function PartTypes(props) {
   useEffect(() => {
     loadPartTypes();
   }, [loadPartTypes]);
-
-  const handleSort = (clickedColumn) => () => {
-    if (column !== clickedColumn) {
-      setColumn(clickedColumn);
-      setPartTypes(_.sortBy(partTypes, [clickedColumn]));
-      setDirection("ascending");
-    } else {
-      setPartTypes(partTypes.reverse());
-      setDirection(direction === "ascending" ? "descending" : "ascending");
-    }
-  };
 
   const loadAllPartTypes = () => {
     setLoadingAllPartTypes(true);
@@ -93,6 +83,20 @@ export function PartTypes(props) {
     partType[control.name] = control.value;
     const newPartType = { ...partType };
     setPartType(newPartType);
+  };
+
+  const handleSearchChange = (e, control) => {
+    setSearch(control.value);
+    let newPartTypesFiltered = recursivePreFilter(partTypes, null, control.value.toLowerCase());
+    // now remove all part types that don't match the filter
+    newPartTypesFiltered = _.filter(partTypes, i => i.filterMatch === true);
+    const newPartTypesFilteredOrdered = _.sortBy(newPartTypesFiltered, x => x.exactMatch ? 0 : 1);
+    setPartTypesFiltered(newPartTypesFilteredOrdered);
+    if (control.value.length > 1) {
+      setExpandedNodeIds(_.map(newPartTypesFiltered, (i) => (i.name)));
+    }else{
+      setExpandedNodeIds([]);
+    }
   };
 
   const handleInlineChange = async (e, control, partType) => {
@@ -148,6 +152,7 @@ export function PartTypes(props) {
       if (isSuccess) {
         const partTypesDeleted = _.without(partTypes, _.findWhere(partTypes, { partTypeId: selectedPartType.partTypeId }));
         setPartTypes(partTypesDeleted);
+        setPartTypesFiltered(partTypesDeleted);
         if (parentPartType) loadPartTypes(parentPartType.name);
         else loadPartTypes();
         toast.success(t("success.deletedPartType", "Deleted part type {{name}}", { name: partType.name }));
@@ -165,6 +170,7 @@ export function PartTypes(props) {
       if (partType.length > 0) await save(partType[0]);
     });
     setPartTypes(partTypes);
+    setPartTypesFiltered(partTypes);
     setChangeTracker([]);
   };
 
@@ -172,6 +178,7 @@ export function PartTypes(props) {
     const p = _.where(partTypes, { partTypeId: partType.partTypeId });
     p.loading = false;
     setPartTypes(partTypes);
+    setPartTypesFiltered(partTypes);
     let lastSavedPartTypeId = 0;
     const request = {
       partTypeId: Number.parseInt(partType.partTypeId),
@@ -193,6 +200,7 @@ export function PartTypes(props) {
     }
     p.loading = false;
     setPartTypes(partTypes);
+    setPartTypesFiltered(partTypes);
     setLastSavedPartTypeId(lastSavedPartTypeId);
   };
 
@@ -319,6 +327,34 @@ export function PartTypes(props) {
     );
   };
 
+  const recursivePreFilter = (partTypes, parentPartTypeId, filterBy) => {
+		// go through every child, mark filtered matches
+
+    const filterByLowerCase = filterBy.toLowerCase();
+		const childrenComponents = [];
+		let partTypesInCategory = _.filter(partTypes, (i) => i.parentPartTypeId === parentPartTypeId);
+		for(let i = 0; i < partTypesInCategory.length; i++){
+        partTypesInCategory[i].exactMatch = partTypesInCategory[i].name.toLowerCase() === filterByLowerCase;
+			if (partTypesInCategory[i].name.toLowerCase().includes(filterByLowerCase)){
+				partTypesInCategory[i].filterMatch = true;
+			} else {
+				partTypesInCategory[i].filterMatch = false;
+			}
+			childrenComponents.push(partTypesInCategory[i]);
+
+			// now filter the children of this category
+			const childs = recursivePreFilter(partTypes, partTypesInCategory[i].partTypeId, filterBy);
+			if (_.find(childs, i => i.filterMatch)) {
+				// make sure the parent matches the filter because it has children that does
+				partTypesInCategory[i].filterMatch = true;
+			}
+			for(var c = 0; c < childs.length; c++) {
+				childrenComponents.push(childs[c]);
+			}
+		}
+		return childrenComponents;
+	};
+
   const recursiveTreeItem = (partTypes, parentPartTypeId = null) => {
     // build a tree graph
     const children = _.filter(partTypes, (i) => i.parentPartTypeId === parentPartTypeId);
@@ -326,13 +362,14 @@ export function PartTypes(props) {
     if (children && children.length > 0) {
       for (let i = 0; i < children.length; i++) {
         const key = `${children[i].name}-${i}`;
+        const nodeId = `${children[i].name}`;
         const childs = recursiveTreeItem(partTypes, children[i].partTypeId);
         if (chkHideEmptyTypes && children[i].parts === 0) {
           // don't display empty types
         } else {
           childrenComponents.push(
             <StyledTreeItem
-              nodeId={key}
+              nodeId={nodeId}
               key={key}
               data={children[i]}
               labelText={children[i].name}
@@ -389,7 +426,6 @@ export function PartTypes(props) {
           For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.
         </Trans>
       </FormHeader>
-      <p></p>
       <Confirm
         className="confirm"
         header={t("confirm.header.deletePart", "Delete Part")}
@@ -400,6 +436,7 @@ export function PartTypes(props) {
       />
 
       <Segment loading={loading} style={{ marginBottom: "50px" }}>
+        <Form>
         <div style={{ marginBottom: "10px", padding: "5px", backgroundColor: "#fafafa" }}>
           {/** Tools Header */}
           <div style={{ float: "left", lineHeight: "2.25em" }}>
@@ -458,15 +495,18 @@ export function PartTypes(props) {
           )}
         </div>
 
+        <Form.Input name="search" placeholder="Search..." onChange={handleSearchChange} />
         {/** https://mui.com/material-ui/react-tree-view/ */}
         <TreeView
           defaultCollapseIcon={<ArrowDropDownIcon />}
           defaultExpandIcon={<ArrowRightIcon />}
           defaultEndIcon={<div style={{ width: 24 }} />}
+          expanded={expandedNodeIds}
           sx={{ height: 500, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
         >
-          {recursiveTreeItem(partTypes).map((x) => x)}
+          {recursiveTreeItem(partTypesFiltered).map((x) => x)}
         </TreeView>
+        </Form>
       </Segment>
     </div>
   );
