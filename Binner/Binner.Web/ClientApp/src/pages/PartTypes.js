@@ -49,7 +49,7 @@ export function PartTypes(props) {
   const loadPartTypes = useCallback((parentPartType = "") => {
     setLoading(true);
     if (parentPartType === undefined || parentPartType === null) parentPartType = "";
-    fetchApi(`partType/all?parent=${parentPartType}`).then((response) => {
+    fetchApi(`api/partType/all?parent=${parentPartType}`).then((response) => {
       const { data } = response;
 
       setPartTypes(data);
@@ -65,7 +65,7 @@ export function PartTypes(props) {
 
   const loadAllPartTypes = () => {
     setLoadingAllPartTypes(true);
-    fetchApi(`partType/all`).then((response) => {
+    fetchApi(`api/partType/all`).then((response) => {
       const { data } = response;
 
       setPartTypeOptions(
@@ -127,7 +127,7 @@ export function PartTypes(props) {
       name: partType.name,
       parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
     };
-    const response = await fetchApi("partType", {
+    const response = await fetchApi("api/partType", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -146,7 +146,7 @@ export function PartTypes(props) {
   };
 
   const onDelete = async (partType) => {
-    const response = await fetchApi("partType", {
+    const response = await fetchApi("api/partType", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -176,7 +176,7 @@ export function PartTypes(props) {
       partTypeId: modalContext.partTypeId,
       name: modalContext.name,
     };
-    const response = await fetchApi("partType", {
+    const response = await fetchApi("api/partType", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"

@@ -16,6 +16,7 @@ import "./custom.css";
 import './bootstrap.css'; /* needed for the carousel control */
 
 // pages
+import { Account } from "./pages/Account";
 import { Home } from "./pages/Home";
 import Inventory from "./pages/Inventory";
 import Search from "./pages/Search";
@@ -99,6 +100,7 @@ class App extends Component {
         <Layout history={this.history}>
           <Routes>
             <Route exact path="/" element={<Home />} />
+            <Route exact path="/account" element={<Account />} />
             <Route exact path="/inventory/add" element={<Inventory />} />
             <Route exact path="/inventory/:partNumber" element={<Inventory />} />
             <Route exact path="/inventory" element={<Search />} />

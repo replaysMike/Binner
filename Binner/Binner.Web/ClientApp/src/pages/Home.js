@@ -21,9 +21,9 @@ export function Home(props) {
    * Fetch the latest Binner version from GitHub
    */
   const getLatestVersion = useCallback(async (installedVersion) => {
-    const response = await fetch("system/version");
-    if (response.ok) {
-      const latestVersionData = await response.json();
+    const response = await fetchApi("api/system/version");
+    if (response.responseObject.ok) {
+      const latestVersionData = response.data;
       setVersionData(latestVersionData);
       const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
       if (semver.gt(latestVersionData.version, installedVersion) && semver.gt(latestVersionData.version, skipVersion)) {
@@ -55,7 +55,7 @@ export function Home(props) {
       }
       Home.abortController = new AbortController();
       setLoading(true);
-      await fetchApi(`part/summary`, {
+      await fetchApi(`api/part/summary`, {
         signal: Home.abortController.signal,
       }).then((response) => {
         const { data } = response;

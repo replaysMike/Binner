@@ -1,23 +1,18 @@
 ﻿using AnyMapper;
 using Binner.Common.Configuration;
 using Binner.Common.Models;
-using Binner.Common.Models.Requests;
-using Binner.Common.Models.Responses;
-using Binner.Common.Models.Swarm.Requests;
 using Binner.Common.Services;
 using Binner.Model.Common;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class ProjectController : ControllerBase

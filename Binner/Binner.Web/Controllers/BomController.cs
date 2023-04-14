@@ -23,7 +23,7 @@ namespace Binner.Web.Controllers
     /// <summary>
     /// Bill of Materials (BOM) part management controller
     /// </summary>
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class BomController : ControllerBase

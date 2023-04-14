@@ -6,6 +6,7 @@ import { DEFAULT_FONT } from '../common/Types';
 import { FormHeader } from "../components/FormHeader";
 import { HandleBinaryResponse } from "../common/handleResponse.js";
 import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown, Breadcrumb } from "semantic-ui-react";
+import { fetchApi } from "../common/fetchApi";
 
 export function PrintLabels(props) {
   const { t } = useTranslation();
@@ -101,24 +102,25 @@ export function PrintLabels(props) {
   useEffect(() => {
     const loadFonts = async () => {
       setLoading(true);
-      const response = await fetch("print/fonts", {
+      await fetchApi("api/print/fonts", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      const data = await response.json();
-      const newFonts = data.map((l, k) => {
-        return {
-          key: k,
-          value: l,
-          text: l
-        };
-      });
-      const selectedFont = _.find(newFonts, (x) => x && x.text === DEFAULT_FONT);
-      setLoading(false);
-      setFonts(newFonts);
-      setFont(selectedFont.value);
+          "Content-Type": "application/json",
+        },
+      }).then((response) => {
+        const { data } = response;
+        const newFonts = data.map((l, k) => {
+          return {
+            key: k,
+            value: l,
+            text: l
+          };
+        });
+        const selectedFont = _.find(newFonts, (x) => x && x.text === DEFAULT_FONT);
+        setLoading(false);
+        setFonts(newFonts);
+        setFont(selectedFont.value);
+    });
     };
     
     loadFonts();
@@ -170,12 +172,12 @@ export function PrintLabels(props) {
     };
 
     for (var i = 0; i < quantity; i++) {
-      await fetch("print/custom", {
+      await fetchApi("api/print/custom", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(request)
+        body: JSON.stringify(request),
       });
     }
 
@@ -209,19 +211,17 @@ export function PrintLabels(props) {
       generateImageOnly: true
     };
 
-    await fetch("print/custom", {
+    await fetchApi("api/print/custom", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(request)
-    })
-      .then(HandleBinaryResponse)
-      .catch(HandleBinaryResponse)
-      .then((response) => {
-        const base64 = arrayBufferToBase64(response);
-        setImgBase64(base64);
-      });
+      body: JSON.stringify(request),
+    }).then((response) => {
+      const { data } = response;
+      const base64 = arrayBufferToBase64(data);
+      setImgBase64(base64);
+    });
   };
 
   const arrayBufferToBase64 = (buffer) => {

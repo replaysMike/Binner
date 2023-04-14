@@ -92,7 +92,7 @@ export function OrderImport(props) {
       password: order.password,
       parts: _.where(results.parts, { selected: true })
     };
-    await fetchApi("part/importparts", {
+    await fetchApi("api/part/importparts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -122,7 +122,7 @@ export function OrderImport(props) {
     };
 
     try {
-      await fetchApi("part/import", {
+      await fetchApi("api/part/import", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

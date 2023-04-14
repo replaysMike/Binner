@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, Popup, TextArea, Header, Confirm } from "semantic-ui-react";
 import PropTypes from "prop-types";
+import { fetchApi } from "../common/fetchApi";
 import PartsGrid from "./PartsGrid";
 import NumberPicker from "./NumberPicker";
 import debounce from "lodash.debounce";
@@ -42,17 +43,20 @@ export function AddBomPartModal(props) {
     setLoading(true);
 
     try {
-      const response = await fetch(`part/search?keywords=${keyword}`, {
+      const response = await fetchApi(`api/part/search?keywords=${keyword}`, {
         signal: AddBomPartModal.abortController.signal
+      }).catch(() => {
+        setLoading(false);
+        setAddPartSearchResults([]);
       });
 
-      if (response.status === 200) {
-        const data = await response.json();
+      if (response && response.responseObject.ok) {
+        const { data } = response;
+        setLoading(false);
         setAddPartSearchResults(data || []);
-        setLoading(false);
       } else {
-        setAddPartSearchResults([]);
         setLoading(false);
+        setAddPartSearchResults([]);
       }
     } catch (ex) {
       if (ex.name === "AbortError") {

@@ -90,7 +90,7 @@ export default function PartsGrid(props) {
     part.cost = Number.parseFloat(part.cost) || 0.00;
     part.projectId = Number.parseInt(part.projectId) || null;
 
-    const response = await fetchApi('part', {
+    const response = await fetchApi('api/part', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -151,13 +151,13 @@ export default function PartsGrid(props) {
   const handlePrintLabel = async (e, part) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`part/print?partNumber=${part.partNumber}`, { method: 'POST' });
+    await fetchApi(`api/part/print?partNumber=${part.partNumber}`, { method: 'POST' });
   };
 
   const handleDeletePart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`part`, {
+    await fetchApi(`api/part`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'

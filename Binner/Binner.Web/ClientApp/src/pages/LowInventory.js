@@ -16,7 +16,7 @@ export function LowInventory (props) {
   const [loading, setLoading] = useState(true);
 
   const loadParts = async (page, reset = false) => {
-    const response = await fetchApi(`part/low?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
+    const response = await fetchApi(`api/part/low?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
     const pageOfData = response.data.items;
     let newData = [];
     if (reset)
