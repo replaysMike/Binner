@@ -18,9 +18,11 @@ export default function PartTypeSelector(props) {
   const { t } = useTranslation();
   PartTypeSelector.abortController = new AbortController();
   const [partTypes, setPartTypes] = useState(props.partTypes);
+	const [partTypesFiltered, setPartTypesFiltered] = useState([]);
 	const [partTypeId, setPartTypeId] = useState(0);
   const [partType, setPartType] = useState({ partTypeId: 0, name: ""});
 	const [filter, setFilter] = useState('');
+	const [expandedNodeIds, setExpandedNodeIds] = useState([]);
 
 	const getPartTypeFromId = useCallback((partTypeId) => {
 		let partTypeIdInt = partTypeId;
@@ -40,6 +42,7 @@ export default function PartTypeSelector(props) {
 
   useEffect(() => {
     setPartTypes(props.partTypes);
+		setPartTypesFiltered(props.partTypes);
   }, [props.partTypes]);
 
   useEffect(() => {
@@ -119,10 +122,12 @@ export default function PartTypeSelector(props) {
 	const recursivePreFilter = (partTypes, parentPartTypeId, filterBy) => {
 		// go through every child, mark filtered matches
 
+		const filterByLowerCase = filterBy.toLowerCase();
 		const childrenComponents = [];
 		let partTypesInCategory = _.filter(partTypes, (i) => i.parentPartTypeId === parentPartTypeId);
 		for(let i = 0; i < partTypesInCategory.length; i++){
-			if (partTypesInCategory[i].name.toLowerCase().includes(filterBy)){
+			partTypesInCategory[i].exactMatch = partTypesInCategory[i].name.toLowerCase() === filterByLowerCase;
+			if (partTypesInCategory[i].name.toLowerCase().includes(filterByLowerCase)){
 				partTypesInCategory[i].filterMatch = true;
 			} else {
 				partTypesInCategory[i].filterMatch = false;
@@ -145,29 +150,21 @@ export default function PartTypeSelector(props) {
   const recursiveTreeItem = (partTypes, parentPartTypeId = null) => {
     // build a tree graph
 
-		let partTypesFiltered = {...partTypes};
-		if (filter && filter.length > 0) {
-			//partTypesFiltered = _.filter(partTypesFiltered, i => i.name.toLowerCase().includes(filter.toLowerCase()));
-			partTypesFiltered = recursivePreFilter(partTypesFiltered, parentPartTypeId, filter.toLowerCase());
-			// now remove all part types that don't match the filter
-			partTypesFiltered = _.filter(partTypesFiltered, i => i.filterMatch === true);
-		}
-
-    let children = _.filter(partTypesFiltered, (i) => i.parentPartTypeId === parentPartTypeId);
-
+    let children = _.filter(partTypes, (i) => i.parentPartTypeId === parentPartTypeId);
 		
     const childrenComponents = [];
     if (children && children.length > 0) {
       for (let i = 0; i < children.length; i++) {
-        const key = `${children[i].partTypeId}`;
-        const childs = recursiveTreeItem(partTypesFiltered, children[i].partTypeId);
+        const key = `${children[i].name}-${i}`;
+        const nodeId = `${children[i].name}`;
+        const childs = recursiveTreeItem(partTypes, children[i].partTypeId);
         childrenComponents.push(
           <StyledTreeItem
-            nodeId={key}
+            nodeId={nodeId}
             key={key}
             data={children[i]}
             labelText={children[i].name}
-            labelIcon={getIcon(children[i].name)}
+            labelIcon={getIcon(children[i].name, children[i].parentPartTypeId && _.find(partTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name)}
             labelInfo={`${children[i].parts}`}
             labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
             labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
@@ -186,6 +183,16 @@ export default function PartTypeSelector(props) {
 	const handleOnSearchChange = (e, control) => {
 		// process keyboard input
 		setFilter(control.searchQuery);
+		let newPartTypesFiltered = recursivePreFilter(partTypes, null, control.searchQuery.toLowerCase());
+    // now remove all part types that don't match the filter
+    newPartTypesFiltered = _.filter(partTypes, i => i.filterMatch === true);
+    const newPartTypesFilteredOrdered = _.sortBy(newPartTypesFiltered, x => x.exactMatch ? 0 : 1);
+    setPartTypesFiltered(newPartTypesFilteredOrdered);
+    if (control.searchQuery.length > 1) {
+      setExpandedNodeIds(_.map(newPartTypesFiltered, (i) => (i.name)));
+    }else{
+      setExpandedNodeIds([]);
+    }
 	};
 
   const handleOnNodeSelect = (e, selectedPartTypeId) => {
@@ -201,6 +208,10 @@ export default function PartTypeSelector(props) {
     //e.preventDefault();
     //e.stopPropagation();
 		// preventing event propagation leads to ui weirdness unfortunately
+		if (expandedNodeIds.includes(node))
+			setExpandedNodeIds(_.filter(expandedNodeIds, i => i !== node));
+		else
+			setExpandedNodeIds(node);
   };
 
   const handleOnBlur = (e, control) => {
@@ -250,9 +261,11 @@ export default function PartTypeSelector(props) {
 								onNodeToggle={handleOnNodeToggle}
 								onBlur={handleInternalOnBlur}
 								onFocus={handleInternalOnFocus}
+								expanded={expandedNodeIds}
+								selected={partType?.name || ""}
 								sx={{ flexGrow: 1, maxWidth: "100%" }}
 							>
-								{recursiveTreeItem(partTypes).map((x) => x)}
+								{recursiveTreeItem(partTypesFiltered).map((x) => x)}
 							</TreeView>
 						</Dropdown.Item>
 					</Dropdown.Menu>
