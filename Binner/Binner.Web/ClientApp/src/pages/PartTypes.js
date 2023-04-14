@@ -6,6 +6,7 @@ import { Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup } from 
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
 import { FormHeader } from "../components/FormHeader";
+import { getIcon } from "../common/partTypes";
 
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -335,7 +336,7 @@ export function PartTypes(props) {
               key={key}
               data={children[i]}
               labelText={children[i].name}
-              labelIcon={Label}
+              labelIcon={getIcon(children[i].name, children[i].parentPartTypeId && _.find(partTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name)}
               labelInfo={`${children[i].parts}`}
               labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
               labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
@@ -459,51 +460,12 @@ export function PartTypes(props) {
 
         {/** https://mui.com/material-ui/react-tree-view/ */}
         <TreeView
-          aria-label="gmail"
-          defaultExpanded={["3"]}
           defaultCollapseIcon={<ArrowDropDownIcon />}
           defaultExpandIcon={<ArrowRightIcon />}
           defaultEndIcon={<div style={{ width: 24 }} />}
           sx={{ height: 500, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
         >
           {recursiveTreeItem(partTypes).map((x) => x)}
-          {/*<StyledTreeItem nodeId="1" labelText="All Mail" labelIcon={MailIcon} />
-          <StyledTreeItem nodeId="2" labelText="Trash" labelIcon={DeleteIcon} />
-          <StyledTreeItem nodeId="3" labelText="Categories" labelIcon={Label}>
-            <StyledTreeItem
-              nodeId="5"
-              labelText="Social"
-              labelIcon={SupervisorAccountIcon}
-              labelInfo="90"
-              color="#1a73e8"
-              bgColor="#e8f0fe"
-            />
-            <StyledTreeItem
-              nodeId="6"
-              labelText="Updates"
-              labelIcon={InfoIcon}
-              labelInfo="2,294"
-              color="#e3742f"
-              bgColor="#fcefe3"
-            />
-            <StyledTreeItem
-              nodeId="7"
-              labelText="Forums"
-              labelIcon={ForumIcon}
-              labelInfo="3,566"
-              color="#a250f5"
-              bgColor="#f3e8fd"
-            />
-            <StyledTreeItem
-              nodeId="8"
-              labelText="Promotions"
-              labelIcon={LocalOfferIcon}
-              labelInfo="733"
-              color="#3c8039"
-              bgColor="#e6f4ea"
-            />
-          </StyledTreeItem>
-        <StyledTreeItem nodeId="4" labelText="History" labelIcon={Label} />*/}
         </TreeView>
       </Segment>
     </div>

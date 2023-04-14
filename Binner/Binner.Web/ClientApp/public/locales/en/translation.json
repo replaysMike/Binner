@@ -283,6 +283,9 @@
     "barcodeScannerInput": {
       "supportsBarcodeScanning": "This page supports barcode scanning. <1>More Info</1>"
     },
+    "partTypeSelector": {
+      "choosePartType": "Choose part type"
+    },
     "partsGrid": {
       "recordsPerPage": "records per page",
       "parts": "Parts",
