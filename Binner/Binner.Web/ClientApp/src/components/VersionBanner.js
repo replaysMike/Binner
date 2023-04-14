@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { Icon, Button, Modal } from "semantic-ui-react";
-import reactStringReplace from "react-string-replace";
 import PropTypes from "prop-types";
+import { Converter } from "showdown";
 
 export function VersionBanner(props) {
 	const { t } = useTranslation();
@@ -21,11 +21,10 @@ export function VersionBanner(props) {
 		setVersion(props.version?.version);
 		setDescription(props.version?.description);
 		setUrl(props.version?.url);
+		var converter = new Converter({optionKey: 'value', completeHTMLDocument: false, ghMentions: true, ghCompatibleHeaderId: true, ghCodeBlocks: true, tasklists: true, tables: true, strikethrough: true, emoji: true, openLinksInNewWindow: true, simplifiedAutoLink: true });
 		let desc = props.version?.description;
-		desc = reactStringReplace(desc, /(\r\n|\r|\n)/g, (match, i) => (<br key={i}/>))
-		desc = reactStringReplace(desc, "* ", (match, i) => (<span className="bullet" key={i}>&bull;</span>))
-		desc = reactStringReplace(desc, "## What's Changed", (match, i) => (<h2 key={i}>What's Changed</h2>))
-		setDescriptionObject(desc);
+		var html = converter.makeHtml(desc);
+		setDescriptionObject(html);
 	}, [props.version]);
 
 	const handleViewReleaseNotesModalOpen = (e) => {
@@ -58,6 +57,7 @@ export function VersionBanner(props) {
 					A new version of Binner <b>{{version: version}}</b> is available!
 				</Trans>
 			</span>
+			
 			<div style={{float: 'right'}}>
 				<Button primary onClick={handleViewReleaseNotesModalOpen} size="tiny">{t('notification.versionBanner.releaseNotes', "Release Notes")}</Button>
 				<Button primary onClick={handleView} size="tiny">{t('notification.versionBanner.view', "View")}</Button>
@@ -67,7 +67,7 @@ export function VersionBanner(props) {
         <Modal.Header>{t('notification.versionBanner.releaseNotes', "Release Notes")}</Modal.Header>
 				<Modal.Description><p style={{padding: '0 10px', marginLeft: '10px'}}>{version}</p></Modal.Description>
         <Modal.Content scrolling>
-					{descriptionObject}
+					<div dangerouslySetInnerHTML={{__html: descriptionObject}} />
         </Modal.Content>
         <Modal.Actions>
 					<Button primary onClick={handleView}>{t('notification.versionBanner.view', "View")} {version}</Button>
