@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Configuration;
+using Binner.Model.Authentication;
 using Binner.Web.Configuration;
 using Binner.Web.Middleware;
 using LightInject;
@@ -13,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Binner.Web.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Binner.Web.WebHost
 {
@@ -53,10 +56,40 @@ namespace Binner.Web.WebHost
 
             services.AddControllersWithViews();
 
+            services.Configure<FormOptions>(options =>
+            {
+                // limit files to 64MB
+                options.MultipartBodyLengthLimit = 64 * 1024 * 1024;
+            });
+
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/build";
+            });
+
+            // add custom Jwt authentication support
+            services.AddJwtAuthentication(configuration);
+
+            services.AddAuthorization(options =>
+            {
+                // add a default policy, the user must have the CanLogin policy to access authenticated pages
+                options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireClaim(JwtClaimTypes.CanLogin, true.ToString())
+                    .Build();
+
+                // add admin policy for admin users only access
+                options.AddPolicy(AuthorizationPolicies.Admin, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim(JwtClaimTypes.Admin, true.ToString());
+                });
+                // user must be able to login to access resource (confirmed email, not locked out)
+                options.AddPolicy(AuthorizationPolicies.CanLogin, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim(JwtClaimTypes.CanLogin, true.ToString());
+                });
             });
 
             StartupConfiguration.ConfigureIoC(Container, services);
@@ -111,6 +144,10 @@ namespace Binner.Web.WebHost
             app.UseSpaStaticFiles();
 
             app.UseRouting();
+
+            // enable authorization
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();

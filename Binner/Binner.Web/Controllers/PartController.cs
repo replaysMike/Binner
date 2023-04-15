@@ -5,6 +5,8 @@ using Binner.Common.Models;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
 using Binner.Model.Common;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,9 +20,12 @@ using System.Net;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Binner.Common;
+using Binner.Common.Models.Requests;
 
 namespace Binner.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -33,8 +38,9 @@ namespace Binner.Web.Controllers
         private readonly IProjectService _projectService;
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
+        private readonly IUserService _userService;
 
-        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService)
         {
             _logger = logger;
             _config = config;
@@ -43,6 +49,7 @@ namespace Binner.Web.Controllers
             _projectService = projectService;
             _labelPrinter = labelPrinter;
             _barcodeGenerator = barcodeGenerator;
+            _userService = userService;
         }
 
         /// <summary>
@@ -517,11 +524,16 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("preview")]
         public async Task<IActionResult> PreviewPrintPartAsync([FromQuery] PrintPartRequest request)
         {
             try
             {
+                var userContext = await _userService.ValidateUserImageToken(request.Token ?? string.Empty);
+                if (userContext == null) return Unauthorized("Invalid image token!");
+                System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
+
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
                 var part = await _partService.GetPartAsync(request.PartNumber);
                 Image<Rgba32> image;
@@ -551,11 +563,16 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("barcode")]
-        public IActionResult BarcodePart([FromQuery] GetPartRequest request)
+        public async Task<IActionResult> BarcodePart([FromQuery] GetPartImageRequest request)
         {
             try
             {
+                var userContext = await _userService.ValidateUserImageToken(request.Token ?? string.Empty);
+                if (userContext == null) return Unauthorized("Invalid image token!");
+                System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
+
                 if (string.IsNullOrEmpty(request.PartNumber))
                     return BadRequest("No part number specified.");
                 var stream = new MemoryStream();

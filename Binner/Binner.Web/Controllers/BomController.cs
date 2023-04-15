@@ -6,6 +6,8 @@ using Binner.Common.Models.Requests;
 using Binner.Common.Models.Responses;
 using Binner.Common.Services;
 using Binner.Model.Common;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -23,6 +25,7 @@ namespace Binner.Web.Controllers
     /// <summary>
     /// Bill of Materials (BOM) part management controller
     /// </summary>
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]

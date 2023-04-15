@@ -170,7 +170,7 @@ export function Account(props) {
               <Grid.Column>
                 <Form.Input label="Name" required focus placeholder="John Doe" value={account.name || ""} name="name" onChange={handleChange} />
                 <Form.Input
-                  label="Email"
+                  label="Username/Email"
                   iconPosition="left"
                   required
                   placeholder="john@example.com"
@@ -195,18 +195,15 @@ export function Account(props) {
                 </Form.Input>
                 <Popup
                     hideOnScroll
-                    content="This is your private api key for the Swarm Api."
+                    content="Enter your license key to enable pro features. A license key can be obtained by subscribing to Binner Cloud."
                     trigger={
                       <Form.Input
-                        label="Swarm Api Key"
+                        icon="key"
+                        label="License Key"
                         iconPosition="left"
-                        value={(account.apiKey && account.apiKey.privateApiKey) || ""}
-                        name="apiKey"
-                      >
-                        <Icon name="key" />
-                        <input />
-                        <Link to="/api" className="small" style={{lineHeight: '3.1em', marginLeft: '10px'}}>Manage</Link>
-                      </Form.Input>
+                        value={account.licenseKey || ""}
+                        name="licenseKey"
+                      />
                     }
                   />
                 

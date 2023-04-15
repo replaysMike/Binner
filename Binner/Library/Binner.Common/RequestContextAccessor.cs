@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Binner.Common.Extensions;
 using Binner.Common.Models;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
@@ -79,6 +79,19 @@ namespace Binner.Common
         }
 
         /// <summary>
+        /// Set the User for the current request
+        /// </summary>
+        /// <param name="claimsPrincipal"></param>
+        public void SetUser(ClaimsPrincipal claimsPrincipal)
+        {
+            var context = _httpContextAccessor.HttpContext;
+            if (context != null)
+            {
+                context.User = claimsPrincipal;
+            }
+        }
+
+        /// <summary>
         /// Set an item in the request context
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -95,5 +108,19 @@ namespace Binner.Common
                 }
             }
         }
+
+        /// <summary>
+        /// Get the remote user's IP address as a 64-bit integer
+        /// </summary>
+        /// <returns></returns>
+        public long GetIp() 
+            => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToLong() ?? 0;
+
+        /// <summary>
+        /// Get the remote user's IP address as a string
+        /// </summary>
+        /// <returns></returns>
+        public string? GetIpAddress()
+            => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
     }
 }
