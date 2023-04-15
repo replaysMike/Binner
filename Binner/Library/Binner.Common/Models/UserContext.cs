@@ -26,5 +26,15 @@ namespace Binner.Common.Models
         /// Phone number of user
         /// </summary>
         public string? PhoneNumber { get; set; }
+
+        /// <summary>
+        /// False to disable logins
+        /// </summary>
+        public bool CanLogin { get; set; }
+
+        /// <summary>
+        /// Is Admin
+        /// </summary>
+        public bool IsAdmin { get; set; }
     }
 }

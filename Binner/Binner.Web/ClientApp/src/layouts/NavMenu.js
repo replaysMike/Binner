@@ -44,6 +44,8 @@ export function NavMenu(props) {
     navigate(`/inventory?keyword=${searchKeyword}`, { replace: true });
   };
 
+  const isLoggedIn = isAuthenticated();
+
   return (
     <header>
       <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
@@ -52,6 +54,7 @@ export function NavMenu(props) {
           <NavbarToggler onClick={toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>
             <Form onSubmit={onSubmit}>
+              {isLoggedIn && 
               <ul className="navbar-nav flex-grow">
                 <NavItem style={{lineHeight: '2.3'}}>
                   <Popup 
@@ -92,6 +95,7 @@ export function NavMenu(props) {
                       <Dropdown direction="left" item trigger={<Icon name="user" style={{ color: "#042173" }} />}>
                         <Dropdown.Menu>
                           <Dropdown.Item icon="edit" text="Account Settings" as={Link} to="/account" />
+                          <Dropdown.Item icon="users" text="Manage Users" as={Link} to="/admin/users" />
                           <Dropdown.Item icon="help circle" text="Help" as={Link} to="/help" />
                           <Dropdown.Item icon="bug" text="Report a Bug" as={Link} to="https://github.com/replaysMike/Binner/issues" target="_blank" />
                           <Dropdown.Item icon="sign out" text="Logout" onClick={logout} />
@@ -100,6 +104,7 @@ export function NavMenu(props) {
                     </Menu>
                   </NavItem>
               </ul>
+              }
             </Form>
           </Collapse>
         </Container>

@@ -260,6 +260,23 @@
         "resistor": "Resistor",
         "outputVoltage": "Output Voltage"
       }
+    },
+    "admin": {
+      "users": {
+        "title": "User Management",
+        "description": "Administration of users.",
+        "accountType": "Account Type",
+        "masterAccount": "Master Admin Account",
+        "canNotDeleteAdmin": "Can not delete master admin",
+        "userAdded": "User {{emailAddress}} added!",
+        "confirm": {
+          "areYouSure": "Are you sure you want to delete this user?"
+        },
+        "popup": {
+          "name": "Specify the user's first and last name",
+          "emailAddress": "Specify the user's username/email"
+        }
+      }
     }
   },
   "bc": {
@@ -270,7 +287,13 @@
     "tools": "Tools",
     "ohmsLaw": "Ohms Law Calculator",
     "resistanceColorCalc": "Resistor Color Code Calculator",
-    "voltDividerCalc": "Voltage Divider Calculator"
+    "voltDividerCalc": "Voltage Divider Calculator",
+    "admin": "Admin",
+    "users": "Users",
+    "user": "User",
+    "help": "Help",
+    "updatePartMetadata": "Update Part Metadata",
+    "backupRestore": "Backup / Restore"
   },
   "comp": {
     "navBar": {
@@ -438,7 +461,9 @@
     "visit": "Visit",
     "or": "Or",
     "view": "View",
-    "saveAnyway": "Save Anyway"
+    "saveAnyway": "Save Anyway",
+    "addUser": "Add User",
+    "generate": "Generate"
   },
   "label": {
     "name": "Name",
@@ -531,7 +556,21 @@
     "quantityAvailable": "Quantity Available",
     "rememberLastSelection": "Remember last selection",
     "origin": "Origin",
-    "supplierType": "Supplier Type"
+    "supplierType": "Supplier Type",
+    "id": "Id",
+    "type": "Type",
+    "locked": "Locked",
+    "usernameEmail": "Username / Email",
+    "lastActive": "Last Active",
+    "dateAdded": "Date Added",
+    "changePassword": "Change Password",
+    "accountType": "Account Type",
+    "accountLocked": "Account Locked",
+    "lastLogin": "Last Login",
+    "dateCreated": "Date Created",
+    "dateModified": "Date Modified",
+    "dateLocked": "Date Locked",
+    "ip": "IP"
   },
   "message": {
     "noPartsAdded": "No parts added.",

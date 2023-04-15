@@ -5,7 +5,8 @@ export const EmptyUserAccount = {
   isAuthenticated: false,
   name: "",
   accessToken: "",
-	isAdmin: false
+	imagesToken: "",
+	isAdmin: false,
 };
 
 /**
@@ -39,6 +40,15 @@ export const getUserAccount = () => {
  export const getAuthToken = () => {
   const user = getUserAccount();
   return user.accessToken || "";
+};
+
+/**
+ * Get the image access token for authenticated user
+ * @returns {string} the image access token
+ */
+export const getImagesToken = () => {
+  const user = getUserAccount();
+  return user.imagesToken || "";
 };
 
 /**
@@ -83,6 +93,7 @@ export const deAuthenticateUserAccount = () => {
 				// use the new token
 				let userAccount = getUserAccount();
 				userAccount.accessToken = newResponseData.jwtToken;
+				userAccount.imagesToken = newResponseData.imagesToken;
 				setUserAccount(userAccount);
 
 				// re-issue the original request and return it

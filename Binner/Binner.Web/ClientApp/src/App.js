@@ -5,6 +5,9 @@ import { createBrowserHistory as createHistory } from "history";
 import { ErrorContext } from "./common/ErrorContext";
 import { toast } from "react-toastify";
 
+// routing
+import AdminWrapper from "./routes/AdminWrapper";
+
 // layouts
 import { Layout } from "./layouts/Layout";
 
@@ -16,8 +19,10 @@ import "./custom.css";
 import './bootstrap.css'; /* needed for the carousel control */
 
 // pages
+import { AccessDenied } from "./pages/AccessDenied";
 import { Account } from "./pages/Account";
 import { Home } from "./pages/Home";
+import { Login } from "./pages/Login";
 import Inventory from "./pages/Inventory";
 import Search from "./pages/Search";
 import Boms from "./pages/Boms";
@@ -39,6 +44,13 @@ import { Help } from './pages/help/Home';
 import { Scanning } from './pages/help/Scanning';
 import { ApiIntegrations } from './pages/help/ApiIntegrations';
 import { BOM } from "./pages/help/BOM";
+
+// admin
+import { Users } from "./pages/admin/users/Users";
+import { User } from "./pages/admin/users/User";
+import { Admin } from "./pages/admin/Home";
+import { Backup } from "./pages/admin/Backup";
+import { UpdateParts } from "./pages/admin/UpdateParts";
 
 function withSearchParams(Component) {
   return props => <Component {...props} searchParams={useSearchParams()} />;
@@ -100,6 +112,8 @@ class App extends Component {
         <Layout history={this.history}>
           <Routes>
             <Route exact path="/" element={<Home />} />
+            <Route exact path="/accessdenied" element={<AccessDenied />} />
+            <Route exact path="/login" element={<Login />} />
             <Route exact path="/account" element={<Account />} />
             <Route exact path="/inventory/add" element={<Inventory />} />
             <Route exact path="/inventory/:partNumber" element={<Inventory />} />
@@ -133,6 +147,14 @@ class App extends Component {
             <Route path="/help/scanning" element={<Scanning />} />
             <Route path="/help/api-integrations" element={<ApiIntegrations />} />
             <Route path="/help/bom" element={<BOM />} />
+
+            {/* admin */}
+
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/users" element={<Users />} />
+            <Route exact path="/admin/users/:userId" element={<AdminWrapper><User/></AdminWrapper>} />
+            <Route path="/admin/backup" element={<Backup />} />
+            <Route path="/admin/updateParts" element={<UpdateParts />} />
           </Routes>
         </Layout>
         <ErrorContext.Provider value={this.state}>

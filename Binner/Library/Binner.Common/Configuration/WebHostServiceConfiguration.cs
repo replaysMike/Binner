@@ -65,6 +65,11 @@ namespace Binner.Common.Configuration
         public LocaleConfiguration Locale { get; set; } = new ();
 
         /// <summary>
+        /// Authentication configuration
+        /// </summary>
+        public AuthenticationConfiguration Authentication { get; set; } = new AuthenticationConfiguration();
+
+        /// <summary>
         /// Digikey configuration
         /// </summary>
         public IntegrationConfiguration Integrations { get; set; } = new ();

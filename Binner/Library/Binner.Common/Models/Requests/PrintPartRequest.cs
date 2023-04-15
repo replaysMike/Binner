@@ -1,6 +1,6 @@
 ﻿namespace Binner.Common.Models
 {
-    public class PrintPartRequest
+    public class PrintPartRequest : IImagesToken
     {
         /// <summary>
         /// The main part number
@@ -11,5 +11,10 @@
         /// True to generate image only
         /// </summary>
         public bool GenerateImageOnly { get; set; }
+
+        /// <summary>
+        /// The image token to validate the insecure request with
+        /// </summary>
+        public string? Token { get; set; }
     }
 }

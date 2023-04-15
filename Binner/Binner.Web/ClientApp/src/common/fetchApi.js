@@ -1,6 +1,5 @@
 import { getUserAccount, deAuthenticateUserAccount, refreshTokenAuthorizationAsync } from "./authentication";
 import _ from "underscore";
-import customEvents from './customEvents';
 const noData = { message: `No message was specified.` };
 
 /**
@@ -10,7 +9,7 @@ const noData = { message: `No message was specified.` };
  * @param {any} data the fetch request object
  * @returns json response from api with an embedded response object
  */
-export const fetchApi = async (url, data = { method: "GET", headers: {}, body: null }) => {
+export const fetchApi = async (url, data = { method: "GET", headers: {}, body: null, catchErrors: false }) => {
   const userAccount = getUserAccount();
 
   let headers = data.headers || {};
@@ -44,8 +43,18 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
   };
 
   const responseBody = await fetch(requestContext.url, requestContext.data)
-  	.then((response) => handleJsonResponse(response, requestContext));
-  //.catch((response) => HandleJsonResponse(response, requestContext));
+  	.then((response) => {
+      return handleJsonResponse(response, requestContext);
+    })
+    .catch((response) => {
+      // opportunity to handle errors internally
+      if (data.catchErrors) {
+        // swallow errors and let the caller handle them
+        return response;
+      }
+      else
+        return Promise.reject(response);
+    });
   return responseBody;
 };
 
@@ -56,21 +65,19 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
  */
 export const handleJsonResponse = async (response, requestContext) => {
   // store the last version header we have seen
-  if (response.headers.has("x-version")) {
-    const version = response.headers.get("x-version");
-    window.version = version;
-    customEvents.notifySubscribers("version", { version });
-  }
+  if (response.headers.has("x-version")) window.version = response.headers.get("x-version");
   const wrappedResponse = await handle401UnauthorizedAsync(response, requestContext);
   if (!wrappedResponse.ok) return wrappedResponse.response;
 
-
   // valid response
-  const data = isJson(wrappedResponse.response) && wrappedResponse.response.json ? await wrappedResponse.response.clone().json() : noData;
-
-  // wrap the result in the final data, but include the response as `responseObject`
-  const wrappedData = wrapReturn(data, wrappedResponse.response);
-  return wrappedData;
+  if (response.bodyUsed) {
+    return response;
+  } else {
+    const data = isJson(wrappedResponse.response) && wrappedResponse.response.json ? await wrappedResponse.response.clone().json() : noData;
+    // wrap the result in the final data, but include the response as `responseObject`
+    const wrappedData = wrapReturn(data, wrappedResponse.response);
+    return wrappedData;
+  }
 };
 
 /**
@@ -190,14 +197,16 @@ const invokeErrorHandler = async (response) => {
   let responseObject = {
     message: `Status: ${response.status} - No message was specified.`,
   };
-  if (isJson(response)) responseObject = await response.json();
+  if (isJson(response) && !response.bodyUsed) {
+    responseObject = await response.json();
+  }  
 
   const errorObject = {
     url: response.url,
     status: response.status,
     ...responseObject,
   };
-  if (window && window.showErrorWindow)
-    window.showErrorWindow(errorObject);
-  return Promise.reject(response);
+  window.showErrorWindow(errorObject);
+  // return the original response along with the responseObject that was read
+  return Promise.reject(wrapReturn(responseObject, response));
 };

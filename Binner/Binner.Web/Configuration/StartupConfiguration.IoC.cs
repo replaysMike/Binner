@@ -9,7 +9,9 @@ using Binner.Web.ServiceHost;
 using LightInject;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Binner.Common.Services.Authentication;
 using Binner.Model.Common;
+using Binner.Common.IO;
 
 namespace Binner.Web.Configuration
 {
@@ -52,6 +54,9 @@ namespace Binner.Web.Configuration
 
             // register the font manager
             container.Register<FontManager>(new PerContainerLifetime());
+
+            // register an http client factory
+            container.Register<HttpClientFactory>(new PerContainerLifetime());
 
             // request context
             container.Register<RequestContextAccessor>(new PerContainerLifetime());
@@ -107,6 +112,10 @@ namespace Binner.Web.Configuration
             container.Register<ISettingsService, SettingsService>(new PerScopeLifetime());
             container.Register<ISwarmService, SwarmService>(new PerScopeLifetime());
             container.Register<IStoredFileService, StoredFileService>(new PerScopeLifetime());
+            container.Register<IUserService, UserService>(new PerScopeLifetime());
+            container.Register<IAuthenticationService, AuthenticationService>(new PerScopeLifetime());
+            container.Register<IAccountService, AccountService>(new PerScopeLifetime());
+            container.Register<JwtService>(new PerScopeLifetime());
             container.Register<IntegrationService>(new PerScopeLifetime());
             container.Register<VersionManagementService>(new PerScopeLifetime());
         }

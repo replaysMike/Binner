@@ -1,16 +1,123 @@
-import { format, parseJSON, parse } from "date-fns";
+
+import { format, parse } from "date-fns";
 export const Format24HourTime = 'kk:mm:ss';
 export const Format12HourTime = 'h:mm aaa';
 export const FormatFullDateTime = 'E, MMM dd h:mm:ss aaa';
 export const FormatShortDate = 'E, MMM dd';
+export const FormatDateOnly = 'MMM dd, yyyy';
 export const FormatWeekNumber = 'w';
+
+/**
+ * Get the time represented by a timestamp, with friendly human readable text
+ * @param {number} timestamp timestamp in milliseconds
+ * @returns 
+ */
+export const getFriendlyElapsedTime = function (timestamp, includeRelative = false) {
+	// Convert to a positive integer
+	var time = Math.abs(timestamp);
+
+	// Define humanTime and units
+	var humanTime, units;
+
+	// If there are years
+	if (time > (1000 * 60 * 60 * 24 * 365)) {
+		humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 365), 10);
+		units = 'years';
+	}
+
+	// If there are months
+	else if (time > (1000 * 60 * 60 * 24 * 30)) {
+		humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 30), 10);
+		units = 'months';
+	}
+
+	// If there are weeks
+	else if (time > (1000 * 60 * 60 * 24 * 7)) {
+		humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 7), 10);
+		units = 'weeks';
+	}
+
+	// If there are days
+	else if (time > (1000 * 60 * 60 * 24)) {
+		humanTime = parseInt(time / (1000 * 60 * 60 * 24), 10);
+		units = 'days';
+	}
+
+	// If there are hours
+	else if (time > (1000 * 60 * 60)) {
+		humanTime = parseInt(time / (1000 * 60 * 60), 10);
+		units = 'hours';
+	}
+
+	// If there are minutes
+	else if (time > (1000 * 60)) {
+		humanTime = parseInt(time / (1000 * 60), 10);
+		units = 'minutes';
+	}
+
+	// Otherwise, use seconds
+	else {
+		humanTime = parseInt(time / (1000), 10);
+		units = 'seconds';
+	}
+
+		// Get the time and units
+	var timeUnits = humanTime + ' ' + units;
+
+	if (includeRelative) {
+		// If in the future
+		if (timestamp > 0) {
+			return 'in ' + timeUnits;
+		}
+
+		// If in the past
+		return timeUnits + ' ago';
+	}
+
+	return timeUnits;
+};
+
+/**
+ * Get a date/time formatted by locale, in local timezone
+ * @param {number} time ticks in milliseconds
+ * @returns ''
+ */
+export const getFormattedTime = (time) => {
+	if (time === null)
+		return '';
+	const date = new Date(time);
+	const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour12: true };
+	return date.toLocaleString('en-US');
+};
+
+/**
+ * Get the time difference between 2 timestamps
+ * @param {number} time1 ticks in milliseconds
+ * @param {number} time2 ticks in milliseconds
+ * @returns 
+ */
+export const getTimeDifference = (time1, time2) => {
+	return time2 - time1;
+};
+
+/**
+ * Get elapsed time without milliseconds
+ * @param {string} elapsed 
+ * @returns 
+ */
+export const getBasicElapsed = (elapsed) => {
+	if (elapsed === null)
+		return null;
+	const msIndex = elapsed.indexOf('.');
+	return elapsed.substring(0, msIndex);
+};
 
 /**
  * Get a date object ignoring the time
  * @param {string} dateStr Date string
  * @returns Date object
  */
- export const getDateWithoutTime = (dateStr) => {
+export const getDateWithoutTime = (dateStr) => {
 	var indexOfTime = dateStr.indexOf('T');
 	var dateOnly = dateStr.substring(0, indexOfTime);
 	var dateParts = dateOnly.split('-');

@@ -16,6 +16,16 @@ export const ProjectColors = [
 
 export const DEFAULT_FONT = "Segoe UI";
 
+export const AccountTypes = {
+  Normal: false,
+  Admin: true
+};
+
+export const BooleanTypes = {
+  False: false,
+  True: true
+};
+
 /**
  * Gets the name of a type by value
  * @param {object} type Type to get

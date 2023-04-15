@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Binner.Model;
 using System;
+using Binner.Common.Models;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Common.MappingProfiles.ModelCommon
@@ -46,6 +46,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.PcbStoredFileAssignments, options => options.Ignore())
                 .ForMember(x => x.ProjectPartAssignments, options => options.Ignore())
                 .ForMember(x => x.ProjectPcbAssignments, options => options.Ignore())
+                .ForMember(x => x.Pcbs, options => options.Ignore())
                 .ForMember(x => x.StoredFiles, options => options.Ignore())
                 ;
 
