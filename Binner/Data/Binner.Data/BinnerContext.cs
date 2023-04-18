@@ -105,6 +105,7 @@ namespace Binner.Data
 
         }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // add all entity configuration profiles automatically

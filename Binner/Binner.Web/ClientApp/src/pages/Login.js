@@ -43,6 +43,7 @@ export function Login (props) {
           imagesToken: data.imagesToken,
           isAdmin: data.isAdmin
         });
+				localStorage.setItem("showWelcome", true);
         navigate("/", { replace: true, state: { } });
       } else {
         setErrorMessage(data.message);
@@ -64,10 +65,33 @@ export function Login (props) {
     }));
   }
 
+	const showWelcome = () => {
+		const welcomeDisplayed = localStorage.getItem("showWelcome");
+		if (!welcomeDisplayed){
+			return (<div style={{marginBottom: '20px'}}>
+				<p>
+					Welcome to the new Binner login experience.<br/>
+				</p>
+{window.location.href.startsWith('https://localhost:') && 
+				<p>
+					<Icon name="key" size="large" />
+					<br/>
+					Your adminstrator account is:<br/>
+					Username: <b>admin</b><br/>
+					Password: <b>admin</b>
+					<br/><br/>
+					<span className="small">If your installation is available outside of your local network, please ensure to set a password to protect your account.</span>
+				</p>}
+			</div>);
+		}
+		return;
+	};
+
   return (
     <div>
       <div className="centered">
         <h1>Login</h1>
+				{showWelcome()}
         <Segment raised className="half-width" style={{ margin: "auto", marginBottom: '50px' }}>
           <Form onSubmit={onSubmit} loading={loading} autoComplete="on">
             <Form.Input

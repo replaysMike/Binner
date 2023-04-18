@@ -37,6 +37,7 @@
     <PackageReference Include="AnySerializer" Version="1.2.5" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
     <PackageReference Include="Binner.SwarmApi" Version="1.0.5" />
+    <PackageReference Include="libc.hwid" Version="6.0.1" />
     <PackageReference Include="LightInject" Version="6.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />

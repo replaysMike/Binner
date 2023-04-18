@@ -1,4 +1,5 @@
-﻿using Binner.Common.Models;
+﻿using Binner.Common.IO;
+using Binner.Common.Models;
 using Binner.Data;
 using Binner.Data.Model;
 using Binner.Model.Authentication;
@@ -61,7 +62,7 @@ namespace Binner.Common.Services.Authentication
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime),
                 NotBefore = DateTime.UtcNow,
-                SigningCredentials = new SigningCredentials(GetSecurityKey(_configuration.JwtSecretKey), GetSecurityAlgorithm(_configuration.EncryptionBits))
+                SigningCredentials = new SigningCredentials(GetSecurityKey(HardwareId.Get()), GetSecurityAlgorithm(_configuration.EncryptionBits))
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
@@ -146,7 +147,7 @@ namespace Binner.Common.Services.Authentication
         public TokenValidationParameters GetTokenValidationParameters()
             => new TokenValidationParameters
             {
-                IssuerSigningKey = GetSecurityKey(_configuration.JwtSecretKey),
+                IssuerSigningKey = GetSecurityKey(HardwareId.Get()),
                 ValidateIssuerSigningKey = _configuration.ValidateIssuerSigningKey,
                 ValidateIssuer = _configuration.ValidateIssuer,
                 ValidIssuer = _configuration.JwtIssuer,

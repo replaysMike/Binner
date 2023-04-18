@@ -10,11 +10,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using Binner.Common.IO;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Binner.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -32,8 +37,9 @@ namespace Binner.Web.Controllers
         private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
         private readonly RequestContextAccessor _requestContext;
         private readonly VersionManagementService _versionManagementService;
+        private readonly IBackupProvider _backupProvider;
 
-        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider, VersionManagementService versionManagementService)
+        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider, VersionManagementService versionManagementService, IBackupProvider backupProvider)
         {
             _mapper = mapper;
             _container = container;
@@ -46,6 +52,7 @@ namespace Binner.Web.Controllers
             _requestContext = requestContextAccessor;
             _credentialProvider = credentialProvider;
             _versionManagementService = versionManagementService;
+            _backupProvider = backupProvider;
         }
 
         /// <summary>
@@ -170,6 +177,48 @@ namespace Binner.Web.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Get version error! ", ex));
             }
 
+        }
+
+        /// <summary>
+        /// Perform a complete backup of Binner
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("backup")]
+        public async Task<IActionResult> BackupAsync()
+        {
+            try
+            {
+                var stream = await _backupProvider.BackupAsync();
+                var now = DateTime.UtcNow;
+                return File(stream, "application/octet-stream", $"Binner-{now.Year}-{now.Month}-{now.Day}.bak");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ExceptionResponse(ex));
+            }
+        }
+
+        /// <summary>
+        /// Perform a complete restore of Binner
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("restore")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> RestoreAsync(IFormFile file)
+        {
+            try
+            {
+                var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+                var uploadFile = new UploadFile(file.FileName, stream);
+                await _backupProvider.RestoreAsync(uploadFile);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ExceptionResponse(ex));
+            }
         }
     }
 }

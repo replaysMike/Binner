@@ -115,6 +115,7 @@ namespace Binner.Web.Configuration
             container.Register<IUserService, UserService>(new PerScopeLifetime());
             container.Register<IAuthenticationService, AuthenticationService>(new PerScopeLifetime());
             container.Register<IAccountService, AccountService>(new PerScopeLifetime());
+            container.Register<IBackupProvider, BackupProvider>(new PerScopeLifetime());
             container.Register<JwtService>(new PerScopeLifetime());
             container.Register<IntegrationService>(new PerScopeLifetime());
             container.Register<VersionManagementService>(new PerScopeLifetime());

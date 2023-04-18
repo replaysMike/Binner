@@ -1,7 +1,9 @@
 ﻿using AnySerializer;
+using Binner.Common.Authentication;
 using Binner.Common.Configuration;
 using Binner.Data;
 using Binner.Model.Common;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using System;
@@ -10,8 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Binner.Common.Authentication;
-using Microsoft.Data.Sqlite;
 
 namespace Binner.Common.StorageProviders
 {
@@ -101,7 +101,13 @@ namespace Binner.Common.StorageProviders
                 case "mysql":
                     {
                         using var context = _contextFactory.CreateDbContext();
+
+                        // if the database doesn't exist, we don't need to migrate
+                        if (!context.Database.CanConnect())
+                            return false;
+
                         using var conn = context.Database.GetDbConnection();
+
                         using var cmd = conn.CreateCommand();
                         cmd.CommandText = "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_NAME='__EFMigrationsHistory' AND TABLE_TYPE = 'BASE TABLE'";
                         conn.Open();
@@ -112,6 +118,11 @@ namespace Binner.Common.StorageProviders
                 case "postgresql":
                     {
                         using var context = _contextFactory.CreateDbContext();
+
+                        // if the database doesn't exist, we don't need to migrate
+                        if (!context.Database.CanConnect())
+                            return false;
+
                         using var conn = context.Database.GetDbConnection();
                         using var cmd = conn.CreateCommand();
                         cmd.CommandText = "SELECT COUNT(*) FROM pg_tables WHERE schemaname='dbo' AND tablename = '__EFMigrationsHistory'";
@@ -123,6 +134,11 @@ namespace Binner.Common.StorageProviders
                 case "sqlite":
                     {
                         using var context = _contextFactory.CreateDbContext();
+
+                        // if the database doesn't exist, we don't need to migrate
+                        if (!context.Database.CanConnect())
+                            return false;
+
                         using var conn = context.Database.GetDbConnection();
                         using var cmd = conn.CreateCommand();
                         cmd.CommandText = "SELECT COUNT(*) FROM __EFMigrationsHistory";
@@ -142,6 +158,11 @@ namespace Binner.Common.StorageProviders
                 case "sqlserver":
                     {
                         using var context = _contextFactory.CreateDbContext();
+
+                        // if the database doesn't exist, we don't need to migrate
+                        if (!context.Database.CanConnect())
+                            return false;
+
                         using var conn = context.Database.GetDbConnection();
                         using var cmd = conn.CreateCommand();
                         cmd.CommandText = "SELECT COUNT(*) FROM sysobjects WHERE name='__EFMigrationsHistory' and xtype='U'";

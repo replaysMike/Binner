@@ -40,12 +40,12 @@ namespace Binner.Web.Configuration
             services.AddDbContext<BinnerContext>(options => _ = configuration.Provider.ToLower() switch
             {
                 // binner and sqlite are now the same
-                "binner" => options.UseSqlite($"Data Source={filename}", x =>
+                "binner" => options.UseSqlite(EnsureSqliteConnectionString(connectionString, filename), x =>
                 {
                     x.MigrationsAssembly(SqlLiteMigrationsAssemblyName);
                 }).ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>(),
 
-                "sqlite" => options.UseSqlite(connectionString, x =>
+                "sqlite" => options.UseSqlite(EnsureSqliteConnectionString(connectionString, filename), x =>
                 {
                     x.MigrationsAssembly(SqlLiteMigrationsAssemblyName);
                 }).ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>(),
@@ -62,11 +62,19 @@ namespace Binner.Web.Configuration
                 "mysql" => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), x =>
                 {
                     x.MigrationsAssembly(MySqlMigrationsAssemblyName);
+                    x.SchemaBehavior(Pomelo.EntityFrameworkCore.MySql.Infrastructure.MySqlSchemaBehavior.Ignore);
                 }).ReplaceService<IMigrationsSqlGenerator, MySqlCustomMigrationsSqlGenerator>(),
                 _ => throw new NotSupportedException($"Unsupported provider: {configuration.Provider}")
             });
             services.AddDbContextFactory<BinnerContext>(lifetime: ServiceLifetime.Scoped);
             return services;
+        }
+
+        private static string EnsureSqliteConnectionString(string? connectionString, string? filename)
+        {
+            if (!string.IsNullOrEmpty(connectionString))
+                return connectionString;
+            return $"Data Source={filename}";
         }
     }
 }

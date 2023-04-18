@@ -35,4 +35,8 @@
     <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>
