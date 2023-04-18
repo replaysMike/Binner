@@ -9,7 +9,6 @@ namespace Binner.Data
         /// Initialize the Binner Context
         /// </summary>
         /// <param name="context">Database context</param>
-        /// <param name="environment">Development environment</param>
         /// <param name="passwordHasher">Password hasher for hashing passwords</param>
         public static void Initialize(BinnerContext context, Func<string, string> passwordHasher)
         {

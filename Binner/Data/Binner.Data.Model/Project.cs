@@ -21,6 +21,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// Project name
         /// </summary>
         public string? Name { get; set; }
@@ -60,5 +65,6 @@ namespace Binner.Data.Model
         public ICollection<Part>? Parts { get; set; }
         public ICollection<ProjectPcbAssignment>? ProjectPcbAssignments { get; set; }
         public ICollection<ProjectPartAssignment>? ProjectPartAssignments { get; set; }
+        public ICollection<ProjectProduceHistory>? ProjectProduceHistory { get; set; }
     }
 }

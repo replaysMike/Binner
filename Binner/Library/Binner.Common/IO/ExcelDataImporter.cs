@@ -91,8 +91,7 @@ namespace Binner.Common.IO
                                                 Location = GetQuoted(rowData.GetCell(header.GetHeaderIndex("Location"))?.ToString()),
                                                 Color = color,
                                                 DateCreatedUtc = dateCreatedUtc,
-                                                //DateModifiedUtc = dateModifiedUtc,
-                                                UserId = userContext?.UserId
+                                                //DateModifiedUtc = dateModifiedUtc
                                             };
                                             project = await _storageProvider.AddProjectAsync(project, userContext);
                                             _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
@@ -126,8 +125,7 @@ namespace Binner.Common.IO
                                             {
                                                 ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
                                                 Name = name,
-                                                DateCreatedUtc = dateCreatedUtc,
-                                                UserId = userContext?.UserId
+                                                DateCreatedUtc = dateCreatedUtc
                                             };
                                             partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
                                             if (partType != null)
@@ -206,8 +204,7 @@ namespace Binner.Common.IO
                                                 ProjectId = projectId != null ? _temporaryKeyTracker.GetMappedId("Projects", "ProjectId", projectId.Value) : null,
                                                 Quantity = quantity,
                                                 //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
-                                                DateCreatedUtc = dateCreatedUtc,
-                                                UserId = userContext?.UserId
+                                                DateCreatedUtc = dateCreatedUtc
                                             };
                                             part = await _storageProvider.AddPartAsync(part, userContext);
                                             _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);

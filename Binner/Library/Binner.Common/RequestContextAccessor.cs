@@ -49,6 +49,7 @@ namespace Binner.Common
                 return new UserContext
                 {
                     UserId = int.Parse(context.User.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault() ?? "0"),
+                    OrganizationId = int.Parse(context.User.Claims.Where(x => x.Type == "OrganizationId").Select(x => x.Value).FirstOrDefault() ?? "0"),
                     Name = context.User.Claims.Where(x => x.Type == "Name").Select(x => x.Value).FirstOrDefault(),
                     EmailAddress = context.User.Identity.Name,
                     PhoneNumber = context.User.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault()
@@ -58,6 +59,7 @@ namespace Binner.Common
             return new UserContext
             {
                 UserId = 1,
+                OrganizationId = 1,
                 Name = "Admin",
                 EmailAddress = "admin"
             };

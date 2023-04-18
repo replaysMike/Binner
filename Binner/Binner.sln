@@ -31,15 +31,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Data.Model", "Data\B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Model", "Library\Binner.Model\Binner.Model.csproj", "{48D67189-54DC-4590-B5D2-0CEECCE037BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Data.Migrations.SqlServer", "Data\Binner.Data.Migrations.SqlServer\Binner.Data.Migrations.SqlServer.csproj", "{162A447D-725C-4961-BDE9-E997CE5E89A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Data.Migrations.SqlServer", "Data\Binner.Data.Migrations.SqlServer\Binner.Data.Migrations.SqlServer.csproj", "{162A447D-725C-4961-BDE9-E997CE5E89A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Data.Migrations.Sqlite", "Data\Binner.Data.Migrations.Sqlite\Binner.Data.Migrations.Sqlite.csproj", "{594B2F75-E770-4935-8025-AFF45C450A81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Data.Migrations.Sqlite", "Data\Binner.Data.Migrations.Sqlite\Binner.Data.Migrations.Sqlite.csproj", "{594B2F75-E770-4935-8025-AFF45C450A81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Data.Migrations.Postgresql", "Data\Binner.Data.Migrations.Postgresql\Binner.Data.Migrations.Postgresql.csproj", "{3E02D9F5-01DC-49CA-9DA1-02144FC5C0E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Data.Migrations.Postgresql", "Data\Binner.Data.Migrations.Postgresql\Binner.Data.Migrations.Postgresql.csproj", "{3E02D9F5-01DC-49CA-9DA1-02144FC5C0E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Data.Migrations.MySql", "Data\Binner.Data.Migrations.MySql\Binner.Data.Migrations.MySql.csproj", "{083AF392-3E42-4B26-90E0-32CAA6246521}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Data.Migrations.MySql", "Data\Binner.Data.Migrations.MySql\Binner.Data.Migrations.MySql.csproj", "{083AF392-3E42-4B26-90E0-32CAA6246521}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Data.Stub", "Data\Binner.Data.Stub\Binner.Data.Stub.csproj", "{67FDC3E8-4018-4119-9062-05C3D1236CB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Data.Stub", "Data\Binner.Data.Stub\Binner.Data.Stub.csproj", "{67FDC3E8-4018-4119-9062-05C3D1236CB2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.LicensedProvider", "..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj", "{4C63F1A4-D0EB-4C56-999A-873E984364A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +105,10 @@ Global
 		{67FDC3E8-4018-4119-9062-05C3D1236CB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67FDC3E8-4018-4119-9062-05C3D1236CB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67FDC3E8-4018-4119-9062-05C3D1236CB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C63F1A4-D0EB-4C56-999A-873E984364A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C63F1A4-D0EB-4C56-999A-873E984364A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C63F1A4-D0EB-4C56-999A-873E984364A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C63F1A4-D0EB-4C56-999A-873E984364A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +128,7 @@ Global
 		{3E02D9F5-01DC-49CA-9DA1-02144FC5C0E0} = {B23BB570-CD42-415B-9EA4-48595241755E}
 		{083AF392-3E42-4B26-90E0-32CAA6246521} = {B23BB570-CD42-415B-9EA4-48595241755E}
 		{67FDC3E8-4018-4119-9062-05C3D1236CB2} = {B23BB570-CD42-415B-9EA4-48595241755E}
+		{4C63F1A4-D0EB-4C56-999A-873E984364A1} = {2D9C4743-1B04-41B1-A12F-4CCF6F5BAB3E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {413F8D19-37B6-4A57-858F-DD8AFF2DAE96}

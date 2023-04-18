@@ -32,6 +32,7 @@ namespace Binner.Common.Services.Authentication
             var claims = new List<Claim> {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(JwtClaimTypes.UserId, user.UserId.ToString()),
+                new Claim(JwtClaimTypes.OrganizationId, user.OrganizationId.ToString()),
                 new Claim(JwtClaimTypes.FullName, user.Name),
                 new Claim(ClaimTypes.Name, user.EmailAddress),
                 new Claim(ClaimTypes.HomePhone, user.PhoneNumber),
@@ -84,6 +85,7 @@ namespace Binner.Common.Services.Authentication
                 Token = ConfirmationTokenGenerator.NewToken(),
                 TokenTypeId = TokenTypes.ImagesToken,
                 UserId = user.UserId,
+                OrganizationId = user.OrganizationId,
                 DateCreatedUtc = DateTime.UtcNow,
                 DateModifiedUtc = DateTime.UtcNow,
                 DateExpiredUtc = DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime).AddMinutes(5),

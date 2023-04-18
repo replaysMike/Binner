@@ -22,6 +22,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Cost, options => options.MapFrom(x => x.Cost))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
                 .ForMember(x => x.Part, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
 #endif

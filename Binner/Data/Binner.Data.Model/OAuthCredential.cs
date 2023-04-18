@@ -23,6 +23,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// The access token
         /// </summary>
         public string? AccessToken { get; set; }

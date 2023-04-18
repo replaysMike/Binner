@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.39</LibraryVersion>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.40</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

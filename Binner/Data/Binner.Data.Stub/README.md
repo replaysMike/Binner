@@ -11,6 +11,11 @@ Migrations will be applied against the database the Binner application is config
 `dotnet ef migrations add InitialCreate --project Data\Binner.Data.Migrations.Postgresql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Postgresql`
 `dotnet ef migrations add InitialCreate --project Data\Binner.Data.Migrations.MySql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider MySql`
 
+## Updating
+`dotnet ef database update --project Data\Binner.Data.Migrations.Sqlite --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Sqlite`
+`dotnet ef database update --project Data\Binner.Data.Migrations.SqlServer --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider SqlServer`
+`dotnet ef database update --project Data\Binner.Data.Migrations.Postgresql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Postgresql`
+`dotnet ef database update --project Data\Binner.Data.Migrations.MySql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider MySql`
 
 ## Resources
 

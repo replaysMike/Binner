@@ -22,6 +22,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// Email address used to login
         /// </summary>
         public string? EmailAddress { get; set; }

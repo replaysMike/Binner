@@ -66,5 +66,15 @@ namespace Binner.Common.Models
         /// The user's current ip address, if applicable
         /// </summary>
         public string? IPAddress { get; set; }
+
+        /// <summary>
+        /// The user's preferred language, used for APIs
+        /// </summary>
+        public string? LocaleLanguage { get; set; }
+
+        /// <summary>
+        /// The user's preferred currency, used for APIs and display
+        /// </summary>
+        public string? LocaleCurrency { get; set; }
     }
 }

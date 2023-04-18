@@ -27,6 +27,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.ParentPartType, options => options.Ignore())
                 .ForMember(x => x.Parts, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.PartType, PartTypeResponse>()

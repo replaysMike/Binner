@@ -583,7 +583,7 @@ namespace Binner.Common.Integrations
                     CreatedUtc = DateTime.UtcNow,
                     ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(token.ExpiresIn)),
                     AuthorizationReceived = true,
-                    UserId = _requestContext.GetUserContext()?.UserId
+                    UserId = _requestContext.GetUserContext()?.UserId,
                 };
                 if (refreshTokenResponse.IsAuthorized)
                 {

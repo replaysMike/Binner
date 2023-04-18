@@ -46,6 +46,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("TEXT");
 
@@ -94,6 +97,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -112,6 +118,29 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("OAuthRequests", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.Organization", b =>
+                {
+                    b.Property<int>("OrganizationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("OrganizationId");
+
+                    b.ToTable("Organizations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -183,6 +212,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<string>("MouserPartNumber")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PackageType")
                         .HasColumnType("TEXT");
@@ -265,6 +297,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<long>("PartId")
                         .HasColumnType("INTEGER");
 
@@ -307,6 +342,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<long?>("ParentPartTypeId")
                         .HasColumnType("INTEGER");
@@ -353,6 +391,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
 
@@ -390,6 +431,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("PcbId")
                         .HasColumnType("INTEGER");
@@ -442,6 +486,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
@@ -481,6 +528,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<long?>("PartId")
                         .HasColumnType("INTEGER");
@@ -536,6 +586,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<long>("PcbId")
                         .HasColumnType("INTEGER");
 
@@ -554,6 +607,94 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ProjectPcbAssignments", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectPcbProduceHistory", b =>
+                {
+                    b.Property<long>("ProjectPcbProduceHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("PcbCost")
+                        .HasColumnType("REAL");
+
+                    b.Property<long?>("PcbId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PcbQuantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("ProjectProduceHistoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SerialNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ProjectPcbProduceHistoryId");
+
+                    b.HasIndex("PcbId");
+
+                    b.HasIndex("ProjectProduceHistoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectPcbProduceHistory", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.Property<long>("ProjectProduceHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ProduceUnassociated")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ProjectProduceHistoryId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectProduceHistory", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -581,6 +722,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("OriginalFileName")
                         .IsRequired()
@@ -663,9 +807,18 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
+                    b.Property<string>("LocaleCurrency")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LocaleLanguage")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -759,6 +912,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<bool>("OctopartEnabled")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("SwarmApiKey")
                         .HasColumnType("TEXT");
 
@@ -814,6 +970,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<double?>("ReCaptchaScore")
                         .HasColumnType("REAL");
 
@@ -842,6 +1001,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PartLabelName")
                         .IsRequired()
@@ -923,6 +1085,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("MarginTop")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Position")
                         .HasColumnType("INTEGER");
 
@@ -973,6 +1138,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ReplacedByToken")
                         .HasColumnType("TEXT");
@@ -1171,6 +1339,48 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.ProjectPcbProduceHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Pcb", "Pcb")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("PcbId");
+
+                    b.HasOne("Binner.Data.Model.ProjectProduceHistory", "ProjectProduceHistory")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("ProjectProduceHistoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Pcb");
+
+                    b.Navigation("ProjectProduceHistory");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Project", "Project")
+                        .WithMany("ProjectProduceHistory")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectProduceHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
                 {
                     b.HasOne("Binner.Data.Model.Part", "Part")
@@ -1265,6 +1475,8 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("PcbStoredFileAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectPcbProduceHistory");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -1274,6 +1486,13 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("ProjectPartAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectProduceHistory");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.Navigation("ProjectPcbProduceHistory");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -1300,6 +1519,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("ProjectPartAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectPcbProduceHistory");
+
+                    b.Navigation("ProjectProduceHistory");
 
                     b.Navigation("Projects");
 

@@ -43,15 +43,15 @@ namespace Binner.Common.Services
             var userContext = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetAccountQueryable(context)
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
             var model = _mapper.Map<Account>(entity);
             if (entity != null)
             {
-                model.PartsInventoryCount = await context.Parts.CountAsync(x => x.UserId == userContext.UserId);
-                model.PartTypesCount = await context.PartTypes.CountAsync(x => x.UserId == userContext.UserId);
+                model.PartsInventoryCount = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
+                model.PartTypesCount = await context.PartTypes.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
             }
 
             return model;
@@ -116,7 +116,7 @@ namespace Binner.Common.Services
             var userContext = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetAccountQueryable(context)
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 

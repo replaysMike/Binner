@@ -15,6 +15,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateEmailConfirmedUtc, options => options.MapFrom(x => x.DateEmailConfirmedUtc))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                 .ForMember(x => x.PhoneNumber, options => options.MapFrom(x => x.PhoneNumber))
+                .ForMember(x => x.LocaleLanguage, options => options.MapFrom(x => x.LocaleLanguage))
+                .ForMember(x => x.LocaleCurrency, options => options.MapFrom(x => x.LocaleCurrency))
                 .ForMember(x => x.ProfileImage, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.IsEmailSubscribed, options => options.Ignore())
@@ -46,6 +48,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ProjectPartAssignments, options => options.Ignore())
                 .ForMember(x => x.ProjectPcbAssignments, options => options.Ignore())
                 .ForMember(x => x.StoredFiles, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.User, Account>()
@@ -54,6 +57,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                     .ForMember(x => x.DateEmailConfirmedUtc, options => options.MapFrom(x => x.DateEmailConfirmedUtc))
                     .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                     .ForMember(x => x.PhoneNumber, options => options.MapFrom(x => x.PhoneNumber))
+                    .ForMember(x => x.LocaleLanguage, options => options.MapFrom(x => x.LocaleLanguage))
+                    .ForMember(x => x.LocaleCurrency, options => options.MapFrom(x => x.LocaleCurrency))
                     .ForMember(x => x.ProfileImage, options => options.MapFrom(x => GetBase64Image(x.ProfileImage)))
                     .ForMember(x => x.IPAddress, options => options.Ignore())
                     .ForMember(x => x.PartsInventoryCount, options => options.Ignore())

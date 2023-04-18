@@ -20,6 +20,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.User, options => options.Ignore())
 #endif
                 .ForMember(x => x.Ip, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ReverseMap();
         }
     }

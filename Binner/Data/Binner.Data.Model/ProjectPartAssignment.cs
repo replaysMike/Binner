@@ -85,6 +85,11 @@ namespace Binner.Data.Model
         /// </summary>
         public int? UserId { get; set; }
 
+        /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
 #if INITIALCREATE
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }

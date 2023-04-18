@@ -53,7 +53,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == part.PartId && x.UserId == userContext.UserId);
+            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             EnforceIntegrityCreate(entity, userContext);
@@ -66,7 +66,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.PartTypes.FirstOrDefault(x => x.PartTypeId == partType.PartTypeId && x.UserId == userContext.UserId);
+            var entity = context.PartTypes.FirstOrDefault(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.PartTypes.Remove(entity);
@@ -78,7 +78,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.Projects.FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.UserId == userContext.UserId);
+            var entity = await context.Projects.FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.Projects.Remove(entity);
@@ -286,7 +286,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthRequests
-                .FirstOrDefaultAsync(x => x.Provider == authRequest.Provider && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.Provider == authRequest.Provider && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(authRequest, entity);
@@ -302,7 +302,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthRequests
-                .Where(x => x.RequestId == requestId && x.UserId == userContext.UserId)
+                .Where(x => x.RequestId == requestId && x.OrganizationId == userContext.OrganizationId)
                 .FirstOrDefaultAsync();
             return _mapper.Map<OAuthAuthorization>(entity);
         }
@@ -311,7 +311,7 @@ INNER JOIN (
         {
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Parts
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<Part>>(entities);
         }
@@ -320,7 +320,7 @@ INNER JOIN (
         {
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.OAuthCredentials
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<OAuthCredential>>(entities); ;
         }
@@ -329,7 +329,7 @@ INNER JOIN (
         {
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Projects
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<Project>>(entities);
         }
@@ -339,9 +339,9 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
-            var totalItems = await context.Parts.CountAsync(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext.UserId);
+            var totalItems = await context.Parts.CountAsync(x => x.Quantity <= x.LowStockThreshold && x.OrganizationId == userContext.OrganizationId);
             var entitiesQueryable = context.Parts
-                .Where(x => x.Quantity <= x.LowStockThreshold && x.UserId == userContext.UserId);
+                .Where(x => x.Quantity <= x.LowStockThreshold && x.OrganizationId == userContext.OrganizationId);
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
@@ -373,7 +373,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.StoredFiles
-                .FirstOrDefaultAsync(x => x.StoredFileId == storedFileId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.StoredFileId == storedFileId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<StoredFile?>(entity);
         }
 
@@ -382,7 +382,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.StoredFiles
-                .FirstOrDefaultAsync(x => x.FileName == filename && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.FileName == filename && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<StoredFile?>(entity);
         }
 
@@ -391,7 +391,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.StoredFiles
-                .Where(x => x.PartId == partId && x.StoredFileType == fileType && x.UserId == userContext.UserId)
+                .Where(x => x.PartId == partId && x.StoredFileType == fileType && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<StoredFile>>(entities);
         }
@@ -401,7 +401,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
-            var entitiesQueryable = context.StoredFiles.Where(x => x.UserId == userContext.UserId);
+            var entitiesQueryable = context.StoredFiles.Where(x => x.OrganizationId == userContext.OrganizationId);
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
@@ -421,7 +421,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.StoredFiles
-                .FirstOrDefaultAsync(x => x.StoredFileId == storedFile.StoredFileId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.StoredFileId == storedFile.StoredFileId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(storedFile, entity);
@@ -436,7 +436,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.StoredFiles.FirstOrDefault(x => x.StoredFileId == storedFile.StoredFileId && x.UserId == userContext.UserId);
+            var entity = context.StoredFiles.FirstOrDefault(x => x.StoredFileId == storedFile.StoredFileId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.StoredFiles.Remove(entity);
@@ -449,7 +449,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Pcbs
-                .FirstOrDefaultAsync(x => x.PcbId == pcbId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.PcbId == pcbId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<Pcb?>(entity);
         }
 
@@ -459,7 +459,7 @@ INNER JOIN (
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPcbAssignments
                 .Include(x => x.Pcb)
-                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
+                .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId)
                 .Select(x => x.Pcb)
                 .ToListAsync();
             return _mapper.Map<ICollection<Pcb>>(entities);
@@ -481,7 +481,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Pcbs
-                .FirstOrDefaultAsync(x => x.PcbId == pcb.PcbId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.PcbId == pcb.PcbId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(pcb, entity);
@@ -496,7 +496,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.Pcbs.FirstOrDefault(x => x.PcbId == pcb.PcbId && x.UserId == userContext.UserId);
+            var entity = context.Pcbs.FirstOrDefault(x => x.PcbId == pcb.PcbId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.Pcbs.Remove(entity);
@@ -509,7 +509,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PcbStoredFileAssignments
-                .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == pcbStoredFileAssignmentId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == pcbStoredFileAssignmentId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<PcbStoredFileAssignment?>(entity);
         }
 
@@ -518,7 +518,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.PcbStoredFileAssignments
-                .Where(x => x.PcbId == pcbId && x.UserId == userContext.UserId)
+                .Where(x => x.PcbId == pcbId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<PcbStoredFileAssignment>>(entities);
         }
@@ -539,7 +539,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PcbStoredFileAssignments
-                .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(assignment, entity);
@@ -554,7 +554,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.PcbStoredFileAssignments.FirstOrDefault(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.UserId == userContext.UserId);
+            var entity = context.PcbStoredFileAssignments.FirstOrDefault(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.PcbStoredFileAssignments.Remove(entity);
@@ -567,7 +567,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPartAssignments
-                .Where(x => x.PartId == partId && x.UserId == userContext.UserId)
+                .Where(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<ProjectPartAssignment>>(entities);
         }
@@ -577,7 +577,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
-                .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == projectPartAssignmentId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == projectPartAssignmentId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPartAssignment?>(entity);
         }
 
@@ -586,7 +586,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
-                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartId == partId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartId == partId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPartAssignment?>(entity);
         }
 
@@ -595,7 +595,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
-                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartName == partName && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartName == partName && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPartAssignment?>(entity);
         }
 
@@ -604,7 +604,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPartAssignments
-                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
+                .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<ProjectPartAssignment>>(entities);
         }
@@ -615,7 +615,7 @@ INNER JOIN (
             using var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
             var entitiesQueryable = context.ProjectPartAssignments
-                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId);
+                .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId);
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
@@ -646,7 +646,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
-                .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(assignment, entity);
@@ -661,7 +661,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.ProjectPartAssignments.FirstOrDefault(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.UserId == userContext.UserId);
+            var entity = context.ProjectPartAssignments.FirstOrDefault(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.ProjectPartAssignments.Remove(entity);
@@ -674,7 +674,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPcbAssignments
-                .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == projectPcbAssignmentId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == projectPcbAssignmentId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPcbAssignment?>(entity);
         }
 
@@ -683,7 +683,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPcbAssignments
-                .Where(x => x.ProjectId == projectId && x.UserId == userContext.UserId)
+                .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<ProjectPcbAssignment>>(entities);
         }
@@ -704,7 +704,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPcbAssignments
-                .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(assignment, entity);
@@ -719,7 +719,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.ProjectPcbAssignments.FirstOrDefault(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.UserId == userContext.UserId);
+            var entity = context.ProjectPcbAssignments.FirstOrDefault(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.ProjectPcbAssignments.Remove(entity);
@@ -732,7 +732,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthCredentials
-                .Where(x => x.Provider == providerName && x.UserId == userContext.UserId)
+                .Where(x => x.Provider == providerName && x.OrganizationId == userContext.OrganizationId)
                 .FirstOrDefaultAsync();
             if (entity == null)
                 return null;
@@ -744,7 +744,7 @@ INNER JOIN (
             using var context = await _contextFactory.CreateDbContextAsync();
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var existingEntity = await context.PartTypes
-                .FirstOrDefaultAsync(x => x.Name != null && x.Name == partType.Name && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.Name != null && x.Name == partType.Name && x.OrganizationId == userContext.OrganizationId);
             if (existingEntity == null)
             {
                 existingEntity = new DataModel.PartType
@@ -766,7 +766,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == partId && x.UserId == userContext.UserId);
+            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             return _mapper.Map<Part?>(entity);
@@ -776,7 +776,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.UserId == userContext.UserId);
+            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             return _mapper.Map<Part?>(entity);
@@ -789,9 +789,9 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
-            var totalParts = await context.Parts.CountAsync(x => x.UserId == userContext.UserId);
+            var totalParts = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
             var entitiesQueryable = context.Parts
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value);
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
@@ -848,7 +848,7 @@ INNER JOIN (
             var newPredicate = expressionConverter.Visit(predicate);
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Parts
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .Where(newPredicate as Expression<Func<DataModel.Part, bool>>)
                 .ToListAsync();
 
@@ -860,7 +860,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             return await context.Parts
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .SumAsync(x => x.Quantity);
         }
 
@@ -869,7 +869,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             return await context.Parts
-                .CountAsync(x => x.UserId == userContext.UserId);
+                .CountAsync(x => x.OrganizationId == userContext.OrganizationId);
         }
 
         public async Task<decimal> GetPartsValueAsync(IUserContext? userContext)
@@ -877,7 +877,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             return (decimal)await context.Parts
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .SumAsync(x => x.Cost * x.Quantity);
         }
 
@@ -886,7 +886,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartTypes
-                .FirstOrDefaultAsync(x => x.PartTypeId == partTypeId && (x.UserId == userContext.UserId || x.UserId == null));
+                .FirstOrDefaultAsync(x => x.PartTypeId == partTypeId && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
             if (entity == null)
                 return null;
             return _mapper.Map<PartType?>(entity);
@@ -898,8 +898,8 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.PartTypes
-                .Where(x => x.UserId == userContext.UserId || x.UserId == null)
-                .OrderBy(x => x.UserId == null)
+                .Where(x => x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null)
+                .OrderBy(x => x.OrganizationId == null)
                 .ThenBy(x => x.ParentPartType.Name)
                 .ThenBy(x => x.Name)
                 .ToListAsync();
@@ -911,7 +911,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Projects
-                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             return _mapper.Map<Project?>(entity);
@@ -922,7 +922,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Projects
-                .FirstOrDefaultAsync(x => x.Name == projectName && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.Name == projectName && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             return _mapper.Map<Project?>(entity);
@@ -935,7 +935,7 @@ INNER JOIN (
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
             var entitiesQueryable = context.Projects
-                .Where(x => x.UserId == userContext.UserId)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value);
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
@@ -956,7 +956,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthCredentials
-                .FirstOrDefaultAsync(x => x.Provider == providerName && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.Provider == providerName && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
                 context.Remove(entity);
             await context.SaveChangesAsync();
@@ -968,7 +968,7 @@ INNER JOIN (
             using var context = await _contextFactory.CreateDbContextAsync();
             // insert or update
             var entity = await context.OAuthCredentials
-                .FirstOrDefaultAsync(x => x.Provider == credential.Provider && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.Provider == credential.Provider && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 // update
@@ -994,7 +994,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Parts
-                .FirstOrDefaultAsync(x => x.PartId == part.PartId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(part, entity);
@@ -1010,7 +1010,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartTypes
-                .FirstOrDefaultAsync(x => x.PartTypeId == partType.PartTypeId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(partType, entity);
@@ -1029,7 +1029,7 @@ INNER JOIN (
                 .Include(x => x.ProjectPartAssignments)
                 .Include(x => x.ProjectPcbAssignments)
                 .Include(x => x.Parts)
-                .FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(project, entity);
@@ -1057,7 +1057,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartSuppliers
-                .Where(x => x.PartSupplierId == partSupplierId && x.UserId == userContext.UserId)
+                .Where(x => x.PartSupplierId == partSupplierId && x.OrganizationId == userContext.OrganizationId)
                 .FirstOrDefaultAsync();
             return _mapper.Map<PartSupplier?>(entity);
         }
@@ -1068,7 +1068,7 @@ INNER JOIN (
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.PartSuppliers
                 .Include(x => x.Part)
-                .Where(x => x.PartId == partId && x.UserId == userContext.UserId)
+                .Where(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<PartSupplier>>(entities);
         }
@@ -1078,7 +1078,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartSuppliers
-                .FirstOrDefaultAsync(x => x.PartSupplierId == partSupplier.PartSupplierId && x.UserId == userContext.UserId);
+                .FirstOrDefaultAsync(x => x.PartSupplierId == partSupplier.PartSupplierId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
                 entity = _mapper.Map(partSupplier, entity);
@@ -1093,7 +1093,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.PartSuppliers.FirstOrDefault(x => x.PartSupplierId == partSupplier.PartSupplierId && x.UserId == userContext.UserId);
+            var entity = context.PartSuppliers.FirstOrDefault(x => x.PartSupplierId == partSupplier.PartSupplierId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
             context.PartSuppliers.Remove(entity);
@@ -1107,6 +1107,7 @@ INNER JOIN (
             where T : DataModel.IEntity, DataModel.IUserData
         {
             entity.UserId = userContext.UserId;
+            entity.OrganizationId = userContext.OrganizationId;
             entity.DateCreatedUtc = DateTime.UtcNow;
             entity.DateModifiedUtc = DateTime.UtcNow;
         }
@@ -1115,6 +1116,7 @@ INNER JOIN (
             where T : DataModel.IEntity, DataModel.IUserData
         {
             entity.UserId = userContext.UserId;
+            entity.OrganizationId = userContext.OrganizationId;
             entity.DateModifiedUtc = DateTime.UtcNow;
         }
 

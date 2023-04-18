@@ -1,7 +1,10 @@
 ﻿using AnyMapper;
 using Binner.Common.Models;
 using Binner.Common.Models.Requests;
+using Binner.Data;
+using Binner.Data.Configurations;
 using Binner.Model.Common;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +15,14 @@ namespace Binner.Common.Services
     public class ProjectService : IProjectService
     {
         private readonly IStorageProvider _storageProvider;
+        private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly RequestContextAccessor _requestContext;
 
-        public ProjectService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
+        public ProjectService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory)
         {
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;
+            _contextFactory = contextFactory;
         }
 
         public async Task<Project> AddProjectAsync(Project project)
@@ -265,6 +270,7 @@ namespace Binner.Common.Services
         {
             // get all the parts in the project
             var user = _requestContext.GetUserContext();
+            var context = await _contextFactory.CreateDbContextAsync();
             var numberOfPcbsProduced = request.Quantity;
 
             var project = await GetProjectAsync(request.ProjectId);
@@ -273,12 +279,25 @@ namespace Binner.Common.Services
 
             var parts = await GetPartsAsync(request.ProjectId);
 
+            var produceHistory = new Data.Model.ProjectProduceHistory
+            {
+                ProjectId = project.ProjectId,
+                ProduceUnassociated = request.Unassociated,
+                Quantity = request.Quantity,
+                DateCreatedUtc = DateTime.UtcNow,
+                DateModifiedUtc = DateTime.UtcNow,
+                UserId = user.UserId,
+                OrganizationId = user.OrganizationId,
+            };
+
             // because some storage providers don't have transaction support, first validate we have the parts/quantities before making any changes
             await ProcessPcbParts(false);
             if (request.Unassociated)
                 await ProcessNonPcbParts(false);
 
             // no exceptions thrown, write the changes
+            context.ProjectProduceHistory.Add(produceHistory);
+            await context.SaveChangesAsync();
             await ProcessPcbParts(true);
             if (request.Unassociated)
                 await ProcessNonPcbParts(true);
@@ -334,7 +353,25 @@ namespace Binner.Common.Services
 
                     if (performUpdates)
                     {
-                        pcbEntity.LastSerialNumber = IncrementSerialNumber(pcb.SerialNumber ?? string.Empty, numberOfPcbsProduced);
+                        pcbEntity.LastSerialNumber = IncrementSerialNumber(pcb.SerialNumber ?? string.Empty, numberOfPcbsProduced, (serial, i) =>
+                        {
+                            // create a history record
+                            var pcbProduceHistory = new Data.Model.ProjectPcbProduceHistory
+                            {
+                                ProjectProduceHistoryId = produceHistory.ProjectProduceHistoryId,
+                                DateCreatedUtc = DateTime.UtcNow,
+                                DateModifiedUtc = DateTime.UtcNow,
+                                PcbId = pcbEntity.PcbId,
+                                PcbQuantity = pcbEntity.Quantity,
+                                PcbCost = pcbEntity.Cost,
+                                SerialNumber = pcbEntity.LastSerialNumber,
+                                UserId = user.UserId,
+                                OrganizationId = user.OrganizationId,
+                            };
+                            context.ProjectPcbProduceHistory.Add(pcbProduceHistory);
+                        });
+                        
+                        await context.SaveChangesAsync();
                         await _storageProvider.UpdatePcbAsync(pcbEntity, user);
                     }
                 }
@@ -365,7 +402,7 @@ namespace Binner.Common.Services
             }
         }
 
-        public string IncrementSerialNumber(string nextSerialNumber, int numberOfPcbsProduced)
+        public string IncrementSerialNumber(string nextSerialNumber, int numberOfPcbsProduced, Action<string, int>? onIncrement = null)
         {
             var serialNumber = nextSerialNumber;
             for (var s = 1; s < numberOfPcbsProduced; s++)
@@ -388,10 +425,12 @@ namespace Binner.Common.Services
                     var nextSerialNumberInt = parsedNumber + 1;
                     var labelPortion = nextSerialNumber.Substring(0, lastNonNumericIndex + 1);
                     serialNumber = labelPortion.PadRight(labelPortion.Length + numericLabel.Length - nextSerialNumberInt.ToString().Length, '0') + nextSerialNumberInt;
+                    if (onIncrement != null) onIncrement(serialNumber, s);
                     return serialNumber;
                 }
             }
 
+            if (onIncrement != null) onIncrement(serialNumber, 1);
             return serialNumber;
         }
     }

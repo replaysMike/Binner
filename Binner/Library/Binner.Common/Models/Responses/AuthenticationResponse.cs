@@ -10,6 +10,11 @@ namespace Binner.Common.Models.Responses
         public int Id { get; set; }
 
         /// <summary>
+        /// Organization Id
+        /// </summary>
+        public int OrganizationId { get; set; }
+
+        /// <summary>
         /// Name of user
         /// </summary>
         public string? Name { get; set; }
@@ -33,6 +38,7 @@ namespace Binner.Common.Models.Responses
         public AuthenticationResponse(UserContext user, AuthenticatedTokens authenticatedTokens)
         {
             Id = user.UserId;
+            OrganizationId = user.OrganizationId;
             Name = user.Name;
             IsAuthenticated = authenticatedTokens.IsAuthenticated;
             JwtToken = authenticatedTokens.JwtToken;
