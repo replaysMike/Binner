@@ -18,6 +18,11 @@ namespace Binner.Data.Model
         public int UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int OrganizationId { get; set; }
+
+        /// <summary>
         /// Name of user
         /// </summary>
         public string Name { get; set; } = string.Empty;
@@ -106,12 +111,21 @@ namespace Binner.Data.Model
         /// </summary>
         public long LastSetPasswordIp { get; set; }
 
+        /// <summary>
+        /// The user's preferred language, used for APIs
+        /// </summary>
+        public string? LocaleLanguage { get; set; }
+
+        /// <summary>
+        /// The user's preferred currency, used for APIs and display
+        /// </summary>
+        public string? LocaleCurrency { get; set; }
 
         public ICollection<UserToken>? UserTokens { get; set; }
 
         public ICollection<UserLoginHistory>? UserLoginHistory { get; set; }
 
-        public ICollection<Pcb>? Pcbs{ get; set; }
+        public ICollection<Pcb>? Pcbs { get; set; }
 
         public ICollection<PcbStoredFileAssignment>? PcbStoredFileAssignments { get; set; }
 
@@ -132,7 +146,11 @@ namespace Binner.Data.Model
         public ICollection<OAuthRequest>? OAuthRequests { get; set; }
 
         public ICollection<PartSupplier>? PartSuppliers { get; set; }
-        
+
+        public ICollection<ProjectProduceHistory>? ProjectProduceHistory { get; set; }
+
+        public ICollection<ProjectPcbProduceHistory>? ProjectPcbProduceHistory { get; set; }
+
         public ICollection<UserIntegrationConfiguration>? UserIntegrationConfigurations { get; set; }
 
         public ICollection<UserPrinterConfiguration>? UserPrinterConfigurations { get; set; }

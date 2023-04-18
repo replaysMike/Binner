@@ -28,6 +28,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// True if an oAuth callback was received from Digikey
         /// </summary>
         public bool AuthorizationReceived { get; set; }

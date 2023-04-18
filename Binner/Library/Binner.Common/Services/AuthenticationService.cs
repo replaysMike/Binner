@@ -248,6 +248,7 @@ namespace Binner.Common.Services
                 // register account
                 var user = new Data.Model.User
                 {
+                    OrganizationId = 1,
                     Name = request.Name,
                     EmailAddress = request.Email,
                     EmailConfirmationToken = ConfirmationTokenGenerator.NewToken(),
@@ -539,6 +540,7 @@ namespace Binner.Common.Services
             return new UserContext
             {
                 UserId = user.UserId,
+                OrganizationId = user.OrganizationId,
                 Name = user.Name,
                 EmailAddress = user.EmailAddress,
                 PhoneNumber = user.PhoneNumber ?? string.Empty,

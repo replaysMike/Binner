@@ -67,6 +67,11 @@ namespace Binner.Data.Model
         /// </summary>
         public int? UserId { get; set; }
 
+        /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
         [ForeignKey(nameof(PartId))]
         public Part? Part { get; set; }
 

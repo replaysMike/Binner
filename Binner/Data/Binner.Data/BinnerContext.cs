@@ -50,6 +50,16 @@ namespace Binner.Data
         /// Project PCB assignments (BOM)
         /// </summary>
         public DbSet<ProjectPcbAssignment> ProjectPcbAssignments { get; set; } = null!;
+
+        /// <summary>
+        /// Produce history (BOM)
+        /// </summary>
+        public DbSet<ProjectProduceHistory> ProjectProduceHistory { get; set; } = null!;
+
+        /// <summary>
+        /// Produce history by pcb (BOM)
+        /// </summary>
+        public DbSet<ProjectPcbProduceHistory> ProjectPcbProduceHistory { get; set; } = null!;
         
         /// <summary>
         /// Projects
@@ -61,6 +71,11 @@ namespace Binner.Data
         /// Stored files (user uploaded files)
         /// </summary>
         public DbSet<StoredFile> StoredFiles { get; set; } = null!;
+
+        /// <summary>
+        /// Organization groups users together and may signify a company or grouping
+        /// </summary>
+        public DbSet<Organization> Organizations { get; set; } = null!;
 
 #if INITIALCREATE
         /// <summary>

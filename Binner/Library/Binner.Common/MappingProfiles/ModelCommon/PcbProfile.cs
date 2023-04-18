@@ -21,6 +21,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
                 .ForMember(x => x.ProjectPcbAssignments, options => options.Ignore())
                 .ForMember(x => x.PcbStoredFileAssignments, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
 #endif

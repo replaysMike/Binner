@@ -28,6 +28,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// The number of items in stock
         /// </summary>
         public long Quantity { get; set; }

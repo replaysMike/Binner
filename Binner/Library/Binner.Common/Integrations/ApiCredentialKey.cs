@@ -14,11 +14,12 @@ namespace Binner.Common.Integrations
         /// Create a new credential key
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="organizationId"></param>
         /// <returns></returns>
         public static ApiCredentialKey Create(int userId)
             => new ApiCredentialKey
             {
-                UserId = userId
+                UserId = userId,
             };
 
         public bool Equals(ApiCredentialKey? other)
@@ -32,6 +33,10 @@ namespace Binner.Common.Integrations
         }
 
         public override int GetHashCode()
-            => UserId.GetHashCode();
+        {
+            var hash = 23;
+            hash = hash * 31 + UserId.GetHashCode();
+            return hash;
+        }
     }
 }

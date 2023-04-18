@@ -13,6 +13,11 @@
         public const string UserId = "UserId";
 
         /// <summary>
+        /// User's internal OrganizationId
+        /// </summary>
+        public const string OrganizationId = "OrganizationId";
+
+        /// <summary>
         /// User's subscription level
         /// </summary>
         public const string SubscriptionLevel = "SubscriptionLevel";

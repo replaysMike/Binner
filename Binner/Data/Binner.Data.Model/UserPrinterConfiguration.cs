@@ -23,6 +23,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// If using a remote printer, specify the address Url.
         /// Requires Binner print spooler
         /// </summary>

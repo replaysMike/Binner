@@ -22,6 +22,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// Binner Swarm api enabled
         /// </summary>
         public bool SwarmEnabled { get; set; } = true;

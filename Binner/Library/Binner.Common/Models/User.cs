@@ -13,6 +13,11 @@ namespace Binner.Common.Models
         public int UserId { get; set; }
 
         /// <summary>
+        /// Organization Id
+        /// </summary>
+        public int OrganizationId { get; set; }
+
+        /// <summary>
         /// Name of user
         /// </summary>
         public string Name { get; set; } = string.Empty;
@@ -73,6 +78,16 @@ namespace Binner.Common.Models
         /// Ip address
         /// </summary>
         public string? IpAddress { get; set; }
+
+        /// <summary>
+        /// The user's preferred language, used for APIs
+        /// </summary>
+        public string? LocaleLanguage { get; set; }
+
+        /// <summary>
+        /// The user's preferred currency, used for APIs and display
+        /// </summary>
+        public string? LocaleCurrency { get; set; }
 
         public DateTime DateCreatedUtc { get; set; }
 

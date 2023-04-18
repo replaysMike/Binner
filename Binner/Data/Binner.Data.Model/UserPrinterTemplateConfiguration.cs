@@ -23,6 +23,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// The printer configuration
         /// </summary>
         public int UserPrinterConfigurationId { get; set; }

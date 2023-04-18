@@ -38,6 +38,11 @@ namespace Binner.Data.Model
         /// </summary>
         public int? UserId { get; set; }
 
+        /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
 #if INITIALCREATE
         public DateTime DateModifiedUtc { get; set; }
 

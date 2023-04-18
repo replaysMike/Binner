@@ -13,6 +13,11 @@ namespace Binner.Common.Models
         public int UserId { get; set; }
 
         /// <summary>
+        /// User Id
+        /// </summary>
+        public int OrganizationId { get; set; }
+
+        /// <summary>
         /// Name of user
         /// </summary>
         public string? Name { get; set; }

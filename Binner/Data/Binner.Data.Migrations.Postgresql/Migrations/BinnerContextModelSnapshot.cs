@@ -50,6 +50,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
 
@@ -100,6 +103,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasColumnType("text");
@@ -118,6 +124,31 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("OAuthRequests", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.Organization", b =>
+                {
+                    b.Property<int>("OrganizationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrganizationId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("OrganizationId");
+
+                    b.ToTable("Organizations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -191,6 +222,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<string>("MouserPartNumber")
                         .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PackageType")
                         .HasColumnType("text");
@@ -275,6 +309,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<long>("PartId")
                         .HasColumnType("bigint");
 
@@ -319,6 +356,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<long?>("ParentPartTypeId")
                         .HasColumnType("bigint");
@@ -367,6 +407,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -406,6 +449,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<long>("PcbId")
                         .HasColumnType("bigint");
@@ -460,6 +506,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
@@ -501,6 +550,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<long?>("PartId")
                         .HasColumnType("bigint");
@@ -558,6 +610,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<long>("PcbId")
                         .HasColumnType("bigint");
 
@@ -576,6 +631,98 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ProjectPcbAssignments", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectPcbProduceHistory", b =>
+                {
+                    b.Property<long>("ProjectPcbProduceHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectPcbProduceHistoryId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("PcbCost")
+                        .HasColumnType("double precision");
+
+                    b.Property<long?>("PcbId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("PcbQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("ProjectProduceHistoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SerialNumber")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProjectPcbProduceHistoryId");
+
+                    b.HasIndex("PcbId");
+
+                    b.HasIndex("ProjectProduceHistoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectPcbProduceHistory", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.Property<long>("ProjectProduceHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectProduceHistoryId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ProduceUnassociated")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProjectProduceHistoryId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectProduceHistory", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -605,6 +752,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("OriginalFileName")
                         .IsRequired()
@@ -689,9 +839,18 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
+                    b.Property<string>("LocaleCurrency")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LocaleLanguage")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -787,6 +946,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<bool>("OctopartEnabled")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SwarmApiKey")
                         .HasColumnType("text");
 
@@ -844,6 +1006,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("text");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<double?>("ReCaptchaScore")
                         .HasColumnType("double precision");
 
@@ -874,6 +1039,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PartLabelName")
                         .IsRequired()
@@ -957,6 +1125,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("MarginTop")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Position")
                         .HasColumnType("integer");
 
@@ -1009,6 +1180,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ReplacedByToken")
                         .HasColumnType("text");
@@ -1207,6 +1381,48 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.ProjectPcbProduceHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Pcb", "Pcb")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("PcbId");
+
+                    b.HasOne("Binner.Data.Model.ProjectProduceHistory", "ProjectProduceHistory")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("ProjectProduceHistoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Pcb");
+
+                    b.Navigation("ProjectProduceHistory");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Project", "Project")
+                        .WithMany("ProjectProduceHistory")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectProduceHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
                 {
                     b.HasOne("Binner.Data.Model.Part", "Part")
@@ -1301,6 +1517,8 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("PcbStoredFileAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectPcbProduceHistory");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -1310,6 +1528,13 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("ProjectPartAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectProduceHistory");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.Navigation("ProjectPcbProduceHistory");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -1336,6 +1561,10 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("ProjectPartAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectPcbProduceHistory");
+
+                    b.Navigation("ProjectProduceHistory");
 
                     b.Navigation("Projects");
 

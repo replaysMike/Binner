@@ -27,6 +27,11 @@ namespace Binner.Data.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// Associated organization
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// If this is a child type, indicates the parent type
         /// </summary>
         public long? ParentPartTypeId { get; set; }

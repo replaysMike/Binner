@@ -12,6 +12,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
         {
             CreateMap<User, DataModel.User>()
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                .ForMember(x => x.OrganizationId, options => options.MapFrom(x => x.OrganizationId))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 .ForMember(x => x.DateLastLoginUtc, options => options.MapFrom(x => x.DateLastLoginUtc))
                 .ForMember(x => x.DateLastActiveUtc, options => options.MapFrom(x => x.DateLastActiveUtc))
@@ -23,6 +24,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateEmailConfirmedUtc, options => options.MapFrom(x => x.DateEmailConfirmedUtc))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                 .ForMember(x => x.PhoneNumber, options => options.MapFrom(x => x.PhoneNumber))
+                .ForMember(x => x.LocaleLanguage, options => options.MapFrom(x => x.LocaleLanguage))
+                .ForMember(x => x.LocaleCurrency, options => options.MapFrom(x => x.LocaleCurrency))
                 .ForMember(x => x.UserIntegrationConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
@@ -48,10 +51,12 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ProjectPcbAssignments, options => options.Ignore())
                 .ForMember(x => x.Pcbs, options => options.Ignore())
                 .ForMember(x => x.StoredFiles, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.User, User>()
                     .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                    .ForMember(x => x.OrganizationId, options => options.MapFrom(x => x.OrganizationId))
                     .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                     .ForMember(x => x.DateLastLoginUtc, options => options.MapFrom(x => x.DateLastLoginUtc))
                     .ForMember(x => x.DateLastActiveUtc, options => options.MapFrom(x => x.DateLastActiveUtc))
@@ -63,6 +68,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                     .ForMember(x => x.DateEmailConfirmedUtc, options => options.MapFrom(x => x.DateEmailConfirmedUtc))
                     .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                     .ForMember(x => x.PhoneNumber, options => options.MapFrom(x => x.PhoneNumber))
+                    .ForMember(x => x.LocaleLanguage, options => options.MapFrom(x => x.LocaleLanguage))
+                    .ForMember(x => x.LocaleCurrency, options => options.MapFrom(x => x.LocaleCurrency))
                     .ForMember(x => x.IpAddress, options => options.Ignore())
                     .ForMember(x => x.Password, options => options.Ignore())
                     .ForMember(x => x.PartsInventoryCount, options => options.Ignore())

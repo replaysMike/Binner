@@ -44,6 +44,11 @@ namespace Binner.Data.Model
         /// </summary>
         public int? UserId { get; set; }
 
+        /// <summary>
+        /// Optional organization id to associate
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
 #if INITIALCREATE
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }

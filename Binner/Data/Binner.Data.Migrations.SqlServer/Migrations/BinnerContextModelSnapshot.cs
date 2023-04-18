@@ -50,6 +50,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
 
@@ -100,6 +103,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -118,6 +124,31 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("OAuthRequests", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.Organization", b =>
+                {
+                    b.Property<int>("OrganizationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrganizationId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("OrganizationId");
+
+                    b.ToTable("Organizations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
@@ -191,6 +222,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("MouserPartNumber")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("PackageType")
                         .HasColumnType("nvarchar(max)");
@@ -275,6 +309,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<long>("PartId")
                         .HasColumnType("bigint");
 
@@ -319,6 +356,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<long?>("ParentPartTypeId")
                         .HasColumnType("bigint");
@@ -367,6 +407,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -406,6 +449,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<long>("PcbId")
                         .HasColumnType("bigint");
@@ -460,6 +506,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
@@ -501,6 +550,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<long?>("PartId")
                         .HasColumnType("bigint");
@@ -558,6 +610,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<long>("PcbId")
                         .HasColumnType("bigint");
 
@@ -576,6 +631,98 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ProjectPcbAssignments", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectPcbProduceHistory", b =>
+                {
+                    b.Property<long>("ProjectPcbProduceHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ProjectPcbProduceHistoryId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("PcbCost")
+                        .HasColumnType("float");
+
+                    b.Property<long?>("PcbId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("PcbQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<long>("ProjectProduceHistoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SerialNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProjectPcbProduceHistoryId");
+
+                    b.HasIndex("PcbId");
+
+                    b.HasIndex("ProjectProduceHistoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectPcbProduceHistory", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.Property<long>("ProjectProduceHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ProjectProduceHistoryId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ProduceUnassociated")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProjectProduceHistoryId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProjectProduceHistory", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -605,6 +752,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("OriginalFileName")
                         .IsRequired()
@@ -689,9 +839,18 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
 
+                    b.Property<string>("LocaleCurrency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LocaleLanguage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -787,6 +946,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<bool>("OctopartEnabled")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SwarmApiKey")
                         .HasColumnType("nvarchar(max)");
 
@@ -844,6 +1006,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<double?>("ReCaptchaScore")
                         .HasColumnType("float");
 
@@ -874,6 +1039,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("PartLabelName")
                         .IsRequired()
@@ -957,6 +1125,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("MarginTop")
                         .HasColumnType("int");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Position")
                         .HasColumnType("int");
 
@@ -1009,6 +1180,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ReplacedByToken")
                         .HasColumnType("nvarchar(max)");
@@ -1207,6 +1381,48 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.ProjectPcbProduceHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Pcb", "Pcb")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("PcbId");
+
+                    b.HasOne("Binner.Data.Model.ProjectProduceHistory", "ProjectProduceHistory")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("ProjectProduceHistoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectPcbProduceHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Pcb");
+
+                    b.Navigation("ProjectProduceHistory");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Project", "Project")
+                        .WithMany("ProjectProduceHistory")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("ProjectProduceHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
                 {
                     b.HasOne("Binner.Data.Model.Part", "Part")
@@ -1301,6 +1517,8 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("PcbStoredFileAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectPcbProduceHistory");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>
@@ -1310,6 +1528,13 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("ProjectPartAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectProduceHistory");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.ProjectProduceHistory", b =>
+                {
+                    b.Navigation("ProjectPcbProduceHistory");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.StoredFile", b =>
@@ -1336,6 +1561,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("ProjectPartAssignments");
 
                     b.Navigation("ProjectPcbAssignments");
+
+                    b.Navigation("ProjectPcbProduceHistory");
+
+                    b.Navigation("ProjectProduceHistory");
 
                     b.Navigation("Projects");
 

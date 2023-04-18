@@ -156,7 +156,7 @@ namespace Binner.Common.Services
             using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.PartTypes
                 .Include(x => x.Parts)
-                .Where(x => x.UserId == userContext.UserId || x.UserId == null)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .OrderBy(x => x.ParentPartType != null ? x.ParentPartType.Name : "")
                 .ThenBy(x => x.Name)
                 .ToListAsync();

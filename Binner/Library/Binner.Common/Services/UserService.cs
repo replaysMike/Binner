@@ -167,6 +167,7 @@ namespace Binner.Common.Services
                 return new UserContext
                 {
                     UserId = userToken.User.UserId,
+                    OrganizationId = userToken.User.OrganizationId,
                     EmailAddress = userToken.User.EmailAddress,
                     Name = userToken.User.Name,
                     PhoneNumber = userToken.User.PhoneNumber,

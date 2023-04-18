@@ -75,6 +75,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.StoredFiles, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.PartSuppliers, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
 #if INITIALCREATE
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.User, options => options.Ignore())
@@ -144,6 +145,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ProjectPartAssignments, options => options.Ignore())
                 .ForMember(x => x.StoredFiles, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
+                .ForMember(x => x.OrganizationId, options => options.Ignore())
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())

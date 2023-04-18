@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.39</LibraryVersion>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.40</LibraryVersion>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win10-x64;linux-arm;linux-arm64;linux-x64;osx.10.12-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
@@ -29,6 +29,10 @@
     <Compile Remove="Resources\**" />
     <EmbeddedResource Remove="Resources\**" />
     <None Remove="Resources\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Models\ProjectPcbProduceHistory.cs~RF28552c62.TMP" />
   </ItemGroup>
 
   <ItemGroup>
