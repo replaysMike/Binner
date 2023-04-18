@@ -261,6 +261,14 @@
         "outputVoltage": "Output Voltage"
       }
     },
+    "accountSettings": {
+      "title": "Account Settings",
+      "description": "Edit account settings"
+    },
+    "activateLicense": {
+      "title": "",
+      "description": ""
+    },
     "admin": {
       "users": {
         "title": "User Management",
@@ -276,6 +284,14 @@
           "name": "Specify the user's first and last name",
           "emailAddress": "Specify the user's username/email"
         }
+      },
+      "activateLicense": {
+        "title": "Activate License",
+        "description": "Enter your license key to enable pro features on your local Binner installation. Don't have a license key? Visit <1>Binner Cloud</1>"
+      },
+      "updateParts": {
+        "title": "Update Part Metadata",
+        "description": "Refresh information from external APIs and choose which fields you would like to update."
       }
     }
   },
@@ -293,7 +309,9 @@
     "user": "User",
     "help": "Help",
     "updatePartMetadata": "Update Part Metadata",
-    "backupRestore": "Backup / Restore"
+    "backupRestore": "Backup / Restore",
+    "accountSettings": "Account Settings",
+    "activateLicense": "Activate License"
   },
   "comp": {
     "navBar": {

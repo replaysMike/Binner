@@ -89,6 +89,7 @@ class App extends Component {
             apiName = 'External Api';
             break;
         }
+        toast.dismiss();
         if (apiAuthSuccess)
           toast.success(`Successfully authenticated with ${apiName}!`);
         else
@@ -150,11 +151,11 @@ class App extends Component {
 
             {/* admin */}
 
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin" element={<AdminWrapper><Admin /></AdminWrapper>} />
+            <Route path="/admin/users" element={<AdminWrapper><Users /></AdminWrapper>} />
             <Route exact path="/admin/users/:userId" element={<AdminWrapper><User/></AdminWrapper>} />
-            <Route path="/admin/backup" element={<Backup />} />
-            <Route path="/admin/updateParts" element={<UpdateParts />} />
+            <Route path="/admin/backup" element={<AdminWrapper><Backup /></AdminWrapper>} />
+            <Route path="/admin/updateParts" element={<AdminWrapper><UpdateParts /></AdminWrapper>} />
           </Routes>
         </Layout>
         <ErrorContext.Provider value={this.state}>

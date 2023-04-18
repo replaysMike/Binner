@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     public class AuthorizationController : ControllerBase

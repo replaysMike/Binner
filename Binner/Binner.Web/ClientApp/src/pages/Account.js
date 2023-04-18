@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button, Form, Segment, Icon, Label, Grid, Image, Popup } from "semantic-ui-react";
+import { useTranslation, Trans } from "react-i18next";
+import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb, Popup } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { config } from "../common/config";
 import { formatNumber, MD5 } from "../common/Utils";
 import { fetchApi, getErrorsString } from "../common/fetchApi";
+import { FormHeader } from "../components/FormHeader";
 import { getAuthToken } from "../common/authentication";
 
 export function Account(props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [account, setAccount] = useState({
     name: "",
@@ -29,13 +32,7 @@ export function Account(props) {
     maxFiles: 1,
     onDrop: (acceptedFiles) => {
       // do accept manually
-      const acceptedMimeTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-        "image/bmp"
-      ];
+      const acceptedMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/bmp"];
       let errorMsg = "";
       for (let i = 0; i < acceptedFiles.length; i++) {
         if (!acceptedMimeTypes.includes(acceptedFiles[i].type)) {
@@ -80,9 +77,9 @@ export function Account(props) {
             headers: { Authorization: `Bearer ${getAuthToken()}` }
           })
           .then((data) => {
-            if (data.status === 200){
+            if (data.status === 200) {
               console.log("upload success", data);
-            }else{
+            } else {
               console.log("upload failed", data);
             }
           })
@@ -104,14 +101,14 @@ export function Account(props) {
     }).then((response) => {
       if (response.responseObject.ok) {
         const { data } = response;
-        console.log('account response', data);
+        console.log("account response", data);
         if (data.isSuccessful) {
           setIsDirty(false);
           toast.success("Account updated!");
           navigate(-1);
         } else {
           if (data.message === "Incorrect password.") setErrorPassword(true);
-          toast.error(data.message || 'error');
+          toast.error(data.message || "error");
         }
       } else {
         const errorMessage = getErrorsString(response);
@@ -140,8 +137,16 @@ export function Account(props) {
 
   return (
     <div>
-      <h1>Account Settings</h1>
-      <p>Edit account settings</p>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>
+          {t("bc.home", "Home")}
+        </Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t("bc.accountSettings", "Account Settings")}</Breadcrumb.Section>
+      </Breadcrumb>
+      <FormHeader name={t("page.accountSettings.title", "Account Settings")} to="..">
+        <Trans i18nKey="page.accountSettings.description">Edit account settings</Trans>
+      </FormHeader>
 
       <Segment loading={loading} secondary>
         <Form onSubmit={updateAccount}>
@@ -193,20 +198,6 @@ export function Account(props) {
                   <Icon name="phone" />
                   <input />
                 </Form.Input>
-                <Popup
-                    hideOnScroll
-                    content="Enter your license key to enable pro features. A license key can be obtained by subscribing to Binner Cloud."
-                    trigger={
-                      <Form.Input
-                        icon="key"
-                        label="License Key"
-                        iconPosition="left"
-                        value={account.licenseKey || ""}
-                        name="licenseKey"
-                      />
-                    }
-                  />
-                
               </Grid.Column>
             </Grid.Row>
           </Grid>
@@ -249,17 +240,6 @@ export function Account(props) {
               </div>
             )}
           </Segment>
-
-          <Form.Group className="celled">
-            <Form.Field>
-              <label>Inventory Count</label>
-              {formatNumber(account.partsInventoryCount)}
-            </Form.Field>
-            <Form.Field>
-              <label>Custom Part Types</label>
-              {formatNumber(account.partTypesCount)}
-            </Form.Field>
-          </Form.Group>
 
           <Button type="submit" primary disabled={!isDirty} style={{ marginTop: "10px" }}>
             <Icon name="save" />

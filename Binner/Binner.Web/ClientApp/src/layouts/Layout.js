@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 export function Layout(props) {
   return (
     <div className="centered" style={{marginBottom: '50px'}}>
-      <ToastContainer newestOnTop={true} autoClose={2500} />
+      <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} position="top-center" />
       <div id="banner" />
       <Container>
       <Header />

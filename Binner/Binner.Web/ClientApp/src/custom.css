@@ -724,3 +724,11 @@ section.formHeader {
     font-weight: 700;
     margin-right: 10px;
 }
+
+:root {
+    --toastify-toast-width: 50%;
+}
+
+.Toastify .Toastify__toast-container:has(#wide) {
+    --toastify-toast-width: 70% !important;
+}
