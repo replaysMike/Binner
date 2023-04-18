@@ -34,7 +34,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ReturnToUrl, options => options.MapFrom(x => x.ReturnToUrl))
                 .ForMember(x => x.AuthorizationCode, options => options.MapFrom(x => x.AuthorizationCode))
                 .ForMember(x => x.AuthorizationReceived, options => options.MapFrom(x => x.AuthorizationReceived))
-                .ForMember(x => x.RequestId, options => options.Ignore())
+                .ForMember(x => x.RequestId, options => options.MapFrom(x => x.Id))
                 .ForMember(x => x.OAuthRequestId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
