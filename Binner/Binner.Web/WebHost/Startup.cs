@@ -14,8 +14,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Binner.Common.Authentication;
+using Binner.Data;
 using Binner.Web.Authorization;
 using Microsoft.AspNetCore.Http.Features;
+using Binner.Common.IO;
 
 namespace Binner.Web.WebHost
 {
@@ -170,6 +173,16 @@ namespace Binner.Web.WebHost
                     Console.WriteLine("Using pre-built react application");
                 }
             });
+
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                // initialize the database context
+                var context = scope.ServiceProvider.GetRequiredService<BinnerContext>();
+                BinnerContextInitializer.Initialize(context,
+                    (password) => PasswordHasher
+                        .GeneratePasswordHash(password)
+                        .GetBase64EncodedPasswordHash());
+            }
         }
     }
 }

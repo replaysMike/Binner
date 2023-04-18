@@ -7,7 +7,7 @@ import { formatCurrency } from "../common/Utils";
 import { VersionBanner } from "../components/VersionBanner";
 import semver from "semver";
 import customEvents from '../common/customEvents';
-import { isAuthenticated } from "../common/authentication";
+import { isAuthenticated, isAdmin } from "../common/authentication";
 
 export function Home(props) {
   const { t } = useTranslation();
@@ -115,7 +115,7 @@ export function Home(props) {
               <Statistic.Label>{t('page.home.datasheets', "Datasheets")}</Statistic.Label>
             </Statistic>
           </Statistic.Group>
-          <Statistic.Group widths="three" size="tiny" style={{ marginTop: "50px" }}>
+          <Statistic.Group widths="four" size="tiny" style={{ marginTop: "50px" }}>
             <Statistic onClick={(e) => route(e, "/lowstock")} style={{ cursor: "pointer" }}>
               <Statistic.Value>
                 <Icon name="battery low" />
@@ -152,6 +152,12 @@ export function Home(props) {
               </Statistic.Value>
               <Statistic.Label>{t('page.home.settings', "Settings")}</Statistic.Label>
             </Statistic>
+            {isAdmin() && <Statistic onClick={(e) => route(e, "/admin")} style={{ cursor: "pointer" }}>
+              <Statistic.Value>
+                <Icon name="user secret" />
+              </Statistic.Value>
+              <Statistic.Label>{t('page.home.admin', "Admin")}</Statistic.Label>
+            </Statistic>}
           </Statistic.Group>
         </Segment>
 

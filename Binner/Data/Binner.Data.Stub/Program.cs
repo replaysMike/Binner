@@ -53,18 +53,21 @@ var host = Host.CreateDefaultBuilder(args)
                             // treated as Sqlite, but inserting the filename into the connection string
                             var filename = storageProviderConfiguration.ProviderConfiguration
                                 .Where(x => x.Key == "Filename").Select(x => x.Value).FirstOrDefault();
-                            var connectionString = $"Data Source={filename}";
+                            var connectionString = storageProviderConfiguration.ProviderConfiguration
+                                .Where(x => x.Key == "SqliteConnectionString").Select(x => x.Value).FirstOrDefault();
                             Console.WriteLine($"Using connectionString: {connectionString}");
-                            optionsBuilder.UseSqlite(connectionString, x => x.MigrationsAssembly("Binner.Data.Migrations.Sqlite"));
+                            optionsBuilder.UseSqlite(EnsureSqliteConnectionString(connectionString, filename), x => x.MigrationsAssembly("Binner.Data.Migrations.Sqlite"));
                             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>();
                         }
                         break;
                     case "sqlite":
                         {
+                            var filename = storageProviderConfiguration.ProviderConfiguration
+                                .Where(x => x.Key == "Filename").Select(x => x.Value).FirstOrDefault();
                             var connectionString = storageProviderConfiguration.ProviderConfiguration
                                 .Where(x => x.Key == "SqliteConnectionString").Select(x => x.Value).FirstOrDefault();
                             Console.WriteLine($"Using connectionString: {connectionString}");
-                            optionsBuilder.UseSqlite(connectionString, x => x.MigrationsAssembly("Binner.Data.Migrations.Sqlite"));
+                            optionsBuilder.UseSqlite(EnsureSqliteConnectionString(connectionString, filename), x => x.MigrationsAssembly("Binner.Data.Migrations.Sqlite"));
                             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>();
                         }
                         break;
@@ -97,12 +100,23 @@ var host = Host.CreateDefaultBuilder(args)
                             Console.WriteLine($"Using connectionString: {connectionString}");
 
                             var serverVersion = ServerVersion.AutoDetect(connectionString);
-                            optionsBuilder.UseMySql(connectionString, serverVersion, x => x.MigrationsAssembly("Binner.Data.Migrations.MySql"));
+                            optionsBuilder.UseMySql(connectionString, serverVersion, x =>
+                            {
+                                x.MigrationsAssembly("Binner.Data.Migrations.MySql");
+                                x.SchemaBehavior(Pomelo.EntityFrameworkCore.MySql.Infrastructure.MySqlSchemaBehavior.Ignore);
+                            });
                             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, MySqlCustomMigrationsSqlGenerator>();
                         }
                         break;
                     default:
                         throw new NotSupportedException($"Unsupported database provider '{storageProviderConfiguration.Provider}'");
+                }
+
+                string EnsureSqliteConnectionString(string? connectionString, string? filename)
+                {
+                    if (!string.IsNullOrEmpty(connectionString))
+                        return connectionString;
+                    return $"Data Source={filename}";
                 }
             });
         });

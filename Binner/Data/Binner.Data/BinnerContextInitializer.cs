@@ -1,5 +1,4 @@
-﻿using Binner.Model.Configuration;
-using TypeSupport.Extensions;
+﻿using TypeSupport.Extensions;
 using static Binner.Model.SystemDefaults;
 
 namespace Binner.Data
@@ -12,10 +11,9 @@ namespace Binner.Data
         /// <param name="context">Database context</param>
         /// <param name="environment">Development environment</param>
         /// <param name="passwordHasher">Password hasher for hashing passwords</param>
-        public static void Initialize(BinnerContext context, Environments environment, Func<string, string> passwordHasher)
+        public static void Initialize(BinnerContext context, Func<string, string> passwordHasher)
         {
-            if (environment == Environments.Development)
-                context.Database.EnsureCreated();
+            // context.Database.EnsureCreated();
             if (context.PartTypes.Any())
             {
                 return;
@@ -28,6 +26,7 @@ namespace Binner.Data
             try
             {
                 // seed data
+                SeedInitialUsers(context, passwordHasher);
                 SeedSystemPartTypes(context);
                 if (context.ChangeTracker.HasChanges())
                 {
@@ -40,6 +39,21 @@ namespace Binner.Data
                 transaction.Rollback();
                 throw;
             }
+        }
+
+        private static void SeedInitialUsers(BinnerContext context, Func<string, string> passwordHasher)
+        {
+            var defaultUser = new Data.Model.User
+            {
+                Name = "Admin",
+                EmailAddress = "admin",
+                PasswordHash = passwordHasher("admin"),
+                DateCreatedUtc = DateTime.UtcNow,
+                DateModifiedUtc = DateTime.UtcNow,
+                IsEmailConfirmed = true,
+                IsAdmin = true
+            };
+            context.Users.Add(defaultUser);
         }
 
         private static void SeedSystemPartTypes(BinnerContext context)
