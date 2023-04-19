@@ -1,9 +1,8 @@
-﻿using Binner.Common.Models;
-using Binner.Model.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Binner.Model;
 
 namespace Binner.Common.IO
 {

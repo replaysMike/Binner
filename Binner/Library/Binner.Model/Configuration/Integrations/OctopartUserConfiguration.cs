@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     /// <summary>
     /// Octopart Api user configuration settings
@@ -7,14 +7,8 @@
     {
         public bool Enabled { get; set; } = false;
 
-        /// <summary>
-        /// Client Id
-        /// </summary>
         public string? ClientId { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Client Secret
-        /// </summary>
         public string? ClientSecret { get; set; } = string.Empty;
     }
 }

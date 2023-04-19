@@ -1,7 +1,7 @@
 ﻿using Binner.Common.IO;
-using Binner.Common.Models;
 using Binner.Data;
 using Binner.Data.Model;
+using Binner.Model;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Microsoft.IdentityModel.Tokens;

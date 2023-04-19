@@ -1,4 +1,4 @@
-﻿using Binner.Common.Models;
+﻿using Binner.Model;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;

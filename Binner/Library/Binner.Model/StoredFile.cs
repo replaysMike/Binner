@@ -1,13 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Binner.Model
+﻿namespace Binner.Model
 {
     public class StoredFile
     {
         /// <summary>
         /// Primary key
         /// </summary>
-        [Key]
         public long StoredFileId { get; set; }
 
         /// <summary>

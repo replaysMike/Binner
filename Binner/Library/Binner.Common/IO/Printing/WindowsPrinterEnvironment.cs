@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using Binner.Model.IO.Printing;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Drawing.Printing;

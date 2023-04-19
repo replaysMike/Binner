@@ -1,4 +1,6 @@
-﻿using SixLabors.Fonts;
+﻿using Binner.Model.IO.Printing;
+using Binner.Model.IO.Printing.PrinterHardware;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -259,7 +261,7 @@ namespace Binner.Common.IO.Printing
             var y = lineOffset.Y;
             x += template.Margin.Left;
             y += template.Margin.Top;
-            if (template.Barcode)
+            if (template.Barcode == true)
             {
                 x = 0;
                 y += 12;

@@ -1,12 +1,12 @@
 ﻿using Binner.Common.Integrations;
 using Binner.Common.Services;
-using Binner.Model.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Mime;
 using System.Security.Authentication;
 using System.Threading.Tasks;
+using Binner.Model;
 
 namespace Binner.Web.Controllers
 {

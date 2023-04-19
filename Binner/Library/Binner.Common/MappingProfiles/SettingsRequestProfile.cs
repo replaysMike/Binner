@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using Binner.Common.Configuration;
-using Binner.Common.IO.Printing;
-using Binner.Common.Models;
-using Binner.Common.Models.Configuration;
-using Binner.Common.Models.Configuration.Integrations;
-using Binner.Common.Models.Requests;
 using System.Linq;
+using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
+using Binner.Model.IO.Printing;
+using Binner.Model.Requests;
 
 namespace Binner.Common.MappingProfiles
 {

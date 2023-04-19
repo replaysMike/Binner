@@ -1,5 +1,5 @@
 ﻿using Binner.Common.Integrations.Models;
-using Binner.Common.Models.Configuration.Integrations;
+using Binner.Model.Configuration.Integrations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

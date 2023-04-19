@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     /// <summary>
     /// Binner Swarm Api user configuration settings
@@ -15,11 +15,11 @@
         /// <summary>
         /// Path to the Swarm Api
         /// </summary>
-        public string? ApiUrl => $"https://swarm.binner.io";
+        public string? ApiUrl { get; set; } = "https://swarm.binner.io";
 
         /// <summary>
         /// Api request timeout
         /// </summary>
-        public TimeSpan? Timeout { get; set; }
+        public TimeSpan? Timeout { get; set; } = TimeSpan.FromSeconds(5);
     }
 }

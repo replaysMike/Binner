@@ -1,12 +1,8 @@
-﻿using Binner.Common.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Binner.Model;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-using Binner.Common.Models.Requests;
-using Binner.Common.Models.Responses;
 
 namespace Binner.Common.Services
 {

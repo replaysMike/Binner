@@ -1,4 +1,4 @@
-﻿using Binner.Model.Common;
+﻿using Binner.Model;
 using System.Security.Claims;
 
 namespace Binner.Common

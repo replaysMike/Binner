@@ -1,8 +1,10 @@
-﻿using Binner.Common.Configuration;
-using Binner.Common.IO.Printing;
-using Binner.Common.Models;
-using Binner.Common.Models.Responses;
+﻿using Binner.Common.IO.Printing;
 using Binner.Common.Services;
+using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
+using Binner.Model.IO.Printing.PrinterHardware;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

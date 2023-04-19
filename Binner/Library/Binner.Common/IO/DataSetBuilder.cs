@@ -1,8 +1,8 @@
-﻿using Binner.Model.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading;
+using Binner.Model;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.IO

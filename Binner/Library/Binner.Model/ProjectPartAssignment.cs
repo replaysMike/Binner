@@ -1,15 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Binner.Model
+﻿namespace Binner.Model
 {
     public class ProjectPartAssignment : IEntity
     {
         /// <summary>
         /// Primary key
         /// </summary>
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ProjectPartAssignmentId { get; set; }
 
         /// <summary>
@@ -42,6 +37,16 @@ namespace Binner.Model
         /// Otherwise, the part's quantity (in stock) should be used.
         /// </summary>
         public int QuantityAvailable { get; set; }
+
+        /// <summary>
+        /// Cost of part
+        /// </summary>
+        public double Cost { get; set; }
+
+        /// <summary>
+        /// Currency of part
+        /// </summary>
+        public string? Currency { get; set; }
 
         /// <summary>
         /// Notes about this part

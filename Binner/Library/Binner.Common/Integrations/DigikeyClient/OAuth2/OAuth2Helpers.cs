@@ -3,7 +3,7 @@ using ApiClient.Exception;
 using ApiClient.Models;
 using ApiClient.OAuth2.Models;
 using Binner.Common.Integrations;
-using Binner.Common.Models.Configuration.Integrations;
+using Binner.Model.Configuration.Integrations;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

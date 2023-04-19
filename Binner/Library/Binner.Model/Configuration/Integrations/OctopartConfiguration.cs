@@ -1,21 +1,29 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
+    /// <summary>
+    /// Octopart api configuration
+    /// </summary>
     public class OctopartConfiguration : IApiConfiguration
     {
         public bool Enabled { get; set; } = false;
 
-        public string ApiKey => ClientId ?? string.Empty;
+        public string? ApiKey => ClientId;
 
         /// <summary>
-        /// Client Id
+        /// Nexar Client Id
         /// </summary>
-        public string? ClientId { get; set; } = string.Empty;
+        public string? ClientId { get; set; }
 
         /// <summary>
-        /// Client Secret
+        /// Nexar Client Secret
         /// </summary>
-        public string? ClientSecret { get; set; } = string.Empty;
+        public string? ClientSecret { get; set; }
 
-        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ClientId) && !string.IsNullOrEmpty(ClientSecret);
+        /// <summary>
+        /// Path to the Octopart Api
+        /// </summary>
+        public string ApiUrl { get; set; } = "https://octopart.com";
+
+        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl);
     }
 }

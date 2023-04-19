@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     public class AliExpressConfiguration : IApiConfiguration
     {
@@ -7,7 +7,7 @@
         /// <summary>
         /// AliExpress Api Key
         /// </summary>
-        public string ApiKey { get; set; }
+        public string? ApiKey { get; set; }
 
         /// <summary>
         /// Path to the AliExpress Api

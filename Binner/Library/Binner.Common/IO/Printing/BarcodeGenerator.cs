@@ -1,7 +1,8 @@
-﻿using System;
-using AnyBarcode;
+﻿using AnyBarcode;
+using Binner.Model.IO.Printing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
 
 namespace Binner.Common.IO.Printing
 {

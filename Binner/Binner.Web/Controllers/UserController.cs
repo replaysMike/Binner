@@ -1,14 +1,11 @@
-﻿using Binner.Common.Models;
-using Binner.Model.Configuration;
-using Binner.Common.Models.Requests;
-using Binner.Common.Services;
+﻿using Binner.Common.Services;
+using Binner.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Binner.Model.Common;
 
 namespace Binner.Web.Controllers
 {

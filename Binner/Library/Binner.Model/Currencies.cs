@@ -1,0 +1,32 @@
+﻿namespace Binner.Model
+{
+    public enum Currencies
+    {
+        USD, 
+        CAD, 
+        JPY, 
+        GBP, 
+        EUR, 
+        HKD, 
+        SGD, 
+        TWD, 
+        KRW, 
+        AUD, 
+        NZD, 
+        INR, 
+        DKK, 
+        NOK, 
+        SEK, 
+        ILS, 
+        CNY, 
+        PLN, 
+        CHF, 
+        CZK, 
+        HUF, 
+        RON, 
+        ZAR, 
+        MYR, 
+        THB, 
+        PHP
+    }
+}

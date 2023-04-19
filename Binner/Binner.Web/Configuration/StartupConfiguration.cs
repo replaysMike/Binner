@@ -1,6 +1,6 @@
 ﻿using Binner.Common;
-using Binner.Common.Configuration;
-using Binner.Common.StorageProviders;
+using Binner.Legacy.StorageProviders;
+using Binner.Model.Configuration;
 using LightInject;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

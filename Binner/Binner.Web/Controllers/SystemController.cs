@@ -1,11 +1,15 @@
 ﻿using Binner.Common;
-using Binner.Common.Configuration;
 using Binner.Common.Integrations;
+using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Common.Models.Requests;
-using Binner.Common.Models.Responses;
 using Binner.Common.Services;
+using Binner.Model.Configuration;
+using Binner.Model.IO.Printing.PrinterHardware;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using LightInject;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,9 +17,6 @@ using System;
 using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Binner.Common.IO;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Binner.Web.Controllers
 {

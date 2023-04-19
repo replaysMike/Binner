@@ -1,10 +1,9 @@
 ﻿using AnyMapper;
-using Binner.Common.Configuration;
-using Binner.Common.IO.Printing;
-using Binner.Common.Models;
-using Binner.Common.Models.Responses;
-using Binner.Common.Services;
-using Binner.Model.Common;
+using Binner.Common;
+using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,8 +19,9 @@ using System.Net;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Binner.Common;
-using Binner.Common.Models.Requests;
+using Binner.Common.Services;
+using Binner.Model.IO.Printing;
+using Binner.Model.IO.Printing.PrinterHardware;
 
 namespace Binner.Web.Controllers
 {
@@ -236,7 +236,7 @@ namespace Binner.Web.Controllers
                             mappedPart.LowStockThreshold = 10;
                             mappedPart.ProductUrl = entry.ProductUrl;
                             mappedPart.PackageType = entry.PackageType;
-                            mappedPart.Cost = (decimal)entry.Cost;
+                            mappedPart.Cost = entry.Cost;
                             isMapped = true;
                         }
                     }
@@ -279,7 +279,7 @@ namespace Binner.Web.Controllers
                                 mappedPart.LowStockThreshold = 10;
                                 mappedPart.ProductUrl = metadata.ProductUrl;
                                 mappedPart.PackageType = metadata.PackageType;
-                                mappedPart.Cost = (decimal)metadata.Cost;
+                                mappedPart.Cost = metadata.Cost;
                             }
                             else
                             {
@@ -454,7 +454,7 @@ namespace Binner.Web.Controllers
                     var existingPart = existingParts.First();
                     // update quantity and cost
                     existingPart.Quantity += commonPart.QuantityAvailable;
-                    existingPart.Cost = (decimal)commonPart.Cost;
+                    existingPart.Cost = commonPart.Cost;
                     existingPart.Currency = commonPart.Currency;
                     existingPart = await _partService.UpdatePartAsync(existingPart);
                     parts.Add(Mapper.Map<Part, PartResponse>(existingPart));
@@ -464,7 +464,7 @@ namespace Binner.Web.Controllers
                     // create new part
                     var part = Mapper.Map<CommonPart, Part>(commonPart);
                     part.Quantity += commonPart.QuantityAvailable;
-                    part.Cost = (decimal)commonPart.Cost;
+                    part.Cost = commonPart.Cost;
                     if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
                     if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)

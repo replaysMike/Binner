@@ -1,10 +1,11 @@
 ﻿using ApiClient.OAuth2;
 using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
-using Binner.Common.Integrations.Models.DigiKey;
-using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Services;
-using Binner.Model.Common;
+using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations.DigiKey;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -19,7 +20,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Binner.Common.Configuration;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.Integrations

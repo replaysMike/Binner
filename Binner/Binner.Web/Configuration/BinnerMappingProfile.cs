@@ -1,5 +1,4 @@
 ﻿using AnyMapper;
-using Binner.Common.Models;
 
 namespace Binner.Web.Configuration
 {

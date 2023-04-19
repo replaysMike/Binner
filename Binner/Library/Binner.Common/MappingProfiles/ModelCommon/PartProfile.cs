@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
-using Binner.Model.Common;
+using Binner.Model;
 using System.Collections.Generic;
 using System.Linq;
+using Binner.Model.Responses;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Common.MappingProfiles.ModelCommon
@@ -10,7 +11,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
     {
         public PartProfile()
         {
-            CreateMap<DataModel.Part, Common.Models.PartResponse>()
+            CreateMap<DataModel.Part, PartResponse>()
                 .ForMember(x => x.BinNumber, options => options.MapFrom(x => x.BinNumber))
                 .ForMember(x => x.BinNumber2, options => options.MapFrom(x => x.BinNumber2))
                 .ForMember(x => x.Cost, options => options.MapFrom(x => (decimal)x.Cost))
@@ -40,7 +41,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.MountingType, options => options.Ignore())
                 ;
 
-            CreateMap<Common.Models.PartResponse, DataModel.Part>()
+            CreateMap<PartResponse, DataModel.Part>()
                 .ForMember(x => x.BinNumber, options => options.MapFrom(x => x.BinNumber))
                 .ForMember(x => x.BinNumber2, options => options.MapFrom(x => x.BinNumber2))
                 .ForMember(x => x.Cost, options => options.MapFrom(x => (double)x.Cost))

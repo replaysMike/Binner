@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Binner.Common.Authentication;
-using Binner.Common.Models;
-using Binner.Common.Models.Responses;
 using Binner.Data;
+using Binner.Model;
+using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;

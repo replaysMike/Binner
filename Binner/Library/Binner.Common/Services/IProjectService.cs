@@ -1,6 +1,6 @@
-﻿using Binner.Common.Models;
-using Binner.Common.Models.Requests;
-using Binner.Model.Common;
+﻿using Binner.Model;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

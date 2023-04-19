@@ -1,8 +1,10 @@
 ﻿using AnySerializer;
 using Binner.Common.Authentication;
-using Binner.Common.Configuration;
 using Binner.Data;
-using Binner.Model.Common;
+using Binner.Legacy;
+using Binner.Legacy.StorageProviders;
+using Binner.Model;
+using Binner.Model.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NLog;
@@ -30,7 +32,7 @@ namespace Binner.Common.StorageProviders
             _contextFactory = contextFactory;
         }
 
-        public bool TryDetectMigrateNeeded(out IBinnerDb? binnerDb)
+        public bool TryDetectMigrateNeeded(out Binner.Model.Common.IBinnerDb? binnerDb)
         {
             binnerDb = null;
 
@@ -180,7 +182,7 @@ namespace Binner.Common.StorageProviders
             return false;
         }
 
-        public bool MigrateDatabase(IBinnerDb binnerDb)
+        public bool MigrateDatabase(Binner.Model.Common.IBinnerDb binnerDb)
         {
             // all new users have an id=1 as no users existed prior to this migration
             var userId = 1;
@@ -287,7 +289,7 @@ namespace Binner.Common.StorageProviders
             return true;
         }
 
-        private bool MigrateBinnerToSqlite(IBinnerDb binnerDb, int userId)
+        private bool MigrateBinnerToSqlite(Binner.Model.Common.IBinnerDb binnerDb, int userId)
         {
             // steps for migration:
             // 1) backup existing db
@@ -367,9 +369,9 @@ namespace Binner.Common.StorageProviders
             return false;
         }
 
-        private IBinnerDb LoadDatabaseByVersion(BinnerDbVersion version, byte[] bytes)
+        private Binner.Model.Common.IBinnerDb LoadDatabaseByVersion(BinnerDbVersion version, byte[] bytes)
         {
-            IBinnerDb db;
+            Binner.Model.Common.IBinnerDb db;
             // Support database loading by version number
             try
             {
@@ -399,7 +401,7 @@ namespace Binner.Common.StorageProviders
             }
         }
 
-        private bool ImportBinnerDb(IBinnerDb binnerDb, BinnerContext context, int userId)
+        private bool ImportBinnerDb(Binner.Model.Common.IBinnerDb binnerDb, BinnerContext context, int userId)
         {
             var db = binnerDb as BinnerDbV7 ?? throw new Exception("Error - BinnerDb must be Version 7. An upgrade of the database was not performed before migrating to Sqlite.");
             using var transaction = context.Database.BeginTransaction();
@@ -451,7 +453,7 @@ namespace Binner.Common.StorageProviders
                 foreach (var e in db.Parts)
                 {
                     // ensure destination record exists
-                    var partType = db.PartTypes.Where(x => x.PartTypeId == e.PartTypeId).FirstOrDefault();
+                    var partType = db.PartTypes.FirstOrDefault(x => x.PartTypeId == e.PartTypeId);
                     long partTypeId;
                     if (partType == null)
                         partTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
@@ -577,7 +579,7 @@ namespace Binner.Common.StorageProviders
                             OriginalFileName = e.OriginalFileName,
                             PartId = e.PartId,
                             StoredFileId = e.StoredFileId,
-                            StoredFileType = e.StoredFileType,
+                            StoredFileType = (Binner.Model.StoredFileType)e.StoredFileType,
                             DateCreatedUtc = e.DateCreatedUtc,
                             DateModifiedUtc = e.DateCreatedUtc,
                             UserId = userId
@@ -679,7 +681,7 @@ namespace Binner.Common.StorageProviders
             context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT {schema}{entityType.GetTableName()} OFF;");
         }
 
-        private string BuildChecksum(IBinnerDb db)
+        private string BuildChecksum(Binner.Model.Common.IBinnerDb db)
         {
             var bytes = _serializer.Serialize(db, "Checksum");
             using var sha1 = SHA1.Create();
@@ -687,7 +689,7 @@ namespace Binner.Common.StorageProviders
             return hash;
         }
 
-        private bool ValidateChecksum(IBinnerDb db)
+        private bool ValidateChecksum(Binner.Model.Common.IBinnerDb db)
         {
             var calculatedChecksum = BuildChecksum(db);
             if (db.Checksum?.Equals(calculatedChecksum) == true)

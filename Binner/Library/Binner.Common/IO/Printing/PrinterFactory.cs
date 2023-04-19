@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Binner.Model.IO.Printing;
+using System;
 
 namespace Binner.Common.IO.Printing
 {

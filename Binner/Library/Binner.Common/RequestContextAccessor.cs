@@ -1,5 +1,5 @@
 ﻿using Binner.Common.Extensions;
-using Binner.Common.Models;
+using Binner.Model;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Security.Claims;

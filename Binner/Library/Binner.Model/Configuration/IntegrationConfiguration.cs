@@ -1,4 +1,6 @@
-﻿namespace Binner.Model.Configuration
+﻿using Binner.Model.Configuration.Integrations;
+
+namespace Binner.Model.Configuration
 {
     public class IntegrationConfiguration
     {
@@ -8,9 +10,9 @@
         public SwarmConfiguration Swarm { get; set; } = new ();
 
         /// <summary>
-        /// Octopart config
+        /// Octopart/Nexar config
         /// </summary>
-        public OctopartConfiguration Octopart { get; set; } = new ();
+        public OctopartConfiguration Nexar { get; set; } = new ();
 
         /// <summary>
         /// Digikey config
@@ -31,6 +33,5 @@
         /// AliExpress config
         /// </summary>
         public AliExpressConfiguration AliExpress { get; set; } = new ();
-
     }
 }

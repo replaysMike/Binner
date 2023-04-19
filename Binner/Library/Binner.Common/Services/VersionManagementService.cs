@@ -1,13 +1,14 @@
-﻿using System;
-using Octokit;
+﻿using Octokit;
+using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Runtime.Caching;
+using System.Threading.Tasks;
 
 namespace Binner.Common.Services
 {
     public class VersionManagementService
     {
+        private const string GitHubEndpoint = "https://github.com/replaysMike/Binner/releases";
         private static readonly Lazy<MemoryCache> _cache = new Lazy<MemoryCache>(() => new MemoryCache("VersionManagement"));
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace Binner.Common.Services
                 // swallow exception
             }
 
-            return new BinnerVersion("v1.0", "Binner", "https://github.com/replaysMike/Binner/releases", false);
+            return new BinnerVersion("v1.0", "Binner", GitHubEndpoint, false);
         }
 
         public class BinnerVersion

@@ -1,17 +1,19 @@
 ﻿using AutoMapper.Internal;
 using Binner.Common;
-using Binner.Common.Configuration;
 using Binner.Common.Integrations;
+using Binner.Common.IO;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
+using Binner.Common.Services.Authentication;
 using Binner.Common.StorageProviders;
+using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
+using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Web.ServiceHost;
 using LightInject;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Binner.Common.Services.Authentication;
-using Binner.Model.Common;
-using Binner.Common.IO;
 
 namespace Binner.Web.Configuration
 {

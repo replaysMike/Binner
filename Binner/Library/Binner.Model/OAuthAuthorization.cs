@@ -19,7 +19,7 @@
         /// <summary>
         /// Name of the provider used
         /// </summary>
-        public string Provider { get; set; }
+        public string Provider { get; set; } = string.Empty;
 
         /// <summary>
         /// The UserId associated with this authorization
@@ -85,6 +85,11 @@
         /// The full url to return the user to
         /// </summary>
         public string ReturnToUrl { get; set; } = string.Empty;
+
+        public OAuthAuthorization()
+        {
+
+        }
 
         public OAuthAuthorization(string provider, Guid id)
         {

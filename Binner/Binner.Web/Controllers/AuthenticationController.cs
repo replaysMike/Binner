@@ -1,6 +1,8 @@
 ﻿using Binner.Common;
-using Binner.Common.Models.Responses;
+using Binner.Common.Services;
 using Binner.Model.Configuration;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,8 +12,6 @@ using System;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Binner.Common.Models.Requests;
-using Binner.Common.Services;
 
 namespace Binner.Web.Controllers
 {

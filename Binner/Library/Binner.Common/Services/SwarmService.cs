@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using Binner.Common.Models;
-using Binner.Common.Models.Swarm.Requests;
-using Binner.Common.Models.Swarm.Responses;
+using Binner.Model.Swarm;
+using Binner.Model.Swarm.Requests;
+using Binner.Model.Swarm.Responses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

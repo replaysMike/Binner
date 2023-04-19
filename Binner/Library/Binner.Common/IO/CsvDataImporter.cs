@@ -1,11 +1,10 @@
-﻿using Binner.Common.Models;
-using Binner.Model.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Binner.Model;
 
 namespace Binner.Common.IO
 {
@@ -229,7 +228,7 @@ namespace Binner.Common.IO
                                         PartTypeId = _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", partTypeId),
                                         BinNumber = binNumber,
                                         BinNumber2 = binNumber2,
-                                        Cost = (decimal)cost,
+                                        Cost = cost,
                                         DatasheetUrl = datasheetUrl,
                                         Description = description,
                                         DigiKeyPartNumber = digiKeyPartNumber,

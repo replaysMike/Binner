@@ -1,8 +1,9 @@
 ﻿using AnyMapper;
-using Binner.Common.Configuration;
-using Binner.Common.Models;
 using Binner.Common.Services;
-using Binner.Model.Common;
+using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;

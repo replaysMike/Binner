@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using Binner.Data;
-using Binner.Model.Common;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
+using Binner.Model;
+using Binner.Model.Responses;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.StorageProvider.EntityFrameworkCore
@@ -293,7 +294,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var entities = await GetPartsAsync(userContext);
-            return new Binner.Model.Common.BinnerDbV7
+            return new LegacyBinnerDb
             {
                 OAuthCredentials = await GetOAuthCredentialAsync(userContext),
                 Parts = entities,

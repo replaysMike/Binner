@@ -1,13 +1,13 @@
 ﻿using Binner.Common;
-using Binner.Common.Configuration;
 using Binner.Common.Extensions;
 using Binner.Common.StorageProviders;
+using Binner.Legacy.StorageProviders;
+using Binner.Model.Configuration;
 using Binner.Web.ServiceHost;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using Topshelf;

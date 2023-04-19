@@ -1,5 +1,8 @@
-﻿using Binner.Common.Configuration;
+﻿using Binner.Common.Authentication;
+using Binner.Data;
 using Binner.Model.Authentication;
+using Binner.Model.Configuration;
+using Binner.Web.Authorization;
 using Binner.Web.Configuration;
 using Binner.Web.Middleware;
 using LightInject;
@@ -7,6 +10,7 @@ using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
@@ -14,11 +18,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Binner.Common.Authentication;
-using Binner.Data;
-using Binner.Web.Authorization;
-using Microsoft.AspNetCore.Http.Features;
-using Binner.Common.IO;
 
 namespace Binner.Web.WebHost
 {
