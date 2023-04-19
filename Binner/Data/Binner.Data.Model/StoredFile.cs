@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user uploaded file
     /// </summary>
-    public class StoredFile 
+    public class StoredFile
 #if INITIALCREATE
         : IEntity,
 #else
@@ -42,6 +42,16 @@ namespace Binner.Data.Model
         public long? PartId { get; set; }
 
         /// <summary>
+        /// The associated record (that isn't a part)
+        /// </summary>
+        public long? RecordId { get; set; }
+
+        /// <summary>
+        /// The type of record associated with the stored file
+        /// </summary>
+        public RecordType RecordType { get; set; }
+
+        /// <summary>
         /// The file length in bytes
         /// </summary>
         public int FileLength { get; set; }
@@ -72,7 +82,7 @@ namespace Binner.Data.Model
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
 #endif
-        public Part? Part { get;set; }
+        public Part? Part { get; set; }
 
         public ICollection<PcbStoredFileAssignment>? PcbStoredFileAssignments { get; set; }
 

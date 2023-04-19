@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, TextArea, Input, Image, Header, Popup } from "semantic-ui-react";
+import Dropzone from "./Dropzone";
 import PropTypes from "prop-types";
+import { toast } from "react-toastify";
 import NumberPicker from "./NumberPicker";
 
 export function AddPcbModal(props) {
   const { t } = useTranslation();
   AddPcbModal.abortController = new AbortController();
-  const defaultForm = { name: "", description: "", quantity: "1", cost: 0, serialNumberFormat: 'SN00000000' };
+  const defaultForm = { name: "", description: "", quantity: "1", cost: 0, serialNumberFormat: 'SN00000000', lastSerialNumber: null, image: null, imageBlob: null };
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     setIsOpen(props.isOpen);
@@ -54,6 +57,17 @@ export function AddPcbModal(props) {
     }
   };
 
+  const onUploadSubmit = async (uploadFiles, type) => {
+  };
+
+  const onUploadError = (errors) => {
+    for (let i = 0; i < errors.length; i++) toast.error(errors[i], { autoClose: 10000 });
+  };
+
+  const onDrop = (files) => {
+    setForm({...form, image: files[files.length - 1], imageBlob: URL.createObjectURL(files[files.length - 1])});
+  };
+
   return (
     <div>
       <Modal centered open={isOpen || false} onClose={handleModalClose}>
@@ -63,8 +77,12 @@ export function AddPcbModal(props) {
           <p>{t('comp.addPcbModal.description', "Adding a PCB allows you to associate your parts with a specific PCB, and even multiple PCBs within a project.")}</p>
         </Modal.Description>
         <Modal.Content scrolling image style={{width: "100%"}}>
-          <Image size="medium" src="/image/pcb.png" wrapped />
-          <Form style={{ marginBottom: "10px", width: '100%' }}>
+          <Dropzone onUpload={onUploadSubmit} onError={onUploadError} onDrop={onDrop}>
+          {form.imageBlob !== null ? (<Image src={form.imageBlob} className="medium" />)
+           : (<Image size="medium" src="/image/pcb.png" wrapped />)}
+            <div style={{ fontSize: "0.6em", textAlign: 'center' }}>Drag an image to upload</div>
+          </Dropzone>
+          <Form style={{ marginBottom: "10px", marginLeft: '50px', width: '100%' }}>
             <Form.Field width={8}>
               <Popup
                 wide

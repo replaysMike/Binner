@@ -52,5 +52,10 @@ namespace Binner.Common.Models
         /// List of pcb's in the project
         /// </summary>
         public ICollection<ProjectPcb> Pcbs { get; set; } = new List<ProjectPcb>();
+
+        /// <summary>
+        /// The production history of the project
+        /// </summary>
+        public ICollection<ProjectProduceHistory> ProduceHistory { get; set; } = new List<ProjectProduceHistory>();
     }
 }

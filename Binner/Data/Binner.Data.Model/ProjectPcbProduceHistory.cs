@@ -41,6 +41,11 @@ namespace Binner.Data.Model
         public string? SerialNumber { get; set; }
 
         /// <summary>
+        /// Total parts consumed
+        /// </summary>
+        public int PartsConsumed { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

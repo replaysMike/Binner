@@ -25,6 +25,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
 #endif
+                .ForMember(x => x.RecordId, options => options.Ignore())
+                .ForMember(x => x.RecordType, options => options.Ignore())
                 .ReverseMap();
         }
     }

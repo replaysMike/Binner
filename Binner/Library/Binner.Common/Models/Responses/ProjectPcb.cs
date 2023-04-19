@@ -1,4 +1,5 @@
 ﻿using System;
+using Binner.Model.Common;
 
 namespace Binner.Common.Models
 {
@@ -53,5 +54,10 @@ namespace Binner.Common.Models
         /// Cost to produce a single PCB board
         /// </summary>
         public double Cost { get; set; }
+
+        /// <summary>
+        /// User uploaded file
+        /// </summary>
+        public StoredFile? StoredFile { get; set; }
     }
 }

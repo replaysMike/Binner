@@ -220,9 +220,11 @@
       "title": "Edit Project",
       "description": "Projects are used as part of your BOM, allowing you to associate parts to multiple PCBs.",
       "pcbs": "PCBs",
+      "produceHistory": "Production History",
       "confirm": {
         "deleteProjectHeader": "Delete Project",
-        "deletePcbHeader": "Delete Pcb"
+        "deletePcbHeader": "Delete Pcb",
+        "deleteProduceHistoryHeader": "Delete History Record"
       },
       "placeholder": {
         "name": "My Project",
@@ -232,7 +234,11 @@
         "name": "Enter the name of your project/BOM",
         "description": "Enter a description that summarizes your project",
         "location": "Your project's location <1>(optional)</1>",
-        "color": "Associate a color with this project for easy identification"
+        "color": "Associate a color with this project for easy identification",
+        "quantityProduced": "The production quantity specified",
+        "includeUnassociated": "Indicates if parts not associated with a PCB were produced",
+        "totalConsumed": "The total number of parts consumed",
+        "pcbsProduced": "The Pcbs that were produced"
       }
     },
     "tool": {
@@ -443,6 +449,10 @@
         "barcode": "Render the Content value encoded as a barcode.",
         "rotateDegrees": "Rotate the text in degrees. Example: 90"
       }
+    },
+    "pcbHistoryModal": {
+      "header": "PCB Produce History",
+      "title": "BOM Management"
     }
   },
   "button": {
@@ -481,7 +491,8 @@
     "view": "View",
     "saveAnyway": "Save Anyway",
     "addUser": "Add User",
-    "generate": "Generate"
+    "generate": "Generate",
+    "close": "Close"
   },
   "label": {
     "name": "Name",
@@ -588,7 +599,11 @@
     "dateCreated": "Date Created",
     "dateModified": "Date Modified",
     "dateLocked": "Date Locked",
-    "ip": "IP"
+    "ip": "IP",
+    "includeUnassociated": "Include Unassociated",
+    "date": "Date",
+    "consumed": "Consumed",
+    "serial": "Serial"
   },
   "message": {
     "noPartsAdded": "No parts added.",
@@ -617,6 +632,7 @@
     "deletePart": "Are you sure you want to delete part <1>{{name}}</1>?",
     "deleteLocalFile": "Are you sure you want to delete this local file named <1>{{name}}</1>?",
     "permanent": "This action is <1>permanent and cannot be recovered</1>.",
+    "deleteRecord": "Are you sure you want to delete this record?",
     "header": {
       "removeBomPart": "Remove Part from BOM",
       "deleteFile": "Delete File",
@@ -641,7 +657,8 @@
     "failedClearedCredentials": "Failed to clear cached credentials for {{apiName}}",
     "testFailed": "Test failed",
     "invalidOrder": "Hmmm, that doesn't look like a valid order number!",
-    "invalid2dBarcode": "Hmmm, I don't recognize that 2D barcode!"
+    "invalid2dBarcode": "Hmmm, I don't recognize that 2D barcode!",
+    "failedDeleteRecord": "Failed to record!"
   },
   "success": {
     "producedPcbs": "{{quantity}} PCB's were produced!",
@@ -654,7 +671,8 @@
     "testPassed": "Test passed",
     "partsImported": "{{count}} parts were imported!",
     "deletedProject": "Project was deleted!",
-    "deletedPcb": "Pcb was deleted!"
+    "deletedPcb": "Pcb was deleted!",
+    "deletedRecord": "Record was deleted!"
   },
   "popup": {
     "bom": {

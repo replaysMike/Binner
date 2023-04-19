@@ -1,25 +1,27 @@
-﻿using AnyMapper;
+﻿using AutoMapper;
 using Binner.Common.Models;
 using Binner.Common.Models.Requests;
 using Binner.Data;
-using Binner.Data.Configurations;
 using Binner.Model.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Mapper = AnyMapper.Mapper;
 
 namespace Binner.Common.Services
 {
     public class ProjectService : IProjectService
     {
         private readonly IStorageProvider _storageProvider;
+        private readonly IMapper _mapper;
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly RequestContextAccessor _requestContext;
 
-        public ProjectService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory)
+        public ProjectService(IMapper mapper, IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory)
         {
+            _mapper = mapper;
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;
             _contextFactory = contextFactory;
@@ -110,9 +112,12 @@ namespace Binner.Common.Services
             var projectPcbs = new List<ProjectPcb>();
             var pcbs = await _storageProvider.GetPcbsAsync(projectId, user);
             var projectParts = await _storageProvider.GetProjectPartAssignmentsAsync(projectId, user);
-            foreach (var pcb in pcbs)
+            foreach (var pcb in pcbs.OrderBy(x => x.DateCreatedUtc))
             {
+                var storedFile = await _storageProvider.GetStoredFilesAsync(pcb.PcbId, StoredFileType.Pcb, user);
                 var projectPcb = Mapper.Map<ProjectPcb>(pcb);
+                if (storedFile.Any())
+                    projectPcb.StoredFile = Mapper.Map<StoredFile>(storedFile.First());
                 // get parts count for pcb
                 projectPcb.PartsCount = projectParts.Count(x => x.PcbId == pcb.PcbId);
                 projectPcbs.Add(projectPcb);
@@ -266,6 +271,97 @@ namespace Binner.Common.Services
             return success;
         }
 
+        public async Task<ICollection<ProjectProduceHistory>> GetProduceHistoryAsync(GetProduceHistoryRequest request)
+        {
+            var user = _requestContext.GetUserContext();
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            var context = await _contextFactory.CreateDbContextAsync();
+            var pageRecords = (request.Page - 1) * request.Results;
+            var entities = await context.ProjectProduceHistory
+                .Include(x => x.ProjectPcbProduceHistory)
+                .ThenInclude(x => x.Pcb)
+                .Where(x => x.ProjectId == request.ProjectId && x.OrganizationId == user.OrganizationId)
+                .OrderByDescending(x => x.DateCreatedUtc)
+                .Skip(pageRecords)
+                .Take(request.Results)
+                .ToListAsync();
+
+            var models = _mapper.Map<ICollection<ProjectProduceHistory>>(entities);
+            foreach (var history in models)
+            {
+                foreach (var pcb in history.Pcbs)
+                {
+                    var storedFiles = await _storageProvider.GetStoredFilesAsync(pcb.Pcb.PcbId, StoredFileType.Pcb, user);
+                    if (storedFiles.Any())
+                        pcb.Pcb.StoredFile = Mapper.Map<StoredFile>(storedFiles.First());
+                }
+            }
+
+            return models;
+        }
+
+        public async Task<ProjectProduceHistory> UpdateProduceHistoryAsync(ProjectProduceHistory request)
+        {
+            var user = _requestContext.GetUserContext();
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            var context = await _contextFactory.CreateDbContextAsync();
+            
+            var entity = await context.ProjectProduceHistory
+                .Include(x => x.ProjectPcbProduceHistory)
+                .ThenInclude(x => x.Pcb)
+                .Where(x => x.ProjectProduceHistoryId == request.ProjectProduceHistoryId && x.OrganizationId == user.OrganizationId)
+                .FirstOrDefaultAsync();
+
+            entity = _mapper.Map(request, entity);
+            foreach (var pcb in request.Pcbs)
+            {
+                var pcbEntity = entity.ProjectPcbProduceHistory.FirstOrDefault(x => x.PcbId == pcb.PcbId);
+                if (pcbEntity != null)
+                    pcbEntity = _mapper.Map(pcb, pcbEntity);
+            }
+            await context.SaveChangesAsync();
+
+            return _mapper.Map<ProjectProduceHistory>(entity);
+        }
+
+        public async Task<bool> DeleteProduceHistoryAsync(ProjectProduceHistory request)
+        {
+            var user = _requestContext.GetUserContext();
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectProduceHistory
+                .Include(x => x.ProjectPcbProduceHistory)
+                .Where(x => x.ProjectProduceHistoryId == request.ProjectProduceHistoryId && x.OrganizationId == user.OrganizationId)
+                .FirstOrDefaultAsync();
+            if (entity == null) return false;
+
+            // delete all child records
+            context.ProjectPcbProduceHistory.RemoveRange(entity.ProjectPcbProduceHistory);
+
+            context.ProjectProduceHistory.Remove(entity);
+
+            return await context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> DeletePcbProduceHistoryAsync(ProjectPcbProduceHistory request)
+        {
+            var user = _requestContext.GetUserContext();
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.ProjectPcbProduceHistory
+                .Where(x => x.ProjectPcbProduceHistoryId == request.ProjectPcbProduceHistoryId && x.OrganizationId == user.OrganizationId)
+                .FirstOrDefaultAsync();
+            if (entity == null) return false;
+
+            context.ProjectPcbProduceHistory.Remove(entity);
+
+            return await context.SaveChangesAsync() > 0;
+        }
+
         public async Task<bool> ProducePcbAsync(ProduceBomPcbRequest request)
         {
             // get all the parts in the project
@@ -284,6 +380,7 @@ namespace Binner.Common.Services
                 ProjectId = project.ProjectId,
                 ProduceUnassociated = request.Unassociated,
                 Quantity = request.Quantity,
+                PartsConsumed = 0,
                 DateCreatedUtc = DateTime.UtcNow,
                 DateModifiedUtc = DateTime.UtcNow,
                 UserId = user.UserId,
@@ -291,11 +388,13 @@ namespace Binner.Common.Services
             };
 
             // because some storage providers don't have transaction support, first validate we have the parts/quantities before making any changes
-            await ProcessPcbParts(false);
+            var pcbPartsConsumed = await ProcessPcbParts(false);
+            var partsConsumed = 0;
             if (request.Unassociated)
-                await ProcessNonPcbParts(false);
+                partsConsumed = await ProcessNonPcbParts(false);
 
             // no exceptions thrown, write the changes
+            produceHistory.PartsConsumed = pcbPartsConsumed + partsConsumed;
             context.ProjectProduceHistory.Add(produceHistory);
             await context.SaveChangesAsync();
             await ProcessPcbParts(true);
@@ -308,10 +407,12 @@ namespace Binner.Common.Services
 
             return true;
 
-            async Task ProcessPcbParts(bool performUpdates)
+            async Task<int> ProcessPcbParts(bool performUpdates)
             {
+                var totalConsumed = 0;
                 foreach (var pcb in request.Pcbs)
                 {
+                    var pcbConsumed = 0;
                     var pcbEntity = await _storageProvider.GetPcbAsync(pcb.PcbId, user);
                     if (pcbEntity == null)
                         throw new InvalidOperationException($"The pcb with Id '{pcb.PcbId}' could not be found!");
@@ -320,29 +421,23 @@ namespace Binner.Common.Services
                     var pcbParts = parts.Where(x => x.PcbId != null && x.PcbId == pcb.PcbId).ToList();
                     foreach (var pcbPart in pcbParts)
                     {
+                        var quantityAvailable = pcbPart.Part?.Quantity ?? pcbPart.QuantityAvailable;
                         // get the quantity to remove, which is the number of parts used on this pcb X the number of pcb boards produced
-                        var quantityToRemove = pcbPart.Quantity * numberOfPcbsProduced;
-                        if (quantityToRemove > (pcbPart.Part?.Quantity ?? pcbPart.QuantityAvailable))
+                        // if the pcb has a quantity > 1, it acts as a multiplier for BOMs that produce multiples of a single PCB
+                        // a value of 0 is invalid
+                        var quantityToRemove = pcbPart.Quantity * numberOfPcbsProduced * (pcbEntity.Quantity > 0 ? pcbEntity.Quantity : 1);
+                        if (quantityToRemove > quantityAvailable)
                             throw new InvalidOperationException($"There are not enough parts in inventory for part: {pcbPart.PartName}. In Stock: {pcbPart.Part?.Quantity ?? pcbPart.QuantityAvailable}, Quantity needed: {quantityToRemove}");
+                        
+                        totalConsumed += quantityToRemove;
+                        pcbConsumed += quantityToRemove;
 
                         if (performUpdates)
                         {
-                            // if the pcb has a quantity > 1, it acts as a multiplier for BOMs that produce multiples of a single PCB
-                            // a value of 0 is invalid
-                            if (pcbEntity.Quantity > 1)
-                            {
-                                if (pcbPart.Part != null)
-                                    pcbPart.Part.Quantity -= (quantityToRemove * pcbEntity.Quantity);
-                                else
-                                    pcbPart.QuantityAvailable -= (quantityToRemove * pcbEntity.Quantity);
-                            }
+                            if (pcbPart.Part != null)
+                                pcbPart.Part.Quantity -= quantityToRemove;
                             else
-                            {
-                                if (pcbPart.Part != null)
-                                    pcbPart.Part.Quantity -= quantityToRemove;
-                                else
-                                    pcbPart.QuantityAvailable -= quantityToRemove;
-                            }
+                                pcbPart.QuantityAvailable -= quantityToRemove;
 
                             if (pcbPart.Part != null)
                                 await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(pcbPart.Part), user);
@@ -364,7 +459,8 @@ namespace Binner.Common.Services
                                 PcbId = pcbEntity.PcbId,
                                 PcbQuantity = pcbEntity.Quantity,
                                 PcbCost = pcbEntity.Cost,
-                                SerialNumber = pcbEntity.LastSerialNumber,
+                                SerialNumber = serial,
+                                PartsConsumed = pcbConsumed,
                                 UserId = user.UserId,
                                 OrganizationId = user.OrganizationId,
                             };
@@ -375,18 +471,22 @@ namespace Binner.Common.Services
                         await _storageProvider.UpdatePcbAsync(pcbEntity, user);
                     }
                 }
+
+                return totalConsumed;
             }
 
-            async Task ProcessNonPcbParts(bool performUpdates)
+            async Task<int> ProcessNonPcbParts(bool performUpdates)
             {
+                var totalConsumed = 0;
                 foreach (var part in parts.Where(x => x.PcbId == null))
                 {
+                    var quantityAvailable = part.Part?.Quantity ?? part.QuantityAvailable;
                     // get the quantity to remove, which is the number of parts used on this pcb X the number of pcb boards produced
                     var quantityToRemove = part.Quantity * numberOfPcbsProduced;
-                    if (quantityToRemove > (part.Part?.Quantity ?? part.QuantityAvailable))
+                    if (quantityToRemove > quantityAvailable)
                         throw new InvalidOperationException(
                             $"There are not enough parts in inventory for part: {part.PartName}. In Stock: {part.Part?.Quantity ?? part.QuantityAvailable}, Quantity needed: {quantityToRemove}");
-
+                    totalConsumed += quantityToRemove;
                     if (performUpdates)
                     {
                         if (part.Part != null)
@@ -399,13 +499,16 @@ namespace Binner.Common.Services
                             await _storageProvider.UpdateProjectPartAssignmentAsync(Mapper.Map<ProjectPartAssignment>(part), user);
                     }
                 }
+                return totalConsumed;
             }
         }
 
         public string IncrementSerialNumber(string nextSerialNumber, int numberOfPcbsProduced, Action<string, int>? onIncrement = null)
         {
+            if (string.IsNullOrEmpty(nextSerialNumber)) nextSerialNumber = "00000";
+
             var serialNumber = nextSerialNumber;
-            for (var s = 1; s < numberOfPcbsProduced; s++)
+            for (var s = 1; s <= numberOfPcbsProduced; s++)
             {
                 // add 1 to the serial number
 
@@ -418,19 +521,18 @@ namespace Binner.Common.Services
                         lastNonNumericIndex = i;
                 }
                 // parse the remainder as an integer
+                
                 var numericLabel = nextSerialNumber.Substring(lastNonNumericIndex + 1, nextSerialNumber.Length - (lastNonNumericIndex + 1));
                 if (int.TryParse(numericLabel, out var parsedNumber))
                 {
                     // increment it
-                    var nextSerialNumberInt = parsedNumber + 1;
+                    var nextSerialNumberInt = parsedNumber + (s - 1);
                     var labelPortion = nextSerialNumber.Substring(0, lastNonNumericIndex + 1);
                     serialNumber = labelPortion.PadRight(labelPortion.Length + numericLabel.Length - nextSerialNumberInt.ToString().Length, '0') + nextSerialNumberInt;
                     if (onIncrement != null) onIncrement(serialNumber, s);
-                    return serialNumber;
                 }
             }
 
-            if (onIncrement != null) onIncrement(serialNumber, 1);
             return serialNumber;
         }
     }

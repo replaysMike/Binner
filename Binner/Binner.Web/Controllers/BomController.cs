@@ -36,14 +36,16 @@ namespace Binner.Web.Controllers
         private readonly IPartService _partService;
         private readonly IProjectService _projectService;
         private readonly IPcbService _pcbService;
+        private readonly IStoredFileService _storedFileService;
 
-        public BomController(ILogger<BomController> logger, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService, IPcbService pcbService)
+        public BomController(ILogger<BomController> logger, WebHostServiceConfiguration config, IPartService partService, IProjectService projectService, IPcbService pcbService, IStoredFileService storedFileService)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
             _projectService = projectService;
             _pcbService = pcbService;
+            _storedFileService = storedFileService;
         }
 
         /// <summary>
@@ -103,6 +105,10 @@ namespace Binner.Web.Controllers
             var bomResponse = Mapper.Map<Project, BomResponse>(project);
             bomResponse.Parts = await _projectService.GetPartsAsync(project.ProjectId);
             bomResponse.Pcbs = await _projectService.GetPcbsAsync(project.ProjectId);
+            bomResponse.ProduceHistory = await _projectService.GetProduceHistoryAsync(new GetProduceHistoryRequest
+            {
+                ProjectId = project.ProjectId
+            });
             var partTypes = await _partService.GetPartTypesAsync();
             foreach (var projectPart in bomResponse.Parts)
             {
@@ -200,12 +206,50 @@ namespace Binner.Web.Controllers
                 Name = request.Name,
                 Description = request.Description,
                 SerialNumberFormat = request.SerialNumberFormat,
-                LastSerialNumber = request.SerialNumber,
+                LastSerialNumber = string.IsNullOrEmpty(request.SerialNumber) ? request.SerialNumberFormat : request.SerialNumber,
                 Quantity = request.Quantity,
                 Cost = request.Cost
             }, request.ProjectId);
             if (pcb == null)
                 return NotFound();
+            return Ok(pcb);
+        }
+
+        /// <summary>
+        /// Create a new pcb
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("pcbWithImage")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreatePcbWithImage([FromForm] CreateBomPcbWithImageRequest request)
+        {
+            var pcb = await _pcbService.AddPcbAsync(new Pcb
+            {
+                Name = request.Name,
+                Description = request.Description,
+                SerialNumberFormat = request.SerialNumberFormat,
+                LastSerialNumber = string.IsNullOrEmpty(request.SerialNumber) ? request.SerialNumberFormat : request.SerialNumber,
+                Quantity = request.Quantity,
+                Cost = request.Cost
+            }, request.ProjectId);
+            if (pcb == null)
+                return NotFound();
+
+            if (request.Image != null)
+            {
+                var uploadFiles = new List<UserUploadedFile>();
+                var stream = new MemoryStream();
+                await request.Image.CopyToAsync(stream);
+                stream.Position = 0;
+                var uploadFile = new UserUploadedFile(request.Image.FileName, stream, pcb.PcbId, StoredFileType.Pcb);
+                uploadFiles.Add(uploadFile);
+                var storedFiles = await _storedFileService.UploadFilesAsync(uploadFiles);
+                // cleanup
+                foreach (var file in uploadFiles)
+                    file.Stream?.Dispose();
+            }
+
             return Ok(pcb);
         }
 
@@ -296,6 +340,66 @@ namespace Binner.Web.Controllers
                     return ExportToFile(file, $"{bomResponse.Name}-Excel-BOM");
                 }
             }
+        }
+
+        /// <summary>
+        /// Get produce history for a BOM project
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("produce/history")]
+        public async Task<IActionResult> GetProduceHistoryAsync([FromQuery] GetProduceHistoryRequest request)
+        {
+            try
+            {
+                var history = await _projectService.GetProduceHistoryAsync(request);
+
+                return Ok(history);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to get history", ex));
+            }
+        }
+
+        /// <summary>
+        /// Update history record
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("produce/history")]
+        public async Task<IActionResult> UpdateProduceHistoryAsync(ProjectProduceHistory request)
+        {
+            var history = await _projectService.UpdateProduceHistoryAsync(request);
+            return Ok(history);
+        }
+
+        /// <summary>
+        /// Delete produce history record
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpDelete("produce/history")]
+        public async Task<IActionResult> DeleteProduceHistoryAsync(ProjectProduceHistory request)
+        {
+            var history = await _projectService.DeleteProduceHistoryAsync(request);
+            return Ok(history);
+        }
+
+        /// <summary>
+        /// Delete produce pcb history record
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpDelete("produce/history/pcb")]
+        public async Task<IActionResult> DeletePcbProduceHistoryAsync(ProjectPcbProduceHistory request)
+        {
+            var history = await _projectService.DeletePcbProduceHistoryAsync(request);
+            return Ok(history);
         }
 
         private IActionResult ExportToFile(IDictionary<StreamName, Stream> streams, string filename)

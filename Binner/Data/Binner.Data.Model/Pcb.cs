@@ -70,8 +70,8 @@ namespace Binner.Data.Model
         public User? User { get; set; }
 #endif
 
-        public ICollection<ProjectPcbProduceHistory>? ProjectPcbProduceHistory { get; set; }
-        public ICollection<PcbStoredFileAssignment>? PcbStoredFileAssignments { get; set; }
-        public ICollection<ProjectPcbAssignment>? ProjectPcbAssignments { get; set; }
+        public ICollection<ProjectPcbProduceHistory> ProjectPcbProduceHistory { get; set; } = null!;
+        public ICollection<PcbStoredFileAssignment> PcbStoredFileAssignments { get; set; } = null!;
+        public ICollection<ProjectPcbAssignment> ProjectPcbAssignments { get; set; } = null!;
     }
 }

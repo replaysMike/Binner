@@ -628,6 +628,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("PartsConsumed")
+                        .HasColumnType("INTEGER");
+
                     b.Property<double>("PcbCost")
                         .HasColumnType("REAL");
 
@@ -674,6 +677,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PartsConsumed")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("ProduceUnassociated")
@@ -731,6 +737,12 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<long?>("PartId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("RecordId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RecordType")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("StoredFileType")

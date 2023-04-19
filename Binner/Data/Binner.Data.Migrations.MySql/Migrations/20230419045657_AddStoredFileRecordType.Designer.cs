@@ -3,6 +3,7 @@ using System;
 using Binner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Binner.Data.Migrations.MySql.Migrations
 {
     [DbContext(typeof(BinnerContext))]
-    partial class BinnerContextModelSnapshot : ModelSnapshot
+    [Migration("20230419045657_AddStoredFileRecordType")]
+    partial class AddStoredFileRecordType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
