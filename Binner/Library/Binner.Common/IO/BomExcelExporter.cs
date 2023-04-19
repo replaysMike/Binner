@@ -1,4 +1,4 @@
-﻿using Binner.Common.Models;
+﻿using Binner.Model.Responses;
 using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;

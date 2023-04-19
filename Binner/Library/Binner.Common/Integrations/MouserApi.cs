@@ -1,8 +1,7 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
-using Binner.Common.Integrations.Models.Mouser;
-using Binner.Common.Models.Configuration.Integrations;
-using Binner.Model.Common;
+using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations.Mouser;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

@@ -29,6 +29,11 @@ namespace Binner.Model
         public double Cost { get; set; }
 
         /// <summary>
+        /// Currency of part cost
+        /// </summary>
+        public string? Currency { get; set; }
+
+        /// <summary>
         /// The main part number
         /// </summary>
         [MaxLength(64)]
@@ -128,11 +133,6 @@ namespace Binner.Model
         /// The manufacturer part number
         /// </summary>
         public string? ManufacturerPartNumber { get; set; }
-
-        /// <summary>
-        /// Add a link to the part number manufacturer (Swarm)
-        /// </summary>
-        public int? SwarmPartNumberManufacturerId { get; set; }
 
         /// <summary>
         /// Optional user id to associate

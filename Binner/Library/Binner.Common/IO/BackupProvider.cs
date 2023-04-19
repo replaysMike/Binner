@@ -1,5 +1,5 @@
-﻿using Binner.Common.Configuration;
-using Binner.Data;
+﻿using Binner.Data;
+using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

@@ -1,6 +1,6 @@
-﻿using Binner.Common.Models;
-using Binner.Common.Models.Responses;
-using Binner.Model.Common;
+﻿using Binner.Model;
+using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -42,7 +42,7 @@ namespace Binner.Common.Services
         /// List all DigiKey categories
         /// </summary>
         /// <returns></returns>
-        Task<IServiceResult<Integrations.Models.DigiKey.CategoriesResponse?>> GetCategoriesAsync();
+        Task<IServiceResult<CategoriesResponse?>> GetCategoriesAsync();
 
         /// <summary>
         /// Get a part by part number

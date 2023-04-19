@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Binner.Common.Models;
-using Binner.Common.Models.Requests;
 using Binner.Data;
-using Binner.Model.Common;
+using Binner.Model;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

@@ -1,7 +1,7 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     /// <summary>
-    /// Digikey APi configuration settings
+    /// Digikey api configuration settings
     /// </summary>
     public class DigikeyConfiguration : IApiConfiguration
     {
@@ -10,25 +10,31 @@
         public string? ApiKey => ClientId;
 
         /// <summary>
-        /// Digikey Client Id
+        /// Client Id
         /// </summary>
-        public string? ClientId { get; set; } = string.Empty;
+        public string? ClientId { get; set; }
 
         /// <summary>
-        /// Digikey Client Secret
+        /// Client Secret
         /// </summary>
-        public string? ClientSecret { get; set; } = string.Empty;
+        public string? ClientSecret { get; set; }
 
         /// <summary>
         /// The oAuth Postback Url - this must match the Callback Url for the App you configured on Digikey's API
         /// </summary>
-        public string? OAuthPostbackUrl { get; set; } = "http://localhost:8090/Authorization/Authorize";
+        // ReSharper disable once InconsistentNaming
+        public string oAuthPostbackUrl { get; set; } = "https://localhost:8090/Authorization/Authorize";
 
         /// <summary>
-        /// Path to the Digikey Api
+        /// Path to the api
         /// </summary>
-        public string? ApiUrl { get; set; } = "https://sandbox-api.digikey.com";
+        public string ApiUrl { get; set; } = "https://api.digikey.com";
 
-        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ClientId) && !string.IsNullOrEmpty(ClientSecret) && !string.IsNullOrEmpty(OAuthPostbackUrl) && !string.IsNullOrEmpty(ApiUrl);
+        /// <summary>
+        /// Specifies which site to default the Api to
+        /// </summary>
+        public DigikeyLocaleSite Site { get; set; } = DigikeyLocaleSite.US;
+
+        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ClientId) && !string.IsNullOrEmpty(ClientSecret) && !string.IsNullOrEmpty(oAuthPostbackUrl) && !string.IsNullOrEmpty(ApiUrl);
     }
 }

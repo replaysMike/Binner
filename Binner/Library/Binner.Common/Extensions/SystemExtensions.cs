@@ -1,4 +1,4 @@
-﻿using Binner.Model.Common;
+﻿using Binner.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -138,7 +138,7 @@ namespace Binner.Common.Extensions
         /// <typeparam name="TSource">The type of the elements of <paramref name="query" />.</typeparam>
         /// <param name="query">A sequence of values to order.</param>
         /// <param name="key">Name of the property of <see cref="TSource"/> by which to sort the elements.</param>
-        /// <param name="ascending">True for ascending order, false for descending order.</param>
+        /// <param name="direction">True for ascending order, false for descending order.</param>
         /// <returns>An <see cref="T:System.Linq.IOrderedQueryable`1" /> whose elements are sorted according to a key and sort order.</returns>
         public static IEnumerable<TSource> OrderBy<TSource>(this IEnumerable<TSource> query, string key, SortDirection direction)
         {

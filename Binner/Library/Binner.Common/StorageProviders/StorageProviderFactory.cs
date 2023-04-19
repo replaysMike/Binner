@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Binner.Data;
-using Binner.Model.Common;
+using Binner.Model;
 using Binner.StorageProvider.EntityFrameworkCore;
 using LightInject;
 using Microsoft.EntityFrameworkCore;

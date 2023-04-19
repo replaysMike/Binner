@@ -6,6 +6,11 @@
     public class AuthenticationConfiguration
     {
         /// <summary>
+        /// The key used to generate Jwt tokens from
+        /// </summary>
+        public string JwtSecretKey { get; set; } = string.Empty;
+
+        /// <summary>
         /// The jwt issuer url
         /// </summary>
         public string JwtIssuer { get; set; } = "https://localhost:8090";

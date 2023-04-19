@@ -1,7 +1,7 @@
-﻿using Binner.Common.Configuration;
-using Binner.Common.Models;
-using Binner.Common.Models.Responses;
-using Binner.Common.Services;
+﻿using Binner.Common.Services;
+using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

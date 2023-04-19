@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     public interface IApiConfiguration
     {

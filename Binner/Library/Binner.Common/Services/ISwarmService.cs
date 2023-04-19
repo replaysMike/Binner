@@ -1,5 +1,5 @@
-﻿using Binner.Common.Models.Swarm.Requests;
-using Binner.Common.Models.Swarm.Responses;
+﻿using Binner.Model.Swarm.Requests;
+using Binner.Model.Swarm.Responses;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services

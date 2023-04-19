@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     /// <summary>
     /// Mouser Api user configuration settings
@@ -6,11 +6,6 @@
     public class MouserUserConfiguration
     {
         public bool Enabled { get; set; } = true;
-
-        /// <summary>
-        /// The Api key for searches
-        /// </summary>
-        public string? SearchApiKey { get; set; }
 
         /// <summary>
         /// The Api key for order management
@@ -23,8 +18,13 @@
         public string? CartApiKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// The Api url
+        /// The Api key for search features
         /// </summary>
-        public string? ApiUrl { get; set; }
+        public string? SearchApiKey { get; set; }
+
+        /// <summary>
+        /// Mouser api url
+        /// </summary>
+        public string ApiUrl { get; set; } = "https://api.mouser.com";
     }
 }

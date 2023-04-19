@@ -1,4 +1,4 @@
-﻿using Binner.Model.Common;
+﻿using Binner.Model;
 using System.Collections.Generic;
 
 namespace Binner.Common.StorageProviders

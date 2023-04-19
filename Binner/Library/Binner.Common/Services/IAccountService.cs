@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using Binner.Model;
+using Binner.Model.Responses;
+using System.IO;
 using System.Threading.Tasks;
-using Binner.Common.Models;
-using Binner.Common.Models.Responses;
 
 namespace Binner.Common.Services
 {

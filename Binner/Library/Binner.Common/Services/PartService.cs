@@ -1,15 +1,15 @@
 ﻿using AutoMapper;
-using Binner.Common.Configuration;
 using Binner.Common.Integrations;
-using Binner.Common.Integrations.Models.Arrow;
-using Binner.Common.Integrations.Models.DigiKey;
-using Binner.Common.Integrations.Models.Mouser;
-using Binner.Common.Integrations.Models.Nexar;
-using Binner.Common.Models;
-using Binner.Common.Models.Configuration.Integrations;
-using Binner.Common.Models.Responses;
 using Binner.Data;
-using Binner.Model.Common;
+using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations.Arrow;
+using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Integrations.Mouser;
+using Binner.Model.Integrations.Nexar;
+using Binner.Model.Responses;
+using Binner.Model.Swarm;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,7 +19,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Part = Binner.Model.Common.Part;
+using Part = Binner.Model.Part;
 
 namespace Binner.Common.Services
 {

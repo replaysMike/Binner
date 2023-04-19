@@ -1,7 +1,7 @@
-﻿using Binner.Common.Configuration;
-using Binner.Common.Integrations.Models;
-using Binner.Common.Integrations.Models.Nexar;
-using Binner.Common.Models.Configuration.Integrations;
+﻿using Binner.Common.Integrations.Models;
+using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations.Nexar;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Nexar.Client;
@@ -166,7 +166,7 @@ namespace Binner.Common.Integrations
                         UnitsName = x.UnitsName,
                         Value = x.Value,
                         ValueType = x.ValueType,
-                        Attribute = new Models.Nexar.Attribute
+                        Attribute = new Binner.Model.Integrations.Nexar.Attribute
                         {
                             Id = x.Attribute.Id,
                             Name = x.Attribute.Name,

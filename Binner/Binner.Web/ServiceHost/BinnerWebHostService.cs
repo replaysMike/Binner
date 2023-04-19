@@ -1,11 +1,15 @@
 ﻿using Binner.Common;
-using Binner.Common.Configuration;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
+using Binner.Common.StorageProviders;
+using Binner.Data;
 using Binner.Model.Common;
+using Binner.Model.Configuration;
+using Binner.Web.Configuration;
 using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,12 +25,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Binner.Common.StorageProviders;
-using Binner.Data;
-using Binner.Web.Configuration;
-using Microsoft.EntityFrameworkCore;
 using Topshelf;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Binner.Web.ServiceHost
 {

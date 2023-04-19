@@ -1,6 +1,6 @@
-﻿using Binner.Common.Configuration;
-using Binner.Common.IO;
-using Binner.Model.Common;
+﻿using Binner.Common.IO;
+using Binner.Model;
+using Binner.Model.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;

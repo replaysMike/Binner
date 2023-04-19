@@ -1,7 +1,6 @@
-﻿using Binner.Common.Configuration;
-using Binner.Common.Integrations;
-using Binner.Common.Integrations.Models.DigiKey;
-using Binner.Common.Models.Configuration.Integrations;
+﻿using Binner.Common.Integrations;
+using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;

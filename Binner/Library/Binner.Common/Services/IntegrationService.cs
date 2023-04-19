@@ -1,6 +1,6 @@
 ﻿using Binner.Common.Integrations;
-using Binner.Common.Models.Requests;
-using Binner.Common.Models.Responses;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;

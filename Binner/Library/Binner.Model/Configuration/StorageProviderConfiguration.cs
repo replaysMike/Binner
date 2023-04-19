@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-
-namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration
 {
     public class StorageProviderConfiguration
     {
         /// <summary>
         /// The storage provider to use
         /// </summary>
-        public string Provider { get; set; }
+        public string Provider { get; set; } = "Binner";
 
         /// <summary>
         /// Configuration to pass to the provider

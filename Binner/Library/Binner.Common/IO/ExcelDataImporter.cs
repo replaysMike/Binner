@@ -1,5 +1,4 @@
-﻿using Binner.Common.Models;
-using Binner.Model.Common;
+﻿using Binner.Model;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -184,7 +183,7 @@ namespace Binner.Common.IO
                                                 PartTypeId = _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", partTypeId),
                                                 BinNumber = binNumber,
                                                 BinNumber2 = binNumber2,
-                                                Cost = (decimal)cost,
+                                                Cost = cost,
                                                 DatasheetUrl = datasheetUrl,
                                                 Description = description,
                                                 DigiKeyPartNumber = digiKeyPartNumber,

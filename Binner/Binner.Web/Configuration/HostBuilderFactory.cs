@@ -1,6 +1,6 @@
-﻿using Binner.Common.Configuration;
-using Binner.Data;
+﻿using Binner.Data;
 using Binner.Data.Generators;
+using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;

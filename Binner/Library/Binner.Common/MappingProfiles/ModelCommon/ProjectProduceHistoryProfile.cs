@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using Binner.Common.Models;
-using Binner.Model.Common;
+using Binner.Model;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Common.MappingProfiles.ModelCommon

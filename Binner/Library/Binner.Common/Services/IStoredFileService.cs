@@ -1,5 +1,5 @@
 ﻿using Binner.Common.IO;
-using Binner.Model.Common;
+using Binner.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     /// <summary>
     /// Arrow api configuration
@@ -22,6 +22,6 @@
         /// </summary>
         public string ApiUrl { get; set; } = "https://api.arrow.com";
 
-        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl);
+        public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl) && !string.IsNullOrEmpty(Username);
     }
 }

@@ -1,6 +1,4 @@
-﻿using Binner.Common.Models;
-using Binner.Model;
-using Binner.Model.Common;
+﻿using Binner.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -1,6 +1,6 @@
 ﻿using Binner.Common.Integrations.Models;
-using Binner.Common.Models.Configuration.Integrations;
 using Binner.Common.Services;
+using Binner.Model.Configuration.Integrations;
 using Binner.SwarmApi;
 using Binner.SwarmApi.Request;
 using Microsoft.AspNetCore.Http;

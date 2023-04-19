@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using Binner.Common.Configuration;
-using Binner.Common.IO.Printing;
-using Binner.Common.Models.Configuration;
-using Binner.Common.Models.Configuration.Integrations;
-using Binner.Common.Models.Responses;
+using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
+using Binner.Model.IO.Printing;
+using Binner.Model.Responses;
 using System.Collections.Generic;
 using System.Linq;
 

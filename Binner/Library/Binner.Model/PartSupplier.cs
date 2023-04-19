@@ -58,5 +58,10 @@
         public DateTime DateModifiedUtc { get; set; } = DateTime.UtcNow;
 
         public Part Part { get; set; } = null!;
+
+        /// <summary>
+        /// Optional user id to associate
+        /// </summary>
+        public int? UserId { get; set; }
     }
 }

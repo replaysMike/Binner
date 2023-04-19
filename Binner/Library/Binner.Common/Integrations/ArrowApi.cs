@@ -1,7 +1,7 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
-using Binner.Common.Integrations.Models.Arrow;
-using Binner.Common.Models.Configuration.Integrations;
+using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations.Arrow;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

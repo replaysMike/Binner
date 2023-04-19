@@ -1,4 +1,4 @@
-﻿using Binner.Model.Common;
+﻿using Binner.Model;
 using System.IO;
 
 namespace Binner.Common.IO

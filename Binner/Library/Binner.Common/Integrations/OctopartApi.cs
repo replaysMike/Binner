@@ -1,6 +1,6 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
-using Binner.Common.Models.Configuration.Integrations;
+using Binner.Model.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;

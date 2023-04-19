@@ -49,5 +49,10 @@
         /// Modification date
         /// </summary>
         public DateTime DateModifiedUtc { get; set; }
+
+        /// <summary>
+        /// Optional user id to associate
+        /// </summary>
+        public int? UserId { get; set; }
     }
 }

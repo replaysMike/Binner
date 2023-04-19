@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
     /// <summary>
     /// Binner Swarm Api configuration settings
@@ -23,5 +23,6 @@
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(5);
 
         public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiUrl);
+
     }
 }

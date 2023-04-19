@@ -1,5 +1,8 @@
-﻿namespace Binner.Model.Configuration
+﻿namespace Binner.Model.Configuration.Integrations
 {
+    /// <summary>
+    /// Mouser api configuration
+    /// </summary>
     public class MouserConfiguration : IApiConfiguration
     {
         public bool Enabled { get; set; } = true;
@@ -9,7 +12,7 @@
         /// <summary>
         /// Mouser Api Keys
         /// </summary>
-        public MouserApiKeys ApiKeys { get; set; } = new MouserApiKeys();
+        public MouserApiKeys ApiKeys { get; set; } = new();
 
         /// <summary>
         /// Path to the Mouser Api
@@ -17,6 +20,8 @@
         public string ApiUrl { get; set; } = "https://api.mouser.com";
 
         public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiKeys.SearchApiKey) && !string.IsNullOrEmpty(ApiUrl);
+        public bool IsOrdersConfigured => Enabled && !string.IsNullOrEmpty(ApiKeys.OrderApiKey) && !string.IsNullOrEmpty(ApiUrl);
+        public bool IsCartConfigured => Enabled && !string.IsNullOrEmpty(ApiKeys.CartApiKey) && !string.IsNullOrEmpty(ApiUrl);
     }
 
     public class MouserApiKeys
@@ -35,10 +40,5 @@
         /// The Api key for cart management
         /// </summary>
         public string? CartApiKey { get; set; }
-
-        /// <summary>
-        /// The Api url
-        /// </summary>
-        public string? ApiUrl { get; set; }
     }
 }
