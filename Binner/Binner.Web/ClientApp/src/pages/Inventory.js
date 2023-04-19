@@ -30,6 +30,7 @@ import {
   Checkbox,
   Dropdown
 } from "semantic-ui-react";
+import { getImagesToken } from "../common/authentication";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
 import PartTypeSelector from "../components/PartTypeSelector";
@@ -42,6 +43,7 @@ import { formatCurrency, formatNumber, getCurrencySymbol } from "../common/Utils
 import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
 import axios from "axios";
+import { getAuthToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
 import { GetTypeName, GetTypeValue, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
@@ -298,11 +300,14 @@ export function Inventory(props) {
       requestData.append("storedFileType", GetTypeValue(StoredFileType, type));
       for (let i = 0; i < uploadFiles.length; i++) requestData.append("files", uploadFiles[i], uploadFiles[i].name);
 
+      // first fetch some data using fetchApi, to leverage 401 token refresh
+      fetchApi("api/authentication/identity").then((_) => {
       axios
         .request({
           method: "post",
-          url: `storedFile`,
-          data: requestData
+          url: `api/storedFile`,
+          data: requestData,
+          headers: { Authorization: `Bearer ${getAuthToken()}` }
         })
         .then((response) => {
           const { data } = response;
@@ -326,7 +331,7 @@ export function Inventory(props) {
                 for (i = 0; i < data.length; i++) {
                   productImages.unshift({
                     name: data[i].originalFileName,
-                    value: `/storedFile/preview?fileName=${data[i].fileName}`,
+                    value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                     id: data[i].storedFileId
                   });
                 }
@@ -338,9 +343,9 @@ export function Inventory(props) {
                   const datasheet = {
                     name: data[i].originalFileName,
                     value: {
-                      datasheetUrl: `/storedFile/local?fileName=${data[i].fileName}`,
+                      datasheetUrl: `/api/storedFile/local?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                       description: data[i].originalFileName,
-                      imageUrl: `/storedFile/preview?fileName=${data[i].fileName}`,
+                      imageUrl: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                       manufacturer: "",
                       title: data[i].originalFileName
                     },
@@ -356,7 +361,7 @@ export function Inventory(props) {
                 for (i = 0; i < data.length; i++) {
                   pinoutImages.unshift({
                     name: data[i].originalFileName,
-                    value: `/storedFile/preview?fileName=${data[i].fileName}`,
+                    value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                     id: data[i].storedFileId
                   });
                 }
@@ -367,7 +372,7 @@ export function Inventory(props) {
                 for (i = 0; i < data.length; i++) {
                   circuitImages.unshift({
                     name: data[i].originalFileName,
-                    value: `/storedFile/preview?fileName=${data[i].fileName}`,
+                    value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                     id: data[i].storedFileId
                   });
                 }
@@ -397,6 +402,7 @@ export function Inventory(props) {
           setUploading(false);
           setFiles([]);
         });
+      });
     } else {
       toast.error(t('message.noFilesSelected', "No files selected for upload!"));
     }
@@ -539,7 +545,7 @@ export function Inventory(props) {
   const fetchBarcodeMetadata = async (e, scannedPart, onSuccess, onFailure) => {
     e.preventDefault();
     e.stopPropagation();
-    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}`, {
+    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}&token=${getImagesToken()}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -771,7 +777,7 @@ export function Inventory(props) {
       infoResponse.productImages.unshift(
         ...storedProductImages.map((pi) => ({
           name: pi.originalFileName,
-          value: `/storedFile/preview?fileName=${pi.fileName}`,
+          value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
           id: pi.storedFileId
         }))
       );
@@ -780,9 +786,9 @@ export function Inventory(props) {
         ...storedDatasheets.map((pi) => ({
           name: pi.originalFileName,
           value: {
-            datasheetUrl: `/storedFile/local?fileName=${pi.fileName}`,
+            datasheetUrl: `/api/storedFile/local?fileName=${pi.fileName}&token=${getImagesToken()}`,
             description: pi.originalFileName,
-            imageUrl: `/storedFile/preview?fileName=${pi.fileName}`,
+            imageUrl: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
             manufacturer: "",
             title: pi.originalFileName
           },
@@ -793,7 +799,7 @@ export function Inventory(props) {
       infoResponse.pinoutImages.unshift(
         ...storedPinouts.map((pi) => ({
           name: pi.originalFileName,
-          value: `/storedFile/preview?fileName=${pi.fileName}`,
+          value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
           id: pi.storedFileId
         }))
       );
@@ -801,7 +807,7 @@ export function Inventory(props) {
       infoResponse.circuitImages.unshift(
         ...storedReferenceDesigns.map((pi) => ({
           name: pi.originalFileName,
-          value: `/storedFile/preview?fileName=${pi.fileName}`,
+          value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
           id: pi.storedFileId
         }))
       );
@@ -1772,7 +1778,7 @@ export function Inventory(props) {
             </Button.Content>
           </Button>
         )}
-        {part.partNumber && <Image src={"/part/preview?partNumber=" + part.partNumber} width={180} floated="right" style={{ marginTop: "0px" }} />}
+        {part.partNumber && <Image src={`api/part/preview?partNumber=${part.partNumber}&token=${getImagesToken()}`} width={180} floated="right" style={{ marginTop: "0px" }} />}
         <FormHeader name={title} to="..">
         </FormHeader>
         {!isEditing &&

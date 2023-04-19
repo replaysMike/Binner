@@ -654,6 +654,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<int>("PartsConsumed")
+                        .HasColumnType("int");
+
                     b.Property<double>("PcbCost")
                         .HasColumnType("float");
 
@@ -702,6 +705,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PartsConsumed")
                         .HasColumnType("int");
 
                     b.Property<bool>("ProduceUnassociated")
@@ -762,6 +768,12 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<long?>("PartId")
                         .HasColumnType("bigint");
+
+                    b.Property<long?>("RecordId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("RecordType")
+                        .HasColumnType("int");
 
                     b.Property<int>("StoredFileType")
                         .HasColumnType("int");

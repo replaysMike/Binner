@@ -14,6 +14,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateModifiedUtc, options => options.MapFrom(x => x.DateModifiedUtc))
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
                 .ForMember(x => x.ProduceUnassociated, options => options.MapFrom(x => x.ProduceUnassociated))
+                .ForMember(x => x.PartsConsumed, options => options.MapFrom(x => x.PartsConsumed))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
                 .ForMember(x => x.ProjectProduceHistoryId, options => options.MapFrom(x => x.ProjectProduceHistoryId))
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
@@ -31,7 +32,9 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateModifiedUtc, options => options.MapFrom(x => x.DateModifiedUtc))
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
                 .ForMember(x => x.ProduceUnassociated, options => options.MapFrom(x => x.ProduceUnassociated))
+                .ForMember(x => x.PartsConsumed, options => options.MapFrom(x => x.PartsConsumed))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
+                .ForMember(x => x.Pcbs, options => options.MapFrom(x => x.ProjectPcbProduceHistory))
                 .ForMember(x => x.ProjectProduceHistoryId, options => options.MapFrom(x => x.ProjectProduceHistoryId))
                 ;
         }

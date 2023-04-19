@@ -654,6 +654,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("PartsConsumed")
+                        .HasColumnType("integer");
+
                     b.Property<double>("PcbCost")
                         .HasColumnType("double precision");
 
@@ -702,6 +705,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PartsConsumed")
                         .HasColumnType("integer");
 
                     b.Property<bool>("ProduceUnassociated")
@@ -762,6 +768,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<long?>("PartId")
                         .HasColumnType("bigint");
+
+                    b.Property<long?>("RecordId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("RecordType")
+                        .HasColumnType("integer");
 
                     b.Property<int>("StoredFileType")
                         .HasColumnType("integer");

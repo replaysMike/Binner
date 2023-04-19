@@ -732,3 +732,18 @@ section.formHeader {
 .Toastify .Toastify__toast-container:has(#wide) {
     --toastify-toast-width: 70% !important;
 }
+
+.ui.modal .content:has(.image.square) {
+    display: flex;
+}
+
+.ui.modal .content .image.square {
+    display: inline-block;
+    width: 300px;
+    height: 300px;
+}
+
+.ui.modal .content .image.square img {
+    width: 300px;
+    max-height: 300px;
+}

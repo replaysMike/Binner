@@ -35,6 +35,16 @@ namespace Binner.Common.Models
         public string? SerialNumber { get; set; }
 
         /// <summary>
+        /// Total parts consumed
+        /// </summary>
+        public int PartsConsumed { get; set; }
+
+        /// <summary>
+        /// The associated pcb
+        /// </summary>
+        public ProjectPcb? Pcb { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

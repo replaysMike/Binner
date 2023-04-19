@@ -32,6 +32,7 @@ export default function Dropzone(props) {
 					return;
       } else {
         setFiles(filesToUpload);
+        if (props.onDrop) props.onDrop(filesToUpload);
       }
 
       if (filesToUpload.length > 0){
@@ -72,7 +73,9 @@ Dropzone.propTypes = {
   /** Root key name */
   key: PropTypes.string,
 	/** Type of file being uploaded */
-	type: PropTypes.string
+	type: PropTypes.string,
+  /** Custom onDrop handling can be specified */
+  onDrop: PropTypes.func
 };
 
 Dropzone.defaultProps = {

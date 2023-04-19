@@ -5,5 +5,6 @@ export const StoredFileType = {
   ReferenceDesign: 3,
   ProductSheet: 4,
   MarketingGuide: 5,
-  Other: 6
+  Other: 6,
+  PcbImage: 7
 };

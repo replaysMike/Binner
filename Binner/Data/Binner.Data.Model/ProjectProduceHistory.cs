@@ -31,6 +31,11 @@ namespace Binner.Data.Model
         public bool ProduceUnassociated { get; set; }
 
         /// <summary>
+        /// Total parts consumed
+        /// </summary>
+        public int PartsConsumed { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
@@ -55,6 +60,6 @@ namespace Binner.Data.Model
         [ForeignKey(nameof(ProjectId))]
         public Project? Project { get; set; }
 
-        public ICollection<ProjectPcbProduceHistory>? ProjectPcbProduceHistory { get; set; }
+        public ICollection<ProjectPcbProduceHistory> ProjectPcbProduceHistory { get; set; } = null!;
     }
 }

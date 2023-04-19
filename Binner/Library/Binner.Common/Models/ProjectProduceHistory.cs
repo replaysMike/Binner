@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Binner.Common.Models
 {
@@ -23,6 +25,16 @@ namespace Binner.Common.Models
         /// True to allow producing of unassociated parts
         /// </summary>
         public bool ProduceUnassociated { get; set; }
+
+        /// <summary>
+        /// Total parts consumed
+        /// </summary>
+        public int PartsConsumed { get; set; }
+
+        /// <summary>
+        /// List of PCBs that were produced
+        /// </summary>
+        public ICollection<ProjectPcbProduceHistory> Pcbs { get; set; } = new List<ProjectPcbProduceHistory>();
 
         /// <summary>
         /// Creation date

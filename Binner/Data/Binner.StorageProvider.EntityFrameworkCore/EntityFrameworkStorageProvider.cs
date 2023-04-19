@@ -103,6 +103,9 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             {
                 case "postgresql":
                     return GetPostgresqlFindPartsQuery(keywords, userContext);
+                case "binner":
+                case "sqlite":
+                    return GetSqliteFindPartsQuery(keywords, userContext);
                 default:
                     return GetDefaultFindPartsQuery(keywords, userContext);
             }
@@ -150,6 +153,64 @@ PartNumber LIKE '%' + '{keywords}' + '%'
  OR Location LIKE '%' + '{keywords}' + '%'
  OR BinNumber LIKE '%' + '{keywords}' + '%'
  OR BinNumber2 LIKE '%' + '{keywords}' + '%')
+),
+PartsMerged (PartId, Rank) AS
+(
+	SELECT PartId, Rank FROM PartsExactMatch
+	UNION
+	SELECT PartId, Rank FROM PartsBeginsWith
+	UNION
+	SELECT PartId, Rank FROM PartsAny
+)
+SELECT p.* FROM Parts p
+INNER JOIN (
+  SELECT PartId, MIN(Rank) Rank FROM PartsMerged GROUP BY PartId
+) pm ON pm.PartId = p.PartId ORDER BY pm.Rank ASC;
+;");
+        }
+
+        private FormattableString GetSqliteFindPartsQuery(string keywords, IUserContext userContext)
+        {
+            // note: this is not injectable, using a formattable string which is a special case for FromSql()
+            return FormattableStringFactory.Create(
+                $@"WITH PartsExactMatch (PartId, Rank) AS
+(
+SELECT PartId, 10 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber = '{keywords}'
+ OR DigiKeyPartNumber = '{keywords}'
+ OR MouserPartNumber = '{keywords}'
+ OR ManufacturerPartNumber = '{keywords}'
+ OR Description = '{keywords}'
+ OR Keywords = '{keywords}'
+ OR Location = '{keywords}'
+ OR BinNumber = '{keywords}'
+ OR BinNumber2 = '{keywords}')
+),
+PartsBeginsWith (PartId, Rank) AS
+(
+SELECT PartId, 100 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber LIKE '{keywords}' || '%'
+ OR DigiKeyPartNumber LIKE '{keywords}' || '%'
+ OR MouserPartNumber LIKE '{keywords}' || '%'
+ OR ManufacturerPartNumber LIKE '{keywords}' || '%'
+ OR Description LIKE '{keywords}' || '%'
+ OR Keywords LIKE '{keywords}' || '%'
+ OR Location LIKE '{keywords}' || '%'
+ OR BinNumber LIKE '{keywords}' || '%'
+ OR BinNumber2 LIKE '{keywords}' || '%')
+),
+PartsAny (PartId, Rank) AS
+(
+SELECT PartId, 200 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber LIKE '%' + '{keywords}' || '%'
+ OR DigiKeyPartNumber LIKE '%' + '{keywords}' || '%'
+ OR MouserPartNumber LIKE '%' || '{keywords}' || '%'
+ OR ManufacturerPartNumber LIKE '%' || '{keywords}' || '%'
+ OR Description LIKE '%' || '{keywords}' || '%'
+ OR Keywords LIKE '%' || '{keywords}' || '%'
+ OR Location LIKE '%' || '{keywords}' || '%'
+ OR BinNumber LIKE '%' || '{keywords}' || '%'
+ OR BinNumber2 LIKE '%' || '{keywords}' || '%')
 ),
 PartsMerged (PartId, Rank) AS
 (
@@ -496,9 +557,17 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.Pcbs.FirstOrDefault(x => x.PcbId == pcb.PcbId && x.OrganizationId == userContext.OrganizationId);
+            var entity = context.Pcbs
+                .Include(x => x.ProjectPcbProduceHistory)
+                .Include(x => x.ProjectPcbAssignments)
+                .Include(x => x.PcbStoredFileAssignments)
+                .FirstOrDefault(x => x.PcbId == pcb.PcbId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
+
+            context.PcbStoredFileAssignments.RemoveRange(entity.PcbStoredFileAssignments);
+            context.ProjectPcbAssignments.RemoveRange(entity.ProjectPcbAssignments);
+            context.ProjectPcbProduceHistory.RemoveRange(entity.ProjectPcbProduceHistory);
             context.Pcbs.Remove(entity);
             await context.SaveChangesAsync();
             return true;

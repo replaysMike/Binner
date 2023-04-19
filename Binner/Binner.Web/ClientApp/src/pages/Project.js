@@ -11,13 +11,19 @@ import {
   Segment,
   Popup,
   Breadcrumb,
-  Confirm
+  Confirm,
+  Checkbox,
+  Image
 } from "semantic-ui-react";
+import { getImagesToken } from "../common/authentication";
+import { format, parseJSON } from "date-fns";
+import { FormatFullDateTime } from "../common/datetime";
 import { FormHeader } from "../components/FormHeader";
 import _ from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
+import { PcbHistoryModal } from "../components/PcbHistoryModal";
 import "./Bom.css";
 
 export function Project(props) {
@@ -30,7 +36,8 @@ export function Project(props) {
     color: 0,
     loading: false,
     parts: [],
-    pcbs: []
+    pcbs: [],
+    produceHistory: []
   };
 	const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(defaultProject);
@@ -38,14 +45,19 @@ export function Project(props) {
   const [direction, setDirection] = useState(null);
   const [confirmDeleteProjectIsOpen, setConfirmDeleteProjectIsOpen] = useState(false);
 	const [confirmDeletePcbIsOpen, setConfirmDeletePcbIsOpen] = useState(false);
+  const [confirmDeleteProduceHistoryIsOpen, setConfirmDeleteProduceHistoryIsOpen] = useState(false);
 	const [btnDeleteProjectDisabled, setBtnDeleteProjectDisabled] = useState(true);
 	const [changeTracker, setChangeTracker] = useState([]);
-  const [confirmProjectDeleteContent, setConfirmDeleteProjectContent] = useState(null);
-	const [confirmPcbDeleteContent, setConfirmDeletePcbContent] = useState(null);
+  const [confirmDeleteProjectContent, setConfirmDeleteProjectContent] = useState(null);
+	const [confirmDeletePcbContent, setConfirmDeletePcbContent] = useState(null);
+  const [confirmDeleteProduceHistoryContent, setConfirmDeleteProduceHistoryContent] = useState(null);
 	const [selectedPcb, setSelectedPcb] = useState(null);
+  const [selectedProduceHistory, setSelectedProduceHistory] = useState(null);
 	const [btnSubmitDisabled, setBtnSubmitDisabled] = useState(false);
 	const [btnDeleteDisabled, setBtnDeleteDisabled] = useState(false);
 	const [pageDisabled, setPageDisabled] = useState(false);
+  const [pcbHistoryModalIsOpen, setPcbHistoryModalIsOpen] = useState(false);
+  const [pcbHistoryModalContext, setPcbHistoryModalContext] = useState(null);
 	
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -131,6 +143,29 @@ export function Project(props) {
     setLoading(false);
     setConfirmDeletePcbIsOpen(false);
 		setSelectedPcb(null);
+  };
+
+  const handleDeleteProduceHistory = async (e) => {
+    setLoading(true);
+    const request = {...selectedProduceHistory};
+    const response = await fetchApi('api/bom/produce/history', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    }).catch(() => {
+		});
+    if (response && response.responseObject.status === 200) {
+			// remove pcb from list
+			setProject({...project, produceHistory: _.filter(project.produceHistory, x => x.projectProduceHistoryId !== selectedProduceHistory.projectProduceHistoryId)});
+      toast.success(t('success.deletedRecord', 'Record was deleted!'));
+    }
+    else
+      toast.error(t('error.failedDeleteRecord', "Failed to delete record!"));
+    setLoading(false);
+    setConfirmDeleteProduceHistoryIsOpen(false);
+		setSelectedProduceHistory(null);
   };
 
 	const inlineSave = async (pcb) => {
@@ -232,11 +267,35 @@ export function Project(props) {
     );
   };
 
+  const confirmDeleteProduceHistoryOpen = (e, p) => {
+    e.preventDefault();
+    e.stopPropagation();
+		setSelectedProduceHistory(p);
+    setConfirmDeleteProduceHistoryIsOpen(true);
+    setConfirmDeleteProduceHistoryContent(
+      <p>
+        {t('confirm.deleteRecord', "Are you sure you want to delete this record?")}
+        <br />
+        <br />
+        <Trans i18nKey='confirm.permanent'>
+        This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
+      </p>
+    );
+  };
+
 	const confirmDeletePcbClose = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setConfirmDeletePcbIsOpen(false);
 		setSelectedPcb(null);
+  };
+
+  const confirmDeleteProduceHistoryClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteProduceHistoryIsOpen(false);
+		setSelectedProduceHistory(null);
   };
 
 	const focusColumn = (e) => {
@@ -263,6 +322,13 @@ export function Project(props) {
     setChangeTracker(changes);
   };
 
+  const openPcbHistoryModal = (e, pcbHistory) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPcbHistoryModalContext(pcbHistory);
+    setPcbHistoryModalIsOpen(true);
+  };
+
   return (
     <div>
 			<Breadcrumb>
@@ -283,7 +349,7 @@ export function Project(props) {
         open={confirmDeleteProjectIsOpen}
         onCancel={confirmDeleteProjectClose}
         onConfirm={handleDeleteProject}
-        content={confirmProjectDeleteContent}
+        content={confirmDeleteProjectContent}
       />
 			<Confirm
         className="confirm"
@@ -291,8 +357,17 @@ export function Project(props) {
         open={confirmDeletePcbIsOpen}
         onCancel={confirmDeletePcbClose}
         onConfirm={handleDeletePcb}
-        content={confirmPcbDeleteContent}
+        content={confirmDeletePcbContent}
       />
+      <Confirm
+        className="confirm"
+        header={t('page.project.confirm.deleteProduceHistoryHeader', "Delete History Record")}
+        open={confirmDeleteProduceHistoryIsOpen}
+        onCancel={confirmDeleteProduceHistoryClose}
+        onConfirm={handleDeleteProduceHistory}
+        content={confirmDeleteProduceHistoryContent}
+      />
+      <PcbHistoryModal isOpen={pcbHistoryModalIsOpen} onClose={() => setPcbHistoryModalIsOpen(false)} history={pcbHistoryModalContext} />
 
       <Form onSubmit={handleSaveProject}>
         <Segment raised disabled={pageDisabled}>
@@ -341,6 +416,7 @@ export function Project(props) {
 					<Table>
 						<Table.Header>
 							<Table.Row>
+                <Table.HeaderCell width={1}></Table.HeaderCell>
 								<Table.HeaderCell width={2}>{t('label.name', "Name")}</Table.HeaderCell>
 								<Table.HeaderCell width={2}>{t('label.description', "Description")}</Table.HeaderCell>
                 <Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
@@ -354,6 +430,10 @@ export function Project(props) {
 						<Table.Body>
 							{project.pcbs.map((p, key) => (
 								<Table.Row key={key}>
+                  <Table.Cell width={1}>{p.storedFile && p.storedFile.fileName 
+                    ? <Image src={`api/storedFile/preview?fileName=${p.storedFile.fileName}&token=${getImagesToken()}`} height={32} />
+                    : <Image src="/image/pcb.png" height={32} />
+                  }</Table.Cell>
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
                   <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='quantity' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.quantity || ''} fluid /></Table.Cell>
@@ -361,7 +441,37 @@ export function Project(props) {
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='serialNumberFormat' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.serialNumberFormat || ''} fluid /></Table.Cell>
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='lastSerialNumber' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.lastSerialNumber || ''} fluid /></Table.Cell>
 									<Table.Cell>{p.partsCount}</Table.Cell>
-									<Table.Cell><Button circular size='mini' icon='delete' title='Delete pcb' onClick={e => confirmDeletePcbOpen(e, p)} /></Table.Cell>
+									<Table.Cell><Button circular size='mini' icon='delete' title='Delete pcb' onClick={e => confirmDeletePcbOpen(e, p)} /></Table.Cell></Table.Row>
+							))}
+						</Table.Body>
+					</Table>
+				</Segment>
+
+        <Segment disabled={pageDisabled}>
+					<h2>{t('page.project.produceHistory', "Production History")}</h2>
+					<Table>
+						<Table.Header>
+							<Table.Row>
+								<Table.HeaderCell width={3}>{t('label.date', "Date")}</Table.HeaderCell>
+                <Table.HeaderCell><Popup wide content={<p>{t('page.project.popup.quantityProduced', "The production quantity specified")}</p>} trigger={<div>{t('label.quantity', "Quantity")}</div>} /></Table.HeaderCell>
+                <Table.HeaderCell><Popup wide content={<p>{t('page.project.popup.includeUnassociated', "Indicates if parts not associated with a PCB were produced")}</p>} trigger={<div>{t('label.includeUnassociated', "Include Unassociated")}</div>} /></Table.HeaderCell>
+                <Table.HeaderCell><Popup wide content={<p>{t('page.project.popup.totalConsumed', "The total number of parts consumed")}</p>} trigger={<div>{t('label.consumed', "Consumed")}</div>} /></Table.HeaderCell>
+								<Table.HeaderCell width={5}><Popup content={<p>{t('page.project.popup.pcbsProduced', "The Pcbs that were produced")}</p>} trigger={<div>{t('label.pcbs', "Pcbs")}</div>} /></Table.HeaderCell>
+								<Table.HeaderCell width={2}></Table.HeaderCell>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{project.produceHistory.map((p, key) => (
+								<Table.Row key={key}>
+									<Table.Cell>{format(parseJSON(p.dateCreatedUtc), FormatFullDateTime)}</Table.Cell>
+                  <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='quantity' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.quantity || ''} fluid /></Table.Cell>
+									<Table.Cell><Checkbox toggle checked={p.produceUnassociated} disabled /></Table.Cell>
+                  <Table.Cell>{p.partsConsumed}</Table.Cell>
+									<Table.Cell>{Object.keys(_.indexBy(p.pcbs, i => i.pcb.name)).join(', ')}</Table.Cell>
+									<Table.Cell>
+                    <Button circular size='mini' icon='edit' title='View PCBs' disabled={p.pcbs.length === 0} onClick={e => openPcbHistoryModal(e, p)} /> 
+                    <Button circular size='mini' icon='delete' title='Delete produce record' onClick={e => confirmDeleteProduceHistoryOpen(e, p)} />
+                  </Table.Cell>
 								</Table.Row>
 							))}
 						</Table.Body>

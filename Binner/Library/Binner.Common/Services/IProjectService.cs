@@ -86,6 +86,34 @@ namespace Binner.Common.Services
         Task<bool> RemovePartAsync(RemoveBomPartRequest request);
 
         /// <summary>
+        /// Get the produce history for a BOM project
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<ICollection<ProjectProduceHistory>> GetProduceHistoryAsync(GetProduceHistoryRequest request);
+
+        /// <summary>
+        /// Update a produce history record (BOM)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<ProjectProduceHistory> UpdateProduceHistoryAsync(ProjectProduceHistory request);
+
+        /// <summary>
+        /// Delete a produce history record
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<bool> DeleteProduceHistoryAsync(ProjectProduceHistory request);
+
+        /// <summary>
+        /// Delete a pcb produce history record
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<bool> DeletePcbProduceHistoryAsync(ProjectPcbProduceHistory request);
+
+        /// <summary>
         /// Produce a PCB by reducing inventory quantities within the BOM
         /// </summary>
         /// <param name="request"></param>
