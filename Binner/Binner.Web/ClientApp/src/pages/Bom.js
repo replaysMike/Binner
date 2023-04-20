@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { HashLink } from 'react-router-hash-link';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { Icon, Input, Tab, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb, Statistic, Menu, Label } from "semantic-ui-react";
@@ -991,6 +992,10 @@ export function Bom(props) {
     }))
   ];
 
+  const scrollWithOffset = (el) => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); 
+}
+
   return (
     <div>
       <Breadcrumb>
@@ -1102,6 +1107,17 @@ export function Bom(props) {
                 <Button secondary onClick={handleOpenProducePcb} size="mini" disabled={pageDisabled}>
                   <i className="pcb-icon tiny" /> {t("button.producePcb", "Produce PCB")}
                 </Button>
+              }
+            />
+            <Popup
+              wide
+              content={t("popup.bom.produceHistory", "View production history")}
+              trigger={
+                <HashLink smooth to={`/project/${project.name}#history`} scroll={scrollWithOffset}>
+                  <Button size="mini" disabled={pageDisabled}>
+                    <i className="pcb-icon tiny" /> {t("button.produceHistory", "History")}
+                  </Button>
+                </HashLink>
               }
             />
             <div style={{ float: "right" }}>

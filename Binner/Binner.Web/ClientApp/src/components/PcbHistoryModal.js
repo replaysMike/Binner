@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation, Trans } from 'react-i18next';
-import { Button, Form, Modal, Image, Header, Confirm, Input, Table, Icon } from "semantic-ui-react";
+import { Button, Form, Modal, Image, Header, Confirm, Input, Table, Popup } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { getImagesToken } from "../common/authentication";
-import { formatCurrency, getCurrencySymbol } from "../common/Utils";
+import { getCurrencySymbol } from "../common/Utils";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
 import _ from "underscore";
@@ -135,6 +135,11 @@ export function PcbHistoryModal(props) {
         {t('confirm.deleteHistory', "Are you sure you want to delete this history record?")}
         <br />
         <br />
+        <Trans i18nKey='confirm.partsWillBeBackInStock'>
+        All consumed parts will be placed <b>back in stock</b>.
+        </Trans>
+        <br />
+        <br />
         <Trans i18nKey='confirm.permanent'>
         This action is <i>permanent and cannot be recovered</i>.
         </Trans>
@@ -176,8 +181,18 @@ export function PcbHistoryModal(props) {
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell>{t('label.pcb', "PCB")}</Table.HeaderCell>
-                    <Table.HeaderCell width={1}>{t('label.quantity', "Quantity")}</Table.HeaderCell>
-                    <Table.HeaderCell width={1}>{t('label.consumed', "Consumed")}</Table.HeaderCell>
+                    <Table.HeaderCell width={1}>
+                      <Popup 
+                        wide
+                        content={<p>
+                          <Trans i18nKey="comp.addPcbModal.popup.quantity">
+                          Enter a quantity (multiplier) of PCB's produced each time you create a PCB. This should normally be 1, unless you require several copies of the same PCB for producing your BOM project.<br/><br/><i>Example:</i> An audio amplifier may require 2 of the same PCB's, one for each left/right channel each time you produce the entire assembly.
+                          </Trans>
+                        </p>} 
+                        trigger={<div>{t('label.quantity', "Quantity")}</div>} 
+                      />
+                    </Table.HeaderCell>
+                    <Table.HeaderCell width={1}><Popup wide content={<p>{t('page.project.popup.totalConsumed', "The total number of parts consumed")}</p>} trigger={<div>{t('label.consumed', "Consumed")}</div>} /></Table.HeaderCell>
                     <Table.HeaderCell width={2}>{t('label.cost', "Cost")}</Table.HeaderCell>
                     <Table.HeaderCell>{t('label.serial', "Serial")}</Table.HeaderCell>
                     <Table.HeaderCell width={1}></Table.HeaderCell>

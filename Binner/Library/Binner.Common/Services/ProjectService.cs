@@ -333,10 +333,17 @@ namespace Binner.Common.Services
 
             var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectProduceHistory
+                .Include(x => x.Project)
+                    .ThenInclude(x => x.ProjectPartAssignments)
+                    .ThenInclude(x => x.Part)
                 .Include(x => x.ProjectPcbProduceHistory)
+                    .ThenInclude(x => x.Pcb)
                 .Where(x => x.ProjectProduceHistoryId == request.ProjectProduceHistoryId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
             if (entity == null) return false;
+
+            // place the parts back in stock
+            await ReturnInventoryStockAsync(context, entity);
 
             // delete all child records
             context.ProjectPcbProduceHistory.RemoveRange(entity.ProjectPcbProduceHistory);
@@ -353,13 +360,70 @@ namespace Binner.Common.Services
 
             var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPcbProduceHistory
+                .Include(x => x.Pcb)
+                .Include(x => x.ProjectProduceHistory)
+                    .ThenInclude(x => x.Project)
+                    .ThenInclude(x => x.ProjectPartAssignments)
+                    .ThenInclude(x => x.Part)
                 .Where(x => x.ProjectPcbProduceHistoryId == request.ProjectPcbProduceHistoryId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
             if (entity == null) return false;
 
+            // place the parts back in stock
+            await ReturnPcbInventoryStockAsync(context, entity);
+
             context.ProjectPcbProduceHistory.Remove(entity);
 
             return await context.SaveChangesAsync() > 0;
+        }
+
+        private async Task ReturnInventoryStockAsync(BinnerContext context, Data.Model.ProjectProduceHistory history)
+        {
+            if (history.ProduceUnassociated)
+            {
+                var produceQuantity = history.Quantity;
+                // place the unassociated parts back in stock
+                foreach (var part in history.Project!.ProjectPartAssignments!.Where(x => x.PcbId == null))
+                {
+                    var quantityRequired = part.Quantity * produceQuantity;
+                    if (part.Part != null)
+                    {
+                        part.Part.Quantity += quantityRequired;
+                    }
+                    else
+                    {
+                        part.QuantityAvailable += quantityRequired;
+                    }
+                }
+            }
+
+            // place the pcb parts back in stock
+            foreach (var pcbHistory in history.ProjectPcbProduceHistory)
+            {
+                await ReturnPcbInventoryStockAsync(context, pcbHistory);
+            }
+        }
+
+        private async Task ReturnPcbInventoryStockAsync(BinnerContext context, Data.Model.ProjectPcbProduceHistory pcbHistory)
+        {
+            // the pcb quantity multiplier
+            var produceQuantity = pcbHistory.ProjectProduceHistory!.Quantity;
+            var pcbQuantity = pcbHistory.PcbQuantity;
+            var project = pcbHistory.ProjectProduceHistory!.Project;
+            var parts = project!.ProjectPartAssignments;
+            var partsAssignedToPcb = parts.Where(x => x.PcbId == pcbHistory.PcbId).ToList();
+            foreach (var part in partsAssignedToPcb)
+            {
+                var quantityRequired = part.Quantity * pcbQuantity * produceQuantity;
+                
+                // also update the parent history record parts consumed count
+                pcbHistory.ProjectProduceHistory.PartsConsumed -= quantityRequired;
+
+                if (part.Part != null)
+                    part.Part.Quantity += quantityRequired;
+                else
+                    part.QuantityAvailable += quantityRequired;
+            }
         }
 
         public async Task<bool> ProducePcbAsync(ProduceBomPcbRequest request)
@@ -373,7 +437,10 @@ namespace Binner.Common.Services
             if (project == null)
                 return false;
 
-            var parts = await GetPartsAsync(request.ProjectId);
+            var parts = await context.ProjectPartAssignments
+                .Include(x => x.Part)
+                .Where(x => x.ProjectId == project.ProjectId && x.OrganizationId == user.OrganizationId)
+                .ToListAsync();
 
             var produceHistory = new Data.Model.ProjectProduceHistory
             {
@@ -396,10 +463,11 @@ namespace Binner.Common.Services
             // no exceptions thrown, write the changes
             produceHistory.PartsConsumed = pcbPartsConsumed + partsConsumed;
             context.ProjectProduceHistory.Add(produceHistory);
-            await context.SaveChangesAsync();
             await ProcessPcbParts(true);
             if (request.Unassociated)
                 await ProcessNonPcbParts(true);
+
+            await context.SaveChangesAsync();
 
             // update project (DateModified)
             project.DateModifiedUtc = DateTime.UtcNow;
@@ -413,7 +481,8 @@ namespace Binner.Common.Services
                 foreach (var pcb in request.Pcbs)
                 {
                     var pcbConsumed = 0;
-                    var pcbEntity = await _storageProvider.GetPcbAsync(pcb.PcbId, user);
+                    var pcbEntity = await context.Pcbs
+                        .FirstOrDefaultAsync(x => x.PcbId == pcb.PcbId && x.OrganizationId == user.OrganizationId);
                     if (pcbEntity == null)
                         throw new InvalidOperationException($"The pcb with Id '{pcb.PcbId}' could not be found!");
 
@@ -438,11 +507,6 @@ namespace Binner.Common.Services
                                 pcbPart.Part.Quantity -= quantityToRemove;
                             else
                                 pcbPart.QuantityAvailable -= quantityToRemove;
-
-                            if (pcbPart.Part != null)
-                                await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(pcbPart.Part), user);
-                            else
-                                await _storageProvider.UpdateProjectPartAssignmentAsync(Mapper.Map<ProjectPartAssignment>(pcbPart), user);
                         }
                     }
 
@@ -453,7 +517,7 @@ namespace Binner.Common.Services
                             // create a history record
                             var pcbProduceHistory = new Data.Model.ProjectPcbProduceHistory
                             {
-                                ProjectProduceHistoryId = produceHistory.ProjectProduceHistoryId,
+                                ProjectProduceHistory = produceHistory,
                                 DateCreatedUtc = DateTime.UtcNow,
                                 DateModifiedUtc = DateTime.UtcNow,
                                 PcbId = pcbEntity.PcbId,
@@ -466,9 +530,6 @@ namespace Binner.Common.Services
                             };
                             context.ProjectPcbProduceHistory.Add(pcbProduceHistory);
                         });
-                        
-                        await context.SaveChangesAsync();
-                        await _storageProvider.UpdatePcbAsync(pcbEntity, user);
                     }
                 }
 
@@ -493,10 +554,6 @@ namespace Binner.Common.Services
                             part.Part.Quantity -= quantityToRemove;
                         else
                             part.QuantityAvailable -= quantityToRemove;
-                        if (part.Part != null)
-                            await _storageProvider.UpdatePartAsync(Mapper.Map<Part>(part.Part), user);
-                        else
-                            await _storageProvider.UpdateProjectPartAssignmentAsync(Mapper.Map<ProjectPartAssignment>(part), user);
                     }
                 }
                 return totalConsumed;
