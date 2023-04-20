@@ -274,7 +274,12 @@ export function Project(props) {
     setConfirmDeleteProduceHistoryIsOpen(true);
     setConfirmDeleteProduceHistoryContent(
       <p>
-        {t('confirm.deleteRecord', "Are you sure you want to delete this record?")}
+        {t('confirm.deleteHistory', "Are you sure you want to delete this history record?")}
+        <br />
+        <br />
+        <Trans i18nKey='confirm.partsWillBeBackInStock'>
+        All consumed parts will be placed <b>back in stock</b>.
+        </Trans>
         <br />
         <br />
         <Trans i18nKey='confirm.permanent'>
@@ -447,8 +452,8 @@ export function Project(props) {
 					</Table>
 				</Segment>
 
-        <Segment disabled={pageDisabled}>
-					<h2>{t('page.project.produceHistory', "Production History")}</h2>
+        <Segment disabled={pageDisabled} style={{minHeight: '500px'}}>
+					<h2 id="history">{t('page.project.produceHistory', "Production History")}</h2>
 					<Table>
 						<Table.Header>
 							<Table.Row>
@@ -461,7 +466,8 @@ export function Project(props) {
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{project.produceHistory.map((p, key) => (
+							{project.produceHistory.length > 0 
+              ? project.produceHistory.map((p, key) => (
 								<Table.Row key={key}>
 									<Table.Cell>{format(parseJSON(p.dateCreatedUtc), FormatFullDateTime)}</Table.Cell>
                   <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='quantity' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.quantity || ''} fluid /></Table.Cell>
@@ -473,7 +479,8 @@ export function Project(props) {
                     <Button circular size='mini' icon='delete' title='Delete produce record' onClick={e => confirmDeleteProduceHistoryOpen(e, p)} />
                   </Table.Cell>
 								</Table.Row>
-							))}
+							))
+            : (<Table.Row><Table.Cell colSpan={6} textAlign="center">{t('message.noResults', "No Results")}</Table.Cell></Table.Row>)}
 						</Table.Body>
 					</Table>
 				</Segment>

@@ -725,14 +725,6 @@ section.formHeader {
     margin-right: 10px;
 }
 
-:root {
-    --toastify-toast-width: 50%;
-}
-
-.Toastify .Toastify__toast-container:has(#wide) {
-    --toastify-toast-width: 70% !important;
-}
-
 .ui.modal .content:has(.image.square) {
     display: flex;
 }
@@ -746,4 +738,16 @@ section.formHeader {
 .ui.modal .content .image.square img {
     width: 300px;
     max-height: 300px;
+}
+
+/* CUSTOM TOAST STYLING */
+:root {
+    --toastify-toast-width: 50%;
+    --toastify-color-error: #e02a15;
+    --toastify-color-warning: #f1e20f;
+    --toastify-color-info: #1b59dd;
+}
+
+.Toastify .Toastify__toast-container:has(#wide) {
+    --toastify-toast-width: 70% !important;
 }
