@@ -7,6 +7,7 @@ using TypeSupport.Extensions;
 using Binner.Model;
 using Binner.Model.Responses;
 using DataModel = Binner.Data.Model;
+using Binner.LicensedProvider;
 
 namespace Binner.StorageProvider.EntityFrameworkCore
 {
@@ -17,13 +18,15 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         private readonly string _providerName;
         private readonly IDictionary<string, string> _config;
         private readonly IMapper _mapper;
+        private readonly ILicensedStorageProvider _licensedStorageProvider;
 
-        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config)
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, ILicensedStorageProvider licensedStorageProvider)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _providerName = providerName;
             _config = config;
+            _licensedStorageProvider = licensedStorageProvider;
         }
 
         public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)
