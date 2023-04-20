@@ -6,6 +6,7 @@ using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Common.Services.Authentication;
 using Binner.Common.StorageProviders;
+using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
@@ -36,6 +37,9 @@ namespace Binner.Web.Configuration
 
             // register services
             RegisterServices(container);
+
+            // register licensed services
+            RegisterLicensedServices(container);
 
             // configure mapping
             RegisterMappingProfiles(container);
@@ -121,6 +125,14 @@ namespace Binner.Web.Configuration
             container.Register<JwtService>(new PerScopeLifetime());
             container.Register<IntegrationService>(new PerScopeLifetime());
             container.Register<VersionManagementService>(new PerScopeLifetime());
+        }
+
+        private static void RegisterLicensedServices(IServiceContainer container)
+        {
+            var configLicenseKey = container.GetInstance<Binner.Model.Configuration.LicenseConfiguration>().LicenseKey;
+            container.RegisterInstance<Binner.LicensedProvider.LicenseConfiguration>(new LicensedProvider.LicenseConfiguration { LicenseKey = configLicenseKey });
+            container.Register<ILicensedService, LicensedService>(new PerScopeLifetime());
+            container.Register<ILicensedStorageProvider, LicensedStorageProvider>(new PerScopeLifetime());
         }
 
         private static void RegisterApiIntegrations(IServiceContainer container)

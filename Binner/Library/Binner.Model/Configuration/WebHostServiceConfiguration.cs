@@ -59,7 +59,7 @@
         /// <summary>
         /// Locale configuration
         /// </summary>
-        public LocaleConfiguration Locale { get; set; } = new ();
+        public LocaleConfiguration Locale { get; set; } = new();
 
         /// <summary>
         /// Authentication configuration
@@ -69,17 +69,16 @@
         /// <summary>
         /// Digikey configuration
         /// </summary>
-        public IntegrationConfiguration Integrations { get; set; } = new ();
+        public IntegrationConfiguration Integrations { get; set; } = new();
 
         /// <summary>
         /// Printer configuration
         /// </summary>
-        public PrinterConfiguration PrinterConfiguration { get; set; } = new ();
-    }
+        public PrinterConfiguration PrinterConfiguration { get; set; } = new();
 
-    public enum Environments
-    {
-        Development,
-        Production
+        /// <summary>
+        /// Registered license configuration for activating paid features
+        /// </summary>
+        public LicenseConfiguration Licensing { get; set; } = new();
     }
 }

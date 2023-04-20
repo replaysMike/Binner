@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Binner.Common.Integrations;
 using Binner.Data;
+using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
@@ -36,8 +37,9 @@ namespace Binner.Common.Services
         private readonly RequestContextAccessor _requestContext;
         private readonly ISwarmService _swarmService;
         private readonly ILogger<PartService> _logger;
+        private readonly ILicensedService _licensedService;
 
-        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor)
+        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor, ILicensedService licensedService)
         {
             _contextFactory = contextFactory;
             _configuration = configuration;
@@ -47,6 +49,7 @@ namespace Binner.Common.Services
             _integrationApiFactory = integrationApiFactory;
             _requestContext = requestContextAccessor;
             _swarmService = swarmService;
+            _licensedService = licensedService;
         }
 
         public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords)

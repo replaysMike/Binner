@@ -46,6 +46,8 @@ namespace Binner.Web.Configuration
             container.RegisterInstance(storageProviderConfiguration);
             services.AddSingleton(binnerConfig);
             container.RegisterInstance(binnerConfig);
+            services.AddSingleton(serviceConfiguration.Licensing);
+            container.RegisterInstance(serviceConfiguration.Licensing);
 
             return configuration;
         }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Binner.Data;
+using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.StorageProvider.EntityFrameworkCore;
 using LightInject;
@@ -25,7 +26,8 @@ namespace Binner.Common.StorageProviders
             // materialize the dependencies
             var contextFactory = container.GetInstance<IDbContextFactory<BinnerContext>>();
             var mapper = container.GetInstance<IMapper>();
-            var instance = Activator.CreateInstance(provider, contextFactory, mapper, providerName, config) as IStorageProvider ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");
+            var licensedStorageProvider = container.GetInstance<ILicensedStorageProvider>();
+            var instance = Activator.CreateInstance(provider, contextFactory, mapper, providerName, config, licensedStorageProvider) as IStorageProvider ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");
             return instance;
         }
     }
