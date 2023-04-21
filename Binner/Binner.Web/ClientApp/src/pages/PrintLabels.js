@@ -7,30 +7,33 @@ import { FormHeader } from "../components/FormHeader";
 import { HandleBinaryResponse } from "../common/handleResponse.js";
 import { Button, Icon, Form, Input, Checkbox, Table, Image, Dropdown, Breadcrumb } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
+import { getImagesToken } from "../common/authentication";
+
 
 export function PrintLabels(props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const barcodeFonts = ["IDAutomationHC39M Free Version"];
+  const defaultPrintPreferences = {
+    lastLabelName: "30277",
+    lastLabelSource: 0,
+    lastFont: DEFAULT_FONT
+  };
   var quan = [];
   for (var i = 1; i <= 10; i++) {
     quan.push({ key: i, value: i, text: i.toString() });
   }
 
   const [loading, setLoading] = useState(false);
-  const [printPreferences, setPrintPreferences] = useState(JSON.parse(localStorage.getItem("printPreferences")) 
-    || {
-      lastLabelName: "30277",
-      lastLabelSource: 0,
-      lastFont: DEFAULT_FONT
-    });
+  const [printPreferences, setPrintPreferences] = useState(JSON.parse(localStorage.getItem("printPreferences")) || defaultPrintPreferences);
   const [printLabelHistory, setPrintLabelHistory] = useState(JSON.parse(localStorage.getItem("printLabelHistory")) || []);
   const [lines, setLines] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [imgBase64, setImgBase64] = useState("");
   const [labelName, setLabelName] = useState(printPreferences.lastLabelName || "30277");
   const [labelSource, setLabelSource] = useState(printPreferences.lastLabelSource || 0);
-  const [font, setFont] = useState(printPreferences.lastFont || DEFAULT_FONT);
   const [quantities, setQuantities] = useState(quan);
+  const [banner, setBanner] = useState(null);
   const [labelPositions, setLabelPositions] = useState([
     {
       key: 1,
@@ -119,7 +122,6 @@ export function PrintLabels(props) {
         const selectedFont = _.find(newFonts, (x) => x && x.text === DEFAULT_FONT);
         setLoading(false);
         setFonts(newFonts);
-        setFont(selectedFont.value);
     });
     };
     
@@ -151,6 +153,7 @@ export function PrintLabels(props) {
     }
 
     const request = {
+      token: getImagesToken(),
       showDiagnostic: false,
       labelName,
       labelSource,
@@ -160,7 +163,7 @@ export function PrintLabels(props) {
           content: l.content,
           fontSize: Number.parseInt(l.fontSize),
           position: Number.parseInt(l.position),
-          font: l.font,
+          fontName: l.font,
           margin: {
             top: Number.parseInt(l.topMargin),
             left: Number.parseInt(l.leftMargin)
@@ -191,6 +194,7 @@ export function PrintLabels(props) {
     e.stopPropagation();
 
     const request = {
+      token: getImagesToken(),
       showDiagnostic: true,
       labelName,
       labelSource,
@@ -200,7 +204,7 @@ export function PrintLabels(props) {
           content: l.content,
           fontSize: Number.parseInt(l.fontSize),
           position: Number.parseInt(l.position),
-          font: l.font,
+          fontName: l.font,
           margin: {
             top: Number.parseInt(l.topMargin),
             left: Number.parseInt(l.leftMargin)
@@ -210,6 +214,7 @@ export function PrintLabels(props) {
       }),
       generateImageOnly: true
     };
+    console.log('request', request);
 
     await fetchApi("api/print/custom", {
       method: "POST",
@@ -218,9 +223,10 @@ export function PrintLabels(props) {
       },
       body: JSON.stringify(request),
     }).then((response) => {
-      const { data } = response;
-      const base64 = arrayBufferToBase64(data);
-      setImgBase64(base64);
+      HandleBinaryResponse(response.responseObject).then((b) => {
+        const base64 = arrayBufferToBase64(b);
+        setImgBase64(base64); 
+      });
     });
   };
 
@@ -234,9 +240,9 @@ export function PrintLabels(props) {
   };
 
   const handleChange = (e, control) => {
+    console.log('handleChange', control.name, control.value);
     let newLabelName = labelName;
     let newLabelSource = labelSource;
-    let newFont = font;
     let newQuantity = quantity;
     switch (control.name) {
       case "labelName":
@@ -259,27 +265,28 @@ export function PrintLabels(props) {
       case "quantity":
         newQuantity = control.value;
         break;
-      case "font":
-        newFont = control.value;
-        localStorage.setItem(
-          "printPreferences",
-          JSON.stringify({ ...printPreferences, font: control.value })
-        );
-        break;
       default:
         break;
     }
     setLabelName(newLabelName);
     setLabelSource(newLabelSource);
-    setFont(newFont);
     setPrintPreferences({...printPreferences});
     setQuantity(newQuantity);
   };
 
   const handleLineChange = (e, control, line) => {
+    console.log('handleLineChange', control.name, control.value);
     switch (control.name) {
       case "barcode":
         line[control.name] = control.checked || false;
+        break;
+      case "font":
+        if (barcodeFonts.includes(control.value)){
+          setBanner(t('page.printLabels.barcodeFontsNotice', "Barcode fonts may be problematic. Values must be surrounded by asterix, ex: *value* or parenthesis, ex: (value) to encode correctly. For best accuracy use a font size of [6, 12, 18, 24, 30, 36]. Alternatively, toggle IsBarcode and a barcode will be drawn for you and no special characters needed."));
+        } else {
+          setBanner(null);
+        }
+        line[control.name] = control.value;
         break;
       default:
         line[control.name] = control.value;
@@ -346,6 +353,7 @@ export function PrintLabels(props) {
     e.preventDefault();
     e.stopPropagation();
     setLines([]);
+    setBanner(null);
   };
 
   const removeLine = (e, line, index) => {
@@ -393,6 +401,8 @@ export function PrintLabels(props) {
         <Button onClick={handleAdd}>{t('button.addLine', "Add line")}</Button>
         <Button onClick={handleReset}>{t('button.reset', "Reset")}</Button>
 
+        {banner && <div className="page-notice resizable">{banner}</div>}
+
         <Table compact celled size="small">
           <Table.Header>
             <Table.Row>
@@ -408,7 +418,8 @@ export function PrintLabels(props) {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {lines.map((l, k) => (
+            {lines.length > 0 
+            ? lines.map((l, k) => (
               <Table.Row key={k}>
                 <Table.Cell>
                   <Input
@@ -482,7 +493,8 @@ export function PrintLabels(props) {
                   />
                 </Table.Cell>
               </Table.Row>
-            ))}
+            ))
+          : (<Table.Row><Table.Cell colSpan={9} textAlign="center">{t('page.printLabels.addLineToStart', "Add a line to get started.")}</Table.Cell></Table.Row>)}
           </Table.Body>
         </Table>
         <Form.Group>

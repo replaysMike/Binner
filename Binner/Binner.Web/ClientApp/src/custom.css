@@ -564,6 +564,16 @@ section.formHeader {
 	max-height: 28px;
 }
 
+.page-banner:has(.page-notice.resizable) {
+    height: auto;
+    min-height: 30px;
+}
+
+.page-notice.resizable {
+    margin-top: 4px;
+    max-height: none;
+}
+
 .page-notice div {
 	max-width: 100%;
 	max-height: 28px;

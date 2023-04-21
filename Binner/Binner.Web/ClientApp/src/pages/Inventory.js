@@ -30,7 +30,6 @@ import {
   Checkbox,
   Dropdown
 } from "semantic-ui-react";
-import { getImagesToken } from "../common/authentication";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
 import PartTypeSelector from "../components/PartTypeSelector";
@@ -43,7 +42,7 @@ import { formatCurrency, formatNumber, getCurrencySymbol } from "../common/Utils
 import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
 import axios from "axios";
-import { getAuthToken } from "../common/authentication";
+import { getAuthToken, getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
 import { GetTypeName, GetTypeValue, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";

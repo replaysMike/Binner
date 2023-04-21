@@ -5,6 +5,8 @@ using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,9 +15,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Threading.Tasks;
+using Binner.Common;
 
 namespace Binner.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -26,14 +31,16 @@ namespace Binner.Web.Controllers
         private readonly IPartService _partService;
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly FontManager _fontManager;
+        private readonly IUserService _userService;
 
-        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, FontManager fontManager)
+        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, FontManager fontManager, IUserService userService)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
             _labelPrinter = labelPrinter;
             _fontManager = fontManager;
+            _userService = userService;
         }
 
         /// <summary>
@@ -42,10 +49,15 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("custom")]
-        public IActionResult PrintCustomLabel(PrintLabelRequest request)
+        [AllowAnonymous]
+        public async Task<IActionResult> PrintCustomLabelAsync(PrintLabelRequest request)
         {
             try
             {
+                var userContext = await _userService.ValidateUserImageToken(request.Token ?? string.Empty);
+                if (userContext == null) return Unauthorized("Invalid image token!");
+                System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
+
                 var stream = new MemoryStream();
 
                 Image image;
