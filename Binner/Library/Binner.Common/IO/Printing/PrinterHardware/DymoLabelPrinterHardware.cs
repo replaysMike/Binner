@@ -29,6 +29,7 @@ namespace Binner.Common.IO.Printing
         private readonly List<PointF> _labelStart = new();
         private readonly IPrinterEnvironment _printer;
         private Rectangle _paperRect;
+        private const float _scaleFactor = 0.75f;
 
         /// <summary>
         /// Printer settings
@@ -195,6 +196,7 @@ namespace Binner.Common.IO.Printing
             }
             if (template.Line2?.Content == template.Line3?.Content)
             {
+                content.Line2 = content.Line2.Replace("\n", "").Replace("\r", "");
                 MergeLines(content.Line2, content.Line3, paperRect, margins, out var newLine, out var newLine2);
                 content.Line2 = newLine;
                 content.Line3 = newLine2;
@@ -229,7 +231,7 @@ namespace Binner.Common.IO.Printing
             // autowrap line 2
             do
             {
-                len = TextMeasurer.Measure(line1, new TextOptions(fontFirstLine));
+                len = TextMeasurer.Measure(line1, new TextOptions(fontFirstLine) { Dpi = Dpi } );
                 if (len.Width > paperRect.Width - margins.Right - margins.Left)
                     line1 = line1.Substring(0, line1.Length - 1);
             } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -239,7 +241,7 @@ namespace Binner.Common.IO.Printing
                 line2 = description.Substring(line1.Length, description.Length - line1.Length).Trim();
                 do
                 {
-                    len = TextMeasurer.Measure(line2, new TextOptions(fontSecondLine));
+                    len = TextMeasurer.Measure(line2, new TextOptions(fontSecondLine) { Dpi = Dpi });
                     if (len.Width > paperRect.Width - margins.Right - margins.Left)
                         line2 = line2.Substring(0, line2.Length - 1);
                 } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -254,8 +256,9 @@ namespace Binner.Common.IO.Printing
             if (string.IsNullOrWhiteSpace(text) || template == null)
                 return new PointF(0, lineOffset.Y);
             var font = CreateFont(template, text, paperRect);
+            
             var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
-            var textOptions = new TextOptions(font) { Dpi = Dpi };
+            var textOptions = new TextOptions(font) { Dpi = Dpi, KerningMode = KerningMode.Auto };
             var textBounds = TextMeasurer.Measure(text, textOptions);
             var x = 0f;
             var y = lineOffset.Y;
@@ -337,10 +340,10 @@ namespace Binner.Common.IO.Printing
             Font font;
             var fontFamily = GetOrCreateFontFamily(template?.FontName ?? DefaultFontName);
             if (template?.AutoSize == true)
-                font = AutosizeFont(fontFamily, template?.FontSize ?? 8 - 1, lineValue, paperRect.Width);
+                font = AutosizeFont(fontFamily, (template?.FontSize ?? 8 - 1) * _scaleFactor, lineValue, paperRect.Width);
             else
             {
-                font = new Font(fontFamily, template?.FontSize ?? 8 - 1);
+                font = new Font(fontFamily, (template?.FontSize ?? 8 - 1) * _scaleFactor);
             }
             return font;
         }
@@ -394,7 +397,7 @@ namespace Binner.Common.IO.Printing
             {
                 Antialias = false,
             };
-            var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, foregroundColor, backgroundColor, rect.Width, 25);
+            var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, foregroundColor, backgroundColor, rect.Width, 55);
             try
             {
                 image.Mutate(c => c.DrawImage(generatedBarcodeImage, new Point(0, rect.Y), graphicsOptions));
@@ -415,7 +418,7 @@ namespace Binner.Common.IO.Printing
             {
                 do
                 {
-                    var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
+                    var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize * _scaleFactor));
                     var textOptions = new TextOptions(testFont)
                     {
                         Dpi = Dpi
@@ -426,7 +429,7 @@ namespace Binner.Common.IO.Printing
                 } while (len.Width > maxWidth);
             }
 
-            return new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize));
+            return new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize * _scaleFactor));
         }
 
         private LabelDefinition GetLabelDimensions(string labelName)

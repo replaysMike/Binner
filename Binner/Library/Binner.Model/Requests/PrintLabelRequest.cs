@@ -2,7 +2,7 @@
 
 namespace Binner.Model.Requests
 {
-    public class PrintLabelRequest
+    public class PrintLabelRequest : IImagesToken
     {
         /// <summary>
         /// True to show diagnostic framing
@@ -28,5 +28,10 @@ namespace Binner.Model.Requests
         /// True to generate image only
         /// </summary>
         public bool GenerateImageOnly { get; set; }
+
+        /// <summary>
+        /// The image token to validate the insecure request with
+        /// </summary>
+        public string? Token { get; set; }
     }
 }
