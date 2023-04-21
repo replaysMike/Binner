@@ -23,7 +23,6 @@ export const Backup = () => {
   const [disableCreateBackupButton, setDisableCreateBackupButton] = useState(false);
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     maxFiles: 3,
-    accept: "application/x-zip-compressed,application/octet-stream",
     onDrop: (acceptedFiles, rejectedFiles, e) => {
       const acceptedMimeTypes = ["application/x-zip-compressed", "application/octet-stream"];
       let errorMsg = "";

@@ -11,7 +11,7 @@ namespace Binner.Data.Configurations
 #if INITIALCREATE
             builder.HasOne(p => p.User)
                 .WithMany(b => b.ProjectPcbProduceHistory)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 #endif
             builder.HasOne(p => p.ProjectProduceHistory)
                 .WithMany(b => b.ProjectPcbProduceHistory)

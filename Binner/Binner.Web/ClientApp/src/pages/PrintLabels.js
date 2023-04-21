@@ -214,7 +214,6 @@ export function PrintLabels(props) {
       }),
       generateImageOnly: true
     };
-    console.log('request', request);
 
     await fetchApi("api/print/custom", {
       method: "POST",
@@ -240,7 +239,6 @@ export function PrintLabels(props) {
   };
 
   const handleChange = (e, control) => {
-    console.log('handleChange', control.name, control.value);
     let newLabelName = labelName;
     let newLabelSource = labelSource;
     let newQuantity = quantity;
@@ -275,7 +273,6 @@ export function PrintLabels(props) {
   };
 
   const handleLineChange = (e, control, line) => {
-    console.log('handleLineChange', control.name, control.value);
     switch (control.name) {
       case "barcode":
         line[control.name] = control.checked || false;

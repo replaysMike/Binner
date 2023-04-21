@@ -23,6 +23,7 @@ export const ActivateLicense = () => {
       </FormHeader>
 
       <Segment raised>
+        
       </Segment>
     </div>
   );

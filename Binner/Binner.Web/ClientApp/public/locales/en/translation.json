@@ -18,7 +18,8 @@
       "parts": "Parts",
       "uniqueParts": "Unique Parts",
       "value": "Value",
-      "projects": "BOM Projects"
+      "projects": "BOM Projects",
+      "admin": "Admin"
     },
     "search": {
       "title":"Inventory",
@@ -202,6 +203,8 @@
       "title": "Print Labels",
       "description": "Print custom multi-line labels for your storage bins.<1 />Print history is kept so you can reuse templates for your labels.",
       "printHistory": "Print History",
+      "addLineToStart": "Add a line to get started.",
+      "barcodeFontsNotice": "Barcode fonts may be problematic. Values must be surrounded by asterix, ex: *value* or parenthesis, ex: (value) to encode correctly. For best accuracy use a font size of [6, 12, 18, 24, 30, 36]. Alternatively, toggle IsBarcode and a barcode will be drawn for you and no special characters needed.",
       "label": {
         "labelType": "Label Type",
         "paperSource": "Paper Source",
@@ -299,6 +302,12 @@
         "title": "Update Part Metadata",
         "description": "Refresh information from external APIs and choose which fields you would like to update."
       }
+    },
+    "backup": {
+      "title": "Backup / Restore",
+      "description": "Create a backup or restore from a backup.",
+      "acceptedFileTypes": "Accepted file types: \"*.bak\"",
+      "backupDescription": "Create a snapshot of your Binner installation."
     }
   },
   "bc": {
@@ -492,7 +501,11 @@
     "saveAnyway": "Save Anyway",
     "addUser": "Add User",
     "generate": "Generate",
-    "close": "Close"
+    "close": "Close",
+    "return": "Return",
+    "restore": "Restore",
+    "createBackup": "Create Backup",
+    "produceHistory": "History"
   },
   "label": {
     "name": "Name",
@@ -603,7 +616,8 @@
     "includeUnassociated": "Include Unassociated",
     "date": "Date",
     "consumed": "Consumed",
-    "serial": "Serial"
+    "serial": "Serial",
+    "allowLogin": "Allow Login"
   },
   "message": {
     "noPartsAdded": "No parts added.",
@@ -697,7 +711,8 @@
       "editReferenceId": "Edit your custom <1 />reference Id(s) you can use for identifying this part.",
       "editSchematicReferenceId": "Edit your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
       "customDescription": "Provide a custom description",
-      "customNote": "Provide a custom note"
+      "customNote": "Provide a custom note",
+      "produceHistory": "View production history"
     }
   },
   "footer": {

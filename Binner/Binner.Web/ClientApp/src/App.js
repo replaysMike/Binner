@@ -51,6 +51,7 @@ import { User } from "./pages/admin/users/User";
 import { Admin } from "./pages/admin/Home";
 import { Backup } from "./pages/admin/Backup";
 import { UpdateParts } from "./pages/admin/UpdateParts";
+import { ActivateLicense } from "./pages/admin/ActivateLicense";
 
 function withSearchParams(Component) {
   return props => <Component {...props} searchParams={useSearchParams()} />;
@@ -156,6 +157,7 @@ class App extends Component {
             <Route exact path="/admin/users/:userId" element={<AdminWrapper><User/></AdminWrapper>} />
             <Route path="/admin/backup" element={<AdminWrapper><Backup /></AdminWrapper>} />
             <Route path="/admin/updateParts" element={<AdminWrapper><UpdateParts /></AdminWrapper>} />
+            <Route path="/admin/activateLicense" element={<AdminWrapper><ActivateLicense /></AdminWrapper>} />
           </Routes>
         </Layout>
         <ErrorContext.Provider value={this.state}>

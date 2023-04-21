@@ -11,7 +11,7 @@ namespace Binner.Data.Configurations
         {
             builder.HasOne(p => p.User)
                 .WithMany(p => p.UserPrinterTemplateConfigurations)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne(p => p.UserPrinterConfiguration)
                 .WithMany(p => p.UserPrinterTemplateConfigurations)

@@ -5,6 +5,7 @@ import _ from "underscore";
 import { Form, Segment, Button, Icon, Confirm, Breadcrumb, Header, Flag } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { fetchApi, getErrorsString } from "../../../common/fetchApi";
+import { generatePassword } from "../../../common/Utils";
 import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Types";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
 import { FormHeader } from "../../../components/FormHeader";
@@ -30,13 +31,9 @@ export function User(props) {
     userPrinterTemplateConfigurations: []
   });
   const [isDirty, setIsDirty] = useState(false);
-  const [addSubscription, setAddSubscription] = useState({ subscriptionLevel: 0, userId: 0 });
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
-  const [confirmDeleteSubscriptionIsOpen, setConfirmDeleteSubscriptionIsOpen] = useState(false);
   const [deleteSelectedItem, setDeleteSelectedItem] = useState(null);
-  const [deleteSubscriptionSelectedItem, setDeleteSubscriptionSelectedItem] = useState(null);
-  const [addSubscriptionVisible, setAddSubscriptionVisible] = useState(false);
-
+  
   const accountTypes = GetTypeDropdown(AccountTypes);
   const emailConfirmedTypes = GetTypeDropdown(BooleanTypes);
   const dateLockedTypes = GetTypeDropdown(BooleanTypes);
@@ -107,34 +104,11 @@ export function User(props) {
     });
   };
 
-  const deleteSubscription = (e, subscription) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setLoading(true);
-    fetchApi(`api/user/subscription`, {
-      method: "DELETE",
-      body: { subscriptionLevel: subscription.subscriptionType, userId: user.userId }
-    }).then(() => {
-      const subscriptions = _.filter(user.subscriptions, (item) => item.subscriptionType !== subscription.subscriptionType);
-      setUser({...user, subscriptions: subscriptions });
-
-      setLoading(false);
-      setConfirmDeleteSubscriptionIsOpen(false);
-    });
-  };
-
   const confirmDeleteOpen = (e, user) => {
     e.preventDefault();
     e.stopPropagation();
     setDeleteSelectedItem(user);
     setConfirmDeleteIsOpen(true);
-  };
-
-  const confirmDeleteSubscriptionOpen = (e, user) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDeleteSubscriptionSelectedItem(user);
-    setConfirmDeleteSubscriptionIsOpen(true);
   };
 
   const confirmDeleteClose = (e) => {
@@ -144,36 +118,10 @@ export function User(props) {
     setConfirmDeleteIsOpen(false);
   };
 
-  const confirmDeleteSubscriptionClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDeleteSubscriptionSelectedItem(null);
-    setConfirmDeleteSubscriptionIsOpen(false);
-  };
-
   const handleChange = (e, control) => {
     user[control.name] = control.value;
     setUser({ ...user });
     setIsDirty(true);
-  };
-
-  const handleSubscriptionChange = (e, control) => {
-    addSubscription[control.name] = control.value;
-    setAddSubscription({ ...addSubscription });
-  };
-
-  const handleShowAddSubscription = (e, control) => {
-    setAddSubscriptionVisible(!addSubscriptionVisible);
-  };
-
-  const generatePassword = () => {
-    var length = 8,
-        charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$",
-        retVal = "";
-    for (var i = 0, n = charset.length; i < length; ++i) {
-        retVal += charset.charAt(Math.floor(Math.random() * n));
-    }
-    return retVal;
   };
 
 	return (
@@ -200,36 +148,32 @@ export function User(props) {
         }}
         size="mini"
       >
-        Return
+        {t('button.return', "Return")}
       </Button>
 
 			<Segment loading={loading} secondary>
         <Confirm
+          className="confirm"
           open={confirmDeleteIsOpen}
           onCancel={confirmDeleteClose}
           onConfirm={(e) => deleteUser(e, deleteSelectedItem)}
-          content="Are you sure you want to delete this user?"
-        />
-        <Confirm
-          open={confirmDeleteSubscriptionIsOpen}
-          onCancel={confirmDeleteSubscriptionClose}
-          onConfirm={(e) => deleteSubscription(e, deleteSubscriptionSelectedItem)}
-          content="Are you sure you want to delete this subscription?"
+          content={t('page.admin.users.confirm.areYouSure', "Are you sure you want to delete this user?")}
         />
         <Form onSubmit={updateUser}>
           {user.userId === 1 &&
             <Header as='h4'>{t('page.admin.users.masterAccount', "Master Admin Account")}</Header>
           }
-          <Form.Input label={t('label.name', "Name")} required focus placeholder="John Doe" value={user.name || ""} name="name" onChange={handleChange} />
-          <Form.Input label={t('label.usernameEmail', "Username / Email")} required iconPosition="left" placeholder="john@example.com" value={user.emailAddress || ""} name="emailAddress" onChange={handleChange}>
+          <Form.Input required label={t('label.name', "Name")} focus placeholder="John Doe" value={user.name || ""} name="name" onChange={handleChange} />
+          <Form.Input required label={t('label.usernameEmail', "Username / Email")} iconPosition="left" placeholder="john@example.com" value={user.emailAddress || ""} name="emailAddress" onChange={handleChange}>
             <Icon name='user' />
             <input />
           </Form.Input>
-          <Form.Input label={t('label.changePassword', "Change Password")} action value={user.password || ""} name="password" onChange={handleChange}>
+          <Form.Input label={t('label.changePassword', "Change Password")} placeholder="Change existing password" action value={user.password || ""} name="password" onChange={handleChange}>
             <input />
             <Button onClick={(e) => { e.preventDefault(); setUser({...user, password: generatePassword()}); }}>{t('button.generate', "Generate")}</Button>
           </Form.Input>
           <Form.Dropdown
+            required
             label={t('label.accountType', "Account Type")}
             placeholder={t('label.accountType', "Account Type")}
             selection

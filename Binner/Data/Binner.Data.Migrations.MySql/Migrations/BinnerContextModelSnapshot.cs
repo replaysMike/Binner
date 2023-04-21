@@ -1211,7 +1211,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("Parts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("PartType");
 
@@ -1231,7 +1231,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("PartSuppliers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Part");
 
@@ -1248,7 +1248,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("PartTypes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("ParentPartType");
 
@@ -1260,7 +1260,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("Pcbs")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });
@@ -1282,7 +1282,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("PcbStoredFileAssignments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Pcb");
 
@@ -1296,7 +1296,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("Projects")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });
@@ -1317,7 +1317,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("ProjectPartAssignments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Part");
 
@@ -1343,7 +1343,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("ProjectPcbAssignments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Pcb");
 
@@ -1367,7 +1367,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("ProjectPcbProduceHistory")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Pcb");
 
@@ -1387,7 +1387,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("ProjectProduceHistory")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Project");
 
@@ -1404,7 +1404,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("StoredFiles")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Part");
 
@@ -1416,7 +1416,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserIntegrationConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });
@@ -1426,7 +1426,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserLoginHistory")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });
@@ -1436,7 +1436,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });
@@ -1446,7 +1446,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
                         .WithMany("UserPrinterTemplateConfigurations")
@@ -1464,7 +1464,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserTokens")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });

@@ -55,8 +55,18 @@ namespace Binner.Common.Services
                 if (user != null)
                 {
                     var userContext = Map(user);
-                    // validate password
-                    if (PasswordHasher.Verify(model.Password, user.PasswordHash))
+                    var isLoginAllowed = false;
+                    if (string.IsNullOrEmpty(user.PasswordHash) && string.IsNullOrEmpty(model.Password))
+                    {
+                        // special case for lost passwords on local installations only, requires database-level password clear as it can't be done via the api
+                        isLoginAllowed = true;
+                    }
+                    else
+                    {
+                        // validate password
+                        isLoginAllowed = PasswordHasher.Verify(model.Password, user.PasswordHash);
+                    }
+                    if (isLoginAllowed)
                     {
                         // authenticated
                         var authenticationResponse = await CreateAuthenticationLoginAsync(context, user, userContext);
@@ -106,7 +116,7 @@ namespace Binner.Common.Services
             if (!user.IsEmailConfirmed)
                 return new AuthenticationResponse(false, "You must confirm your email address before logging in.");
             if (user.DateLockedUtc != null)
-                return new AuthenticationResponse(false, "Account is locked. Please contact support.");
+                return new AuthenticationResponse(false, "Account is locked. Please contact your admin.");
 
             userContext.CanLogin = true;
 

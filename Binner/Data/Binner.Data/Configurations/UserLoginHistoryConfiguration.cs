@@ -11,7 +11,7 @@ namespace Binner.Data.Configurations
         {
             builder.HasOne(x => x.User)
                 .WithMany(x => x.UserLoginHistory)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");
