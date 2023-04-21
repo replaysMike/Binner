@@ -30,14 +30,14 @@ export const Admin = () => {
               <h1>Backup/Restore</h1>
               <p>Backup or restore your Binner installation.</p>
             </li>
-            <li onClick={() => navigate("/admin/updateParts")}>
+            {/*<li onClick={() => navigate("/admin/updateParts")}>
               <h1>Update Part Metadata</h1>
               <p>Refresh information from external APIs and choose which fields you would like to update.</p>
-            </li>
-						<li onClick={() => navigate("/admin/activateLicense")}>
+						</li>*/}
+						{/*<li onClick={() => navigate("/admin/activateLicense")}>
               <h1>Activate License</h1>
               <p>If you have a paid subscription on <a href="https://binner.io" target="_blank" rel="noreferrer">Binner Cloud</a>, activate your license key to gain licensed features in your Binner installation.</p>
-            </li>
+            </li>*/}
           </ul>
         </div>
       </Segment>

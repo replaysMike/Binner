@@ -13,7 +13,6 @@ namespace Binner.Model.Requests
         /// <summary>
         /// Clear-text password
         /// </summary>
-        [Required]
-        public string Password { get; set; } = null!;
+        public string? Password { get; set; } = null!;
     }
 }

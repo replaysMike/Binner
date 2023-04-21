@@ -11,7 +11,7 @@ namespace Binner.Data.Configurations
 #if INITIALCREATE
             builder.HasOne(p => p.User)
                 .WithMany(p => p.PcbStoredFileAssignments)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 #endif
             builder.HasOne(p => p.Pcb)
                 .WithMany(b => b.PcbStoredFileAssignments)

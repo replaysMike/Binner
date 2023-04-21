@@ -21,6 +21,7 @@ namespace Binner.Common.Services
     /// </summary>
     public class UserService : IUserService
     {
+        private const int MinPasswordLength = 6;
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IMapper _mapper;
         private readonly RequestContextAccessor _requestContext;
@@ -34,7 +35,7 @@ namespace Binner.Common.Services
             _configuration = configuration;
         }
 
-        private IQueryable<DataModel.User> GetUserQueryable(BinnerContext context)
+        private IQueryable<DataModel.User> GetUserQueryable(BinnerContext context, IUserContext userContext)
             => context.Users
                 .Include(x => x.OAuthCredentials)
                 .Include(x => x.OAuthRequests)
@@ -43,13 +44,15 @@ namespace Binner.Common.Services
                 .Include(x => x.UserIntegrationConfigurations)
                 .Include(x => x.UserPrinterConfigurations)
                 .Include(x => x.UserPrinterTemplateConfigurations)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .AsQueryable();
 
         public async Task<ICollection<User>> GetUsersAsync(PaginatedRequest request)
         {
+            var userContext = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
-            var entities = await GetUserQueryable(context)
+            var entities = await GetUserQueryable(context, userContext)
                 // .OrderBy(request.OrderBy, request.Direction) // todo: ordering
                 .Skip(pageRecords)
                 .Take(request.Results)
@@ -60,8 +63,9 @@ namespace Binner.Common.Services
 
         public async Task<User> GetUserAsync(User user)
         {
+            var userContext = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await GetUserQueryable(context)
+            var entity = await GetUserQueryable(context, userContext)
                 .WhereIf(user.UserId > 0, x => x.UserId == user.UserId)
                 .WhereIf(!string.IsNullOrEmpty(user.EmailAddress), x => x.EmailAddress == user.EmailAddress)
                 .WhereIf(!string.IsNullOrEmpty(user.Name), x => x.Name == user.Name)
@@ -80,9 +84,13 @@ namespace Binner.Common.Services
 
         public async Task<User> CreateUserAsync(User user)
         {
+            if (string.IsNullOrWhiteSpace(user.Password))
+                throw new InvalidOperationException("Password can not be empty!");
+            if (user.Password.Length < MinPasswordLength)
+                throw new ArgumentException($"Password must be at least {MinPasswordLength} characters in length!");
             var userContext = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await GetUserQueryable(context)
+            var entity = await GetUserQueryable(context, userContext)
                 .Where(x => x.EmailAddress == user.EmailAddress)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
@@ -93,6 +101,9 @@ namespace Binner.Common.Services
             entity = _mapper.Map(user, entity);
             if (string.IsNullOrEmpty(entity.EmailConfirmationToken))
                 entity.EmailConfirmationToken = ConfirmationTokenGenerator.NewToken();
+            entity.IsEmailConfirmed = true;
+            entity.PasswordHash = PasswordHasher.GeneratePasswordHash(user.Password).ToString();
+            entity.OrganizationId = userContext.OrganizationId;
             context.Users.Add(entity);
 
             await context.SaveChangesAsync();
@@ -104,7 +115,7 @@ namespace Binner.Common.Services
         {
             var userContext = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await GetUserQueryable(context)
+            var entity = await GetUserQueryable(context, userContext)
                 .Where(x => x.UserId == user.UserId)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
@@ -118,14 +129,15 @@ namespace Binner.Common.Services
 
             if (!string.IsNullOrWhiteSpace(user.Password))
             {
-                if (user.Password.Length < 6)
+                if (user.Password.Length < MinPasswordLength)
                 {
-                    throw new ArgumentException("Password must be at least 6 characters in length!");
+                    throw new ArgumentException($"Password must be at least {MinPasswordLength} characters in length!");
                 }
                 // reset password
                 entity.PasswordHash = PasswordHasher.GeneratePasswordHash(user.Password).ToString();
             }
-
+            entity.IsEmailConfirmed = true;
+            entity.OrganizationId = userContext.OrganizationId;
             await context.SaveChangesAsync();
 
             return _mapper.Map<User>(entity);
@@ -135,15 +147,22 @@ namespace Binner.Common.Services
         {
             if (userId == 1)
                 throw new SecurityException($"The root admin user cannot be deleted.");
-
+            var userContext = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await GetUserQueryable(context)
+            var entity = await GetUserQueryable(context, userContext)
                 .Where(x => x.UserId == userId)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
             if (entity == null)
                 throw new KeyNotFoundException($"Could not find user with id '{userId}'");
+
+            context.UserTokens.RemoveRange(await context.UserTokens.Where(x => x.UserId == userId).ToListAsync());
+            context.UserLoginHistory.RemoveRange(await context.UserLoginHistory.Where(x => x.UserId == userId).ToListAsync());
+            context.UserPrinterTemplateConfigurations.RemoveRange(await context.UserPrinterTemplateConfigurations.Where(x => x.UserId == userId).ToListAsync());
+            context.UserPrinterConfigurations.RemoveRange(await context.UserPrinterConfigurations.Where(x => x.UserId == userId).ToListAsync());
+            context.OAuthRequests.RemoveRange(await context.OAuthRequests.Where(x => x.UserId == userId).ToListAsync());
+            context.OAuthCredentials.RemoveRange(await context.OAuthCredentials.Where(x => x.UserId == userId).ToListAsync());
 
             context.Users.Remove(entity);
 

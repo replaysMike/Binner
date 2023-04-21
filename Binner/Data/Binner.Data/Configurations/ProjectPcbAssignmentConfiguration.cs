@@ -12,7 +12,7 @@ namespace Binner.Data.Configurations
 
             builder.HasOne(p => p.User)
                 .WithMany(p => p.ProjectPcbAssignments)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
             builder.Property(p => p.DateModifiedUtc)
                 .HasDefaultValueSql("getutcdate()");
 #endif

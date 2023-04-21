@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button, Form, Segment, Icon, Divider, Label } from "semantic-ui-react";
-import { setUserAccount, deAuthenticateUserAccount } from "../common/authentication";
-import { fetchApi, doNothing } from "../common/fetchApi";
+import { useNavigate } from "react-router-dom";
+import { Button, Form, Segment, Icon, Label } from "semantic-ui-react";
+import { setUserAccount } from "../common/authentication";
+import { fetchApi, getErrorsString } from "../common/fetchApi";
 
 export function Login (props) {
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,10 @@ export function Login (props) {
 				localStorage.setItem("showWelcome", true);
         navigate("/", { replace: true, state: { } });
       } else {
-        setErrorMessage(data.message);
+				if (data.message) setErrorMessage(data.message);
+				if (data.errors) {
+					setErrorMessage(getErrorsString(response));
+				}
         setLoading(false);
         //deAuthenticateUserAccount();
       }
@@ -106,7 +109,6 @@ export function Login (props) {
               onChange={handleChange}
             />
             <Form.Input
-              required
               autoComplete="current-password"
               type="password"
               name="password"
@@ -128,9 +130,6 @@ export function Login (props) {
                 LOGIN
                 <Icon name="arrow circle right" />
               </Button>
-            </div>
-            <div style={{ marginTop: "15px" }}>
-              <Link to="/passwordrecovery" className="small">Forgot your password?</Link>
             </div>
           </Form>
         </Segment>

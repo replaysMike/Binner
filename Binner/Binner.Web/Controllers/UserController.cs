@@ -1,9 +1,12 @@
 ﻿using Binner.Common.Services;
 using Binner.Model;
+using Binner.Model.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -32,8 +35,15 @@ namespace Binner.Web.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetUsersAsync([FromQuery] PaginatedRequest request)
         {
-            var users = await _userService.GetUsersAsync(request);
-            return Ok(users);
+            try
+            {
+                var users = await _userService.GetUsersAsync(request);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
+            }
         }
 
         /// <summary>
@@ -43,8 +53,15 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserAsync([FromQuery] User request)
         {
-            var user = await _userService.GetUserAsync(request);
-            return Ok(user);
+            try
+            {
+                var user = await _userService.GetUserAsync(request);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
+            }
         }
 
         /// <summary>
@@ -54,8 +71,15 @@ namespace Binner.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUserAsync(User request)
         {
-            var user = await _userService.CreateUserAsync(request);
-            return Ok(user);
+            try
+            {
+                var user = await _userService.CreateUserAsync(request);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
+            }
         }
 
         /// <summary>
@@ -65,8 +89,15 @@ namespace Binner.Web.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateUserAsync(User request)
         {
-            var user = await _userService.UpdateUserAsync(request);
-            return Ok(user);
+            try
+            {
+                var user = await _userService.UpdateUserAsync(request);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
+            }
         }
 
         /// <summary>
@@ -76,8 +107,15 @@ namespace Binner.Web.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteUserAsync([FromBody] int userId)
         {
-            var result = await _userService.DeleteUserAsync(userId);
-            return Ok(new { result });
+            try
+            {
+                var result = await _userService.DeleteUserAsync(userId);
+                return Ok(new { result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
+            }
         }
     }
 }

@@ -57,6 +57,9 @@
         /// <exception cref="ArgumentException"></exception>
         public static HashedPassword FromHashedPassword(string base64EncodedPasswordHash)
         {
+            if (string.IsNullOrWhiteSpace(base64EncodedPasswordHash))
+                throw new ArgumentException("Hashed password is empty and not valid.");
+
             var hashedPassword = new HashedPassword();
 
             // parse encoded password hash

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Form, Input, Menu, Dropdown, Icon, Popup } from "semantic-ui-react";
-import { isAuthenticated, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
+import { isAuthenticated, isAdmin, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
 import { AppEvents, Events } from "../common/events";
 import "./NavMenu.css";
 
@@ -95,7 +95,9 @@ export function NavMenu(props) {
                       <Dropdown direction="left" item trigger={<Icon name="user" style={{ color: "#042173" }} />}>
                         <Dropdown.Menu>
                           <Dropdown.Item icon="edit" text="Account Settings" as={Link} to="/account" />
-                          <Dropdown.Item icon="users" text="Manage Users" as={Link} to="/admin/users" />
+                          {isAdmin() && 
+                            <Dropdown.Item icon="users" text="Manage Users" as={Link} to="/admin/users" />
+                          }
                           <Dropdown.Item icon="help circle" text="Help" as={Link} to="/help" />
                           <Dropdown.Item icon="bug" text="Report a Bug" as={Link} to="https://github.com/replaysMike/Binner/issues" target="_blank" />
                           <Dropdown.Item icon="sign out" text="Logout" onClick={logout} />
