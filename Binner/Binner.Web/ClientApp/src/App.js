@@ -13,6 +13,7 @@ import { Layout } from "./layouts/Layout";
 
 // components
 import ErrorModal from "./components/ErrorModal";
+import LicenseErrorModal from "./components/LicenseErrorModal";
 
 // styles
 import "./custom.css";
@@ -71,6 +72,7 @@ class App extends Component {
       stackTrace: ""
     };
     window.showErrorWindow = this.showErrorWindow;
+    window.showLicenseErrorWindow = this.showLicenseErrorWindow;
 
     // provide a UI toast when we have authenticated with DigiKey
     if (props.searchParams) {
@@ -106,6 +108,15 @@ class App extends Component {
       this.setState({ modalTitle: "API Error", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message, stackTrace: errorObject.stackTrace });
     else
       this.setState({ modalTitle: "API Error", url: "", header: "", errorMessage: "", stackTrace: "" });
+  };
+
+  showLicenseErrorWindow = errorObject => {
+    if (errorObject && Object.prototype.toString.call(errorObject) === "[object String]"){
+      this.setState({ modalTitle: "License Limitation", url: "", header: "", errorMessage: errorObject });
+    }else if (errorObject)
+      this.setState({ modalTitle: "License Limitation", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message });
+    else
+      this.setState({ modalTitle: "License Limitation", url: "", header: "", errorMessage: "" });
   };
 
   render() {
@@ -162,6 +173,9 @@ class App extends Component {
         </Layout>
         <ErrorContext.Provider value={this.state}>
           <ErrorModal />
+        </ErrorContext.Provider>
+        <ErrorContext.Provider value={this.state}>
+          <LicenseErrorModal />
         </ErrorContext.Provider>
       </div>
     );

@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Integrations;
+using Binner.Global.Common;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;

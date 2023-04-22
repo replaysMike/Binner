@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Binner.Global.Common;
+using Binner.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Binner.Model;
 
 namespace Binner.Common.IO
 {
@@ -20,7 +21,7 @@ namespace Binner.Common.IO
             _storageProvider = storageProvider;
         }
 
-        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext? userContext)
+        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, IUserContext? userContext)
         {
             var result = new ImportResult();
             // is filename correct?
@@ -59,7 +60,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext? userContext)
+        public async Task<ImportResult> ImportAsync(string filename, Stream stream, IUserContext? userContext)
         {
             var result = new ImportResult();
             foreach (var table in SupportedTables)

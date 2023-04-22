@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Binner.Global.Common;
+using Binner.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Binner.Model;
 
 namespace Binner.Common.IO
 {
@@ -23,7 +24,7 @@ namespace Binner.Common.IO
         /// </summary>
         /// <param name="exportFormat">The Binner database to export</param>
         /// <param name="userContext"></param>
-        public async Task<IDictionary<StreamName, Stream>> ExportAsync(string exportFormat, UserContext? userContext)
+        public async Task<IDictionary<StreamName, Stream>> ExportAsync(string exportFormat, IUserContext? userContext)
         {
             var database = await _storageProvider.GetDatabaseAsync(userContext);
             switch (exportFormat.ToLower())

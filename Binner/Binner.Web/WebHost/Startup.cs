@@ -1,5 +1,4 @@
-﻿using Binner.Common.Authentication;
-using Binner.Data;
+﻿using Binner.Data;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Binner.Web.Authorization;
@@ -18,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Binner.Global.Common;
 
 namespace Binner.Web.WebHost
 {

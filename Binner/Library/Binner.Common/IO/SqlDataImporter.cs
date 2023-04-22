@@ -1,4 +1,5 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
+using Binner.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +21,7 @@ namespace Binner.Common.IO
             _storageProvider = storageProvider;
         }
 
-        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext? userContext)
+        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, IUserContext? userContext)
         {
             var result = new ImportResult();
             foreach (var file in files)
@@ -40,7 +41,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext? userContext)
+        public async Task<ImportResult> ImportAsync(string filename, Stream stream, IUserContext? userContext)
         {
             const char delimiter = ',';
             var result = new ImportResult();
@@ -134,7 +135,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        private async Task AddRowAsync(ImportResult result, int rowNumber, char delimiter, string row, string? tableName, Dictionary<string, int> columnMap, ICollection<PartType> partTypes, UserContext? userContext)
+        private async Task AddRowAsync(ImportResult result, int rowNumber, char delimiter, string row, string? tableName, Dictionary<string, int> columnMap, ICollection<PartType> partTypes, IUserContext? userContext)
         {
             var rowData = SplitBoundaries(row, new char[] { delimiter }, true);
             if (string.IsNullOrEmpty(tableName))

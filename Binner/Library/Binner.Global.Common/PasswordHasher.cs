@@ -1,8 +1,7 @@
-﻿using Binner.Model.Authentication;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 
-namespace Binner.Common.Authentication
+namespace Binner.Global.Common
 {
     /// <summary>
     /// Provides the password hashing implementation

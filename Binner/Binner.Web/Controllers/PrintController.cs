@@ -1,4 +1,5 @@
-﻿using Binner.Common.IO.Printing;
+﻿using Binner.Common;
+using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
@@ -16,7 +17,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Binner.Common;
 
 namespace Binner.Web.Controllers
 {

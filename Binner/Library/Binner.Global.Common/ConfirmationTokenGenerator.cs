@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Binner.Common.Services.Authentication
+﻿namespace Binner.Global.Common
 {
     /// <summary>
     /// Generates confirmation tokens

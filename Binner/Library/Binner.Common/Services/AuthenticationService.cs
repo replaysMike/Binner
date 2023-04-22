@@ -1,8 +1,12 @@
-﻿using Binner.Common.Authentication;
-using Binner.Common.IO;
+﻿using Binner.Common.IO;
 using Binner.Common.Services.Authentication;
 using Binner.Data;
+using Binner.Global.Common;
+using Binner.Model;
 using Binner.Model.Authentication;
+using Binner.Model.Configuration;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,10 +16,6 @@ using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Binner.Model;
-using Binner.Model.Configuration;
-using Binner.Model.Requests;
-using Binner.Model.Responses;
 
 namespace Binner.Common.Services
 {

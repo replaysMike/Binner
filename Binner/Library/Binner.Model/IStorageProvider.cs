@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Binner.Global.Common;
 using Binner.Model.Responses;
 
 namespace Binner.Model

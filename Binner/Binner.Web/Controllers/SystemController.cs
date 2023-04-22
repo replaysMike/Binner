@@ -1,8 +1,8 @@
-﻿using Binner.Common;
-using Binner.Common.Integrations;
+﻿using Binner.Common.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
+using Binner.Global.Common;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;

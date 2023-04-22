@@ -1,7 +1,7 @@
 ﻿using Binner.Common.IO;
 using Binner.Data;
 using Binner.Data.Model;
-using Binner.Model;
+using Binner.Global.Common;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -30,14 +30,14 @@ namespace Binner.Common.Services.Authentication
         public IEnumerable<Claim> GetClaims(UserContext user)
         {
             var claims = new List<Claim> {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(JwtClaimTypes.UserId, user.UserId.ToString()),
-                new Claim(JwtClaimTypes.OrganizationId, user.OrganizationId.ToString()),
-                new Claim(JwtClaimTypes.FullName, user.Name),
-                new Claim(ClaimTypes.Name, user.EmailAddress),
-                new Claim(ClaimTypes.HomePhone, user.PhoneNumber),
-                new Claim(JwtClaimTypes.CanLogin, user.CanLogin.ToString()),
-                new Claim(ClaimTypes.Expiration, DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
+                new (ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new (JwtClaimTypes.UserId, user.UserId.ToString()),
+                new (JwtClaimTypes.OrganizationId, user.OrganizationId.ToString()),
+                new (JwtClaimTypes.FullName, user.Name),
+                new (ClaimTypes.Name, user.EmailAddress),
+                new (ClaimTypes.HomePhone, user.PhoneNumber),
+                new (JwtClaimTypes.CanLogin, user.CanLogin.ToString()),
+                new (ClaimTypes.Expiration, DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
             };
             if (user.IsAdmin)
                 claims.Add(new Claim(JwtClaimTypes.Admin, true.ToString()));

@@ -14,8 +14,7 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
 
   let headers = data.headers || {};
 
-  if (!headers["Content-Type"])
-    headers["Content-Type"] = "application/json";
+  if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
 
   if (userAccount && userAccount.isAuthenticated && userAccount.accessToken.length > 0) {
     // authenticated users require a bearer token
@@ -24,14 +23,13 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
   const fetchData = {
     ...data,
     method: data.method || "GET",
-    headers: headers,
+    headers: headers
   };
   if (fetchData.method.toUpperCase() !== "GET" && data.body) {
     // is body already stringified?
-    if (!_.isString(data.body) && headers["Content-Type"] === "application/json"){ 
+    if (!_.isString(data.body) && headers["Content-Type"] === "application/json") {
       fetchData["body"] = JSON.stringify(data.body);
-    }
-    else{
+    } else {
       fetchData["body"] = data.body;
     }
   }
@@ -39,11 +37,11 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
   // store the request we want to send, in case we need to reissue it when Jwt token expires
   const requestContext = {
     url,
-    data: fetchData,
+    data: fetchData
   };
 
   const responseBody = await fetch(requestContext.url, requestContext.data)
-  	.then((response) => {
+    .then((response) => {
       return handleJsonResponse(response, requestContext);
     })
     .catch((response) => {
@@ -51,9 +49,7 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
       if (data.catchErrors) {
         // swallow errors and let the caller handle them
         return response;
-      }
-      else
-        return Promise.reject(response);
+      } else return Promise.reject(response);
     });
   return responseBody;
 };
@@ -111,10 +107,10 @@ export const getErrors = (response) => {
   const errors = [];
   if (response.data && response.data.errors) {
     const keys = Object.keys(response.data.errors);
-    
-    for(let i = 0; i < keys.length; i++) {
+
+    for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      for(let x = 0; x < response.data.errors[key].length; x++) {
+      for (let x = 0; x < response.data.errors[key].length; x++) {
         errors.push({ field: key, value: response.data.errors[key][x] });
       }
     }
@@ -129,7 +125,11 @@ export const getErrors = (response) => {
  */
 export const getErrorsString = (response) => {
   const errors = getErrors(response);
-  const errorString = errors.map(err => { return err.field + ': ' + err.value; }).join("\n");
+  const errorString = errors
+    .map((err) => {
+      return err.field + ": " + err.value;
+    })
+    .join("\n");
   return errorString;
 };
 
@@ -151,7 +151,7 @@ const handle401UnauthorizedAsync = async (response, requestContext) => {
       window.location.replace("/login");
       return {
         ok: false,
-        response: Promise.reject(reissuedResponse),
+        response: Promise.reject(reissuedResponse)
       };
     }
     // continue with re-issued response
@@ -159,18 +159,25 @@ const handle401UnauthorizedAsync = async (response, requestContext) => {
   }
 
   if (!response.ok) {
-    // response has an error, we want to display a error modal box
-    if (response.status >= 404) {
+    if (response.status === 426) {
+      // response has an licensing error, we want to display a licensing error modal box
+      console.log("received 426 license error");
       return {
         ok: false,
-        response: await invokeErrorHandler(response),
+        response: await invokeLicensingErrorHandler(response)
+      };
+    } else if (response.status >= 404) {
+      // response has an error, we want to display a error modal box
+      return {
+        ok: false,
+        response: await invokeErrorHandler(response)
       };
     }
   }
 
   return {
     ok: true,
-    response,
+    response
   };
 };
 
@@ -181,32 +188,50 @@ const handle401UnauthorizedAsync = async (response, requestContext) => {
  */
 const isJson = (response) => {
   var validJsonTypes = ["application/json", "application/problem+json"];
-  return validJsonTypes.some((h) => response.headers.get("content-type") !== null ? response.headers.get("content-type").includes(h) : false);
+  return validJsonTypes.some((h) => (response.headers.get("content-type") !== null ? response.headers.get("content-type").includes(h) : false));
 };
 
 const wrapReturn = (returnData, response) => {
   const data = {
     data: returnData,
     // also return the full response object
-    responseObject: response,
+    responseObject: response
   };
   return data;
 };
 
 const invokeErrorHandler = async (response) => {
   let responseObject = {
-    message: `Status: ${response.status} - No message was specified.`,
+    message: `Status: ${response.status} - No message was specified.`
   };
   if (isJson(response) && !response.bodyUsed) {
     responseObject = await response.json();
-  }  
+  }
 
   const errorObject = {
     url: response.url,
     status: response.status,
-    ...responseObject,
+    ...responseObject
   };
   window.showErrorWindow(errorObject);
+  // return the original response along with the responseObject that was read
+  return Promise.reject(wrapReturn(responseObject, response));
+};
+
+const invokeLicensingErrorHandler = async (response) => {
+  let responseObject = {
+    message: `Status: ${response.status} - No message was specified.`
+  };
+  if (isJson(response) && !response.bodyUsed) {
+    responseObject = await response.json();
+  }
+
+  const errorObject = {
+    url: response.url,
+    status: response.status,
+    ...responseObject
+  };
+  window.showLicenseErrorWindow(errorObject);
   // return the original response along with the responseObject that was read
   return Promise.reject(wrapReturn(responseObject, response));
 };

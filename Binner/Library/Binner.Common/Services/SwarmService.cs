@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Binner.Global.Common;
 using Binner.Model.Swarm;
 using Binner.Model.Swarm.Requests;
 using Binner.Model.Swarm.Responses;
