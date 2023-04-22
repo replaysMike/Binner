@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Binner.Common.Integrations;
 using Binner.Data;
+using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;

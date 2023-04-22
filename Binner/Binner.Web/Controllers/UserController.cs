@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using Binner.LicensedProvider;
 
 namespace Binner.Web.Controllers
 {
@@ -40,6 +41,10 @@ namespace Binner.Web.Controllers
                 var users = await _userService.GetUsersAsync(request);
                 return Ok(users);
             }
+            catch (LicenseException ex)
+            {
+                return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
+            }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
@@ -57,6 +62,10 @@ namespace Binner.Web.Controllers
             {
                 var user = await _userService.GetUserAsync(request);
                 return Ok(user);
+            }
+            catch (LicenseException ex)
+            {
+                return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
             }
             catch (Exception ex)
             {
@@ -76,6 +85,10 @@ namespace Binner.Web.Controllers
                 var user = await _userService.CreateUserAsync(request);
                 return Ok(user);
             }
+            catch (LicenseException ex)
+            {
+                return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
+            }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
@@ -94,6 +107,10 @@ namespace Binner.Web.Controllers
                 var user = await _userService.UpdateUserAsync(request);
                 return Ok(user);
             }
+            catch (LicenseException ex)
+            {
+                return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
+            }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Users api error! ", ex));
@@ -111,6 +128,10 @@ namespace Binner.Web.Controllers
             {
                 var result = await _userService.DeleteUserAsync(userId);
                 return Ok(new { result });
+            }
+            catch (LicenseException ex)
+            {
+                return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
             }
             catch (Exception ex)
             {

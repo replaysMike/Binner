@@ -1,5 +1,6 @@
 ﻿using Binner.Common.Integrations.Models;
 using Binner.Common.Services;
+using Binner.Global.Common;
 using Binner.Model.Configuration.Integrations;
 using Binner.SwarmApi;
 using Binner.SwarmApi.Request;

@@ -3,6 +3,7 @@ using Binner.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using Binner.Global.Common;
 using TypeSupport.Extensions;
 using Binner.Model;
 using Binner.Model.Responses;

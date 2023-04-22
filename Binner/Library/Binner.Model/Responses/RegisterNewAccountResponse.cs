@@ -1,4 +1,5 @@
-﻿using Binner.Model.Authentication;
+﻿using Binner.Global.Common;
+using Binner.Model.Authentication;
 
 namespace Binner.Model.Responses
 {

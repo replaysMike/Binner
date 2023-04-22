@@ -36,10 +36,10 @@
     <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj')">
-    <!-- Use the licensedprovider package -->
+  <!--<ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj')">
+    --><!-- Use the licensedprovider package --><!--
     <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
@@ -78,9 +78,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />-->
     <ProjectReference Include="..\..\Data\Binner.Data\Binner.Data.csproj" />
     <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
     <ProjectReference Include="..\Binner.Legacy\Binner.Legacy.csproj" />
     <ProjectReference Include="..\Binner.Model\Binner.Model.csproj" />
     <ProjectReference Include="..\Nexar.Client\Nexar.Client.csproj" />

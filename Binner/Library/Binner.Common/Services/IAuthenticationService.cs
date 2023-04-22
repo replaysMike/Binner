@@ -1,4 +1,4 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using System.Security.Claims;

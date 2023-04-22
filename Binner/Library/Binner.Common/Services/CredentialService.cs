@@ -1,6 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Binner.Global.Common;
 using Binner.Model;
+using System;
+using System.Threading.Tasks;
 
 namespace Binner.Common.Services
 {

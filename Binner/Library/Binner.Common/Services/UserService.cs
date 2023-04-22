@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using Binner.Common.Authentication;
-using Binner.Common.Extensions;
-using Binner.Common.Services.Authentication;
 using Binner.Data;
+using Binner.Global.Common;
+using Binner.LicensedProvider;
 using Binner.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,18 +20,19 @@ namespace Binner.Common.Services
     /// </summary>
     public class UserService : IUserService
     {
-        private const int MinPasswordLength = 6;
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IMapper _mapper;
         private readonly RequestContextAccessor _requestContext;
         private readonly IConfiguration _configuration;
+        private readonly ILicensedService _licensedService;
 
-        public UserService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, RequestContextAccessor requestContext, IConfigurationRoot configuration)
+        public UserService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, RequestContextAccessor requestContext, IConfigurationRoot configuration, ILicensedService licensedService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _requestContext = requestContext;
             _configuration = configuration;
+            _licensedService = licensedService;
         }
 
         private IQueryable<DataModel.User> GetUserQueryable(BinnerContext context, IUserContext userContext)
@@ -47,101 +47,13 @@ namespace Binner.Common.Services
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .AsQueryable();
 
-        public async Task<ICollection<User>> GetUsersAsync(PaginatedRequest request)
-        {
-            var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
-            var pageRecords = (request.Page - 1) * request.Results;
-            var entities = await GetUserQueryable(context, userContext)
-                // .OrderBy(request.OrderBy, request.Direction) // todo: ordering
-                .Skip(pageRecords)
-                .Take(request.Results)
-                .AsSplitQuery()
-                .ToListAsync();
-            return _mapper.Map<ICollection<User>>(entities);
-        }
+        public Task<User> CreateUserAsync(User user) => _licensedService.CreateUserAsync(user);
 
-        public async Task<User> GetUserAsync(User user)
-        {
-            var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await GetUserQueryable(context, userContext)
-                .WhereIf(user.UserId > 0, x => x.UserId == user.UserId)
-                .WhereIf(!string.IsNullOrEmpty(user.EmailAddress), x => x.EmailAddress == user.EmailAddress)
-                .WhereIf(!string.IsNullOrEmpty(user.Name), x => x.Name == user.Name)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync();
+        public Task<User> GetUserAsync(User user) => _licensedService.GetUserAsync(user);
 
-            var model = _mapper.Map<User>(entity);
-            if (entity != null)
-            {
-                model.PartsInventoryCount = await context.Parts.CountAsync(x => x.UserId == user.UserId);
-                model.PartTypesCount = await context.PartTypes.CountAsync(x => x.UserId == user.UserId);
-            }
+        public Task<ICollection<User>> GetUsersAsync(PaginatedRequest request) => _licensedService.GetUsersAsync(request);
 
-            return model;
-        }
-
-        public async Task<User> CreateUserAsync(User user)
-        {
-            if (string.IsNullOrWhiteSpace(user.Password))
-                throw new InvalidOperationException("Password can not be empty!");
-            if (user.Password.Length < MinPasswordLength)
-                throw new ArgumentException($"Password must be at least {MinPasswordLength} characters in length!");
-            var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await GetUserQueryable(context, userContext)
-                .Where(x => x.EmailAddress == user.EmailAddress)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync();
-
-            if (entity != null)
-                throw new KeyNotFoundException($"User already exists '{user.EmailAddress}'");
-
-            entity = _mapper.Map(user, entity);
-            if (string.IsNullOrEmpty(entity.EmailConfirmationToken))
-                entity.EmailConfirmationToken = ConfirmationTokenGenerator.NewToken();
-            entity.IsEmailConfirmed = true;
-            entity.PasswordHash = PasswordHasher.GeneratePasswordHash(user.Password).ToString();
-            entity.OrganizationId = userContext.OrganizationId;
-            context.Users.Add(entity);
-
-            await context.SaveChangesAsync();
-
-            return _mapper.Map<User>(entity);
-        }
-
-        public async Task<User> UpdateUserAsync(User user)
-        {
-            var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await GetUserQueryable(context, userContext)
-                .Where(x => x.UserId == user.UserId)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync();
-
-            if (entity == null)
-                throw new KeyNotFoundException($"Could not find user with id '{user.UserId}'");
-
-            entity = _mapper.Map(user, entity);
-            if (string.IsNullOrEmpty(entity.EmailConfirmationToken))
-                entity.EmailConfirmationToken = ConfirmationTokenGenerator.NewToken();
-
-            if (!string.IsNullOrWhiteSpace(user.Password))
-            {
-                if (user.Password.Length < MinPasswordLength)
-                {
-                    throw new ArgumentException($"Password must be at least {MinPasswordLength} characters in length!");
-                }
-                // reset password
-                entity.PasswordHash = PasswordHasher.GeneratePasswordHash(user.Password).ToString();
-            }
-            entity.IsEmailConfirmed = true;
-            entity.OrganizationId = userContext.OrganizationId;
-            await context.SaveChangesAsync();
-
-            return _mapper.Map<User>(entity);
-        }
+        public Task<User> UpdateUserAsync(User user) => _licensedService.UpdateUserAsync(user);
 
         public async Task<bool> DeleteUserAsync(int userId)
         {

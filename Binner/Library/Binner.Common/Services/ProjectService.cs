@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Binner.Data;
+using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Requests;
 using Binner.Model.Responses;

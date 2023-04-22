@@ -1,4 +1,5 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
+using Binner.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,7 +26,7 @@ namespace Binner.Common.IO
         /// <param name="files"></param>
         /// <param name="userContext"></param>
         /// <returns></returns>
-        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, UserContext? userContext)
+        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, IUserContext? userContext)
         {
             // group by extension
             var filesByExtension = files.GroupBy(x => Path.GetExtension(x.Filename));
@@ -59,7 +60,7 @@ namespace Binner.Common.IO
         /// <param name="userContext"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<ImportResult> ImportAsync(string filename, Stream stream, UserContext? userContext)
+        public async Task<ImportResult> ImportAsync(string filename, Stream stream, IUserContext? userContext)
         {
             var extension = Path.GetExtension(filename);
             switch (extension.ToLower())

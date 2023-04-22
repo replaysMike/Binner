@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Integrations;
+using Binner.Global.Common;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using System;
