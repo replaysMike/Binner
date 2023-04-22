@@ -14,10 +14,10 @@
     <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
   </ItemGroup>
 
-  <!--<ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj')">
-    --><!-- Use the licensedprovider package --><!--
+  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj')">
+    <!-- Use the licensedprovider package -->
     <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
-  </ItemGroup>-->
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Library\Binner.Model\Binner.Model.csproj" />

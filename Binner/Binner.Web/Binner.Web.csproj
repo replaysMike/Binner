@@ -16,9 +16,9 @@
     <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
     <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <AssemblyVersion>2.3.0.0</AssemblyVersion>
-    <FileVersion>2.3.0.0</FileVersion>
-    <Version>2.3.0</Version>
+    <AssemblyVersion>2.4.0.0</AssemblyVersion>
+    <FileVersion>2.4.0.0</FileVersion>
+    <Version>2.4.0</Version>
     <ApplicationIcon>binner128x128.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -28,10 +28,10 @@
     <ProjectReference Include="..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
   </ItemGroup>
 
-  <!--<ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj')">
-    --><!-- Use the licensedprovider package --><!--
+  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj')">
+    <!-- Use the licensedprovider package -->
     <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
-  </ItemGroup>-->
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
