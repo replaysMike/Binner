@@ -19,15 +19,19 @@ export default function ErrorModal (props) {
 	return (
 	<ErrorContext.Consumer>
 		{({modalTitle, url, header, errorMessage, stackTrace}) => (
-		<Modal centered open={hasErrorMessage(errorMessage)} onClose={handleCloseErrorModal}>
+		<Modal centered open={hasErrorMessage(errorMessage)} onClose={handleCloseErrorModal} className="error-modal">
 		<Modal.Header>{modalTitle}</Modal.Header>
 		<Modal.Content scrolling dimmer='blurring'>
 			<Modal.Description>
-			{header && <h1>{header}</h1>}
-			{errorMessage && <h3>{errorMessage}</h3>}
-			<hr style={{backgroundColor: '#c00', color: '#c00', border: 'none', height: '4px', opacity: '1.0', borderRadius: '4px'}}/>
-			{url && <h2>{t('label.apiEndpoint', "Api Endpoint")}: {url}</h2>}
-			{stackTrace && <p>{stackTrace}</p>}
+				<div>
+					{header && <h1>{header}</h1>}
+					{errorMessage && <h3>{errorMessage}</h3>}
+				</div>
+				<hr />
+				<footer>
+					{url && <h2>{t('label.apiEndpoint', "Api Endpoint")}: {url}</h2>}
+					{stackTrace && <p>{stackTrace}</p>}
+				</footer>
 			</Modal.Description>
 		</Modal.Content>
 		</Modal>

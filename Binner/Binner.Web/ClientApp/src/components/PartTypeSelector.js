@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { CableIcon, CapacitorIcon, ConnectorIcon, CrystalIcon, DiodeIcon, HardwareIcon, ICIcon, InductorIcon, KitIcon, LEDIcon, ModuleIcon, RelayIcon, ResistorIcon, SCRIcon, SensorIcon, SwitchIcon, TransformerIcon, TransistorIcon } from "../common/icons";
+
 import { useTranslation } from "react-i18next";
-import { Dropdown } from "semantic-ui-react";
+import { Dropdown, Icon } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import _ from "underscore";
 import { getIcon } from "../common/partTypes";
@@ -231,6 +233,12 @@ export default function PartTypeSelector(props) {
     if (props.onFocus) props.onFocus(e, control);
   };
 
+  const getSelectedText = (partType) => {
+    if (partType)
+      return (<span>{partType && getIcon(partType?.name, partType?.parentPartTypeId && _.find(partTypes, x => x.partTypeId === partType?.parentPartTypeId)?.name)()} {partType?.name || ""}</span>);
+    return "";
+  };
+
   return (
     <>
 			<label>{props.label}</label>
@@ -238,7 +246,7 @@ export default function PartTypeSelector(props) {
 				<Dropdown
 					id="partTypeDropdown"
 					name={props.name || ""} 
-					text={partType?.name || ""}
+					text={getSelectedText(partType)}
 					search 
 					floating
 					fluid

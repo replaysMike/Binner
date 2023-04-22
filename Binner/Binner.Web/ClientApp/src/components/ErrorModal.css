@@ -1,32 +1,32 @@
-.licensing-modal {
+.error-modal {
 	min-height: 300px;
 }
 
-.licensing-modal .ui.medium.image {
+.error-modal .ui.medium.image {
 	width: 200px;
 }
 
-.licensing-modal .description {
+.error-modal .description {
 	position: relative;
 	width: 100% !important;
 }
 
-.licensing-modal .description footer {
+.error-modal .description footer {
 	position: absolute;
 	bottom: 0;
 }
 
-.licensing-modal .description hr {
+.error-modal .description hr {
 	border: none;
 	height: 4px;
 	opacity: 1.0;
 	border-radius: 4px;
-	color: #0366d6;
-	background-color: #0366d6;
+	color: #c00;
+	background-color: #c00;
 	margin-top: 50px;
 }
 
-.licensing-modal .description p {
+.error-modal .description p {
 	color: #888;
 	font-size: 0.9rem;
 	font-weight: 300;
