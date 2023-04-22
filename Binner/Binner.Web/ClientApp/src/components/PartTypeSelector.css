@@ -1,3 +1,16 @@
 .partTypeSelector .ui.default.dropdown:not(.button)>.text, .ui.dropdown:not(.button)>.default.text {
 	color: rgba(0,0,0,.87);
 }
+
+.ui.selection.dropdown.partTypeSelector {
+	padding-top: 0 !important;
+}
+
+.ui.selection.dropdown.partTypeSelector .text {
+	top: 10px;
+}
+
+.ui.selection.dropdown.partTypeSelector .text svg {
+	margin-top: -1px;
+	margin-right: 10px;
+}
