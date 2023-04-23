@@ -50,7 +50,8 @@ namespace Binner.Data
                 DateCreatedUtc = DateTime.UtcNow,
                 DateModifiedUtc = DateTime.UtcNow,
                 IsEmailConfirmed = true,
-                IsAdmin = true
+                IsAdmin = true,
+                OrganizationId = 1
             };
             context.Users.Add(defaultUser);
         }

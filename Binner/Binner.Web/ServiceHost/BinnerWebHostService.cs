@@ -10,6 +10,7 @@ using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +21,8 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -99,12 +102,12 @@ namespace Binner.Web.ServiceHost
             var ipAddress = IPAddress.Any;
             var ipString = _config.IP;
             if (!string.IsNullOrEmpty(ipString) && ipString != "*")
-                if(!IPAddress.TryParse(_config.IP, out ipAddress)) throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
+                if (!IPAddress.TryParse(_config.IP, out ipAddress)) throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
 
             // use embedded certificate
             var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
             var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
-            
+
             var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ?? throw new BinnerConfigurationException($"Configuration section '{nameof(StorageProviderConfiguration)}' does not exist!");
             var migrationHostBuilder = HostBuilderFactory.Create(storageConfig);
             var migrationHost = migrationHostBuilder.Build();
@@ -122,7 +125,7 @@ namespace Binner.Web.ServiceHost
                     return;
                 }
             }
-            
+
             _nlogLogger.Info($"Building the WebHost on {ipAddress}:{_config.Port} ...");
             var host = Microsoft.AspNetCore.WebHost
             .CreateDefaultBuilder()
@@ -156,9 +159,14 @@ namespace Binner.Web.ServiceHost
             {
                 try
                 {
-                    _logger.LogInformation($"Migrating {storageConfig.Provider} database...");
-                    context.Database.Migrate();
-                    _logger.LogInformation($"{storageConfig.Provider} database migration complete!");
+                    _logger.LogInformation($"Applying EF migrations to {storageConfig.Provider} database...");
+                    await context.Database.MigrateAsync();
+
+                    // apply a Users patch for any customers that were affected
+                    await ApplyOrganizationIdPatchAsync(context);
+                    // end patch
+
+                    _logger.LogInformation($"{storageConfig.Provider} EF migrations successfully applied!");
                 }
                 catch (Exception ex)
                 {
@@ -174,6 +182,68 @@ namespace Binner.Web.ServiceHost
             // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
             _webHost.Services.GetRequiredService<IStorageProvider>()
                 ?.Dispose();
+        }
+
+        private async Task ApplyOrganizationIdPatchAsync(BinnerContext context)
+        {
+            await PatchTableAsync(context, x => x.Users);
+            await PatchTableAsync(context, x => x.OAuthCredentials);
+            await PatchTableAsync(context, x => x.OAuthRequests);
+            await PatchTableAsync(context, x => x.Parts);
+            await PatchTableAsync(context, x => x.PartSuppliers);
+            await PatchTableAsync(context, x => x.PartTypes);
+            await PatchTableAsync(context, x => x.Pcbs);
+            await PatchTableAsync(context, x => x.PcbStoredFileAssignments);
+            await PatchTableAsync(context, x => x.ProjectPartAssignments);
+            await PatchTableAsync(context, x => x.ProjectPcbAssignments);
+            await PatchTableAsync(context, x => x.Projects);
+            await PatchTableAsync(context, x => x.StoredFiles);
+            await PatchTableAsync(context, x => x.UserIntegrationConfigurations);
+            await PatchTableAsync(context, x => x.UserLoginHistory);
+            await PatchTableAsync(context, x => x.UserPrinterConfigurations);
+            await PatchTableAsync(context, x => x.UserPrinterTemplateConfigurations);
+            await PatchTableAsync(context, x => x.UserTokens);
+        }
+
+        private async Task PatchTableAsync<T>(BinnerContext context, Func<BinnerContext, DbSet<T>> expression)
+        where T : class
+        {
+            try
+            {
+                var param = Expression.Parameter(typeof(T), "e");
+                var propExpression = Expression.Property(param, "OrganizationId");
+                var value = 0;
+                Expression<Func<T, bool>> filterLambda;
+                if (propExpression.Type == typeof(Int32))
+                {
+                    filterLambda = Expression.Lambda<Func<T, bool>>(Expression.Equal(propExpression, Expression.Constant(value)), param);
+                }
+                else if (Nullable.GetUnderlyingType(propExpression.Type) == typeof(Int32))
+                {
+                    // value = Convert.ChangeType(value, propExpression.Type);
+                    filterLambda = Expression.Lambda<Func<T, bool>>(Expression.Equal(propExpression, Expression.Convert(Expression.Constant(value), propExpression.Type)), param);
+                }
+                else
+                {
+                    throw new Exception($"Unexpected type: {propExpression.Type}");
+                }
+
+                var records = await expression.Invoke(context).Where(filterLambda).ToListAsync();
+                foreach (var record in records)
+                {
+                    var type = record.GetType();
+                    var pi = type.GetProperty("OrganizationId");
+                    pi.SetValue(record, 1);
+                }
+
+                var updatedCount = await context.SaveChangesAsync();
+                if (updatedCount > 0) _logger!.LogWarning($"Patched {updatedCount} {typeof(T).Name}s missing OrganizationId!");
+            }
+            catch (Exception ex)
+            {
+                // log the error
+                _logger!.LogError(ex, "PatchTableAsync encountered an unexpected error!");
+            }
         }
 
         /// <summary>

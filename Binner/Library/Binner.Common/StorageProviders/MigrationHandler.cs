@@ -195,7 +195,8 @@ namespace Binner.Common.StorageProviders
                 DateCreatedUtc = DateTime.UtcNow,
                 DateModifiedUtc = DateTime.UtcNow,
                 IsEmailConfirmed = true,
-                IsAdmin = true
+                IsAdmin = true,
+                OrganizationId = 1
             };
 #endif
 
@@ -356,6 +357,7 @@ UPDATE UserPrinterConfigurations SET OrganizationId = 1;
 UPDATE UserPrinterTemplateConfigurations SET OrganizationId = 1;
 UPDATE Users SET OrganizationId = 1;
 UPDATE UserTokens SET OrganizationId = 1;
+UPDATE Users SET OrganizationId = 1;
 ");
 
                         _logger.Info("Successfully migrated Binner database to Sqlite!");
