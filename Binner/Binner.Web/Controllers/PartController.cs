@@ -350,20 +350,27 @@ namespace Binner.Web.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetDashboardSummaryAsync()
         {
-            var uniquePartsCount = await _partService.GetUniquePartsCountAsync();
-            var partsCount = await _partService.GetPartsCountAsync();
-            var partsCost = await _partService.GetPartsValueAsync();
-            var lowStockCount = await _partService.GetLowStockAsync(new PaginatedRequest { Results = 999 });
-            var projectsCount = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
-            return Ok(new
+            try
             {
-                UniquePartsCount = uniquePartsCount,
-                PartsCount = partsCount,
-                PartsCost = partsCost,
-                LowStockCount = lowStockCount.Items.Count(),
-                ProjectsCount = projectsCount.Count,
-                Currency = _config.Locale.Currency.ToString().ToUpper()
-            });
+                var uniquePartsCount = await _partService.GetUniquePartsCountAsync();
+                var partsCount = await _partService.GetPartsCountAsync();
+                var partsCost = await _partService.GetPartsValueAsync();
+                var lowStockCount = await _partService.GetLowStockAsync(new PaginatedRequest { Results = 999 });
+                var projectsCount = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
+                return Ok(new
+                {
+                    UniquePartsCount = uniquePartsCount,
+                    PartsCount = partsCount,
+                    PartsCost = partsCost,
+                    LowStockCount = lowStockCount.Items.Count(),
+                    ProjectsCount = projectsCount.Count,
+                    Currency = _config.Locale.Currency.ToString().ToUpper()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Error", ex));
+            }
         }
 
         /// <summary>

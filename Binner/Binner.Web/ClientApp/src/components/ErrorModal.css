@@ -1,5 +1,8 @@
 .error-modal {
-	min-height: 300px;
+	min-height: 400px;
+}
+
+.error-modal .content {
 }
 
 .error-modal .ui.medium.image {
@@ -7,13 +10,11 @@
 }
 
 .error-modal .description {
-	position: relative;
 	width: 100% !important;
 }
 
 .error-modal .description footer {
-	position: absolute;
-	bottom: 0;
+	margin-top: auto;
 }
 
 .error-modal .description hr {

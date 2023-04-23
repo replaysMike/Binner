@@ -411,9 +411,9 @@ INNER JOIN (
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
-                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
-                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
             var entities = await entitiesQueryable
                 .Skip(pageRecords)
@@ -471,9 +471,9 @@ INNER JOIN (
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
-                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
-                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
 
             var entities = await entitiesQueryable.Skip(pageRecords)
@@ -693,9 +693,9 @@ INNER JOIN (
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
-                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
-                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
             var entities = await entitiesQueryable
                 .Skip(pageRecords)
@@ -870,9 +870,9 @@ INNER JOIN (
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
-                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
-                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
 
             var entities = await entitiesQueryable
@@ -1014,9 +1014,9 @@ INNER JOIN (
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
-                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
-                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy));
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
             var entities = await entitiesQueryable
                 .Skip(pageRecords)

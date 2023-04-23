@@ -17,7 +17,7 @@ import LicenseErrorModal from "./components/LicenseErrorModal";
 
 // styles
 import "./custom.css";
-import './bootstrap.css'; /* needed for the carousel control */
+import "./bootstrap.css"; /* needed for the carousel control */
 
 // pages
 import { AccessDenied } from "./pages/AccessDenied";
@@ -41,9 +41,9 @@ import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
 import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalculator";
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
 import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
-import { Help } from './pages/help/Home';
-import { Scanning } from './pages/help/Scanning';
-import { ApiIntegrations } from './pages/help/ApiIntegrations';
+import { Help } from "./pages/help/Home";
+import { Scanning } from "./pages/help/Scanning";
+import { ApiIntegrations } from "./pages/help/ApiIntegrations";
 import { BOM } from "./pages/help/BOM";
 
 // admin
@@ -55,21 +55,29 @@ import { UpdateParts } from "./pages/admin/UpdateParts";
 import { ActivateLicense } from "./pages/admin/ActivateLicense";
 
 function withSearchParams(Component) {
-  return props => <Component {...props} searchParams={useSearchParams()} />;
+  return (props) => <Component {...props} searchParams={useSearchParams()} />;
 }
 
 class App extends Component {
   static displayName = App.name;
   history = createHistory(this.props);
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
-      modalTitle: "",
-      url: "",
-      header: "",
-      errorMessage: "",
-      stackTrace: ""
+      error: {
+        modalTitle: "",
+        url: "",
+        header: "",
+        errorMessage: "",
+        stackTrace: ""
+      },
+      licenseError: {
+        modalTitle: "",
+        url: "",
+        header: "",
+        errorMessage: ""
+      }
     };
     window.showErrorWindow = this.showErrorWindow;
     window.showLicenseErrorWindow = this.showLicenseErrorWindow;
@@ -77,11 +85,11 @@ class App extends Component {
     // provide a UI toast when we have authenticated with DigiKey
     if (props.searchParams) {
       const [searchParams] = props.searchParams;
-      const apiAuthSuccess = searchParams.get("api-authenticate") || '';
-      if (apiAuthSuccess !== '') {
-        let apiName = searchParams.get("api") || 'External Api';
+      const apiAuthSuccess = searchParams.get("api-authenticate") || "";
+      if (apiAuthSuccess !== "") {
+        let apiName = searchParams.get("api") || "External Api";
         // validate the name
-        switch(apiName.toLowerCase()){
+        switch (apiName.toLowerCase()) {
           case "digikey":
           case "mouser":
           case "swarm":
@@ -89,34 +97,29 @@ class App extends Component {
           case "arrow":
             break;
           default:
-            apiName = 'External Api';
+            apiName = "External Api";
             break;
         }
         toast.dismiss();
-        if (apiAuthSuccess)
-          toast.success(`Successfully authenticated with ${apiName}!`);
-        else
-          toast.error(`Failed to authenticate with ${apiName}!`);
+        if (apiAuthSuccess) toast.success(`Successfully authenticated with ${apiName}!`);
+        else toast.error(`Failed to authenticate with ${apiName}!`);
       }
     }
   }
 
-  showErrorWindow = errorObject => {
-    if (errorObject && Object.prototype.toString.call(errorObject) === "[object String]"){
-      this.setState({ modalTitle: "Error", url: "", header: "", errorMessage: errorObject, stackTrace: "" });
-    }else if (errorObject)
-      this.setState({ modalTitle: "API Error", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message, stackTrace: errorObject.stackTrace });
-    else
-      this.setState({ modalTitle: "API Error", url: "", header: "", errorMessage: "", stackTrace: "" });
+  showErrorWindow = (errorObject) => {
+    if (errorObject && Object.prototype.toString.call(errorObject) === "[object String]") {
+      this.setState({ error: { modalTitle: "Error", url: "", header: "", errorMessage: errorObject, stackTrace: "" } });
+    } else if (errorObject)
+      this.setState({ error: { modalTitle: "API Error", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message, stackTrace: errorObject.stackTrace } });
+    else this.setState({ error: { modalTitle: "API Error", url: "", header: "", errorMessage: "", stackTrace: "" } });
   };
 
-  showLicenseErrorWindow = errorObject => {
-    if (errorObject && Object.prototype.toString.call(errorObject) === "[object String]"){
-      this.setState({ modalTitle: "License Limitation", url: "", header: "", errorMessage: errorObject });
-    }else if (errorObject)
-      this.setState({ modalTitle: "License Limitation", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message });
-    else
-      this.setState({ modalTitle: "License Limitation", url: "", header: "", errorMessage: "" });
+  showLicenseErrorWindow = (errorObject) => {
+    if (errorObject && Object.prototype.toString.call(errorObject) === "[object String]") {
+      this.setState({ licenseError: { modalTitle: "License Limitation", url: "", header: "", errorMessage: errorObject } });
+    } else if (errorObject) this.setState({ licenseError: { modalTitle: "License Limitation", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message } });
+    else this.setState({ licenseError: { modalTitle: "License Limitation", url: "", header: "", errorMessage: "" } });
   };
 
   render() {
@@ -144,18 +147,9 @@ class App extends Component {
             <Route exact path="/tools" element={<Tools />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/tools/ohmslaw" element={<OhmsLawCalculator />} />
-            <Route
-              path="/tools/resistor"
-              element={<ResistorColorCodeCalculator />}
-            />
-            <Route
-              path="/tools/voltagedivider"
-              element={<VoltageDividerCalculator />}
-            />
-            <Route
-              path="/tools/barcodescanner"
-              element={<BarcodeScanner />}
-            />
+            <Route path="/tools/resistor" element={<ResistorColorCodeCalculator />} />
+            <Route path="/tools/voltagedivider" element={<VoltageDividerCalculator />} />
+            <Route path="/tools/barcodescanner" element={<BarcodeScanner />} />
             <Route exact path="/help" element={<Help />} />
             <Route path="/help/scanning" element={<Scanning />} />
             <Route path="/help/api-integrations" element={<ApiIntegrations />} />
@@ -163,20 +157,59 @@ class App extends Component {
 
             {/* admin */}
 
-            <Route path="/admin" element={<AdminWrapper><Admin /></AdminWrapper>} />
-            <Route path="/admin/users" element={<AdminWrapper><Users /></AdminWrapper>} />
-            <Route exact path="/admin/users/:userId" element={<AdminWrapper><User/></AdminWrapper>} />
-            <Route path="/admin/backup" element={<AdminWrapper><Backup /></AdminWrapper>} />
-            <Route path="/admin/updateParts" element={<AdminWrapper><UpdateParts /></AdminWrapper>} />
-            <Route path="/admin/activateLicense" element={<AdminWrapper><ActivateLicense /></AdminWrapper>} />
+            <Route
+              path="/admin"
+              element={
+                <AdminWrapper>
+                  <Admin />
+                </AdminWrapper>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminWrapper>
+                  <Users />
+                </AdminWrapper>
+              }
+            />
+            <Route
+              exact
+              path="/admin/users/:userId"
+              element={
+                <AdminWrapper>
+                  <User />
+                </AdminWrapper>
+              }
+            />
+            <Route
+              path="/admin/backup"
+              element={
+                <AdminWrapper>
+                  <Backup />
+                </AdminWrapper>
+              }
+            />
+            <Route
+              path="/admin/updateParts"
+              element={
+                <AdminWrapper>
+                  <UpdateParts />
+                </AdminWrapper>
+              }
+            />
+            <Route
+              path="/admin/activateLicense"
+              element={
+                <AdminWrapper>
+                  <ActivateLicense />
+                </AdminWrapper>
+              }
+            />
           </Routes>
         </Layout>
-        <ErrorContext.Provider value={this.state}>
-          <ErrorModal />
-        </ErrorContext.Provider>
-        <ErrorContext.Provider value={this.state}>
-          <LicenseErrorModal />
-        </ErrorContext.Provider>
+        <ErrorModal context={this.state.error} />
+        <LicenseErrorModal context={this.state.licenseError} />
       </div>
     );
   }
