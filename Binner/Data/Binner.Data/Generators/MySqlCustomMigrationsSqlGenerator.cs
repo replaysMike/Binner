@@ -60,8 +60,8 @@ namespace Binner.Data.Generators
         private string? TransformDefaultDateColumn(string input)
         {
             return input
-                .Replace("getutcdate()", "UTC_TIMESTAMP()", _stringComparison)
-                .Replace("getdate()", "CURRENT_TIMESTAMP()", _stringComparison);
+                .Replace("getutcdate()", "(UTC_TIMESTAMP())", _stringComparison)
+                .Replace("getdate()", "(CURRENT_TIMESTAMP())", _stringComparison);
         }
     }
 }
