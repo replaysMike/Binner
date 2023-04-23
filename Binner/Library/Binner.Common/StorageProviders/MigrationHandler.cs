@@ -331,10 +331,32 @@ namespace Binner.Common.StorageProviders
 
                         // create the Sqlite database
                         _logger.Info("Migrating Binner database to Sqlite...");
+
                         context.Database.Migrate();
 
                         // import data
                         ImportBinnerDb(binnerDb, context, userId);
+
+                        // reapply the data migration for Sqlite, because there was no data during migrate no OrganizationIds were set as intended.
+                        context.Database.ExecuteSql($@"
+UPDATE OAuthCredentials SET OrganizationId = 1;
+UPDATE OAuthRequests SET OrganizationId = 1;
+UPDATE Parts SET OrganizationId = 1;
+UPDATE PartSuppliers SET OrganizationId = 1;
+UPDATE PartTypes SET OrganizationId = 1;
+UPDATE Pcbs SET OrganizationId = 1;
+UPDATE PcbStoredFileAssignments SET OrganizationId = 1;
+UPDATE ProjectPartAssignments SET OrganizationId = 1;
+UPDATE ProjectPcbAssignments SET OrganizationId = 1;
+UPDATE Projects SET OrganizationId = 1;
+UPDATE StoredFiles SET OrganizationId = 1;
+UPDATE UserIntegrationConfigurations SET OrganizationId = 1;
+UPDATE UserLoginHistory SET OrganizationId = 1;
+UPDATE UserPrinterConfigurations SET OrganizationId = 1;
+UPDATE UserPrinterTemplateConfigurations SET OrganizationId = 1;
+UPDATE Users SET OrganizationId = 1;
+UPDATE UserTokens SET OrganizationId = 1;
+");
 
                         _logger.Info("Successfully migrated Binner database to Sqlite!");
                         // success!
