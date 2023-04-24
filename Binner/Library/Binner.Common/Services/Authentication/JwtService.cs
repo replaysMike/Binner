@@ -76,10 +76,7 @@ namespace Binner.Common.Services.Authentication
         /// Generate a token that can be used to serve secure images
         /// </summary>
         /// <returns></returns>
-        public async Task<string?> GenerateImagesTokenAsync()
-        {
-            return ConfirmationTokenGenerator.NewToken();
-        }
+        public string? GenerateImagesToken() => ConfirmationTokenGenerator.NewToken();
 
         /// <summary>
         /// Get the security key

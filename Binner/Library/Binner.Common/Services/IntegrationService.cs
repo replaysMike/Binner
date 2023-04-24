@@ -57,6 +57,7 @@ namespace Binner.Common.Services
                 var digikeyConfiguration = new Dictionary<string, object>
                 {
                     { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
+                    { "Site", request.Configuration.Where(x => x.Key.Equals("Site", comparisonType) && x.Value != null).Select(x => int.Parse(x.Value ?? "0")).FirstOrDefault() },
                     { "ClientId", request.Configuration.Where(x => x.Key.Equals("ClientId", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
                     { "ClientSecret", request.Configuration.Where(x => x.Key.Equals("ClientSecret", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
                     { "oAuthPostbackUrl", request.Configuration.Where(x => x.Key.Equals("oAuthPostbackUrl", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },

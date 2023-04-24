@@ -178,11 +178,21 @@ namespace Binner.Common.Services
             }
 
             // replace old refresh token with a new one (rotate token)
-            var newRefreshToken = RotateRefreshToken(refreshToken);
+            var (newRefreshToken, newImagesToken) = RotateRefreshToken(refreshToken);
             context.UserTokens.Add(new Data.Model.UserToken
             {
                 TokenTypeId = TokenTypes.RefreshToken,
                 Token = newRefreshToken.Token,
+                DateExpiredUtc = newRefreshToken.Expires,
+                DateRevokedUtc = newRefreshToken.Revoked,
+                UserId = user.UserId,
+                OrganizationId = user.OrganizationId,
+                Ip = _requestContext.GetIp()
+            });
+            context.UserTokens.Add(new Data.Model.UserToken
+            {
+                TokenTypeId = TokenTypes.ImagesToken,
+                Token = newImagesToken,
                 DateExpiredUtc = newRefreshToken.Expires,
                 DateRevokedUtc = newRefreshToken.Revoked,
                 UserId = user.UserId,
@@ -203,7 +213,7 @@ namespace Binner.Common.Services
             // generate new jwt
             var userContext = Map(user);
             var jwtToken = _jwt.GenerateJwtToken(userContext);
-            var imagesToken = await _jwt.GenerateImagesTokenAsync();
+            var imagesToken = _jwt.GenerateImagesToken();
 
             return new AuthenticationResponse(userContext, new AuthenticatedTokens
             {
@@ -496,7 +506,7 @@ namespace Binner.Common.Services
 
             // login allowed, issue a jwt access token & refresh token
             var jwtToken = _jwt.GenerateJwtToken(userContext);
-            var imagesToken = await _jwt.GenerateImagesTokenAsync();
+            var imagesToken = _jwt.GenerateImagesToken();
             var refreshToken = _jwt.GenerateRefreshToken();
 
             return new AuthenticatedTokens
@@ -521,12 +531,13 @@ namespace Binner.Common.Services
             return userToken;
         }
 
-        private RefreshToken RotateRefreshToken(Data.Model.UserToken refreshToken)
+        private (RefreshToken, string? imagesToken) RotateRefreshToken(Data.Model.UserToken refreshToken)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
             var newRefreshToken = _jwt.GenerateRefreshToken();
+            var newImagesToken = _jwt.GenerateImagesToken();
             RevokeRefreshToken(refreshToken, newRefreshToken.Token);
-            return newRefreshToken;
+            return (newRefreshToken, newImagesToken);
         }
 
         private async Task RemoveOldUserTokensAsync(BinnerContext context, Data.Model.User user)
