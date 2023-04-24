@@ -32,3 +32,15 @@
 	font-size: 0.9rem;
 	font-weight: 300;
 }
+
+.error-modal .message div:nth-of-type(1) {
+	font-size: 1.3rem;
+	font-weight: 500;
+	color: #333;
+}
+
+.error-modal .message {
+	font-size: 1.1rem;
+	font-weight: 500;
+	color: #333;
+}

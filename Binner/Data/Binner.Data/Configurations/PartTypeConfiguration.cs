@@ -17,7 +17,7 @@ namespace Binner.Data.Configurations
 #endif
             builder.HasOne(p => p.ParentPartType)
                 .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");

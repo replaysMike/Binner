@@ -71,10 +71,35 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = context.PartTypes.FirstOrDefault(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
+
+            var entity = await context.PartTypes.FirstOrDefaultAsync(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
+
+            // does it have children?
+            var hasChildren = await context.PartTypes.AnyAsync(x => x.ParentPartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
+            if (hasChildren)
+                throw new InvalidOperationException("Can't delete part type that has children. You must delete the children first.");
+
+            // dereference any parts with this part type
+            var partsWithPartType = await context.Parts.Where(x => x.PartTypeId == partType.PartTypeId).ToListAsync();
+            // set it to the Other part type if it exists
+            var newDefaultPartType = await context.PartTypes
+                .Where(x => x.PartTypeId != partType.PartTypeId && x.PartTypeId == (long)SystemDefaults.DefaultPartTypes.Other)
+                .FirstOrDefaultAsync();
+            if (newDefaultPartType == null)
+            {
+                // if all else fails, set it to the first part type available
+                newDefaultPartType = await context.PartTypes
+                    .Where(x => x.PartTypeId != partType.PartTypeId)
+                    .OrderBy(x => x.PartTypeId)
+                    .FirstAsync();
+            }
+            foreach (var part in partsWithPartType)
+                part.PartTypeId = newDefaultPartType.PartTypeId;
+
             context.PartTypes.Remove(entity);
+
             await context.SaveChangesAsync();
             return true;
         }

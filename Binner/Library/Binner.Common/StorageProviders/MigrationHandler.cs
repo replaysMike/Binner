@@ -46,7 +46,7 @@ namespace Binner.Common.StorageProviders
                         {
                             try
                             {
-                                using (var stream = File.Open(fsConfig.Filename, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                                using (var stream = File.Open(fsConfig.Filename, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                                 {
                                     var version = ReadDbVersion(stream);
                                     if (version == null)

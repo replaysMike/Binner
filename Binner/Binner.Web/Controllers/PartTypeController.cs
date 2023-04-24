@@ -153,9 +153,9 @@ namespace Binner.Web.Controllers
                 });
                 return Ok(isDeleted);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Cannot delete. ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to delete.", ex));
             }
         }
     }

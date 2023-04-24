@@ -1,6 +1,7 @@
 import { Modal } from "semantic-ui-react";
 import { useTranslation } from "react-i18next";
 import React, { useState, useEffect } from "react";
+import reactStringReplace from "react-string-replace";
 import "./ErrorModal.css";
 
 export default function ErrorModal(props) {
@@ -22,6 +23,15 @@ export default function ErrorModal(props) {
   };
 
   if (context) {
+		const errorMessages = [];
+		if (context.errorMessage && context.errorMessage.includes("\n")){
+			const errorMessagesArray = context.errorMessage.split('\n');
+			for(let i = 0; i < errorMessagesArray.length; i++)
+				errorMessages.push(errorMessagesArray[i]);
+		} else {
+			errorMessages.push(context.errorMessage);
+		}
+	
     return (
       <Modal centered open={hasErrorMessage(context.errorMessage)} onClose={handleCloseErrorModal} className="error-modal">
         <Modal.Header>{context.modalTitle}</Modal.Header>
@@ -29,7 +39,11 @@ export default function ErrorModal(props) {
           <Modal.Description>
             <div>
               {context.header && <h1>{context.header}</h1>}
-              {context.errorMessage && <h3>{context.errorMessage}</h3>}
+              {errorMessages && errorMessages.length > 0 && <div className="message">
+								{errorMessages.map((msg, key) => (
+									<div key={key}>{msg}</div>
+								))}
+							</div>}
             </div>
             <hr />
             <footer>

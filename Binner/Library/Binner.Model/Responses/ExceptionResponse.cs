@@ -25,11 +25,12 @@
         public ExceptionResponse(string message, Exception exception)
         {
             ExceptionType = $"{exception.GetType().FullName}";
-            Message = $"{message}An exception occurred of type {ExceptionType}{Environment.NewLine}";
-            Message += $"{exception.Message}";
+            Message = $"{message}{Environment.NewLine}";
+            Message += $"An exception occurred of type {ExceptionType}{Environment.NewLine}";
+            Message += $"{exception.Message}{Environment.NewLine}";
             if (exception.InnerException != null)
             {
-                Message += $"{Environment.NewLine}Base Exception:{Environment.NewLine}{exception.GetBaseException().Message}";
+                Message += $"Base Exception:{Environment.NewLine}{exception.GetBaseException().Message}{Environment.NewLine}";
             }
             StackTrace = exception.StackTrace;
         }

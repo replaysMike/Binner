@@ -25,17 +25,6 @@ namespace Binner.Common.Services
 
         public async Task<bool> DeletePartTypeAsync(PartType partType)
         {
-            var existingPartType = await _storageProvider.GetPartTypeAsync(partType.PartTypeId, _requestContext.GetUserContext());
-            if (existingPartType == null)
-                return false;
-            
-            // does it have children? todo: need storage provider support for this
-            var partTypes = await GetPartTypesAsync();
-            if (partTypes.Any(x => x.ParentPartTypeId== existingPartType.PartTypeId))
-            {
-                throw new InvalidOperationException($"Cannot delete part type '{existingPartType.Name}' until it's children are deleted.");
-            }            
-
             return await _storageProvider.DeletePartTypeAsync(partType, _requestContext.GetUserContext());
         }
 
