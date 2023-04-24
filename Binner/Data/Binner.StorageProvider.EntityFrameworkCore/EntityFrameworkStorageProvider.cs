@@ -857,7 +857,7 @@ INNER JOIN (
                     OrganizationId = userContext.OrganizationId
                 };
                 context.PartTypes.Add(existingEntity);
-                
+
                 await context.SaveChangesAsync();
             }
             return _mapper.Map<PartType>(existingEntity);
@@ -888,12 +888,21 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             if (request == null) throw new ArgumentNullException(nameof(request));
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            // special case for partTypes
+            if (request.Value != null && request?.By.Equals("partType", StringComparison.InvariantCultureIgnoreCase) == true)
+            {
+                var partType = await GetPartTypeAsync(request.Value, userContext);
+                if (partType == null) throw new ArgumentException($"Unknown part type: {request.Value}");
+                request.Value = partType.PartTypeId.ToString();
+                request.By = "partTypeId";
+            }
+
             var pageRecords = (request.Page - 1) * request.Results;
             using var context = await _contextFactory.CreateDbContextAsync();
             var totalParts = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
             var entitiesQueryable = context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
-                .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value);
+                .WhereIf(!string.IsNullOrEmpty(request.By), x => EF.Property<string>(x, request.By!.UcFirst()) == request.Value);
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.Direction == SortDirection.Descending)
@@ -901,12 +910,25 @@ INNER JOIN (
                 else
                     entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
+            else
+            {
+                entitiesQueryable = entitiesQueryable.OrderByDescending(p => p.DateCreatedUtc);
+            }
 
-            var entities = await entitiesQueryable
-                .Skip(pageRecords)
-                .Take(request.Results)
-                .ToListAsync();
-            return new PaginatedResponse<Part>(totalParts, pageRecords, request.Page, _mapper.Map<ICollection<Part>>(entities));
+            List<DataModel.Part> entities;
+            try
+            {
+                entities = await entitiesQueryable
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToListAsync();
+                return new PaginatedResponse<Part>(totalParts, pageRecords, request.Page, _mapper.Map<ICollection<Part>>(entities));
+            }
+            catch (InvalidOperationException)
+            {
+                // return empty result set, unknown sort by column
+                return new PaginatedResponse<Part>(totalParts, pageRecords, request.Page, new List<Part>());
+            }
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext? userContext)
@@ -988,6 +1010,18 @@ INNER JOIN (
             using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartTypes
                 .FirstOrDefaultAsync(x => x.PartTypeId == partTypeId && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
+            if (entity == null)
+                return null;
+            return _mapper.Map<PartType?>(entity);
+
+        }
+
+        public async Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PartTypes
+                .FirstOrDefaultAsync(x => x.Name == name && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
             if (entity == null)
                 return null;
             return _mapper.Map<PartType?>(entity);

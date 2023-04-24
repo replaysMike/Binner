@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { CableIcon, CapacitorIcon, ConnectorIcon, CrystalIcon, DiodeIcon, HardwareIcon, ICIcon, InductorIcon, KitIcon, LEDIcon, ModuleIcon, RelayIcon, ResistorIcon, SCRIcon, SensorIcon, SwitchIcon, TransformerIcon, TransistorIcon } from "../common/icons";
-
 import { useTranslation } from "react-i18next";
 import { Dropdown, Icon } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import _ from "underscore";
 import { getIcon } from "../common/partTypes";
-
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import TreeView from "@mui/lab/TreeView";
@@ -238,6 +235,7 @@ export default function PartTypeSelector(props) {
   };
 
   const getSelectedText = (partType) => {
+    // this currently generates a UI error but it renders correctly, so we are ignoring the issue for now.
     if (partType)
       return (<span>{partType && getIcon(partType?.name, partType?.parentPartTypeId && _.find(partTypes, x => x.partTypeId === partType?.parentPartTypeId)?.name)()} {partType?.name || ""}</span>);
     return "";

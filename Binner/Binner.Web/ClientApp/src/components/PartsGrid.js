@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation, Trans } from "react-i18next";
 import { createMedia } from "@artsy/fresnel";
 import { Table, Icon, Input, Label, Button, Confirm, Modal, Header, Dropdown, Pagination, Popup, Dimmer, Loader } from 'semantic-ui-react';
@@ -8,6 +9,7 @@ import PropTypes from 'prop-types';
 import { fetchApi } from '../common/fetchApi';
 import { AppEvents, Events } from "../common/events";
 import { formatCurrency } from "../common/Utils";
+import { getIcon } from "../common/partTypes";
 import "./PartsGrid.css";
 
 const AppMedia = createMedia({
@@ -25,6 +27,7 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function PartsGrid(props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [parts, setParts] = useState(props.parts);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -44,6 +47,7 @@ export default function PartsGrid(props) {
   const [modalHeader, setModalHeader] = useState('');
   const [modalContent, setModalContent] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [partTypes, setPartTypes] = useState();
   const loadPage = props.loadPage;
   const onPartClick = props.onPartClick;
   const itemsPerPageOptions = [
@@ -52,6 +56,20 @@ export default function PartsGrid(props) {
     { key: 3, text: '50', value: 50 },
     { key: 4, text: '100', value: 100 },
   ];
+
+  const loadPartTypes = useCallback((parentPartType = "") => {
+    if (parentPartType === undefined || parentPartType === null) parentPartType = "";
+    fetchApi(`api/partType/all?parent=${parentPartType}`).then((response) => {
+      const { data } = response;
+
+      setPartTypes(data);
+      setLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadPartTypes();
+  }, [loadPartTypes]);
 
   useEffect(() => {
     setParts(props.parts);
@@ -140,8 +158,13 @@ export default function PartsGrid(props) {
     window.open(url, '_blank');
   };
 
-  const handleSelfLink = (e) => {
+  const handleSelfLink = (e, part, propertyName) => {
+    e.preventDefault();
     e.stopPropagation();
+    if (part[propertyName]) {
+      const url = `/inventory?by=${propertyName}&value=${part[propertyName]}`;
+      navigate(url);
+    }
   };
 
   const handleLoadPartClick = (e, part) => {
@@ -210,6 +233,12 @@ export default function PartsGrid(props) {
       props.onPageSizeChange(e, control.value);
   };
 
+  const getIconForPart = (p) => {
+    const partType = _.find(partTypes, x => x.partTypeId === p.partTypeId);
+    if (partType) return getIcon(partType.name, partType.parentPartTypeId && _.find(partTypes, x => x.partTypeId === partType.parentPartTypeId)?.name)();
+    return "";
+  };
+
   const renderParts = (parts, column, direction) => {
     const col = getColumns(columns);
     return (
@@ -236,6 +265,7 @@ export default function PartsGrid(props) {
                 {col.lowstockthreshold && <Table.HeaderCell sorted={column === 'lowstockthreshold' ? direction : null} onClick={handleSort('lowstockthreshold')}>{t('comp.partsGrid.lowStock', "Low Stock")}</Table.HeaderCell>}
                 {col.manufacturerpartnumber && <Table.HeaderCell sorted={column === 'manufacturerPartNumber' ? direction : null} onClick={handleSort('manufacturerPartNumber')}>{t('comp.partsGrid.mfrPart', "Manufacturer Part")}</Table.HeaderCell> }
                 {col.description && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'description' ? direction : null} onClick={handleSort('description')}>{renderChildren ? t('comp.partsGrid.description', "Description") : null}</Table.HeaderCell>)}}</Media>}              
+                {col.parttype && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'partType' ? direction : null} onClick={handleSort('partType')}>{renderChildren ? t('comp.partsGrid.partType', "Part Type") : null}</Table.HeaderCell>)}}</Media>}              
                 {col.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'location' ? direction : null} onClick={handleSort('location')}>{renderChildren ? t('comp.partsGrid.location', "Location") : null}</Table.HeaderCell>)}}</Media> }
                 {col.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber' ? direction : null} onClick={handleSort('binNumber')}>{renderChildren ? t('comp.partsGrid.binNumber', "Bin Number") : null}</Table.HeaderCell>)}}</Media> }
                 {col.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.HeaderCell className={className} sorted={column === 'binNumber2' ? direction : null} onClick={handleSort('binNumber2')}>{renderChildren ? t('comp.partsGrid.binNumber2', "Bin Number 2") : null}</Table.HeaderCell>)}}</Media> }
@@ -300,14 +330,17 @@ export default function PartsGrid(props) {
                   {col.description && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
                     {renderChildren ? <span className='truncate small' title={p.description}>{p.description}</span> : null}
                   </Table.Cell>)}}</Media> }
-                  {col.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                    {visitable ? (renderChildren ? <Link to={`/inventory?by=location&value=${p.location}`} onClick={handleSelfLink}><span className='truncate'>{p.location}</span></Link> : null) : <span>{p.location}</span>}
+                  {col.parttype && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className} onClick={(e) => handleSelfLink(e, p, "partType")}>
+                    {visitable ? (renderChildren && p.partTypeId ? <div className="icon-container small">{getIconForPart(p)} <div><Link to={`/inventory?by=partType&value=${p.partType}`}>{p.partType}</Link></div></div> : null) : <div className="icon-container small">{getIconForPart(p)} <div>{p.partType}</div></div>}
                   </Table.Cell>)}}</Media> }
-                  {col.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                    {visitable ? (renderChildren ? <Link to={`/inventory?by=binNumber&value=${p.binNumber}`} onClick={handleSelfLink}>{p.binNumber}</Link> : null) : <span>{p.binNumber}</span>}
+                  {col.location && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className} onClick={(e) => handleSelfLink(e, p, "location")}>
+                    {visitable ? (renderChildren && p.location ? <Link to={`/inventory?by=location&value=${p.location}`}><span className='truncate'>{p.location}</span></Link> : null) : <span>{p.location}</span>}
                   </Table.Cell>)}}</Media> }
-                  {col.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className}>
-                    {visitable ? (renderChildren ? <Link to={`/inventory?by=binNumber2&value=${p.binNumber2}`} onClick={handleSelfLink}>{p.binNumber2}</Link> : null) : <span>{p.binNumber2}</span>}
+                  {col.binnumber && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className} onClick={(e) => handleSelfLink(e, p, "binNumber")}>
+                    {visitable ? (renderChildren && p.binNumber ? <Link to={`/inventory?by=binNumber&value=${p.binNumber}`}>{p.binNumber}</Link> : null) : <span>{p.binNumber}</span>}
+                  </Table.Cell>)}}</Media> }
+                  {col.binnumber2 && <Media greaterThan="tablet">{(className, renderChildren) => { return (<Table.Cell className={className} onClick={(e) => handleSelfLink(e, p, "binNumber2")}>
+                    {visitable ? (renderChildren && p.binNumber2 ? <Link to={`/inventory?by=binNumber2&value=${p.binNumber2}`}>{p.binNumber2}</Link> : null) : <span>{p.binNumber2}</span>}
                   </Table.Cell>)}}</Media> }
                   {col.cost && <Media greaterThan="computer">{(className, renderChildren) => { return (<Table.Cell className={className}>
                     {renderChildren ? formatCurrency(p.cost, p.currency || "USD") : null}
@@ -376,7 +409,7 @@ PartsGrid.propTypes = {
 
 PartsGrid.defaultProps = {
   loading: true,
-  columns: 'partNumber,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,datasheetUrl,print,delete',
+  columns: 'partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete',
   page: 1,
   totalPages: 1,
   editable: true,

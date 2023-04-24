@@ -360,6 +360,7 @@
       "arrowPart": "Arrow Part",
       "datasheet": "Datasheet",
       "noResults": "No results.",
+      "partType": "Part Type",
       "ok": "Ok",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
