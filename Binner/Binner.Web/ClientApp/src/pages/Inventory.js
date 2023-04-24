@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation, Trans } from 'react-i18next';
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
@@ -169,6 +169,7 @@ export function Inventory(props) {
   const [partInputPartNumberRef, setInputPartNumberFocus] = useFocus();
   const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
   const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
+  const [partExistsInInventory, setPartExistsInInventory] = useState(false);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
 
   // todo: find a better alternative, we shouldn't need to do this!
@@ -181,6 +182,7 @@ export function Inventory(props) {
 
   useEffect(() => {
     const partNumberStr = props.params.partNumber;
+    setIsEditing((props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0));
     const fetchData = async () => {
       setPartMetadataIsSubscribed(false);
       setPartMetadataError(null);
@@ -213,6 +215,18 @@ export function Inventory(props) {
       const response = await fetchApi(`api/part/info?partNumber=${input}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
+
+      if (!hasParameters) {
+        // also check inventory for this part
+        const existsResponse = await fetchApi(`api/part/search?keywords=${input}&exactMatch=true`, {
+          signal: Inventory.infoAbortController.signal,
+          catchErrors: true
+        });
+        if(existsResponse.responseObject.ok && existsResponse.data !== null) {
+          setPartExistsInInventory(true);
+        }
+      }
+
       const data = response.data;
       if (data.requiresAuthentication) {
         // redirect for authentication
@@ -232,7 +246,7 @@ export function Inventory(props) {
 
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
-        if(!isEditing) setPartFromMetadata(metadataParts, suggestedPart);
+        if(!hasParameters) setPartFromMetadata(metadataParts, suggestedPart);
       } else {
         // no part metadata available
         setPartMetadataIsSubscribed(true);
@@ -285,7 +299,7 @@ export function Inventory(props) {
     }
   };
 
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [isEditing]);
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [hasParameters]);
 
   const onUploadSubmit = async (uploadFiles, type) => {
     setUploading(true);
@@ -886,6 +900,7 @@ export function Inventory(props) {
   const resetForm = (saveMessage = "", clearAll = false) => {
     setIsDirty(false);
     setIsEditing(false);
+    setPartExistsInInventory(false);
     setSaveMessage(saveMessage);
     setMetadataParts([]);
     setDuplicateParts([]);
@@ -1854,7 +1869,8 @@ export function Inventory(props) {
                     <input ref={partInputPartNumberRef} />
                     <Icon name="search" />
                   </Form.Input>
-                  {!isEditing && <div className="suggested-part">{part.partNumber && part.PartNumber !== inputPartNumber && <span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
+                  {!isEditing && part.partNumber && part.partNumber !== inputPartNumber && <div className="suggested-part">{<span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
+                  {!isEditing && partExistsInInventory && <div className="suggested-part">This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.</div>}
                 </Form.Field>
                 <Form.Field width={6}>
                   <PartTypeSelector 

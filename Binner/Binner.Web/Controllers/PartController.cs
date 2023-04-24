@@ -320,30 +320,61 @@ namespace Binner.Web.Controllers
         /// Search parts by keyword(s)
         /// </summary>
         /// <param name="keywords"></param>
+        /// <param name="exactMatch">True if only searching for an exact match</param>
         /// <returns></returns>
         [HttpGet("search")]
-        public async Task<IActionResult> SearchAsync([FromQuery] string keywords)
+        public async Task<IActionResult> SearchAsync([FromQuery] string keywords, [FromQuery] bool exactMatch = false)
         {
-            var parts = await _partService.FindPartsAsync(keywords);
-            if (!parts.Any())
-                return NotFound();
-            var partTypes = await _partService.GetPartTypesAsync();
-            var partsOrdered = parts
-                .OrderBy(x => x.Rank)
-                .Select(x => x.Result)
-                .ToList();
-            var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(partsOrdered);
-            // map part types
-            foreach (var part in partsResponse)
+            if (exactMatch)
             {
-                part.PartType = partTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name).FirstOrDefault();
-                part.MountingType = ((MountingType)part.MountingTypeId).ToString();
-                var keywordsList = partsOrdered.First(x => x.PartId == part.PartId).Keywords;
-                if (keywordsList != null)
-                    part.Keywords = string.Join(" ", keywordsList);
-            }
+                // search by exact part name match
+                var part = await _partService.GetPartAsync(keywords);
+                if (part == null) return NotFound();
 
-            return Ok(partsResponse);
+                var partTypes = await _partService.GetPartTypesAsync();
+                var mappedPart = Mapper.Map<Part, PartResponse>(part);
+                mappedPart.PartType = partTypes
+                    .Where(x => x.PartTypeId == mappedPart.PartTypeId)
+                    .Select(x => x.Name)
+                    .FirstOrDefault();
+                mappedPart.MountingType = ((MountingType)mappedPart.MountingTypeId).ToString();
+                var keywordsList = part.Keywords;
+                if (keywordsList != null)
+                    mappedPart.Keywords = string.Join(" ", keywordsList);
+                var partResponse = new List<PartResponse>
+                {
+                    mappedPart
+                };
+                
+                return Ok(partResponse);
+            }
+            else
+            {
+                // search by keyword
+                var parts = await _partService.FindPartsAsync(keywords);
+                if (!parts.Any())
+                    return NotFound();
+                var partTypes = await _partService.GetPartTypesAsync();
+                var partsOrdered = parts
+                    .OrderBy(x => x.Rank)
+                    .Select(x => x.Result)
+                    .ToList();
+                var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(partsOrdered);
+                // map part types
+                foreach (var mappedPart in partsResponse)
+                {
+                    mappedPart.PartType = partTypes
+                        .Where(x => x.PartTypeId == mappedPart.PartTypeId)
+                        .Select(x => x.Name)
+                        .FirstOrDefault();
+                    mappedPart.MountingType = ((MountingType)mappedPart.MountingTypeId).ToString();
+                    var keywordsList = partsOrdered.First(x => x.PartId == mappedPart.PartId).Keywords;
+                    if (keywordsList != null)
+                        mappedPart.Keywords = string.Join(" ", keywordsList);
+                }
+
+                return Ok(partsResponse);
+            }
         }
 
         /// <summary>
