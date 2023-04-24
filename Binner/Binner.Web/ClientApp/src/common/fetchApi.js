@@ -7,9 +7,10 @@ const noData = { message: `No message was specified.` };
  * Automatically includes jwt bearer authentication credentials and handles token refresh requests.
  * @param {string} url the url to fetch
  * @param {any} data the fetch request object
+ * @param {bool} isReissuedRequest true if this is a reissued request (via refresh-token fetch)
  * @returns json response from api with an embedded response object
  */
-export const fetchApi = async (url, data = { method: "GET", headers: {}, body: null, catchErrors: false }) => {
+export const fetchApi = async (url, data = { method: "GET", headers: {}, body: null, catchErrors: false }, isReissuedRequest = false) => {
   const userAccount = getUserAccount();
 
   let headers = data.headers || {};
@@ -42,7 +43,7 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
 
   const responseBody = await fetch(requestContext.url, requestContext.data)
     .then((response) => {
-      return handleJsonResponse(response, requestContext);
+      return handleJsonResponse(response, requestContext, isReissuedRequest);
     })
     .catch((response) => {
       // opportunity to handle errors internally
@@ -57,12 +58,14 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
 /**
  * Get the json response from a fetch operation
  * @param {any} response the response from fetch
+ * @param {bool} requestContext the request context
+ * @param {bool} isReissuedRequest true if this is a reissued request (via refresh-token fetch)
  * @returns {any} the response json object
  */
-export const handleJsonResponse = async (response, requestContext) => {
+export const handleJsonResponse = async (response, requestContext, isReissuedRequest) => {
   // store the last version header we have seen
   if (response.headers.has("x-version")) window.version = response.headers.get("x-version");
-  const wrappedResponse = await handle401UnauthorizedAsync(response, requestContext);
+  const wrappedResponse = await handle401UnauthorizedAsync(response, requestContext, isReissuedRequest);
   if (!wrappedResponse.ok) return wrappedResponse.response;
 
   // valid response
@@ -79,10 +82,12 @@ export const handleJsonResponse = async (response, requestContext) => {
 /**
  * Get the response from a fetch operation
  * @param {any} response the response from fetch
+ * @param {bool} requestContext the request context
+ * @param {bool} isReissuedRequest true if this is a reissued request (via refresh-token fetch)
  * @returns {any} the response binary object
  */
-export const handleBinaryResponse = async (response, requestContext) => {
-  const wrappedResponse = await handle401UnauthorizedAsync(response, requestContext);
+export const handleBinaryResponse = async (response, requestContext, isReissuedRequest) => {
+  const wrappedResponse = await handle401UnauthorizedAsync(response, requestContext, isReissuedRequest);
   if (!wrappedResponse.ok) return wrappedResponse.response;
 
   // valid response
@@ -138,10 +143,20 @@ export const getErrorsString = (response) => {
  * This handles the process required to refresh jwt tokens when necessary and reissue the original request
  * @param {any} response the response object from fetch
  * @param {any} requestContext the original request being sent
+ * @param {bool} isReissuedRequest true if this is a reissued request (via refresh-token fetch)
  * @returns new reissued response, or original response
  */
-const handle401UnauthorizedAsync = async (response, requestContext) => {
+const handle401UnauthorizedAsync = async (response, requestContext, isReissuedRequest) => {
   if (response.status === 401 || response.status === 403) {
+    // unauthorized
+    if (isReissuedRequest){
+      deAuthenticateUserAccount();
+      window.location.replace("/login");
+      return {
+        ok: false,
+        response: Promise.reject(response)
+      };
+    }
     // unauthorized, must ask for new jwt token
     const reissuedResponse = await refreshTokenAuthorizationAsync(response, requestContext);
     const reissuedResponseData = await reissuedResponse.clone().json();
@@ -161,7 +176,6 @@ const handle401UnauthorizedAsync = async (response, requestContext) => {
   if (!response.ok) {
     if (response.status === 426) {
       // response has an licensing error, we want to display a licensing error modal box
-      console.log("received 426 license error");
       return {
         ok: false,
         response: await invokeLicensingErrorHandler(response)

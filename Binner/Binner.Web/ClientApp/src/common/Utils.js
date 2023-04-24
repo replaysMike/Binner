@@ -58,6 +58,7 @@ export const formatCurrency = (number, currency = 'USD', maxDecimals = 5) => {
  */
 export const getCurrencySymbol = (currency = 'USD') => {
   const locale = getLocaleLanguage();
+  if (!locale) return '';
   return (0).toLocaleString(locale, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).replace(/\d/g, '').trim();
 };
   

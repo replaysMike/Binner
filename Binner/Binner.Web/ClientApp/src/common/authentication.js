@@ -57,7 +57,6 @@ export const getImagesToken = () => {
  */
 export const setUserAccount = (user) => {
   localStorage.setItem("user", JSON.stringify(user));
-	console.log('user authenticated', user.name);
 };
 
 /**
@@ -67,7 +66,6 @@ export const setUserAccount = (user) => {
  */
 export const deAuthenticateUserAccount = () => {
   localStorage.removeItem("user");
-	console.log('deAuthenticated user');
 };
 
 /**
@@ -100,7 +98,7 @@ export const deAuthenticateUserAccount = () => {
 				console.log('reissuing original request', requestContext);
 				// todo: this part is a little wonky and could be refactored. because fetchApi returns json() body and not the response,
 				// we need to get it from our predefined response structure.
-				const finalResult = await fetchApi(requestContext.url, requestContext.data);
+				const finalResult = await fetchApi(requestContext.url, requestContext.data, true);
 				return finalResult.responseObject;
 			} else {
 				console.log('failed to refresh token', newResponseData.message);

@@ -1,9 +1,11 @@
-﻿using Binner.Common.IO;
+﻿using Binner.Common.Auth;
+using Binner.Common.IO;
 using Binner.Data;
 using Binner.Data.Model;
 using Binner.Global.Common;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -55,6 +57,7 @@ namespace Binner.Common.Services.Authentication
             // generate token that is valid for 15 minutes
             var tokenHandler = new JwtSecurityTokenHandler();
             var claims = GetClaims(user);
+            var signingKey = GetJwtSigningKey();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Issuer = _configuration.JwtIssuer,
@@ -63,7 +66,7 @@ namespace Binner.Common.Services.Authentication
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime),
                 NotBefore = DateTime.UtcNow,
-                SigningCredentials = new SigningCredentials(GetSecurityKey(HardwareId.Get()), GetSecurityAlgorithm(_configuration.EncryptionBits))
+                SigningCredentials = new SigningCredentials(signingKey, GetSecurityAlgorithm(_configuration.EncryptionBits))
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
@@ -147,9 +150,11 @@ namespace Binner.Common.Services.Authentication
         /// <param name="authConfig"></param>
         /// <returns></returns>
         public TokenValidationParameters GetTokenValidationParameters()
-            => new TokenValidationParameters
+        {
+            var signingKey = GetJwtSigningKey();
+            return new TokenValidationParameters
             {
-                IssuerSigningKey = GetSecurityKey(HardwareId.Get()),
+                IssuerSigningKey = signingKey,
                 ValidateIssuerSigningKey = _configuration.ValidateIssuerSigningKey,
                 ValidateIssuer = _configuration.ValidateIssuer,
                 ValidIssuer = _configuration.JwtIssuer,
@@ -160,6 +165,27 @@ namespace Binner.Common.Services.Authentication
                 ClockSkew = _configuration.ClockSkew,
                 // LifetimeValidator = TokenLifetimeValidator.Validate
             };
+        }
+
+        private static SecurityKey GetJwtSigningKey()
+        {
+            var keyProvider = new SecurityKeyProvider();
+            var key = string.Empty;
+            try
+            {
+                // use the machine's hardware id to sign jwt
+                key = HardwareId.Get();
+            }
+            catch (Exception)
+            {
+                // use fallback
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
+                key = keyProvider.LoadOrGenerateKey(SecurityKeyProvider.KeyTypes.Jwt, 40);
+            return GetSecurityKey(key);
+        }
+            
 
         public static class TokenLifetimeValidator
         {
