@@ -31,7 +31,7 @@ i18n
     },
     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
-      addPath: '/locale/missing?language={{lng}}',
+      addPath: '/api/locale/missing?language={{lng}}',
       jsonIndent: 2
     },
     saveMissing: true,

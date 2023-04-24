@@ -94,7 +94,8 @@
     },
     "partTypes": {
       "title": "Part Types",
-      "description": "Part Types allow you to separate your parts by type. <1>Parent</1> types allow for unlimited part type hierarchy.<3 />For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC."
+      "description": "Part Types allow you to separate your parts by type. <1>Parent</1> types allow for unlimited part type hierarchy.<3 />For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.",
+      "rename": "Rename Part Type"
     },
     "exportData": {
       "title": "Import/Export Data",
@@ -505,7 +506,8 @@
     "return": "Return",
     "restore": "Restore",
     "createBackup": "Create Backup",
-    "produceHistory": "History"
+    "produceHistory": "History",
+    "rename": "Rename"
   },
   "label": {
     "name": "Name",

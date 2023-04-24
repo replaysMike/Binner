@@ -828,9 +828,11 @@ INNER JOIN (
                     Name = partType.Name,
                     ParentPartTypeId = partType.ParentPartTypeId,
                     PartTypeId = partType.PartTypeId,
-                    UserId = userContext.UserId
+                    UserId = userContext.UserId,
+                    OrganizationId = userContext.OrganizationId
                 };
                 context.PartTypes.Add(existingEntity);
+                
                 await context.SaveChangesAsync();
             }
             return _mapper.Map<PartType>(existingEntity);

@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Button, Segment, Form, Icon, Confirm, Breadcrumb, Header, Popup, Modal } from "semantic-ui-react";
+import { Button, Segment, Form, Icon, Confirm, Breadcrumb, Popup, Modal, Checkbox, Input } from "semantic-ui-react";
+import PartTypeSelector from "../components/PartTypeSelector";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
 import { FormHeader } from "../components/FormHeader";
 import { getIcon } from "../common/partTypes";
-
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import TreeView from "@mui/lab/TreeView";
@@ -16,6 +16,7 @@ import Typography from "@mui/material/Typography";
 import { Memory as MemoryTwoTone } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import "./PartTypes.css";
 
 export function PartTypes(props) {
   const { t } = useTranslation();
@@ -27,15 +28,11 @@ export function PartTypes(props) {
     loading: false
   };
   const [parentPartType, setParentPartType] = useState(null);
-  const [partTypeOptions, setPartTypeOptions] = useState([]);
   const [partTypesFiltered, setPartTypesFiltered] = useState([]);
   const [partTypes, setPartTypes] = useState([]);
   const [partType, setPartType] = useState(defaultPartType);
-  const [changeTracker, setChangeTracker] = useState([]);
-  const [lastSavedPartTypeId, setLastSavedPartTypeId] = useState(0);
   const [addVisible, setAddVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadingAllPartTypes, setLoadingAllPartTypes] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [selectedPartType, setSelectedPartType] = useState(null);
   const [chkHideEmptyTypes, setChkHideEmptyTypes] = useState(false);
@@ -43,7 +40,7 @@ export function PartTypes(props) {
   const [expandedNodeIds, setExpandedNodeIds] = useState([]);
   const [search, setSearch] = useState("");
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
-  const [newPartTypeName, setNewPartTypeName] = useState('');
+  const [btnAddDisabled, setBtnAddDisabled] = useState(true);
   const [modalContext, setModalContext] = useState(null);
 
   const loadPartTypes = useCallback((parentPartType = "") => {
@@ -54,7 +51,6 @@ export function PartTypes(props) {
 
       setPartTypes(data);
       setPartTypesFiltered(data);
-      //setPartTypes([]);
       setLoading(false);
     });
   }, []);
@@ -63,29 +59,16 @@ export function PartTypes(props) {
     loadPartTypes();
   }, [loadPartTypes]);
 
-  const loadAllPartTypes = () => {
-    setLoadingAllPartTypes(true);
-    fetchApi(`api/partType/all`).then((response) => {
-      const { data } = response;
-
-      setPartTypeOptions(
-        data.map((i, key) => ({
-          key: key,
-          value: i.partTypeId,
-          content: <Header icon="microchip" content={i.name} subheader={i.parentPartType} />,
-          text: i.name
-        }))
-      );
-      setLoadingAllPartTypes(false);
-    });
-  };
-
   const handleChange = (e, control) => {
     e.preventDefault();
     e.stopPropagation();
     partType[control.name] = control.value;
     const newPartType = { ...partType };
     setPartType(newPartType);
+    if (control.value.length === 0) 
+      setBtnAddDisabled(true);
+    else
+      setBtnAddDisabled(false);
   };
 
   const handleSearchChange = (e, control) => {
@@ -106,23 +89,12 @@ export function PartTypes(props) {
     setModalContext({ ...modalContext, name: control.value });
   };
 
-  const handleInlineChange = async (e, control, partType) => {
-    e.preventDefault();
-    e.stopPropagation();
-    partType[control.name] = control.value;
-    let changes = [...changeTracker];
-    if (_.where(changes, { partTypeId: partType.partTypeId }).length === 0) {
-      changes.push({ partTypeId: partType.partTypeId });
-    }
-    setPartTypes(partTypes);
-    setChangeTracker(changes);
-  };
-
   /**
    * Save new project
    * @param {any} e
    */
   const onSubmit = async (e) => {
+    setBtnAddDisabled(true);
     const request = {
       name: partType.name,
       parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
@@ -143,6 +115,7 @@ export function PartTypes(props) {
     } else {
       toast.error(t("error.failedAddedPartType", "Failed to add part type {{name}}", { name: partType.name }));
     }
+    setBtnAddDisabled(false);
   };
 
   const onDelete = async (partType) => {
@@ -199,7 +172,6 @@ export function PartTypes(props) {
 
   const handleShowAdd = (e) => {
     if (!addVisible) {
-      loadAllPartTypes();
       if (parentPartType) setPartType({ ...partType, parentPartTypeId: parentPartType.partTypeId });
     }
     setAddVisible(!addVisible);
@@ -207,15 +179,6 @@ export function PartTypes(props) {
 
   const handleDelete = async (e) => {
     await onDelete(selectedPartType);
-  };
-
-  const handleEditRow = (e, p) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // prevent handling of click if target is the input text box
-    if (e.target.type === "text") return;
-    setParentPartType(p);
-    loadPartTypes(p.name);
   };
 
   const handleUnsetParentPartType = (e) => {
@@ -331,6 +294,11 @@ export function PartTypes(props) {
     );
   };
 
+  const getPartTypeFromName = (name) => {
+		const lcName = name.toLowerCase();
+		return _.find(partTypes, (i) => i.name.toLowerCase() === lcName)
+	};
+
   const recursivePreFilter = (partTypes, parentPartTypeId, filterBy) => {
 		// go through every child, mark filtered matches
 
@@ -404,10 +372,33 @@ export function PartTypes(props) {
     return childrenComponents;
   };
 
+  const handleOnNodeSelect = (e, selectedPartTypeName) => {
+    const selectedPartType = getPartTypeFromName(selectedPartTypeName);
+    if (selectedPartType) {
+      setPartType(selectedPartType);
+      // fire event
+			if (props.onSelect) props.onSelect(e, selectedPartType);
+    }
+  };
+
+  const handleOnNodeToggle = (e, node) => {
+    //e.preventDefault();
+    //e.stopPropagation();
+		// preventing event propagation leads to ui weirdness unfortunately
+		if (expandedNodeIds.includes(node))
+			setExpandedNodeIds(_.filter(expandedNodeIds, i => i !== node));
+		else
+			setExpandedNodeIds(node);
+  };
+
   const handleOpenRenamePartModal = (e, pt) => {
     setModalContext(pt);
     setIsRenameModalOpen(true);
   };
+
+  const handlePartTypeSelectorChange = (e, newParentPartType) => {
+    setPartType({...partType, parentPartTypeId: newParentPartType.partTypeId});
+  }
 
   return (
     <div>
@@ -455,7 +446,7 @@ export function PartTypes(props) {
           </Form>
         </Modal.Content>
         <Modal.Actions>
-        <Button onClick={() => setIsRenameModalOpen(false) }>Cancel</Button>
+        <Button onClick={() => setIsRenameModalOpen(false) }>{t('button.cancel', "Cancel")}</Button>
           <Button primary onClick={handleRenamePartType}>
             <Icon name="save" /> {t('button.save', "Save")}
           </Button>
@@ -463,14 +454,13 @@ export function PartTypes(props) {
       </Modal>
 
       <Segment loading={loading} style={{ marginBottom: "50px" }}>
-        <Form>
         <div style={{ marginBottom: "10px", padding: "5px", backgroundColor: "#fafafa" }}>
           {/** Tools Header */}
           <div style={{ float: "left", lineHeight: "2.25em" }}>
             <Popup
               content="Hide part types that have no parts assigned"
               trigger={
-                <Form.Checkbox
+                <Checkbox
                   toggle
                   label={t("label.hideEmptyTypes", "Hide Empty Types")}
                   name="filterEmpty"
@@ -481,7 +471,7 @@ export function PartTypes(props) {
           </div>
           <div style={{ minHeight: "35px", marginTop: "2px" }}>
             <Button onClick={handleShowAdd} icon size="mini" floated="right" className="svg">
-              <MemoryTwoTone /> {t("button.addPartType", "Add Part Type")}
+              <MemoryTwoTone style={{color: "#2185d0"}} /> {t("button.addPartType", "Add Part Type")}
             </Button>
           </div>
         </div>
@@ -494,46 +484,48 @@ export function PartTypes(props) {
           {addVisible && (
             <Segment>
               <Form onSubmit={onSubmit}>
-                <Form.Input
-                  width={6}
-                  label={t("label.name", "Name")}
-                  required
-                  placeholder={t("label.resistors", "Resistors")}
-                  focus
-                  value={partType.name}
-                  onChange={handleChange}
-                  name="name"
-                />
-                <Form.Dropdown
-                  width={6}
-                  label={t("label.parent", "Parent")}
-                  selection
-                  fluid
-                  value={partType.parentPartTypeId}
-                  options={partTypeOptions}
-                  onChange={handleChange}
-                  name="parentPartTypeId"
-                />
-                <Button primary type="submit" icon>
-                  <Icon name="save" /> {t("button.save", "Save")}
+                <Form.Field width={8}>
+                  <Form.Input
+                    label={t("label.name", "Name")}
+                    required
+                    placeholder={t("label.resistors", "Resistors")}
+                    focus
+                    value={partType.name}
+                    onChange={handleChange}
+                    name="name"
+                  />
+                </Form.Field>
+                <Form.Field width={8}>
+                  <PartTypeSelector 
+                    label={t("label.parent", "Parent")}
+                    name="parentPartTypeId"
+                    value={partType.parentPartTypeId || ""}
+                    partTypes={partTypes} 
+                    onSelect={handlePartTypeSelectorChange}
+                  />
+                </Form.Field>
+                <Button primary type="submit" icon disabled={btnAddDisabled}>
+                  <Icon name="add" /> {t("button.add", "Add")}
                 </Button>
               </Form>
             </Segment>
           )}
         </div>
 
-        <Form.Input name="search" placeholder="Search..." onChange={handleSearchChange} />
+        <Input name="search" placeholder="Search..." icon="search" onChange={handleSearchChange} style={{marginTop: '5px', marginBottom: '10px', width: '300px'}} />
         {/** https://mui.com/material-ui/react-tree-view/ */}
         <TreeView
+          className="partTypesTreeView"
           defaultCollapseIcon={<ArrowDropDownIcon />}
           defaultExpandIcon={<ArrowRightIcon />}
           defaultEndIcon={<div style={{ width: 24 }} />}
+          onNodeSelect={handleOnNodeSelect}
+          onNodeToggle={handleOnNodeToggle}
           expanded={expandedNodeIds}
           sx={{ height: 500, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
         >
           {recursiveTreeItem(partTypesFiltered).map((x) => x)}
         </TreeView>
-        </Form>
       </Segment>
     </div>
   );

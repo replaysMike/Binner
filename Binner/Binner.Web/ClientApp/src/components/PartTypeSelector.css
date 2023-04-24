@@ -14,3 +14,16 @@
 	margin-top: -1px;
 	margin-right: 10px;
 }
+
+.partTypeSelectorTreeView .MuiTreeItem-group {
+	margin-left: 10px !important;
+}
+.partTypeSelectorTreeView li.MuiTreeItem-root {
+	margin-left: 0px;
+}
+.partTypeSelectorTreeView .MuiTreeItem-content {
+	padding-left: 0;
+}
+.partTypeSelectorTreeView .MuiTreeItem-group .MuiTreeItem-content {
+	padding-left: 0 !important;
+}

@@ -217,6 +217,10 @@ export default function PartTypeSelector(props) {
   const handleOnBlur = (e, control) => {
 		e.stopPropagation();
 		if (props.onBlur) props.onBlur(e, control);
+    // reset the search filtering
+    setFilter(null);
+    setExpandedNodeIds([]);
+    setPartTypesFiltered([...partTypes]);
   };
 
   const handleOnFocus = (e, control) => {
@@ -260,6 +264,7 @@ export default function PartTypeSelector(props) {
 						<Dropdown.Item>
 							{/** https://mui.com/material-ui/react-tree-view/ */}
 							<TreeView
+                className="partTypeSelectorTreeView"
 								defaultCollapseIcon={<ArrowDropDownIcon />}
 								defaultExpandIcon={<ArrowRightIcon />}
 								defaultEndIcon={<div style={{ width: 24 }} />}

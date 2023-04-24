@@ -1,0 +1,12 @@
+.partTypesTreeView .MuiTreeItem-group {
+	margin-left: 10px !important;
+}
+.partTypesTreeView li.MuiTreeItem-root {
+	margin-left: 0px;
+}
+.partTypesTreeView .MuiTreeItem-content {
+	padding-left: 0;
+}
+.partTypesTreeView .MuiTreeItem-group .MuiTreeItem-content {
+	padding-left: 0 !important;
+}
