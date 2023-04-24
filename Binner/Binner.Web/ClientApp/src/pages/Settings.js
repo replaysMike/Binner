@@ -400,7 +400,7 @@ export const Settings = (props) => {
         break;
       case "digikey":
         configuration.push({ key: "enabled", value: settings.digikey.enabled + "" });
-        configuration.push({ key: "site", value: settings.digikey.site });
+        configuration.push({ key: "site", value: settings.digikey.site + "" });
         configuration.push({ key: "clientId", value: settings.digikey.clientId });
         configuration.push({ key: "clientSecret", value: settings.digikey.clientSecret });
         configuration.push({ key: "apiUrl", value: settings.digikey.apiUrl });

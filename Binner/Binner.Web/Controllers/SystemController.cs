@@ -61,7 +61,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("settings")]
-        public IActionResult SaveSettings(SettingsRequest request)
+        public IActionResult SaveSettings(SettingsRequest request) 
         {
             try
             {
@@ -119,7 +119,7 @@ namespace Binner.Web.Controllers
         /// Test api settings
         /// </summary>
         /// <returns></returns>
-        [HttpPut("settings/testapi")]
+        [HttpPut("/api/settings/testapi")]
         public async Task<IActionResult> TestApiAsync(TestApiRequest request)
         {
             try
@@ -142,7 +142,7 @@ namespace Binner.Web.Controllers
         /// Forget cached credentials
         /// </summary>
         /// <returns></returns>
-        [HttpPut("/settings/forgetcredentials")]
+        [HttpPut("/api/settings/forgetcredentials")]
         public async Task<IActionResult> ForgetCredentialsAsync(ForgetCachedCredentialsRequest request)
         {
             try
