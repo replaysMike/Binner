@@ -75,28 +75,10 @@ namespace Binner.Common.Services.Authentication
         /// <summary>
         /// Generate a token that can be used to serve secure images
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="user"></param>
         /// <returns></returns>
-        public async Task<string?> GenerateImagesTokenAsync(BinnerContext context, UserContext user)
+        public async Task<string?> GenerateImagesTokenAsync()
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (user == null) throw new ArgumentNullException(nameof(user));
-
-            var userToken = new UserToken()
-            {
-                Token = ConfirmationTokenGenerator.NewToken(),
-                TokenTypeId = TokenTypes.ImagesToken,
-                UserId = user.UserId,
-                OrganizationId = user.OrganizationId,
-                DateCreatedUtc = DateTime.UtcNow,
-                DateModifiedUtc = DateTime.UtcNow,
-                DateExpiredUtc = DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime).AddMinutes(5),
-            };
-            context.UserTokens.Add(userToken);
-            await context.SaveChangesAsync();
-
-            return userToken.Token;
+            return ConfirmationTokenGenerator.NewToken();
         }
 
         /// <summary>

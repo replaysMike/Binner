@@ -19,9 +19,13 @@ using System.Net;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Processing;
 
 namespace Binner.Web.Controllers
 {
@@ -538,7 +542,7 @@ namespace Binner.Web.Controllers
             try
             {
                 var userContext = await _userService.ValidateUserImageToken(request.Token ?? string.Empty);
-                if (userContext == null) return Unauthorized("Invalid image token!");
+                if (userContext == null) return GetInvalidTokenImage();
                 System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
 
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
@@ -577,7 +581,7 @@ namespace Binner.Web.Controllers
             try
             {
                 var userContext = await _userService.ValidateUserImageToken(request.Token ?? string.Empty);
-                if (userContext == null) return Unauthorized("Invalid image token!");
+                if (userContext == null) return GetInvalidTokenImage();
                 System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
 
                 if (string.IsNullOrEmpty(request.PartNumber))
@@ -592,6 +596,15 @@ namespace Binner.Web.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Barcode Error! ", ex));
             }
+        }
+
+        private FileStreamResult GetInvalidTokenImage()
+        {
+            var image = new BlankImage(300, 100, Color.White, Color.Red, "Invalid Image Token!\nYou may need to re-login.");
+            var stream = new MemoryStream();
+            image.Image.SaveAsPng(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return new FileStreamResult(stream, "image/png");
         }
 
         /// <summary>

@@ -20,7 +20,7 @@
         /// <summary>
         /// A token that can be used to access images securely
         /// </summary>
-        public string? ImagesToken { get; set; }
+        public string ImagesToken { get; set; } = null!;
 
         /// <summary>
         /// Refresh token created date

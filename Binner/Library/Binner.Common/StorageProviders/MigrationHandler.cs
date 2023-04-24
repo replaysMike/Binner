@@ -90,6 +90,11 @@ namespace Binner.Common.StorageProviders
                                 // not a binner db
                                 _logger.Warn(ex, "Database not a Binner format database.");
                             }
+                            catch (IOException ex)
+                            {
+                                // not a binner db
+                                _logger.Warn(ex, "Database cannot be accessed.");
+                            }
                             catch (Exception ex)
                             {
                                 // invalid format or could not read

@@ -131,6 +131,17 @@ namespace Binner.Common.Services
                 DateExpiredUtc = authenticatedTokens.DateExpires,
                 TokenTypeId = TokenTypes.RefreshToken,
                 UserId = user.UserId,
+                OrganizationId = user.OrganizationId,
+                Ip = _requestContext.GetIp()
+            });
+            context.UserTokens.Add(new Data.Model.UserToken
+            {
+                Token = authenticatedTokens.ImagesToken,
+                DateCreatedUtc = authenticatedTokens.DateCreated,
+                DateExpiredUtc = authenticatedTokens.DateExpires,
+                TokenTypeId = TokenTypes.ImagesToken,
+                UserId = user.UserId,
+                OrganizationId = user.OrganizationId,
                 Ip = _requestContext.GetIp()
             });
             await context.SaveChangesAsync();
@@ -175,6 +186,7 @@ namespace Binner.Common.Services
                 DateExpiredUtc = newRefreshToken.Expires,
                 DateRevokedUtc = newRefreshToken.Revoked,
                 UserId = user.UserId,
+                OrganizationId = user.OrganizationId,
                 Ip = _requestContext.GetIp()
             });
 
@@ -185,13 +197,13 @@ namespace Binner.Common.Services
             user.DateLastLoginUtc = DateTime.UtcNow;
 
             // save changes to db
-            await context.SaveChangesAsync();
+            var success = await context.SaveChangesAsync();
             //await transaction.CommitAsync();
 
             // generate new jwt
             var userContext = Map(user);
             var jwtToken = _jwt.GenerateJwtToken(userContext);
-            var imagesToken = await _jwt.GenerateImagesTokenAsync(context, userContext);
+            var imagesToken = await _jwt.GenerateImagesTokenAsync();
 
             return new AuthenticationResponse(userContext, new AuthenticatedTokens
             {
@@ -280,6 +292,17 @@ namespace Binner.Common.Services
                         DateExpiredUtc = authenticatedTokens.DateExpires,
                         TokenTypeId = TokenTypes.RefreshToken,
                         UserId = user.UserId,
+                        OrganizationId = user.OrganizationId,
+                        Ip = _requestContext.GetIp()
+                    });
+                    context.UserTokens.Add(new Data.Model.UserToken
+                    {
+                        Token = authenticatedTokens.ImagesToken,
+                        DateCreatedUtc = authenticatedTokens.DateCreated,
+                        DateExpiredUtc = authenticatedTokens.DateExpires,
+                        TokenTypeId = TokenTypes.ImagesToken,
+                        UserId = user.UserId,
+                        OrganizationId = user.OrganizationId,
                         Ip = _requestContext.GetIp()
                     });
                     await context.SaveChangesAsync();
@@ -473,7 +496,7 @@ namespace Binner.Common.Services
 
             // login allowed, issue a jwt access token & refresh token
             var jwtToken = _jwt.GenerateJwtToken(userContext);
-            var imagesToken = await _jwt.GenerateImagesTokenAsync(context, userContext);
+            var imagesToken = await _jwt.GenerateImagesTokenAsync();
             var refreshToken = _jwt.GenerateRefreshToken();
 
             return new AuthenticatedTokens
