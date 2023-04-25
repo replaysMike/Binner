@@ -13,7 +13,7 @@ const lngs = {
     // temporary: enable languages as the translations are finished.
     //fr: { nativeName: 'Français ', flag: 'fr' },    // french
     //es: { nativeName: 'Español', flag: 'mx' },      // spanish
-    //zh: { nativeName: '中文', flag: 'cn' },         // chinese
+    zh: { nativeName: '中文', flag: 'cn' },         // chinese
 };
 
 export function Header() {
