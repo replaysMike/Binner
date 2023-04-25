@@ -205,23 +205,51 @@ namespace Binner.Web.ServiceHost
             await PatchTableAsync(context, x => x.UserTokens);
         }
 
+        private class ReplaceExpressionVisitor
+            : ExpressionVisitor
+        {
+            private readonly Expression _oldValue;
+            private readonly Expression _newValue;
+
+            public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
+            {
+                _oldValue = oldValue;
+                _newValue = newValue;
+            }
+
+            public override Expression Visit(Expression node)
+            {
+                if (node == _oldValue)
+                    return _newValue;
+                return base.Visit(node);
+            }
+        }
+
         private async Task PatchTableAsync<T>(BinnerContext context, Func<BinnerContext, DbSet<T>> expression)
         where T : class
         {
             try
             {
-                var param = Expression.Parameter(typeof(T), "e");
-                var propExpression = Expression.Property(param, "OrganizationId");
+                var parameter = Expression.Parameter(typeof(T), "e");
+                var propExpression = Expression.Property(parameter, "OrganizationId");
                 var value = 0;
                 Expression<Func<T, bool>> filterLambda;
                 if (propExpression.Type == typeof(Int32))
                 {
-                    filterLambda = Expression.Lambda<Func<T, bool>>(Expression.Equal(propExpression, Expression.Constant(value)), param);
+                    var equalCondition = Expression.Equal(propExpression, Expression.Constant(value));
+                    filterLambda = Expression.Lambda<Func<T, bool>>(equalCondition, parameter);
                 }
                 else if (Nullable.GetUnderlyingType(propExpression.Type) == typeof(Int32))
                 {
+                    var areEqual = Expression.Equal(propExpression, Expression.Convert(Expression.Constant(value), propExpression.Type));
+                    var isNull = Expression.Equal(propExpression, Expression.Convert(Expression.Constant(null), propExpression.Type));
+                    
                     // value = Convert.ChangeType(value, propExpression.Type);
-                    filterLambda = Expression.Lambda<Func<T, bool>>(Expression.Equal(propExpression, Expression.Convert(Expression.Constant(value), propExpression.Type)), param);
+                    // Expression.Equal(propExpression, Expression.Convert(Expression.Constant(value), propExpression.Type))
+                    var expr1 = Expression.Lambda<Func<T, bool>>(areEqual, parameter);
+                    var expr2 = Expression.Lambda<Func<T, bool>>(isNull, parameter);
+                    var body = Expression.Or(expr1.Body, expr2.Body);
+                    filterLambda = Expression.Lambda<Func<T, bool>>(body, expr1.Parameters[0]);
                 }
                 else
                 {
