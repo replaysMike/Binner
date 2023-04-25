@@ -228,44 +228,47 @@ namespace Binner.Web.ServiceHost
         private async Task PatchTableAsync<T>(BinnerContext context, Func<BinnerContext, DbSet<T>> expression)
         where T : class
         {
+            var propertiesToPatch = new[] { "OrganizationId", "UserId" };
             try
             {
-                var parameter = Expression.Parameter(typeof(T), "e");
-                var propExpression = Expression.Property(parameter, "OrganizationId");
-                var value = 0;
-                Expression<Func<T, bool>> filterLambda;
-                if (propExpression.Type == typeof(Int32))
+                foreach (var propertyName in propertiesToPatch)
                 {
-                    var equalCondition = Expression.Equal(propExpression, Expression.Constant(value));
-                    filterLambda = Expression.Lambda<Func<T, bool>>(equalCondition, parameter);
-                }
-                else if (Nullable.GetUnderlyingType(propExpression.Type) == typeof(Int32))
-                {
-                    var areEqual = Expression.Equal(propExpression, Expression.Convert(Expression.Constant(value), propExpression.Type));
-                    var isNull = Expression.Equal(propExpression, Expression.Convert(Expression.Constant(null), propExpression.Type));
-                    
-                    // value = Convert.ChangeType(value, propExpression.Type);
-                    // Expression.Equal(propExpression, Expression.Convert(Expression.Constant(value), propExpression.Type))
-                    var expr1 = Expression.Lambda<Func<T, bool>>(areEqual, parameter);
-                    var expr2 = Expression.Lambda<Func<T, bool>>(isNull, parameter);
-                    var body = Expression.Or(expr1.Body, expr2.Body);
-                    filterLambda = Expression.Lambda<Func<T, bool>>(body, expr1.Parameters[0]);
-                }
-                else
-                {
-                    throw new Exception($"Unexpected type: {propExpression.Type}");
-                }
+                    var parameter = Expression.Parameter(typeof(T), "e");
+                    var propExpression = Expression.Property(parameter, propertyName); // OrganizationId, UserId
+                    var value = 0;
+                    Expression<Func<T, bool>> filterLambda;
+                    if (propExpression.Type == typeof(Int32))
+                    {
+                        var equalCondition = Expression.Equal(propExpression, Expression.Constant(value));
+                        filterLambda = Expression.Lambda<Func<T, bool>>(equalCondition, parameter);
+                    }
+                    else if (Nullable.GetUnderlyingType(propExpression.Type) == typeof(Int32))
+                    {
+                        // create an expression that does an EqualTo value OR EqualTo null
+                        var areEqual = Expression.Equal(propExpression, Expression.Convert(Expression.Constant(value), propExpression.Type));
+                        var isNull = Expression.Equal(propExpression, Expression.Convert(Expression.Constant(null), propExpression.Type));
 
-                var records = await expression.Invoke(context).Where(filterLambda).ToListAsync();
-                foreach (var record in records)
-                {
-                    var type = record.GetType();
-                    var pi = type.GetProperty("OrganizationId");
-                    pi.SetValue(record, 1);
-                }
+                        var expr1 = Expression.Lambda<Func<T, bool>>(areEqual, parameter);
+                        var expr2 = Expression.Lambda<Func<T, bool>>(isNull, parameter);
+                        var body = Expression.Or(expr1.Body, expr2.Body);
+                        filterLambda = Expression.Lambda<Func<T, bool>>(body, expr1.Parameters[0]);
+                    }
+                    else
+                    {
+                        throw new Exception($"Unexpected type: {propExpression.Type}");
+                    }
 
-                var updatedCount = await context.SaveChangesAsync();
-                if (updatedCount > 0) _logger!.LogWarning($"Patched {updatedCount} {typeof(T).Name}s missing OrganizationId!");
+                    var records = await expression.Invoke(context).Where(filterLambda).ToListAsync();
+                    foreach (var record in records)
+                    {
+                        var type = record.GetType();
+                        var pi = type.GetProperty("OrganizationId");
+                        pi.SetValue(record, 1);
+                    }
+
+                    var updatedCount = await context.SaveChangesAsync();
+                    if (updatedCount > 0) _logger!.LogWarning($"Patched {updatedCount} {typeof(T).Name}s missing {propertyName}!");
+                }
             }
             catch (Exception ex)
             {
