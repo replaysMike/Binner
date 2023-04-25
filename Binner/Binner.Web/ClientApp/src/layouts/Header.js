@@ -9,8 +9,8 @@ import '../i18n';
 const lngs = {
     en: { nativeName: 'English', flag: 'gb' },      // english
     it: { nativeName: 'Italiano', flag: 'it' },      // italian
+    de: { nativeName: 'Deutsch', flag: 'de' },      // german
     // temporary: enable languages as the translations are finished.
-    //de: { nativeName: 'Deutsch', flag: 'de' },      // german
     //fr: { nativeName: 'Français ', flag: 'fr' },    // french
     //es: { nativeName: 'Español', flag: 'mx' },      // spanish
     //zh: { nativeName: '中文', flag: 'cn' },         // chinese
