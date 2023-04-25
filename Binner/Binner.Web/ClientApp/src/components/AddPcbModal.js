@@ -140,7 +140,7 @@ export function AddPcbModal(props) {
               <Form.Field width={4}>
                 <Popup
                   wide
-                  content={<p>{t('comp.addPcbModal.popup.name', "The cost to produce a single PCB board (without components). If using quantity, only specify the cost for a single board as quantity will be taken into consideration.")}</p>}
+                  content={<p>{t('comp.addPcbModal.popup.cost', "The cost to produce a single PCB board (without components). If using quantity, only specify the cost for a single board as quantity will be taken into consideration.")}</p>}
                   trigger={<Form.Field>
                     <label>{t('label.cost', "Cost")}</label>
                     <Input
