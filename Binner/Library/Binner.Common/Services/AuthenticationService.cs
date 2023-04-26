@@ -213,7 +213,7 @@ namespace Binner.Common.Services
             // generate new jwt
             var userContext = Map(user);
             var jwtToken = _jwt.GenerateJwtToken(userContext);
-            var imagesToken = _jwt.GenerateImagesToken();
+            var imagesToken = newImagesToken;
 
             return new AuthenticationResponse(userContext, new AuthenticatedTokens
             {
