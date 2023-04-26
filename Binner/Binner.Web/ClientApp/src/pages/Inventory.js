@@ -2247,8 +2247,8 @@ export function Inventory(props) {
                       <Table.HeaderCell textAlign="center">{t('label.cost', "Cost")}</Table.HeaderCell>
                       <Table.HeaderCell textAlign="center">{t('label.quantityAvailable', "Quantity Available")}</Table.HeaderCell>
                       <Table.HeaderCell textAlign="center">{t('label.minimumOrderQuantity', "Minimum Order Quantity")}</Table.HeaderCell>
-                      <Table.HeaderCell></Table.HeaderCell>
-                      <Table.HeaderCell></Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">{t('label.image', "Image")}</Table.HeaderCell>
+                      <Table.HeaderCell textAlign="center">{t('label.productUrl', "Product Url")}</Table.HeaderCell>
                       <Table.HeaderCell></Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
