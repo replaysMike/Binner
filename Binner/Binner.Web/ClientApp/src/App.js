@@ -53,6 +53,7 @@ import { Admin } from "./pages/admin/Home";
 import { Backup } from "./pages/admin/Backup";
 import { UpdateParts } from "./pages/admin/UpdateParts";
 import { ActivateLicense } from "./pages/admin/ActivateLicense";
+import { SystemInformation } from "./pages/admin/SystemInformation";
 
 function withSearchParams(Component) {
   return (props) => <Component {...props} searchParams={useSearchParams()} />;
@@ -187,6 +188,14 @@ class App extends Component {
               element={
                 <AdminWrapper>
                   <Backup />
+                </AdminWrapper>
+              }
+            />
+            <Route
+              path="/admin/info"
+              element={
+                <AdminWrapper>
+                  <SystemInformation />
                 </AdminWrapper>
               }
             />
