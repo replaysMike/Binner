@@ -1152,7 +1152,9 @@ INNER JOIN (
             await using var context = await _contextFactory.CreateDbContextAsync();
             // insert or update
             var entity = await context.OAuthCredentials
-                .FirstOrDefaultAsync(x => x.Provider == credential.Provider && x.OrganizationId == userContext.OrganizationId);
+                .FirstOrDefaultAsync(x => x.Provider == credential.Provider 
+                    && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null || x.OrganizationId == 0)
+                    && (x.UserId == userContext.UserId || x.UserId == null || x.UserId == 0));
             if (entity != null)
             {
                 // update

@@ -40,12 +40,12 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> AuthorizeAsync([FromQuery] string? code, [FromQuery] string? scope, [FromQuery] string? state)
         {
-            if (string.IsNullOrEmpty(code)) throw new ArgumentNullException("code", "Code parameter must be specified");
-            if (string.IsNullOrEmpty(state)) throw new ArgumentNullException("state", "State parameter must be specified");
+            if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code), "Code parameter must be specified");
+            if (string.IsNullOrEmpty(state)) throw new ArgumentNullException(nameof(state), "State parameter must be specified");
 
             // state is a Guid indicating the requestId
             if (!Guid.TryParse(state, out var requestId) && requestId != Guid.Empty)
-                throw new ArgumentException("State is an invalid format.", "state");
+                throw new ArgumentException("State is an invalid format.", nameof(state));
 
             var authRequest = await _credentialService.GetOAuthRequestAsync(requestId);
             if (authRequest == null)
