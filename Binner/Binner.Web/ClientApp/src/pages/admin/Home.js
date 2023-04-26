@@ -30,6 +30,10 @@ export const Admin = () => {
               <h1>Backup/Restore</h1>
               <p>Backup or restore your Binner installation.</p>
             </li>
+            <li onClick={() => navigate("/admin/info")}>
+              <h1>System Information</h1>
+              <p>Get information on your Binner installation.</p>
+            </li>
             {/*<li onClick={() => navigate("/admin/updateParts")}>
               <h1>Update Part Metadata</h1>
               <p>Refresh information from external APIs and choose which fields you would like to update.</p>

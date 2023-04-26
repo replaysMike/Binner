@@ -37,10 +37,11 @@ namespace Binner.Web.Controllers
         private readonly IServiceContainer _container;
         private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
         private readonly RequestContextAccessor _requestContext;
-        private readonly VersionManagementService _versionManagementService;
+        private readonly IVersionManagementService _versionManagementService;
         private readonly IBackupProvider _backupProvider;
+        private readonly IAdminService _adminService;
 
-        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider, VersionManagementService versionManagementService, IBackupProvider backupProvider)
+        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider, IVersionManagementService versionManagementService, IBackupProvider backupProvider, IAdminService adminService)
         {
             _mapper = mapper;
             _container = container;
@@ -54,6 +55,7 @@ namespace Binner.Web.Controllers
             _credentialProvider = credentialProvider;
             _versionManagementService = versionManagementService;
             _backupProvider = backupProvider;
+            _adminService = adminService;
         }
 
         /// <summary>
@@ -159,6 +161,25 @@ namespace Binner.Web.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
             }
 
+        }
+
+        /// <summary>
+        /// Get information about the Binner installation
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("info")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
+        public async Task<IActionResult> GetSystemInformationAsync()
+        {
+            try
+            {
+                var result = await _adminService.GetSystemInfoAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Get system info error! ", ex));
+            }
         }
 
         /// <summary>

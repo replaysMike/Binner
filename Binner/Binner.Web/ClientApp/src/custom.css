@@ -273,9 +273,35 @@ section.formHeader {
     font-style: italic;
 }
 
+.ellipsis-container {
+    max-width: 100%;
+    display: flex;
+}
+
+.ellipsis-container div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ellipsis-container.nowrap div {
+    white-space: nowrap;
+}
+
+.ellipsis-container.resizable div {
+    resize: horizontal;
+}
+
 .ellipsis {
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.ellipsis.nowrap {
+    white-space: nowrap;
+}
+
+.ellipsis.resizable{
+    resize: horizontal;
 }
 
 .truncate {

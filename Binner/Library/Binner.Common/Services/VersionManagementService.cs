@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Common.Services
 {
-    public class VersionManagementService
+    public class VersionManagementService : IVersionManagementService
     {
         private const string GitHubEndpoint = "https://github.com/replaysMike/Binner/releases";
         private static readonly Lazy<MemoryCache> _cache = new Lazy<MemoryCache>(() => new MemoryCache("VersionManagement"));
