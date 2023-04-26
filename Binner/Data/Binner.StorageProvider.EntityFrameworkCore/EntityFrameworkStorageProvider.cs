@@ -133,6 +133,8 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             {
                 case "postgresql":
                     return GetPostgresqlFindPartsQuery(keywords, userContext);
+                case "mysql":
+                    return GetMySqlFindPartsQuery(keywords, userContext);
                 case "binner":
                 case "sqlite":
                     return GetSqliteFindPartsQuery(keywords, userContext);
@@ -254,6 +256,64 @@ SELECT p.* FROM Parts p
 INNER JOIN (
   SELECT PartId, MIN(Rank) Rank FROM PartsMerged GROUP BY PartId
 ) pm ON pm.PartId = p.PartId ORDER BY pm.Rank ASC;
+;");
+        }
+
+        private FormattableString GetMySqlFindPartsQuery(string keywords, IUserContext userContext)
+        {
+            // note: this is not injectable, using a formattable string which is a special case for FromSql()
+            return FormattableStringFactory.Create(
+                $@"WITH PartsExactMatch (PartId, OrderRank) AS
+(
+SELECT PartId, 10 as OrderRank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber = '{keywords}'
+ OR DigiKeyPartNumber = '{keywords}'
+ OR MouserPartNumber = '{keywords}'
+ OR ManufacturerPartNumber = '{keywords}'
+ OR Description = '{keywords}'
+ OR Keywords = '{keywords}'
+ OR Location = '{keywords}'
+ OR BinNumber = '{keywords}'
+ OR BinNumber2 = '{keywords}')
+),
+PartsBeginsWith (PartId, OrderRank) AS
+(
+SELECT PartId, 100 as OrderRank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber LIKE CONCAT('{keywords}','%')
+ OR DigiKeyPartNumber LIKE CONCAT('{keywords}','%')
+ OR MouserPartNumber LIKE CONCAT('{keywords}','%')
+ OR ManufacturerPartNumber LIKE CONCAT('{keywords}','%')
+ OR Description LIKE CONCAT('{keywords}','%')
+ OR Keywords LIKE CONCAT('{keywords}','%')
+ OR Location LIKE CONCAT('{keywords}','%')
+ OR BinNumber LIKE CONCAT('{keywords}','%')
+ OR BinNumber2 LIKE CONCAT('{keywords}','%'))
+),
+PartsAny (PartId, OrderRank) AS
+(
+SELECT PartId, 200 as OrderRank FROM Parts WHERE UserId = {userContext.UserId} AND (
+PartNumber LIKE CONCAT('%','{keywords}','%')
+ OR DigiKeyPartNumber LIKE CONCAT('%','{keywords}','%')
+ OR MouserPartNumber LIKE CONCAT('%','{keywords}','%')
+ OR ManufacturerPartNumber LIKE CONCAT('%','{keywords}','%')
+ OR Description LIKE CONCAT('%','{keywords}','%')
+ OR Keywords LIKE CONCAT('%','{keywords}','%')
+ OR Location LIKE CONCAT('%','{keywords}','%')
+ OR BinNumber LIKE CONCAT('%','{keywords}','%')
+ OR BinNumber2 LIKE CONCAT('%','{keywords}','%'))
+),
+PartsMerged (PartId, OrderRank) AS
+(
+	SELECT PartId, OrderRank FROM PartsExactMatch
+	UNION
+	SELECT PartId, OrderRank FROM PartsBeginsWith
+	UNION
+	SELECT PartId, OrderRank FROM PartsAny
+)
+SELECT p.* FROM Parts p
+INNER JOIN (
+  SELECT PartId, MIN(OrderRank) OrderRank FROM PartsMerged GROUP BY PartId
+) pm ON pm.PartId = p.PartId ORDER BY pm.OrderRank ASC;
 ;");
         }
 
