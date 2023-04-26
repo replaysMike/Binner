@@ -3,6 +3,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { Icon, Button, Modal } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { Converter } from "showdown";
+import "./VersionBanner.css";
 
 export function VersionBanner(props) {
 	const { t } = useTranslation();
@@ -50,7 +51,7 @@ export function VersionBanner(props) {
 
 	return (
 		<>
-		{isOpen && <div className="version-banner">
+		{<div className={`version-banner ${isOpen ? 'open' : ''}`}>
 			<span>
 				<Icon name="close" style={{marginRight: '20px', cursor: 'pointer'}} onClick={handleSkip} />
 				<Trans i18nKey="notification.versionBanner.newVersion" version={version}>

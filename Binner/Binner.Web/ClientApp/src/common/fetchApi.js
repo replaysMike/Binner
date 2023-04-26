@@ -1,5 +1,6 @@
 import { getUserAccount, deAuthenticateUserAccount, refreshTokenAuthorizationAsync } from "./authentication";
 import _ from "underscore";
+import customEvents from './customEvents';
 const noData = { message: `No message was specified.` };
 
 /**
@@ -64,7 +65,11 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
  */
 export const handleJsonResponse = async (response, requestContext, isReissuedRequest) => {
   // store the last version header we have seen
-  if (response.headers.has("x-version")) window.version = response.headers.get("x-version");
+  if (response.headers.has("x-version")) {
+    const version = response.headers.get("x-version");
+    window.version = version;
+    customEvents.notifySubscribers("version", { version });
+  }
   const wrappedResponse = await handle401UnauthorizedAsync(response, requestContext, isReissuedRequest);
   if (!wrappedResponse.ok) return wrappedResponse.response;
 
