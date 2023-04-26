@@ -595,7 +595,7 @@ export function Bom(props) {
                 {t("label.partNumber", "Part Number")}
               </Table.HeaderCell>
               <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
-                {t("label.partNumber", "Mfr Part")}
+                {t("label.mfrPart", "Mfr Part")}
               </Table.HeaderCell>
               <Table.HeaderCell style={{ width: "100px" }} sorted={column === "partType" ? direction : null} onClick={handleSort("partType")}>
                 {t("label.partType", "Part Type")}
