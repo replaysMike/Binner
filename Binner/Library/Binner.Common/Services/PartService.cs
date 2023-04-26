@@ -157,14 +157,23 @@ namespace Binner.Common.Services
         {
             var userContext = _requestContext.GetUserContext();
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
-            var entities = await context.PartTypes
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var models = await context.PartTypes
                 .Include(x => x.Parts)
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .OrderBy(x => x.ParentPartType != null ? x.ParentPartType.Name : "")
                 .ThenBy(x => x.Name)
+                .Select(x => new PartTypeResponse
+                {
+                    PartTypeId = x.PartTypeId,
+                    Name = x.Name,
+                    ParentPartTypeId = x.ParentPartTypeId,
+                    ParentPartType = x.ParentPartType != null ? x.ParentPartType.Name : null,
+                    Parts = x.Parts.Count,
+                    DateCreatedUtc = x.DateCreatedUtc
+                })
                 .ToListAsync();
-            return _mapper.Map<ICollection<PartTypeResponse>>(entities);
+            return models;
         }
 
         public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId)

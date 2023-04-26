@@ -170,6 +170,12 @@ export function PartTypes(props) {
     setIsRenameModalOpen(false);
   };
 
+  const handleViewPartsForPartType = (e, partType) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/inventory?by=partType&value=${partType.name}`);
+  };
+
   const handleShowAdd = (e) => {
     if (!addVisible) {
       if (parentPartType) setPartType({ ...partType, parentPartTypeId: parentPartType.partTypeId });
@@ -261,11 +267,22 @@ export function PartTypes(props) {
             </Typography>
             <Popup
               position="left center"
-              content={<p>{t("button.rename", "Rename")}</p>}
+              content={<p>{t("button.parts", "Parts")}</p>}
               trigger={
                 <Button
                   size="tiny"
                   style={{ fontSize: "0.6em", padding: '0.5em 1.5em', marginLeft: "40px", marginTop: "-3px" }}
+                  onClick={(e) => handleViewPartsForPartType(e, data)}
+                >{t("button.parts", "Parts")}</Button>
+              }
+            />
+            <Popup
+              position="left center"
+              content={<p>{t("button.rename", "Rename")}</p>}
+              trigger={
+                <Button
+                  size="tiny"
+                  style={{ fontSize: "0.6em", padding: '0.5em 1.5em', marginLeft: "10px", marginTop: "-3px" }}
                   onClick={(e) => handleOpenRenamePartModal(e, data)}
                 >{t("button.rename", "Rename")}</Button>
               }

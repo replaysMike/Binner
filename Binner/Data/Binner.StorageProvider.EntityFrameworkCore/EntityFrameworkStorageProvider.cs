@@ -33,7 +33,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.Part>(part);
             EnforceIntegrityCreate(entity, userContext);
             context.Parts.Add(entity);
@@ -45,7 +45,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         public async Task<Project?> AddProjectAsync(Project project, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.Project>(project);
             EnforceIntegrityCreate(entity, userContext);
             context.Projects.Add(entity);
@@ -57,7 +57,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         public async Task<bool> DeletePartAsync(Part part, IUserContext userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
@@ -70,7 +70,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         public async Task<bool> DeletePartTypeAsync(PartType partType, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
 
             var entity = await context.PartTypes.FirstOrDefaultAsync(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
@@ -107,7 +107,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         public async Task<bool> DeleteProjectAsync(Project project, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Projects.FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
@@ -121,7 +121,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             // todo: this search is inefficient in EF but don't know how to convert it yet
             var query = GetFindPartsQueryForProvider(keywords, userContext);
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Parts.FromSql(query)
                 .ToListAsync();
             return entities.Select(x => new SearchResult<Part>(_mapper.Map<Part>(x), 0)).ToList();
@@ -339,7 +339,7 @@ INNER JOIN (
         {
             try
             {
-                using var context = await _contextFactory.CreateDbContextAsync();
+                await using var context = await _contextFactory.CreateDbContextAsync();
                 var entity = await context.PartTypes.FirstOrDefaultAsync();
                 if (entity != null)
                     return new ConnectionResponse { IsSuccess = true, DatabaseExists = true, Errors = new List<string>() };
@@ -365,7 +365,7 @@ INNER JOIN (
                 RequestId = authRequest.Id,
                 ReturnToUrl = authRequest.ReturnToUrl
             };
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             EnforceIntegrityCreate(entity, userContext);
             context.OAuthRequests.Add(entity);
             await context.SaveChangesAsync();
@@ -375,7 +375,7 @@ INNER JOIN (
         public async Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthRequests
                 .FirstOrDefaultAsync(x => x.Provider == authRequest.Provider && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -391,7 +391,7 @@ INNER JOIN (
         public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthRequests
                 .Where(x => x.RequestId == requestId && x.OrganizationId == userContext.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -400,7 +400,7 @@ INNER JOIN (
 
         private async Task<ICollection<Part>> GetPartsAsync(IUserContext userContext)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -409,7 +409,7 @@ INNER JOIN (
 
         private async Task<ICollection<OAuthCredential>> GetOAuthCredentialAsync(IUserContext userContext)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.OAuthCredentials
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -418,7 +418,7 @@ INNER JOIN (
 
         private async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Projects
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -429,7 +429,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var totalItems = await context.Parts.CountAsync(x => x.Quantity <= x.LowStockThreshold && x.OrganizationId == userContext.OrganizationId);
             var entitiesQueryable = context.Parts
                 .Where(x => x.Quantity <= x.LowStockThreshold && x.OrganizationId == userContext.OrganizationId);
@@ -452,7 +452,7 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var entity = _mapper.Map<DataModel.StoredFile>(storedFile);
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             EnforceIntegrityCreate(entity, userContext);
             context.StoredFiles.Add(entity);
             await context.SaveChangesAsync();
@@ -462,7 +462,7 @@ INNER JOIN (
         public async Task<StoredFile?> GetStoredFileAsync(long storedFileId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.StoredFiles
                 .FirstOrDefaultAsync(x => x.StoredFileId == storedFileId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<StoredFile?>(entity);
@@ -471,7 +471,7 @@ INNER JOIN (
         public async Task<StoredFile?> GetStoredFileAsync(string filename, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.StoredFiles
                 .FirstOrDefaultAsync(x => x.FileName == filename && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<StoredFile?>(entity);
@@ -480,7 +480,7 @@ INNER JOIN (
         public async Task<ICollection<StoredFile>> GetStoredFilesAsync(long partId, StoredFileType? fileType, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.StoredFiles
                 .Where(x => x.PartId == partId && x.StoredFileType == fileType && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -490,7 +490,7 @@ INNER JOIN (
         public async Task<ICollection<StoredFile>> GetStoredFilesAsync(PaginatedRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
             var entitiesQueryable = context.StoredFiles.Where(x => x.OrganizationId == userContext.OrganizationId);
             if (!string.IsNullOrEmpty(request.OrderBy))
@@ -510,7 +510,7 @@ INNER JOIN (
         public async Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.StoredFiles
                 .FirstOrDefaultAsync(x => x.StoredFileId == storedFile.StoredFileId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -526,7 +526,7 @@ INNER JOIN (
         public async Task<bool> DeleteStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = context.StoredFiles.FirstOrDefault(x => x.StoredFileId == storedFile.StoredFileId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
@@ -538,7 +538,7 @@ INNER JOIN (
         public async Task<Pcb?> GetPcbAsync(long pcbId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Pcbs
                 .FirstOrDefaultAsync(x => x.PcbId == pcbId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<Pcb?>(entity);
@@ -547,7 +547,7 @@ INNER JOIN (
         public async Task<ICollection<Pcb>> GetPcbsAsync(long projectId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPcbAssignments
                 .Include(x => x.Pcb)
                 .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId)
@@ -559,7 +559,7 @@ INNER JOIN (
         public async Task<Pcb> AddPcbAsync(Pcb pcb, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.Pcb>(pcb);
             EnforceIntegrityCreate(entity, userContext);
             context.Pcbs.Add(entity);
@@ -570,7 +570,7 @@ INNER JOIN (
         public async Task<Pcb> UpdatePcbAsync(Pcb pcb, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Pcbs
                 .FirstOrDefaultAsync(x => x.PcbId == pcb.PcbId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -586,7 +586,7 @@ INNER JOIN (
         public async Task<bool> DeletePcbAsync(Pcb pcb, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = context.Pcbs
                 .Include(x => x.ProjectPcbProduceHistory)
                 .Include(x => x.ProjectPcbAssignments)
@@ -606,7 +606,7 @@ INNER JOIN (
         public async Task<PcbStoredFileAssignment?> GetPcbStoredFileAssignmentAsync(long pcbStoredFileAssignmentId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PcbStoredFileAssignments
                 .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == pcbStoredFileAssignmentId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<PcbStoredFileAssignment?>(entity);
@@ -615,7 +615,7 @@ INNER JOIN (
         public async Task<ICollection<PcbStoredFileAssignment>> GetPcbStoredFileAssignmentsAsync(long pcbId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.PcbStoredFileAssignments
                 .Where(x => x.PcbId == pcbId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -625,7 +625,7 @@ INNER JOIN (
         public async Task<PcbStoredFileAssignment> AddPcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.PcbStoredFileAssignment>(assignment);
             EnforceIntegrityCreate(entity, userContext);
             context.PcbStoredFileAssignments.Add(entity);
@@ -636,7 +636,7 @@ INNER JOIN (
         public async Task<PcbStoredFileAssignment> UpdatePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PcbStoredFileAssignments
                 .FirstOrDefaultAsync(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -652,7 +652,7 @@ INNER JOIN (
         public async Task<bool> RemovePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = context.PcbStoredFileAssignments.FirstOrDefault(x => x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
@@ -664,7 +664,7 @@ INNER JOIN (
         public async Task<ICollection<ProjectPartAssignment>> GetPartAssignmentsAsync(long partId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPartAssignments
                 .Where(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -674,7 +674,7 @@ INNER JOIN (
         public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectPartAssignmentId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
                 .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == projectPartAssignmentId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPartAssignment?>(entity);
@@ -683,7 +683,7 @@ INNER JOIN (
         public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectId, long partId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
                 .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartId == partId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPartAssignment?>(entity);
@@ -692,7 +692,7 @@ INNER JOIN (
         public async Task<ProjectPartAssignment?> GetProjectPartAssignmentAsync(long projectId, string partName, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
                 .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.PartName == partName && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPartAssignment?>(entity);
@@ -701,7 +701,7 @@ INNER JOIN (
         public async Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(long projectId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPartAssignments
                 .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -711,7 +711,7 @@ INNER JOIN (
         public async Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(long projectId, PaginatedRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
             var entitiesQueryable = context.ProjectPartAssignments
                 .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId);
@@ -732,7 +732,7 @@ INNER JOIN (
         public async Task<ProjectPartAssignment> AddProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.ProjectPartAssignment>(assignment);
             EnforceIntegrityCreate(entity, userContext);
             context.ProjectPartAssignments.Add(entity);
@@ -743,7 +743,7 @@ INNER JOIN (
         public async Task<ProjectPartAssignment> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPartAssignments
                 .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -759,7 +759,7 @@ INNER JOIN (
         public async Task<bool> RemoveProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = context.ProjectPartAssignments.FirstOrDefault(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
@@ -771,7 +771,7 @@ INNER JOIN (
         public async Task<ProjectPcbAssignment?> GetProjectPcbAssignmentAsync(long projectPcbAssignmentId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPcbAssignments
                 .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == projectPcbAssignmentId && x.OrganizationId == userContext.OrganizationId);
             return _mapper.Map<ProjectPcbAssignment?>(entity);
@@ -780,7 +780,7 @@ INNER JOIN (
         public async Task<ICollection<ProjectPcbAssignment>> GetProjectPcbAssignmentsAsync(long projectId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.ProjectPcbAssignments
                 .Where(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
@@ -790,7 +790,7 @@ INNER JOIN (
         public async Task<ProjectPcbAssignment> AddProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.ProjectPcbAssignment>(assignment);
             EnforceIntegrityCreate(entity, userContext);
             context.ProjectPcbAssignments.Add(entity);
@@ -801,7 +801,7 @@ INNER JOIN (
         public async Task<ProjectPcbAssignment> UpdateProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPcbAssignments
                 .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -817,7 +817,7 @@ INNER JOIN (
         public async Task<bool> RemoveProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = context.ProjectPcbAssignments.FirstOrDefault(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
@@ -829,7 +829,7 @@ INNER JOIN (
         public async Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthCredentials
                 .Where(x => x.Provider == providerName && x.OrganizationId == userContext.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -840,7 +840,7 @@ INNER JOIN (
 
         public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext? userContext)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var existingEntity = await context.PartTypes
                 .FirstOrDefaultAsync(x => x.Name != null && x.Name == partType.Name && x.OrganizationId == userContext.OrganizationId);
@@ -866,7 +866,7 @@ INNER JOIN (
         public async Task<Part?> GetPartAsync(long partId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
@@ -876,7 +876,7 @@ INNER JOIN (
         public async Task<Part?> GetPartAsync(string partNumber, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
@@ -888,32 +888,65 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             if (request == null) throw new ArgumentNullException(nameof(request));
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            DataModel.PartType? partType = null;
             // special case for partTypes
             if (request.Value != null && request?.By.Equals("partType", StringComparison.InvariantCultureIgnoreCase) == true)
             {
-                var partType = await GetPartTypeAsync(request.Value, userContext);
+                partType = await context.PartTypes.Where(x => x.Name == request.Value).FirstOrDefaultAsync();
                 if (partType == null) throw new ArgumentException($"Unknown part type: {request.Value}");
                 request.Value = partType.PartTypeId.ToString();
                 request.By = "partTypeId";
+            } else if (request.Value != null && request?.By.Equals("partTypeId", StringComparison.InvariantCultureIgnoreCase) == true)
+            {
+                partType = await context.PartTypes.Where(x => x.PartTypeId == int.Parse(request.Value)).FirstOrDefaultAsync();
+                if (partType == null) throw new ArgumentException($"Unknown part type: {request.Value}");
             }
 
             var pageRecords = (request.Page - 1) * request.Results;
-            using var context = await _contextFactory.CreateDbContextAsync();
-            var totalParts = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
             var entitiesQueryable = context.Parts
-                .Where(x => x.OrganizationId == userContext.OrganizationId)
-                .WhereIf(!string.IsNullOrEmpty(request.By), x => EF.Property<string>(x, request.By!.UcFirst()) == request.Value);
-            if (!string.IsNullOrEmpty(request.OrderBy))
+                .Where(x => x.OrganizationId == userContext.OrganizationId);
+            var orderingApplied = false;
+            if (!string.IsNullOrEmpty(request.By) && (request.By.Equals("PartType", StringComparison.InvariantCultureIgnoreCase) ||
+                                                      request.By.Equals("PartTypeId", StringComparison.InvariantCultureIgnoreCase)) 
+                                                  && partType != null)
+            {
+                // recursively get part types and their children
+                var allPartTypes = await GetPartsByPartTypeAsync(context, partType, userContext);
+                // query all the children using a custom predicate builder
+                var predicate = PredicateBuilder.True<DataModel.Part>();
+                predicate = predicate.AND(x => x.PartTypeId == partType.PartTypeId);
+                foreach (var childPartType in allPartTypes)
+                {
+                    predicate = predicate.OR(x => x.PartTypeId == childPartType.PartTypeId);
+                }
+                // apply the predicate
+                entitiesQueryable = entitiesQueryable.Where(predicate);
+                // apply sorting
+                if (!string.IsNullOrEmpty(request.OrderBy))
+                {
+                    orderingApplied = true;
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => p.PartTypeId)
+                        .ThenByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+                }
+            }
+            else
+            {
+                // build a normal where
+                entitiesQueryable = entitiesQueryable.WhereIf(!string.IsNullOrEmpty(request.By), x => EF.Property<string>(x, request.By!.UcFirst()) == request.Value);
+            }
+
+            // apply specified sorting
+            if (!orderingApplied)
             {
                 if (request.Direction == SortDirection.Descending)
                     entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
                     entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
-            else
-            {
-                entitiesQueryable = entitiesQueryable.OrderByDescending(p => p.DateCreatedUtc);
-            }
+
+            var totalParts = await entitiesQueryable.CountAsync();
 
             List<DataModel.Part> entities;
             try
@@ -929,6 +962,22 @@ INNER JOIN (
                 // return empty result set, unknown sort by column
                 return new PaginatedResponse<Part>(totalParts, pageRecords, request.Page, new List<Part>());
             }
+        }
+
+        private async Task<ICollection<DataModel.PartType>> GetPartsByPartTypeAsync(BinnerContext context, DataModel.PartType partType, IUserContext? userContext)
+        {
+            var allPartTypes = new List<DataModel.PartType>();
+            var childPartTypes = await context.PartTypes
+                .Where(x => x.ParentPartTypeId == partType.PartTypeId)
+                .ToListAsync();
+            allPartTypes.AddRange(childPartTypes);
+            foreach (var child in childPartTypes)
+            {
+                var children = await GetPartsByPartTypeAsync(context, child, userContext);
+                if (children.Any())
+                    allPartTypes.AddRange(children);
+            }
+            return allPartTypes;
         }
 
         public async Task<ICollection<Part>> GetPartsAsync(Expression<Func<Part, bool>> predicate, IUserContext? userContext)
@@ -969,7 +1018,7 @@ INNER JOIN (
             var mappedConverter = new MappedConverter<Part, DataModel.Part>(mappings.ToArray());
             var expressionConverter = new ExpressionConverter<Part, DataModel.Part>(mappedConverter);
             var newPredicate = expressionConverter.Visit(predicate);
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .Where(newPredicate as Expression<Func<DataModel.Part, bool>>)
@@ -981,7 +1030,7 @@ INNER JOIN (
         public async Task<long> GetPartsCountAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             return await context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .SumAsync(x => x.Quantity);
@@ -990,7 +1039,7 @@ INNER JOIN (
         public async Task<long> GetUniquePartsCountAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             return await context.Parts
                 .CountAsync(x => x.OrganizationId == userContext.OrganizationId);
         }
@@ -998,7 +1047,7 @@ INNER JOIN (
         public async Task<decimal> GetPartsValueAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             return (decimal)await context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .SumAsync(x => x.Cost * x.Quantity);
@@ -1007,7 +1056,7 @@ INNER JOIN (
         public async Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartTypes
                 .FirstOrDefaultAsync(x => x.PartTypeId == partTypeId && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
             if (entity == null)
@@ -1019,7 +1068,7 @@ INNER JOIN (
         public async Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartTypes
                 .FirstOrDefaultAsync(x => x.Name == name && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
             if (entity == null)
@@ -1031,7 +1080,7 @@ INNER JOIN (
         public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.PartTypes
                 .Where(x => x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null)
                 .OrderBy(x => x.OrganizationId == null)
@@ -1044,7 +1093,7 @@ INNER JOIN (
         public async Task<Project?> GetProjectAsync(long projectId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Projects
                 .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
@@ -1055,7 +1104,7 @@ INNER JOIN (
         public async Task<Project?> GetProjectAsync(string projectName, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Projects
                 .FirstOrDefaultAsync(x => x.Name == projectName && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
@@ -1068,7 +1117,7 @@ INNER JOIN (
             if (request == null) throw new ArgumentNullException(nameof(request));
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var pageRecords = (request.Page - 1) * request.Results;
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entitiesQueryable = context.Projects
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .WhereIf(!string.IsNullOrEmpty(request.By), x => x.GetPropertyValue(request.By.UcFirst()).ToString() == request.Value);
@@ -1089,7 +1138,7 @@ INNER JOIN (
         public async Task RemoveOAuthCredentialAsync(string providerName, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthCredentials
                 .FirstOrDefaultAsync(x => x.Provider == providerName && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -1100,7 +1149,7 @@ INNER JOIN (
         public async Task<OAuthCredential?> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             // insert or update
             var entity = await context.OAuthCredentials
                 .FirstOrDefaultAsync(x => x.Provider == credential.Provider && x.OrganizationId == userContext.OrganizationId);
@@ -1127,7 +1176,7 @@ INNER JOIN (
         public async Task<Part> UpdatePartAsync(Part part, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Parts
                 .FirstOrDefaultAsync(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -1143,7 +1192,7 @@ INNER JOIN (
         public async Task<PartType?> UpdatePartTypeAsync(PartType partType, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartTypes
                 .FirstOrDefaultAsync(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -1159,7 +1208,7 @@ INNER JOIN (
         public async Task<Project?> UpdateProjectAsync(Project project, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Projects
                 .Include(x => x.ProjectPartAssignments)
                 .Include(x => x.ProjectPcbAssignments)
@@ -1178,7 +1227,7 @@ INNER JOIN (
         public async Task<PartSupplier> AddPartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.PartSupplier>(partSupplier);
             EnforceIntegrityCreate(entity, userContext);
             context.PartSuppliers.Add(entity);
@@ -1190,7 +1239,7 @@ INNER JOIN (
         public async Task<PartSupplier?> GetPartSupplierAsync(long partSupplierId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartSuppliers
                 .Where(x => x.PartSupplierId == partSupplierId && x.OrganizationId == userContext.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -1200,7 +1249,7 @@ INNER JOIN (
         public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.PartSuppliers
                 .Include(x => x.Part)
                 .Where(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId)
@@ -1211,7 +1260,7 @@ INNER JOIN (
         public async Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.PartSuppliers
                 .FirstOrDefaultAsync(x => x.PartSupplierId == partSupplier.PartSupplierId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
@@ -1227,7 +1276,7 @@ INNER JOIN (
         public async Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = context.PartSuppliers.FirstOrDefault(x => x.PartSupplierId == partSupplier.PartSupplierId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
@@ -1260,4 +1309,94 @@ INNER JOIN (
             _config.Clear();
         }
     }
+
+    // <summary>
+/// Enables the efficient, dynamic composition of query predicates.
+/// </summary>
+public static class PredicateBuilder
+{
+    /// <summary>
+    /// Creates a predicate that evaluates to true.
+    /// </summary>
+    public static Expression<Func<T, bool>> True<T>() { return param => true; }
+
+    /// <summary>
+    /// Creates a predicate that evaluates to false.
+    /// </summary>
+    public static Expression<Func<T, bool>> False<T>() { return param => false; }
+
+    /// <summary>
+    /// Creates a predicate expression from the specified lambda expression.
+    /// </summary>
+    public static Expression<Func<T, bool>> Create<T>(Expression<Func<T, bool>> predicate) { return predicate; }
+
+    /// <summary>
+    /// Combines the first predicate with the second using the logical "and".
+    /// </summary>
+    public static Expression<Func<T, bool>> AND<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
+    {
+        return first.Compose(second, Expression.AndAlso);
+    }
+
+    /// <summary>
+    /// Combines the first predicate with the second using the logical "or".
+    /// </summary>
+    public static Expression<Func<T, bool>> OR<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
+    {
+        return first.Compose(second, Expression.OrElse);
+    }
+
+    /// <summary>
+    /// Negates the predicate.
+    /// </summary>
+    public static Expression<Func<T, bool>> Not<T>(this Expression<Func<T, bool>> expression)
+    {
+        var negated = Expression.Not(expression.Body);
+        return Expression.Lambda<Func<T, bool>>(negated, expression.Parameters);
+    }
+
+    /// <summary>
+    /// Combines the first expression with the second using the specified merge function.
+    /// </summary>
+    static Expression<T> Compose<T>(this Expression<T> first, Expression<T> second, Func<Expression, Expression, Expression> merge)
+    {
+        // zip parameters (map from parameters of second to parameters of first)
+        var map = first.Parameters
+            .Select((f, i) => new { f, s = second.Parameters[i] })
+            .ToDictionary(p => p.s, p => p.f);
+
+        // replace parameters in the second lambda expression with the parameters in the first
+        var secondBody = ParameterRebinder.ReplaceParameters(map, second.Body);
+
+        // create a merged lambda expression with parameters from the first expression
+        return Expression.Lambda<T>(merge(first.Body, secondBody), first.Parameters);
+    }
+
+    class ParameterRebinder : ExpressionVisitor
+    {
+        readonly Dictionary<ParameterExpression, ParameterExpression> map;
+
+        ParameterRebinder(Dictionary<ParameterExpression, ParameterExpression> map)
+        {
+            this.map = map ?? new Dictionary<ParameterExpression, ParameterExpression>();
+        }
+
+        public static Expression ReplaceParameters(Dictionary<ParameterExpression, ParameterExpression> map, Expression exp)
+        {
+            return new ParameterRebinder(map).Visit(exp);
+        }
+
+        protected override Expression VisitParameter(ParameterExpression p)
+        {
+            ParameterExpression replacement;
+
+            if (map.TryGetValue(p, out replacement))
+            {
+                p = replacement;
+            }
+
+            return base.VisitParameter(p);
+        }
+    }
+}
 }
