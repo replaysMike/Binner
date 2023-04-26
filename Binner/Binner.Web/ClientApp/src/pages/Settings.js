@@ -259,7 +259,7 @@ export const Settings = (props) => {
       },
       body: JSON.stringify(settings),
     }).then((response) => {
-      const saveMessage = t('success.savedSystemSettings', "System settings were saved.");
+      const saveMessage = t('success.systemSettingsSaved', "System settings were saved.");
       toast.success(saveMessage);
       setSaveMessage(saveMessage);
       navigate(-1);
