@@ -263,11 +263,15 @@ export function PartTypes(props) {
               {labelText}
             </Typography>
             <Typography variant="caption" color={labelColor} sx={{ fontWeight: labelFontWeight }}>
-              {labelInfo}
+            <Popup
+              position="left center"
+              content={<p>{t("page.partTypes.partCount", "The number of parts in this category")}</p>}
+              trigger={<div>{labelInfo}</div>}
+            />              
             </Typography>
             <Popup
               position="left center"
-              content={<p>{t("button.parts", "Parts")}</p>}
+              content={<p>{t("page.partTypes.viewParts", "View Parts")}</p>}
               trigger={
                 <Button
                   size="tiny"

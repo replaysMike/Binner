@@ -1,5 +1,34 @@
 import _ from "underscore";
-import { CableIcon, CapacitorIcon, ConnectorIcon, CrystalIcon, DiodeIcon, HardwareIcon, ICIcon, InductorIcon, KitIcon, LEDIcon, ModuleIcon, RelayIcon, ResistorIcon, SCRIcon, SensorIcon, SwitchIcon, TransformerIcon, TransistorIcon } from "./icons";
+import {
+  CableIcon,
+  CapacitorIcon,
+  CeramicCapacitorIcon,
+  MicaCapacitorIcon,
+  PaperCapacitorIcon,
+	SuperCapacitorIcon,
+  MylarCapacitorIcon,
+  TantalumCapacitorIcon,
+  VariableCapacitorIcon,
+  PolyesterCapacitorIcon,
+  ConnectorIcon,
+  CrystalIcon,
+  DiodeIcon,
+	EvaluationIcon,
+  HardwareIcon,
+  ICIcon,
+  InductorIcon,
+  KitIcon,
+  LEDIcon,
+  ModuleIcon,
+  RelayIcon,
+  ResistorIcon,
+	PotentiometerIcon,
+  SCRIcon,
+  SensorIcon,
+  SwitchIcon,
+  TransformerIcon,
+  TransistorIcon
+} from "./icons";
 
 /**
  * Get the part type id using its name
@@ -31,59 +60,69 @@ export const getIcon = (name, parentName) => {
 const getIconForType = (name) => {
   switch (name) {
     case "Cable":
-		case "Cables":
       return CableIcon;
     case "Capacitor":
-		case "Capacitors":
       return CapacitorIcon;
-		case "Connector":
-		case "Connectors":
+    case "CeramicCapacitor":
+      return CeramicCapacitorIcon;
+    case "MicaCapacitor":
+      return MicaCapacitorIcon;
+    case "PaperCapacitor":
+      return PaperCapacitorIcon;
+		case "SupercapacitorCapacitor":
+			return SuperCapacitorIcon;
+    case "MylarCapacitor":
+		case "SafetyCapacitor":
+      return MylarCapacitorIcon;
+    case "TantalumCapacitor":
+      return TantalumCapacitorIcon;
+    case "VariableCapacitor":
+      return VariableCapacitorIcon;
+    case "PolyesterCapacitor":
+		case "PolycarbonateCapacitor":
+      return PolyesterCapacitorIcon;
+    case "Connector":
       return ConnectorIcon;
-		case "Crystal":
-		case "Crystals":
+    case "Crystal":
       return CrystalIcon;
     case "Diode":
-		case "Diodes":
       return DiodeIcon;
-		case "Hardware":
-			return HardwareIcon;
+		case "Evaluation":
+      return EvaluationIcon;
+    case "Hardware":
+      return HardwareIcon;
     case "IC":
-		case "ICs":
+    case "ICs":
       return ICIcon;
-		case "Inductor":
-		case "Inductors":
+    case "Inductor":
+		case "WirewoundResistor":
       return InductorIcon;
-		case "Kit":
-		case "Kits":
-			return KitIcon;
-		case "LED":
-		case "LEDs":
+    case "Kit":
+		case "ResistorKit":
+		case "CapacitorKit":
+		case "DiodeKit":
+				return KitIcon;
+    case "LED":
       return LEDIcon;
-		case "Module":
-		case "Modules":
+    case "Module":
       return ModuleIcon;
-		case "Relay":
-		case "Relays":
-			return RelayIcon;
+    case "Relay":
+      return RelayIcon;
     case "Resistor":
-		case "Resistors":
       return ResistorIcon;
-		case "MOSFET":
-		case "MOSFETs":
-		case "TRIAC":
-		case "SCR":
+		case "Potentiometer":
+			return PotentiometerIcon;
+    case "MOSFET":
+    case "TRIAC":
+    case "SCR":
       return SCRIcon;
-		case "Sensor":
-		case "Sensors":
+    case "Sensor":
       return SensorIcon;
-		case "Switch":
-		case "Switches":
+    case "Switch":
       return SwitchIcon;
-		case "Transformer":
-		case "Transformers":
+    case "Transformer":
       return TransformerIcon;
-		case "Transistor":
-		case "Transistors":
+    case "Transistor":
       return TransistorIcon;
     default:
       return null;
