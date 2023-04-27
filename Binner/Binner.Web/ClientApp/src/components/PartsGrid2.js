@@ -320,7 +320,9 @@ export default function PartsGrid2(props) {
 
     const getIconForPart = (p) => {
       const partType = _.find(partTypes, (x) => x.partTypeId === p.partTypeId);
-      if (partType) return getIcon(partType.name, partType.parentPartTypeId && _.find(partTypes, (x) => x.partTypeId === partType.parentPartTypeId)?.name)();
+      const basePartTypeName = partType.parentPartTypeId && _.find(partTypes, (x) => x.partTypeId === partType.parentPartTypeId)?.name;
+      const partTypeName = partType.name;
+      if (partType) return getIcon(partTypeName, basePartTypeName)({className: `parttype-${basePartTypeName || partTypeName}`});
       return "";
     };
 

@@ -725,6 +725,48 @@ section.formHeader {
     max-height: 300px;
 }
 
+/* Icon hover colors */
+
+.MuiBox-root svg.parttype-LED:hover,.icon-container svg.parttype-LED:hover {
+    color: #f00 !important;
+}
+
+.MuiBox-root svg.parttype-Evaluation:hover,.icon-container svg.parttype-Evaluation:hover {
+    color: #0a0 !important;
+}
+
+.MuiBox-root svg.parttype-Hardware:hover,.icon-container svg.parttype-Hardware:hover {
+    color: #06a !important;
+}
+
+.MuiBox-root svg.parttype-Transistor:hover,.icon-container svg.parttype-Transistor:hover {
+    color: #000 !important;
+}
+
+.MuiBox-root svg.parttype-Capacitor:hover,.icon-container svg.parttype-Capacitor:hover {
+    color: #c0c !important;
+}
+
+.MuiBox-root svg.parttype-Resistor:hover,.icon-container svg.parttype-Resistor:hover {
+    color: rgb(248, 248, 149) !important;
+}
+
+.MuiBox-root svg.parttype-Relay:hover,.icon-container svg.parttype-Relay:hover {
+    color: #08a !important;
+}
+
+.MuiBox-root svg.parttype-IC:hover,.icon-container svg.parttype-IC:hover {
+    color: #000 !important;
+}
+
+.MuiBox-root svg.parttype-Diode:hover,.icon-container svg.parttype-Diode:hover {
+    color: #000 !important;
+}
+
+.MuiBox-root svg.parttype-Crystal:hover,.icon-container svg.parttype-Crystal:hover {
+    color: #ccc !important;
+}
+
 /* CUSTOM TOAST STYLING */
 :root {
     --toastify-toast-width: 50%;
