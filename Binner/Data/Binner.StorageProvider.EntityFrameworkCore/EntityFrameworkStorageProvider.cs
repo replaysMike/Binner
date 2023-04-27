@@ -949,6 +949,11 @@ INNER JOIN (
             if (request == null) throw new ArgumentNullException(nameof(request));
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                // ensure camel case names, EF properties are case sensitive
+                request.OrderBy = request.OrderBy.UcFirst();
+            }
 
             DataModel.PartType? partType = null;
             // special case for partTypes

@@ -5,7 +5,7 @@ import _ from "underscore";
 import debounce from "lodash.debounce";
 import { Input, Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
 import { getQueryVariable } from "../common/query";
-import PartsGrid from "../components/PartsGrid";
+import PartsGrid2 from "../components/PartsGrid2";
 import { fetchApi } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
@@ -18,8 +18,10 @@ export function Search(props) {
 
   const [parts, setParts] = useState([]);
   const [keyword, setKeyword] = useState(getQueryVariable(window.location.search, "keyword") || "");
-  const [by, setBy] = useState(getQueryVariable(window.location.search, "by") || "");
-  const [byValue, setByValue] = useState(getQueryVariable(window.location.search, "value") || "");
+  const [filterBy, setFilterBy] = useState(getQueryVariable(window.location.search, "by") || "");
+  const [filterByValue, setFilterByValue] = useState(getQueryVariable(window.location.search, "value") || "");
+  const [sortBy, setSortBy] = useState("DateCreatedUtc");
+  const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -46,20 +48,13 @@ export function Search(props) {
     setIsKeyboardListening(false);
   };
 
-  const loadParts = async (page, reset = false, _by = null, _byValue = null, _pageSize = null) => {
-    let byParameter = _by;
-    let byValueParameter = _byValue;
-    let pageSizeParameter = _pageSize;
-    if (byParameter === null) byParameter = by;
-    if (byValueParameter === null) byValueParameter = byValue;
-    if (pageSizeParameter === null) pageSizeParameter = pageSize;
-
+  const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
     const response = await fetchApi(
-      `api/part/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSizeParameter}&page=${page}&by=${byParameter}&value=${byValueParameter}`
+      `api/part/list?orderBy=${orderBy}&direction=${orderDirection}&results=${results}&page=${page}&by=${by}&value=${byValue}`
     );
     const { data } = response;
     const pageOfData = data.items;
-    const totalPages = Math.ceil(data.totalItems / pageSizeParameter);
+    const totalPages = Math.ceil(data.totalItems / results);
     let newData = [];
     if (reset) newData = [...pageOfData];
     else newData = [...parts, ...pageOfData];
@@ -67,6 +62,7 @@ export function Search(props) {
     setPage(page);
     setTotalPages(totalPages);
     setLoading(false);
+    return response;
   };
 
   const search = async (keyword) => {
@@ -75,8 +71,8 @@ export function Search(props) {
     Search.abortController = new AbortController();
 
     // if there's a keyword we should clear binning (because they use different endpoints)
-    setBy("");
-    setByValue("");
+    setFilterBy("");
+    setFilterByValue("");
 
     setLoading(true);
 
@@ -116,14 +112,14 @@ export function Search(props) {
       if (_keyword && _keyword.length > 0) {
         // if there's a keyword we should clear binning (because they use different endpoints)
         setKeyword(_keyword);
-        setBy("");
-        setByValue("");
+        setFilterBy("");
+        setFilterByValue("");
         setPage(1);
         search(_keyword);
       } else if (_by && _by.length > 0) {
         // likewise, clear keyword if we're in a bin search
-        setBy(_by);
-        setByValue(_byValue);
+        setFilterBy(_by);
+        setFilterByValue(_byValue);
         setKeyword("");
         setPage(1);
         loadParts(page, true, _by, _byValue);
@@ -166,14 +162,22 @@ export function Search(props) {
 
   const removeFilter = (e) => {
     e.preventDefault();
-    setBy("");
-    setByValue("");
+    setFilterBy("");
+    setFilterByValue("");
     props.history(`/inventory`);
   };
 
   const handlePageSizeChange = async (e, pageSize) => {
     setPageSize(pageSize);
-    await loadParts(page, true, by, byValue, pageSize);
+    await loadParts(page, true, filterBy, filterByValue, pageSize);
+  };
+
+  const handleSortChange = async (sortBy, sortDirection) => {
+    const newSortBy = sortBy || "DateCreatedUtc";
+    const newSortDirection = sortDirection || "Descending";
+    setSortBy(newSortBy);
+    setSortDirection(newSortDirection);
+    return await loadParts(page, true, filterBy, filterByValue, pageSize, newSortBy, newSortDirection);
   };
 
   return (
@@ -201,14 +205,14 @@ export function Search(props) {
         </Form.Field>
       </Form>
       <div style={{ paddingTop: "10px", marginBottom: "10px" }}>
-        {by && (
+        {filterBy && (
           <Button primary size="mini" onClick={removeFilter}>
             <Icon name="delete" />
-            {by}: {byValue}
+            {filterBy}: {filterByValue}
           </Button>
         )}
       </div>
-      <PartsGrid
+      <PartsGrid2
         parts={parts}
         page={page}
         totalPages={totalPages}
@@ -216,8 +220,9 @@ export function Search(props) {
         loadPage={handleNextPage}
         onPartClick={handlePartClick}
         onPageSizeChange={handlePageSizeChange}
+        onSortChange={handleSortChange}
         name="partsGrid"
-      >{t('message.noMatchingResults', "No matching results.")}</PartsGrid>
+      >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2>
     </div>
   );
 }
