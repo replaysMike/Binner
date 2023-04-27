@@ -305,6 +305,39 @@ export const addTimeToDate = (date, time) => {
 	return newDate;
 };
 
+
+/**
+ * Parse a TimeSpan into a formatted time object
+ * @param {string} timespan TimeSpan formatted time: 00:00:00.0000
+ */
+export const parseTimeSpan = (timespan) => {
+	if (timespan === undefined || timespan.length === 0)
+		return { hours: 0, minutes: 0, seconds: 0, ms: 0, toMilliseconds: () => 0, toSeconds: () => 0, toMinutes: () => 0, toHours: () => 0 };
+	const parts = timespan.split(':');
+	const hours = parts.length > 0 && parseInt(parts[0]);
+	const minutes = parts.length > 1 && parseInt(parts[1]);
+	const secParts = parts.length > 2 && parts[2].split('.');
+	let seconds = 0;
+	let ms = 0;
+	if (secParts.length > 0) {
+		seconds = parseInt(secParts[0]);
+		if (secParts.length > 1)
+			ms = (parseInt(secParts[1]) / Math.pow(10, secParts[1].length - 2)) * 10;	
+	}
+
+	const ts = {
+		hours,
+		minutes,
+		seconds,
+		ms,
+		toMilliseconds: () => (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000) + ms,
+		toSeconds: () => (hours * 60 * 60) + (minutes * 60) + (seconds) + ms,
+		toMinutes: () => (hours * 60) + (minutes),
+		toHours: () => hours,
+	};
+	return ts;
+};
+
 /**
  * Format a string as a timespan
  * @param {string} time TimeSpan string value 00:00 or 00:00:00
@@ -326,6 +359,21 @@ export const formatTimeSpan = (time, withSeconds = true, withLeadingZeros = true
 	}
 	const formattedTime = formattedParts.join(':');
 	return formattedTime;
+};
+
+/**
+ * Convert milliseconds to TimeSpan
+ * @param {string} time The time in milliseconds
+ */
+export const timeSpanFromMilliseconds = (milliseconds) => {
+	
+	const ms = milliseconds % 1000;
+	const seconds = ((milliseconds % 60000) / 1000).toFixed(0);
+	const minutes = Math.floor(milliseconds / (1000 * 60)).toFixed(0);
+	const hours = Math.floor(milliseconds / (1000 * 60 * 60)).toFixed(0);
+	function pad(i) { return ('0'+i).slice(-2); }
+	const ts = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${ms}`;
+	return ts;
 };
 
 /**

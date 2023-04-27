@@ -80,5 +80,10 @@
         /// Registered license configuration for activating paid features
         /// </summary>
         public LicenseConfiguration Licensing { get; set; } = new();
+
+        /// <summary>
+        /// Barcode configuration
+        /// </summary>
+        public BarcodeConfiguration Barcode { get; set; } = new();
     }
 }

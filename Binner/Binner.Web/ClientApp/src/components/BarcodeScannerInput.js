@@ -1,20 +1,30 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useTranslation, Trans } from 'react-i18next';
+import { Trans } from 'react-i18next';
 import { Link } from "react-router-dom";
 import { Popup, Image } from "semantic-ui-react";
+import { BarcodeProfiles } from "../common/Types";
+import { parseTimeSpan } from "../common/datetime";
 import PropTypes from "prop-types";
-import debounce from "lodash.debounce";
+import { dynamicDebouncer } from "../common/dynamicDebouncer";
 import { Events } from "../common/events";
 import useSound from 'use-sound';
 import boopSfx from '../audio/softbeep.mp3';
+import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
+
+const DefaultDebounceIntervalMs = 150;
 
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough,enableSound}) {
-  const BufferTimeMs = 500;
+export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig }) {
 	const [keyBuffer, setKeyBuffer] = useState([]);
+	const [barcodeConfig, setBarcodeConfig] = useState(config || {
+		enabled: true,
+		bufferTime: "00:00:00.150",
+		barcodePrefix2D: "[)>",
+		profile: BarcodeProfiles.Default
+	});
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
 	const [previousIsKeyboardListeningState, setPreviousIsKeyboardListeningState] = useState(listening || true);
 	const [playScanSound] = useSound(boopSfx, { soundEnabled: true, volume: 1 });
@@ -27,7 +37,7 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
   playScanSoundRef.current = playScanSound;
 
   const onReceivedBarcodeInput = (e, buffer) => {
-    if (buffer.length < minInputLength) {
+    if (buffer.length < 8) {
 			keyBufferRef.current.length = 0;
     	return; // drop and ignore input
 		}
@@ -35,19 +45,29 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		// reset key buffer
 		keyBufferRef.current.length = 0;
 		// process raw value into an input object with decoded information
-    const input = processBarcodeInformation(e, value);
+		if (value && value.length > 0) {
+			const input = processBarcodeInformation(e, value);
 
-		if (enableSound) playScanSoundRef.current();
-		// fire an event that we received data
-		onReceived(e, input);
+			if (enableSound) {
+				playScanSoundRef.current();
+			}
+			// fire an event that we received data
+			onReceived(e, input);
+		}else{
+			console.warn('no scan found, filtered.');
+		}
 		setIsReceiving(false);
   };
 
   const processKeyBuffer = (buffer) => {
     let str = "";
     let specialCharBuffer = [];
+		let modifierKeyCount = 0;
     for (let i = 0; i < buffer.length; i++) {
       let key = buffer[i];
+			if (key.altKey || key.shiftKey || key.ctrlKey)
+				modifierKeyCount++;
+
       // check for alt key
       if (key.keyCode === 18) {
         // it's a special character, read until alt is no longer pressed
@@ -83,6 +103,10 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 				str += char;
 			}
     }
+
+		if (buffer.length === modifierKeyCount) {
+			return null;
+		}
     return str;
   };
 
@@ -336,7 +360,8 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 		return newGsLines;
 	};
 
-  const scannerDebounced = useMemo(() => debounce(onReceivedBarcodeInput, BufferTimeMs), []);
+	// create a debouncer, but with the ability to update it's interval as needed
+	const scannerDebounced = useMemo(() => dynamicDebouncer(onReceivedBarcodeInput, () => BarcodeScannerInput.debounceIntervalMs), []);
 
 	const disableBarcodeInput = (e) => {
 		setPreviousIsKeyboardListeningState(isKeyboardListening);
@@ -348,19 +373,46 @@ export function BarcodeScannerInput({listening, minInputLength, onReceived, help
 	};
 
   useEffect(() => {
-    // start listening for all key presses on page
-    addKeyboardHandler();
-		// add event listeners to receive requests to disable/enable barcode capture
-		document.body.addEventListener(Events.DisableBarcodeInput, disableBarcodeInput);
-		document.body.addEventListener(Events.RestoreBarcodeInput, restoreBarcodeInput);
-    return () => {
-      // stop listening for key presses
-      removeKeyboardHandler();
+		const enableListening = () => {
+			// start listening for all key presses on page
+			addKeyboardHandler();
+			// add event listeners to receive requests to disable/enable barcode capture
+			document.body.addEventListener(Events.DisableBarcodeInput, disableBarcodeInput);
+			document.body.addEventListener(Events.RestoreBarcodeInput, restoreBarcodeInput);
+		};
+
+		if (!config) {
+			fetchApi("/api/system/settings").then((response) => {
+				const { data } = response;
+				const barcodeConfig = data.barcode;
+				setBarcodeConfig(barcodeConfig);
+				if (onSetConfig)
+					onSetConfig(barcodeConfig);
+
+				// update the static debounce interval
+				BarcodeScannerInput.debounceIntervalMs = parseTimeSpan(barcodeConfig.bufferTime).toMilliseconds();
+				enableListening();
+			});
+		} else {
+			setBarcodeConfig(config);
+			enableListening();
+		}
+		return () => {
+			// stop listening for key presses
+			removeKeyboardHandler();
 			// remove event listeners
 			document.body.removeEventListener(Events.DisableBarcodeInput, disableBarcodeInput);
 			document.body.removeEventListener(Events.RestoreBarcodeInput, restoreBarcodeInput);
-    };
+		};
   }, []);
+
+	useEffect(() => {
+		if (config) {
+			setBarcodeConfig({...config});
+			// update the static debounce interval
+			BarcodeScannerInput.debounceIntervalMs = parseTimeSpan(config.bufferTime).toMilliseconds();
+		}
+	}, [config])
 
   useEffect(() => {
 		// handle changes to the incoming listening prop
@@ -456,7 +508,11 @@ BarcodeScannerInput.propTypes = {
 	/** keyboard passthrough, for passing data directly to component */
 	passThrough: PropTypes.string,
 	/** True to enable beep sound when an item is scanned */
-	enableSound: PropTypes.bool
+	enableSound: PropTypes.bool,
+	/** Set the barcode config */
+	config: PropTypes.object,
+	/** Fired when the configuration is updated */
+	onSetConfig: PropTypes.func
 };
 
 BarcodeScannerInput.defaultProps = {
@@ -466,3 +522,6 @@ BarcodeScannerInput.defaultProps = {
 	swallowKeyEvent: true,
 	enableSound: true
 };
+
+// store the debounce interval statically, so it can be modified and used by a memoized debounce function
+BarcodeScannerInput.debounceIntervalMs = DefaultDebounceIntervalMs;

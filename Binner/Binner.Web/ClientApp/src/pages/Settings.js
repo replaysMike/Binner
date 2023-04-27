@@ -4,12 +4,13 @@ import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
 import LineTemplate from "../components/LineTemplate";
-import { DEFAULT_FONT, GetAdvancedTypeDropdown } from "../common/Types";
+import { DEFAULT_FONT, BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown } from "../common/Types";
 import { DigiKeySites } from "../common/digiKeySites";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
 import customEvents from '../common/customEvents';
+import { timeSpanFromMilliseconds, parseTimeSpan } from '../common/datetime';
 import "./Settings.css";
 
 export const Settings = (props) => {
@@ -51,6 +52,7 @@ export const Settings = (props) => {
       text: "Enabled",
     },
   ]);
+  const barcodeProfileOptions = GetTypeDropdown(BarcodeProfiles);
   const digikeySites = GetAdvancedTypeDropdown(DigiKeySites);
   const [settings, setSettings] = useState({
     binner: {
@@ -202,6 +204,13 @@ export const Settings = (props) => {
         },
       ],
     },
+    barcode: {
+      enabled: true,
+      bufferTime: '00:00:00.150',
+      bufferTimeMs: parseTimeSpan('00:00:00.150').toMilliseconds(),
+      profile: BarcodeProfiles.Default,
+      barcodePrefix2D: "[)>"
+    },
   });
   const [apiTestResults, setApiTestResults] = useState([]);
 
@@ -240,7 +249,7 @@ export const Settings = (props) => {
       }).then((response) => {
         const { data } = response;
         setLoading(false);
-        setSettings(data);
+        setSettings({ ...data, barcode: {...data.barcode, bufferTimeMs: parseTimeSpan(data.barcode.bufferTime).toMilliseconds()} });
       });
     };
 
@@ -258,12 +267,13 @@ export const Settings = (props) => {
    * @param {any} e
    */
   const onSubmit = async (e) => {
+    const newSettings = {...settings, barcode: {...settings.barcode, bufferTime: timeSpanFromMilliseconds(parseInt(settings.barcode.bufferTimeMs)) }};
     await fetchApi("api/system/settings", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(settings),
+      body: JSON.stringify(newSettings),
     }).then((response) => {
       const saveMessage = t('success.systemSettingsSaved', "System settings were saved.");
       toast.success(saveMessage);
@@ -291,6 +301,9 @@ export const Settings = (props) => {
     }
     if (control.name.startsWith("octopart")) {
       setControlValue(newSettings.octopart, "octopart", control);
+    }
+    if (control.name.startsWith("barcode")) {
+      setControlValue(newSettings.barcode, "barcode", control);
     }
 
     // todo: find a better way to clean up state changes
@@ -1317,6 +1330,98 @@ export const Settings = (props) => {
               onChange={handleChange}
               tertiary
             />
+          </Segment>
+
+          <Segment loading={loading} color="blue" raised padded>
+            <Header dividing as="h3">
+              {t('page.settings.barcodeConfiguration', "Barcode Configuration")}
+            </Header>
+
+            <Form.Field width={10}>
+              <label>{t('page.settings.barcodeSupport', "Barcode Support")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>{t('page.settings.popup.barcodeSupportEnabled', "Choose if you would like to enable barcode support.")}</p>
+                }
+                trigger={
+                  <Dropdown
+                    name="barcodeEnabled"
+                    placeholder="Disabled"
+                    selection
+                    value={settings.barcode.enabled ? 1 : 0}
+                    options={enabledSources}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+            
+            <Form.Field width={10}>
+              <label>{t('label.bufferTime', "Buffer Time (ms)")}</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.barcodeBufferTime', "The buffer time the barcode will scan data for. Some scanners require more or less time.")}</p>}
+                trigger={
+                  <Input
+                    icon="clock"
+                    className="labeled"
+                    placeholder=""
+                    value={settings.barcode.bufferTimeMs || ""}
+                    name="barcodeBufferTimeMs"
+                    onChange={handleChange}
+                  ></Input>
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('label.barcodePrefix2d', "2D Barcode Prefix")}</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.barcodePrefix', "The prefix used for 2D barcodes, usually '[)>'.")}</p>}
+                trigger={
+                  <Input
+                    className="labeled"
+                    placeholder=""
+                    value={settings.barcode.barcodePrefix2D || ""}
+                    name="barcodePrefix2D"
+                    onChange={handleChange}
+                  ></Input>
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('page.settings.barcodeProfile', "Barcode Profile")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>{t('page.settings.popup.barcodeProfile', "Choose the barcode profile to use for your scanner.")}</p>
+                }
+                trigger={
+                  <Dropdown
+                    name="barcodeProfile"
+                    placeholder="Default"
+                    selection
+                    value={settings.barcode.profile}
+                    options={barcodeProfileOptions}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+
           </Segment>
 
           <Form.Field inline>

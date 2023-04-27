@@ -33,5 +33,10 @@ namespace Binner.Model.Responses
         /// Printer config
         /// </summary>
         public PrinterSettingsResponse Printer { get; set; } = new ();
+
+        /// <summary>
+        /// Barcode config
+        /// </summary>
+        public BarcodeSettingsResponse Barcode { get; set; } = new ();
     }
 }

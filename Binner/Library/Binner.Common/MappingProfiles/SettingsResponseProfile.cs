@@ -19,6 +19,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
+                .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, SettingsResponse>()
@@ -60,6 +61,7 @@ namespace Binner.Common.MappingProfiles
                     ClientSecret = x.NexarClientSecret
                 }))
                 .ForMember(x => x.Printer, options => options.Ignore())
+                .ForMember(x => x.Barcode, options => options.Ignore())
                 .ReverseMap();
 
             CreateMap<MouserConfiguration, MouserConfigurationResponse>()
@@ -69,6 +71,12 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.SearchApiKey, options => options.MapFrom(x => x.ApiKeys.SearchApiKey))
                 .ForMember(x => x.CartApiKey, options => options.MapFrom(x => x.ApiKeys.CartApiKey))
                 .ReverseMap();
+
+            CreateMap<BarcodeConfiguration, BarcodeSettingsResponse>()
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
+                .ForMember(x => x.BarcodePrefix2D, options => options.MapFrom(x => x.BarcodePrefix2D))
+                .ForMember(x => x.Profile, options => options.MapFrom(x => x.Profile))
+                .ForMember(x => x.BufferTime, options => options.MapFrom(x => x.BufferTime));
 
             CreateMap<PrinterConfiguration, PrinterSettingsResponse>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))

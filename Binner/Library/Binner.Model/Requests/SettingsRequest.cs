@@ -9,7 +9,7 @@ namespace Binner.Model.Requests
         /// <summary>
         /// Octopart config
         /// </summary>
-        public OctopartUserConfiguration Octopart { get; set; } = new OctopartUserConfiguration();
+        public OctopartUserConfiguration Octopart { get; set; } = new ();
 
         /// <summary>
         /// Digikey config
@@ -31,8 +31,14 @@ namespace Binner.Model.Requests
         /// </summary>
         public SwarmUserConfiguration Binner { get; set; } = new ();
 
+        /// <summary>
+        /// Printer configuration
+        /// </summary>
         public PrinterSettingsResponse Printer { get; set; } = new ();
 
+        /// <summary>
+        /// Barcode configuration
+        /// </summary>
         public BarcodeConfiguration Barcode { get; set; } = new();
     }
 }

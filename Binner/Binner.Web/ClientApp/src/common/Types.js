@@ -14,6 +14,10 @@ export const ProjectColors = [
   { name: 'violet', value: 10 },
 ];
 
+export const BarcodeProfiles = {
+  Default: 0
+};
+
 export const DEFAULT_FONT = "Segoe UI";
 
 export const AccountTypes = {

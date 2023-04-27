@@ -18,6 +18,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
+                .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
                 .ReverseMap();
 
             CreateMap<SettingsRequest, UserIntegrationConfiguration>(MemberList.None)

@@ -1,8 +1,10 @@
 ﻿import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Form, Popup } from "semantic-ui-react";
+import { Form, Popup, Input, Icon } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
+import { parseTimeSpan, timeSpanFromMilliseconds } from "../../common/datetime";
+import { GetTypeName, BarcodeProfiles } from "../../common/Types";
 import reactStringReplace from "react-string-replace";
 import "./BarcodeScanner.css";
 
@@ -16,7 +18,26 @@ export function BarcodeScanner(props) {
   const [rsDetected, setRsDetected] = useState(false);
   const [gsDetected, setGsDetected] = useState(false);
   const [eotDetected, setEotDetected] = useState(false);
+  const [config, setConfig] = useState({});
   const [invalidBarcodeDetected, setInvalidBarcodeDetected] = useState(false);
+  const [customBufferTime, setCustomBufferTime] = useState(0);
+  const [configOverride, setConfigOverride] = useState(null);
+
+  const handleSetConfig = (config) => {
+    setConfig(config);
+    setCustomBufferTime(parseTimeSpan(config?.bufferTime || "00:00:00").toMilliseconds());
+  };
+
+  const handleChange = (e, config) => {
+    switch(config.name){
+      case 'customBufferTime':
+        setCustomBufferTime(config.value);
+        setConfigOverride({...config, bufferTime: timeSpanFromMilliseconds(parseInt(config.value))})
+        break;
+      default:
+        break;
+    }
+  };
 
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
@@ -49,22 +70,42 @@ export function BarcodeScanner(props) {
     }
     toast.info(t('success.barcodeTypeReceived', "Barcode type {{type}} received", { type: input.type }));
   };
-
-  let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={i*2} className="control rs">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={i*3} className="control gs">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u2404", (match, i) => (<span key={i*4} className="control eot">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u240d", (match, i) => (<span key={i*5} className="control cr">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u240a", (match, i) => (<span key={i*6} className="control lf">{match}</span>));
-  barcodeObject = reactStringReplace(barcodeObject, "\u241c", (match, i) => (<span key={i*7} className="control fs">{match}</span>));
+  const getRandomKey = () => Math.floor(Math.random() * 999999);
+  let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={getRandomKey()} className="control rs">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={getRandomKey()} className="control gs">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u2404", (match, i) => (<span key={getRandomKey()} className="control eot">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u240d", (match, i) => (<span key={getRandomKey()} className="control cr">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u240a", (match, i) => (<span key={getRandomKey()} className="control lf">{match}</span>));
+  barcodeObject = reactStringReplace(barcodeObject, "\u241c", (match, i) => (<span key={getRandomKey()} className="control fs">{match}</span>));
 
   return (
     <div>
-      <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} swallowKeyEvent={false} />
+      <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} swallowKeyEvent={false} config={configOverride} onSetConfig={handleSetConfig} />
       <h1>{t('page.barcodeScanner.title', "Barcode Scanner")}</h1>
       <p>{t('page.barcodeScanner.description', "Test your barcode scanner to see what values it outputs.")}</p>
       <Form>
         <div>
           <code><pre>{barcodeObject}</pre></code>
+          <h5>Barcode Config</h5>
+          <Form.Group>
+            <Form.Field width={1}>
+              <label>Enabled:</label> {config.enabled ? 'true' : 'false'} 
+            </Form.Field>
+            <Form.Field width={2}>
+              <label>Profile:</label> {GetTypeName(BarcodeProfiles, config.profile)} 
+            </Form.Field>
+            <Form.Field width={2}>
+              <label>BufferTime (ms):</label> 
+              <Input transparent value={customBufferTime} name="customBufferTime" onChange={handleChange}> 
+                <Icon name="clock" />
+                <input />
+              </Input>
+            </Form.Field>
+            <Form.Field width={1}>
+              <label>BarcodePrefix2D:</label> {config.barcodePrefix2D}
+            </Form.Field>
+          </Form.Group>
+            
           <div className="block-container">
             <label>{t('page.barcodeScanner.detected', "Detected")}:</label>
             <Popup 
