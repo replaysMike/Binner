@@ -155,13 +155,15 @@ export default function PartTypeSelector(props) {
         const key = `${children[i].name}-${i}`;
         const nodeId = `${children[i].name}`;
         const childs = recursiveTreeItem(partTypes, children[i].partTypeId);
+        const basePartTypeName = _.find(partTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
+        const partTypeName = children[i].name;
         childrenComponents.push(
           <StyledTreeItem
             nodeId={nodeId}
             key={key}
             data={children[i]}
-            labelText={children[i].name}
-            labelIcon={getIcon(children[i].name, children[i].parentPartTypeId && _.find(partTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name)}
+            labelText={partTypeName}
+            labelIcon={() => getIcon(partTypeName, basePartTypeName)({className: `parttype-${basePartTypeName || partTypeName}`})}
             labelInfo={`${children[i].parts}`}
             labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
             labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
