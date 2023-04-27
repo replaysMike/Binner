@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Breadcrumb } from "semantic-ui-react";
-import PartsGrid from "../components/PartsGrid";
+import PartsGrid2 from "../components/PartsGrid2";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from '../common/fetchApi';
 
@@ -49,7 +49,6 @@ export function LowInventory (props) {
     await loadParts(page, true);
   };
   
-  const columns =  'partNumber,quantity,lowStockThreshold,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,delete';
   return (
     <div>
       <Breadcrumb>
@@ -63,7 +62,18 @@ export function LowInventory (props) {
           You can define a custom <i>Low Stock</i> value per part in your inventory.
         </Trans>
 			</FormHeader>
-      <PartsGrid parts={parts} columns={columns} page={page} totalPages={totalPages} loading={loading} loadPage={handleNextPage} onPartClick={handlePartClick} onPageSizeChange={handlePageSizeChange} name='partsGrid' />
+      <PartsGrid2 
+        parts={parts} 
+        columns="partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete"
+        defaultVisibleColumns='partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,print,delete' 
+        page={page} 
+        totalPages={totalPages} 
+        loading={loading} 
+        loadPage={handleNextPage} 
+        onPartClick={handlePartClick} 
+        onPageSizeChange={handlePageSizeChange} 
+        name='partsGrid' 
+      />
     </div>
   );
 };

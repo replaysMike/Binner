@@ -3,7 +3,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, Popup, TextArea, Header, Confirm } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { fetchApi } from "../common/fetchApi";
-import PartsGrid from "./PartsGrid";
+import PartsGrid2 from "./PartsGrid2";
 import NumberPicker from "./NumberPicker";
 import debounce from "lodash.debounce";
 
@@ -247,7 +247,7 @@ export function AddBomPartModal(props) {
             </Form.Group>
           </Form>
 
-          <PartsGrid
+          <PartsGrid2
             parts={addPartSearchResults}
             page={page}
             totalPages={totalPages}
@@ -256,13 +256,14 @@ export function AddBomPartModal(props) {
             onPartClick={handleAddPartSelectPart}
             onPageSizeChange={handlePageSizeChange}
             selectedPart={selectedPart}
-            columns="partNumber,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl"
+            defaultVisibleColumns="partNumber,quantity,manufacturerPartNumber,description,cost"
             editable={false}
             visitable={false}
+            settingsName="bomAddPartModal"
             name="partsGrid"
           >
             {t('message.noMatchingResults', "No matching results.")}
-          </PartsGrid>
+          </PartsGrid2>
         </Modal.Content>
         <Modal.Actions>
           <Button onClick={handleModalClose}>Cancel</Button>

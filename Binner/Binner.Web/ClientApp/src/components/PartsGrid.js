@@ -399,6 +399,8 @@ PartsGrid.propTypes = {
   onPartClick: PropTypes.func,
   /** Event handler when page size is changed */
   onPageSizeChange: PropTypes.func,
+  /** Event handler when sort is changed */
+  onSortChange: PropTypes.func,
   /** Highlight the selected part if provided */
   selectedPart: PropTypes.object,
   /** True if edit options are exposed */

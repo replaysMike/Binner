@@ -1,0 +1,84 @@
+#partsGrid tr.selected {
+	background-color: rgb(179, 218, 255);
+}
+
+#partsGrid td {
+	vertical-align: middle;
+}
+
+.ui.selectable.table tbody tr.selected:hover {
+	background-color: rgb(63, 160, 250) !important;
+}
+
+#partsGrid .icon-container { 
+	display: flex;
+}
+
+#partsGrid .icon-container.small svg { 
+	height: 0.9em;
+	color: gray;
+}
+
+#partsGrid .icon-container.small { 
+	font-size: 1em;
+}
+
+#partsGrid td .icon-container div {
+	margin-left: auto;
+	margin-right: 10px;
+}
+
+#partsGrid td a {
+	display: inline-block;
+}
+
+#partsGrid td:has(a):hover { 
+	background-color: #ccc;
+}
+
+#partsGrid .footer {
+	padding: 5px;
+}
+
+#partsGrid .text-highlight {
+	color: #2185d0;
+	font-weight: 700;
+}
+
+.MuiTableRow-root.Mui-selected {
+	background-color: rgb(63, 160, 250) !important;
+}
+
+.MuiTableRow-root.Mui-selected:hover {
+	background-color: rgb(93, 180, 255) !important;
+}
+
+.MuiTableRow-root:hover {
+	background-color: #eee !important;
+}
+
+.MuiMenuItem-root {
+	padding: 1px 16px 1px 16px !important;
+}
+
+.MuiSvgIcon-root[data-testid="PushPinIcon"] {
+	font-size: 1.1em !important;
+	scale: 1;
+	transition-property: scale;
+	transition-duration: 0.25s;
+}
+
+.MuiSvgIcon-root[data-testid="PushPinIcon"]:hover {
+	color: #2185d0 !important;
+	scale: 1.1 !important;
+}
+
+.MuiSwitch-root {
+	transition-property: scale;
+	transition-duration: 0.25s;
+	scale: 0.8;
+}
+
+.MuiSwitch-root:hover {
+	scale: 0.9 !important;
+}

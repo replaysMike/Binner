@@ -11,6 +11,8 @@ import "./Clipboard.css";
  */
 export function Clipboard(props) {
 	const handleCopy = (e, copyText) => {
+		e.preventDefault();
+		e.stopPropagation();
 		navigator.clipboard.writeText(copyText);
 		toast.info('Copied!');
 	};
