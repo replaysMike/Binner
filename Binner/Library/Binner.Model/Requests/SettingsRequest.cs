@@ -1,4 +1,5 @@
-﻿using Binner.Model.Configuration.Integrations;
+﻿using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
 using Binner.Model.Responses;
 
 namespace Binner.Model.Requests
@@ -13,23 +14,25 @@ namespace Binner.Model.Requests
         /// <summary>
         /// Digikey config
         /// </summary>
-        public DigiKeyUserConfiguration Digikey { get; set; } = new DigiKeyUserConfiguration();
+        public DigiKeyUserConfiguration Digikey { get; set; } = new ();
 
         /// <summary>
         /// Mouser config
         /// </summary>
-        public MouserUserConfiguration Mouser { get; set; } = new MouserUserConfiguration();
+        public MouserUserConfiguration Mouser { get; set; } = new ();
 
         /// <summary>
         /// Arrow config
         /// </summary>
-        public ArrowUserConfiguration Arrow { get; set; } = new ArrowUserConfiguration();
+        public ArrowUserConfiguration Arrow { get; set; } = new ();
 
         /// <summary>
         /// Binner swarm config
         /// </summary>
-        public SwarmUserConfiguration Binner { get; set; } = new SwarmUserConfiguration();
+        public SwarmUserConfiguration Binner { get; set; } = new ();
 
-        public PrinterSettingsResponse Printer { get; set; } = new PrinterSettingsResponse();
+        public PrinterSettingsResponse Printer { get; set; } = new ();
+
+        public BarcodeConfiguration Barcode { get; set; } = new();
     }
 }

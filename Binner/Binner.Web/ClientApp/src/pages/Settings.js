@@ -4,11 +4,12 @@ import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
 import LineTemplate from "../components/LineTemplate";
-import { DEFAULT_FONT, GetTypeDropdown, GetAdvancedTypeDropdown } from "../common/Types";
+import { DEFAULT_FONT, GetAdvancedTypeDropdown } from "../common/Types";
 import { DigiKeySites } from "../common/digiKeySites";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
+import customEvents from '../common/customEvents';
 import "./Settings.css";
 
 export const Settings = (props) => {
@@ -205,6 +206,7 @@ export const Settings = (props) => {
   const [apiTestResults, setApiTestResults] = useState([]);
 
   useEffect(() => {
+    customEvents.notifySubscribers("avatar", true);
     const loadFonts = async () => {
       await fetchApi("api/print/fonts", {
         method: "GET",
@@ -244,6 +246,10 @@ export const Settings = (props) => {
 
     loadSettings();
     loadFonts();
+
+    return () => {
+      customEvents.notifySubscribers("avatar", false);
+    };
   }, []);
 
   /**
@@ -493,7 +499,7 @@ export const Settings = (props) => {
   };
 
   return (
-    <div>
+    <div className="mask">
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -1312,16 +1318,30 @@ export const Settings = (props) => {
               tertiary
             />
           </Segment>
+
+          <Form.Field inline>
+            <Button type="submit" primary style={{ marginTop: "10px" }}>
+              <Icon name="save" />
+              {t('button.save', "Save")}
+            </Button>
+            {saveMessage.length > 0 && (
+              <Label pointing="left">{saveMessage}</Label>
+            )}
+          </Form.Field>
+
+          <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.05,0.8"}>
+            <Form.Field inline>
+              <Button type="submit" primary style={{ marginTop: "10px" }}>
+                <Icon name="save" />
+                {t('button.save', "Save")}
+              </Button>
+              {saveMessage.length > 0 && (
+                <Label pointing="left">{saveMessage}</Label>
+              )}
+            </Form.Field>
+          </div>
         </Segment>
-        <Form.Field inline>
-          <Button type="submit" primary style={{ marginTop: "10px" }}>
-            <Icon name="save" />
-            {t('button.save', "Save")}
-          </Button>
-          {saveMessage.length > 0 && (
-            <Label pointing="left">{saveMessage}</Label>
-          )}
-        </Form.Field>
+        
       </Form>
     </div>
   );

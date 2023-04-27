@@ -9,6 +9,7 @@ import PartsGrid2 from "../components/PartsGrid2";
 import { fetchApi } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
+import customEvents from '../common/customEvents';
 
 export function Search(props) {
   const { t } = useTranslation();
@@ -24,7 +25,7 @@ export function Search(props) {
   const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(25);
   const [loading, setLoading] = useState(true);
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
 
@@ -103,6 +104,13 @@ export function Search(props) {
   };
 
   const searchDebounced = useMemo(() => debounce(search, 400), []);
+
+  useEffect(() => {
+    customEvents.notifySubscribers("avatar", true);
+    return () => {
+      customEvents.notifySubscribers("avatar", false);
+    };
+  });
 
   useEffect(() => {
     const _keyword = searchParams.get("keyword");

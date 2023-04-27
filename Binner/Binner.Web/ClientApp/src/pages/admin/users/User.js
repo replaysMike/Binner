@@ -8,6 +8,7 @@ import { fetchApi, getErrorsString } from "../../../common/fetchApi";
 import { generatePassword } from "../../../common/Utils";
 import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Types";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
+import customEvents from '../../../common/customEvents';
 import { FormHeader } from "../../../components/FormHeader";
 
 export function User(props) {
@@ -43,6 +44,7 @@ export function User(props) {
   const navigate = useNavigate();
 
 	useEffect(() => {
+    customEvents.notifySubscribers("avatar", true);
 		fetchUser();
 
     function fetchUser() {
@@ -56,6 +58,9 @@ export function User(props) {
 				}
       });
     }
+    return () => {
+      customEvents.notifySubscribers("avatar", false);
+    };
   }, []);
 
 	const updateUser = (e) => {
@@ -125,7 +130,7 @@ export function User(props) {
   };
 
 	return (
-    <div>
+    <div className="mask">
 			<Breadcrumb>
       <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -261,7 +266,6 @@ export function User(props) {
         </Form>
 
 			</Segment>
-      <div style={{height: '50px'}}></div>
 		</div>
 	);
 }

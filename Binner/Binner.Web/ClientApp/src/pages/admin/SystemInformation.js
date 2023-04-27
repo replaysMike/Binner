@@ -6,6 +6,7 @@ import { Clipboard } from "../../components/Clipboard";
 import { fetchApi } from "../../common/fetchApi";
 import { FormHeader } from "../../components/FormHeader";
 import { getCurrencySymbol } from "../../common/Utils";
+import customEvents from '../../common/customEvents';
 
 export const SystemInformation = () => {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ export const SystemInformation = () => {
   });
 
   useEffect(() => {
+    customEvents.notifySubscribers("avatar", true);
     fetchSystemInfo();
     function fetchSystemInfo() {
       setLoading(true);
@@ -27,6 +29,9 @@ export const SystemInformation = () => {
         setLoading(false);
       });
     }
+    return () => {
+      customEvents.notifySubscribers("avatar", false);
+    };
   }, []);
 
   return (

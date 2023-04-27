@@ -8,6 +8,122 @@
     }
 }
 
+/* EXPERIMENTAL */
+
+.sticky-target {
+    border-top:1px solid rgb(200, 200, 200);
+    box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.05);
+    position: fixed;
+    width: 100%;
+    bottom: -100px;
+    left: 0;
+    background-color: #fff;
+    padding-left: 200px;
+    z-index: 10000;
+    transition-property: bottom;
+    transition-duration: 0.5s;
+}
+
+/* reveal image scroll footer */
+
+html {
+    background-color: #fff;
+}
+
+body {
+  background-image: linear-gradient(to top, transparent 60px, #fff 60px, #fff 0);
+  margin: 0;
+}
+
+footer {
+    --var-offset: -100px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+
+    position: sticky;
+    position: -webkit-sticky;
+    bottom: 0;
+    height: 150px;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position-x: center;
+    color: #000;
+    padding: 5px 0;
+    text-align: center;
+    z-index: -1;
+    animation-play-state: running;
+    animation-name: randomAvatar;
+    animation-duration: 1400s;
+    animation-iteration-count: infinite;
+    animation-timing-function: steps(4);
+    animation-delay: var(--animation-time);
+    animation-delay: -5s;
+}
+footer.active {
+    background-image: url('../public/image/reveal/avatars.png');
+    color: white;
+}
+@keyframes randomAvatar {
+    from {
+        background-position-y: calc(0px + var(--var-offset));
+    }
+    to {
+        background-position-y: calc(-1400px + var(--var-offset));
+    }
+}
+
+footer.active>div:first-child {
+    margin-top: 5px;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 8px;
+    padding: 4px 15px;
+}
+
+footer a, footer a:hover {
+    color: #000;
+}
+
+footer.active a, footer.active a:hover {
+    color: white;
+}
+
+.promo {
+    position: absolute;
+    z-index: 1;
+    text-align: center;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    margin: auto;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 0.8em;
+}
+
+.promo span {
+    background-color: rgba(0,0,0,0.75);
+    border-radius: 8px;
+    padding: 4px 15px;
+    scale: 1;
+    transition: background-color;
+    transition-duration: 0.2s;
+}
+
+.promo a {
+    color: #fff;
+}
+
+.promo span:hover {
+    scale: 1.2;
+    background-color: rgba(0,0,0,1);
+}
+
+/* END EXPERIMENTAL */
+
 h1>a,h1>a:hover {
     text-decoration: none !important;
 }
@@ -159,9 +275,14 @@ section.formHeader {
     color: #d62303 !important;
 }
 
+.mask {
+    background-color: #fff;
+}
+
 .ui.grid {
     margin-left: 0px !important;
     margin-right: 0px !important;
+    background-color: #fff;
 }
 
 .borderless input {
@@ -703,13 +824,6 @@ section.formHeader {
     margin-top: 0px;
 }
 
-.footer .promo {
-    margin-top: 4px;
-    margin-bottom: 20px;
-    font-size: 0.8em;
-
-}
-
 .ui.modal .content:has(.image.square) {
     display: flex;
 }
@@ -723,6 +837,10 @@ section.formHeader {
 .ui.modal .content .image.square img {
     width: 300px;
     max-height: 300px;
+}
+
+.MuiPaper-root {
+    min-height: 600px;
 }
 
 /* Icon hover colors */

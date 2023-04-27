@@ -72,7 +72,7 @@ export default function PartsGrid2(props) {
 
   const [parts, setParts] = useState(props.parts);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(25);
   const [totalPages, setTotalPages] = useState(props.totalPages);
   const [isLoading, setIsLoading] = useState(props.loading);
   const [selectedPart, setSelectedPart] = useState(props.selectedPart);
@@ -98,10 +98,10 @@ export default function PartsGrid2(props) {
   const loadPage = props.loadPage;
   const onPartClick = props.onPartClick;
   const itemsPerPageOptions = [
-    { key: 1, text: "10", value: 10 },
-    { key: 2, text: "25", value: 25 },
-    { key: 3, text: "50", value: 50 },
-    { key: 4, text: "100", value: 100 }
+    { key: 1, text: "25", value: 25 },
+    { key: 2, text: "50", value: 50 },
+    { key: 3, text: "100", value: 100 },
+    { key: 4, text: "200", value: 200 }
   ];
 
   const loadPartTypes = useCallback((parentPartType = "") => {

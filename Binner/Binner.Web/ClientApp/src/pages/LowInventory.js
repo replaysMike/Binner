@@ -5,6 +5,7 @@ import { Breadcrumb } from "semantic-ui-react";
 import PartsGrid2 from "../components/PartsGrid2";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from '../common/fetchApi';
+import customEvents from '../common/customEvents';
 
 export function LowInventory (props) {
   const { t } = useTranslation();
@@ -12,7 +13,7 @@ export function LowInventory (props) {
   const [parts, setParts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(25);
   const [loading, setLoading] = useState(true);
 
   const loadParts = async (page, reset = false) => {
@@ -30,7 +31,14 @@ export function LowInventory (props) {
 
   useEffect(() => {
     loadParts(page);
-}, [page]);
+  }, [page]);
+
+  useEffect(() => {
+    customEvents.notifySubscribers("avatar", true);
+    return () => {
+      customEvents.notifySubscribers("avatar", false);
+    };
+  });
 
   const handleNextPage = () => {
     const { page, noRemainingData } = this.state;

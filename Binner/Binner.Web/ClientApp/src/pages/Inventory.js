@@ -46,6 +46,7 @@ import { getAuthToken, getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
 import { GetTypeName, GetTypeValue, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
+import customEvents from '../common/customEvents';
 import { Currencies } from "../common/currency";
 import "./Inventory.css";
 
@@ -202,6 +203,13 @@ export function Inventory(props) {
       searchDebounced.cancel();
     };
   }, [props.params.partNumber]);
+
+  useEffect(() => {
+    customEvents.notifySubscribers("avatar", true);
+    return () => {
+      customEvents.notifySubscribers("avatar", false);
+    };
+  });
 
   const fetchPartMetadata = async (input, part) => {
     if (partTypesRef.current.length === 0)
@@ -1739,7 +1747,7 @@ export function Inventory(props) {
   /* RENDER */
 
   return (
-    <div>
+    <div className="mask">
       <Modal centered open={duplicatePartModalOpen} onClose={handleDuplicatePartModalClose}>
         <Modal.Header>Duplicate Part</Modal.Header>
         <Modal.Content scrolling>
@@ -2032,8 +2040,7 @@ export function Inventory(props) {
                     position="right center"
                     content={t('page.inventory.popup.clear', "Clear the form to default values")}
                     trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
-                  />
-                  
+                  />                  
                 </Button.Group>
                 {part && part.partId > 0 && (
                   <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
@@ -2043,6 +2050,20 @@ export function Inventory(props) {
                 )}
                 {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
               </Form.Field>
+              <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.20,0.65"}>
+                <Button.Group>
+                  <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
+                    <Icon name="save" />
+                    {t('button.save', "Save")}
+                  </Button>
+                  <Button.Or text={t('button.or', "Or")} />
+                  <Popup 
+                    position="right center"
+                    content={t('page.inventory.popup.clear', "Clear the form to default values")}
+                    trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
+                  />                  
+                </Button.Group>
+              </div>
 
               {/* PART METADATA */}
 
