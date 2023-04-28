@@ -1,0 +1,76 @@
+name: '🐛 Bug report'
+description: Report a bug you are experiencing
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue :pray: - we live for good bug reports.
+
+        Before submitting a new bug/issue, please check the links below to see if there is a solution or question posted there already:
+        - Binner [Discussions](https://github.com/replaysMike/Binner/discussions)
+        - Binner [Open Issues](https://github.com/replaysMike/Binner/issues?q=is%3Aopen+is%3Aissue)
+        - Binner [Closed Issues](https://github.com/replaysMike/Binner/issues?q=is%3Aissue+is%3Aclosed)
+
+        If you think you need hands on help, try our [Discord channel](https://discadia.com/binner).
+
+        The more information you fill in, the better the community can help you.
+
+  - type: input
+    id: binner-version
+    attributes:
+      label: Binner version
+      description: |
+        - Please let us know the exact version you installed. If you are using a version other than latest, the bug may have already been solved. 
+        - The latest version is [![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/)
+      placeholder: |
+        e.g. v2.4.0
+    validations:
+      required: true
+
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: Please specify O/S, x32/x64/ARM
+      placeholder: |
+        e.g. Linux ARM64 (Raspberry PI) or Windows 11 x64
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug and the steps to reproduce it
+      description: Provide a clear and concise description of the challenge you are running into, and the steps we should take to try to reproduce your bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: appsettings
+    attributes:
+      label: Would you like to attach your appsetings.json configuration?
+      description: This does help us diagnose certain issues, but please be careful about posting any api keys as this is a public forum.
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots_or_videos
+    attributes:
+      label: Screenshots or Videos (Optional, but they help!)
+      description: |
+        If applicable, add screenshots or a video to help explain your problem.
+      placeholder: |
+        You can drag your video or image files inside of this editor ↓
+
+  - type: dropdown
+    attributes:
+      options:
+        - No, because I do not know how
+        - Maybe, I'll investigate and start debugging
+        - Yes, I think I know how to fix it and will discuss it in the comments of this issue
+        - Yes, I am also opening a PR that solves the problem along side this issue
+      label: Are you able to contribute a PR? (No is ok!)
+      description: |
+        If you think you know the cause of the problem, you will show up as a contributor if you can submit a PR. But we understand you may not even be a developer.
