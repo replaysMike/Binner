@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 🗨 Feature Requests & Questions
+  - name: 💬 Feature Requests & Questions
     url: https://github.com/replaysMike/Binner/discussions
     about: Please ask and answer questions here, but don't report bugs here! That's what bug reports/issues are for!
-  - name: <i class="fa-brands fa-discord"></i> Community Chat
+  - name: 👾 Community Chat
     url: https://discadia.com/binner
     about: Join the Discord to discuss bugs, feature suggestions, and getting help!
