@@ -25,8 +25,8 @@ const MinKeystrokesToConsiderScanningEvent = 10;
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig, id }) {
-	const IsDebug = false;
+export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig, id, onDisabled }) {
+	const IsDebug = true;
 	const [barcodeConfig, setBarcodeConfig] = useState(config || {
 		enabled: true,
 		bufferTime: "00:00:00.150",
@@ -440,11 +440,13 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 
 				// update the static debounce interval
 				BarcodeScannerInput.debounceIntervalMs = parseTimeSpan(barcodeConfig.bufferTime).toMilliseconds();
-				enableListening();
+				if (barcodeConfig.enabled) enableListening();
+				else if (onDisabled) onDisabled();
 			});
 		} else {
 			setBarcodeConfig(config);
-			enableListening();
+			if (config.enabled) enableListening();
+			else if (onDisabled) onDisabled();
 		}
 		return () => {
 			// stop listening for key presses
@@ -554,6 +556,9 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		return max;
 	}
 
+	if (!barcodeConfig.enabled)
+		return (<></>);
+
   return (
     <div style={{ float: "right" }}>
       <Popup
@@ -590,7 +595,9 @@ BarcodeScannerInput.propTypes = {
 	/** Set the barcode config */
 	config: PropTypes.object,
 	/** Fired when the configuration is updated */
-	onSetConfig: PropTypes.func
+	onSetConfig: PropTypes.func,
+	/** Fired when barcode support is disabled */
+	onDisabled: PropTypes.func
 };
 
 BarcodeScannerInput.defaultProps = {

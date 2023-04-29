@@ -9,7 +9,7 @@ import "./ProtectedInput.css";
  * A form input that is protected against barcode input
  */
 export default function ProtectedInput(props) {
-	const IsDebug = false;
+	const IsDebug = true;
 	const ScanSuccessClassRemovalMs = 2100;
 	const DefaultProtectedClassName = "protectedInput";
 	const DefaultIsScanningClassName = "isBarcodeScanning";

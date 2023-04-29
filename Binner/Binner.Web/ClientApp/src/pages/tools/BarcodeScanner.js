@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, Popup, Input, Icon, Button } from "semantic-ui-react";
 import { toast } from "react-toastify";
@@ -29,6 +29,12 @@ export function BarcodeScanner(props) {
   const [dummyStartTime, setDummyStartTime] = useState(null);
   const dummyTimerRef = useRef();
   const unprotectedDummyTimerRef = useRef();
+
+  useEffect(() => {
+    return () => {
+      toast.dismiss();
+    };
+  }, []);
 
   const handleSetConfig = (config) => {
     setConfig(config);
@@ -117,7 +123,14 @@ export function BarcodeScanner(props) {
 
   return (
     <div>
-      <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} config={configOverride} onSetConfig={handleSetConfig} />
+      <BarcodeScannerInput 
+        onReceived={handleBarcodeInput} 
+        minInputLength={4} 
+        swallowKeyEvent={false} 
+        config={configOverride} 
+        onSetConfig={handleSetConfig} 
+        onDisabled={() => toast.error('Barcode scanning support is currently disabled. See Settings page.', { autoClose: false })} 
+      />
       <h1>{t('page.barcodeScanner.title', "Barcode Scanner")}</h1>
       <p>{t('page.barcodeScanner.description', "Test your barcode scanner to see what values it outputs.")}</p>
       <Form>

@@ -5,7 +5,6 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
 
 // import i18n
 import './i18n';

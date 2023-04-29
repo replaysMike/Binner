@@ -160,6 +160,9 @@
       "partLabelTemplateDescription": "Part labels are printed according to this template.",
       "lineX": "Line {{number}}",
       "identifierX": "Identifier {{number}}",
+      "barcodeConfiguration": "Barcode Configuration",
+      "barcodeSupport": "Barcode Support",
+      "barcodeProfile": "Barcode Profile",
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
         "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
@@ -186,7 +189,11 @@
         "octopartClientSecret": "Your Client Secret for Octopart/Nexar.",
         "printerPrinterName": "Your printer name as it appears in Windows, or CUPS (Unix).",
         "printerPartLabelSource": "The label paper source to use.",
-        "partLabelName": "The name of the label model installed in your printer. This will be specific to your printer, and must be defined in your appsettings.json under <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>"
+        "partLabelName": "The name of the label model installed in your printer. This will be specific to your printer, and must be defined in your appsettings.json under <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>",
+        "barcodeSupportEnabled": "Choose if you would like to enable barcode support.",
+        "barcodeProfile": "Choose the barcode profile to use for your scanner.",
+        "barcodePrefix": "The prefix used for 2D barcodes, usually '[)>'.",
+        "barcodeBufferTime": "The buffer time the barcode will scan data for. Some scanners require more or less time."
       }
     },
     "datasheet": {
@@ -664,7 +671,9 @@
     "date": "Date",
     "consumed": "Consumed",
     "serial": "Serial",
-    "allowLogin": "Allow Login"
+    "allowLogin": "Allow Login",
+    "bufferTime": "Buffer Time (ms)",
+    "barcodePrefix2d": "2D Barcode Prefix"
   },
   "message": {
     "noPartsAdded": "No parts added.",

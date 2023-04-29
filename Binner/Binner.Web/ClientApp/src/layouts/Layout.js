@@ -3,6 +3,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { Container } from "reactstrap";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import 'react-toastify/dist/ReactToastify.css';
 
 export function Layout(props) {
   const { t } = useTranslation('en');
