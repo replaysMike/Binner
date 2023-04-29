@@ -36,6 +36,7 @@ import PartTypeSelector from "../components/PartTypeSelector";
 import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
 import { BulkScanModal } from "../components/BulkScanModal";
+import { BulkScanIcon } from "../components/BulkScanIcon";
 import Dropzone from "../components/Dropzone";
 import { ProjectColors } from "../common/Types";
 import { fetchApi, getErrorsString } from "../common/fetchApi";
@@ -80,15 +81,15 @@ export function Inventory(props) {
   const [datasheetDescription, setDatasheetDescription] = useState("");
   const [datasheetManufacturer, setDatasheetManufacturer] = useState("");
   
-  const hasParameters = (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0);
+  const pageHasParameters = (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0);
   const defaultPart = {
     partId: 0,
     partNumber: props.params.partNumber || "",
     allowPotentialDuplicate: false,
-    quantity: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) + "",
-    lowStockThreshold: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) + "",
-    partTypeId: (!hasParameters && viewPreferences.rememberLast && (viewPreferences.lastPartTypeId || IcPartType)) || 0 ,
-    mountingTypeId: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) || 0 + "",
+    quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) + "",
+    lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) + "",
+    partTypeId: (!pageHasParameters && viewPreferences.rememberLast && (viewPreferences.lastPartTypeId || IcPartType)) || 0 ,
+    mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) || 0 + "",
     packageType: "",
     keywords: "",
     description: "",
@@ -96,9 +97,9 @@ export function Inventory(props) {
     digiKeyPartNumber: "",
     mouserPartNumber: "",
     arrowPartNumber: "",
-    location: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastLocation) || "",
-    binNumber: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber) || "",
-    binNumber2: (!hasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber2) || "",
+    location: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastLocation) || "",
+    binNumber: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber) || "",
+    binNumber2: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber2) || "",
     cost: "",
     lowestCostSupplier: "",
     lowestCostSupplierUrl: "",
@@ -133,7 +134,7 @@ export function Inventory(props) {
 
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState(defaultPart);
-  const [isEditing, setIsEditing] = useState((part && part.partId > 0) || hasParameters);
+  const [isEditing, setIsEditing] = useState((part && part.partId > 0) || pageHasParameters);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedPart, setSelectedPart] = useState(null);
   const [selectedLocalFile, setSelectedLocalFile] = useState(null);
@@ -157,8 +158,6 @@ export function Inventory(props) {
   const [partMetadataIsSubscribed, setPartMetadataIsSubscribed] = useState(false);
   const [partMetadataError, setPartMetadataError] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
-  const [isKeyboardListening, setIsKeyboardListening] = useState(true);
-  const [keyboardPassThrough, setKeyboardPassThrough] = useState(null);
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
   const [error, setError] = useState(null);
@@ -190,7 +189,7 @@ export function Inventory(props) {
       if (partNumberStr) {
         var loadedPart = await fetchPart(partNumberStr);
         if (isEditing) setInputPartNumber(partNumberStr);
-        await fetchPartMetadata(partNumberStr, loadedPart || part);
+        await fetchPartMetadataAndInventory(partNumberStr, loadedPart || part);
       } else {
         resetForm();
       }
@@ -208,8 +207,7 @@ export function Inventory(props) {
     };
   });
 
-  const fetchPartMetadata = async (input, part) => {
-    console.log('fetchPartMetadataX', input, part);
+  const fetchPartMetadataAndInventory = async (input, part) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
     Inventory.infoAbortController.abort();
@@ -218,27 +216,9 @@ export function Inventory(props) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${input}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
-        signal: Inventory.infoAbortController.signal
-      });
-
-      if (!hasParameters) {
-        // also check inventory for this part
-        const existsResponse = await fetchApi(`api/part/search?keywords=${input}&exactMatch=true`, {
-          signal: Inventory.infoAbortController.signal,
-          catchErrors: true
-        });
-        if(existsResponse.responseObject.ok && existsResponse.data !== null) {
-          setPartExistsInInventory(true);
-        }
-      }
-
-      const data = response.data;
-      if (data.requiresAuthentication) {
-        // redirect for authentication
-        window.open(data.redirectUrl, "_blank");
-        return;
-      }
+      const includeInventorySearch = !pageHasParameters;
+      const { data, existsInInventory } = await doFetchPartMetadata(input, part, includeInventorySearch);
+      if (existsInInventory) setPartExistsInInventory(true);
 
       if (data.errors && data.errors.length > 0) {
         setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
@@ -252,7 +232,7 @@ export function Inventory(props) {
 
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
-        if(!hasParameters) setPartFromMetadata(metadataParts, suggestedPart);
+        if(!pageHasParameters) setPartFromMetadata(metadataParts, suggestedPart);
       } else {
         // no part metadata available
         setPartMetadataIsSubscribed(true);
@@ -273,15 +253,23 @@ export function Inventory(props) {
     }
   };
 
-  const getPartMetadata = async (input, part) => {
+  /**
+   * Do a part information search
+   * @param {string} partNumber part number to search for
+   * @param {object} part part object of the form
+   * @param {bool} includeInventorySearch true to also check local inventory for the part
+   * @returns part information
+   */
+  const doFetchPartMetadata = async (partNumber, part, includeInventorySearch = true) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${input}&partTypeId=${part.partTypeId || "0"}&mountingTypeId=${part.mountingTypeId || "0"}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${partNumber}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
+
       const data = response.data;
       if (data.requiresAuthentication) {
         // redirect for authentication
@@ -289,12 +277,15 @@ export function Inventory(props) {
         return;
       }
 
-      if (data.errors && data.errors.length > 0) {
-        setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
-        return;
+      let existsInInventory = false;
+      if (includeInventorySearch) {
+        // also check inventory for this part
+        const { exists, existsResponse } = await doInventoryPartSearch(partNumber);
+        existsInInventory = exists;
       }
 
-      return data;
+      // let caller handle errors
+      return { data, existsInInventory };
 
     } catch (ex) {
       console.error("Exception", ex);
@@ -305,7 +296,64 @@ export function Inventory(props) {
     }
   };
 
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, 1000), [hasParameters]);
+  /**
+   * Check local inventory for a part
+   * @param {string} partNumber The part number to search for
+   * @returns exists: true if part exists inventory, plus response
+   */
+  const doInventoryPartSearch = async (partNumber) => {
+
+    const existsResponse = await fetchApi(`api/part/search?keywords=${partNumber}&exactMatch=true`, {
+      signal: Inventory.infoAbortController.signal,
+      catchErrors: true
+    });
+    
+    if(existsResponse.responseObject.ok && existsResponse.data !== null) {
+      return { exists: true, data: existsResponse.data };
+    }
+    return { exists: false };
+  };
+
+  /**
+   * Lookup a scanned part by it's barcode and return any metadata found
+   * @param {object} scannedPart the scanned part object
+   * @param {func} onSuccess function to invoke on barcode lookup success
+   * @param {func} onFailure function to invoke on barcode lookup failure
+   * @returns barcode metadata object
+   */
+  const doBarcodeLookup = async (scannedPart, onSuccess, onFailure) => {
+    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}&token=${getImagesToken()}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    if (response.responseObject.status === 200) {
+      const { data } = response;
+      if (data.requiresAuthentication) {
+        // redirect for authentication
+        window.open(data.redirectUrl, "_blank");
+        return;
+      }
+      if (data.errors && data.errors.length > 0) {
+        const errorMessage = data.errors.join("\n");
+        if(data.errors[0] === "Api is not enabled."){
+          // supress warning for barcode scans
+        }
+        else
+          toast.error(errorMessage);
+      } else if (data.response.parts.length > 0) {
+        // show the metadata in the UI
+        var partInfo =  data.response.parts[0];
+        onSuccess(partInfo);
+      } else {
+        // no barcode found
+        onFailure(scannedPart);
+      }
+    }
+  };
+
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadataAndInventory, 1000), [pageHasParameters]);
 
   const onUploadSubmit = async (uploadFiles, type) => {
     setUploading(true);
@@ -435,9 +483,6 @@ export function Inventory(props) {
   const handleBarcodeInput = (e, input) => {
     if (!input.value) return;
 
-    // really important: reset the keyboard passthrough or scan results will be unreliable
-    setKeyboardPassThrough(null);
-
     let cleanPartNumber = "";
     if (input.type === "datamatrix") {
       if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
@@ -450,7 +495,6 @@ export function Inventory(props) {
 
     // add part
     if (bulkScanIsOpenRef.current) {
-      console.log('handleBarcodeInput RX', cleanPartNumber, input);
       // bulk scan add part
       setScannedPartsBarcodeInput({ cleanPartNumber, input });
     } else {
@@ -462,7 +506,7 @@ export function Inventory(props) {
         barcode: input.correctedValue
       };
       setInputPartNumber(cleanPartNumber);
-      fetchBarcodeMetadata(scannedPart, (partInfo) => {
+      doBarcodeLookup(scannedPart, (partInfo) => {
         // barcode found
         // console.log("Barcode info found!", partInfo);
         if (cleanPartNumber) {
@@ -498,46 +542,6 @@ export function Inventory(props) {
     }
   };
 
-  const fetchBarcodeMetadata = async (scannedPart, onSuccess, onFailure) => {
-    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}&token=${getImagesToken()}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-    if (response.responseObject.status === 200) {
-      const { data } = response;
-      if (data.requiresAuthentication) {
-        // redirect for authentication
-        window.open(data.redirectUrl, "_blank");
-        return;
-      }
-      if (data.errors && data.errors.length > 0) {
-        const errorMessage = data.errors.join("\n");
-        if(data.errors[0] === "Api is not enabled."){
-          // supress warning for barcode scans
-        }
-        else
-          toast.error(errorMessage);
-      } else if (data.response.parts.length > 0) {
-        // show the metadata in the UI
-        var partInfo =  data.response.parts[0];
-        onSuccess(partInfo);
-      } else {
-        // no barcode found
-        onFailure(scannedPart);
-      }
-    }
-  };
-
-  const enableKeyboardListening = () => {
-    setIsKeyboardListening(true);
-  };
-
-  const disableKeyboardListening = () => {
-    setIsKeyboardListening(false);
-  };
-
   const formatField = (e) => {
     switch (e.target.name) {
       default:
@@ -547,7 +551,6 @@ export function Inventory(props) {
         if (isNaN(part.cost)) part.cost = Number(0).toFixed(2);
         break;
     }
-    enableKeyboardListening(e);
     setPart(part);
   };
 
@@ -953,15 +956,6 @@ export function Inventory(props) {
     setPartMetadataError(null);
     let searchPartNumber = control.value;
 
-    // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
-    if (searchPartNumber && typeof control.value === "string" && control.value.includes("[)>")) {
-      console.log('barcode input detected, switching mode');
-      enableKeyboardListening();
-      setKeyboardPassThrough("[)>");
-      control.value = "";
-      return;
-    }
-
     if (searchPartNumber && searchPartNumber.length > 0) {
       searchPartNumber = control.value.replace("\t", "");
       searchDebounced(searchPartNumber, part, partTypes);
@@ -983,15 +977,6 @@ export function Inventory(props) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     const updatedPart = { ...part };
-
-    // check if the input looks like a barcode scanner tag, in case it's used when a text input has focus
-    if (control && control.value && typeof control.value === "string" && control.value.includes("[)>")) {
-      // console.log('barcode input detected, switching mode');
-      enableKeyboardListening();
-      setKeyboardPassThrough("[)>");
-      updatedPart[control.name] = "";
-      return;
-    }
 
     updatedPart[control.name] = control.value;
     switch (control.name) {
@@ -1496,8 +1481,6 @@ export function Inventory(props) {
     setInputPartNumber(value);
   };
 
-  
-
   const renderRecentParts = (recentParts) => {
     return (
       <Table compact celled selectable striped>
@@ -1575,8 +1558,9 @@ export function Inventory(props) {
         barcodeInput={scannedPartsBarcodeInput} 
         isBulkScanSaving={isBulkScanSaving} 
         onSave={handleSaveScannedParts} 
-        onFetchBarcodeMetadata={fetchBarcodeMetadata} 
-        onGetPartMetadata={getPartMetadata} 
+        onBarcodeLookup={doBarcodeLookup} 
+        onGetPartMetadata={doFetchPartMetadata} 
+        onInventoryPartSearch={doInventoryPartSearch} 
       />
 
       {/* FORM START */}
@@ -1607,30 +1591,7 @@ export function Inventory(props) {
             wide
             content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
             trigger={
-              <div style={{ width: "132px", height: "30px", display: "inline-block", cursor: "pointer" }} className="barcodescan" onClick={handleBulkBarcodeScan}>
-                <div className="anim-box">
-                  <div className="scanner" />
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-lg"></div>
-                  <div className="anim-item anim-item-lg"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-lg"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-md"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-md"></div>
-                  <div className="anim-item anim-item-lg"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-lg"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-lg"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-lg"></div>
-                  <div className="anim-item anim-item-sm"></div>
-                  <div className="anim-item anim-item-md"></div>
-                </div>
-              </div>
+              <BulkScanIcon onClick={handleBulkBarcodeScan} />
             }
           />
         }
@@ -1682,23 +1643,8 @@ export function Inventory(props) {
                     value={part.partTypeId || ""}
                     partTypes={allPartTypes} 
                     onSelect={handlePartTypeChange}
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
                   />
                 </Form.Field>
-                {/*<Form.Dropdown
-                  label={t('label.partType', "Part Type")}
-                  placeholder={t('label.partType', "Part Type")}
-                  loading={loadingPartTypes}
-                  search
-                  selection
-                  value={part.partTypeId || ""}
-                  options={partTypes}
-                  onChange={handleChange}
-                  name="partTypeId"
-                  onFocus={disableKeyboardListening}
-                  onBlur={enableKeyboardListening}
-                />*/}
                 <Form.Dropdown
                   label={t('label.mountingType', "Mounting Type")}
                   placeholder={t('label.mountingType', "Mounting Type")}
@@ -1708,8 +1654,6 @@ export function Inventory(props) {
                   options={mountingTypes}
                   onChange={handleChange}
                   name="mountingTypeId"
-                  onFocus={disableKeyboardListening}
-                  onBlur={enableKeyboardListening}
                 />
               </Form.Group>
               <Form.Group>
@@ -1728,8 +1672,6 @@ export function Inventory(props) {
                       onChange={updateNumberPicker}
                       name="quantity"
                       autoComplete="off"
-                      onFocus={disableKeyboardListening}
-                      onBlur={enableKeyboardListening}
                     />
                   }
                 />
@@ -1746,8 +1688,6 @@ export function Inventory(props) {
                       onChange={handleChange}
                       name="lowStockThreshold"
                       width={3}
-                      onFocus={disableKeyboardListening}
-                      onBlur={enableKeyboardListening}
                     />
                   }
                 />
@@ -1767,8 +1707,6 @@ export function Inventory(props) {
                         value={part.location || ""}
                         onChange={handleChange}
                         name="location"
-                        onFocus={disableKeyboardListening}
-                        onBlur={enableKeyboardListening}
                         width={5}
                       />
                     }
@@ -1785,8 +1723,6 @@ export function Inventory(props) {
                         value={part.binNumber || ""}
                         onChange={handleChange}
                         name="binNumber"
-                        onFocus={disableKeyboardListening}
-                        onBlur={enableKeyboardListening}
                         width={4}
                       />
                     }
@@ -1803,8 +1739,6 @@ export function Inventory(props) {
                         value={part.binNumber2 || ""}
                         onChange={handleChange}
                         name="binNumber2"
-                        onFocus={disableKeyboardListening}
-                        onBlur={enableKeyboardListening}
                         width={4}
                       />
                     }
@@ -1899,7 +1833,6 @@ export function Inventory(props) {
                       type="text"
                       onChange={handleChange}
                       name="cost"
-                      onFocus={disableKeyboardListening}
                       onBlur={formatField}
                     >
                       <Dropdown 
@@ -1920,8 +1853,6 @@ export function Inventory(props) {
                     onChange={handleChange}
                     name="manufacturer"
                     width={4}
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
                   />
                   <Form.Input
                     label={t('label.manufacturerPart', "Manufacturer Part")}
@@ -1929,8 +1860,6 @@ export function Inventory(props) {
                     value={part.manufacturerPartNumber || ""}
                     onChange={handleChange}
                     name="manufacturerPartNumber"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
                   />
                   <Form.Field style={{textAlign: 'right'}}>
                     <Image src={part.imageUrl} size="tiny" />
@@ -1943,8 +1872,6 @@ export function Inventory(props) {
                   value={part.description || ""}
                   onChange={handleChange}
                   name="description"
-                  onFocus={disableKeyboardListening}
-                  onBlur={enableKeyboardListening}
                 />
                 <Form.Field width={16}>
                   <label>{t('label.keywords', "Keywords")}</label>
@@ -1957,8 +1884,6 @@ export function Inventory(props) {
                     onChange={handleChange}
                     value={part.keywords || ""}
                     name="keywords"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
                   />
                 </Form.Field>
                 <Form.Field width={8}>
@@ -1968,8 +1893,6 @@ export function Inventory(props) {
                     value={part.packageType || ""}
                     onChange={handleChange}
                     name="packageType"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
                   />
                 </Form.Field>
               </Segment>
@@ -1985,7 +1908,7 @@ export function Inventory(props) {
                   <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
                   <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
                     <Label>https://</Label>
-                    <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <input />
                     <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>{t('button.view', "View")}</Button>
                   </Input>
                 </Form.Field>
@@ -1993,22 +1916,22 @@ export function Inventory(props) {
                   <label>{t('label.productUrl', "Product Url")}</label>
                   <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
                     <Label>https://</Label>
-                    <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <input />
                     <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
                   </Input>
                 </Form.Field>
                 <Form.Group>
                   <Form.Field width={4}>
                     <label>{t('label.digikeyPartNumber', "DigiKey Part Number")}</label>
-                    <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' />
                   </Form.Field>
                   <Form.Field width={4}>
                     <label>{t('label.mouserPartNumber', "Mouser Part Number")}</label>
-                    <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' />
                   </Form.Field>
                   <Form.Field width={4}>
                     <label>{t('label.arrowPartNumber', "Arrow Part Number")}</label>
-                    <Input placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Input placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' />
                   </Form.Field>
                 </Form.Group>
               </Segment>
@@ -2031,26 +1954,26 @@ export function Inventory(props) {
                 </div>
 
                 {showAddPartSupplier && <Segment raised>
-                  <Form.Input width={6} label={t('label.supplier', "Supplier")} required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                  <Form.Input width={6} label={t('label.supplierPartNumber', "Supplier Part Number")} required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                  <Form.Input width={6} label={t('label.supplier', "Supplier")} required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' />
+                  <Form.Input width={6} label={t('label.supplierPartNumber', "Supplier Part Number")} required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' />
                   <Form.Group>
-                    <Form.Input width={3} label={t('label.cost', "Cost")} placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                    <Form.Input width={4} label={t('label.quantityAvailable', "Quantity Available")} placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
-                    <Form.Input width={5} label={t('label.minimumOrderQuantity', "Minimum Order Quantity")} placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                    <Form.Input width={3} label={t('label.cost', "Cost")} placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' />
+                    <Form.Input width={4} label={t('label.quantityAvailable', "Quantity Available")} placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' />
+                    <Form.Input width={5} label={t('label.minimumOrderQuantity', "Minimum Order Quantity")} placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' />
                   </Form.Group>
                   <Form.Field width={12}>
                     <label>{t('label.productUrl', "Product Url")}</label>
-                    <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
+                    <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl'>
                       <Label>https://</Label>
-                      <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                      <input />
                       <Button onClick={e => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
                     </Input>
                   </Form.Field>
                   <Form.Field width={12}>
                     <label>{t('label.imageUrl', "Image Url")}</label>
-                    <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl' onFocus={disableKeyboardListening} onBlur={enableKeyboardListening}>
+                    <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl'>
                       <Label>https://</Label>
-                      <input onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />
+                      <input  />
                       <Button onClick={e => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>{t('button.visit', "Visit")}</Button>
                     </Input>
                   </Form.Field>

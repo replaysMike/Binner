@@ -198,9 +198,13 @@ namespace Binner.Web.Controllers
                 var existingSearch = await _partService.FindPartsAsync(mappedPart.PartNumber);
                 if (existingSearch.Any())
                 {
-                    // update it's quantity only
+                    // update it's basic data only
                     var existingPart = existingSearch.First().Result;
-                    existingPart.Quantity += mappedPart.Quantity;
+                    existingPart.Quantity = mappedPart.Quantity;
+                    existingPart.Description = mappedPart.Description;
+                    existingPart.Location = mappedPart.Location;
+                    existingPart.BinNumber = mappedPart.BinNumber;
+                    existingPart.BinNumber2 = mappedPart.BinNumber2;
                     updatedParts.Add(await _partService.UpdatePartAsync(existingPart));
                 }
                 else

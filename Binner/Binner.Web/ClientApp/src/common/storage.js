@@ -65,11 +65,13 @@ export const removeLocalData = (settingName, options = { settingsName: DefaultRo
 	const prefLocation = options.location?.pathname?.toLowerCase().replaceAll('/', '') || options.containerName || DefaultContainerName;
 	let values = {...currentViewPreferences };
 	const prefValues = values[prefLocation];
-	delete prefValues[settingName];
-	const keys = Object.keys(prefValues);
-	// if there are no children left, remove the entire key
-	if (keys.length === 0)
-		localStorage.removeItem(options.settingsName);
-	else
-		localStorage.setItem(options.settingsName, JSON.stringify(values));
+	if (prefValues !== undefined) {
+		delete prefValues[settingName];
+		const keys = Object.keys(prefValues);
+		// if there are no children left, remove the entire key
+		if (keys.length === 0)
+			localStorage.removeItem(options.settingsName);
+		else
+			localStorage.setItem(options.settingsName, JSON.stringify(values));
+	}
 };

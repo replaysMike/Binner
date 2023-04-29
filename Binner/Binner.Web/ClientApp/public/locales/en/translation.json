@@ -499,6 +499,14 @@
     "pcbHistoryModal": {
       "header": "PCB Produce History",
       "title": "BOM Management"
+    },
+    "bulkScanModal": {
+      "autoIncrement": "Auto Increment",
+      "rememberLocation": "Remember Location",
+      "popup": {
+        "autoIncrement": "Auto increment of Bin Number 2",
+        "rememberLocation": "Repeat the location of each added part"
+      }
     }
   },
   "button": {
@@ -676,7 +684,8 @@
     "savedPart": "Saved part {{partNumber}}!",
     "addedPart": "Added part {{partNumber}}!",
     "failedSavePart": "Failed to update, check Part Type and Mounting Type",
-    "noPartMetadata": "No part metadata found!"
+    "noPartMetadata": "No part metadata found!",
+    "scanPartExists": "Part exists in inventory. You can edit it's details or remove it from your scan."
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
@@ -689,10 +698,12 @@
     "deleteRecord": "Are you sure you want to delete this record?",
     "deleteHistory": "Are you sure you want to delete this history record?",
     "partsWillBeBackInStock": "All consumed parts will be placed <1>back in stock</1>.",
+    "clearScan": "Are you sure you want to clear your scanned results?",
     "header": {
       "removeBomPart": "Remove Part from BOM",
       "deleteFile": "Delete File",
-      "deletePart": "Delete Part"
+      "deletePart": "Delete Part",
+      "clearScan": "Clear Scanned Parts"
     }    
   },
   "error": {

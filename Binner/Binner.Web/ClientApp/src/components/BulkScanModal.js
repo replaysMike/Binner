@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import _ from "underscore";
-import { Icon, Button, Checkbox, Form, Modal, Popup, Table, Flag, Dimmer, Loader } from "semantic-ui-react";
+import { Confirm, Icon, Button, Checkbox, Form, Modal, Popup, Table, Flag, Dimmer, Loader } from "semantic-ui-react";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import ProtectedInput from "./ProtectedInput";
 import PropTypes from "prop-types";
+import "./BulkScanModal.css";
 
 export function BulkScanModal(props) {
   const { t } = useTranslation();
 	const LocalStorageKey = "scannedPartsSerialized";
-	const {onFetchBarcodeMetadata, onGetPartMetadata} = props;
+	const SettingsContainer = "BulkScanModal";
+	const {onBarcodeLookup, onGetPartMetadata, onInventoryPartSearch} = props;
 
 	const getFromLocalStorage = () => {
-		const val = getLocalData(LocalStorageKey, { settingsName: 'BulkScanModal' })
+		const val = getLocalData(LocalStorageKey, { settingsName: SettingsContainer })
 		// on load, force all items to be editable
 		if (val) {
 			for(var i = 0; i < val.length; i++) {
@@ -23,7 +25,7 @@ export function BulkScanModal(props) {
 	};
 
 	const saveToLocalStorage = (items) => {
-		setLocalData(LocalStorageKey, items, { settingsName: 'BulkScanModal' } );
+		setLocalData(LocalStorageKey, items, { settingsName: SettingsContainer } );
 	};
 
 	const scannedPartsSerialized = getFromLocalStorage() || [];
@@ -37,9 +39,10 @@ export function BulkScanModal(props) {
 	const [barcodeInput, setBarcodeInput] = useState(props.barcodeInput);
 	const [autoIncrement, setAutoIncrement] = useState(true);
 	const [rememberLocation, setRememberLocation] = useState(true);
+	const [confirmClearIsOpen, setConfirmClearIsOpen] = useState(false);
+	const [confirmClearContent, setConfirmClearContent] = useState(null);
 
 	useEffect(() => {
-		console.log('setting isOpen props', props.isOpen);
 		setIsOpen(props.isOpen);
 		if (props.isOpen) {
 			const scannedPartsSerialized = getFromLocalStorage() || [];
@@ -78,6 +81,7 @@ export function BulkScanModal(props) {
 				barcode: input.correctedValue,
 				isMetadataFound: false,
 				isEditable: false,
+				existsInInventory: false,
 				dateAdded: new Date().getTime()
 			};
 			// stupid hack
@@ -90,7 +94,6 @@ export function BulkScanModal(props) {
 
 			const existingPartNumber = _.find(scannedParts, { partNumber: cleanPartNumber });
 			if (existingPartNumber) {
-				console.log('existing part number found in scanned parts', existingPartNumber, cleanPartNumber);
 				//existingPartNumber.quantity += existingPartNumber.scannedQuantity || 1;
 				existingPartNumber.quantity = existingPartNumber.scannedQuantity || 1;
 				existingPartNumber.isEditable = true;
@@ -108,17 +111,30 @@ export function BulkScanModal(props) {
 				setIsDirty(!isDirty);
 				scannedPartsRef.current = newScannedParts;
 				
-				onFetchBarcodeMetadata(scannedPart, (partInfo) => {
+				onBarcodeLookup(scannedPart, async (partInfo) => {
 					// barcode found
+					// does it already exist in inventory?
+					const localInventoryResponse = await onInventoryPartSearch(partInfo.basePartNumber);
+
 					const newScannedParts = [...scannedPartsRef.current];
 					const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber || i.barcode === scannedPart.barcode);
 					if (scannedPartIndex >= 0) {
 						const scannedPart = newScannedParts[scannedPartIndex];
+						if (localInventoryResponse.exists) {
+							// part exists in inventory
+							scannedPart.existsInInventory = localInventoryResponse.exists;
+							scannedPart.description = localInventoryResponse.data[0].description;
+							scannedPart.location = localInventoryResponse.data[0].location;
+							scannedPart.binNumber = localInventoryResponse.data[0].binNumber;
+							scannedPart.binNumber2 = localInventoryResponse.data[0].binNumber2;
+							scannedPart.quantity = localInventoryResponse.data[0].quantity;
+						} else {
+							scannedPart.description = partInfo.description;
+							if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
+								scannedPart.partNumber = partInfo.basePartNumber;
+						}
 						scannedPart.isMetadataFound = true;
 						scannedPart.isEditable = true;
-						scannedPart.description = partInfo.description;
-						if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
-							scannedPart.partNumber = partInfo.basePartNumber;
 						newScannedParts[scannedPartIndex] = scannedPart;
 						setScannedParts(newScannedParts);
 						setIsDirty(!isDirty);
@@ -126,8 +142,8 @@ export function BulkScanModal(props) {
 					}
 				}, (scannedPart) => {
 					// no barcode info found, try searching the part number
-					onGetPartMetadata(scannedPart.partNumber, scannedPart).then((data) => {
-						console.log('partInfo received', data);
+					const includeInventorySearch = true;
+					onGetPartMetadata(scannedPart.partNumber, scannedPart, includeInventorySearch).then((data) => {
 						if (data.response.parts.length > 0) {
 							const firstPart = data.response.parts[0];
 							// console.log('adding part', firstPart);
@@ -210,6 +226,7 @@ export function BulkScanModal(props) {
       binNumber2: '',
 			isMetadataFound: false,
 			isEditable: true,
+			existsInInventory: false,
 			dateAdded: new Date().getTime(),
      }]);
 		 setIsDirty(!isDirty);
@@ -223,9 +240,10 @@ export function BulkScanModal(props) {
 
   const handleBulkScanClear = () => {
 		localStorage.removeItem(LocalStorageKey);
-		removeLocalData(LocalStorageKey, { settingsName: 'BulkScanModal' } );
+		removeLocalData(LocalStorageKey, { settingsName: SettingsContainer } );
 		setScannedParts([]);
 		setIsDirty(!isDirty);
+		setConfirmClearIsOpen(false);
   };
 
 	const handleRememberLocationChange = (e, control) => {
@@ -246,6 +264,30 @@ export function BulkScanModal(props) {
 			}
 		}
 	};
+
+	const confirmClearOpen = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmClearIsOpen(true);
+    setConfirmClearContent(
+      <p>
+        <Trans i18nKey="confirm.clearScan">
+        Are you sure you want to clear your scanned results?
+        </Trans>
+        <br />
+        <br />
+        <Trans i18nKey="confirm.permanent">
+        This action is <i>permanent and cannot be recovered</i>.
+        </Trans>        
+      </p>
+    );
+  };
+
+	const confirmClearClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmClearIsOpen(false);
+  };
 
 	const beginAnimation = (highlightScannedPart) => {
 		const highlightElement = document.querySelectorAll(`[data-partnumber="${highlightScannedPart.partNumber}"]`);
@@ -288,14 +330,16 @@ export function BulkScanModal(props) {
 						<Table.Row
 							key={index}
 							data-partnumber={p.partNumber}
-							className=""
+							className={`${p.existsInInventory ? 'exists' : ''} `}
 						>
 							<Table.Cell textAlign="center" style={{verticalAlign: 'middle', width: '50px'}}>
 								{!p.isEditable 
 									? <Loader active inline />
-									: p.isMetadataFound 
-										? <Icon name="check circle" color="green" size="big" /> 
-										: <Icon name="warning sign" color="yellow" size="big" title={t('message.noPartMetadata', "No part metadata found!")} />
+									: p.existsInInventory 
+										? <Popup content={<p>{t('message.scanPartExists', "Part exists in inventory. You can edit it's details or remove it from your scan.")}</p>} trigger={<Icon name="warning circle" color="red" size="big" />} />
+										: p.isMetadataFound 
+											? <Icon name="check circle" color="green" size="big" /> 
+											: <Popup content={<p>{t('message.noPartMetadata', "No part metadata found!")}</p>} trigger={<Icon name="warning sign" color="yellow" size="big" />} />
 								}									
 							</Table.Cell>
 							<Table.Cell collapsing>
@@ -378,6 +422,15 @@ export function BulkScanModal(props) {
   };
 
 	return (
+		<>
+		<Confirm
+			className="confirm"
+			header={t('confirm.header.clearScan', "Clear Scanned Parts")}
+			open={confirmClearIsOpen}
+			onCancel={confirmClearClose}
+			onConfirm={handleBulkScanClear}
+			content={confirmClearContent}
+		/>
 		<Modal centered open={isOpen} onClose={handleBulkScanClose} dimmer="blurring">
 			<Modal.Header>{t('page.inventory.bulkScan', "Bulk Scan")}</Modal.Header>
 			<Dimmer.Dimmable as={Modal.Content} scrolling>
@@ -422,8 +475,8 @@ export function BulkScanModal(props) {
 						<p>{t('page.inventory.startScanning', "Start scanning parts...")}</p>
 						<div style={{textAlign: 'right', height: '35px', width: '100%', marginBottom: '2px'}}>
 							<Form.Group style={{justifyContent: 'end'}}>
-								<Form.Field style={{margin: 'auto 0'}}><Popup hoverable content={<p>Auto increment each Bin Number 2</p>} trigger={<Checkbox toggle label="Auto Increment" checked={autoIncrement} onChange={handleAutoIncrementChange} style={{scale: '0.8' }} />}/></Form.Field>
-								<Form.Field style={{margin: 'auto 0'}}><Popup content={<p>Repeat the location of each added part</p>} trigger={<Checkbox toggle label="Remember Location" checked={rememberLocation} onChange={handleRememberLocationChange} style={{scale: '0.8' }} />}/></Form.Field>
+								<Form.Field style={{margin: 'auto 0'}}><Popup hoverable content={<p>{t('comp.bulkScanModal.popup.autoIncrement', "Auto increment of Bin Number 2")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.autoIncrement', "Auto Increment")} checked={autoIncrement} onChange={handleAutoIncrementChange} style={{scale: '0.8' }} />}/></Form.Field>
+								<Form.Field style={{margin: 'auto 0'}}><Popup content={<p>{t('comp.bulkScanModal.popup.rememberLocation', "Repeat the location of each added part")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.rememberLocation', "Remember Location")} checked={rememberLocation} onChange={handleRememberLocationChange} style={{scale: '0.8' }} />}/></Form.Field>
 								<Form.Field>
 								<Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" color="green" /> {t('button.manualAdd', "Manual Add")}</Button>
 							</Form.Field>
@@ -434,22 +487,25 @@ export function BulkScanModal(props) {
 				</div>
 			</Dimmer.Dimmable>
 			<Modal.Actions>
-				<Button onClick={handleBulkScanClear} disabled={scannedParts.length === 0}>{t('button.clear', "Clear")}</Button>
+				<Button onClick={confirmClearOpen} disabled={scannedParts.length === 0}>{t('button.clear', "Clear")}</Button>
 				<Button onClick={handleBulkScanClose}>{t('button.cancel', "Cancel")}</Button>
 				<Button primary onClick={handleOnSave} disabled={bulkScanSaving}>
 					{t('button.save', "Save")}
 				</Button>
 			</Modal.Actions>
-		</Modal>);
+		</Modal>
+		</>);
 };
 
 BulkScanModal.propTypes = {
 	/** Event handler to call when saving scanned parts */
 	onSave: PropTypes.func.isRequired,
 	/** Event handler to call when needing part metadata */
-	onFetchBarcodeMetadata: PropTypes.func.isRequired,
+	onBarcodeLookup: PropTypes.func.isRequired,
 	/** Event handler to call when needing part info */
 	onGetPartMetadata: PropTypes.func.isRequired,
+	/** Event handler to call when needing local inventory lookup */
+	onInventoryPartSearch: PropTypes.func.isRequired,
 	/** Event handler when a part is scanned */
   onAdd: PropTypes.func,
 	/** Event handler when a part is removed */
