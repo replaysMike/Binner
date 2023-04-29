@@ -1,15 +1,15 @@
 import React from "react";
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Container } from "reactstrap";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
 
 export function Layout(props) {
+  const { t } = useTranslation('en');
+  const noop = t('noop', "-do-not-translate-");
   return (
     <div className="centered" style={{marginBottom: '50px', position: 'relative', zIndex: '50', textAlign: 'left'}}>
-      <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" />
+      
       <div id="banner" />
       <Container>
         <Header />

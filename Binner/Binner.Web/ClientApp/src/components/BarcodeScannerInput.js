@@ -13,13 +13,20 @@ import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
 
 // this value will be replaced by the Barcode config
-const DefaultDebounceIntervalMs = 150;
+// lower values might fail to detect scans
+const DefaultDebounceIntervalMs = 80;
+// lower values will falsely detect scans, higher may fail on short barcodes
+const MinBufferLengthToAccept = 15; 
+const AbortBufferTimerMs = 2000;
+// if any keystrokes have a delay between them greater than this value, the buffer will be dropped
+const MaxKeystrokeThresholdMs = 200;
+const MinKeystrokesToConsiderScanningEvent = 10;
 
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig }) {
-	const [keyBuffer, setKeyBuffer] = useState([]);
+export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig, id }) {
+	const IsDebug = false;
 	const [barcodeConfig, setBarcodeConfig] = useState(config || {
 		enabled: true,
 		bufferTime: "00:00:00.150",
@@ -30,18 +37,31 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 	const [previousIsKeyboardListeningState, setPreviousIsKeyboardListeningState] = useState(listening || true);
 	const [playScanSound] = useSound(boopSfx, { soundEnabled: true, volume: 1 });
 	const [isReceiving, setIsReceiving] = useState(false);
-	const listeningRef = useRef();
-	listeningRef.current = isKeyboardListening;
-	const keyBufferRef = useRef();
-	keyBufferRef.current = keyBuffer;
-	const playScanSoundRef = useRef();
-  playScanSoundRef.current = playScanSound;
+	const isStartedReading = useRef(false);
+	const timerRef = useRef(null);
+	const listeningRef = useRef(isKeyboardListening);
+	const keyBufferRef = useRef([]);
+	const playScanSoundRef = useRef(playScanSound);
+	const keyTimes = useRef([]);
+	const lastKeyTime = useRef(0);
 
   const onReceivedBarcodeInput = (e, buffer) => {
-    if (buffer.length < 8) {
+    if (buffer.length < MinBufferLengthToAccept && processKeyBuffer(buffer, barcodeConfig.barcodePrefix2D.length) !== barcodeConfig.barcodePrefix2D) {
 			keyBufferRef.current.length = 0;
-			console.log('timeout: barcode dropped input', buffer);
+			if(IsDebug) console.log('timeout: barcode dropped input', buffer);
+			const maxTime = getMaxValueFast(keyTimes.current, 1);
+			if(IsDebug) console.log(`keytimes maxtime '${maxTime}'`, keyTimes.current);
+			keyTimes.current = [];
     	return; // drop and ignore input
+		} else {
+			// if keytimes has any times over a max threshold, drop input
+			const maxTime = getMaxValueFast(keyTimes.current, 1);
+			if (maxTime > MaxKeystrokeThresholdMs) {
+				if(IsDebug) console.log(`dropped buffer due to maxtime '${maxTime}'`, keyTimes.current);
+				keyTimes.current = [];
+				return; // drop and ignore input
+			}
+			if(IsDebug) console.log('accepted buffer', buffer.length);
 		}
 
     const result = processKeyBuffer(buffer);
@@ -49,6 +69,9 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		keyBufferRef.current.length = 0;
 
 		processStringInput(e, result);
+		const maxTime = getMaxValueFast(keyTimes.current, 1);
+		if(IsDebug) console.log(`keytimes maxtime '${maxTime}'`, keyTimes.current);
+		keyTimes.current = [];
   };
 
 	const processStringInput = (e, result) => {
@@ -64,7 +87,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			// fire an mounted event handler that we received data
 			onReceived(e, input);
 			// fire a domain event
-			AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text });
+			AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text }, id || "BarcodeScannerInput", document.activeElement);
 		}else{
 			console.warn('no scan found, filtered.');
 		}
@@ -74,14 +97,15 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 	/**
 	 * Process an array of key input objects into a string buffer
 	 * @param {array} buffer The array of Key input objects
+	 * @param {array} length If provided, will only process the length specified (useful for peeking at data)
 	 * @returns 
 	 */
-  const processKeyBuffer = (buffer) => {
+  const processKeyBuffer = (buffer, length = 99999) => {
     let str = "";
 		let noControlCodesStr = "";
     let specialCharBuffer = [];
 		let modifierKeyCount = 0;
-    for (let i = 0; i < buffer.length; i++) {
+    for (let i = 0; i < Math.min(buffer.length, length); i++) {
       let key = buffer[i];
 			if (key.altKey || key.shiftKey || key.ctrlKey)
 				modifierKeyCount++;
@@ -138,7 +162,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		let rsDetected = false;
 		let eotDetected = false;
 		let invalidBarcodeDetected = false;
-    if (value.startsWith("[)>")) {
+    if (value.startsWith(barcodeConfig.barcodePrefix2D)) {
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
       const parseResult = parseDataMatrix(value);
@@ -177,7 +201,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		const sohCharCodes = ["\u0001"]; // CTRL-A, \u0001 START OF HEADER
 		const stxCharCodes = ["\u0002"]; // CTRL-B, \u0002 START OF TEXT
 		const etxCharCodes = ["\u0003"]; // CTRL-C, \u0003 END OF TEXT
-    const header = "[)>";
+    const header = barcodeConfig.barcodePrefix2D;
     const expectedFormatNumber = 6; /** 22z22 barcode */
     const controlChars = ["P", "1P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z"];
 
@@ -333,7 +357,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
   };
 
 	const buildBarcode = (formatNumber, gsLines) => {
-		let barcode = `[)>\u241e${formatNumber.toString().padStart(2, '0')}`; // Header + RS + formatNumber
+		let barcode = `${barcodeConfig.barcodePrefix2D}\u241e${formatNumber.toString().padStart(2, '0')}`; // Header + RS + formatNumber
 		for(let i = 0; i < gsLines.length; i++){
 			barcode = barcode + "\u241d" + gsLines[i]; // GS
 		}
@@ -384,12 +408,16 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 	const scannerDebounced = useMemo(() => dynamicDebouncer(onReceivedBarcodeInput, () => BarcodeScannerInput.debounceIntervalMs), []);
 
 	const disableBarcodeInput = (e) => {
+		if(IsDebug) console.log('disabled barcode input on request');
 		setPreviousIsKeyboardListeningState(isKeyboardListening);
 		setIsKeyboardListening(false);
+		removeKeyboardHandler();
 	};
 
 	const restoreBarcodeInput = (e) => {
+		if(IsDebug) console.log('enabled barcode input on request');
 		setIsKeyboardListening(previousIsKeyboardListeningState);
+		addKeyboardHandler();
 	};
 
   useEffect(() => {
@@ -484,21 +512,47 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 				return;
 			}
 			keyBufferRef.current.push(e);
+
+			const maxTime = getMaxValueFast(keyTimes.current, 1);
+			if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < MaxKeystrokeThresholdMs) {
+				setIsReceiving(true);
+				// only send the event once when we've determined we are capturing
+				if(!isStartedReading.current) AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", document.activeElement);
+				isStartedReading.current = true;	
+			}
+
 			// visual indicator of input received
-			setTimeout(() => { 
-				if (keyBufferRef.current.length > 5) {
-					setIsReceiving(true);
-					AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current );
-		 		} else {
-					setIsReceiving(false);
-				}
-			}, 500);
+			if (timerRef.current) clearTimeout(timerRef.current);
+			timerRef.current = setTimeout(() => {
+				// barcode scan stopped
+				setIsReceiving(false);
+				if(isStartedReading.current) AppEvents.sendEvent(Events.BarcodeReadingCancelled, keyBufferRef.current, id || "BarcodeScannerInput", document.activeElement);
+				isStartedReading.current = false;
+			}, AbortBufferTimerMs);
+
+			keyTimes.current.push(new Date().getTime() - lastKeyTime.current);
+			lastKeyTime.current = new Date().getTime();
       scannerDebounced(e, keyBufferRef.current);
     } else {
 			// dropped key, not listening
+			if(IsDebug) console.log('input ignored, not listening');
 		}
 		return e;
   };
+
+	// helpers
+
+	const getMaxValueFast = (arr, startAt = 0) => {
+		// fastest performing solution of getting the max value in an array
+		if (startAt >= arr.length) return arr.length > 0 ? arr[0] : -1;
+		let max = arr[startAt];
+		for (let i = startAt + 1; i < arr.length; ++i) {
+			if (arr[i] > max) {
+				max = arr[i];
+			}
+		}
+		return max;
+	}
 
   return (
     <div style={{ float: "right" }}>

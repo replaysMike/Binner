@@ -4,6 +4,8 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 // import i18n
 import './i18n';
@@ -57,6 +59,7 @@ document.removeEventListener = (type, listener, options) => {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <BrowserRouter basename={baseUrl}>
+    <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" containerId="maintoast" />
     <App />
   </BrowserRouter>,
 );

@@ -10,3 +10,8 @@
 .partTypesTreeView .MuiTreeItem-group .MuiTreeItem-content {
 	padding-left: 0 !important;
 }
+
+.partTypesTreeView svg.parttype {
+	color: #bbb;
+	margin-right: 4px;
+}

@@ -1,21 +1,60 @@
+:root {
+	--pi-inset: 2px;
+	--pi-scanning-backgroundColor: rgba(18, 92, 220, 1);
+	--pi-scanning-borderColor: rgba(77, 166, 255, 1);
+	--pi-scanning-color: rgb(34, 106, 230);
+	--pi-scananimation-color: rgba(0, 110, 255, 1);
+	--pi-scananimation-speed: 1s;
+	/* this duration value is in sync with ProtectedInput.ScanSuccessClassRemovalMs */
+	--pi-transition: 1s;
+}
+
+i.barcode.icon:has(+ .protectedInput.isBarcodeScanning) {
+	color: #fff;
+	z-index: 999999;
+	font-size: 1.5em;
+}
+
 .protectedInput {
 	transition-property: outline-color, background-color !important;
 	transition-duration: 0.3s !important;
-	background-color: #fff !important;
 }
 
 .protectedInput.isBarcodeScanning {
-	outline: 2px solid rgb(0, 100, 230) !important;
-	background-color: rgb(0, 100, 230) !important;
-	color: rgb(25, 116, 235) !important;
+	outline: 2px solid var(--pi-scanning-backgroundColor) !important;
+	background-color: var(--pi-scanning-backgroundColor) !important;
+	color: var(--pi-scanning-color) !important;
 	text-decoration: line-through !important;
+	
+}
+
+.ui.input:has(.protectedInput.isBarcodeScanning)::before {
+	content: '';
+	position: absolute;
+	border-right: 5px solid var(--pi-scanning-borderColor);
+	top: var(--pi-inset);
+	left: var(--pi-inset);
+	width: calc(100% - var(--pi-inset));
+	height: calc(100% - (var(--pi-inset) * 2));
+	background-color: var(--pi-scananimation-color);
+	z-index: 1000;
+	animation: animate var(--pi-scananimation-speed) linear infinite;
+	border-radius: .28571429rem;
 }
 
 .protectedInput.barcodeScanSuccess:focus {
-	/* this duration value is in sync with ProtectedInput.ScanSuccessClassRemovalMs */
-	transition-duration: 2s !important;
-	background-color: #fff !important;
+	transition-duration: var(--pi-transition) !important;
 	outline: unset;
 	color: unset;
 	text-decoration: unset;
+}
+
+@keyframes animate
+{
+	0%{
+		width: 0;
+	}
+	100%{
+		width: calc(100% - var(--pi-inset));
+	}
 }

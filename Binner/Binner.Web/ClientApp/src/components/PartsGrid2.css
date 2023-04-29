@@ -45,6 +45,25 @@
 	font-weight: 700;
 }
 
+#partsGrid .header {
+	display: flex;
+	flex-direction: row;
+	justify-content: stretch;
+	width: 100%;
+	align-items: center;
+	font-size: 0.8em;
+}
+
+#partsGrid .header > :nth-child(2) {
+	flex: 1;
+	text-align: right;
+	margin-right: 20px;
+}
+
+#partsGrid .header > :nth-child(3) {
+	justify-content: flex-end;
+}
+
 .MuiTableRow-root.Mui-selected {
 	background-color: rgb(63, 160, 250) !important;
 }

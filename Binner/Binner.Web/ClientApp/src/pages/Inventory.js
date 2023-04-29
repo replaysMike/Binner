@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation, Trans } from 'react-i18next';
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
-import { useFocus } from "../hooks/useFocus";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import {
@@ -30,11 +29,13 @@ import {
   Checkbox,
   Dropdown
 } from "semantic-ui-react";
+import ProtectedInput from "../components/ProtectedInput";
 import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
 import PartTypeSelector from "../components/PartTypeSelector";
 import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
+import { BulkScanModal } from "../components/BulkScanModal";
 import Dropzone from "../components/Dropzone";
 import { ProjectColors } from "../common/Types";
 import { fetchApi, getErrorsString } from "../common/fetchApi";
@@ -78,7 +79,7 @@ export function Inventory(props) {
   const [datasheetPartName, setDatasheetPartName] = useState("");
   const [datasheetDescription, setDatasheetDescription] = useState("");
   const [datasheetManufacturer, setDatasheetManufacturer] = useState("");
-  const scannedPartsSerialized = JSON.parse(localStorage.getItem("scannedPartsSerialized")) || [];
+  
   const hasParameters = (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0);
   const defaultPart = {
     partId: 0,
@@ -139,8 +140,6 @@ export function Inventory(props) {
   const [recentParts, setRecentParts] = useState([]);
   const [metadataParts, setMetadataParts] = useState([]);
   const [duplicateParts, setDuplicateParts] = useState([]);
-  const [scannedParts, setScannedParts] = useState(scannedPartsSerialized);
-  const [highlightScannedPart, setHighlightScannedPart] = useState(null);
   const [partModalOpen, setPartModalOpen] = useState(false);
   const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
@@ -161,23 +160,21 @@ export function Inventory(props) {
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [keyboardPassThrough, setKeyboardPassThrough] = useState(null);
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
-  const [bulkScanSaving, setBulkScanSaving] = useState(false);
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
   const [error, setError] = useState(null);
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [dragOverClass, setDragOverClass] = useState("");
-  const [partInputPartNumberRef, setInputPartNumberFocus] = useFocus();
   const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
   const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
+  const [isBulkScanSaving, setBulkScanSaving] = useState(false);
+  const [scannedPartsBarcodeInput, setScannedPartsBarcodeInput] = useState(null);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
 
   // todo: find a better alternative, we shouldn't need to do this!
   const bulkScanIsOpenRef = useRef();
   bulkScanIsOpenRef.current = bulkScanIsOpen;
-  const scannedPartsRef = useRef();
-  scannedPartsRef.current = scannedParts;
   const partTypesRef = useRef();
   partTypesRef.current = partTypes;
 
@@ -212,6 +209,7 @@ export function Inventory(props) {
   });
 
   const fetchPartMetadata = async (input, part) => {
+    console.log('fetchPartMetadataX', input, part);
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
     Inventory.infoAbortController.abort();
@@ -452,72 +450,9 @@ export function Inventory(props) {
 
     // add part
     if (bulkScanIsOpenRef.current) {
+      console.log('handleBarcodeInput RX', cleanPartNumber, input);
       // bulk scan add part
-      const lastPart = _.last(scannedParts);
-      const scannedPart = {
-        partNumber: cleanPartNumber,
-        quantity: parseInt(input.value.quantity || "1"),
-        scannedQuantity: parseInt(input.value.quantity || "1"),
-        location: (lastPart && lastPart.location) || "",
-        binNumber: (lastPart && lastPart.binNumber) || "",
-        binNumber2: (lastPart && lastPart.binNumber2) || "",
-        origin: (input.value.countryOfOrigin && input.value.countryOfOrigin.toLowerCase()) || "",
-        description: input.value.description || "",
-        barcode: input.correctedValue
-      };
-      const existingPartNumber = _.find(scannedPartsRef.current, { partNumber: cleanPartNumber });
-      if (existingPartNumber) {
-        // console.log('existing part number found in scanned parts', existingPartNumber, cleanPartNumber);
-        existingPartNumber.quantity += existingPartNumber.scannedQuantity || 1;
-        localStorage.setItem("scannedPartsSerialized", JSON.stringify(scannedPartsRef.current));
-        setShowBarcodeBeingScanned(false);
-        setHighlightScannedPart(existingPartNumber);
-        setScannedParts([...scannedPartsRef.current]);
-      } else {
-        // fetch metadata on the barcode, don't await, do a background update
-        const newScannedParts = [...scannedPartsRef.current, scannedPart];
-        localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
-        setShowBarcodeBeingScanned(false);
-        setHighlightScannedPart(scannedPart);
-        setScannedParts(newScannedParts);
-
-        fetchBarcodeMetadata(e, scannedPart, (partInfo) => {
-          // barcode found
-          const newScannedParts = [...scannedPartsRef.current];
-          const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber || i.barcode === scannedPart.barcode);
-          if (scannedPartIndex >= 0) {
-            const scannedPart = newScannedParts[scannedPartIndex];
-            scannedPart.description = partInfo.description;
-            if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
-              scannedPart.partNumber = partInfo.basePartNumber;
-            newScannedParts[scannedPartIndex] = scannedPart;
-            setScannedParts(newScannedParts);
-            localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
-          }
-        }, (scannedPart) => {
-          // no barcode info found, try searching the part number
-          //searchDebounced(scannedPart.partNumber, scannedPart);
-          // console.log('no barcode found, getting partInfo');
-          getPartMetadata(scannedPart.partNumber, scannedPart).then((data) => {
-            // console.log('partInfo received', data);
-            if (data.response.parts.length > 0) {
-              const firstPart = data.response.parts[0];
-              // console.log('adding part', firstPart);
-              const newScannedParts = [...scannedPartsRef.current];
-              const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === firstPart.manufacturerPartNumber || i.barcode === scannedPart.barcode);
-              if (scannedPartIndex >= 0) {
-                const scannedPart = newScannedParts[scannedPartIndex];
-                scannedPart.description = firstPart.description;
-                if (firstPart.basePartNumber && firstPart.basePartNumber.length > 0)
-                  scannedPart.partNumber = firstPart.basePartNumber;
-                newScannedParts[scannedPartIndex] = scannedPart;
-                setScannedParts(newScannedParts);
-                localStorage.setItem("scannedPartsSerialized", JSON.stringify(newScannedParts));
-              }
-            }
-          });
-        });
-      }
+      setScannedPartsBarcodeInput({ cleanPartNumber, input });
     } else {
       // scan single part
       // console.log('bulk scan is NOT open', cleanPartNumber);
@@ -527,7 +462,7 @@ export function Inventory(props) {
         barcode: input.correctedValue
       };
       setInputPartNumber(cleanPartNumber);
-      fetchBarcodeMetadata(e, scannedPart, (partInfo) => {
+      fetchBarcodeMetadata(scannedPart, (partInfo) => {
         // barcode found
         // console.log("Barcode info found!", partInfo);
         if (cleanPartNumber) {
@@ -563,9 +498,7 @@ export function Inventory(props) {
     }
   };
 
-  const fetchBarcodeMetadata = async (e, scannedPart, onSuccess, onFailure) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const fetchBarcodeMetadata = async (scannedPart, onSuccess, onFailure) => {
     const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}&token=${getImagesToken()}`, {
       method: "GET",
       headers: {
@@ -581,7 +514,11 @@ export function Inventory(props) {
       }
       if (data.errors && data.errors.length > 0) {
         const errorMessage = data.errors.join("\n");
-        toast.error(errorMessage);
+        if(data.errors[0] === "Api is not enabled."){
+          // supress warning for barcode scans
+        }
+        else
+          toast.error(errorMessage);
       } else if (data.response.parts.length > 0) {
         // show the metadata in the UI
         var partInfo =  data.response.parts[0];
@@ -954,7 +891,7 @@ export function Inventory(props) {
     if (clearAll && viewPreferences.rememberLast) {
       updateViewPreferences({ lastQuantity: clearedPart.quantity, lowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId, lastProjectId: clearedPart.projectId });
     }
-    setInputPartNumberFocus();
+    document.getElementById('inputPartNumber').focus();
   };
 
   const clearForm = (e) => {
@@ -1243,10 +1180,6 @@ export function Inventory(props) {
     setBulkScanIsOpen(true);
   };
 
-  const handleBulkScanClose = () => {
-    setBulkScanIsOpen(false);
-  };
-
   const renderAllMatchingParts = (part, metadataParts) => {
     return (
       <Table compact celled selectable size="small" className="partstable">
@@ -1389,9 +1322,11 @@ export function Inventory(props) {
     await fetchPart(part.partNumber);
   };
 
-  const onSubmitScannedParts = async (e) => {
+  const handleSaveScannedParts = async (e, scannedParts) => {
     e.preventDefault();
     e.stopPropagation();
+    if (scannedParts.length === 0)
+      return true;
     setBulkScanSaving(true);
     const request = {
       parts: scannedParts
@@ -1406,27 +1341,12 @@ export function Inventory(props) {
     if (response.responseObject.status === 200) {
       const { data } = response;
       toast.success(t('message.addXParts', "Added {{count}} new parts!", {count: data.length}));
+      setBulkScanIsOpen(false);
+      setBulkScanSaving(false);
+      return true;
     }
-    localStorage.setItem("scannedPartsSerialized", JSON.stringify([]));
-    setBulkScanIsOpen(false);
-    setScannedParts([]);
     setBulkScanSaving(false);
-  };
-
-  const handleScannedPartChange = (e, control, scannedPart) => {
-    e.preventDefault();
-    e.stopPropagation();
-    scannedPart[control.name] = control.value;
-    setScannedParts([...scannedParts]);
-    setIsDirty(true);
-  };
-
-  const deleteScannedPart = (e, scannedPart) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const scannedPartsDeleted = _.without(scannedParts, _.findWhere(scannedParts, { partNumber: scannedPart.partNumber }));
-    localStorage.setItem("scannedPartsSerialized", JSON.stringify(scannedPartsDeleted));
-    setScannedParts(scannedPartsDeleted);
+    return false;
   };
 
   const handleDeletePart = async (e) => {
@@ -1534,20 +1454,6 @@ export function Inventory(props) {
     setSelectedLocalFile(null);
   };
 
-  const onScannedInputKeyDown = (e, scannedPart) => {
-    if (e.keyCode === 13) {
-      // copy downward
-      let beginCopy = false;
-      scannedParts.forEach((part) => {
-        if (part.partName === scannedPart.partName) beginCopy = true;
-        if (beginCopy && part[e.target.name] === "") {
-          part[e.target.name] = scannedPart[e.target.name];
-        }
-      });
-      setScannedParts(scannedParts);
-    }
-  };
-
   const visitAnchor = (e, anchor) => {
     e.preventDefault();
     var redirectToURL = document.URL.replace(/#.*$/, "");
@@ -1571,21 +1477,6 @@ export function Inventory(props) {
     setDatasheetMeta(infoResponse.datasheets[activeIndex]);
   };
 
-  const handleAddBulkScanRow = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setScannedParts([...scannedParts, {
-      basePartNumber: '',
-      partNumber: '',
-      quantity: 1,
-      description: '',
-      origin: '',
-      location: '',
-      binNumber: '',
-      binNumber2: ''
-     }]);
-  };
-
   const handleShowAddPartSupplier = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1605,111 +1496,7 @@ export function Inventory(props) {
     setInputPartNumber(value);
   };
 
-  const renderScannedParts = (scannedParts, highlightScannedPart) => {
-    if (highlightScannedPart) {
-      // reset the css highlight animation
-      setTimeout(() => {
-        const elements = document.getElementsByClassName("scannedPartAnimation");
-        for (let i = 0; i < elements.length; i++) {
-          elements[i].classList.add("lastScannedPart");
-          if (elements[i].classList.contains("scannedPartAnimation")) elements[i].classList.remove("scannedPartAnimation");
-        }
-      }, 750);
-    }
-    return (
-      <Form className="notdroptarget">
-        <Table compact celled striped size="small">
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.description', "Description")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.origin', "Origin")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.location', "Location")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.binNumber', "Bin Number")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.binNumber2', "Bin Number 2")}</Table.HeaderCell>
-              <Table.HeaderCell width={1}></Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {scannedParts.map((p, index) => (
-              <Table.Row
-                key={index}
-                className={highlightScannedPart && p.partNumber === highlightScannedPart.partNumber ? `scannedPartAnimation ${Math.random()}` : ""}
-              >
-                <Table.Cell collapsing style={{maxWidth: '200px'}}>
-                  <Form.Input 
-                    name="partNumber" 
-                    value={p.partNumber || ''} 
-                    onChange={(e, c) => handleScannedPartChange(e, c, p)} 
-                    onFocus={disableKeyboardListening} 
-                    onBlur={e => { enableKeyboardListening(); fetchBarcodeMetadata(e, p.partNumber); }} 
-                  />
-                </Table.Cell>
-                <Table.Cell collapsing>
-                  <Form.Input
-                    width={10}
-                    value={p.quantity || '1'}
-                    onChange={(e, c) => handleScannedPartChange(e, c, p)}
-                    name="quantity"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
-                  />
-                </Table.Cell>
-                <Table.Cell collapsing className="ellipsis" style={{maxWidth: '200px'}}>
-                  <Popup 
-                    wide
-                    hoverable
-                    content={<p>{p.description}</p>}
-                    trigger={<Form.Input name="description" value={p.description || ''} onChange={(e, c) => handleScannedPartChange(e, c, p)} onFocus={disableKeyboardListening} onBlur={enableKeyboardListening} />}
-                  />                  
-                </Table.Cell>
-                <Table.Cell collapsing textAlign="center" verticalAlign="middle" width={1}>
-                  <Flag name={p.origin || ""} />
-                </Table.Cell>
-                <Table.Cell collapsing>
-                  <Form.Input
-                    width={16}
-                    placeholder={t('page.inventory.placeholder.location', "Home lab")}
-                    value={p.location || ''}
-                    onChange={(e, c) => handleScannedPartChange(e, c, p)}
-                    name="location"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
-                  />
-                </Table.Cell>
-                <Table.Cell collapsing>
-                  <Form.Input
-                    width={14}
-                    placeholder=""
-                    value={p.binNumber || ''}
-                    onChange={(e, c) => handleScannedPartChange(e, c, p)}
-                    name="binNumber"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
-                  />
-                </Table.Cell>
-                <Table.Cell collapsing>
-                  <Form.Input
-                    width={14}
-                    placeholder=""
-                    value={p.binNumber2 || ''}
-                    onChange={(e, c) => handleScannedPartChange(e, c, p)}
-                    name="binNumber2"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
-                  />
-                </Table.Cell>
-                <Table.Cell collapsing textAlign="center" verticalAlign="middle">
-                  <Button type="button" circular size="mini" icon="delete" title="Delete" onClick={(e) => deleteScannedPart(e, p)} />
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
-      </Form>
-    );
-  };
+  
 
   const renderRecentParts = (recentParts) => {
     return (
@@ -1782,11 +1569,20 @@ export function Inventory(props) {
         onConfirm={handleDeleteLocalFile}
         content={confirmLocalFileDeleteContent}
       />
+      <BulkScanModal 
+        isOpen={bulkScanIsOpen} 
+        onClose={() => setBulkScanIsOpen(false)}
+        barcodeInput={scannedPartsBarcodeInput} 
+        isBulkScanSaving={isBulkScanSaving} 
+        onSave={handleSaveScannedParts} 
+        onFetchBarcodeMetadata={fetchBarcodeMetadata} 
+        onGetPartMetadata={getPartMetadata} 
+      />
 
       {/* FORM START */}
 
       <Form onSubmit={e => onSubmit(e, part)} className="inventory">
-        {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} passThrough={keyboardPassThrough} minInputLength={3} /> }
+        {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} /> }
         {part && part.partId > 0 && (
           <Button
             type="button"
@@ -1863,7 +1659,7 @@ export function Inventory(props) {
               {/** LEFT COLUMN */}
               <Form.Group>
                 <Form.Field>
-                  <Form.Input
+                  <ProtectedInput
                     label={t('label.part', "Part")}
                     required
                     placeholder="LM358"
@@ -1872,14 +1668,10 @@ export function Inventory(props) {
                     value={inputPartNumber || ""}
                     onChange={handleInputPartNumberChange}
                     name="inputPartNumber"
-                    onFocus={disableKeyboardListening}
-                    onBlur={enableKeyboardListening}
                     onKeyDown={handleInputPartNumberKeyDown}
-                    icon
-                  >
-                    <input ref={partInputPartNumberRef} />
-                    <Icon name="search" />
-                  </Form.Input>
+                    icon="search"
+                    id="inputPartNumber"
+                  />
                   {!isEditing && part.partNumber && part.partNumber !== inputPartNumber && <div className="suggested-part">{<span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
                   {!isEditing && partExistsInInventory && <div className="suggested-part">This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.</div>}
                 </Form.Field>
@@ -2140,9 +1932,21 @@ export function Inventory(props) {
                     onFocus={disableKeyboardListening}
                     onBlur={enableKeyboardListening}
                   />
-                  <Image src={part.imageUrl} size="tiny" />
+                  <Form.Field style={{textAlign: 'right'}}>
+                    <Image src={part.imageUrl} size="tiny" />
+                  </Form.Field>
                 </Form.Group>
-                <Form.Field width={10}>
+                <Form.Field
+                  width={16}
+                  control={TextArea}
+                  label={t('label.description', "Description")}
+                  value={part.description || ""}
+                  onChange={handleChange}
+                  name="description"
+                  onFocus={disableKeyboardListening}
+                  onBlur={enableKeyboardListening}
+                />
+                <Form.Field width={16}>
                   <label>{t('label.keywords', "Keywords")}</label>
                   <Input
                     icon="tags"
@@ -2157,7 +1961,7 @@ export function Inventory(props) {
                     onBlur={enableKeyboardListening}
                   />
                 </Form.Field>
-                <Form.Field width={4}>
+                <Form.Field width={8}>
                   <label>{t('label.packageType', "Package Type")}</label>
                   <Input
                     placeholder="DIP8"
@@ -2168,16 +1972,6 @@ export function Inventory(props) {
                     onBlur={enableKeyboardListening}
                   />
                 </Form.Field>
-                <Form.Field
-                  width={10}
-                  control={TextArea}
-                  label={t('label.description', "Description")}
-                  value={part.description || ""}
-                  onChange={handleChange}
-                  name="description"
-                  onFocus={disableKeyboardListening}
-                  onBlur={enableKeyboardListening}
-                />
               </Segment>
 
               {/* Part Preferences */}
@@ -2516,60 +2310,6 @@ export function Inventory(props) {
             </Grid.Column>
           </Grid.Row>
         </Grid>
-
-        <Modal centered open={bulkScanIsOpen} onClose={handleBulkScanClose}>
-          <Modal.Header>{t('page.inventory.bulkScan', "Bulk Scan")}</Modal.Header>
-          <Modal.Content>
-            <div style={{ width: "200px", height: "100px", margin: "auto" }}>
-              <div className="anim-box">
-                <div className="scanner animated" />
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-              </div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <p>{t('page.inventory.startScanning', "Start scanning parts...")}</p>
-              <div style={{textAlign: 'right', height: '35px', width: '100%'}}>
-                <Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" /> {t('button.manualAdd', "Manual Add")}</Button>
-              </div>
-              {renderScannedParts(scannedParts, highlightScannedPart)}
-            </div>
-          </Modal.Content>
-          <Modal.Actions>
-            <Button onClick={handleBulkScanClose}>{t('button.cancel', "Cancel")}</Button>
-            <Button primary onClick={onSubmitScannedParts} disabled={bulkScanSaving}>
-            {t('button.save', "Save")}
-            </Button>
-          </Modal.Actions>
-        </Modal>
       </Form>
       <br />
       <div style={{ marginTop: "20px" }}>

@@ -9,7 +9,7 @@ import _ from "underscore";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { fetchApi } from "../common/fetchApi";
-import { AppEvents, Events } from "../common/events";
+import { getLocalData, setLocalData } from "../common/storage";
 import { formatCurrency } from "../common/Utils";
 import { getIcon } from "../common/partTypes";
 import "./PartsGrid2.css";
@@ -33,31 +33,11 @@ export default function PartsGrid2(props) {
   const location = useLocation();
 
   const getViewPreference = (preferenceName) => {
-    const preferences = JSON.parse(localStorage.getItem(`partsGridViewPreferences`));
-    if (preferences) {
-      const prefLocation = props.settingsName || location.pathname?.toLowerCase().replaceAll('/', '') || 'root';
-      const prefLocationSettings = preferences[prefLocation];
-      if (prefLocationSettings){
-        const val = prefLocationSettings[preferenceName];
-        return val;
-      }
-    }
-    return null;
+    return getLocalData(preferenceName, { settingsName: 'partsGridViewPreferences', location })
   };
 
   const setViewPreference = (preferenceName, value) => {
-    /**
-     {
-      location: {
-        // preferences
-      }
-     }
-     */
-    const currentViewPreferences = JSON.parse(localStorage.getItem(`partsGridViewPreferences`))
-    const prefLocation = props.settingsName || location.pathname?.toLowerCase().replaceAll('/', '') || 'root';
-    let newViewPreferences = {...currentViewPreferences };
-    newViewPreferences[prefLocation] = {...newViewPreferences[prefLocation], [preferenceName]: value};
-    localStorage.setItem('partsGridViewPreferences', JSON.stringify(newViewPreferences));
+    setLocalData(preferenceName, value, { settingsName: 'partsGridViewPreferences', location });
   };
 
   const createDefaultVisibleColumns = (columns, defaultVisibleColumns) => {
@@ -72,7 +52,7 @@ export default function PartsGrid2(props) {
 
   const [parts, setParts] = useState(props.parts);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(getViewPreference('pageSize') || 25);
   const [totalPages, setTotalPages] = useState(props.totalPages);
   const [isLoading, setIsLoading] = useState(props.loading);
   const [selectedPart, setSelectedPart] = useState(props.selectedPart);
@@ -265,6 +245,7 @@ export default function PartsGrid2(props) {
 
   const handlePageSizeChange = (e, control) => {
     setPageSize(control.value);
+    setViewPreference('pageSize', control.value);
     if (props.onPageSizeChange) props.onPageSizeChange(e, control.value);
   };
 
@@ -438,16 +419,23 @@ export default function PartsGrid2(props) {
   };
 
   return (
-    <div>
+    <div id="partsGrid">
       <style>{mediaStyles}</style>
       <MediaContextProvider>
-        <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em" }}>
-          <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="small labeled" onChange={handlePageSizeChange} />
-          <span>{t("comp.partsGrid.recordsPerPage", "records per page")}</span>
+        <div className="header">
+          <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" />
+          <div>
+            <span>Total records: {props.totalRecords}</span>
+          </div>
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="labeled" onChange={handlePageSizeChange} style={{width: '75px', minWidth: '75px', marginRight: '10px'}} />
+            <div>
+              <span>{t("comp.partsGrid.recordsPerPage", "records per page")}</span>
+            </div>
+          </div>
         </div>
-        <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" />
 
-        <div id="partsGrid" style={{marginTop: '5px'}}>
+        <div style={{marginTop: '5px'}}>
           {<MaterialReactTable
             columns={tableColumns}
             data={parts}
@@ -517,6 +505,8 @@ PartsGrid2.propTypes = {
   page: PropTypes.number.isRequired,
   /** Total pages */
   totalPages: PropTypes.number.isRequired,
+  /** Total records */
+  totalRecords: PropTypes.number,
   /** True if loading data */
   loading: PropTypes.bool,
   /** List of columns to display */
@@ -543,6 +533,7 @@ PartsGrid2.defaultProps = {
   defaultVisibleColumns: "partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
   page: 1,
   totalPages: 1,
+  totalRecords: 0,
   editable: true,
   visitable: true
 };

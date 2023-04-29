@@ -163,7 +163,7 @@ export default function PartTypeSelector(props) {
             key={key}
             data={children[i]}
             labelText={partTypeName}
-            labelIcon={() => getIcon(partTypeName, basePartTypeName)({className: `parttype-${basePartTypeName || partTypeName}`})}
+            labelIcon={() => getIcon(partTypeName, basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
             labelInfo={`${children[i].parts}`}
             labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
             labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
@@ -237,16 +237,26 @@ export default function PartTypeSelector(props) {
   };
 
   const getSelectedText = (partType) => {
-    // this currently generates a UI error but it renders correctly, so we are ignoring the issue for now.
-    if (partType)
-      return (<span>{partType && getIcon(partType?.name, partType?.parentPartTypeId && _.find(partTypes, x => x.partTypeId === partType?.parentPartTypeId)?.name)()} {partType?.name || ""}</span>);
+    if (partType) {
+      return partType?.name || "";
+    }
+    return "";
+  };
+
+  const getSelectedIcon = (partType) => {
+    if (partType) {
+      const basePartTypeName = partType?.parentPartTypeId && _.find(partTypes, x => x.partTypeId === partType?.parentPartTypeId)?.name;
+      const partTypeName = partType?.name;
+      return (partType && getIcon(partType?.name, basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`}));
+    }
     return "";
   };
 
   return (
     <>
 			<label>{props.label}</label>
-			<div>
+			<div className="partTypeSelector-container">
+        <div className="icon">{getSelectedIcon(partType)}</div>
 				<Dropdown
 					id="partTypeDropdown"
 					name={props.name || ""} 

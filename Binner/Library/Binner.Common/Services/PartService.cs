@@ -612,15 +612,7 @@ namespace Binner.Common.Services
                     }
                     else
                     {
-                        response.Parts.Add(new CommonPart
-                        {
-                            Supplier = "DigiKey",
-                            SupplierPartNumber = digikeyResponse.DigiKeyPartNumber,
-                            Manufacturer = digikeyResponse.ManufacturerName,
-                            ManufacturerPartNumber = digikeyResponse.ManufacturerPartNumber,
-                            Description = digikeyResponse.ProductDescription,
-                            QuantityAvailable = digikeyResponse.Quantity
-                        });
+                        return ServiceResult<PartResults>.NotFound();
                     }
                 }
             }

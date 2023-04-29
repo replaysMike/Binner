@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import { Input, Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
+import ProtectedInput from "../components/ProtectedInput";
 import { getQueryVariable } from "../common/query";
 import PartsGrid2 from "../components/PartsGrid2";
 import { fetchApi } from "../common/fetchApi";
@@ -27,7 +28,7 @@ export function Search(props) {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [loading, setLoading] = useState(true);
-  const [isKeyboardListening, setIsKeyboardListening] = useState(true);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
@@ -39,14 +40,6 @@ export function Search(props) {
     }
     setKeyword(partNumber);
     search(partNumber);
-  };
-
-  const enableKeyboardListening = () => {
-    setIsKeyboardListening(true);
-  };
-
-  const disableKeyboardListening = () => {
-    setIsKeyboardListening(false);
   };
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
@@ -62,12 +55,12 @@ export function Search(props) {
     setParts(newData);
     setPage(page);
     setTotalPages(totalPages);
+    setTotalRecords(data.totalItems);
     setLoading(false);
     return response;
   };
 
   const search = async (keyword) => {
-    console.log('search', keyword);
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
 
@@ -90,9 +83,10 @@ export function Search(props) {
           setLoading(false);
         }
       }).catch((response) => {
-        if (response.status === 404){
+        if (response.responseObject.status === 404){
           // part not found
-          this.setState({ parts: [], loading: false, noRemainingData: true });
+          setParts([]);
+          setLoading(false);
         }
       });
     } catch (ex) {
@@ -190,7 +184,7 @@ export function Search(props) {
 
   return (
     <div>
-      <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={3} />
+      <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={3} />
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -200,15 +194,14 @@ export function Search(props) {
 			</FormHeader>
       <Form>
         <Form.Field width={5}>
-          <Input            
+          <ProtectedInput            
+            focus
             placeholder={t('page.search.search', "Search")}
             icon="search"
-            focus
             value={keyword}
             onChange={handleSearch}
             name="keyword"
-            onFocus={disableKeyboardListening}
-            onBlur={enableKeyboardListening}
+            clearOnScan={false}
           />
         </Form.Field>
       </Form>
@@ -224,6 +217,7 @@ export function Search(props) {
         parts={parts}
         page={page}
         totalPages={totalPages}
+        totalRecords={totalRecords}
         loading={loading}
         loadPage={handleNextPage}
         onPartClick={handlePartClick}

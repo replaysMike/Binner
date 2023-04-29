@@ -4,9 +4,17 @@ export const AppEvents = {
 /**
  * Send an application event
  * @param {string} eventHandler Name of event to send
+ * @param {object} args Optional arguments, stored in the detail portion of the event
+ * @param {string} source The source that initiated the event
+ * @param {string} destination The destination the event should be received by
  */
-	sendEvent: (eventHandler, args = null) => {
-		document.body.dispatchEvent(new CustomEvent(eventHandler, { detail: args }));
+	sendEvent: (eventHandler, args = null, source = null, destination = null) => {
+		const parameters = {
+			...args,
+			source: source, 
+			destination: destination
+		}
+		document.body.dispatchEvent(new CustomEvent(eventHandler, {detail: parameters }));
 	}
 
 };
@@ -29,6 +37,10 @@ export const Events = {
 	 * A barcode is being read
 	*/
 	BarcodeReading: 'barcodeReading',
+	/** 
+	 * A barcode read operation was cancelled
+	 */
+	BarcodeReadingCancelled: 'barcodeReadingCancelled',
 	/** 
 	 * A barcode was received
 	 */

@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Route, Routes } from "react-router";
 import { useSearchParams } from "react-router-dom";
 import { createBrowserHistory as createHistory } from "history";
-import { ErrorContext } from "./common/ErrorContext";
 import { toast } from "react-toastify";
 
 // routing

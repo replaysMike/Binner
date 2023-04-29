@@ -46,6 +46,15 @@
             ApiName = apiName;
         }
 
+        /// <summary>
+        /// No results found, but not an error state.
+        /// </summary>
+        /// <returns></returns>
+        public static ServiceResult<T> NotFound()
+        {
+            return new ServiceResult<T>(Activator.CreateInstance<T>());
+        }
+
         public static ServiceResult<T> Create(T response)
         {
             return new ServiceResult<T>(response);

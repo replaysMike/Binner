@@ -675,7 +675,8 @@
     "addXParts": "Added {{count}} new parts!",
     "savedPart": "Saved part {{partNumber}}!",
     "addedPart": "Added part {{partNumber}}!",
-    "failedSavePart": "Failed to update, check Part Type and Mounting Type"
+    "failedSavePart": "Failed to update, check Part Type and Mounting Type",
+    "noPartMetadata": "No part metadata found!"
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
@@ -780,5 +781,6 @@
     "white": "White",
     "gold": "Gold",
     "silver": "Silver"
-  }
+  },
+  "noop": "-do-not-translate-"
 }

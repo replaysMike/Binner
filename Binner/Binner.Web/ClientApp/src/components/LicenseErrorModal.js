@@ -24,9 +24,9 @@ export default function LicenseErrorModal(props) {
 
   if (context) {
     return (
-      <Modal centered open={hasErrorMessage(context.errorMessage)} onClose={handleCloseErrorModal} className="licensing-modal">
+      <Modal centered open={hasErrorMessage(context.errorMessage)} onClose={handleCloseErrorModal} className="licensing-modal" dimmer="blurring">
         <Modal.Header>{context.modalTitle}</Modal.Header>
-        <Modal.Content scrolling image dimmer="blurring">
+        <Modal.Content scrolling image>
           <Image size="medium" src="/image/limited.png" wrapped />
           <Modal.Description>
             <div>

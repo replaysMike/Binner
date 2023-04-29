@@ -627,30 +627,13 @@ section.formHeader {
 }
 
 .lastScannedPart {
-    background-color: #dff1fe !important;
+    transition-duration: 1s;
+    transition-property: background-color;
+    background-color: #dff1fe;
 }
 
-.scannedPartAnimation {
-    animation-name: highlight;
-    animation-duration: 0.75s;
-    animation-timing-function: linear;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-    animation-play-state: running;
-}
-
-@keyframes highlight {
-    0% {
-        background-color: #ffffff;
-    }
-
-    50% {
-        background-color: #2185d0;
-    }
-
-    100% {
-        background-color: #ffffff;
-    }
+.lastScannedPart.scannedPartAnimation {
+    background-color: #2185d0;
 }
 
 /* segment */
@@ -845,43 +828,43 @@ section.formHeader {
 
 /* Icon hover colors */
 
-.MuiBox-root svg.parttype-LED:hover,.icon-container svg.parttype-LED:hover {
+svg.parttype-LED:hover,.icon-container svg.parttype-LED:hover {
     color: #f00 !important;
 }
 
-.MuiBox-root svg.parttype-Evaluation:hover,.icon-container svg.parttype-Evaluation:hover {
+svg.parttype-Evaluation:hover,.icon-container svg.parttype-Evaluation:hover {
     color: #0a0 !important;
 }
 
-.MuiBox-root svg.parttype-Hardware:hover,.icon-container svg.parttype-Hardware:hover {
+svg.parttype-Hardware:hover,.icon-container svg.parttype-Hardware:hover {
     color: #06a !important;
 }
 
-.MuiBox-root svg.parttype-Transistor:hover,.icon-container svg.parttype-Transistor:hover {
+svg.parttype-Transistor:hover,.icon-container svg.parttype-Transistor:hover {
     color: #000 !important;
 }
 
-.MuiBox-root svg.parttype-Capacitor:hover,.icon-container svg.parttype-Capacitor:hover {
+svg.parttype-Capacitor:hover,.icon-container svg.parttype-Capacitor:hover {
     color: #c0c !important;
 }
 
-.MuiBox-root svg.parttype-Resistor:hover,.icon-container svg.parttype-Resistor:hover {
+svg.parttype-Resistor:hover,.icon-container svg.parttype-Resistor:hover {
     color: rgb(248, 248, 149) !important;
 }
 
-.MuiBox-root svg.parttype-Relay:hover,.icon-container svg.parttype-Relay:hover {
+svg.parttype-Relay:hover,.icon-container svg.parttype-Relay:hover {
     color: #08a !important;
 }
 
-.MuiBox-root svg.parttype-IC:hover,.icon-container svg.parttype-IC:hover {
+svg.parttype-IC:hover,.icon-container svg.parttype-IC:hover {
     color: #000 !important;
 }
 
-.MuiBox-root svg.parttype-Diode:hover,.icon-container svg.parttype-Diode:hover {
+svg.parttype-Diode:hover,.icon-container svg.parttype-Diode:hover {
     color: #000 !important;
 }
 
-.MuiBox-root svg.parttype-Crystal:hover,.icon-container svg.parttype-Crystal:hover {
+svg.parttype-Crystal:hover,.icon-container svg.parttype-Crystal:hover {
     color: #ccc !important;
 }
 
@@ -889,10 +872,27 @@ section.formHeader {
 :root {
     --toastify-toast-width: 50%;
     --toastify-color-error: #e02a15;
-    --toastify-color-warning: #f1e20f;
+    --toastify-color-warning: #f5ec76;
     --toastify-color-info: #1b59dd;
+    --toastify-text-color-warning: #000;
 }
 
 .Toastify .Toastify__toast-container:has(#wide) {
     --toastify-toast-width: 70% !important;
+}
+
+.Toastify__toast-container--top-center {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.Toastify__toast {
+    /* gives more room to the top header controls */
+    margin-bottom: 0.5em;
+}
+
+div:has(.popup),div:has(.Toastify>*) {
+    -webkit-filter: none !important;
+    filter: none !important;
 }

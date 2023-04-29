@@ -14,7 +14,6 @@ export function BarcodeScanner(props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [barcodeValue, setBarcodeValue] = useState(t('page.barcodeScanner.waitingForInput', "Waiting for input..."));
   const [rsDetected, setRsDetected] = useState(false);
   const [gsDetected, setGsDetected] = useState(false);
@@ -24,19 +23,12 @@ export function BarcodeScanner(props) {
   const [customBufferTime, setCustomBufferTime] = useState(0);
   const [configOverride, setConfigOverride] = useState(null);
   const [dummy, setDummy] = useState(null);
+  const [dummy2, setDummy2] = useState(null);
   const [unprotectedDummy, setUnprotectedDummy] = useState(null);
   const [unprotectedDummyStartTime, setUnprotectedDummyStartTime] = useState(null);
   const [dummyStartTime, setDummyStartTime] = useState(null);
   const dummyTimerRef = useRef();
   const unprotectedDummyTimerRef = useRef();
-
-  const enableKeyboardListening = () => {
-    setIsKeyboardListening(true);
-  };
-
-  const disableKeyboardListening = () => {
-    setIsKeyboardListening(false);
-  };
 
   const handleSetConfig = (config) => {
     setConfig(config);
@@ -50,12 +42,15 @@ export function BarcodeScanner(props) {
         setConfigOverride({...control, bufferTime: timeSpanFromMilliseconds(parseInt(control.value))})
         break;
       case 'dummy':
-        // console.log('dummy onChange', control.value);
+        // measure how long a barcode scan event takes
         if (dummy === null || dummy.length === 0) setDummyStartTime(new Date().getTime());
         clearTimeout(dummyTimerRef.current);
         dummyTimerRef.current = setTimeout(() => { console.log('Dummy took', new Date().getTime() - dummyStartTime - 500); }, 500);
         setDummy(control.value);
         break;
+      case 'dummy2':
+          setDummy2(control.value);
+          break;
       case 'unprotectedDummy':
         if (unprotectedDummy === null || unprotectedDummy.length === 0) setUnprotectedDummyStartTime(new Date().getTime());
         console.log('unprotectedDummy onChange', control.value);
@@ -122,12 +117,29 @@ export function BarcodeScanner(props) {
 
   return (
     <div>
-      <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} swallowKeyEvent={false} config={configOverride} onSetConfig={handleSetConfig} />
+      <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} config={configOverride} onSetConfig={handleSetConfig} />
       <h1>{t('page.barcodeScanner.title', "Barcode Scanner")}</h1>
       <p>{t('page.barcodeScanner.description', "Test your barcode scanner to see what values it outputs.")}</p>
       <Form>
         <div>
-          <ProtectedInput name="dummy" icon placeholder="A protected input text box that can handle barcode events" value={dummy || ''} onChange={handleChange} />
+          <ProtectedInput 
+            name="dummy" 
+            icon="search"
+            iconPosition="left"
+            placeholder="A protected input text box that can handle barcode events" 
+            value={dummy || ''} 
+            onChange={handleChange}
+            focus
+            />
+          <ProtectedInput 
+            name="dummy2" 
+            icon="search"
+            iconPosition="left"
+            placeholder="A protected input text box that can handle barcode events" 
+            value={dummy2 || ''} 
+            onChange={handleChange}
+            focus
+            />
           <Form.Input name="unprotectedDummy" placeholder="A regular unprotected input text box" value={unprotectedDummy || ''} onChange={handleChange} />
           <code><pre>{barcodeObject}</pre></code>
           <h5>Barcode Config</h5>

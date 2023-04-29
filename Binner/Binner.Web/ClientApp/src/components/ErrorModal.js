@@ -33,9 +33,9 @@ export default function ErrorModal(props) {
 		}
 	
     return (
-      <Modal centered open={hasErrorMessage(context.errorMessage)} onClose={handleCloseErrorModal} className="error-modal">
+      <Modal centered open={hasErrorMessage(context.errorMessage)} onClose={handleCloseErrorModal} className="error-modal" dimmer="blurring">
         <Modal.Header>{context.modalTitle}</Modal.Header>
-        <Modal.Content dimmer="blurring">
+        <Modal.Content>
           <Modal.Description>
             <div>
               {context.header && <h1>{context.header}</h1>}

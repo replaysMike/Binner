@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
@@ -42,6 +42,7 @@ export function PartTypes(props) {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [btnAddDisabled, setBtnAddDisabled] = useState(true);
   const [modalContext, setModalContext] = useState(null);
+  const [updateTreeView, setUpdateTreeView] = useState(true);
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setLoading(true);
@@ -52,6 +53,7 @@ export function PartTypes(props) {
       setPartTypes(data);
       setPartTypesFiltered(data);
       setLoading(false);
+      setUpdateTreeView(!updateTreeView);
     });
   }, []);
 
@@ -63,8 +65,7 @@ export function PartTypes(props) {
     e.preventDefault();
     e.stopPropagation();
     partType[control.name] = control.value;
-    const newPartType = { ...partType };
-    setPartType(newPartType);
+    setPartType({...partType});
     if (control.value.length === 0) 
       setBtnAddDisabled(true);
     else
@@ -83,6 +84,7 @@ export function PartTypes(props) {
     }else{
       setExpandedNodeIds([]);
     }
+    setUpdateTreeView(!updateTreeView);
   };
 
   const handleNewPartTypeNameChange = (e, control) => {
@@ -110,6 +112,7 @@ export function PartTypes(props) {
       // reset form
       setPartType(defaultPartType);
       setAddVisible(false);
+      setUpdateTreeView(!updateTreeView);
       toast.success(t("success.addedPartType", "Added part type {{name}}", { name: response.data.name }));
       loadPartTypes(response.data.parentPartType);
     } else {
@@ -135,6 +138,7 @@ export function PartTypes(props) {
         setPartTypesFiltered(partTypesDeleted);
         if (parentPartType) loadPartTypes(parentPartType.name);
         else loadPartTypes();
+        setUpdateTreeView(!updateTreeView);
         toast.success(t("success.deletedPartType", "Deleted part type {{name}}", { name: partType.name }));
       } else {
         toast.error(t("error.failedDeletedPartType", "Failed to delete part type {{name}}", { name: partType.name }));
@@ -161,6 +165,7 @@ export function PartTypes(props) {
       const sortedPartTypes = _.sortBy(newPartTypes, i => i.name);
       setPartTypes(sortedPartTypes);
       setPartTypesFiltered(sortedPartTypes);
+      setUpdateTreeView(!updateTreeView);
 
       toast.success(t("success.savedPartType", "Saved part type {{name}}", { name: response.data.name }));
     } else {
@@ -368,7 +373,7 @@ export function PartTypes(props) {
               key={key}
               data={children[i]}
               labelText={partTypeName}
-              labelIcon={() => getIcon(partTypeName, children[i].parentPartTypeId && basePartTypeName)({className: `parttype-${basePartTypeName || partTypeName}`})}
+              labelIcon={() => getIcon(partTypeName, children[i].parentPartTypeId && basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
               labelInfo={`${children[i].parts}`}
               labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
               labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
@@ -421,7 +426,24 @@ export function PartTypes(props) {
 
   const handlePartTypeSelectorChange = (e, newParentPartType) => {
     setPartType({...partType, parentPartTypeId: newParentPartType.partTypeId});
-  }
+  };
+
+  const renderTreeView = useMemo(() => {
+    console.log('render');
+    return (
+      <TreeView
+        className="partTypesTreeView"
+        defaultCollapseIcon={<ArrowDropDownIcon />}
+        defaultExpandIcon={<ArrowRightIcon />}
+        defaultEndIcon={<div style={{ width: 24 }} />}
+        onNodeSelect={handleOnNodeSelect}
+        onNodeToggle={handleOnNodeToggle}
+        expanded={expandedNodeIds}
+        sx={{ height: 500, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
+      >
+        {recursiveTreeItem(partTypesFiltered).map((x) => x)}
+      </TreeView>);
+  }, [updateTreeView, expandedNodeIds, partTypesFiltered]);
 
   return (
     <div>
@@ -537,18 +559,7 @@ export function PartTypes(props) {
 
         <Input name="search" placeholder="Search..." icon="search" onChange={handleSearchChange} style={{marginTop: '5px', marginBottom: '10px', width: '300px'}} />
         {/** https://mui.com/material-ui/react-tree-view/ */}
-        <TreeView
-          className="partTypesTreeView"
-          defaultCollapseIcon={<ArrowDropDownIcon />}
-          defaultExpandIcon={<ArrowRightIcon />}
-          defaultEndIcon={<div style={{ width: 24 }} />}
-          onNodeSelect={handleOnNodeSelect}
-          onNodeToggle={handleOnNodeToggle}
-          expanded={expandedNodeIds}
-          sx={{ height: 500, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
-        >
-          {recursiveTreeItem(partTypesFiltered).map((x) => x)}
-        </TreeView>
+        {renderTreeView}
       </Segment>
     </div>
   );
