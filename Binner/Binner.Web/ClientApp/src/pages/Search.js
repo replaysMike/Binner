@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "underscore";
 import debounce from "lodash.debounce";
-import { Input, Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
+import { Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
 import ProtectedInput from "../components/ProtectedInput";
-import { getQueryVariable } from "../common/query";
 import PartsGrid2 from "../components/PartsGrid2";
 import { fetchApi } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
@@ -13,38 +12,50 @@ import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import customEvents from '../common/customEvents';
 
 export function Search(props) {
+  const DebounceTimeMs = 400;
   const { t } = useTranslation();
   const navigate = useNavigate();
-  Search.abortController = new AbortController();
   const [searchParams] = useSearchParams();
+  const by = searchParams.get("by");
+  const byValue = searchParams.get("value");
+  const keywordParam = searchParams.get("keyword");
+  Search.abortController = new AbortController();
 
   const [parts, setParts] = useState([]);
-  const [keyword, setKeyword] = useState(getQueryVariable(window.location.search, "keyword") || "");
-  const [filterBy, setFilterBy] = useState(getQueryVariable(window.location.search, "by") || "");
-  const [filterByValue, setFilterByValue] = useState(getQueryVariable(window.location.search, "value") || "");
+  const [keyword, setKeyword] = useState(keywordParam || "");
+  const [filterBy, setFilterBy] = useState(by || "");
+  const [filterByValue, setFilterByValue] = useState(byValue || "");
   const [sortBy, setSortBy] = useState("DateCreatedUtc");
   const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [renderIsDirty, setRenderIsDirty] = useState(true);
+  const [initComplete, setInitComplete] = useState(false);
+
+  const handleInit = (config) => {
+    setPageSize(config.pageSize);
+    setInitComplete(true);
+  };
 
   // debounced handler for processing barcode scanner input
-  const handleBarcodeInput = (e, input) => {
-    let partNumber = '';
+  const handleBarcodeInput = async (e, input) => {
+    let cleanPartNumber = "";
     if (input.type === "datamatrix") {
-      partNumber = input.value.mfgPartNumber;
-    } else {
-      partNumber = input.value;
+      if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
+      else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
+    } else if (input.type === "code128") {
+      cleanPartNumber = input.value;
     }
-    setKeyword(partNumber);
-    search(partNumber);
+    setKeyword(cleanPartNumber);
+    await searchDebounced(cleanPartNumber);
   };
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
     const response = await fetchApi(
-      `api/part/list?orderBy=${orderBy}&direction=${orderDirection}&results=${results}&page=${page}&by=${by}&value=${byValue}`
+      `api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by || ""}&value=${byValue || ""}`
     );
     const { data } = response;
     const pageOfData = data.items;
@@ -57,13 +68,13 @@ export function Search(props) {
     setTotalPages(totalPages);
     setTotalRecords(data.totalItems);
     setLoading(false);
+    setRenderIsDirty(!renderIsDirty);
     return response;
   };
 
-  const search = async (keyword) => {
+  const search = useCallback(async (keyword) => {
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
-
     // if there's a keyword we should clear binning (because they use different endpoints)
     setFilterBy("");
     setFilterByValue("");
@@ -71,7 +82,7 @@ export function Search(props) {
     setLoading(true);
 
     try {
-      await fetchApi(`api/part/search?keywords=${keyword}`, {
+      await fetchApi(`api/part/search?keywords=${keyword || ""}`, {
         signal: Search.abortController.signal,
       }).then((response) => {
         const { data } = response;
@@ -82,11 +93,13 @@ export function Search(props) {
           setParts([]);
           setLoading(false);
         }
+        setRenderIsDirty(!renderIsDirty);
       }).catch((response) => {
         if (response.responseObject.status === 404){
           // part not found
           setParts([]);
           setLoading(false);
+          setRenderIsDirty(!renderIsDirty);
         }
       });
     } catch (ex) {
@@ -95,39 +108,37 @@ export function Search(props) {
       }
       throw ex;
     }
-  };
+  }, [renderIsDirty]);
 
-  const searchDebounced = useMemo(() => debounce(search, 400), []);
+  const searchDebounced = useMemo(() => debounce(search, DebounceTimeMs), []);
 
   useEffect(() => {
     customEvents.notifySubscribers("avatar", true);
     return () => {
       customEvents.notifySubscribers("avatar", false);
     };
-  });
+  }, []);
 
   useEffect(() => {
-    const _keyword = searchParams.get("keyword");
-    const _by = searchParams.get("by");
-    const _byValue = searchParams.get("value");
-    if (_keyword !== keyword) {
-      if (_keyword && _keyword.length > 0) {
+    if (pageSize === -1) return;
+    if (keywordParam !== keyword) {
+      if (keywordParam && keywordParam.length > 0) {
         // if there's a keyword we should clear binning (because they use different endpoints)
-        setKeyword(_keyword);
+        setKeyword(keywordParam);
         setFilterBy("");
         setFilterByValue("");
         setPage(1);
-        search(_keyword);
-      } else if (_by && _by.length > 0) {
+        search(keywordParam);
+      } else if (by && by.length > 0) {
         // likewise, clear keyword if we're in a bin search
-        setFilterBy(_by);
-        setFilterByValue(_byValue);
+        setFilterBy(by);
+        setFilterByValue(byValue);
         setKeyword("");
         setPage(1);
-        loadParts(page, true, _by, _byValue);
+        loadParts(page, true, by, byValue, pageSize);
       } else {
         setPage(1);
-        loadParts(page, true, "", "");
+        loadParts(page, true, "", "", pageSize);
       }
     } else {
       if (keyword && keyword.length > 0) search(keyword);
@@ -137,27 +148,21 @@ export function Search(props) {
     return () => {
       Search.abortController.abort();
     };
-  }, [searchParams]);
+  }, [by, byValue, keywordParam, initComplete]);
 
   const handlePartClick = (e, part) => {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
-  const handleNextPage = (e, page) => {
-    loadParts(page, true);
+  const handleNextPage = async (e, page) => {
+    await loadParts(page, true);
   };
 
   const handleSearch = (e, control) => {
-    switch (control.name) {
-      case "keyword":
-        if (control.value && control.value.length > 0) {
-          searchDebounced(control.value);
-        } else {
-          loadParts(page, true);
-        }
-        break;
-      default:
-        break;
+    if (control.value && control.value.length > 0) {
+      searchDebounced(control.value);
+    } else {
+      loadParts(page, true);
     }
     setKeyword(control.value);
   };
@@ -182,9 +187,26 @@ export function Search(props) {
     return await loadParts(page, true, filterBy, filterByValue, pageSize, newSortBy, newSortDirection);
   };
 
+  const renderPartsTable = useMemo(() => {
+    return (<PartsGrid2
+        parts={parts}
+        page={page}
+        totalPages={totalPages}
+        totalRecords={totalRecords}
+        loading={loading}
+        loadPage={handleNextPage}
+        onPartClick={handlePartClick}
+        onPageSizeChange={handlePageSizeChange}
+        onSortChange={handleSortChange}
+        onInit={handleInit}
+        name="partsGrid"
+      >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2>);
+  }, [renderIsDirty, parts, page, totalPages, totalRecords, loading]);
+
+
   return (
     <div>
-      <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={3} />
+      <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} />
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -213,18 +235,7 @@ export function Search(props) {
           </Button>
         )}
       </div>
-      <PartsGrid2
-        parts={parts}
-        page={page}
-        totalPages={totalPages}
-        totalRecords={totalRecords}
-        loading={loading}
-        loadPage={handleNextPage}
-        onPartClick={handlePartClick}
-        onPageSizeChange={handlePageSizeChange}
-        onSortChange={handleSortChange}
-        name="partsGrid"
-      >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2>
+      {renderPartsTable}
     </div>
   );
 }

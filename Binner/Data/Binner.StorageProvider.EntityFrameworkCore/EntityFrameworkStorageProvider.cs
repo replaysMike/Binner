@@ -9,6 +9,7 @@ using Binner.Model;
 using Binner.Model.Responses;
 using DataModel = Binner.Data.Model;
 using Binner.LicensedProvider;
+using System;
 
 namespace Binner.StorageProvider.EntityFrameworkCore
 {
@@ -488,18 +489,18 @@ INNER JOIN (
         public async Task<PaginatedResponse<Part>> GetLowStockAsync(PaginatedRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            var pageRecords = (request.Page - 1) * request.Results;
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var totalItems = await context.Parts.CountAsync(x => x.Quantity <= x.LowStockThreshold && x.OrganizationId == userContext.OrganizationId);
-            var entitiesQueryable = context.Parts
-                .Where(x => x.Quantity <= x.LowStockThreshold && x.OrganizationId == userContext.OrganizationId);
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
-                if (request.Direction == SortDirection.Descending)
-                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
-                else
-                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+                // ensure camel case names, EF properties are case sensitive
+                request.OrderBy = request.OrderBy.UcFirst();
             }
+
+            var entitiesQueryable = await GetPartsQueryableAsync(context, request, userContext, x => x.Quantity <= x.LowStockThreshold);
+
+            var pageRecords = (request.Page - 1) * request.Results;
+            var totalItems = await entitiesQueryable.CountAsync();
+
             var entities = await entitiesQueryable
                 .Skip(pageRecords)
                 .Take(request.Results)
@@ -943,18 +944,7 @@ INNER JOIN (
             return _mapper.Map<Part?>(entity);
         }
 
-        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
-        {
-            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            if (request == null) throw new ArgumentNullException(nameof(request));
-            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            await using var context = await _contextFactory.CreateDbContextAsync();
-            if (!string.IsNullOrEmpty(request.OrderBy))
-            {
-                // ensure camel case names, EF properties are case sensitive
-                request.OrderBy = request.OrderBy.UcFirst();
-            }
-
+        private async Task<IQueryable<DataModel.Part>> GetPartsQueryableAsync(BinnerContext context, PaginatedRequest? request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null) {
             DataModel.PartType? partType = null;
             // special case for partTypes
             if (request.Value != null && request?.By.Equals("partType", StringComparison.InvariantCultureIgnoreCase) == true)
@@ -969,7 +959,6 @@ INNER JOIN (
                 if (partType == null) throw new ArgumentException($"Unknown part type: {request.Value}");
             }
 
-            var pageRecords = (request.Page - 1) * request.Results;
             var entitiesQueryable = context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId);
             var orderingApplied = false;
@@ -982,10 +971,13 @@ INNER JOIN (
                 // query all the children using a custom predicate builder
                 var predicate = PredicateBuilder.True<DataModel.Part>();
                 predicate = predicate.AND(x => x.PartTypeId == partType.PartTypeId);
+                if (additionalPredicate != null)
+                    predicate = predicate.AND(additionalPredicate);
                 foreach (var childPartType in allPartTypes)
                 {
                     predicate = predicate.OR(x => x.PartTypeId == childPartType.PartTypeId);
                 }
+
                 // apply the predicate
                 entitiesQueryable = entitiesQueryable.Where(predicate);
                 // apply sorting
@@ -1000,6 +992,8 @@ INNER JOIN (
             {
                 // build a normal where
                 entitiesQueryable = entitiesQueryable.WhereIf(!string.IsNullOrEmpty(request.By), x => EF.Property<string>(x, request.By!.UcFirst()) == request.Value);
+                if (additionalPredicate != null)
+                    entitiesQueryable = entitiesQueryable.Where(additionalPredicate);
             }
 
             // apply specified sorting
@@ -1011,6 +1005,24 @@ INNER JOIN (
                     entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
 
+            return entitiesQueryable;
+        }
+
+        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                // ensure camel case names, EF properties are case sensitive
+                request.OrderBy = request.OrderBy.UcFirst();
+            }
+
+            var entitiesQueryable = await GetPartsQueryableAsync(context, request, userContext);
+
+            var pageRecords = (request.Page - 1) * request.Results;
             var totalParts = await entitiesQueryable.CountAsync();
 
             List<DataModel.Part> entities;

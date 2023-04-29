@@ -96,6 +96,7 @@ export default function PartsGrid2(props) {
   }, []);
 
   useEffect(() => {
+    if (props.onInit) props.onInit({ pageSize});
     loadPartTypes();
   }, [loadPartTypes]);
 
@@ -157,26 +158,6 @@ export default function PartsGrid2(props) {
     setIsLoading(false);
     setLastSavedPartId(lastSavedPartId);
     setSaveMessage(saveMessage);
-  };
-
-  const saveColumn = async (e) => {
-    changeTracker.forEach(async (val) => {
-      const part = _.find(parts, { partId: val.partId });
-      if (part) await save(part);
-    });
-    setParts(parts);
-    setChangeTracker([]);
-  };
-
-  const handleChange = (e, control) => {
-    const part = _.find(parts, { partId: control.data });
-    let changes = [...changeTracker];
-    if (part) {
-      part[control.name] = control.value;
-      if (_.where(changes, { partId: part.partId }).length === 0) changes.push({ partId: part.partId });
-    }
-    setParts([...parts]);
-    setChangeTracker(changes);
   };
 
   const handleVisitLink = (e, url) => {
@@ -285,16 +266,11 @@ export default function PartsGrid2(props) {
   };  
 
   const tableColumns = useMemo(() => {
-    
-    const handleLoadPartClick = (e, part) => {
-      if (onPartClick) onPartClick(e, part);
-    };
-
     const handleSelfLink = (e, part, propertyName) => {
       e.preventDefault();
       e.stopPropagation();
       if (part[propertyName]) {
-        const url = `/inventory?by=${propertyName}&value=${part[propertyName]}`;
+        const url = `${props.visitUrl}?by=${propertyName}&value=${part[propertyName]}`;
         navigate(url);
       }
     };
@@ -329,7 +305,7 @@ export default function PartsGrid2(props) {
               <div onClick={e => handleSelfLink(e, row.original, columnName)}>
                 <div className="icon-container small">{getIconForPart(row.original)} 
                   <div>
-                    <Link to={`/inventory?by=partType&value=${row.original.partType}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
+                    <Link to={`${props.visitUrl}?by=partType&value=${row.original.partType}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
                       {row.original.partType}
                     </Link>
                   </div>
@@ -341,7 +317,7 @@ export default function PartsGrid2(props) {
         case 'location':
           return {...def, Cell: ({row}) => (
             <div onClick={e => handleSelfLink(e, row.original, columnName)}>
-              <Link to={`/inventory?by=${columnName}&value=${row.original[columnName]}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
+              <Link to={`${props.visitUrl}?by=${columnName}&value=${row.original[columnName]}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
                 <span className='truncate'>{row.original[columnName]}</span>
               </Link>
             </div>
@@ -524,7 +500,11 @@ PartsGrid2.propTypes = {
   /** True if links are exposed */
   visitable: PropTypes.bool,
   /** The name to save localized settings as */
-  settingsName: PropTypes.string
+  settingsName: PropTypes.string,
+  /** The link to use when clicking on items to filter by */
+  visitUrl: PropTypes.string,
+  /** Provides a function to get the default state */
+  onInit: PropTypes.func
 };
 
 PartsGrid2.defaultProps = {
@@ -535,5 +515,6 @@ PartsGrid2.defaultProps = {
   totalPages: 1,
   totalRecords: 0,
   editable: true,
-  visitable: true
+  visitable: true,
+  visitUrl: '/inventory'
 };

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
-import { Breadcrumb } from "semantic-ui-react";
+import { Breadcrumb, Button, Icon } from "semantic-ui-react";
 import PartsGrid2 from "../components/PartsGrid2";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from '../common/fetchApi';
@@ -9,16 +9,37 @@ import customEvents from '../common/customEvents';
 
 export function LowInventory (props) {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const by = searchParams.get("by");
+  const byValue = searchParams.get("value");
+  LowInventory.abortController = new AbortController();
   const [parts, setParts] = useState([]);
+  const [filterBy, setFilterBy] = useState(by || "");
+  const [filterByValue, setFilterByValue] = useState(byValue || "");
+  const [sortBy, setSortBy] = useState("DateCreatedUtc");
+  const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(-1);
   const [loading, setLoading] = useState(true);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [renderIsDirty, setRenderIsDirty] = useState(true);
+  const [initComplete, setInitComplete] = useState(false);
 
-  const loadParts = async (page, reset = false) => {
-    const response = await fetchApi(`api/part/low?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
-    const pageOfData = response.data.items;
+  const handleInit = (config) => {
+    setPageSize(config.pageSize);
+    setInitComplete(true);
+  };
+
+  const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
+    const response = await fetchApi(
+      `api/part/low?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by || ""}&value=${byValue || ""}`
+    );
+    const { data } = response;
+    const pageOfData = data.items;
+    const totalPages = Math.ceil(data.totalItems / results);
+    setTotalRecords(data.totalItems);
     let newData = [];
     if (reset)
       newData = [...pageOfData];
@@ -26,36 +47,83 @@ export function LowInventory (props) {
       newData = [...parts, ...pageOfData];
     setParts(newData);
     setPage(page);
+    setTotalPages(totalPages);
+    setTotalRecords(data.totalItems);
     setLoading(false);
+    setRenderIsDirty(!renderIsDirty);
   };
-
-  useEffect(() => {
-    loadParts(page);
-  }, [page]);
 
   useEffect(() => {
     customEvents.notifySubscribers("avatar", true);
     return () => {
       customEvents.notifySubscribers("avatar", false);
     };
-  });
+  }, []);
 
-  const handleNextPage = () => {
-    const { page, noRemainingData } = this.state;
-    if (noRemainingData) return;
+  useEffect(() => {
+    if (pageSize === -1) return;
+    if (by && by.length > 0) {
+      // likewise, clear keyword if we're in a bin search
+      setFilterBy(by);
+      setFilterByValue(byValue);
+      setPage(1);
+      loadParts(page, true, by, byValue, pageSize, sortBy, sortDirection);
+    } else {
+      setPage(1);
+      loadParts(page, true, "", "", pageSize, sortBy, sortDirection);
+    }
 
-    const nextPage = page + 1;
-    loadParts(nextPage);
+    return () => {
+      LowInventory.abortController.abort();
+    };
+  }, [by, byValue, initComplete]);
+
+  const handleNextPage = async (e, page) => {
+    await loadParts(page, true);
   };
 
   const handlePartClick = (e, part) => {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
+  const removeFilter = (e) => {
+    e.preventDefault();
+    setFilterBy("");
+    setFilterByValue("");
+    props.history(`/lowstock`);
+  };
+
   const handlePageSizeChange = async (e, pageSize) => {
     setPageSize(pageSize);
-    await loadParts(page, true);
+    await loadParts(page, true, by, byValue, pageSize);
   };
+
+  const handleSortChange = async (sortBy, sortDirection) => {
+    const newSortBy = sortBy || "DateCreatedUtc";
+    const newSortDirection = sortDirection || "Descending";
+    setSortBy(newSortBy);
+    setSortDirection(newSortDirection);
+    return await loadParts(page, true, filterBy, filterByValue, pageSize, newSortBy, newSortDirection);
+  };
+
+  const renderPartsTable = useMemo(() => {
+    return (<PartsGrid2 
+      parts={parts} 
+      columns="partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete"
+      defaultVisibleColumns='partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,print,delete' 
+      page={page} 
+      totalPages={totalPages} 
+      totalRecords={totalRecords}
+      loading={loading} 
+      loadPage={handleNextPage} 
+      onPartClick={handlePartClick} 
+      onPageSizeChange={handlePageSizeChange}
+      onSortChange={handleSortChange}
+      onInit={handleInit}
+      name='partsGrid' 
+      visitUrl="/lowstock"
+    />);
+  }, [renderIsDirty, parts, page, totalPages, totalRecords, loading]);
   
   return (
     <div>
@@ -70,18 +138,15 @@ export function LowInventory (props) {
           You can define a custom <i>Low Stock</i> value per part in your inventory.
         </Trans>
 			</FormHeader>
-      <PartsGrid2 
-        parts={parts} 
-        columns="partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete"
-        defaultVisibleColumns='partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,print,delete' 
-        page={page} 
-        totalPages={totalPages} 
-        loading={loading} 
-        loadPage={handleNextPage} 
-        onPartClick={handlePartClick} 
-        onPageSizeChange={handlePageSizeChange} 
-        name='partsGrid' 
-      />
+      <div style={{ paddingTop: "10px", marginBottom: "10px" }}>
+        {filterBy && (
+          <Button primary size="mini" onClick={removeFilter}>
+            <Icon name="delete" />
+            {filterBy}: {filterByValue}
+          </Button>
+        )}
+      </div>
+      {renderPartsTable}
     </div>
   );
 };
