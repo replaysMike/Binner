@@ -431,7 +431,7 @@ export function BulkScanModal(props) {
 			onConfirm={handleBulkScanClear}
 			content={confirmClearContent}
 		/>
-		<Modal centered open={isOpen} onClose={handleBulkScanClose} dimmer="blurring">
+		<Modal centered open={isOpen} onClose={handleBulkScanClose} dimmer="blurring" className="bulkScanModal">
 			<Modal.Header>{t('page.inventory.bulkScan', "Bulk Scan")}</Modal.Header>
 			<Dimmer.Dimmable as={Modal.Content} scrolling>
 				<Dimmer active={bulkScanSaving} inverted><Loader /></Dimmer>

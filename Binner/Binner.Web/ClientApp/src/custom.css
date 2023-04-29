@@ -555,40 +555,6 @@ section.formHeader {
     background: radial-gradient(ellipse farthest-corner at right bottom, #FEDB37 0%, #FDB931 8%, #9f7928 30%, #8A6E2F 40%, transparent 80%), radial-gradient(ellipse farthest-corner at left top, #FFFFFF 0%, #FFFFAC 8%, #D1B464 25%, #5d4a1f 62.5%, #5d4a1f 100%);
 }
 
-.anim-box {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    transition: transform .6s ease-out;
-    animation-play-state: running;
-    background-color: #000;
-    overflow: hidden;
-}
-
-/* barcode bars for manual drawing */
-.anim-item {
-    display: inline-block;
-    background-color: #fff;
-    height: 100%;
-}
-
-.anim-item-sm {
-    width: 2px;
-    margin-right: 3px;
-}
-
-.anim-item-md {
-    width: 3px;
-    margin-right: 2px;
-}
-
-.anim-item-lg {
-    width: 5px;
-    margin-right: 5px;
-}
-
-
 /* segment */
 .segment .secondary h3 {
     font-size: 1.1rem;

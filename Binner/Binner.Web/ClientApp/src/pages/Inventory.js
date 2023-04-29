@@ -1589,10 +1589,9 @@ export function Inventory(props) {
         {!isEditing &&
           <Popup
             wide
+            position="right center"
             content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
-            trigger={
-              <BulkScanIcon onClick={handleBulkBarcodeScan} />
-            }
+            trigger={<div style={{display: 'inline-block'}}><BulkScanIcon onClick={handleBulkBarcodeScan} /></div>}
           />
         }
 
