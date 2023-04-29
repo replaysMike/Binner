@@ -1,10 +1,11 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Form, Popup, Input, Icon } from "semantic-ui-react";
+import { Form, Popup, Input, Icon, Button } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
-import { parseTimeSpan, timeSpanFromMilliseconds } from "../../common/datetime";
+import { FormatFullDateTime, parseTimeSpan, timeSpanFromMilliseconds } from "../../common/datetime";
 import { GetTypeName, BarcodeProfiles } from "../../common/Types";
+import ProtectedInput from "../../components/ProtectedInput";
 import reactStringReplace from "react-string-replace";
 import "./BarcodeScanner.css";
 
@@ -22,17 +23,45 @@ export function BarcodeScanner(props) {
   const [invalidBarcodeDetected, setInvalidBarcodeDetected] = useState(false);
   const [customBufferTime, setCustomBufferTime] = useState(0);
   const [configOverride, setConfigOverride] = useState(null);
+  const [dummy, setDummy] = useState(null);
+  const [unprotectedDummy, setUnprotectedDummy] = useState(null);
+  const [unprotectedDummyStartTime, setUnprotectedDummyStartTime] = useState(null);
+  const [dummyStartTime, setDummyStartTime] = useState(null);
+  const dummyTimerRef = useRef();
+  const unprotectedDummyTimerRef = useRef();
+
+  const enableKeyboardListening = () => {
+    setIsKeyboardListening(true);
+  };
+
+  const disableKeyboardListening = () => {
+    setIsKeyboardListening(false);
+  };
 
   const handleSetConfig = (config) => {
     setConfig(config);
     setCustomBufferTime(parseTimeSpan(config?.bufferTime || "00:00:00").toMilliseconds());
   };
 
-  const handleChange = (e, config) => {
-    switch(config.name){
+  const handleChange = (e, control) => {
+    switch(control.name){
       case 'customBufferTime':
-        setCustomBufferTime(config.value);
-        setConfigOverride({...config, bufferTime: timeSpanFromMilliseconds(parseInt(config.value))})
+        setCustomBufferTime(control.value);
+        setConfigOverride({...control, bufferTime: timeSpanFromMilliseconds(parseInt(control.value))})
+        break;
+      case 'dummy':
+        // console.log('dummy onChange', control.value);
+        if (dummy === null || dummy.length === 0) setDummyStartTime(new Date().getTime());
+        clearTimeout(dummyTimerRef.current);
+        dummyTimerRef.current = setTimeout(() => { console.log('Dummy took', new Date().getTime() - dummyStartTime - 500); }, 500);
+        setDummy(control.value);
+        break;
+      case 'unprotectedDummy':
+        if (unprotectedDummy === null || unprotectedDummy.length === 0) setUnprotectedDummyStartTime(new Date().getTime());
+        console.log('unprotectedDummy onChange', control.value);
+        clearTimeout(unprotectedDummyTimerRef.current);
+        unprotectedDummyTimerRef.current = setTimeout(() => { console.log('Unprotected Dummy took', new Date().getTime() - unprotectedDummyStartTime - 500); }, 500);
+        setUnprotectedDummy(control.value);
         break;
       default:
         break;
@@ -70,6 +99,19 @@ export function BarcodeScanner(props) {
     }
     toast.info(t('success.barcodeTypeReceived', "Barcode type {{type}} received", { type: input.type }));
   };
+
+  const handleReset = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBarcodeValue(t('page.barcodeScanner.waitingForInput', "Waiting for input..."));
+    setRsDetected(false);
+    setGsDetected(false);
+    setEotDetected(false);
+    setInvalidBarcodeDetected(false);
+    setDummy(null);
+    setUnprotectedDummy(null);
+  };
+
   const getRandomKey = () => Math.floor(Math.random() * 999999);
   let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={getRandomKey()} className="control rs">{match}</span>));
   barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={getRandomKey()} className="control gs">{match}</span>));
@@ -85,6 +127,8 @@ export function BarcodeScanner(props) {
       <p>{t('page.barcodeScanner.description', "Test your barcode scanner to see what values it outputs.")}</p>
       <Form>
         <div>
+          <ProtectedInput name="dummy" icon placeholder="A protected input text box that can handle barcode events" value={dummy || ''} onChange={handleChange} />
+          <Form.Input name="unprotectedDummy" placeholder="A regular unprotected input text box" value={unprotectedDummy || ''} onChange={handleChange} />
           <code><pre>{barcodeObject}</pre></code>
           <h5>Barcode Config</h5>
           <Form.Group>
@@ -125,6 +169,11 @@ export function BarcodeScanner(props) {
             <Popup 
               content={<p>Some older DigiKey barcodes are encoded incorrectly. If an older part label that was encoded incorrectly is detected it will be indicated here, and Binner has corrected for it.</p>}
               trigger={<div className={`block ${invalidBarcodeDetected ? 'active red' : ''}`}>Invalid</div>}
+            />
+
+            <Popup 
+              content={<p>Reset the form output.</p>}
+              trigger={<Button type='button' onClick={handleReset}>Reset</Button>}
             />
           </div>
         </div>

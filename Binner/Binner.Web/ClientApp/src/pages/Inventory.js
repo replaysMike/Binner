@@ -37,7 +37,7 @@ import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
 import Dropzone from "../components/Dropzone";
 import { ProjectColors } from "../common/Types";
-import { fetchApi } from "../common/fetchApi";
+import { fetchApi, getErrorsString } from "../common/fetchApi";
 import { formatCurrency, formatNumber, getCurrencySymbol } from "../common/Utils";
 import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
@@ -579,11 +579,14 @@ export function Inventory(props) {
         window.open(data.redirectUrl, "_blank");
         return;
       }
-      if (data.response.parts.length > 0) {
+      if (data.errors && data.errors.length > 0) {
+        const errorMessage = data.errors.join("\n");
+        toast.error(errorMessage);
+      } else if (data.response.parts.length > 0) {
         // show the metadata in the UI
         var partInfo =  data.response.parts[0];
         onSuccess(partInfo);
-      }else {
+      } else {
         // no barcode found
         onFailure(scannedPart);
       }

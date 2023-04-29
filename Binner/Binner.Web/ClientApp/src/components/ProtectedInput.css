@@ -1,0 +1,21 @@
+.protectedInput {
+	transition-property: outline-color, background-color !important;
+	transition-duration: 0.3s !important;
+	background-color: #fff !important;
+}
+
+.protectedInput.isBarcodeScanning {
+	outline: 2px solid rgb(0, 100, 230) !important;
+	background-color: rgb(0, 100, 230) !important;
+	color: rgb(25, 116, 235) !important;
+	text-decoration: line-through !important;
+}
+
+.protectedInput.barcodeScanSuccess:focus {
+	/* this duration value is in sync with ProtectedInput.ScanSuccessClassRemovalMs */
+	transition-duration: 2s !important;
+	background-color: #fff !important;
+	outline: unset;
+	color: unset;
+	text-decoration: unset;
+}

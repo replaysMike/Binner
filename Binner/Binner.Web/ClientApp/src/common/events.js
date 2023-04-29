@@ -5,8 +5,8 @@ export const AppEvents = {
  * Send an application event
  * @param {string} eventHandler Name of event to send
  */
-	sendEvent: (eventHandler) => {
-		document.body.dispatchEvent(new CustomEvent(eventHandler));
+	sendEvent: (eventHandler, args = null) => {
+		document.body.dispatchEvent(new CustomEvent(eventHandler, { detail: args }));
 	}
 
 };
@@ -21,4 +21,16 @@ export const Events = {
 	 * Restore barcode input scanning
 	 */
 	RestoreBarcodeInput: 'restoreBarcodeInput',
+	/** 
+	 * A barcode input event
+	*/
+	BarcodeInput: 'barcodeInput',
+	/** 
+	 * A barcode is being read
+	*/
+	BarcodeReading: 'barcodeReading',
+	/** 
+	 * A barcode was received
+	 */
+	BarcodeReceived: 'barcodeReceived'
 };

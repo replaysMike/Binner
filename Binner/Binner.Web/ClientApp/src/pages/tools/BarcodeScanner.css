@@ -29,6 +29,15 @@ pre {
 	line-height: 3.0;
 }
 
+.block-container .ui.button {
+	border: 1px solid #888;
+	padding: 5px 20px;
+	margin: 10px;
+	color: #888;
+	width: 88px;
+	height: 36px;
+}
+
 .block-container .block {
 	border: 1px solid #888;
 	background-color: rgb(189, 189, 189);

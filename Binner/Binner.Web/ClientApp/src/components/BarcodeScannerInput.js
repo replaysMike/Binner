@@ -6,12 +6,13 @@ import { BarcodeProfiles } from "../common/Types";
 import { parseTimeSpan } from "../common/datetime";
 import PropTypes from "prop-types";
 import { dynamicDebouncer } from "../common/dynamicDebouncer";
-import { Events } from "../common/events";
+import { AppEvents, Events } from "../common/events";
 import useSound from 'use-sound';
 import boopSfx from '../audio/softbeep.mp3';
 import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
 
+// this value will be replaced by the Barcode config
 const DefaultDebounceIntervalMs = 150;
 
 /**
@@ -39,28 +40,45 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
   const onReceivedBarcodeInput = (e, buffer) => {
     if (buffer.length < 8) {
 			keyBufferRef.current.length = 0;
+			console.log('timeout: barcode dropped input', buffer);
     	return; // drop and ignore input
 		}
-    const value = processKeyBuffer(buffer);
+
+    const result = processKeyBuffer(buffer);
 		// reset key buffer
 		keyBufferRef.current.length = 0;
+
+		processStringInput(e, result);
+  };
+
+	const processStringInput = (e, result) => {
+		const barcodeText = result.barcodeText;
+		const text = result.text;
 		// process raw value into an input object with decoded information
-		if (value && value.length > 0) {
-			const input = processBarcodeInformation(e, value);
+		if (barcodeText && barcodeText.length > 0) {
+			const input = processBarcodeInformation(barcodeText);
 
 			if (enableSound) {
 				playScanSoundRef.current();
 			}
-			// fire an event that we received data
+			// fire an mounted event handler that we received data
 			onReceived(e, input);
+			// fire a domain event
+			AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text });
 		}else{
 			console.warn('no scan found, filtered.');
 		}
 		setIsReceiving(false);
-  };
+	};
 
+	/**
+	 * Process an array of key input objects into a string buffer
+	 * @param {array} buffer The array of Key input objects
+	 * @returns 
+	 */
   const processKeyBuffer = (buffer) => {
     let str = "";
+		let noControlCodesStr = "";
     let specialCharBuffer = [];
 		let modifierKeyCount = 0;
     for (let i = 0; i < buffer.length; i++) {
@@ -101,16 +119,18 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 				(key.keyCode >= 186 && key.keyCode <= 222)
 			) {
 				str += char;
+				if (!key.altKey && !key.ctrlKey && key.keyCode !== 13 && key.keyCode !== 10 && key.keyCode !== 9)
+					noControlCodesStr += char;
 			}
     }
 
 		if (buffer.length === modifierKeyCount) {
 			return null;
 		}
-    return str;
+    return { barcodeText: str, text: noControlCodesStr };
   };
 
-  const processBarcodeInformation = (e, value) => {
+  const processBarcodeInformation = (value) => {
     let barcodeType = "code128";
     let parsedValue = {};
 		let correctedValue = value;
@@ -379,6 +399,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			// add event listeners to receive requests to disable/enable barcode capture
 			document.body.addEventListener(Events.DisableBarcodeInput, disableBarcodeInput);
 			document.body.addEventListener(Events.RestoreBarcodeInput, restoreBarcodeInput);
+			document.body.addEventListener(Events.BarcodeInput, (event) => processStringInput(event, { barcodeText: event.detail, text: event.detail }));
 		};
 
 		if (!config) {
@@ -467,6 +488,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			setTimeout(() => { 
 				if (keyBufferRef.current.length > 5) {
 					setIsReceiving(true);
+					AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current );
 		 		} else {
 					setIsReceiving(false);
 				}
@@ -503,7 +525,9 @@ BarcodeScannerInput.propTypes = {
   listening: PropTypes.bool,
   /** keyboard buffer smaller than this length will ignore input */
   minInputLength: PropTypes.number,
+	/** help url when clicking on the scanner icon */
   helpUrl: PropTypes.string,
+	/** true to swallow key events */
 	swallowKeyEvent: PropTypes.bool,
 	/** keyboard passthrough, for passing data directly to component */
 	passThrough: PropTypes.string,
