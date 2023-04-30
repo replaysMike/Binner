@@ -38,6 +38,8 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 	const [playScanSound] = useSound(boopSfx, { soundEnabled: true, volume: 1 });
 	const [isReceiving, setIsReceiving] = useState(false);
 	const isStartedReading = useRef(false);
+	const isReadingComplete = useRef(false);
+	const renderCount = useRef(0);
 	const timerRef = useRef(null);
 	const listeningRef = useRef(isKeyboardListening);
 	const keyBufferRef = useRef([]);
@@ -50,7 +52,8 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			keyBufferRef.current.length = 0;
 			if(IsDebug) console.log('timeout: barcode dropped input', buffer);
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
-			if(IsDebug) console.log(`keytimes maxtime '${maxTime}'`, keyTimes.current);
+			const sum = getSumFast(keyTimes.current, 1);
+			if(IsDebug) console.log(`keytimes maxtime1 '${maxTime}' sum: ${sum}`, keyTimes.current);
 			keyTimes.current = [];
     	return; // drop and ignore input
 		} else {
@@ -70,7 +73,8 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 
 		processStringInput(e, result);
 		const maxTime = getMaxValueFast(keyTimes.current, 1);
-		if(IsDebug) console.log(`keytimes maxtime '${maxTime}'`, keyTimes.current);
+		const sum = getSumFast(keyTimes.current, 1);
+		if(IsDebug) console.log(`keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
 		keyTimes.current = [];
   };
 
@@ -84,6 +88,8 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			if (enableSound) {
 				playScanSoundRef.current();
 			}
+			isReadingComplete.current = true;
+
 			// fire an mounted event handler that we received data
 			onReceived(e, input);
 			// fire a domain event
@@ -518,6 +524,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
 			if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < MaxKeystrokeThresholdMs) {
 				setIsReceiving(true);
+				isReadingComplete.current = false;
 				// only send the event once when we've determined we are capturing
 				if(!isStartedReading.current) AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", document.activeElement);
 				isStartedReading.current = true;	
@@ -528,7 +535,8 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			timerRef.current = setTimeout(() => {
 				// barcode scan stopped
 				setIsReceiving(false);
-				if(isStartedReading.current) AppEvents.sendEvent(Events.BarcodeReadingCancelled, keyBufferRef.current, id || "BarcodeScannerInput", document.activeElement);
+				if(isStartedReading.current && !isReadingComplete.current) 
+					AppEvents.sendEvent(Events.BarcodeReadingCancelled, keyBufferRef.current, id || "BarcodeScannerInput", document.activeElement);
 				isStartedReading.current = false;
 			}, AbortBufferTimerMs);
 
@@ -556,8 +564,21 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		return max;
 	}
 
+	const getSumFast = (arr, startAt = 0) => {
+		// fastest performing solution of getting the sum
+		if (startAt >= arr.length) return arr.length > 0 ? arr[0] : -1;
+		let sum = arr[startAt];
+		for (let i = startAt + 1; i < arr.length; ++i) {
+			sum += arr[i];
+		}
+		return sum;
+	}
+
 	if (!barcodeConfig.enabled)
 		return (<></>);
+
+	//renderCount.current = renderCount.current + 1;
+	//if (IsDebug) console.log('render', renderCount.current);
 
   return (
     <div style={{ float: "right" }}>

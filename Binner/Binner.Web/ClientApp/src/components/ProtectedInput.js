@@ -16,6 +16,7 @@ export default function ProtectedInput(props) {
 	const DefaultScanningCompleteClassName = "barcodeScanSuccess";
 	const bufferedValue = useRef(null);
 	const inputRef = useRef(null);
+	const renderCount = useRef(0);
 	const id = useMemo(() => props.id || uuidv4(), [props.id]);
 
 	const barcodeReadStarted = (e) => {
@@ -112,6 +113,9 @@ export default function ProtectedInput(props) {
 	}
 	if (!propsToReturn.icon)
 		propsToReturn.icon = true;
+
+	//renderCount.current = renderCount.current + 1;
+	//if (IsDebug) console.log('render', renderCount.current);
 
 	return <Form.Input { ...propsToReturn } id={id}>
 						{propsForChild.icon && <Icon name={propsForChild.icon} />}
