@@ -5,54 +5,29 @@ import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import _ from "underscore";
 import debounce from "lodash.debounce";
-import {
-  Icon,
-  Input,
-  Label,
-  Button,
-  TextArea,
-  Image,
-  Form,
-  Table,
-  Segment,
-  Popup,
-  Modal,
-  Dimmer,
-  Loader,
-  Header,
-  Confirm,
-  Grid,
-  Card,
-  Menu,
-  Placeholder,
-  Flag,
-  Checkbox,
-  Dropdown
-} from "semantic-ui-react";
+import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Header, Confirm, Grid, Checkbox, Dropdown} from "semantic-ui-react";
 import ProtectedInput from "../components/ProtectedInput";
-import Carousel from "react-bootstrap/Carousel";
 import NumberPicker from "../components/NumberPicker";
 import PartTypeSelector from "../components/PartTypeSelector";
 import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
+import { PartMedia } from "../components/PartMedia";
 import { BulkScanModal } from "../components/BulkScanModal";
 import { BulkScanIcon } from "../components/BulkScanIcon";
-import Dropzone from "../components/Dropzone";
-import { ProjectColors } from "../common/Types";
-import { fetchApi, getErrorsString } from "../common/fetchApi";
-import { formatCurrency, formatNumber, getCurrencySymbol } from "../common/Utils";
+import { RecentParts } from "../components/RecentParts";
+import { PartSuppliers } from "../components/PartSuppliers";
+import { fetchApi } from "../common/fetchApi";
+import { formatNumber } from "../common/Utils";
 import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
-import axios from "axios";
 import { getAuthToken, getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
-import { GetTypeName, GetTypeValue, GetAdvancedTypeDropdown } from "../common/Types";
+import { GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import customEvents from '../common/customEvents';
 import { Currencies } from "../common/currency";
 import "./Inventory.css";
 
-const ProductImageIntervalMs = 10 * 1000;
 const IcPartType = 14;
 
 export function Inventory(props) {
@@ -76,10 +51,6 @@ export function Inventory(props) {
   const [suggestedPartNumber, setSuggestedPartNumber] = useState(null);
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
   const [infoResponse, setInfoResponse] = useState({});
-  const [datasheetTitle, setDatasheetTitle] = useState("");
-  const [datasheetPartName, setDatasheetPartName] = useState("");
-  const [datasheetDescription, setDatasheetDescription] = useState("");
-  const [datasheetManufacturer, setDatasheetManufacturer] = useState("");
   
   const pageHasParameters = (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0);
   const defaultPart = {
@@ -113,7 +84,6 @@ export function Inventory(props) {
     storedFiles: []
   };
 
-  const defaultPartSupplier = { name: '', supplierPartNumber: '', cost: '0', quantityAvailable: '0', minimumOrderQuantity: '0', productUrl: '', imageUrl: ''};
   const defaultMountingTypes = [
     {
       key: 0,
@@ -149,9 +119,8 @@ export function Inventory(props) {
   const [confirmDeleteLocalFileIsOpen, setConfirmDeleteLocalFileIsOpen] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
   const [allPartTypes, setAllPartTypes] = useState([]);
-  const [projects, setProjects] = useState([]);
   const [mountingTypes] = useState(defaultMountingTypes);
-  const [loadingPartMetadata, setLoadingPartMetadata] = useState(true);
+  const [loadingPartMetadata, setLoadingPartMetadata] = useState(false);
   const [loadingPartTypes, setLoadingPartTypes] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
@@ -160,15 +129,12 @@ export function Inventory(props) {
   const [saveMessage, setSaveMessage] = useState("");
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
-  const [error, setError] = useState(null);
-  const [files, setFiles] = useState([]);
-  const [uploading, setUploading] = useState(false);
   const [dragOverClass, setDragOverClass] = useState("");
-  const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
-  const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
   const [isBulkScanSaving, setBulkScanSaving] = useState(false);
   const [scannedPartsBarcodeInput, setScannedPartsBarcodeInput] = useState(null);
+  const [datasheetMeta, setDatasheetMeta] = useState(null);
+  const [renderIsDirty, setRenderIsDirty] = useState(true);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
 
   // todo: find a better alternative, we shouldn't need to do this!
@@ -184,7 +150,6 @@ export function Inventory(props) {
       setPartMetadataIsSubscribed(false);
       setPartMetadataError(null);
       await fetchPartTypes();
-      await fetchProjects();
       await fetchRecentRows();
       if (partNumberStr) {
         var loadedPart = await fetchPart(partNumberStr);
@@ -205,11 +170,13 @@ export function Inventory(props) {
     return () => {
       customEvents.notifySubscribers("avatar", false);
     };
-  });
+  }, []);
 
   const fetchPartMetadataAndInventory = async (input, part) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
+    if (input.length <= 3)
+      return;
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
@@ -302,7 +269,8 @@ export function Inventory(props) {
    * @returns exists: true if part exists inventory, plus response
    */
   const doInventoryPartSearch = async (partNumber) => {
-
+    if (partNumber.length <= 3)
+      return;
     const existsResponse = await fetchApi(`api/part/search?keywords=${partNumber}&exactMatch=true`, {
       signal: Inventory.infoAbortController.signal,
       catchErrors: true
@@ -354,130 +322,6 @@ export function Inventory(props) {
   };
 
   const searchDebounced = useMemo(() => debounce(fetchPartMetadataAndInventory, 1000), [pageHasParameters]);
-
-  const onUploadSubmit = async (uploadFiles, type) => {
-    setUploading(true);
-    if (!part.partId) {
-      toast.warn(t('message.uploadWait', "Files can't be uploaded until the part is saved."));
-      return;
-    }
-    if (uploadFiles && uploadFiles.length > 0) {
-      const requestData = new FormData();
-      requestData.append("partId", part.partId);
-      requestData.append("storedFileType", GetTypeValue(StoredFileType, type));
-      for (let i = 0; i < uploadFiles.length; i++) requestData.append("files", uploadFiles[i], uploadFiles[i].name);
-
-      // first fetch some data using fetchApi, to leverage 401 token refresh
-      fetchApi("api/authentication/identity").then((_) => {
-      axios
-        .request({
-          method: "post",
-          url: `api/storedFile`,
-          data: requestData,
-          headers: { Authorization: `Bearer ${getAuthToken()}` }
-        })
-        .then((response) => {
-          const { data } = response;
-          let errorMessage;
-          toast.dismiss();
-          if (data.errors && data.errors.length > 0) {
-            errorMessage = data.errors.map((err, key) => <li key={key}>{err.message}</li>);
-            toast.error(t('message.uploadFailed', "Failed to upload file!"), { autoClose: 10000 });
-            setError(<ul className="errors">{errorMessage}</ul>);
-          } else {
-            // success uploading
-            if (uploadFiles.length === 1) toast.success(t('message.uploadSuccess', "File uploaded."));
-            else toast.success(t('message.uploadSuccessX', "{{count}} files uploaded.", {count: uploadFiles.length}));
-
-            // add it to the local data
-            var typeValue = GetTypeValue(StoredFileType, type);
-            var i = 0;
-            switch (typeValue) {
-              case StoredFileType.ProductImage:
-                const productImages = [...infoResponse.productImages];
-                for (i = 0; i < data.length; i++) {
-                  productImages.unshift({
-                    name: data[i].originalFileName,
-                    value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
-                    id: data[i].storedFileId
-                  });
-                }
-                setInfoResponse({ ...infoResponse, productImages });
-                break;
-              case StoredFileType.Datasheet:
-                const datasheets = [...infoResponse.datasheets];
-                for (i = 0; i < data.length; i++) {
-                  const datasheet = {
-                    name: data[i].originalFileName,
-                    value: {
-                      datasheetUrl: `/api/storedFile/local?fileName=${data[i].fileName}&token=${getImagesToken()}`,
-                      description: data[i].originalFileName,
-                      imageUrl: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
-                      manufacturer: "",
-                      title: data[i].originalFileName
-                    },
-                    id: data[i].storedFileId
-                  };
-                  datasheets.unshift(datasheet);
-                  setDatasheetMeta(datasheet);
-                }
-                setInfoResponse({ ...infoResponse, datasheets });
-                break;
-              case StoredFileType.Pinout:
-                const pinoutImages = [...infoResponse.pinoutImages];
-                for (i = 0; i < data.length; i++) {
-                  pinoutImages.unshift({
-                    name: data[i].originalFileName,
-                    value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
-                    id: data[i].storedFileId
-                  });
-                }
-                setInfoResponse({ ...infoResponse, pinoutImages });
-                break;
-              case StoredFileType.ReferenceDesign:
-                const circuitImages = [...infoResponse.circuitImages];
-                for (i = 0; i < data.length; i++) {
-                  circuitImages.unshift({
-                    name: data[i].originalFileName,
-                    value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
-                    id: data[i].storedFileId
-                  });
-                }
-                setInfoResponse({ ...infoResponse, circuitImages });
-                break;
-              default:
-            }
-
-            setError(null);
-            setIsDirty(false);
-          }
-          setUploading(false);
-          setFiles([]);
-        })
-        .catch((error) => {
-          toast.dismiss();
-          console.error("error", error);
-          if (error.code === "ERR_NETWORK") {
-            const msg = t('message.unableToUpload', "Unable to upload. Check that the file is not locked or deleted.");
-            toast.error(msg, { autoClose: 10000 });
-            setError(msg);
-          } else {
-            toast.error(t('message.uploadFailed', "Failed to upload file!"));
-            setError(error.message);
-          }
-          setIsDirty(false);
-          setUploading(false);
-          setFiles([]);
-        });
-      });
-    } else {
-      toast.error(t('message.noFilesSelected', "No files selected for upload!"));
-    }
-  };
-
-  const onUploadError = (errors) => {
-    for (let i = 0; i < errors.length; i++) toast.error(errors[i], { autoClose: 10000 });
-  };
 
   // for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
@@ -602,122 +446,6 @@ export function Inventory(props) {
     setPartTypes(partTypes);
     setAllPartTypes(data);
     setLoadingPartTypes(false);
-  };
-
-  const fetchProjects = async () => {
-    setLoadingProjects(true);
-    const response = await fetchApi("api/project/list?orderBy=DateCreatedUtc&direction=Descending&results=99");
-    const { data } = response;
-    const projects = _.sortBy(
-      data.map((item) => {
-        return {
-          key: item.projectId,
-          value: item.projectId,
-          text: item.name,
-          label: {
-            ...(_.find(ProjectColors, (c) => c.value === item.color).name !== "" && { color: _.find(ProjectColors, (c) => c.value === item.color).name }),
-            circular: true,
-            content: item.parts,
-            size: "tiny"
-          }
-        };
-      }),
-      "text"
-    );
-    // ensure that the current part's projectId can't be set to an invalid project
-    if (!_.find(projects, (p) => p.value === viewPreferences.lastProjectId)) {
-      setPart({ ...part, projectId: "" });
-    }
-    setLoadingProjects(false);
-    setProjects(projects);
-  };
-
-  const createPartSupplier = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setLoadingPartMetadata(true);
-    const request = {
-      partId: part.partId,
-      name: partSupplier.name,
-      supplierPartNumber: partSupplier.supplierPartNumber,
-      cost: parseFloat(partSupplier.cost || '0') || 0,
-      quantityAvailable: parseInt(partSupplier.quantityAvailable || '0') || 0,
-      minimumOrderQuantity: parseInt(partSupplier.minimumOrderQuantity || '0') || 0,
-      productUrl: partSupplier.productUrl && partSupplier.productUrl.length > 4 ? `https://${partSupplier.productUrl.replace('https://', '').replace('http://', '')}` : null,
-      imageUrl: partSupplier.imageUrl && partSupplier.imageUrl.length > 4 ? `https://${partSupplier.imageUrl.replace('https://', '').replace('http://', '')}` : null
-    };
-    const response = await fetchApi("api/part/partSupplier", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(request)
-    });
-    if (response && response.responseObject.status === 200) {
-      const data = response.data;
-      // add part supplier to ui
-      const newMetadataParts = [...metadataParts];
-      newMetadataParts.push({
-        additionalPartNumbers:[],
-        basePartNumber: null,
-        cost: data.cost,
-        currency: "USD",
-        datasheetUrls: [],
-        description: null,
-        factoryLeadTime: null,
-        factoryStockAvailable: null,
-        imageUrl: data.imageUrl,
-        keywords: [],
-        manufacturer: null,
-        manufacturerPartNumber: part.manufacturerPartNumber,
-        minimumOrderQuantity: data.minimumOrderQuantity,
-        mountingTypeId: 0,
-        packageType: null,
-        partSupplierId: data.partSupplierId,
-        partType: "",
-        productUrl: data.productUrl,
-        quantityAvailable: data.quantityAvailable,
-        rank: 0,
-        reference: null,
-        status: null,
-        supplier: data.name,
-        supplierPartNumber: data.supplierPartNumber,
-        swarmPartNumberManufacturerId: null
-      });
-      setPartSupplier(defaultPartSupplier);
-      setMetadataParts(newMetadataParts);
-      setShowAddPartSupplier(false);
-    }
-    setLoadingPartMetadata(false);
-  };
-
-  const deletePartSupplier = async (e, partSupplier) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!partSupplier.partSupplierId || partSupplier.partSupplierId <= 0)
-      return; // ignore request to delete, not a valid partSupplier object
-    setLoadingPartMetadata(true);
-    const request = {
-      partSupplierId: partSupplier.partSupplierId,
-    };
-    const response = await fetchApi("api/part/partSupplier", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(request)
-    });
-    if (response && response.responseObject.status === 200) {
-      const isSuccess = response.data;
-      // add part supplier to ui
-      if (isSuccess){
-        const newMetadataParts = [...metadataParts.filter(x => x.partSupplierId !== request.partSupplierId)];
-        setMetadataParts(newMetadataParts);
-      }else{
-        toast.error(t('message.failedToDeleteSupplierPart', "Failed to delete supplier part!"));
-      }
-    }
-    setLoadingPartMetadata(false);
   };
 
   const getMountingTypeById = (mountingTypeId) => {
@@ -930,39 +658,24 @@ export function Inventory(props) {
     updateViewPreferences({ rememberLast: control.checked });
   };
 
-  const handleInputPartNumberKeyDown = (e) => {
-    // this logic is used to prevent barcode scanners from submitting the form with the enter key, when input has focus
-    // here we are using window instead of a state object for performance reasons :-0
-    if (window) {
-      const elapsed = new Date().getTime() - window.lastKeyDown;
-      if (e.keyCode === 13 && elapsed < 200) {
-        e.preventDefault();
-      }
-      window.lastKeyDown = new Date().getTime();
-    }
-  }
-
-  const handlePartSupplierChange = (e, control) => {
-    e.preventDefault();
-    e.stopPropagation();
-    partSupplier[control.name] = control.value;
-    setPartSupplier({ ...partSupplier });
-  };
-
-  const handleInputPartNumberChange = (e, control) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleInputPartNumberChange = async (e, control) => {
+    //e.preventDefault();
+    //e.stopPropagation();
+    console.log('change', control.value);
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     let searchPartNumber = control.value;
 
-    if (searchPartNumber && searchPartNumber.length > 0) {
+    if (searchPartNumber && searchPartNumber.length >= 3) {
       searchPartNumber = control.value.replace("\t", "");
-      searchDebounced(searchPartNumber, part, partTypes);
+      await searchDebounced(searchPartNumber, part, partTypes);
     }
 
     setInputPartNumber(searchPartNumber);
     setIsDirty(true);
+
+    // wont work unless we update render
+    //setRenderIsDirty(!renderIsDirty);
   };
 
   const handlePartTypeChange = (e, partType) => { 
@@ -1155,11 +868,6 @@ export function Inventory(props) {
     setPartModalOpen(false);
   };
 
-  const handleOpenModal = (e) => {
-    e.preventDefault();
-    setPartModalOpen(true);
-  };
-
   const handleBulkBarcodeScan = (e) => {
     e.preventDefault();
     setBulkScanIsOpen(true);
@@ -1267,10 +975,6 @@ export function Inventory(props) {
         </Table.Body>
       </Table>
     );
-  };
-
-  const handlePartModalClose = () => {
-    setPartModalOpen(false);
   };
 
   const handleDuplicatePartModalClose = () => {
@@ -1413,24 +1117,6 @@ export function Inventory(props) {
     setSelectedPart(null);
   };
 
-  const confirmDeleteLocalFileOpen = (e, localFile, type) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setConfirmDeleteLocalFileIsOpen(true);
-    setSelectedLocalFile({ localFile, type });
-    setConfirmLocalFileDeleteContent(
-      <p>
-        <Trans i18nKey="confirm.deleteLocalFile" name={localFile.name}>
-        Are you sure you want to delete this local file named <b>{{name: localFile.name}}</b>?
-        </Trans>
-        <br />
-        <br />
-        <Trans i18nKey="confirm.permanent">
-        This action is <i>permanent and cannot be recovered</i>.
-        </Trans>
-      </p>
-    );
-  };
 
   const confirmDeleteLocalFileClose = (e) => {
     e.preventDefault();
@@ -1439,85 +1125,409 @@ export function Inventory(props) {
     setSelectedLocalFile(null);
   };
 
-  const visitAnchor = (e, anchor) => {
-    e.preventDefault();
-    var redirectToURL = document.URL.replace(/#.*$/, "");
-
-    redirectToURL = redirectToURL + anchor;
-    window.location.href = redirectToURL;
-  };
-
-  const setDatasheetMeta = (datasheet) => {
-    const partName = datasheet.name;
-    const title = datasheet.value.title;
-    const description = datasheet.value.description;
-    const manufacturer = datasheet.value.manufacturer;
-    setDatasheetTitle(title);
-    setDatasheetPartName(partName);
-    setDatasheetManufacturer(manufacturer);
-    setDatasheetDescription(description);
-  };
-
-  const onCurrentDatasheetChanged = (activeIndex, control) => {
-    setDatasheetMeta(infoResponse.datasheets[activeIndex]);
-  };
-
-  const handleShowAddPartSupplier = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowAddPartSupplier(!showAddPartSupplier);
-  };
-
-  const getDatasheetAttributes = (datasheet) => {
-    return {
-      'data-id': datasheet.id || '0',
-      'data-resourceid': datasheet.value.resourceId,
-    };
-  };
-
   const handleSetSuggestedPartNumber = (e, value) => {
     e.preventDefault();
     e.stopPropagation();
     setInputPartNumber(value);
   };
 
-  const renderRecentParts = (recentParts) => {
-    return (
-      <Table compact celled selectable striped>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.manufacturerPart', "Manufacturer Part")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.location', "Location")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.binNumber', "Bin Number")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.binNumber2', "Bin Number 2")}</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {recentParts.map((p, index) => (
-            <Table.Row key={index} onClick={(e) => handleRecentPartClick(e, p)}>
-              <Table.Cell>{index === 0 ? <Label ribbon>{p.partNumber}</Label> : p.partNumber}</Table.Cell>
-              <Table.Cell>{p.quantity}</Table.Cell>
-              <Table.Cell>{p.partType}</Table.Cell>
-              <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-              <Table.Cell>{p.location}</Table.Cell>
-              <Table.Cell>{p.binNumber}</Table.Cell>
-              <Table.Cell>{p.binNumber2}</Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
-    );
-  };
-
+  // todo: can this be removed?
   const matchingPartsList = renderAllMatchingParts(part, metadataParts);
   const title = isEditing 
     ? t('page.inventory.edittitle', "Edit Inventory") 
     : t('page.inventory.addtitle', "Add Inventory");
 
   /* RENDER */
+
+  const renderForm = useMemo(() => {
+    console.log('render!');
+    return (
+    <>
+    {!isEditing &&
+      <Popup
+        wide
+        position="right center"
+        content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
+        trigger={<div style={{display: 'inline-block'}}><BulkScanIcon onClick={handleBulkBarcodeScan} /></div>}
+      />
+    }
+
+    <div className="page-banner">
+      {partMetadataIsSubscribed && (
+        <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
+          <div>
+            <Icon name="close" /> 
+            <Trans i18nKey="message.noPartInfo" partNumber={inputPartNumber}>
+            No part information is available for '{{partNumber: inputPartNumber}}'. You are subscribed to updates and will be automatically updated when the part is indexed.
+            </Trans>
+          </div>
+        </div>
+      )}
+      {partMetadataError && (
+        <div className="page-error" onClick={() => setPartMetadataError(null)}>
+          <Icon name="close" /> {partMetadataError}
+        </div>
+      )}
+    </div>
+
+    <Grid celled className="inventory-container">
+      <Grid.Row>
+        <Grid.Column width={12} className="left-column">
+          {/** LEFT COLUMN */}
+          <Form.Group>
+            <Form.Field>
+              <ProtectedInput
+                label={t('label.part', "Part")}
+                required
+                placeholder="LM358"
+                focus
+                /* this should be the only field that is not updated on an info update */
+                value={inputPartNumber || ""}
+                onChange={handleInputPartNumberChange}
+                name="inputPartNumber"
+                icon="search"
+                id="inputPartNumber"
+              />
+              {!isEditing && part.partNumber && part.partNumber !== inputPartNumber && <div className="suggested-part">{<span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
+              {!isEditing && partExistsInInventory && <div className="suggested-part">This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.</div>}
+            </Form.Field>
+            <Form.Field width={6}>
+              {/* PartTypeSelector is internally memoized for performance */}
+              <PartTypeSelector 
+                label={t('label.partType', "Part Type")}
+                name="partTypeId"
+                value={part.partTypeId || ""}
+                partTypes={allPartTypes} 
+                onSelect={handlePartTypeChange}
+              />
+            </Form.Field>
+            <Form.Dropdown
+              label={t('label.mountingType', "Mounting Type")}
+              placeholder={t('label.mountingType', "Mounting Type")}
+              search
+              selection
+              value={(part.mountingTypeId || "") + ""}
+              options={mountingTypes}
+              onChange={handleChange}
+              name="mountingTypeId"
+            />
+          </Form.Group>
+          <Form.Group>
+            <Popup
+              hideOnScroll
+              disabled={viewPreferences.helpDisabled}
+              onOpen={disableHelp}
+              content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
+              trigger={
+                <Form.Field
+                  control={NumberPicker}
+                  label={t('label.quantity', "Quantity")}
+                  placeholder="10"
+                  min={0}
+                  value={part.quantity || ""}
+                  onChange={updateNumberPicker}
+                  name="quantity"
+                  autoComplete="off"
+                />
+              }
+            />
+            <Popup
+              hideOnScroll
+              disabled={viewPreferences.helpDisabled}
+              onOpen={disableHelp}
+              content={t('page.inventory.popup.lowStock', "Alert when the quantity gets below this value")}
+              trigger={
+                <Form.Input
+                  label={t('label.lowStock', "Low Stock")}
+                  placeholder="10"
+                  value={part.lowStockThreshold || ""}
+                  onChange={handleChange}
+                  name="lowStockThreshold"
+                  width={3}
+                />
+              }
+            />
+          </Form.Group>
+
+          {/* Part Location Information */}
+          <Segment secondary>
+            <Form.Group>
+              <Popup
+                hideOnScroll
+                disabled={viewPreferences.helpDisabled}
+                onOpen={disableHelp}
+                content={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
+                trigger={
+                  <Form.Input
+                    label={t('label.location', "Location")}
+                    placeholder="Home lab"
+                    value={part.location || ""}
+                    onChange={handleChange}
+                    name="location"
+                    width={5}
+                  />
+                }
+              />
+              <Popup
+                hideOnScroll
+                disabled={viewPreferences.helpDisabled}
+                onOpen={disableHelp}
+                content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
+                trigger={
+                  <Form.Input
+                    label={t('label.binNumber', "Bin Number")}
+                    placeholder={t('page.inventory.placeholder.binNumber', "IC Components 2")}
+                    value={part.binNumber || ""}
+                    onChange={handleChange}
+                    name="binNumber"
+                    width={4}
+                  />
+                }
+              />
+              <Popup
+                hideOnScroll
+                disabled={viewPreferences.helpDisabled}
+                onOpen={disableHelp}
+                content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
+                trigger={
+                  <Form.Input
+                    label={t('label.binNumber2', "Bin Number 2")}
+                    placeholder={t('page.inventory.placeholder.binNumber2', "14")}
+                    value={part.binNumber2 || ""}
+                    onChange={handleChange}
+                    name="binNumber2"
+                    width={4}
+                  />
+                }
+              />
+            </Form.Group>
+          </Segment>
+          <Form.Field inline>
+            {!isEditing &&
+              <Popup
+                wide="very"
+                position="top right"
+                content={
+                <p>
+                  <Trans i18nKey="page.inventory.popup.rememberLastSelection">
+                  Enable this toggle to remember the last selected values of: <i>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</i>
+                  </Trans>
+                </p>}
+                trigger={<Checkbox toggle label={t('label.rememberLastSelection', "Remember last selection")} className="left small" style={{float: 'right'}} checked={viewPreferences.rememberLast || false} onChange={handleRememberLastSelection} />}
+              />
+            }
+            <Button.Group>
+              <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
+                <Icon name="save" />
+                {t('button.save', "Save")}
+              </Button>
+              <Button.Or text={t('button.or', "Or")} />
+              <Popup 
+                position="right center"
+                content={t('page.inventory.popup.clear', "Clear the form to default values")}
+                trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
+              />                  
+            </Button.Group>
+            {part && part.partId > 0 && (
+              <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
+                <Icon name="delete" />
+                {t('button.delete', "Delete")}
+              </Button>
+            )}
+            {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
+          </Form.Field>
+          <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.20,0.65"}>
+            <Button.Group>
+              <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
+                <Icon name="save" />
+                {t('button.save', "Save")}
+              </Button>
+              <Button.Or text={t('button.or', "Or")} />
+              <Popup 
+                position="right center"
+                content={t('page.inventory.popup.clear', "Clear the form to default values")}
+                trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
+              />                  
+            </Button.Group>
+          </div>
+
+          {/* PART METADATA */}
+
+          <Segment loading={loadingPartMetadata} color="blue">
+            <Header dividing as="h3">
+              {t('page.inventory.partMetadata', "Part Metadata")}
+            </Header>
+
+            {metadataParts && metadataParts.length > 1 && (
+              <ChooseAlternatePartModal
+                trigger={
+                  <Popup
+                    hideOnScroll
+                    disabled={viewPreferences.helpDisabled}
+                    onOpen={disableHelp}
+                    content={t('page.inventory.popup.alternateParts', "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.")}
+                    trigger={
+                      <Button secondary>
+                        <Icon name="external alternate" color="blue" />
+                        {t('page.inventory.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) } )}
+                      </Button>
+                    }
+                  />
+                }
+                part={part}
+                metadataParts={metadataParts}
+                onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)}
+              />
+            )}
+
+            <Form.Group>
+              <Form.Field width={4}>
+                <label>{t('label.cost', "Cost")}</label>
+                <Input
+                  className="labeled"
+                  placeholder="0.00"
+                  value={part.cost}
+                  type="text"
+                  onChange={handleChange}
+                  name="cost"
+                  onBlur={formatField}
+                >
+                  <Dropdown 
+                    name="currency"
+                    className="label currency"
+                    placeholder="$"
+                    value={part.currency || 'USD'}
+                    options={currencyOptions}
+                    onChange={handleChange}
+                  />
+                  <input />
+                </Input>
+              </Form.Field>
+              <Form.Input
+                label={t('label.manufacturer', "Manufacturer")}
+                placeholder="Texas Instruments"
+                value={part.manufacturer || ""}
+                onChange={handleChange}
+                name="manufacturer"
+                width={4}
+              />
+              <Form.Input
+                label={t('label.manufacturerPart', "Manufacturer Part")}
+                placeholder="LM358"
+                value={part.manufacturerPartNumber || ""}
+                onChange={handleChange}
+                name="manufacturerPartNumber"
+              />
+              <Form.Field style={{textAlign: 'right'}}>
+                <Image src={part.imageUrl} size="tiny" />
+              </Form.Field>
+            </Form.Group>
+            <Form.Field
+              width={16}
+              control={TextArea}
+              label={t('label.description', "Description")}
+              value={part.description || ""}
+              onChange={handleChange}
+              name="description"
+            />
+            <Form.Field width={16}>
+              <label>{t('label.keywords', "Keywords")}</label>
+              <Input
+                icon="tags"
+                iconPosition="left"
+                label={{ tag: true, content: t('page.inventory.addKeyword', "Add Keyword") }}
+                labelPosition="right"
+                placeholder={t('page.inventory.placeholder.keywords', "op amp")}
+                onChange={handleChange}
+                value={part.keywords || ""}
+                name="keywords"
+              />
+            </Form.Field>
+            <Form.Field width={8}>
+              <label>{t('label.packageType', "Package Type")}</label>
+              <Input
+                placeholder="DIP8"
+                value={part.packageType || ""}
+                onChange={handleChange}
+                name="packageType"
+              />
+            </Form.Field>
+          </Segment>
+
+          {/* Part Preferences */}
+          <Segment loading={loadingPartMetadata} color="green">
+            <Header dividing as="h3">
+              {t('page.inventory.privatePartInfo', "Private Part Information")}
+            </Header>
+            <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via apis.")}</p>
+
+            <Form.Field>
+              <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
+              <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
+                <Label>https://</Label>
+                <input />
+                <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>{t('button.view', "View")}</Button>
+              </Input>
+            </Form.Field>
+            <Form.Field>
+              <label>{t('label.productUrl', "Product Url")}</label>
+              <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
+                <Label>https://</Label>
+                <input />
+                <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
+              </Input>
+            </Form.Field>
+            <Form.Group>
+              <Form.Field width={4}>
+                <label>{t('label.digikeyPartNumber', "DigiKey Part Number")}</label>
+                <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' />
+              </Form.Field>
+              <Form.Field width={4}>
+                <label>{t('label.mouserPartNumber', "Mouser Part Number")}</label>
+                <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' />
+              </Form.Field>
+              <Form.Field width={4}>
+                <label>{t('label.arrowPartNumber', "Arrow Part Number")}</label>
+                <Input placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' />
+              </Form.Field>
+            </Form.Group>
+          </Segment>
+
+          {/* Suppliers */}
+
+          <PartSuppliers 
+            loadingPartMetadata={loadingPartMetadata} 
+            part={part} 
+            metadataParts={metadataParts}
+          />
+          
+        </Grid.Column>
+
+        <Grid.Column width={4} className="right-column">
+          {/** RIGHT COLUMN */}
+
+          {/* todo: performance memoize */}
+          <PartMedia infoResponse={infoResponse} datasheet={datasheetMeta} />          
+
+          {/* END RIGHT COLUMN */}
+        </Grid.Column>
+      </Grid.Row>
+    </Grid>
+
+ 
+    </>);
+  }, [renderIsDirty, inputPartNumber, part]);
+
+  const renderRecentParts = useMemo(() => {
+    console.log('render recent parts!');
+    return (
+      <RecentParts 
+        recentParts={recentParts} 
+        loadingRecent={loadingRecent} 
+        handleRecentPartClick={handleRecentPartClick} 
+      />
+    );
+  }, [recentParts, loadingRecent]);
 
   return (
     <div className="mask">
@@ -1586,665 +1596,10 @@ export function Inventory(props) {
         {part.partNumber && <Image src={`api/part/preview?partNumber=${part.partNumber}&token=${getImagesToken()}`} width={180} floated="right" style={{ marginTop: "0px" }} />}
         <FormHeader name={title} to="..">
         </FormHeader>
-        {!isEditing &&
-          <Popup
-            wide
-            position="right center"
-            content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
-            trigger={<div style={{display: 'inline-block'}}><BulkScanIcon onClick={handleBulkBarcodeScan} /></div>}
-          />
-        }
-
-        <div className="page-banner">
-          {partMetadataIsSubscribed && (
-            <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
-              <div>
-                <Icon name="close" /> 
-                <Trans i18nKey="message.noPartInfo" partNumber={inputPartNumber}>
-                No part information is available for '{{partNumber: inputPartNumber}}'. You are subscribed to updates and will be automatically updated when the part is indexed.
-                </Trans>
-              </div>
-            </div>
-          )}
-          {partMetadataError && (
-            <div className="page-error" onClick={() => setPartMetadataError(null)}>
-              <Icon name="close" /> {partMetadataError}
-            </div>
-          )}
-        </div>
-
-        <Grid celled className="inventory-container">
-          <Grid.Row>
-            <Grid.Column width={12} className="left-column">
-              {/** LEFT COLUMN */}
-              <Form.Group>
-                <Form.Field>
-                  <ProtectedInput
-                    label={t('label.part', "Part")}
-                    required
-                    placeholder="LM358"
-                    focus
-                    /* this should be the only field that is not updated on an info update */
-                    value={inputPartNumber || ""}
-                    onChange={handleInputPartNumberChange}
-                    name="inputPartNumber"
-                    onKeyDown={handleInputPartNumberKeyDown}
-                    icon="search"
-                    id="inputPartNumber"
-                  />
-                  {!isEditing && part.partNumber && part.partNumber !== inputPartNumber && <div className="suggested-part">{<span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
-                  {!isEditing && partExistsInInventory && <div className="suggested-part">This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.</div>}
-                </Form.Field>
-                <Form.Field width={6}>
-                  <PartTypeSelector 
-                    label={t('label.partType', "Part Type")}
-                    name="partTypeId"
-                    value={part.partTypeId || ""}
-                    partTypes={allPartTypes} 
-                    onSelect={handlePartTypeChange}
-                  />
-                </Form.Field>
-                <Form.Dropdown
-                  label={t('label.mountingType', "Mounting Type")}
-                  placeholder={t('label.mountingType', "Mounting Type")}
-                  search
-                  selection
-                  value={(part.mountingTypeId || "") + ""}
-                  options={mountingTypes}
-                  onChange={handleChange}
-                  name="mountingTypeId"
-                />
-              </Form.Group>
-              <Form.Group>
-                <Popup
-                  hideOnScroll
-                  disabled={viewPreferences.helpDisabled}
-                  onOpen={disableHelp}
-                  content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
-                  trigger={
-                    <Form.Field
-                      control={NumberPicker}
-                      label={t('label.quantity', "Quantity")}
-                      placeholder="10"
-                      min={0}
-                      value={part.quantity || ""}
-                      onChange={updateNumberPicker}
-                      name="quantity"
-                      autoComplete="off"
-                    />
-                  }
-                />
-                <Popup
-                  hideOnScroll
-                  disabled={viewPreferences.helpDisabled}
-                  onOpen={disableHelp}
-                  content={t('page.inventory.popup.lowStock', "Alert when the quantity gets below this value")}
-                  trigger={
-                    <Form.Input
-                      label={t('label.lowStock', "Low Stock")}
-                      placeholder="10"
-                      value={part.lowStockThreshold || ""}
-                      onChange={handleChange}
-                      name="lowStockThreshold"
-                      width={3}
-                    />
-                  }
-                />
-              </Form.Group>
-
-              <Segment secondary>
-                <Form.Group>
-                  <Popup
-                    hideOnScroll
-                    disabled={viewPreferences.helpDisabled}
-                    onOpen={disableHelp}
-                    content={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
-                    trigger={
-                      <Form.Input
-                        label={t('label.location', "Location")}
-                        placeholder="Home lab"
-                        value={part.location || ""}
-                        onChange={handleChange}
-                        name="location"
-                        width={5}
-                      />
-                    }
-                  />
-                  <Popup
-                    hideOnScroll
-                    disabled={viewPreferences.helpDisabled}
-                    onOpen={disableHelp}
-                    content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
-                    trigger={
-                      <Form.Input
-                        label={t('label.binNumber', "Bin Number")}
-                        placeholder={t('page.inventory.placeholder.binNumber', "IC Components 2")}
-                        value={part.binNumber || ""}
-                        onChange={handleChange}
-                        name="binNumber"
-                        width={4}
-                      />
-                    }
-                  />
-                  <Popup
-                    hideOnScroll
-                    disabled={viewPreferences.helpDisabled}
-                    onOpen={disableHelp}
-                    content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
-                    trigger={
-                      <Form.Input
-                        label={t('label.binNumber2', "Bin Number 2")}
-                        placeholder={t('page.inventory.placeholder.binNumber2', "14")}
-                        value={part.binNumber2 || ""}
-                        onChange={handleChange}
-                        name="binNumber2"
-                        width={4}
-                      />
-                    }
-                  />
-                </Form.Group>
-              </Segment>
-              <Form.Field inline>
-                {!isEditing &&
-                  <Popup
-                    wide="very"
-                    position="top right"
-                    content={
-                    <p>
-                      <Trans i18nKey="page.inventory.popup.rememberLastSelection">
-                      Enable this toggle to remember the last selected values of: <i>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</i>
-                      </Trans>
-                    </p>}
-                    trigger={<Checkbox toggle label={t('label.rememberLastSelection', "Remember last selection")} className="left small" style={{float: 'right'}} checked={viewPreferences.rememberLast || false} onChange={handleRememberLastSelection} />}
-                  />
-                }
-                <Button.Group>
-                  <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
-                    <Icon name="save" />
-                    {t('button.save', "Save")}
-                  </Button>
-                  <Button.Or text={t('button.or', "Or")} />
-                  <Popup 
-                    position="right center"
-                    content={t('page.inventory.popup.clear', "Clear the form to default values")}
-                    trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
-                  />                  
-                </Button.Group>
-                {part && part.partId > 0 && (
-                  <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
-                    <Icon name="delete" />
-                    {t('button.delete', "Delete")}
-                  </Button>
-                )}
-                {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
-              </Form.Field>
-              <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.20,0.65"}>
-                <Button.Group>
-                  <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
-                    <Icon name="save" />
-                    {t('button.save', "Save")}
-                  </Button>
-                  <Button.Or text={t('button.or', "Or")} />
-                  <Popup 
-                    position="right center"
-                    content={t('page.inventory.popup.clear', "Clear the form to default values")}
-                    trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
-                  />                  
-                </Button.Group>
-              </div>
-
-              {/* PART METADATA */}
-
-              <Segment loading={loadingPartMetadata} color="blue">
-                <Header dividing as="h3">
-                  {t('page.inventory.partMetadata', "Part Metadata")}
-                </Header>
-
-                {metadataParts && metadataParts.length > 1 && (
-                  <ChooseAlternatePartModal
-                    trigger={
-                      <Popup
-                        hideOnScroll
-                        disabled={viewPreferences.helpDisabled}
-                        onOpen={disableHelp}
-                        content={t('page.inventory.popup.alternateParts', "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.")}
-                        trigger={
-                          <Button secondary>
-                            <Icon name="external alternate" color="blue" />
-                            {t('page.inventory.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) } )}
-                          </Button>
-                        }
-                      />
-                    }
-                    part={part}
-                    metadataParts={metadataParts}
-                    onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)}
-                  />
-                )}
-
-                <Form.Group>
-                  <Form.Field width={4}>
-                    <label>{t('label.cost', "Cost")}</label>
-                    <Input
-                      className="labeled"
-                      placeholder="0.00"
-                      value={part.cost}
-                      type="text"
-                      onChange={handleChange}
-                      name="cost"
-                      onBlur={formatField}
-                    >
-                      <Dropdown 
-                        name="currency"
-                        className="label currency"
-                        placeholder="$"
-                        value={part.currency || 'USD'}
-                        options={currencyOptions}
-                        onChange={handleChange}
-                      />
-                      <input />
-                    </Input>
-                  </Form.Field>
-                  <Form.Input
-                    label={t('label.manufacturer', "Manufacturer")}
-                    placeholder="Texas Instruments"
-                    value={part.manufacturer || ""}
-                    onChange={handleChange}
-                    name="manufacturer"
-                    width={4}
-                  />
-                  <Form.Input
-                    label={t('label.manufacturerPart', "Manufacturer Part")}
-                    placeholder="LM358"
-                    value={part.manufacturerPartNumber || ""}
-                    onChange={handleChange}
-                    name="manufacturerPartNumber"
-                  />
-                  <Form.Field style={{textAlign: 'right'}}>
-                    <Image src={part.imageUrl} size="tiny" />
-                  </Form.Field>
-                </Form.Group>
-                <Form.Field
-                  width={16}
-                  control={TextArea}
-                  label={t('label.description', "Description")}
-                  value={part.description || ""}
-                  onChange={handleChange}
-                  name="description"
-                />
-                <Form.Field width={16}>
-                  <label>{t('label.keywords', "Keywords")}</label>
-                  <Input
-                    icon="tags"
-                    iconPosition="left"
-                    label={{ tag: true, content: t('page.inventory.addKeyword', "Add Keyword") }}
-                    labelPosition="right"
-                    placeholder={t('page.inventory.placeholder.keywords', "op amp")}
-                    onChange={handleChange}
-                    value={part.keywords || ""}
-                    name="keywords"
-                  />
-                </Form.Field>
-                <Form.Field width={8}>
-                  <label>{t('label.packageType', "Package Type")}</label>
-                  <Input
-                    placeholder="DIP8"
-                    value={part.packageType || ""}
-                    onChange={handleChange}
-                    name="packageType"
-                  />
-                </Form.Field>
-              </Segment>
-
-              {/* Part Preferences */}
-              <Segment loading={loadingPartMetadata} color="green">
-                <Header dividing as="h3">
-                  {t('page.inventory.privatePartInfo', "Private Part Information")}
-                </Header>
-                <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via apis.")}</p>
-
-                <Form.Field>
-                  <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
-                  <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
-                    <Label>https://</Label>
-                    <input />
-                    <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>{t('button.view', "View")}</Button>
-                  </Input>
-                </Form.Field>
-                <Form.Field>
-                  <label>{t('label.productUrl', "Product Url")}</label>
-                  <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
-                    <Label>https://</Label>
-                    <input />
-                    <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
-                  </Input>
-                </Form.Field>
-                <Form.Group>
-                  <Form.Field width={4}>
-                    <label>{t('label.digikeyPartNumber', "DigiKey Part Number")}</label>
-                    <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' />
-                  </Form.Field>
-                  <Form.Field width={4}>
-                    <label>{t('label.mouserPartNumber', "Mouser Part Number")}</label>
-                    <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' />
-                  </Form.Field>
-                  <Form.Field width={4}>
-                    <label>{t('label.arrowPartNumber', "Arrow Part Number")}</label>
-                    <Input placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' />
-                  </Form.Field>
-                </Form.Group>
-              </Segment>
-
-              {/* Suppliers */}
-
-              <Segment loading={loadingPartMetadata} color="violet">
-                <Header dividing as="h3">
-                  {t('page.inventory.suppliers', "Suppliers")}
-                </Header>
-                <div style={{height: '35px'}}>
-                  <div style={{float: 'right'}}>
-                    <Popup 
-                      wide
-                      hoverable
-                      content={<p>{part.partId <= 0 ? <span><Icon name="warning sign" color="yellow" /> {t('page.inventory.popup.mustAddPart', "You must save the part before adding custom suppliers to it.")}</span> : <span>{t('page.inventory.popup.addSupplier', "Add a manual supplier entry")}</span>}</p>}
-                      trigger={<span><Button primary onClick={handleShowAddPartSupplier} size='tiny' disabled={part.partId <= 0}><Icon name="plus" /> {t('button.add', "Add")}</Button></span>}
-                    />
-                  </div>
-                </div>
-
-                {showAddPartSupplier && <Segment raised>
-                  <Form.Input width={6} label={t('label.supplier', "Supplier")} required placeholder='DigiKey' focus value={partSupplier.name} onChange={handlePartSupplierChange} name='name' />
-                  <Form.Input width={6} label={t('label.supplierPartNumber', "Supplier Part Number")} required placeholder='296-1395-5-ND' value={partSupplier.supplierPartNumber} onChange={handlePartSupplierChange} name='supplierPartNumber' />
-                  <Form.Group>
-                    <Form.Input width={3} label={t('label.cost', "Cost")} placeholder='0.50' value={partSupplier.cost} onChange={handlePartSupplierChange} name='cost' />
-                    <Form.Input width={4} label={t('label.quantityAvailable', "Quantity Available")} placeholder='0' value={partSupplier.quantityAvailable} onChange={handlePartSupplierChange} name='quantityAvailable' />
-                    <Form.Input width={5} label={t('label.minimumOrderQuantity', "Minimum Order Quantity")} placeholder='0' value={partSupplier.minimumOrderQuantity} onChange={handlePartSupplierChange} name='minimumOrderQuantity' />
-                  </Form.Group>
-                  <Form.Field width={12}>
-                    <label>{t('label.productUrl', "Product Url")}</label>
-                    <Input action className='labeled' placeholder='' value={(partSupplier.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='productUrl'>
-                      <Label>https://</Label>
-                      <input />
-                      <Button onClick={e => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
-                    </Input>
-                  </Form.Field>
-                  <Form.Field width={12}>
-                    <label>{t('label.imageUrl', "Image Url")}</label>
-                    <Input action className='labeled' placeholder='' value={(partSupplier.imageUrl || '').replace('http://', '').replace('https://', '')} onChange={handlePartSupplierChange} name='imageUrl'>
-                      <Label>https://</Label>
-                      <input  />
-                      <Button onClick={e => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>{t('button.visit', "Visit")}</Button>
-                    </Input>
-                  </Form.Field>
-                  <Button primary icon onClick={createPartSupplier} disabled={part.partId <= 0}><Icon name='save' /> {t('button.save', "Save")}</Button>
-                </Segment>}
-
-                <Table compact celled sortable selectable striped unstackable size="small">
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.HeaderCell textAlign="center">{t('label.supplier', "Supplier")}</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">{t('label.supplierPartNumber', "Supplier Part Number")}</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">{t('label.cost', "Cost")}</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">{t('label.quantityAvailable', "Quantity Available")}</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">{t('label.minimumOrderQuantity', "Minimum Order Quantity")}</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">{t('label.image', "Image")}</Table.HeaderCell>
-                      <Table.HeaderCell textAlign="center">{t('label.productUrl', "Product Url")}</Table.HeaderCell>
-                      <Table.HeaderCell></Table.HeaderCell>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {part &&
-                      metadataParts &&
-                      _.filter(metadataParts, (p) => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
-                        <Table.Row key={supplierKey}>
-                          <Table.Cell textAlign="center">{supplier.supplier}</Table.Cell>
-                          <Table.Cell textAlign="center">{supplier.supplierPartNumber}</Table.Cell>
-                          <Table.Cell textAlign="center">{formatCurrency(supplier.cost, supplier.currency)}</Table.Cell>
-                          <Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
-                          <Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
-                          <Table.Cell textAlign="center">
-                            {supplier.imageUrl && supplier.imageUrl.length > 10 && supplier.imageUrl.startsWith('http') && <img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />}
-                          </Table.Cell>
-                          <Table.Cell textAlign="center">
-                            {supplier.productUrl && supplier.productUrl.length > 10 && supplier.productUrl.startsWith('http') && <a href={supplier.productUrl} target="_blank" rel="noreferrer">
-                            {t('button.visit', "Visit")}
-                            </a>}
-                          </Table.Cell>
-                          <Table.Cell textAlign="center">
-                            {supplier.partSupplierId && supplier.partSupplierId > 0 && <Button icon='delete' size='tiny' onClick={e => deletePartSupplier(e, supplier)} title="Delete supplier part" />}
-                          </Table.Cell>
-                        </Table.Row>
-                      ))}
-                  </Table.Body>
-                </Table>
-              </Segment>
-            </Grid.Column>
-
-            <Grid.Column width={4} className="right-column">
-              {/** RIGHT COLUMN */}
-
-              <Menu className="shortcuts">
-                <Menu.Item onClick={(e) => visitAnchor(e, "#datasheets")}>{t('page.inventory.datasheets', "Datasheets")}</Menu.Item>
-                <Menu.Item onClick={(e) => visitAnchor(e, "#pinout")}>{t('page.inventory.pinout', "Pinout")}</Menu.Item>
-                <Menu.Item onClick={(e) => visitAnchor(e, "#circuits")}>{t('page.inventory.circuits', "Circuits")}</Menu.Item>
-              </Menu>
-
-              {/* Product Images Carousel */}
-              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.ProductImage)}>
-                <Card color="blue">
-                  {infoResponse && infoResponse.productImages && infoResponse.productImages.length > 0 ? (
-                    <Carousel variant="dark" interval={ProductImageIntervalMs} className="centered product-images">
-                      {infoResponse.productImages?.filter(x => x.value.length > 0)?.map((productImage, imageKey) => (
-                        <Carousel.Item key={imageKey}>
-                          <Image src={productImage.value} size="large" />
-                          {productImage.id && (
-                            <Popup
-                              position="top left"
-                              content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
-                              trigger={
-                                <Button
-                                  onClick={(e) => confirmDeleteLocalFileOpen(e, productImage, "productImages")}
-                                  type="button"
-                                  size="tiny"
-                                  style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
-                                  color="red"
-                                >
-                                  <Icon name="delete" style={{ margin: 0 }} />
-                                </Button>
-                              }
-                            />
-                          )}
-                          <Carousel.Caption>
-                            <h5>{productImage.name}</h5>
-                          </Carousel.Caption>
-                        </Carousel.Item>
-                      ))}
-                    </Carousel>
-                  ) : (
-                    <Placeholder>
-                      <img src="/image/microchip.png" className="square" alt="" />
-                    </Placeholder>
-                  )}
-
-                  <Card.Content>
-                    <Loader active={loadingPartMetadata} inline size="small" as="i" style={{ float: "right" }} />
-                    <Header as="h4">
-                      <Icon name="images" />
-                      {t('page.inventory.productImages', "Product Images")}
-                    </Header>
-                  </Card.Content>
-                </Card>
-              </Dropzone>
-
-              {/* DATASHEETS */}
-              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.Datasheet)}>
-                <Card id="datasheets" color="green">
-                  {infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0 ? (
-                    <div>
-                      <Carousel variant="dark" interval={null} onSelect={onCurrentDatasheetChanged} className="datasheets">
-                        {infoResponse.datasheets.map((datasheet, datasheetKey) => (
-                          <Carousel.Item key={datasheetKey} onClick={(e) => handleVisitLink(e, datasheet.value.datasheetUrl)} {...getDatasheetAttributes(datasheet)}>
-                            <Image src={datasheet.value.imageUrl} size="large" />
-                            {datasheet.id && (
-                              <Popup
-                                position="top left"
-                                content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
-                                trigger={
-                                  <Button
-                                    onClick={(e) => confirmDeleteLocalFileOpen(e, datasheet, "datasheets")}
-                                    type="button"
-                                    size="tiny"
-                                    style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
-                                    color="red"
-                                  >
-                                    <Icon name="delete" style={{ margin: 0 }} />
-                                  </Button>
-                                }
-                              />
-                            )}
-                          </Carousel.Item>
-                        ))}
-                      </Carousel>
-                      <Card.Content style={{ textAlign: "left" }}>
-                        <Card.Header>{datasheetTitle}</Card.Header>
-                        <Card.Meta>
-                          {datasheetPartName}, {datasheetManufacturer}
-                        </Card.Meta>
-                        <Card.Description>{datasheetDescription}</Card.Description>
-                      </Card.Content>
-                    </div>
-                  ) : (
-                    <Placeholder>
-                      <img src="/image/datasheet.png" className="square" alt="" />
-                      <Placeholder.Header>
-                        <Placeholder.Line length="very long" />
-                        <Placeholder.Line length="medium" />
-                        <Placeholder.Line length="short" />
-                      </Placeholder.Header>
-                    </Placeholder>
-                  )}
-                  <Card.Content extra>
-                    <Header as="h4">
-                      <Icon name="file pdf" />
-                      {t('page.inventory.datasheets', "Datasheets")}
-                    </Header>
-                  </Card.Content>
-                </Card>
-              </Dropzone>
-
-              {/* PINOUT */}
-
-              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.Pinout)}>
-                <Card id="pinout" color="purple">
-                  {infoResponse && infoResponse.pinoutImages && infoResponse.pinoutImages.length > 0 ? (
-                    <div>
-                      <Carousel variant="dark" interval={null} className="pinout-images">
-                        {infoResponse.pinoutImages.map((pinout, pinoutKey) => (
-                          <Carousel.Item key={pinoutKey}>
-                            <Image src={pinout.value} size="large" />
-                            {pinout.id && (
-                              <Popup
-                                position="top left"
-                                content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
-                                trigger={
-                                  <Button
-                                    onClick={(e) => confirmDeleteLocalFileOpen(e, pinout, "pinoutImages")}
-                                    type="button"
-                                    size="tiny"
-                                    style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
-                                    color="red"
-                                  >
-                                    <Icon name="delete" style={{ margin: 0 }} />
-                                  </Button>
-                                }
-                              />
-                            )}
-                            <Carousel.Caption>
-                              <h5>{pinout.name}</h5>
-                            </Carousel.Caption>
-                          </Carousel.Item>
-                        ))}
-                      </Carousel>
-                    </div>
-                  ) : (
-                    <Placeholder>
-                      <img src="/image/pinout.png" className="square" alt="" />
-                    </Placeholder>
-                  )}
-                  <Card.Content extra>
-                    <Header as="h4">
-                      <Icon name="pin" />
-                      {t('page.inventory.pinout', "Pinout")}
-                    </Header>
-                  </Card.Content>
-                </Card>
-              </Dropzone>
-
-              {/* CIRCUITS */}
-
-              <Dropzone onUpload={onUploadSubmit} onError={onUploadError} type={GetTypeName(StoredFileType, StoredFileType.ReferenceDesign)}>
-                <Card id="circuits" color="violet">
-                  {infoResponse && infoResponse.circuitImages && infoResponse.circuitImages.length > 0 ? (
-                    <div>
-                      <Carousel variant="dark" interval={null} className="circuit-images">
-                        {infoResponse.circuitImages.map((circuit, circuitKey) => (
-                          <Carousel.Item key={circuitKey}>
-                            <Image src={circuit.value} size="large" />
-                            {circuit.id && (
-                              <Popup
-                                position="top left"
-                                content={t('page.inventory.popup.deleteLocalFile', "Delete this local file")}
-                                trigger={
-                                  <Button
-                                    onClick={(e) => confirmDeleteLocalFileOpen(e, circuit, "circuitImages")}
-                                    type="button"
-                                    size="tiny"
-                                    style={{ position: "absolute", top: "4px", right: "2px", padding: "2px", zIndex: "9999" }}
-                                    color="red"
-                                  >
-                                    <Icon name="delete" style={{ margin: 0 }} />
-                                  </Button>
-                                }
-                              />
-                            )}
-                            <Carousel.Caption>
-                              <h5>{circuit.name}</h5>
-                            </Carousel.Caption>
-                          </Carousel.Item>
-                        ))}
-                      </Carousel>
-                    </div>
-                  ) : (
-                    <Placeholder>
-                      <img src="/image/referencedesign.png" className="square" alt="" />
-                    </Placeholder>
-                  )}
-                  <Card.Content extra>
-                    <Header as="h4">
-                      <Icon name="microchip" />
-                      {t('page.inventory.referenceDesigns', "Reference Designs")}
-                    </Header>
-                  </Card.Content>
-                </Card>
-              </Dropzone>
-
-              {/* END LEFT COLUMN */}
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
+        {renderForm}
+        {renderRecentParts}
       </Form>
-      <br />
-      <div style={{ marginTop: "20px" }}>
-        <Segment style={{ minHeight: "50px" }} color="teal">
-          <Header dividing as="h3">
-          {t('page.inventory.recentlyAdded', "Recently Added")}
-          </Header>
-          <Dimmer active={loadingRecent} inverted>
-            <Loader inverted />
-          </Dimmer>
-          {!loadingRecent && recentParts && renderRecentParts(recentParts)}
-        </Segment>
-      </div>
+      
     </div>
   );
 }

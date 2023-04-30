@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Dropdown, Icon } from "semantic-ui-react";
 import PropTypes from "prop-types";
@@ -252,46 +252,52 @@ export default function PartTypeSelector(props) {
     return "";
   };
 
+  const render = useMemo(() => {
+    console.log('partTypesSelector render');
+    return (
+    <div className="partTypeSelector-container">
+      <div className="icon">{getSelectedIcon(partType)}</div>
+      <Dropdown
+        id="partTypeDropdown"
+        name={props.name || ""} 
+        text={getSelectedText(partType)}
+        search 
+        floating
+        fluid
+        placeholder={t('comp.partTypeSelector.choosePartType', "Choose part type")}
+        className="selection partTypeSelector"
+        onSearchChange={handleOnSearchChange}
+        onBlur={handleOnBlur}
+        onFocus={handleOnFocus}
+      >
+        <Dropdown.Menu>
+          <Dropdown.Item>
+            {/** https://mui.com/material-ui/react-tree-view/ */}
+            <TreeView
+              className="partTypeSelectorTreeView"
+              defaultCollapseIcon={<ArrowDropDownIcon />}
+              defaultExpandIcon={<ArrowRightIcon />}
+              defaultEndIcon={<div style={{ width: 24 }} />}
+              onNodeSelect={handleOnNodeSelect}
+              onNodeToggle={handleOnNodeToggle}
+              onBlur={handleInternalOnBlur}
+              onFocus={handleInternalOnFocus}
+              expanded={expandedNodeIds}
+              selected={partType?.name || ""}
+              sx={{ flexGrow: 1, maxWidth: "100%" }}
+            >
+              {recursiveTreeItem(partTypesFiltered).map((x) => x)}
+            </TreeView>
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    </div>);
+  }, [partType, partTypesFiltered, expandedNodeIds]);
+
   return (
     <>
 			<label>{props.label}</label>
-			<div className="partTypeSelector-container">
-        <div className="icon">{getSelectedIcon(partType)}</div>
-				<Dropdown
-					id="partTypeDropdown"
-					name={props.name || ""} 
-					text={getSelectedText(partType)}
-					search 
-					floating
-					fluid
-					placeholder={t('comp.partTypeSelector.choosePartType', "Choose part type")}
-					className="selection partTypeSelector"
-					onSearchChange={handleOnSearchChange}
-					onBlur={handleOnBlur}
-					onFocus={handleOnFocus}
-				>
-					<Dropdown.Menu>
-						<Dropdown.Item>
-							{/** https://mui.com/material-ui/react-tree-view/ */}
-							<TreeView
-                className="partTypeSelectorTreeView"
-								defaultCollapseIcon={<ArrowDropDownIcon />}
-								defaultExpandIcon={<ArrowRightIcon />}
-								defaultEndIcon={<div style={{ width: 24 }} />}
-								onNodeSelect={handleOnNodeSelect}
-								onNodeToggle={handleOnNodeToggle}
-								onBlur={handleInternalOnBlur}
-								onFocus={handleInternalOnFocus}
-								expanded={expandedNodeIds}
-								selected={partType?.name || ""}
-								sx={{ flexGrow: 1, maxWidth: "100%" }}
-							>
-								{recursiveTreeItem(partTypesFiltered).map((x) => x)}
-							</TreeView>
-						</Dropdown.Item>
-					</Dropdown.Menu>
-				</Dropdown>
-			</div>
+			{render}
     </>
   );
 }

@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
-import { Form, Input, Menu, Dropdown, Icon, Popup } from "semantic-ui-react";
+import { Form, Menu, Dropdown, Icon, Popup } from "semantic-ui-react";
 import { isAuthenticated, isAdmin, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
-import { AppEvents, Events } from "../common/events";
+import ProtectedInput from "../components/ProtectedInput";
 import "./NavMenu.css";
 
 export function NavMenu(props) {
@@ -18,13 +18,7 @@ export function NavMenu(props) {
   };
 
   const handleChange = (e, control) => {
-    switch (control.name) {
-      case "searchKeyword":
-        setSearchKeyword(control.value);
-        break;
-      default:
-        break;
-    }
+    setSearchKeyword(control.value);
   };
 
   const logout = async (e) => {
@@ -64,16 +58,18 @@ export function NavMenu(props) {
                   />
                 </NavItem>
                 <NavItem>
-                  <Input
-                    icon={{ name: "search", circular: true, link: true, onClick: onSubmit }}
+                  <ProtectedInput
                     size="mini"
+                    icon
                     placeholder={t('comp.navBar.search', "Search")}
                     onChange={handleChange}
                     value={searchKeyword}
                     name="searchKeyword"
-                    onFocus={() => AppEvents.sendEvent(Events.DisableBarcodeInput)}
-                    onBlur={() => AppEvents.sendEvent(Events.RestoreBarcodeInput)}
-                  />
+                    hideIcon
+                  >
+                    <input />
+                    <Icon name="search" circular link onClick={onSubmit} />
+                  </ProtectedInput>
                 </NavItem>
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/">
