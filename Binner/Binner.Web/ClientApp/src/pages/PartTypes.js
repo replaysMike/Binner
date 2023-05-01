@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Button, Segment, Form, Icon, Confirm, Breadcrumb, Popup, Modal, Checkbox, Input } from "semantic-ui-react";
-import PartTypeSelector from "../components/PartTypeSelector";
+import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
 import { FormHeader } from "../components/FormHeader";
@@ -429,7 +429,6 @@ export function PartTypes(props) {
   };
 
   const renderTreeView = useMemo(() => {
-    console.log('render');
     return (
       <TreeView
         className="partTypesTreeView"
@@ -541,7 +540,7 @@ export function PartTypes(props) {
                   />
                 </Form.Field>
                 <Form.Field width={8}>
-                  <PartTypeSelector 
+                  <PartTypeSelectorMemoized 
                     label={t("label.parent", "Parent")}
                     name="parentPartTypeId"
                     value={partType.parentPartTypeId || ""}

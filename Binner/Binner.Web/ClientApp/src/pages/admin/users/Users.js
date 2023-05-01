@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Table, Form, Segment, Button, Icon, Input, Popup, Confirm, Breadcrumb } from "semantic-ui-react";
+import { Table, Form, Segment, Button, Icon, Popup, Confirm, Breadcrumb } from "semantic-ui-react";
 import { fetchApi } from "../../../common/fetchApi";
 import { InifiniteScrollTable } from "../../../components/InfiniteScrollTable";
 import { generatePassword } from "../../../common/Utils";
 import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Types";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
 import { FormHeader } from "../../../components/FormHeader";
+import ClearableInput from "../../../components/ClearableInput";
 import { toast } from "react-toastify";
 import { getUserAccount } from "../../../common/authentication";
 
@@ -212,7 +213,7 @@ export function Users(props) {
               content={t("page.admin.users.popup.name", "Specify the user's first and last name")}
               trigger={
                 <Form.Field width={10}>
-                  <Form.Input action required label={t("label.name", "Name")} className="labeled" placeholder="John Doe" value={addUser.name} onChange={handleChange} name="name" />
+                  <ClearableInput action required label={t("label.name", "Name")} className="labeled" placeholder="John Doe" value={addUser.name} onChange={handleChange} name="name" />
                 </Form.Field>
               }
             />
@@ -221,7 +222,7 @@ export function Users(props) {
               content={t("page.admin.users.popup.emailAddress", "Specify the user's username/email")}
               trigger={
                 <Form.Field width={10}>
-                  <Form.Input
+                  <ClearableInput
                     action
                     required
                     label={t("label.usernameEmail", "Username / Email")}

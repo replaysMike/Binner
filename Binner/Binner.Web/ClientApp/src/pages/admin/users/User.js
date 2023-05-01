@@ -8,8 +8,8 @@ import { fetchApi, getErrorsString } from "../../../common/fetchApi";
 import { generatePassword } from "../../../common/Utils";
 import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Types";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
-import customEvents from '../../../common/customEvents';
 import { FormHeader } from "../../../components/FormHeader";
+import ClearableInput from "../../../components/ClearableInput";
 
 export function User(props) {
   const { t } = useTranslation();
@@ -44,7 +44,6 @@ export function User(props) {
   const navigate = useNavigate();
 
 	useEffect(() => {
-    customEvents.notifySubscribers("avatar", true);
 		fetchUser();
 
     function fetchUser() {
@@ -58,9 +57,6 @@ export function User(props) {
 				}
       });
     }
-    return () => {
-      customEvents.notifySubscribers("avatar", false);
-    };
   }, []);
 
 	const updateUser = (e) => {
@@ -145,16 +141,6 @@ export function User(props) {
           Administration of users.
         </Trans>
       </FormHeader>
-      <Button type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          navigate(-1);
-        }}
-        size="mini"
-      >
-        {t('button.return', "Return")}
-      </Button>
 
 			<Segment loading={loading} secondary>
         <Confirm
@@ -168,15 +154,15 @@ export function User(props) {
           {user.userId === 1 &&
             <Header as='h4'>{t('page.admin.users.masterAccount', "Master Admin Account")}</Header>
           }
-          <Form.Input required label={t('label.name', "Name")} focus placeholder="John Doe" value={user.name || ""} name="name" onChange={handleChange} />
-          <Form.Input required label={t('label.usernameEmail', "Username / Email")} iconPosition="left" placeholder="john@example.com" value={user.emailAddress || ""} name="emailAddress" onChange={handleChange}>
+          <ClearableInput required label={t('label.name', "Name")} focus placeholder="John Doe" value={user.name || ""} name="name" onChange={handleChange} />
+          <ClearableInput required label={t('label.usernameEmail', "Username / Email")} iconPosition="left" placeholder="john@example.com" value={user.emailAddress || ""} name="emailAddress" onChange={handleChange}>
             <Icon name='user' />
             <input />
-          </Form.Input>
-          <Form.Input label={t('label.changePassword', "Change Password")} placeholder="Change existing password" action value={user.password || ""} name="password" onChange={handleChange}>
+          </ClearableInput>
+          <ClearableInput label={t('label.changePassword', "Change Password")} placeholder="Change existing password" action value={user.password || ""} name="password" onChange={handleChange}>
             <input />
             <Button onClick={(e) => { e.preventDefault(); setUser({...user, password: generatePassword()}); }}>{t('button.generate', "Generate")}</Button>
-          </Form.Input>
+          </ClearableInput>
           <Form.Dropdown
             required
             label={t('label.accountType', "Account Type")}

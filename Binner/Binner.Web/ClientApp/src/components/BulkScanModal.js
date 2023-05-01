@@ -7,6 +7,9 @@ import ProtectedInput from "./ProtectedInput";
 import PropTypes from "prop-types";
 import "./BulkScanModal.css";
 
+/**
+ * Bulk scan parts using a barcode scanner or manual entry
+ */
 export function BulkScanModal(props) {
   const { t } = useTranslation();
 	const LocalStorageKey = "scannedPartsSerialized";

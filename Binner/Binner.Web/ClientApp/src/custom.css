@@ -100,20 +100,21 @@ footer.active a, footer.active a:hover {
     right: 0;
     margin: auto;
     transform: translateY(-50%);
-    color: #fff;
+    color: #000;
     font-size: 0.8em;
 }
 
-.promo span {
-    background-color: rgba(0,0,0,0.75);
+.promo.masked span {
     border-radius: 8px;
     padding: 4px 15px;
     scale: 1;
     transition: background-color;
     transition-duration: 0.2s;
+    background-color: rgba(0,0,0,0.75);
+    color: #fff;
 }
 
-.promo a {
+.promo.masked a {
     color: #fff;
 }
 
@@ -785,6 +786,17 @@ svg.parttype-Diode:hover,.icon-container svg.parttype-Diode:hover {
 
 svg.parttype-Crystal:hover,.icon-container svg.parttype-Crystal:hover {
     color: #ccc !important;
+}
+
+.link-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    display: inline;
+    margin: 0;
+    padding: 0;
+    color: #0366d6;
 }
 
 /* CUSTOM TOAST STYLING */

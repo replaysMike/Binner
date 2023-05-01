@@ -16,6 +16,9 @@ const lngs = {
     zh: { nativeName: '中文', flag: 'cn' },         // chinese
 };
 
+/**
+ * Global Header
+ */
 export function Header() {
   const { i18n } = useTranslation();
   // console.log('resolved langauge', i18n.resolvedLanguage);
@@ -30,10 +33,6 @@ export function Header() {
     var time = 1400 * 4 * Math.random() * -1;
     var footer = document.querySelector('footer');
     footer.style.animationDelay = (time + 's');
-
-    document.addEventListener("load", () => {
-      console.log('doc height', document.body.scrollHeight);
-    });
 
     // .sticky-target support handling
     // allows for popping static controls to the bottom of the scroll window, such as save buttons.
@@ -74,7 +73,6 @@ export function Header() {
   const handleChange = (e, control) => {
     e.preventDefault();
     setLanguage(control.value);
-    // localStorage.setItem('i18nextLng', control.value);
     i18n.changeLanguage(control.value);
   };
 

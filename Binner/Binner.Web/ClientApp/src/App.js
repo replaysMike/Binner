@@ -1,10 +1,10 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { Route, Routes } from "react-router";
 import { useSearchParams } from "react-router-dom";
-import { createBrowserHistory as createHistory } from "history";
 import { toast } from "react-toastify";
 
 // routing
+import PageWrapper from "./routes/PageWrapper";
 import AdminWrapper from "./routes/AdminWrapper";
 
 // layouts
@@ -58,29 +58,56 @@ function withSearchParams(Component) {
   return (props) => <Component {...props} searchParams={useSearchParams()} />;
 }
 
-class App extends Component {
-  static displayName = App.name;
-  history = createHistory(this.props);
+export const App = (props) => {
+  const [error, setError] = useState({
+    modalTitle: "",
+    url: "",
+    header: "",
+    errorMessage: "",
+    stackTrace: ""
+  });
+  const [licenseError, setLicenseError] = useState({
+    modalTitle: "",
+    url: "",
+    header: "",
+    errorMessage: ""
+  });
+  const [windowSize, setWindowSize] = useState([
+    window.innerWidth,
+    window.innerHeight,
+  ]);
+  const [documentSize, setDocumentSize] = useState([
+    document.documentElement.scrollWidth,
+    document.documentElement.scrollHeight,
+  ]);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      error: {
-        modalTitle: "",
-        url: "",
-        header: "",
-        errorMessage: "",
-        stackTrace: ""
-      },
-      licenseError: {
-        modalTitle: "",
-        url: "",
-        header: "",
-        errorMessage: ""
-      }
+  const updateView = () => {
+    // used for activating avatar images on largely vertical pages
+    setWindowSize([window.innerWidth, window.innerHeight]);
+    setDocumentSize([document.documentElement.scrollWidth, document.documentElement.scrollHeight]);
+    //console.log('window size', window.innerWidth, window.innerHeight);
+    //console.log('document size', document.documentElement.scrollWidth, document.documentElement.scrollHeight);
+    if (document.documentElement.scrollHeight > window.innerHeight) {
+      // enable avatar
+      window.avatar = true;
+    } else {
+      window.avatar = false;
+    }
+  };
+
+  useEffect(() => {
+    updateView();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [window.location.href]);
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      updateView();
     };
-    window.showErrorWindow = this.showErrorWindow;
-    window.showLicenseErrorWindow = this.showLicenseErrorWindow;
+    window.addEventListener('resize', handleWindowResize);
+
+    window.showErrorWindow = showErrorWindow;
+    window.showLicenseErrorWindow = showLicenseErrorWindow;
 
     // provide a UI toast when we have authenticated with DigiKey
     if (props.searchParams) {
@@ -105,122 +132,73 @@ class App extends Component {
         else toast.error(`Failed to authenticate with ${apiName}!`);
       }
     }
-  }
+    return () => {
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, []);
 
-  showErrorWindow = (errorObject) => {
+  const showErrorWindow = (errorObject) => {
     if (errorObject && Object.prototype.toString.call(errorObject) === "[object String]") {
-      this.setState({ error: { modalTitle: "Error", url: "", header: "", errorMessage: errorObject, stackTrace: "" } });
+      setError({ modalTitle: "Error", url: "", header: "", errorMessage: errorObject, stackTrace: "" });
     } else if (errorObject)
-      this.setState({ error: { modalTitle: "API Error", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message, stackTrace: errorObject.stackTrace } });
-    else this.setState({ error: { modalTitle: "API Error", url: "", header: "", errorMessage: "", stackTrace: "" } });
+      setError({ modalTitle: "API Error", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message, stackTrace: errorObject.stackTrace });
+    else setError({ modalTitle: "API Error", url: "", header: "", errorMessage: "", stackTrace: "" });
   };
 
-  showLicenseErrorWindow = (errorObject) => {
+  const showLicenseErrorWindow = (errorObject) => {
     if (errorObject && Object.prototype.toString.call(errorObject) === "[object String]") {
-      this.setState({ licenseError: { modalTitle: "License Limitation", url: "", header: "", errorMessage: errorObject } });
+      setLicenseError({ modalTitle: "License Limitation", url: "", header: "", errorMessage: errorObject });
     } else if (errorObject) this.setState({ licenseError: { modalTitle: "License Limitation", url: errorObject.url, header: errorObject.exceptionType, errorMessage: errorObject.message } });
-    else this.setState({ licenseError: { modalTitle: "License Limitation", url: "", header: "", errorMessage: "" } });
+    else setLicenseError({ modalTitle: "License Limitation", url: "", header: "", errorMessage: "" });
   };
 
-  render() {
-    return (
-      <div>
-        <Layout history={this.history}>
-          <Routes>
-            <Route exact path="/" element={<Home />} />
-            <Route exact path="/accessdenied" element={<AccessDenied />} />
-            <Route exact path="/login" element={<Login />} />
-            <Route exact path="/account" element={<Account />} />
-            <Route exact path="/inventory/add" element={<Inventory />} />
-            <Route exact path="/inventory/:partNumber" element={<Inventory />} />
-            <Route exact path="/inventory" element={<Search />} />
-            <Route exact path="/project/:project" element={<Project />} />
-            <Route exact path="/bom/:project" element={<Bom />} />
-            <Route exact path="/bom" element={<Boms />} />
-            <Route path="/datasheets" element={<Datasheets />} />
-            <Route path="/lowstock" element={<LowInventory />} />
-            <Route path="/import" element={<OrderImport />} />
-            <Route path="/partTypes" element={<PartTypes />} />
-            <Route path="/projects" element={<Bom />} />
-            <Route path="/exportData" element={<ExportData />} />
-            <Route path="/print" element={<PrintLabels />} />
-            <Route exact path="/tools" element={<Tools />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/tools/ohmslaw" element={<OhmsLawCalculator />} />
-            <Route path="/tools/resistor" element={<ResistorColorCodeCalculator />} />
-            <Route path="/tools/voltagedivider" element={<VoltageDividerCalculator />} />
-            <Route path="/tools/barcodescanner" element={<BarcodeScanner />} />
-            <Route exact path="/help" element={<Help />} />
-            <Route path="/help/scanning" element={<Scanning />} />
-            <Route path="/help/api-integrations" element={<ApiIntegrations />} />
-            <Route path="/help/bom" element={<BOM />} />
+  return (
+    <div>
+      <Layout>
+        <Routes>
+          <Route exact path="/" element={<PageWrapper><Home /></PageWrapper>} />
+          <Route exact path="/accessdenied" element={<PageWrapper><AccessDenied /></PageWrapper>} />
+          <Route exact path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+          <Route exact path="/account" element={<PageWrapper><Account /></PageWrapper>} />
+          <Route exact path="/inventory/add" element={<PageWrapper><Inventory /></PageWrapper>} />
+          <Route exact path="/inventory/:partNumber" element={<PageWrapper><Inventory /></PageWrapper>} />
+          <Route exact path="/inventory" element={<PageWrapper><Search /></PageWrapper>} />
+          <Route exact path="/project/:project" element={<PageWrapper><Project /></PageWrapper>} />
+          <Route exact path="/bom/:project" element={<PageWrapper><Bom /></PageWrapper>} />
+          <Route exact path="/bom" element={<PageWrapper><Boms /></PageWrapper>} />
+          <Route path="/datasheets" element={<PageWrapper><Datasheets /></PageWrapper>} />
+          <Route path="/lowstock" element={<PageWrapper><LowInventory /></PageWrapper>} />
+          <Route path="/import" element={<PageWrapper><OrderImport /></PageWrapper>} />
+          <Route path="/partTypes" element={<PageWrapper><PartTypes /></PageWrapper>} />
+          <Route path="/projects" element={<PageWrapper><Bom /></PageWrapper>} />
+          <Route path="/exportData" element={<PageWrapper><ExportData /></PageWrapper>} />
+          <Route path="/print" element={<PageWrapper><PrintLabels /></PageWrapper>} />
+          <Route exact path="/tools" element={<PageWrapper><Tools /></PageWrapper>} />
+          <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+          <Route path="/tools/ohmslaw" element={<PageWrapper><OhmsLawCalculator /></PageWrapper>} />
+          <Route path="/tools/resistor" element={<PageWrapper><ResistorColorCodeCalculator /></PageWrapper>} />
+          <Route path="/tools/voltagedivider" element={<PageWrapper><VoltageDividerCalculator /></PageWrapper>} />
+          <Route path="/tools/barcodescanner" element={<PageWrapper><BarcodeScanner /></PageWrapper>} />
+          <Route exact path="/help" element={<PageWrapper><Help /></PageWrapper>} />
+          <Route path="/help/scanning" element={<PageWrapper><Scanning /></PageWrapper>} />
+          <Route path="/help/api-integrations" element={<PageWrapper><ApiIntegrations /></PageWrapper>} />
+          <Route path="/help/bom" element={<PageWrapper><BOM /></PageWrapper>} />
 
-            {/* admin */}
+          {/* admin */}
 
-            <Route
-              path="/admin"
-              element={
-                <AdminWrapper>
-                  <Admin />
-                </AdminWrapper>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
-                <AdminWrapper>
-                  <Users />
-                </AdminWrapper>
-              }
-            />
-            <Route
-              exact
-              path="/admin/users/:userId"
-              element={
-                <AdminWrapper>
-                  <User />
-                </AdminWrapper>
-              }
-            />
-            <Route
-              path="/admin/backup"
-              element={
-                <AdminWrapper>
-                  <Backup />
-                </AdminWrapper>
-              }
-            />
-            <Route
-              path="/admin/info"
-              element={
-                <AdminWrapper>
-                  <SystemInformation />
-                </AdminWrapper>
-              }
-            />
-            <Route
-              path="/admin/updateParts"
-              element={
-                <AdminWrapper>
-                  <UpdateParts />
-                </AdminWrapper>
-              }
-            />
-            <Route
-              path="/admin/activateLicense"
-              element={
-                <AdminWrapper>
-                  <ActivateLicense />
-                </AdminWrapper>
-              }
-            />
-          </Routes>
-        </Layout>
-        <ErrorModal context={this.state.error} />
-        <LicenseErrorModal context={this.state.licenseError} />
-      </div>
-    );
-  }
+          <Route path="/admin" element={<AdminWrapper><Admin /></AdminWrapper>} />
+          <Route path="/admin/users" element={<AdminWrapper><Users /></AdminWrapper>} />
+          <Route exact path="/admin/users/:userId" element={<AdminWrapper><User /></AdminWrapper>} />
+          <Route path="/admin/backup" element={<AdminWrapper><Backup /></AdminWrapper>} />
+          <Route path="/admin/info" element={<AdminWrapper><SystemInformation /></AdminWrapper>} />
+          <Route path="/admin/updateParts" element={<AdminWrapper><UpdateParts /></AdminWrapper>} />
+          <Route path="/admin/activateLicense" element={<AdminWrapper><ActivateLicense /></AdminWrapper>} />
+        </Routes>
+      </Layout>
+      <ErrorModal context={error} />
+      <LicenseErrorModal context={licenseError} />
+    </div>
+  );
 }
 
 export default withSearchParams(App);

@@ -1,0 +1,17 @@
+#datasheets .icon-container { 
+	display: flex;
+}
+
+#datasheets .icon-container.small svg { 
+	height: 0.9em;
+	color: gray;
+}
+
+#datasheets .icon-container.small { 
+	font-size: 1em;
+}
+
+#datasheets td .icon-container div {
+	margin-left: auto;
+	margin-right: 10px;
+}

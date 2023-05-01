@@ -7,6 +7,9 @@ import { isAuthenticated, isAdmin, logoutUserAccountAsync, deAuthenticateUserAcc
 import ProtectedInput from "../components/ProtectedInput";
 import "./NavMenu.css";
 
+/**
+ * Top Navigation menu
+ */
 export function NavMenu(props) {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);

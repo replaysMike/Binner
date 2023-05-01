@@ -85,7 +85,7 @@ export function Home(props) {
 
   const renderAuthenticatedHome = () => {
     return (
-      <div>
+      <div className="mask">
         <h1>{t('page.home.title', "Dashboard")}</h1>
         <p>{t('page.home.description', "Binner is an inventory management app for makers, hobbyists and professionals.")}</p>
         <Segment className="dashboard">

@@ -1,4 +1,5 @@
 ﻿import _ from "underscore";
+import { ResistorIcon } from "./icons";
 
 export const ProjectColors = [
   { name: '', value: 0 },
@@ -13,6 +14,12 @@ export const ProjectColors = [
   { name: 'grey', value: 9 },
   { name: 'violet', value: 10 },
 ];
+
+export const MountingTypes = {
+  None: { value: 0, name: 'None', icon: 'cancel', description: '' },
+  ThroughHole: { value: 1, name: 'Through Hole', icon: <ResistorIcon />, description: 'Part leads run through the PCB' },
+  SurfaceMount: { value: 2, name: 'Surface Mount', icon: 'microchip', description: 'Part is soldered to the surface of the PCB' },
+};
 
 export const BarcodeProfiles = {
   Default: 0
@@ -158,6 +165,7 @@ export const GetAdvancedTypeDropdown = (type, showDescription = false, keyIndex 
       ...extraFields,
       key: type[t].value + keyIndex,
       value: type[t].value,
+      icon: type[t].icon,
       text: type[t].text || type[t].name,
       description: showDescription ? type[t].description : null,
       ...(type[t].flag && {flag: type[t].flag.toLowerCase() })

@@ -27,7 +27,7 @@ const AppMedia = createMedia({
 const mediaStyles = AppMedia.createMediaStyle();
 const { Media, MediaContextProvider } = AppMedia;
 
-export default function PartsGrid2(props) {
+export default function PartsGrid2Memoized(props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,13 +58,8 @@ export default function PartsGrid2(props) {
   const [selectedPart, setSelectedPart] = useState(props.selectedPart);
   const [editable, setEditable] = useState(props.editable);
   const [visitable, setVisitable] = useState(props.visitable);
-  const [column, setColumn] = useState(null);
   const [columns, setColumns] = useState(props.columns);
   const [columnsArray, setColumnsArray] = useState(props.columns.split(','));
-  const [direction, setDirection] = useState(null);
-  const [changeTracker, setChangeTracker] = useState([]);
-  const [lastSavedPartId, setLastSavedPartId] = useState(0);
-  const [saveMessage, setSaveMessage] = useState("");
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
   const [modalHeader, setModalHeader] = useState("");
@@ -113,51 +108,9 @@ export default function PartsGrid2(props) {
     setTotalPages(Math.ceil(props.totalPages));
   }, [props]);
 
-  const handleSort = (clickedColumn) => () => {
-    if (column !== clickedColumn) {
-      setColumn(clickedColumn);
-      setParts(_.sortBy(parts, [clickedColumn]));
-      setDirection("ascending");
-    } else {
-      setParts(parts.reverse());
-      setDirection(direction === "ascending" ? "descending" : "ascending");
-    }
-  };
-
   const handlePageChange = (e, control) => {
     setPage(control.activePage);
     loadPage(e, control.activePage);
-  };
-
-  const save = async (part) => {
-    setIsLoading(true);
-    let lastSavedPartId = 0;
-    part.partTypeId = part.partTypeId + "";
-    part.mountingTypeId = part.mountingTypeId + "";
-    part.quantity = Number.parseInt(part.quantity) || 0;
-    part.lowStockThreshold = Number.parseInt(part.lowStockThreshold) || 0;
-    part.cost = Number.parseFloat(part.cost) || 0.0;
-    part.projectId = Number.parseInt(part.projectId) || null;
-
-    const response = await fetchApi("api/part", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(part)
-    });
-    let saveMessage = "";
-    if (response.responseObject.status === 200) {
-      lastSavedPartId = part.partId;
-      saveMessage = `Saved part ${part.partNumber}!`;
-    } else {
-      console.error("failed to save part", response.data);
-      saveMessage = t("comp.partsGrid.error.failedSave", "Error saving part {{partNumber}} - {{statusText}}", { partNumber: part.partNumber, statusText: response.statusText });
-      displayModalContent(saveMessage, "Error");
-    }
-    setIsLoading(false);
-    setLastSavedPartId(lastSavedPartId);
-    setSaveMessage(saveMessage);
   };
 
   const handleVisitLink = (e, url) => {
@@ -212,12 +165,6 @@ export default function PartsGrid2(props) {
     e.stopPropagation();
     setConfirmDeleteIsOpen(false);
     setSelectedPart(null);
-  };
-
-  const displayModalContent = (content, header = null) => {
-    setModalIsOpen(true);
-    setModalContent(content);
-    setModalHeader(header);
   };
 
   const handleModalClose = () => {
@@ -412,7 +359,7 @@ export default function PartsGrid2(props) {
         </div>
 
         <div style={{marginTop: '5px'}}>
-          {<MaterialReactTable
+          <MaterialReactTable
             columns={tableColumns}
             data={parts}
             //enableRowSelection /** disabled until I can figure out how to pin it */
@@ -427,14 +374,14 @@ export default function PartsGrid2(props) {
             enableDensityToggle
             enableHiding
             manualSorting
+            onColumnVisibilityChange={handleColumnVisibilityChange}
+            onColumnOrderChange={handleColumnOrderChange}
+            onSortingChange={handleSortChange}
             state={{ 
               columnVisibility, 
               columnOrder,
               sorting
             }}
-            onColumnVisibilityChange={handleColumnVisibilityChange}
-            onColumnOrderChange={handleColumnOrderChange}
-            onSortingChange={handleSortChange}
             initialState={{ 
               density: "compact", 
               columnPinning: { left: ['partNumber'], right: ['actions'] }
@@ -448,10 +395,8 @@ export default function PartsGrid2(props) {
                 cursor: 'pointer'
               }
             })}
-          />}
-        </div>
-
-        
+          />
+        </div>        
       </MediaContextProvider>
       <Confirm 
         className="confirm"
@@ -472,7 +417,7 @@ export default function PartsGrid2(props) {
   );
 }
 
-PartsGrid2.propTypes = {
+PartsGrid2Memoized.propTypes = {
   /** Parts listing to render */
   parts: PropTypes.array.isRequired,
   /** Callback to load next page */
@@ -507,7 +452,7 @@ PartsGrid2.propTypes = {
   onInit: PropTypes.func
 };
 
-PartsGrid2.defaultProps = {
+PartsGrid2Memoized.defaultProps = {
   loading: true,
   columns: "partNumber,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete",
   defaultVisibleColumns: "partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",

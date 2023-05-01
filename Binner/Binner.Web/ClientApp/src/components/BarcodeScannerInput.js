@@ -12,8 +12,7 @@ import boopSfx from '../audio/softbeep.mp3';
 import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
 
-// this value will be replaced by the Barcode config
-// lower values might fail to detect scans
+// this value will be replaced by the Barcode config. Lower values might fail to detect scans
 const DefaultDebounceIntervalMs = 80;
 // lower values will falsely detect scans, higher may fail on short barcodes
 const MinBufferLengthToAccept = 15; 
@@ -26,7 +25,7 @@ const MinKeystrokesToConsiderScanningEvent = 10;
  * Handles generic barcode scanning input by listening for batches of key presses
  */
 export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig, id, onDisabled }) {
-	const IsDebug = true;
+	const IsDebug = false;
 	const [barcodeConfig, setBarcodeConfig] = useState(config || {
 		enabled: true,
 		bufferTime: "00:00:00.150",
@@ -38,8 +37,8 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 	const [playScanSound] = useSound(boopSfx, { soundEnabled: true, volume: 1 });
 	const [isReceiving, setIsReceiving] = useState(false);
 	const isStartedReading = useRef(false);
+	const sourceElementRef = useRef(null);
 	const isReadingComplete = useRef(false);
-	const renderCount = useRef(0);
 	const timerRef = useRef(null);
 	const listeningRef = useRef(isKeyboardListening);
 	const keyBufferRef = useRef([]);
@@ -74,7 +73,10 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		processStringInput(e, result);
 		const maxTime = getMaxValueFast(keyTimes.current, 1);
 		const sum = getSumFast(keyTimes.current, 1);
-		if(IsDebug) console.log(`keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
+		if(IsDebug) 
+			console.log(`keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
+		else
+			console.log(`Barcode event processed in ${sum}ms`);
 		keyTimes.current = [];
   };
 
@@ -93,7 +95,8 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			// fire an mounted event handler that we received data
 			onReceived(e, input);
 			// fire a domain event
-			AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text }, id || "BarcodeScannerInput", document.activeElement);
+			AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text }, id || "BarcodeScannerInput", sourceElementRef.current);
+			sourceElementRef.current = null;
 		}else{
 			console.warn('no scan found, filtered.');
 		}
@@ -526,7 +529,10 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 				setIsReceiving(true);
 				isReadingComplete.current = false;
 				// only send the event once when we've determined we are capturing
-				if(!isStartedReading.current) AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", document.activeElement);
+				if(!isStartedReading.current) {
+					sourceElementRef.current = document.activeElement;
+					AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
+				}
 				isStartedReading.current = true;	
 			}
 
@@ -535,8 +541,10 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			timerRef.current = setTimeout(() => {
 				// barcode scan stopped
 				setIsReceiving(false);
-				if(isStartedReading.current && !isReadingComplete.current) 
-					AppEvents.sendEvent(Events.BarcodeReadingCancelled, keyBufferRef.current, id || "BarcodeScannerInput", document.activeElement);
+				if(isStartedReading.current && !isReadingComplete.current) {
+					AppEvents.sendEvent(Events.BarcodeReadingCancelled, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
+					sourceElementRef.current = null;
+				}
 				isStartedReading.current = false;
 			}, AbortBufferTimerMs);
 

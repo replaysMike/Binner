@@ -1,0 +1,25 @@
+.ui.left.icon.input:has(.clearIcon)>input {
+	padding-right: 2em !important;
+}
+
+.ui.icon.input:has(.clearIcon:first-of-type)>input {
+	padding-right: 2em!important;
+}
+
+.ui.icon.input:has(.clearIcon)>input {
+	padding-right: 3.6em!important;
+}
+
+.ui.icon.input>i.icon.clearIcon {
+	cursor: pointer;
+	z-index: 99999;
+	top: 1.45em;
+	transition-property: opacity;
+	transition-duration: 0.2s;
+	font-size: 0.6em;
+}
+
+.ui.icon.input>i.icon.clearIcon:hover {
+	opacity: 1 !important;
+	background-color: #fbfbfb;
+}

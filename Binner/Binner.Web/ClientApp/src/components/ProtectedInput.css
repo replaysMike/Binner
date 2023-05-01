@@ -49,6 +49,31 @@ i.barcode.icon:has(+ .protectedInput.isBarcodeScanning) {
 	text-decoration: unset;
 }
 
+.ui.icon.input:has(.search.icon)>.protectedInput {
+	padding-right: 2.5em !important;
+}
+
+.ui.icon.input:has(.search.icon):has(.clearIcon)>.protectedInput {
+	padding-right: 3.5em !important;
+}
+
+.ui.icon.input:has(.search.icon):has(.clearIcon):has(.barcode.icon)>.protectedInput {
+	padding-right: 5.25em !important;
+}
+
+.ui.icon.input>i.icon.clearIcon {
+	cursor: pointer;
+	z-index: 99999;
+	top: 13px;
+	transition-property: opacity;
+	transition-duration: 0.2s;
+	font-size: 0.6em;
+}
+
+.ui.icon.input>i.icon.clearIcon:hover {
+	opacity: 1 !important;
+}
+
 @keyframes animate
 {
 	0%{
