@@ -1,7 +1,7 @@
 .version-banner {
 	position: fixed;
 	left: 25%;
-	top: -50px;
+	top: -100px;
 	z-index: 999;
 	width: 50vw;
 	height: 40px;

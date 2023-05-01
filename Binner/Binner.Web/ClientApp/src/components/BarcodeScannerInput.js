@@ -3,7 +3,6 @@ import { Trans } from 'react-i18next';
 import { Link } from "react-router-dom";
 import { Popup, Image } from "semantic-ui-react";
 import { BarcodeProfiles } from "../common/Types";
-import { parseTimeSpan } from "../common/datetime";
 import PropTypes from "prop-types";
 import { dynamicDebouncer } from "../common/dynamicDebouncer";
 import { AppEvents, Events } from "../common/events";
@@ -14,21 +13,23 @@ import { copyString } from "../common/Utils";
 
 // this value will be replaced by the Barcode config. Lower values might fail to detect scans
 const DefaultDebounceIntervalMs = 80;
+const DefaultIsDebug = false;
 // lower values will falsely detect scans, higher may fail on short barcodes
 const MinBufferLengthToAccept = 15; 
 const AbortBufferTimerMs = 2000;
 // if any keystrokes have a delay between them greater than this value, the buffer will be dropped
-const MaxKeystrokeThresholdMs = 200;
+const DefaultMaxKeystrokeThresholdMs = 300;
 const MinKeystrokesToConsiderScanningEvent = 10;
 
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
 export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig, id, onDisabled }) {
-	const IsDebug = false;
 	const [barcodeConfig, setBarcodeConfig] = useState(config || {
 		enabled: true,
-		bufferTime: "00:00:00.150",
+		isDebug: DefaultIsDebug,
+		maxKeystrokeThresholdMs: DefaultMaxKeystrokeThresholdMs,
+		bufferTime: DefaultDebounceIntervalMs,
 		barcodePrefix2D: "[)>",
 		profile: BarcodeProfiles.Default
 	});
@@ -49,21 +50,21 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
   const onReceivedBarcodeInput = (e, buffer) => {
     if (buffer.length < MinBufferLengthToAccept && processKeyBuffer(buffer, barcodeConfig.barcodePrefix2D.length) !== barcodeConfig.barcodePrefix2D) {
 			keyBufferRef.current.length = 0;
-			if(IsDebug) console.log('timeout: barcode dropped input', buffer);
+			if(barcodeConfig.isDebug) console.log('BSI: timeout: barcode dropped input', buffer);
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
 			const sum = getSumFast(keyTimes.current, 1);
-			if(IsDebug) console.log(`keytimes maxtime1 '${maxTime}' sum: ${sum}`, keyTimes.current);
+			if(barcodeConfig.isDebug) console.log(`BSI: keytimes maxtime1 '${maxTime}' sum: ${sum}`, keyTimes.current);
 			keyTimes.current = [];
     	return; // drop and ignore input
 		} else {
 			// if keytimes has any times over a max threshold, drop input
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
-			if (maxTime > MaxKeystrokeThresholdMs) {
-				if(IsDebug) console.log(`dropped buffer due to maxtime '${maxTime}'`, keyTimes.current);
+			if (maxTime > barcodeConfig.maxKeystrokeThresholdMs) {
+				if(barcodeConfig.isDebug) console.log(`BSI: dropped buffer due to maxtime '${maxTime}'`, keyTimes.current);
 				keyTimes.current = [];
 				return; // drop and ignore input
 			}
-			if(IsDebug) console.log('accepted buffer', buffer.length);
+			if(barcodeConfig.isDebug) console.log('BSI: ccepted buffer', buffer.length);
 		}
 
     const result = processKeyBuffer(buffer);
@@ -73,10 +74,10 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		processStringInput(e, result);
 		const maxTime = getMaxValueFast(keyTimes.current, 1);
 		const sum = getSumFast(keyTimes.current, 1);
-		if(IsDebug) 
-			console.log(`keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
+		if(barcodeConfig.isDebug) 
+			console.log(`BSI: keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
 		else
-			console.log(`Barcode event processed in ${sum}ms`);
+			console.log(`BSI: Barcode event processed in ${sum}ms`);
 		keyTimes.current = [];
   };
 
@@ -98,7 +99,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text }, id || "BarcodeScannerInput", sourceElementRef.current);
 			sourceElementRef.current = null;
 		}else{
-			console.warn('no scan found, filtered.');
+			console.warn('BSI: no scan found, filtered.');
 		}
 		setIsReceiving(false);
 	};
@@ -255,7 +256,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		// assert expected barcode format number
     if (formatNumber !== expectedFormatNumber) {
       // error
-			console.error(`Expected the 2D barcode format number of ${expectedFormatNumber} but was ${formatNumber}`);
+			console.error(`BSI: Expected the 2D barcode format number of ${expectedFormatNumber} but was ${formatNumber}`);
       return {};
     }
 
@@ -417,14 +418,14 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 	const scannerDebounced = useMemo(() => dynamicDebouncer(onReceivedBarcodeInput, () => BarcodeScannerInput.debounceIntervalMs), []);
 
 	const disableBarcodeInput = (e) => {
-		if(IsDebug) console.log('disabled barcode input on request');
+		if(barcodeConfig.isDebug) console.log('BSI: disabled barcode input on request');
 		setPreviousIsKeyboardListeningState(isKeyboardListening);
 		setIsKeyboardListening(false);
 		removeKeyboardHandler();
 	};
 
 	const restoreBarcodeInput = (e) => {
-		if(IsDebug) console.log('enabled barcode input on request');
+		if(barcodeConfig.isDebug) console.log('BSI: enabled barcode input on request');
 		setIsKeyboardListening(previousIsKeyboardListeningState);
 		addKeyboardHandler();
 	};
@@ -448,7 +449,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 					onSetConfig(barcodeConfig);
 
 				// update the static debounce interval
-				BarcodeScannerInput.debounceIntervalMs = parseTimeSpan(barcodeConfig.bufferTime).toMilliseconds();
+				BarcodeScannerInput.debounceIntervalMs = parseInt(barcodeConfig.bufferTime);
 				if (barcodeConfig.enabled) enableListening();
 				else if (onDisabled) onDisabled();
 			});
@@ -470,7 +471,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		if (config) {
 			setBarcodeConfig({...config});
 			// update the static debounce interval
-			BarcodeScannerInput.debounceIntervalMs = parseTimeSpan(config.bufferTime).toMilliseconds();
+			BarcodeScannerInput.debounceIntervalMs = parseInt(config.bufferTime);
 		}
 	}, [config])
 
@@ -525,7 +526,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 			keyBufferRef.current.push(e);
 
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
-			if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < MaxKeystrokeThresholdMs) {
+			if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < barcodeConfig.maxKeystrokeThresholdMs) {
 				setIsReceiving(true);
 				isReadingComplete.current = false;
 				// only send the event once when we've determined we are capturing
@@ -553,7 +554,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
       scannerDebounced(e, keyBufferRef.current);
     } else {
 			// dropped key, not listening
-			if(IsDebug) console.log('input ignored, not listening');
+			if(barcodeConfig.isDebug) console.log('BSI: input ignored, not listening');
 		}
 		return e;
   };

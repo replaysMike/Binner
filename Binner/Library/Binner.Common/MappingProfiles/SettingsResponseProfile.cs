@@ -74,7 +74,10 @@ namespace Binner.Common.MappingProfiles
 
             CreateMap<BarcodeConfiguration, BarcodeSettingsResponse>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
-                .ForMember(x => x.BarcodePrefix2D, options => options.MapFrom(x => x.BarcodePrefix2D))
+                .ForMember(x => x.Prefix2D, options => options.MapFrom(x => x.Prefix2D))
+                .ForMember(x => x.Profile, options => options.MapFrom(x => x.Profile))
+                .ForMember(x => x.MaxKeystrokeThresholdMs, options => options.MapFrom(x => x.MaxKeystrokeThresholdMs))
+                .ForMember(x => x.IsDebug, options => options.MapFrom(x => x.IsDebug))
                 .ForMember(x => x.Profile, options => options.MapFrom(x => x.Profile))
                 .ForMember(x => x.BufferTime, options => options.MapFrom(x => x.BufferTime));
 

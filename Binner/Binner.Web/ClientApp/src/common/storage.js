@@ -68,6 +68,7 @@ export const removeLocalData = (settingName, options = { settingsName: DefaultRo
 	if (prefValues !== undefined) {
 		delete prefValues[settingName];
 		const keys = Object.keys(prefValues);
+		console.log('del', options.settingsName, keys, values);
 		// if there are no children left, remove the entire key
 		if (keys.length === 0)
 			localStorage.removeItem(options.settingsName);

@@ -22,27 +22,27 @@ export default function ProtectedInput(props) {
 
 	const barcodeReadStarted = (e) => {
 		window.requestAnimationFrame(() => { inputReceiving.current = true; });
-		console.log(`YY sending read started id: ${id} dest: ${e.detail.destination.id}`);
+		if (IsDebug) console.log(`PI: sending read started id: ${id} dest: ${e.detail.destination.id}`);
 		if (e.detail.destination.id !== id) return;
-		if (IsDebug) console.log('barcodeReadStarted', e, e.detail.destination.id, id);
+		if (IsDebug) console.log('PI: barcodeReadStarted', e, e.detail.destination.id, id);
 		inputRef.current.classList.add(DefaultIsScanningClassName);
 		if (props.onBarcodeReadStarted) props.onBarcodeReadStarted(e);
 	};
 
 	const barcodeReadCancelled = (e) => {
 		window.requestAnimationFrame(() => { inputReceiving.current = false; });
-		console.log(`YY sending read cancelled id: ${id} dest: ${e.detail.destination.id}`);
+		if (IsDebug) console.log(`PI: sending read cancelled id: ${id} dest: ${e.detail.destination.id}`);
 		if (e.detail.destination.id !== id) return;
-		if (IsDebug) console.log('barcodeReadCancelled', e, e.detail.destination.id, id);
+		if (IsDebug) console.log('PI: barcodeReadCancelled', e, e.detail.destination.id, id);
 		inputRef.current.classList.remove(DefaultIsScanningClassName);
 		if (props.onBarcodeReadCancelled) props.onBarcodeReadCancelled(e);
 	};
 
 	const barcodeReadReceived = (e) => {
 		window.requestAnimationFrame(() => { inputReceiving.current = false; });
-		console.log(`YY sending read complete id: ${id} dest: ${e.detail.destination.id}`);
+		if (IsDebug) console.log(`PI: sending read complete id: ${id} dest: ${e.detail.destination.id}`);
 		if (e.detail.destination.id !== id) return;
-		if (IsDebug) console.log('barcodeReadReceived', e, e.detail.destination.id, id, props.clearOnScan);
+		if (IsDebug) console.log('PI: barcodeReadReceived', e, e.detail.destination.id, id, props.clearOnScan);
 		// replace the text input control to the original before the barcode scan took place
 		bufferedValue.current = bufferedValue.current?.replaceAll(e.detail.text, "");
 		inputRef.current.classList.remove(DefaultIsScanningClassName);

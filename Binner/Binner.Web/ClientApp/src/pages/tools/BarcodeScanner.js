@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Form, Popup, Input, Icon, Button } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
-import { FormatFullDateTime, parseTimeSpan, timeSpanFromMilliseconds } from "../../common/datetime";
 import { GetTypeName, BarcodeProfiles } from "../../common/Types";
 import ProtectedInput from "../../components/ProtectedInput";
 import reactStringReplace from "react-string-replace";
@@ -23,7 +22,6 @@ export function BarcodeScanner(props) {
   const [customBufferTime, setCustomBufferTime] = useState(0);
   const [configOverride, setConfigOverride] = useState(null);
   const [dummy, setDummy] = useState(null);
-  const [dummy2, setDummy2] = useState(null);
   const [unprotectedDummy, setUnprotectedDummy] = useState(null);
   const [unprotectedDummyStartTime, setUnprotectedDummyStartTime] = useState(null);
   const [dummyStartTime, setDummyStartTime] = useState(null);
@@ -38,14 +36,14 @@ export function BarcodeScanner(props) {
 
   const handleSetConfig = (config) => {
     setConfig(config);
-    setCustomBufferTime(parseTimeSpan(config?.bufferTime || "00:00:00").toMilliseconds());
+    setCustomBufferTime(config?.bufferTime);
   };
 
   const handleChange = (e, control) => {
     switch(control.name){
       case 'customBufferTime':
         setCustomBufferTime(control.value);
-        setConfigOverride({...control, bufferTime: timeSpanFromMilliseconds(parseInt(control.value))})
+        setConfigOverride({...control, bufferTime: parseInt(control.value)})
         break;
       case 'dummy':
         // measure how long a barcode scan event takes
@@ -54,9 +52,6 @@ export function BarcodeScanner(props) {
         dummyTimerRef.current = setTimeout(() => { console.log('Dummy took', new Date().getTime() - dummyStartTime - 500); }, 500);
         setDummy(control.value);
         break;
-      case 'dummy2':
-          setDummy2(control.value);
-          break;
       case 'unprotectedDummy':
         if (unprotectedDummy === null || unprotectedDummy.length === 0) setUnprotectedDummyStartTime(new Date().getTime());
         console.log('unprotectedDummy onChange', control.value);
@@ -137,19 +132,8 @@ export function BarcodeScanner(props) {
         <div>
           <ProtectedInput 
             name="dummy" 
-            icon="search"
-            iconPosition="left"
             placeholder="A protected input text box that can handle barcode events" 
             value={dummy || ''} 
-            onChange={handleChange}
-            focus
-            />
-          <ProtectedInput 
-            name="dummy2" 
-            icon="search"
-            iconPosition="left"
-            placeholder="A protected input text box that can handle barcode events" 
-            value={dummy2 || ''} 
             onChange={handleChange}
             focus
             />

@@ -197,7 +197,7 @@
         "barcodeSupportEnabled": "Choose if you would like to enable barcode support.",
         "barcodeProfile": "Choose the barcode profile to use for your scanner.",
         "barcodePrefix": "The prefix used for 2D barcodes, usually '[)>'.",
-        "barcodeBufferTime": "The buffer time the barcode will scan data for. Some scanners require more or less time."
+        "barcodeBufferTime": "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80"
       }
     },
     "datasheet": {
@@ -757,7 +757,8 @@
     "testFailed": "Test failed",
     "invalidOrder": "Hmmm, that doesn't look like a valid order number!",
     "invalid2dBarcode": "Hmmm, I don't recognize that 2D barcode!",
-    "failedDeleteRecord": "Failed to record!"
+    "failedDeleteRecord": "Failed to record!",
+    "failedToSaveSettings": "Failed to save settings!"
   },
   "success": {
     "producedPcbs": "{{quantity}} PCB's were produced!",

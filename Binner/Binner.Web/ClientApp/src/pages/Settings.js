@@ -9,13 +9,26 @@ import { DEFAULT_FONT, BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown
 import { DigiKeySites } from "../common/digiKeySites";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
+import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { toast } from "react-toastify";
-import { timeSpanFromMilliseconds, parseTimeSpan } from '../common/datetime';
 import "./Settings.css";
 
 export const Settings = (props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  
+  const getViewPreference = (preferenceName) => {
+    return getLocalData(preferenceName, { settingsName: 'settings' })
+  };
+
+  const setViewPreference = (preferenceName, value) => {
+    setLocalData(preferenceName, value, { settingsName: 'settings' });
+  };
+
+  const removeViewPreference = (preferenceName, value) => {
+    removeLocalData(preferenceName, value, { settingsName: 'settings' });
+  };
+
   const [loading, setLoading] = useState(true);
   const [fonts, setFonts] = useState([]);
   const [font, setFont] = useState(null);
@@ -62,14 +75,15 @@ export const Settings = (props) => {
       apiUrl: "",
       timeout: "00:00:05"
     },
-    digikey: {
-      enabled: false,
-      site: 0,
-      clientId: "",
-      clientSecret: "",
-      oAuthPostbackUrl: "",
-      apiUrl: "",
-    },
+    digikey: getViewPreference("digikey") 
+      || {
+        enabled: false,
+        site: 0,
+        clientId: "",
+        clientSecret: "",
+        oAuthPostbackUrl: "",
+        apiUrl: "",
+      },
     mouser: {
       enabled: false,
       searchApiKey: "",
@@ -207,10 +221,11 @@ export const Settings = (props) => {
     },
     barcode: {
       enabled: true,
-      bufferTime: '00:00:00.150',
-      bufferTimeMs: parseTimeSpan('00:00:00.150').toMilliseconds(),
+      isDebug: false,
+      maxKeystrokeThresholdMs: 300,
+      bufferTime: 80,
       profile: BarcodeProfiles.Default,
-      barcodePrefix2D: "[)>"
+      prefix2D: "[)>",
     },
   });
   const [apiTestResults, setApiTestResults] = useState([]);
@@ -249,7 +264,12 @@ export const Settings = (props) => {
       }).then((response) => {
         const { data } = response;
         setLoading(false);
-        setSettings({ ...data, barcode: {...data.barcode, bufferTimeMs: parseTimeSpan(data.barcode.bufferTime).toMilliseconds()} });
+        setSettings({ ...data, barcode: {...data.barcode }});
+        const digikeyTempSettings = getViewPreference("digikey");
+        if (digikeyTempSettings) {
+          setSettings({...data, digikey: digikeyTempSettings});
+          setIsDirty(true);
+        }        
       });
     };
 
@@ -263,7 +283,7 @@ export const Settings = (props) => {
    * @param {any} e
    */
   const onSubmit = async (e) => {
-    const newSettings = {...settings, barcode: {...settings.barcode, bufferTime: timeSpanFromMilliseconds(parseInt(settings.barcode.bufferTimeMs)) }};
+    const newSettings = {...settings, barcode: {...settings.barcode, bufferTime: parseInt(settings.barcode.bufferTime), maxKeystrokeThresholdMs: parseInt(settings.barcode.maxKeystrokeThresholdMs) }};
     await fetchApi("api/system/settings", {
       method: "PUT",
       headers: {
@@ -271,10 +291,17 @@ export const Settings = (props) => {
       },
       body: JSON.stringify(newSettings),
     }).then((response) => {
-      const saveMessage = t('success.systemSettingsSaved', "System settings were saved.");
-      toast.success(saveMessage);
-      setSaveMessage(saveMessage);
-      navigate(-1);
+      if (response.responseObject.ok) {
+        const saveMessage = t('success.systemSettingsSaved', "System settings were saved.");
+        toast.success(saveMessage);
+        setSaveMessage(saveMessage);
+        removeViewPreference('digikey', {});
+        navigate(-1);
+      } else {
+        const errorMessage = t('success.failedToSaveSettings', "Failed to save settings!");
+        toast.error(errorMessage);
+        setSaveMessage(saveMessage);
+      }
     });
   };
 
@@ -351,7 +378,7 @@ export const Settings = (props) => {
   };
 
   const setControlValue = (setting, name, control) => {
-    if (control.name === `${name}Enabled`) {
+    if (control.name === `${name}Enabled` || control.name === `${name}IsDebug`) {
       // for enabled dropdowns, they don't advertise type!
       setting[getControlInstanceName(control, name)] =
         control.value > 0 ? true : false;
@@ -421,6 +448,14 @@ export const Settings = (props) => {
         configuration.push({ key: "clientSecret", value: settings.digikey.clientSecret });
         configuration.push({ key: "apiUrl", value: settings.digikey.apiUrl });
         configuration.push({ key: "oAuthPostbackUrl", value: settings.digikey.oAuthPostbackUrl });
+        setViewPreference('digikey', {
+          enabled: settings.digikey.enabled,
+          site: settings.digikey.site,
+          clientId: settings.digikey.clientId,
+          clientSecret: settings.digikey.clientSecret,
+          oAuthPostbackUrl: settings.digikey.oAuthPostbackUrl,
+          apiUrl: settings.digikey.apiUrl,
+          })
         break;
       case "mouser":
         configuration.push({ key: "enabled", value: settings.mouser.enabled + "" });
@@ -1361,6 +1396,29 @@ export const Settings = (props) => {
                 }
               />
             </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('page.settings.isBarcodeDebug', "Debug Mode")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>{t('page.settings.popup.barcodeIsDebug', "Enabling Barcode debug mode will print diagnostic information to the browser console.")}</p>
+                }
+                trigger={
+                  <Dropdown
+                    name="barcodeIsDebug"
+                    placeholder="Disabled"
+                    selection
+                    value={settings.barcode.isDebug ? 1 : 0}
+                    options={enabledSources}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
             
             <Form.Field width={10}>
               <label>{t('label.bufferTime', "Buffer Time (ms)")}</label>
@@ -1368,14 +1426,14 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>{t('page.settings.popup.barcodeBufferTime', "The buffer time the barcode will scan data for. Some scanners require more or less time.")}</p>}
+                content={<p>{t('page.settings.popup.barcodeBufferTime', "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80")}</p>}
                 trigger={
                   <ClearableInput
                     icon="clock"
                     className="labeled"
                     placeholder=""
-                    value={settings.barcode.bufferTimeMs || ""}
-                    name="barcodeBufferTimeMs"
+                    value={settings.barcode.bufferTime || ""}
+                    name="barcodeBufferTime"
                     onChange={handleChange}
                   />
                 }
@@ -1383,17 +1441,37 @@ export const Settings = (props) => {
             </Form.Field>
 
             <Form.Field width={10}>
-              <label>{t('label.barcodePrefix2d', "2D Barcode Prefix")}</label>
+              <label>{t('label.maxKeystrokeThresholdMs', "Max Keystroke Threshold (ms)")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={<p>{t('page.settings.popup.barcodePrefix', "The prefix used for 2D barcodes, usually '[)>'.")}</p>}
+                content={<p>{t('page.settings.popup.maxKeystrokeThresholdMs', "The maximum amount of time in milliseconds to wait between keypresses.")}</p>}
+                trigger={
+                  <ClearableInput
+                    icon="clock"
+                    className="labeled"
+                    placeholder=""
+                    value={settings.barcode.maxKeystrokeThresholdMs || ""}
+                    name="barcodeMaxKeystrokeThresholdMs"
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('label.prefix2d', "2D Barcode Prefix")}</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.prefix2d', "The prefix used for 2D barcodes, usually '[)>'.")}</p>}
                 trigger={
                   <ClearableInput
                     className="labeled"
                     placeholder=""
-                    value={settings.barcode.barcodePrefix2D || ""}
+                    value={settings.barcode.prefix2D || ""}
                     name="barcodePrefix2D"
                     onChange={handleChange}
                   />

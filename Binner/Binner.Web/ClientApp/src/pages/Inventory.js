@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import { Icon, Input, Label, Button, TextArea, Image, Form, Segment, Popup, Header, Confirm, Grid, Checkbox, Dropdown, Breadcrumb } from "semantic-ui-react";
+import { toast } from "react-toastify";
 import TextSnippet from "@mui/icons-material/TextSnippet";
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import BeenhereIcon from '@mui/icons-material/Beenhere';
@@ -23,7 +24,6 @@ import { MatchingPartsMemoized } from "../components/MatchingPartsMemoized";
 import { DuplicatePartModal } from "../components/DuplicatePartModal";
 import { fetchApi } from "../common/fetchApi";
 import { formatNumber } from "../common/Utils";
-import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
 import { getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
@@ -270,7 +270,7 @@ export function Inventory(props) {
    * @returns barcode metadata object
    */
   const doBarcodeLookup = async (scannedPart, onSuccess, onFailure) => {
-    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}&token=${getImagesToken()}`, {
+    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"

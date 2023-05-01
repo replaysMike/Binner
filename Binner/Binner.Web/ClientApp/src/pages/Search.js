@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import { Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
+import { toast } from "react-toastify";
 import ProtectedInput from "../components/ProtectedInput";
 import PartsGrid2Memoized from "../components/PartsGrid2Memoized";
 import { fetchApi } from "../common/fetchApi";
@@ -41,6 +42,7 @@ export function Search(props) {
 
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = async (e, input) => {
+    console.log('handleBarcodeInput', input);
     let cleanPartNumber = "";
     if (input.type === "datamatrix") {
       if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
@@ -49,7 +51,40 @@ export function Search(props) {
       cleanPartNumber = input.value;
     }
     setKeyword(cleanPartNumber);
-    await searchDebounced(cleanPartNumber);
+
+    const response = await fetchApi(`api/part/barcode/info?barcode=${cleanPartNumber}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    if (response.responseObject.status === 200) {
+      const { data } = response;
+      if (data.requiresAuthentication) {
+        // redirect for authentication
+        window.open(data.redirectUrl, "_blank");
+        return;
+      }
+      if (data.errors && data.errors.length > 0) {
+        const errorMessage = data.errors.join("\n");
+        if(data.errors[0] === "Api is not enabled."){
+          // supress warning for barcode scans
+        }
+        else
+          toast.error(errorMessage);
+      } else if (data.response.parts.length > 0) {
+        // show the metadata in the UI
+        var partInfo =  data.response.parts[0];
+        setKeyword(partInfo.basePartNumber);
+        await search(partInfo.basePartNumber);
+      } else {
+        // no barcode found
+        setKeyword('');
+      }
+    } else {
+      // error received
+      toast.error('Barcode search returned an error!');
+    }
   };
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
@@ -213,8 +248,12 @@ export function Search(props) {
             icon="search"
             value={keyword}
             onChange={handleSearch}
+            id="keyword"
             name="keyword"
             clearOnScan={false}
+            onBarcodeReadStarted={(e) => { console.log('onBarcodeReadStarted'); searchDebounced.cancel();  }}
+            onBarcodeReadCancelled={(e) => { searchDebounced.cancel();  }}
+            onBarcodeReadReceived={(e) => { console.log('onBarcodeReadDone'); searchDebounced.cancel();  }}
           />
         </Form.Field>
       </Form>
