@@ -43,6 +43,7 @@
       "addKeyword": "Add Keyword",
       "chooseAlternatePart": "Choose alternate part ({{count}})",
       "suggestedPart": "Suggested part number",
+      "partExists": "This <1>part</1> <3>already exists</3> in your inventory.",
       "placeholder": {
         "location": "Home lab",
         "keywords": "op amp",
@@ -63,7 +64,10 @@
         "alternateParts": "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.",
         "mustAddPart": "You must save the part before adding custom suppliers to it.",
         "addSupplier": "Add a manual supplier entry",
-        "deleteLocalFile": "Delete this local file"
+        "deleteLocalFile": "Delete this local file",
+        "technicalSpecs": "View technical specs",
+        "compliance": "View compliance information",
+        "cadModels": "View CAD Models available for this part"
       }
     },
     "lowInventory": {
@@ -197,7 +201,15 @@
       }
     },
     "datasheet": {
-      "title": "Datasheet Search"
+      "title": "Datasheet Search",
+      "partType": "Part Type",
+      "manufacturerPartNumber": "Manufacturer Part",
+      "manufacturer": "Manufacturer",
+      "website": "Website",
+      "datasheet": "Datasheet",
+      "packageType": "Package Type",
+      "status": "Status",
+      "datasheets": "Datasheets"
     },
     "orderImport": {
       "title": "Order Import",
@@ -478,7 +490,7 @@
       }
     },
     "chooseAlternatePartModal": {
-      "title": "Matching Parts"
+      "title": "Choose an alternate part"
     },
     "lineTemplate": {
       "label": {
@@ -514,6 +526,10 @@
         "autoIncrement": "Auto increment of Bin Number 2",
         "rememberLocation": "Repeat the location of each added part"
       }
+    },
+    "duplicatePartModal": {
+      "title": "Duplicate Part",
+      "description": "There is a possible duplicate part already in your inventory."
     }
   },
   "button": {
@@ -559,7 +575,11 @@
     "createBackup": "Create Backup",
     "produceHistory": "History",
     "rename": "Rename",
-    "parts": "Parts"
+    "parts": "Parts",
+    "specs": "Specs",
+    "compliance": "Compliance",
+    "cadModels": "CAD Models",
+    "addAnyway": "Add Anyway"
   },
   "label": {
     "name": "Name",
@@ -673,12 +693,15 @@
     "serial": "Serial",
     "allowLogin": "Allow Login",
     "bufferTime": "Buffer Time (ms)",
-    "barcodePrefix2d": "2D Barcode Prefix"
+    "barcodePrefix2d": "2D Barcode Prefix",
+    "active": "Active",
+    "inactive": "Inactive",
+    "rowsPerPage": "Rows per page"
   },
   "message": {
     "noPartsAdded": "No parts added.",
     "noChildPartTypes": "There are no child part types.",
-    "noResults": "No Results",
+    "noResults": "No results.",
     "loadingOrder": "Loading order# {{order}}",
     "noMatchingResults":"No matching results.",
     "notEnoughParts": "Not enough parts",

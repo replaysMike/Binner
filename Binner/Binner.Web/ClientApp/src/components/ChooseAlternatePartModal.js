@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ReactDOM from "react-dom";
 import { Label, Button, Image, Table, Modal, Popup } from "semantic-ui-react";
 import _ from "underscore";
+import { MountingTypes, GetTypeName } from "../common/Types";
 import { formatCurrency, formatNumber } from "../common/Utils";
 
 export function ChooseAlternatePartModal(props) {
@@ -12,16 +13,6 @@ export function ChooseAlternatePartModal(props) {
 
 	const handlePartModalClose = (e) => {
     setPartModalOpen(false);
-  };
-
-	const getMountingTypeById = (mountingTypeId) => {
-    switch (mountingTypeId) {
-      default:
-      case 1:
-        return "through hole";
-      case 2:
-        return "surface mount";
-    }
   };
 
 	const handleChooseAlternatePart = (e, part) => {
@@ -104,7 +95,7 @@ export function ChooseAlternatePartModal(props) {
                 <Table.Cell>{p.partType}</Table.Cell>
                 <Table.Cell>{p.supplier}</Table.Cell>
                 <Table.Cell>{p.packageType}</Table.Cell>
-                <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
+                <Table.Cell>{GetTypeName(MountingTypes, p.mountingTypeId)}</Table.Cell>
                 <Table.Cell>{formatNumber(p.quantityAvailable)}</Table.Cell>
                 <Table.Cell>{formatCurrency(p.cost)}</Table.Cell>
                 <Table.Cell>
@@ -143,7 +134,7 @@ export function ChooseAlternatePartModal(props) {
 		open={partModalOpen}
 		onClose={handlePartModalClose}
 	>
-		<Modal.Header>{t('comp.chooseAlternatePartModal.title', "Matching Parts")}</Modal.Header>
+		<Modal.Header>{t('comp.chooseAlternatePartModal.title', "Choose an alternate part")}</Modal.Header>
 		<Modal.Content scrolling>
 			<Modal.Description>{matchingPartsList}</Modal.Description>
 		</Modal.Content>

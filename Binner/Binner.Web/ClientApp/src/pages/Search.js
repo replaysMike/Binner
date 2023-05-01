@@ -5,11 +5,10 @@ import _ from "underscore";
 import debounce from "lodash.debounce";
 import { Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
 import ProtectedInput from "../components/ProtectedInput";
-import PartsGrid2 from "../components/PartsGrid2";
+import PartsGrid2Memoized from "../components/PartsGrid2Memoized";
 import { fetchApi } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
-import customEvents from '../common/customEvents';
 
 export function Search(props) {
   const DebounceTimeMs = 400;
@@ -113,13 +112,6 @@ export function Search(props) {
   const searchDebounced = useMemo(() => debounce(search, DebounceTimeMs), []);
 
   useEffect(() => {
-    customEvents.notifySubscribers("avatar", true);
-    return () => {
-      customEvents.notifySubscribers("avatar", false);
-    };
-  }, []);
-
-  useEffect(() => {
     if (pageSize === -1) return;
     if (keywordParam !== keyword) {
       if (keywordParam && keywordParam.length > 0) {
@@ -188,7 +180,7 @@ export function Search(props) {
   };
 
   const renderPartsTable = useMemo(() => {
-    return (<PartsGrid2
+    return (<PartsGrid2Memoized
         parts={parts}
         page={page}
         totalPages={totalPages}
@@ -200,7 +192,7 @@ export function Search(props) {
         onSortChange={handleSortChange}
         onInit={handleInit}
         name="partsGrid"
-      >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2>);
+      >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2Memoized>);
   }, [renderIsDirty, parts, page, totalPages, totalRecords, loading]);
 
 
@@ -212,8 +204,7 @@ export function Search(props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('page.search.title', "Inventory")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.search.title', "Inventory")} to={".."}>
-			</FormHeader>
+      <FormHeader name={t('page.search.title', "Inventory")} to="/" />
       <Form>
         <Form.Field width={5}>
           <ProtectedInput            

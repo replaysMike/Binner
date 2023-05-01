@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Dropdown, Icon } from "semantic-ui-react";
+import { Dropdown } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import _ from "underscore";
 import { getIcon } from "../common/partTypes";
@@ -13,15 +13,20 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import "./PartTypeSelector.css";
 
-export default function PartTypeSelector(props) {
+/**
+ * Part type selector dropdown (treeview with icons)
+ * [memoized]
+ */
+export default function PartTypeSelectorMemoized(props) {
   const { t } = useTranslation();
-  PartTypeSelector.abortController = new AbortController();
+  PartTypeSelectorMemoized.abortController = new AbortController();
   const [partTypes, setPartTypes] = useState(props.partTypes);
 	const [partTypesFiltered, setPartTypesFiltered] = useState([]);
 	const [partTypeId, setPartTypeId] = useState(0);
   const [partType, setPartType] = useState({ partTypeId: 0, name: ""});
 	const [filter, setFilter] = useState('');
 	const [expandedNodeIds, setExpandedNodeIds] = useState([]);
+  const [loadingPartTypes, setLoadingPartTypes] = useState(false);
 
 	const getPartTypeFromId = useCallback((partTypeId) => {
 		let partTypeIdInt = partTypeId;
@@ -41,6 +46,10 @@ export default function PartTypeSelector(props) {
     setPartTypes(props.partTypes);
 		setPartTypesFiltered(props.partTypes);
   }, [props.partTypes]);
+
+  useEffect(() => {
+    setLoadingPartTypes(props.loadingPartTypes);
+  }, [props.loadingPartTypes]);
 
   useEffect(() => {
 		const type = typeof props.value;
@@ -253,7 +262,6 @@ export default function PartTypeSelector(props) {
   };
 
   const render = useMemo(() => {
-    console.log('partTypesSelector render');
     return (
     <div className="partTypeSelector-container">
       <div className="icon">{getSelectedIcon(partType)}</div>
@@ -269,6 +277,8 @@ export default function PartTypeSelector(props) {
         onSearchChange={handleOnSearchChange}
         onBlur={handleOnBlur}
         onFocus={handleOnFocus}
+        disabled={loadingPartTypes}
+        loading={loadingPartTypes}
       >
         <Dropdown.Menu>
           <Dropdown.Item>
@@ -302,9 +312,15 @@ export default function PartTypeSelector(props) {
   );
 }
 
-PartTypeSelector.propTypes = {
+PartTypeSelectorMemoized.propTypes = {
+  name: PropTypes.string.isRequired,
+  value: PropTypes.any.isRequired,
   /** Event handler when selecting a part type */
   onSelect: PropTypes.func.isRequired,
   /** The array of partTypes */
-  partTypes: PropTypes.array.isRequired
+  partTypes: PropTypes.array.isRequired,
+  loadingPartTypes: PropTypes.bool,
+  label: PropTypes.string,
+  onBlur: PropTypes.func,
+  onFocus: PropTypes.func
 };

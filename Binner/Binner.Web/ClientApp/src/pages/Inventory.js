@@ -1,66 +1,69 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation, Trans } from 'react-i18next';
-import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import _ from "underscore";
 import debounce from "lodash.debounce";
-import { Icon, Input, Label, Button, TextArea, Image, Form, Table, Segment, Popup, Modal, Header, Confirm, Grid, Checkbox, Dropdown} from "semantic-ui-react";
+import { Icon, Input, Label, Button, TextArea, Image, Form, Segment, Popup, Header, Confirm, Grid, Checkbox, Dropdown, Breadcrumb } from "semantic-ui-react";
+import TextSnippet from "@mui/icons-material/TextSnippet";
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
+import BeenhereIcon from '@mui/icons-material/Beenhere';
 import ProtectedInput from "../components/ProtectedInput";
+import ClearableInput from "../components/ClearableInput";
 import NumberPicker from "../components/NumberPicker";
-import PartTypeSelector from "../components/PartTypeSelector";
+import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
 import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
-import { PartMedia } from "../components/PartMedia";
+import { PartMediaMemoized } from "../components/PartMediaMemoized";
 import { BulkScanModal } from "../components/BulkScanModal";
-import { BulkScanIcon } from "../components/BulkScanIcon";
+import { BulkScanIconMemoized } from "../components/BulkScanIconMemoized";
 import { RecentParts } from "../components/RecentParts";
-import { PartSuppliers } from "../components/PartSuppliers";
+import { PartSuppliersMemoized } from "../components/PartSuppliersMemoized";
+import { MatchingPartsMemoized } from "../components/MatchingPartsMemoized";
+import { DuplicatePartModal } from "../components/DuplicatePartModal";
 import { fetchApi } from "../common/fetchApi";
 import { formatNumber } from "../common/Utils";
 import { toast } from "react-toastify";
 import { getPartTypeId } from "../common/partTypes";
-import { getAuthToken, getImagesToken } from "../common/authentication";
+import { getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
-import { GetAdvancedTypeDropdown } from "../common/Types";
+import { MountingTypes, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
-import customEvents from '../common/customEvents';
 import { Currencies } from "../common/currency";
 import "./Inventory.css";
 
-const IcPartType = 14;
-
 export function Inventory(props) {
+  const SearchDebounceTimeMs = 500;
+  const IcPartType = 14;
+  const DefaultLowStockThreshold = 10;
+  const DefaultQuantity = 1;
+  const DefaultMountingTypeId = 0;
   const maxRecentAddedParts = 10;
+  const MinSearchKeywordLength = 3;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
     lastPartTypeId: IcPartType, // IC
-    lastMountingTypeId: "0", // None
-    lastQuantity: 1,
+    lastMountingTypeId: DefaultMountingTypeId, // None
+    lastQuantity: DefaultQuantity,
     lastProjectId: null,
     lastLocation: "",
     lastBinNumber: "",
     lastBinNumber2: "",
-    lowStockThreshold: 10,
+    lowStockThreshold: DefaultLowStockThreshold,
     rememberLast: true
   };
-
-  const [inputPartNumber, setInputPartNumber] = useState("");
-  const [suggestedPartNumber, setSuggestedPartNumber] = useState(null);
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
-  const [infoResponse, setInfoResponse] = useState({});
-  
   const pageHasParameters = (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0);
   const defaultPart = {
     partId: 0,
     partNumber: props.params.partNumber || "",
     allowPotentialDuplicate: false,
-    quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) + "",
+    quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) || DefaultQuantity,
     lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) + "",
-    partTypeId: (!pageHasParameters && viewPreferences.rememberLast && (viewPreferences.lastPartTypeId || IcPartType)) || 0 ,
-    mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) || 0 + "",
+    partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) || IcPartType,
+    mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) || DefaultMountingTypeId,
     packageType: "",
     keywords: "",
     description: "",
@@ -84,58 +87,36 @@ export function Inventory(props) {
     storedFiles: []
   };
 
-  const defaultMountingTypes = [
-    {
-      key: 0,
-      value: "0", /** using strings here because semantic doesnt allow selection of value=0 */
-      text: "None"
-    },
-    {
-      key: 1,
-      value: "1",
-      text: "Through Hole"
-    },
-    {
-      key: 2,
-      value: "2",
-      text: "Surface Mount"
-    }
-  ];
-
+  const [inputPartNumber, setInputPartNumber] = useState("");
+  const [infoResponse, setInfoResponse] = useState({});
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState(defaultPart);
   const [isEditing, setIsEditing] = useState((part && part.partId > 0) || pageHasParameters);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedPart, setSelectedPart] = useState(null);
-  const [selectedLocalFile, setSelectedLocalFile] = useState(null);
   const [recentParts, setRecentParts] = useState([]);
   const [metadataParts, setMetadataParts] = useState([]);
   const [duplicateParts, setDuplicateParts] = useState([]);
-  const [partModalOpen, setPartModalOpen] = useState(false);
   const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
-  const [confirmLocalFileDeleteContent, setConfirmLocalFileDeleteContent] = useState(null);
-  const [confirmDeleteLocalFileIsOpen, setConfirmDeleteLocalFileIsOpen] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
   const [allPartTypes, setAllPartTypes] = useState([]);
-  const [mountingTypes] = useState(defaultMountingTypes);
   const [loadingPartMetadata, setLoadingPartMetadata] = useState(false);
   const [loadingPartTypes, setLoadingPartTypes] = useState(true);
-  const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [partMetadataIsSubscribed, setPartMetadataIsSubscribed] = useState(false);
   const [partMetadataError, setPartMetadataError] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
-  const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
-  const [dragOverClass, setDragOverClass] = useState("");
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
   const [isBulkScanSaving, setBulkScanSaving] = useState(false);
   const [scannedPartsBarcodeInput, setScannedPartsBarcodeInput] = useState(null);
   const [datasheetMeta, setDatasheetMeta] = useState(null);
-  const [renderIsDirty, setRenderIsDirty] = useState(true);
+  //const [disableRendering, setDisableRendering] = useState(false);
+  const disableRendering = useRef(false);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
+  const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
 
   // todo: find a better alternative, we shouldn't need to do this!
   const bulkScanIsOpenRef = useRef();
@@ -165,17 +146,10 @@ export function Inventory(props) {
     };
   }, [props.params.partNumber]);
 
-  useEffect(() => {
-    customEvents.notifySubscribers("avatar", true);
-    return () => {
-      customEvents.notifySubscribers("avatar", false);
-    };
-  }, []);
-
-  const fetchPartMetadataAndInventory = async (input, part) => {
+  const fetchPartMetadataAndInventory = async (input, localPart) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
-    if (input.length <= 3)
+    if (input.length < MinSearchKeywordLength)
       return;
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
@@ -184,22 +158,28 @@ export function Inventory(props) {
     setPartMetadataError(null);
     try {
       const includeInventorySearch = !pageHasParameters;
-      const { data, existsInInventory } = await doFetchPartMetadata(input, part, includeInventorySearch);
+      const { data, existsInInventory } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
       if (existsInInventory) setPartExistsInInventory(true);
+
+      // cancelled or auth required
+      if (!data) return;
 
       if (data.errors && data.errors.length > 0) {
         setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
+        setMetadataParts([]);
+        setInfoResponse({});
+        setLoadingPartMetadata(false);
         return;
       }
 
       let metadataParts = [];
-      const infoResponse = mergeInfoResponse(data.response, part.storedFiles);
+      const infoResponse = mergeInfoResponse(data.response, localPart.storedFiles);
       if (infoResponse && infoResponse.parts && infoResponse.parts.length > 0) {
         metadataParts = infoResponse.parts;
 
         const suggestedPart = infoResponse.parts[0];
         // populate the form with data from the part metadata
-        if(!pageHasParameters) setPartFromMetadata(metadataParts, suggestedPart);
+        if(!pageHasParameters) setPartFromMetadata(metadataParts, {...suggestedPart, quantity: -1 });
       } else {
         // no part metadata available
         setPartMetadataIsSubscribed(true);
@@ -241,14 +221,14 @@ export function Inventory(props) {
       if (data.requiresAuthentication) {
         // redirect for authentication
         window.open(data.redirectUrl, "_blank");
-        return;
+        return { data: null, existsInInventory: false };
       }
 
       let existsInInventory = false;
       if (includeInventorySearch) {
         // also check inventory for this part
-        const { exists, existsResponse } = await doInventoryPartSearch(partNumber);
-        existsInInventory = exists;
+        const { exists } = await doInventoryPartSearch(partNumber);
+        existsInInventory = exists;       
       }
 
       // let caller handle errors
@@ -257,7 +237,8 @@ export function Inventory(props) {
     } catch (ex) {
       console.error("Exception", ex);
       if (ex.name === "AbortError") {
-        return; // Continuation logic has already been skipped, so return normally
+        // Continuation logic has already been skipped, so return normally
+        return { data: null, existsInInventory: false };
       }
       throw ex;
     }
@@ -269,17 +250,16 @@ export function Inventory(props) {
    * @returns exists: true if part exists inventory, plus response
    */
   const doInventoryPartSearch = async (partNumber) => {
-    if (partNumber.length <= 3)
-      return;
+    if (partNumber.length < MinSearchKeywordLength)
+      return { exists: false, data: null, error: `Ignoring search as keywords are less than the minimum required (${MinSearchKeywordLength}).` };
     const existsResponse = await fetchApi(`api/part/search?keywords=${partNumber}&exactMatch=true`, {
       signal: Inventory.infoAbortController.signal,
       catchErrors: true
     });
-    
-    if(existsResponse.responseObject.ok && existsResponse.data !== null) {
+    if(existsResponse.responseObject && existsResponse.responseObject.ok && existsResponse.data !== null) {
       return { exists: true, data: existsResponse.data };
     }
-    return { exists: false };
+    return { exists: false, data: null };
   };
 
   /**
@@ -321,7 +301,7 @@ export function Inventory(props) {
     }
   };
 
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadataAndInventory, 1000), [pageHasParameters]);
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadataAndInventory, SearchDebounceTimeMs), [pageHasParameters]);
 
   // for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
@@ -356,29 +336,28 @@ export function Inventory(props) {
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
           setPartMetadataError(null);
-          if(!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, barcodeQuantity: partInfo.quantityAvailable });
+          if(!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable });
           if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: partInfo.quantityAvailable});
-          setShowBarcodeBeingScanned(false);
 
           // also run a search to get datasheets/images
-          searchDebounced(cleanPartNumber, part);
+          fetchPartMetadataAndInventory(cleanPartNumber, part);
           setIsDirty(true);
         }
       }, (scannedPart) => {
-        // console.log("No barcode info found, searching part number");
         // no barcode info found, try searching the part number
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
           setPartMetadataError(null);
+          let newQuantity = parseInt(input.value?.quantity) || DefaultQuantity;
+          if (isNaN(newQuantity)) newQuantity = 1;
           const newPart = {...part, 
             partNumber: cleanPartNumber, 
-            quantity: parseInt(input.value?.quantity || "1"),
+            quantity: newQuantity,
             partTypeId: -1,
-            mountingTypeId: "-1",
+            mountingTypeId: -1,
           };
           setPart(newPart);
           if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: newPart.quantity});
-          setShowBarcodeBeingScanned(false);
           searchDebounced(cleanPartNumber, newPart);
           setIsDirty(true);
         }
@@ -407,8 +386,7 @@ export function Inventory(props) {
         signal: Inventory.partAbortController.signal
       });
       const { data } = response;
-      const mappedPart = {...data, mountingTypeId: data.mountingTypeId + ""};
-      setPart(mappedPart);
+      setPart(data);
       setLoadingPartMetadata(false);
       return data;
     } catch (ex) {
@@ -446,18 +424,6 @@ export function Inventory(props) {
     setPartTypes(partTypes);
     setAllPartTypes(data);
     setLoadingPartTypes(false);
-  };
-
-  const getMountingTypeById = (mountingTypeId) => {
-    switch (parseInt(mountingTypeId)) {
-      default:
-      case 0:
-        return "none";
-      case 1:
-        return "through hole";
-      case 2:
-        return "surface mount";
-    }
   };
 
   const mergeInfoResponse = (infoResponse, storedFiles) => {
@@ -507,17 +473,6 @@ export function Inventory(props) {
   };
 
   /**
-   * Force a save of a possible duplicate part
-   * @param {any} e
-   */
-  const handleForceSubmit = (e) => {
-    setDuplicatePartModalOpen(false);
-    const updatedPart = { ...part, allowPotentialDuplicate: true };
-    setPart(updatedPart);
-    onSubmit(e, updatedPart);
-  };
-
-  /**
    * Save the part
    *
    * @param {any} e Event
@@ -530,12 +485,12 @@ export function Inventory(props) {
 
     const request = { ...part };
     request.partNumber = inputPartNumber;
-    request.partTypeId = part.partTypeId.toString();
-    request.mountingTypeId = part.mountingTypeId.toString();
-    request.quantity = Number.parseInt(part.quantity) || 0;
-    request.lowStockThreshold = Number.parseInt(part.lowStockThreshold) || 0;
-    request.cost = Number.parseFloat(part.cost) || 0.0;
-    request.projectId = Number.parseInt(part.projectId) || null;
+    request.partTypeId = (parseInt(part.partTypeId) || 0) + "";
+    request.mountingTypeId = (parseInt(part.mountingTypeId) || 0) + "";
+    request.quantity = parseInt(part.quantity) || 0;
+    request.lowStockThreshold = parseInt(part.lowStockThreshold) || 0;
+    request.cost = parseFloat(part.cost) || 0.0;
+    request.projectId = parseInt(part.projectId) || null;
 
     const saveMethod = isExisting ? "PUT" : "POST";
     const response = await fetchApi("api/part", {
@@ -551,7 +506,7 @@ export function Inventory(props) {
     let saveMessage = "";
     if (response.responseObject.status === 409) {
       // possible duplicate
-      const data = await response.json();
+      const { data } = response;
       setDuplicateParts(data.parts);
       setDuplicatePartModalOpen(true);
     } else if (response.responseObject.status === 200) {
@@ -589,10 +544,10 @@ export function Inventory(props) {
       partId: 0,
       partNumber: "",
       allowPotentialDuplicate: false,
-      quantity: (clearAll || !viewPreferences.rememberLast) ? "1" : viewPreferences.lastQuantity + "",
-      lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? "10" : viewPreferences.lowStockThreshold + "",
-      partTypeId: (clearAll || !viewPreferences.rememberLast) ? 0 : viewPreferences.lastPartTypeId,
-      mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? "0" : viewPreferences.lastMountingTypeId + "",
+      quantity: (clearAll || !viewPreferences.rememberLast) ? DefaultQuantity : viewPreferences.lastQuantity || DefaultQuantity,
+      lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? DefaultLowStockThreshold : viewPreferences.lowStockThreshold || DefaultLowStockThreshold,
+      partTypeId: (clearAll || !viewPreferences.rememberLast) ? IcPartType : viewPreferences.lastPartTypeId || IcPartType,
+      mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultMountingTypeId : viewPreferences.lastMountingTypeId || DefaultMountingTypeId,
       packageType: "",
       keywords: "",
       description: "",
@@ -610,17 +565,15 @@ export function Inventory(props) {
       manufacturer: "",
       manufacturerPartNumber: "",
       imageUrl: "",
-      projectId: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastProjectId,
       supplier: "",
       supplierPartNumber: ""
     };
     setPart(clearedPart);
     setLoadingPartMetadata(false);
     setLoadingPartTypes(false);
-    setLoadingProjects(false);
     setInfoResponse({});
     if (clearAll && viewPreferences.rememberLast) {
-      updateViewPreferences({ lastQuantity: clearedPart.quantity, lowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId, lastProjectId: clearedPart.projectId });
+      updateViewPreferences({ lastQuantity: clearedPart.quantity, lowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId });
     }
     document.getElementById('inputPartNumber').focus();
   };
@@ -641,7 +594,7 @@ export function Inventory(props) {
   };
 
   const updateNumberPicker = (e) => {
-    if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: e.value});
+    if (viewPreferences.rememberLast) updateViewPreferences({lastQuantity: parseInt(e.value) || DefaultQuantity});
     setPart({ ...part, quantity: e.value.toString() });
     setIsDirty(true);
   };
@@ -661,12 +614,11 @@ export function Inventory(props) {
   const handleInputPartNumberChange = async (e, control) => {
     //e.preventDefault();
     //e.stopPropagation();
-    console.log('change', control.value);
     setPartMetadataIsSubscribed(false);
     setPartMetadataError(null);
     let searchPartNumber = control.value;
 
-    if (searchPartNumber && searchPartNumber.length >= 3) {
+    if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
       searchPartNumber = control.value.replace("\t", "");
       await searchDebounced(searchPartNumber, part, partTypes);
     }
@@ -685,6 +637,7 @@ export function Inventory(props) {
   }
 
   const handleChange = (e, control) => {
+    console.log('handleChange', control.name);
     e.preventDefault();
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
@@ -707,11 +660,11 @@ export function Inventory(props) {
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastMountingTypeId: control.value});
         if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
         break;
+      case "quantity":
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({quantity: parseInt(control.value) || DefaultQuantity});
+        break;
       case "lowStockThreshold":
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lowStockThreshold: control.value});
-        break;
-      case "projectId":
-        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastProjectId: control.value});
         break;
       case "location":
         updatedPart[control.name] = control.value.replace("\t", "");
@@ -746,7 +699,7 @@ export function Inventory(props) {
     const mappedPart = {
       partNumber: suggestedPart.basePartNumber,
       partTypeId: getPartTypeId(suggestedPart.partType, partTypesRef.current),
-      mountingTypeId: suggestedPart.mountingTypeId + "",
+      mountingTypeId: suggestedPart.mountingTypeId,
       packageType: suggestedPart.packageType,
       keywords: suggestedPart.keywords && suggestedPart.keywords.join(" ").toLowerCase(),
       description: suggestedPart.description,
@@ -759,14 +712,17 @@ export function Inventory(props) {
       manufacturerPartNumber: suggestedPart.manufacturerPartNumber,
       imageUrl: suggestedPart.imageUrl,
       status: suggestedPart.status,
-      quantity: suggestedPart.barcodeQuantity || 1,
+      quantity: suggestedPart.quantity,
     };
-    // console.log('suggestedPart', mappedPart);
+
+    if (mappedPart.quantity > 0)
+      entity.quantity = mappedPart.quantity;
+
     entity.partNumber = mappedPart.partNumber;
     entity.supplier = mappedPart.supplier;
     entity.supplierPartNumber = mappedPart.supplierPartNumber;
     if (mappedPart.partTypeId) entity.partTypeId = mappedPart.partTypeId || "";
-    if (mappedPart.mountingTypeId) entity.mountingTypeId = (mappedPart.mountingTypeId || "") + "";
+    if (mappedPart.mountingTypeId) entity.mountingTypeId = mappedPart.mountingTypeId || "";
     entity.packageType = mappedPart.packageType || "";
     entity.cost = mappedPart.cost || 0.0;
     entity.keywords = mappedPart.keywords || "";
@@ -863,9 +819,8 @@ export function Inventory(props) {
     setPart(entity);
   };
 
-  const handleChooseAlternatePart = (e, part, partTypes) => {
+  const handleChooseAlternatePart = (e, part) => {
     setPartFromMetadata(metadataParts, part);
-    setPartModalOpen(false);
   };
 
   const handleBulkBarcodeScan = (e) => {
@@ -873,130 +828,10 @@ export function Inventory(props) {
     setBulkScanIsOpen(true);
   };
 
-  const renderAllMatchingParts = (part, metadataParts) => {
-    return (
-      <Table compact celled selectable size="small" className="partstable">
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.supplier', "Supplier")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.supplierType', "Supplier Type")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.packageType', "Package Type")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.mountingType', "Mounting Type")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.datasheet', "Datasheet")}</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {metadataParts.map((p, index) => (
-            <Popup
-              key={index}
-              content="This is a test"
-              trigger={
-                <Table.Row onClick={(e) => handleChooseAlternatePart(e, p, partTypes)}>
-                  <Table.Cell>
-                    {part.supplier === p.supplier && part.supplierPartNumber === p.supplierPartNumber ? (
-                      <Label ribbon>{p.manufacturerPartNumber}</Label>
-                    ) : (
-                      p.manufacturerPartNumber
-                    )}
-                  </Table.Cell>
-                  <Table.Cell>{p.manufacturer}</Table.Cell>
-                  <Table.Cell>{p.partType}</Table.Cell>
-                  <Table.Cell>{p.supplier}</Table.Cell>
-                  <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-                  <Table.Cell>{p.packageType}</Table.Cell>
-                  <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
-                  <Table.Cell>{p.cost}</Table.Cell>
-                  <Table.Cell>
-                    <Image src={p.imageUrl} size="mini"></Image>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {p.datasheetUrls.map(
-                      (d, dindex) =>
-                        d &&
-                        d.length > 0 && (
-                          <Button key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)}>
-                            {t('button.viewDatasheet', "View Datasheet")}
-                          </Button>
-                        )
-                    )}
-                  </Table.Cell>
-                </Table.Row>
-              }
-            />
-          ))}
-        </Table.Body>
-      </Table>
-    );
-  };
-
-  const renderDuplicateParts = () => {
-    return (
-      <Table compact celled selectable size="small" className="partstable">
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>{t('label.partNumber', "Part Number")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.manufacturerPart', "Manufacturer Part")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.description', "Description")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.location', "Location")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.binNumber', "Bin Number")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.binNumber2', "Bin Number 2")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.mountingType', "Mounting Type")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
-            <Table.HeaderCell>{t('label.datasheet', "Datasheet")}</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {duplicateParts.map((p, index) => (
-            <Table.Row key={index}>
-              <Table.Cell>{p.partNumber}</Table.Cell>
-              <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-              <Table.Cell>{p.manufacturer}</Table.Cell>
-              <Table.Cell>{p.description}</Table.Cell>
-              <Table.Cell>{p.partType}</Table.Cell>
-              <Table.Cell>{p.location}</Table.Cell>
-              <Table.Cell>{p.binNumber}</Table.Cell>
-              <Table.Cell>{p.binNumber2}</Table.Cell>
-              <Table.Cell>{getMountingTypeById(p.mountingTypeId)}</Table.Cell>
-              <Table.Cell>
-                <Image src={p.imageUrl} size="mini"></Image>
-              </Table.Cell>
-              <Table.Cell>
-                <Button onClick={(e) => handleHighlightAndVisit(e, p.datasheetUrl)}>{t('button.viewDatasheet', "View Datasheet")}</Button>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
-    );
-  };
-
-  const handleDuplicatePartModalClose = () => {
-    setDuplicatePartModalOpen(false);
-  };
-
   const disableHelp = () => {
     // const { viewPreferences } = state;
     // const val = { ...viewPreferences, helpDisabled: true };
     // localStorage.setItem('viewPreferences', JSON.stringify(val));
-  };
-
-  const handleHighlightAndVisit = (e, url) => {
-    handleVisitLink(e, url);
-    // this handles highlighting of parent row
-    const parentTable = ReactDOM.findDOMNode(e.target).parentNode.parentNode.parentNode;
-    const targetNode = ReactDOM.findDOMNode(e.target).parentNode.parentNode;
-    for (let i = 0; i < parentTable.rows.length; i++) {
-      const row = parentTable.rows[i];
-      if (row.classList.contains("positive")) row.classList.remove("positive");
-    }
-    targetNode.classList.toggle("positive");
   };
 
   const handleVisitLink = (e, url) => {
@@ -1053,43 +888,7 @@ export function Inventory(props) {
     setParts(partsDeleted);
     setSelectedPart(null);
     props.history(`/inventory`);
-  };
-
-  const handleDeleteLocalFile = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await fetchApi(`api/storedfile`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ storedFileId: selectedLocalFile.localFile.id })
-    });
-    var itemsExceptDeleted;
-    switch (selectedLocalFile.type) {
-      case "productImages":
-        itemsExceptDeleted = _.without(infoResponse.productImages, _.findWhere(infoResponse.productImages, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({ ...infoResponse, productImages: itemsExceptDeleted });
-        break;
-      case "datasheets":
-        itemsExceptDeleted = _.without(infoResponse.datasheets, _.findWhere(infoResponse.datasheets, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({ ...infoResponse, datasheets: itemsExceptDeleted });
-        if (itemsExceptDeleted.length > 0) setDatasheetMeta(itemsExceptDeleted[0]);
-        break;
-      case "pinoutImages":
-        itemsExceptDeleted = _.without(infoResponse.pinoutImages, _.findWhere(infoResponse.pinoutImages, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({ ...infoResponse, pinoutImages: itemsExceptDeleted });
-        break;
-      case "circuitImages":
-        itemsExceptDeleted = _.without(infoResponse.circuitImages, _.findWhere(infoResponse.circuitImages, { id: selectedLocalFile.localFile.id }));
-        setInfoResponse({ ...infoResponse, circuitImages: itemsExceptDeleted });
-        break;
-      default:
-    }
-
-    setConfirmDeleteLocalFileIsOpen(false);
-    setSelectedLocalFile(null);
-  };
+  }; 
 
   const confirmDeleteOpen = (e, part) => {
     e.preventDefault();
@@ -1115,15 +914,7 @@ export function Inventory(props) {
     e.stopPropagation();
     setConfirmDeleteIsOpen(false);
     setSelectedPart(null);
-  };
-
-
-  const confirmDeleteLocalFileClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setConfirmDeleteLocalFileIsOpen(false);
-    setSelectedLocalFile(null);
-  };
+  }; 
 
   const handleSetSuggestedPartNumber = (e, value) => {
     e.preventDefault();
@@ -1131,26 +922,14 @@ export function Inventory(props) {
     setInputPartNumber(value);
   };
 
-  // todo: can this be removed?
-  const matchingPartsList = renderAllMatchingParts(part, metadataParts);
-  const title = isEditing 
-    ? t('page.inventory.edittitle', "Edit Inventory") 
-    : t('page.inventory.addtitle', "Add Inventory");
-
   /* RENDER */
 
+  /*<MatchingPartsMemoized part={part} metadataParts={metadataParts} partTypes={partTypes} setPartFromMetadata={setPartFromMetadata} />*/
   const renderForm = useMemo(() => {
-    console.log('render!');
+    console.log('render!', disableRendering.current);
+    
     return (
     <>
-    {!isEditing &&
-      <Popup
-        wide
-        position="right center"
-        content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
-        trigger={<div style={{display: 'inline-block'}}><BulkScanIcon onClick={handleBulkBarcodeScan} /></div>}
-      />
-    }
 
     <div className="page-banner">
       {partMetadataIsSubscribed && (
@@ -1170,215 +949,248 @@ export function Inventory(props) {
       )}
     </div>
 
-    <Grid celled className="inventory-container">
+    <Grid celled className={`inventory-container ${disableRendering.current ? 'render-disabled' : ''}`}>
       <Grid.Row>
-        <Grid.Column width={12} className="left-column">
+        <Grid.Column width={12} className="left-column" style={{minHeight: '1100px'}}>
           {/** LEFT COLUMN */}
-          <Form.Group>
-            <Form.Field>
-              <ProtectedInput
-                label={t('label.part', "Part")}
-                required
-                placeholder="LM358"
-                focus
-                /* this should be the only field that is not updated on an info update */
-                value={inputPartNumber || ""}
-                onChange={handleInputPartNumberChange}
-                name="inputPartNumber"
-                icon="search"
-                id="inputPartNumber"
-              />
-              {!isEditing && part.partNumber && part.partNumber !== inputPartNumber && <div className="suggested-part">{<span>{t('page.inventory.suggestedPart')}: <a href="#" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</a></span>}</div>}
-              {!isEditing && partExistsInInventory && <div className="suggested-part">This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.</div>}
-            </Form.Field>
-            <Form.Field width={6}>
-              {/* PartTypeSelector is internally memoized for performance */}
-              <PartTypeSelector 
-                label={t('label.partType', "Part Type")}
-                name="partTypeId"
-                value={part.partTypeId || ""}
-                partTypes={allPartTypes} 
-                onSelect={handlePartTypeChange}
-              />
-            </Form.Field>
-            <Form.Dropdown
-              label={t('label.mountingType', "Mounting Type")}
-              placeholder={t('label.mountingType', "Mounting Type")}
-              search
-              selection
-              value={(part.mountingTypeId || "") + ""}
-              options={mountingTypes}
-              onChange={handleChange}
-              name="mountingTypeId"
-            />
-          </Form.Group>
-          <Form.Group>
-            <Popup
-              hideOnScroll
-              disabled={viewPreferences.helpDisabled}
-              onOpen={disableHelp}
-              content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
-              trigger={
-                <Form.Field
-                  control={NumberPicker}
-                  label={t('label.quantity', "Quantity")}
-                  placeholder="10"
-                  min={0}
-                  value={part.quantity || ""}
-                  onChange={updateNumberPicker}
-                  name="quantity"
-                  autoComplete="off"
+          <div style={{minHeight: '370px'}}>
+            <div style={{minHeight: '325px'}}>
+              <Form.Group style={{marginBottom: '0'}}>
+                <Form.Field>
+                  <ProtectedInput
+                    label={t('label.part', "Part")}
+                    required
+                    placeholder="LM358"
+                    focus
+                    /* this should be the only field that is not updated on an info update */
+                    value={inputPartNumber || ""}
+                    onChange={handleInputPartNumberChange}
+                    name="inputPartNumber"
+                    icon="search"
+                    id="inputPartNumber"
+                    hideIcon
+                    clearOnScan={false}
+                    onBarcodeReadStarted={(e) => { window.requestAnimationFrame(() => {disableRendering.current = true;}); searchDebounced.cancel();  }}
+                    onBarcodeReadCancelled={(e) => { window.requestAnimationFrame(() => {disableRendering.current = false;}); searchDebounced.cancel();  }}
+                    onBarcodeReadReceived={(e) => { window.requestAnimationFrame(() => {disableRendering.current = false;}); searchDebounced.cancel();  }}
+                  />
+                  {!isEditing && !partExistsInInventory && part.partNumber && part.partNumber !== inputPartNumber && 
+                    <div className="suggested-part">
+                      {<span>{t('page.inventory.suggestedPart')}: <button className="link-button" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</button></span>}
+                    </div>}
+                  {<div className="suggested-part">
+                    {!isEditing && partExistsInInventory && 
+                      <span><Icon name="warning sign" color="yellow" />
+                      <Trans i18nKey="page.inventory.partExists">
+                        This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.
+                      </Trans>
+                      </span>}
+                  </div>}
+                </Form.Field>
+                {!disableRendering.current && <>
+                  <Form.Field width={6}>
+                    {/* PartTypeSelectorMemoized is internally memoized for performance */}
+                    <PartTypeSelectorMemoized 
+                      label={t('label.partType', "Part Type")}
+                      name="partTypeId"
+                      value={part.partTypeId || ""}
+                      partTypes={allPartTypes} 
+                      onSelect={handlePartTypeChange}
+                      loadingPartTypes={loadingPartTypes}
+                    />
+                  </Form.Field>
+                  <Form.Dropdown
+                    label={t('label.mountingType', "Mounting Type")}
+                    placeholder={t('label.mountingType', "Mounting Type")}
+                    search
+                    selection
+                    value={(part.mountingTypeId || "")}
+                    options={mountingTypeOptions}
+                    onChange={handleChange}
+                    name="mountingTypeId"
+                  />
+                </>}
+              </Form.Group>
+
+              {!disableRendering.current && <>
+              <Form.Group>
+                <Popup
+                  hideOnScroll
+                  disabled={viewPreferences.helpDisabled}
+                  onOpen={disableHelp}
+                  content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
+                  trigger={
+                    <Form.Field
+                      control={NumberPicker}
+                      label={t('label.quantity', "Quantity")}
+                      placeholder="10"
+                      min={0}
+                      value={part.quantity || ""}
+                      onChange={updateNumberPicker}
+                      name="quantity"
+                      autoComplete="off"
+                    />
+                  }
                 />
-              }
-            />
-            <Popup
-              hideOnScroll
-              disabled={viewPreferences.helpDisabled}
-              onOpen={disableHelp}
-              content={t('page.inventory.popup.lowStock', "Alert when the quantity gets below this value")}
-              trigger={
-                <Form.Input
-                  label={t('label.lowStock', "Low Stock")}
-                  placeholder="10"
-                  value={part.lowStockThreshold || ""}
-                  onChange={handleChange}
-                  name="lowStockThreshold"
-                  width={3}
+                <Popup
+                  hideOnScroll
+                  disabled={viewPreferences.helpDisabled}
+                  onOpen={disableHelp}
+                  content={t('page.inventory.popup.lowStock', "Alert when the quantity gets below this value")}
+                  trigger={
+                    <Form.Input
+                      label={t('label.lowStock', "Low Stock")}
+                      placeholder="10"
+                      value={part.lowStockThreshold || ""}
+                      onChange={handleChange}
+                      name="lowStockThreshold"
+                      width={3}
+                    />
+                  }
                 />
-              }
-            />
-          </Form.Group>
+              </Form.Group>
+              </>}
 
-          {/* Part Location Information */}
-          <Segment secondary>
-            <Form.Group>
-              <Popup
-                hideOnScroll
-                disabled={viewPreferences.helpDisabled}
-                onOpen={disableHelp}
-                content={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
-                trigger={
-                  <Form.Input
-                    label={t('label.location', "Location")}
-                    placeholder="Home lab"
-                    value={part.location || ""}
-                    onChange={handleChange}
-                    name="location"
-                    width={5}
-                  />
-                }
-              />
-              <Popup
-                hideOnScroll
-                disabled={viewPreferences.helpDisabled}
-                onOpen={disableHelp}
-                content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
-                trigger={
-                  <Form.Input
-                    label={t('label.binNumber', "Bin Number")}
-                    placeholder={t('page.inventory.placeholder.binNumber', "IC Components 2")}
-                    value={part.binNumber || ""}
-                    onChange={handleChange}
-                    name="binNumber"
-                    width={4}
-                  />
-                }
-              />
-              <Popup
-                hideOnScroll
-                disabled={viewPreferences.helpDisabled}
-                onOpen={disableHelp}
-                content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
-                trigger={
-                  <Form.Input
-                    label={t('label.binNumber2', "Bin Number 2")}
-                    placeholder={t('page.inventory.placeholder.binNumber2', "14")}
-                    value={part.binNumber2 || ""}
-                    onChange={handleChange}
-                    name="binNumber2"
-                    width={4}
-                  />
-                }
-              />
-            </Form.Group>
-          </Segment>
-          <Form.Field inline>
-            {!isEditing &&
-              <Popup
-                wide="very"
-                position="top right"
-                content={
-                <p>
-                  <Trans i18nKey="page.inventory.popup.rememberLastSelection">
-                  Enable this toggle to remember the last selected values of: <i>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</i>
-                  </Trans>
-                </p>}
-                trigger={<Checkbox toggle label={t('label.rememberLastSelection', "Remember last selection")} className="left small" style={{float: 'right'}} checked={viewPreferences.rememberLast || false} onChange={handleRememberLastSelection} />}
-              />
-            }
-            <Button.Group>
-              <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
-                <Icon name="save" />
-                {t('button.save', "Save")}
-              </Button>
-              <Button.Or text={t('button.or', "Or")} />
-              <Popup 
-                position="right center"
-                content={t('page.inventory.popup.clear', "Clear the form to default values")}
-                trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
-              />                  
-            </Button.Group>
-            {part && part.partId > 0 && (
-              <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
-                <Icon name="delete" />
-                {t('button.delete', "Delete")}
-              </Button>
-            )}
-            {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
-          </Form.Field>
-          <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.20,0.65"}>
-            <Button.Group>
-              <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
-                <Icon name="save" />
-                {t('button.save', "Save")}
-              </Button>
-              <Button.Or text={t('button.or', "Or")} />
-              <Popup 
-                position="right center"
-                content={t('page.inventory.popup.clear', "Clear the form to default values")}
-                trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
-              />                  
-            </Button.Group>
-          </div>
-
-          {/* PART METADATA */}
-
-          <Segment loading={loadingPartMetadata} color="blue">
-            <Header dividing as="h3">
-              {t('page.inventory.partMetadata', "Part Metadata")}
-            </Header>
-
-            {metadataParts && metadataParts.length > 1 && (
-              <ChooseAlternatePartModal
-                trigger={
+              {/* Part Location Information */}
+              {!disableRendering.current && <Segment secondary>
+                <Form.Group>
                   <Popup
                     hideOnScroll
                     disabled={viewPreferences.helpDisabled}
                     onOpen={disableHelp}
-                    content={t('page.inventory.popup.alternateParts', "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.")}
+                    content={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
                     trigger={
-                      <Button secondary>
-                        <Icon name="external alternate" color="blue" />
-                        {t('page.inventory.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) } )}
-                      </Button>
+                      <ClearableInput
+                        label={t('label.location', "Location")}
+                        placeholder="Home lab"
+                        value={part.location || ""}
+                        onChange={handleChange}
+                        name="location"
+                        width={5}
+                        icon="home"
+                        iconPosition="left"
+                      />
                     }
                   />
-                }
-                part={part}
-                metadataParts={metadataParts}
-                onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)}
-              />
-            )}
+                  <Popup
+                    hideOnScroll
+                    disabled={viewPreferences.helpDisabled}
+                    onOpen={disableHelp}
+                    content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
+                    trigger={
+                      <ClearableInput
+                        label={t('label.binNumber', "Bin Number")}
+                        placeholder={t('page.inventory.placeholder.binNumber', "IC Components 2")}
+                        value={part.binNumber || ""}
+                        onChange={handleChange}
+                        name="binNumber"
+                        width={4}
+                      />
+                    }
+                  />
+                  <Popup
+                    hideOnScroll
+                    disabled={viewPreferences.helpDisabled}
+                    onOpen={disableHelp}
+                    content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
+                    trigger={
+                      <ClearableInput
+                        label={t('label.binNumber2', "Bin Number 2")}
+                        placeholder={t('page.inventory.placeholder.binNumber2', "14")}
+                        value={part.binNumber2 || ""}
+                        onChange={handleChange}
+                        name="binNumber2"
+                        width={4}
+                      />
+                    }
+                  />
+                </Form.Group>
+              </Segment>}
+            </div>
+
+            <Form.Field inline>
+              {!isEditing &&
+                <Popup
+                  wide="very"
+                  position="top right"
+                  content={
+                  <p>
+                    <Trans i18nKey="page.inventory.popup.rememberLastSelection">
+                    Enable this toggle to remember the last selected values of: <i>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</i>
+                    </Trans>
+                  </p>}
+                  trigger={<Checkbox toggle label={t('label.rememberLastSelection', "Remember last selection")} className="left small" style={{float: 'right'}} checked={viewPreferences.rememberLast || false} onChange={handleRememberLastSelection} />}
+                />
+              }
+              <Button.Group>
+                <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty || inputPartNumber.length === 0}>
+                  <Icon name="save" />
+                  {t('button.save', "Save")}
+                </Button>
+                <Button.Or text={t('button.or', "Or")} />
+                <Popup 
+                  position="right center"
+                  content={t('page.inventory.popup.clear', "Clear the form to default values")}
+                  trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
+                />                  
+              </Button.Group>
+              {part && part.partId > 0 && (
+                <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
+                  <Icon name="delete" />
+                  {t('button.delete', "Delete")}
+                </Button>
+              )}
+              {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
+            </Form.Field>
+            <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.20,0.55"}>
+              <Button.Group>
+                <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty || inputPartNumber.length === 0}>
+                  <Icon name="save" />
+                  {t('button.save', "Save")}
+                </Button>
+                <Button.Or text={t('button.or', "Or")} />
+                <Popup 
+                  position="right center"
+                  content={t('page.inventory.popup.clear', "Clear the form to default values")}
+                  trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
+                />                  
+              </Button.Group>
+            </div>
+          </div>
+
+          {/* PART METADATA */}
+
+          {!disableRendering.current && <Segment loading={loadingPartMetadata} color="blue">
+            <div style={{display: 'flex', alignItems: 'stretch', flexDirection: 'row', paddingBottom: '0.22rem', borderBottom: '1px solid rgba(34,36,38,0.15)', marginBottom: '5px'}}>
+              <div style={{display: 'flex', flex: '1'}}>
+                <h3 className="ui header">
+                  {t('page.inventory.partMetadata', "Part Metadata")}
+                </h3>
+              </div>
+              <div style={{ position: 'relative' }}>
+                {metadataParts && metadataParts.length > 1 && (
+                <ChooseAlternatePartModal
+                  trigger={
+                    <Popup
+                      hideOnScroll
+                      disabled={viewPreferences.helpDisabled}
+                      onOpen={disableHelp}
+                      content={t('page.inventory.popup.alternateParts', "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.")}
+                      trigger={
+                        <Button type="button" secondary style={{fontSize: '0.9em', width: '265px', padding: '0.68em 1.5em', position: 'absolute', right: '-10px', top: '-10px' }}>
+                          <Icon name="external alternate" color="blue" />
+                          {t('page.inventory.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) } )}
+                        </Button>
+                      }
+                    />
+                  }
+                  part={part}
+                  metadataParts={metadataParts}
+                  onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)}
+                />
+              )}
+              </div>
+            </div>
 
             <Form.Group>
               <Form.Field width={4}>
@@ -1391,6 +1203,7 @@ export function Inventory(props) {
                   onChange={handleChange}
                   name="cost"
                   onBlur={formatField}
+                  width={4}
                 >
                   <Dropdown 
                     name="currency"
@@ -1403,22 +1216,23 @@ export function Inventory(props) {
                   <input />
                 </Input>
               </Form.Field>
-              <Form.Input
+              <ClearableInput
                 label={t('label.manufacturer', "Manufacturer")}
                 placeholder="Texas Instruments"
                 value={part.manufacturer || ""}
                 onChange={handleChange}
                 name="manufacturer"
-                width={4}
+                width={5}
               />
-              <Form.Input
+              <ClearableInput
                 label={t('label.manufacturerPart', "Manufacturer Part")}
                 placeholder="LM358"
                 value={part.manufacturerPartNumber || ""}
                 onChange={handleChange}
                 name="manufacturerPartNumber"
+                width={5}
               />
-              <Form.Field style={{textAlign: 'right'}}>
+              <Form.Field style={{display: 'flex', justifyContent: 'end', flex: '1'}}>
                 <Image src={part.imageUrl} size="tiny" />
               </Form.Field>
             </Form.Group>
@@ -1443,19 +1257,36 @@ export function Inventory(props) {
                 name="keywords"
               />
             </Form.Field>
-            <Form.Field width={8}>
-              <label>{t('label.packageType', "Package Type")}</label>
-              <Input
-                placeholder="DIP8"
-                value={part.packageType || ""}
-                onChange={handleChange}
-                name="packageType"
-              />
-            </Form.Field>
-          </Segment>
+            <Form.Group>
+              <Form.Field width={6}>
+                <label>{t('label.packageType', "Package Type")}</label>
+                <ClearableInput
+                  placeholder="DIP8"
+                  value={part.packageType || ""}
+                  onChange={handleChange}
+                  name="packageType"
+                />
+              </Form.Field>
+              <Form.Field width={10} className="part-metadata-buttons">
+                <label>&nbsp;</label>
+                <Popup 
+                  content={<p>{t('page.inventory.popup.technicalSpecs', "View technical specs")}</p>}
+                  trigger={<Button type="button" secondary disabled><TextSnippet className="technical-specs" /> {t('button.specs', "Specs")}</Button>} 
+                />
+                <Popup 
+                  content={<p>{t('page.inventory.popup.compliance', "View compliance information")}</p>}
+                  trigger={<Button type="button" secondary disabled><BeenhereIcon className="compliance" /> {t('button.compliance', "Compliance")}</Button>} 
+                />
+                <Popup 
+                  content={<p>{t('page.inventory.popup.cadModels', "View CAD Models available for this part")}</p>}
+                  trigger={<Button type="button" secondary disabled><ViewInArIcon className="cadModels" /> {t('button.cadModels', "CAD Models")}</Button>} 
+                />
+              </Form.Field>
+            </Form.Group>
+          </Segment>}
 
           {/* Part Preferences */}
-          <Segment loading={loadingPartMetadata} color="green">
+          {!disableRendering.current && <Segment loading={loadingPartMetadata} color="green">
             <Header dividing as="h3">
               {t('page.inventory.privatePartInfo', "Private Part Information")}
             </Header>
@@ -1463,11 +1294,11 @@ export function Inventory(props) {
 
             <Form.Field>
               <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
-              <Input action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
+              <ClearableInput type="Input" action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
                 <Label>https://</Label>
                 <input />
                 <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>{t('button.view', "View")}</Button>
-              </Input>
+              </ClearableInput>
             </Form.Field>
             <Form.Field>
               <label>{t('label.productUrl', "Product Url")}</label>
@@ -1480,34 +1311,33 @@ export function Inventory(props) {
             <Form.Group>
               <Form.Field width={4}>
                 <label>{t('label.digikeyPartNumber', "DigiKey Part Number")}</label>
-                <Input placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' />
+                <ClearableInput placeholder='296-1395-5-ND' value={part.digiKeyPartNumber || ''} onChange={handleChange} name='digiKeyPartNumber' />
               </Form.Field>
               <Form.Field width={4}>
                 <label>{t('label.mouserPartNumber', "Mouser Part Number")}</label>
-                <Input placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' />
+                <ClearableInput placeholder='595-LM358AP' value={part.mouserPartNumber || ''} onChange={handleChange} name='mouserPartNumber' />
               </Form.Field>
               <Form.Field width={4}>
                 <label>{t('label.arrowPartNumber', "Arrow Part Number")}</label>
-                <Input placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' />
+                <ClearableInput placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' />
               </Form.Field>
             </Form.Group>
-          </Segment>
+          </Segment>}
 
           {/* Suppliers */}
 
-          <PartSuppliers 
+          {!disableRendering.current && <PartSuppliersMemoized 
             loadingPartMetadata={loadingPartMetadata} 
             part={part} 
             metadataParts={metadataParts}
-          />
+          />}
           
         </Grid.Column>
 
         <Grid.Column width={4} className="right-column">
           {/** RIGHT COLUMN */}
 
-          {/* todo: performance memoize */}
-          <PartMedia infoResponse={infoResponse} datasheet={datasheetMeta} />          
+          {!disableRendering.current && <PartMediaMemoized part={part} infoResponse={infoResponse} datasheet={datasheetMeta} loadingPartMetadata={loadingPartMetadata} />}
 
           {/* END RIGHT COLUMN */}
         </Grid.Column>
@@ -1516,36 +1346,22 @@ export function Inventory(props) {
 
  
     </>);
-  }, [renderIsDirty, inputPartNumber, part]);
+  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPartMetadata, partMetadataError, disableRendering.current]);
 
-  const renderRecentParts = useMemo(() => {
-    console.log('render recent parts!');
-    return (
-      <RecentParts 
-        recentParts={recentParts} 
-        loadingRecent={loadingRecent} 
-        handleRecentPartClick={handleRecentPartClick} 
-      />
-    );
-  }, [recentParts, loadingRecent]);
+  const title = isEditing 
+    ? t('page.inventory.edittitle', "Edit Inventory") 
+    : t('page.inventory.addtitle', "Add Inventory");
 
   return (
     <div className="mask">
-      <Modal centered open={duplicatePartModalOpen} onClose={handleDuplicatePartModalClose}>
-        <Modal.Header>Duplicate Part</Modal.Header>
-        <Modal.Content scrolling>
-          <Modal.Description>
-            <h3>There is a possible duplicate part already in your inventory.</h3>
-            {renderDuplicateParts()}
-          </Modal.Description>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button onClick={handleDuplicatePartModalClose}>{t('button.cancel', "Cancel")}</Button>
-          <Button primary onClick={handleForceSubmit}>
-          {t('button.saveAnyway', "Save Anyway")}
-          </Button>
-        </Modal.Actions>
-      </Modal>
+      <DuplicatePartModal 
+        isOpen={duplicatePartModalOpen}
+        part={part}
+        duplicateParts={duplicateParts}
+        onSetPart={setPart}
+        onSubmit={onSubmit}
+
+      />
       <Confirm
         className="confirm"
         header={t('confirm.header.deletePart', "Delete Part")}
@@ -1554,14 +1370,7 @@ export function Inventory(props) {
         onConfirm={handleDeletePart}
         content={confirmPartDeleteContent}
       />
-      <Confirm
-        className="confirm"
-        header={t('confirm.header.deleteFile', "Delete File")}
-        open={confirmDeleteLocalFileIsOpen}
-        onCancel={confirmDeleteLocalFileClose}
-        onConfirm={handleDeleteLocalFile}
-        content={confirmLocalFileDeleteContent}
-      />
+      
       <BulkScanModal 
         isOpen={bulkScanIsOpen} 
         onClose={() => setBulkScanIsOpen(false)}
@@ -1593,11 +1402,33 @@ export function Inventory(props) {
             </Button.Content>
           </Button>
         )}
+        <Breadcrumb>
+          <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+          <Breadcrumb.Divider />
+          <Breadcrumb.Section link onClick={() => navigate("/inventory")}>{t('bc.inventory', "Inventory")}</Breadcrumb.Section>
+          <Breadcrumb.Divider />
+          <Breadcrumb.Section active>{isEditing ? part.partNumber : t('page.inventory.addtitle', "Add Inventory")}</Breadcrumb.Section>
+        </Breadcrumb>
         {part.partNumber && <Image src={`api/part/preview?partNumber=${part.partNumber}&token=${getImagesToken()}`} width={180} floated="right" style={{ marginTop: "0px" }} />}
-        <FormHeader name={title} to="..">
-        </FormHeader>
+        <div style={{display: 'flex'}}>
+          <FormHeader name={title} to=".." />
+          {!isEditing &&
+            <Popup
+              wide
+              position="right center"
+              content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
+              trigger={<div style={{paddingTop: '10px'}}><BulkScanIconMemoized onClick={handleBulkBarcodeScan} /></div>}
+            />
+          }
+        </div>
         {renderForm}
-        {renderRecentParts}
+        {/** internally memoized */}
+
+        {!disableRendering.current && <RecentParts 
+          recentParts={recentParts} 
+          loadingRecent={loadingRecent} 
+          handleRecentPartClick={handleRecentPartClick} 
+        />}
       </Form>
       
     </div>

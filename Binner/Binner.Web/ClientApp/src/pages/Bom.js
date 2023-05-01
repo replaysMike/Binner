@@ -9,7 +9,7 @@ import _ from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
-import { formatCurrency, formatNumber, getCurrencySymbol } from "../common/Utils";
+import { getCurrencySymbol } from "../common/Utils";
 import { format, parseJSON } from "date-fns";
 import { AddBomPartModal } from "../components/AddBomPartModal";
 import { AddPcbModal } from "../components/AddPcbModal";

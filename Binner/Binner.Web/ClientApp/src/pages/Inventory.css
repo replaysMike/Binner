@@ -1,3 +1,24 @@
+.render-disabled {
+	background-color: #f0f0f0 !important;
+	background-image: linear-gradient(#fff, #bbb);
+}
+
+.inventory-container.render-disabled .row::before {
+	content: 'SCANNING';
+	position: absolute;
+	margin: 0 auto;
+	width: 100%;
+	top: 100px;
+	left: 20px;
+	z-index: 9999;
+	width: 100%;
+	font-size: 3em;
+	font-weight: 700;
+	color: #000;
+	font-style: italic;
+	min-height: 50px;
+}
+
 .carousel-control-next-icon {
 	background-color: rgb(255,255,255,0.15);
 	border-radius: 80px;
@@ -146,7 +167,6 @@
 }
 
 .inventory section {
-	display:inline-block;
 	margin-right: 40px;
 }
 
@@ -168,9 +188,43 @@
 	font-style: italic;
 }
 
-.suggested-part a {
+.suggested-part button {
 	font-weight: 500;
 	font-style: normal;
+}
+
+.ui.dropdown .menu>.item  {
+	display: flex;
+	flex-direction: column-reverse;
+	position: relative;
+}
+
+.ui.dropdown .menu>.item>.icon,.ui.dropdown .menu>.item>.MuiSvgIcon-root {
+	position: absolute;
+	top: 14px;
+	left: 2px;
+}
+
+.ui.dropdown .menu>.item>.MuiSvgIcon-root {
+	color: #ccc;
+}
+
+.ui.dropdown .menu>.item>.text {
+	display:flex;
+	justify-content: start;
+	margin: 0;
+	padding-left: 10px;
+}
+
+.ui.dropdown .menu>.item>.description {
+	display:flex;
+	justify-content: start;
+	flex: 1;
+	font-size: 0.8em;
+	margin: 0;
+	padding-left: 10px;
+	float: none;
+	font-weight: normal;
 }
 
 .ui.dropdown.label.currency .menu {
@@ -189,4 +243,32 @@
 .ui.dropdown.label.currency .item .description {
 	font-size: 0.8em;
 	font-weight: normal;
+}
+
+.part-metadata-buttons {
+	display: flex;
+	align-items: end;
+	justify-content: end;
+}
+
+.part-metadata-buttons .ui.button {
+	height: 43px;
+	line-height: 1.21428571em;
+	padding: 0.68em 1.5em 0.68em 1.5em;
+}
+
+.part-metadata-buttons .MuiSvgIcon-root {
+	margin-right: 5px;
+}
+
+.part-metadata-buttons .MuiSvgIcon-root.technical-specs {
+	color: rgb(8, 114, 212);
+}
+
+.part-metadata-buttons .MuiSvgIcon-root.compliance {
+	color: rgb(3, 175, 3);
+}
+
+.part-metadata-buttons .MuiSvgIcon-root.cadModels {
+	color: rgb(231, 66, 231);
 }

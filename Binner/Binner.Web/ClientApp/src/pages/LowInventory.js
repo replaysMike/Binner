@@ -2,10 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Breadcrumb, Button, Icon } from "semantic-ui-react";
-import PartsGrid2 from "../components/PartsGrid2";
+import PartsGrid2Memoized from "../components/PartsGrid2Memoized";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from '../common/fetchApi';
-import customEvents from '../common/customEvents';
 
 export function LowInventory (props) {
   const { t } = useTranslation();
@@ -54,13 +53,6 @@ export function LowInventory (props) {
   };
 
   useEffect(() => {
-    customEvents.notifySubscribers("avatar", true);
-    return () => {
-      customEvents.notifySubscribers("avatar", false);
-    };
-  }, []);
-
-  useEffect(() => {
     if (pageSize === -1) return;
     if (by && by.length > 0) {
       // likewise, clear keyword if we're in a bin search
@@ -107,7 +99,7 @@ export function LowInventory (props) {
   };
 
   const renderPartsTable = useMemo(() => {
-    return (<PartsGrid2 
+    return (<PartsGrid2Memoized 
       parts={parts} 
       columns="partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete"
       defaultVisibleColumns='partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,print,delete' 
@@ -122,7 +114,7 @@ export function LowInventory (props) {
       onInit={handleInit}
       name='partsGrid' 
       visitUrl="/lowstock"
-    />);
+    >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2Memoized>);
   }, [renderIsDirty, parts, page, totalPages, totalRecords, loading]);
   
   return (

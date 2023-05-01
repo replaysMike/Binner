@@ -6,6 +6,9 @@ import PropTypes from "prop-types";
 import { toast } from "react-toastify";
 import NumberPicker from "./NumberPicker";
 
+/**
+ * Add a PCB to a BOM project
+ */
 export function AddPcbModal(props) {
   const { t } = useTranslation();
   AddPcbModal.abortController = new AbortController();

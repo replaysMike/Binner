@@ -3,10 +3,13 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, Popup, TextArea, Header, Confirm } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { fetchApi } from "../common/fetchApi";
-import PartsGrid2 from "./PartsGrid2";
+import PartsGrid2Memoized from "./PartsGrid2Memoized";
 import NumberPicker from "./NumberPicker";
 import debounce from "lodash.debounce";
 
+/**
+ * Add a part to a BOM project
+ */
 export function AddBomPartModal(props) {
   const { t } = useTranslation();
   AddBomPartModal.abortController = new AbortController();
@@ -247,7 +250,7 @@ export function AddBomPartModal(props) {
             </Form.Group>
           </Form>
 
-          <PartsGrid2
+          <PartsGrid2Memoized
             parts={addPartSearchResults}
             page={page}
             totalPages={totalPages}
@@ -263,7 +266,7 @@ export function AddBomPartModal(props) {
             name="partsGrid"
           >
             {t('message.noMatchingResults', "No matching results.")}
-          </PartsGrid2>
+          </PartsGrid2Memoized>
         </Modal.Content>
         <Modal.Actions>
           <Button onClick={handleModalClose}>Cancel</Button>

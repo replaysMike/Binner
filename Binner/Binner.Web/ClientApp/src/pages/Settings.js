@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Icon, Input, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
+import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
+import ClearableInput from "../components/ClearableInput";
 import LineTemplate from "../components/LineTemplate";
 import { DEFAULT_FONT, BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown } from "../common/Types";
 import { DigiKeySites } from "../common/digiKeySites";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { toast } from "react-toastify";
-import customEvents from '../common/customEvents';
 import { timeSpanFromMilliseconds, parseTimeSpan } from '../common/datetime';
 import "./Settings.css";
 
@@ -23,6 +23,7 @@ export const Settings = (props) => {
   const [testing, setTesting] = useState(false);
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
+  const [isDirty, setIsDirty] = useState(false);
   const [labelSources] = useState([
     {
       key: 1,
@@ -215,7 +216,6 @@ export const Settings = (props) => {
   const [apiTestResults, setApiTestResults] = useState([]);
 
   useEffect(() => {
-    customEvents.notifySubscribers("avatar", true);
     const loadFonts = async () => {
       await fetchApi("api/print/fonts", {
         method: "GET",
@@ -255,10 +255,6 @@ export const Settings = (props) => {
 
     loadSettings();
     loadFonts();
-
-    return () => {
-      customEvents.notifySubscribers("avatar", false);
-    };
   }, []);
 
   /**
@@ -351,6 +347,7 @@ export const Settings = (props) => {
       }
     }
     setSettings(newSettings);
+    setIsDirty(true);
   };
 
   const setControlValue = (setting, name, control) => {
@@ -597,13 +594,13 @@ export const Settings = (props) => {
                   </p>
                 }
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.binner.apiKey || ""}
                     name="swarmApiKey"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -615,7 +612,7 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.swarmApiUrl', "Swarm's API Url")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder="swarm.binner.io"
                     value={(settings.binner.apiUrl || "")
@@ -623,10 +620,11 @@ export const Settings = (props) => {
                       .replace("https://", "")}
                     name="swarmApiUrl"
                     onChange={handleChange}
+                    type="Input"
                   >
                     <Label>https://</Label>
                     <input />
-                  </Input>
+                  </ClearableInput>
                 }
               />
             </Form.Field>
@@ -641,13 +639,13 @@ export const Settings = (props) => {
                   <p>{t('page.settings.popup.swarmTimeout', "Swarm api request timeout. Default: '00:00:05' (5 seconds)")}</p>
                 }
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.binner.timeout || ""}
                     name="swarmTimeout"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -743,13 +741,13 @@ export const Settings = (props) => {
                   </div>
                 }
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.digikey.clientId || ""}
                     name="digikeyClientId"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -775,13 +773,13 @@ export const Settings = (props) => {
                   </div>
                 }
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.digikey.clientSecret || ""}
                     name="digikeyClientSecret"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -800,7 +798,7 @@ export const Settings = (props) => {
                   </p>
                 }
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder="sandbox-api.digikey.com"
                     value={(settings.digikey.apiUrl || "")
@@ -808,10 +806,11 @@ export const Settings = (props) => {
                       .replace("https://", "")}
                     name="digikeyApiUrl"
                     onChange={handleChange}
+                    type="Input"
                   >
                     <Label>https://</Label>
                     <input />
-                  </Input>
+                  </ClearableInput>
                 }
               />
             </Form.Field>
@@ -841,7 +840,7 @@ export const Settings = (props) => {
                   </div>
                 }
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder="localhost:8090/Authorization/Authorize"
                     value={(settings.digikey.oAuthPostbackUrl || "")
@@ -849,10 +848,11 @@ export const Settings = (props) => {
                       .replace("https://", "")}
                     name="digikeyOAuthPostbackUrl"
                     onChange={handleChange}
+                    type="Input"
                   >
                     <Label>https://</Label>
                     <input />
-                  </Input>
+                  </ClearableInput>
                 }
               />
             </Form.Field>
@@ -924,13 +924,13 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.mouserSearchApiKey', "Your api key for accessing the search api.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.mouser.searchApiKey || ""}
                     name="mouserSearchApiKey"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -942,13 +942,13 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.mouserOrderApiKey', "Your api key for accessing the orders api.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.mouser.orderApiKey || ""}
                     name="mouserOrderApiKey"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -962,13 +962,13 @@ export const Settings = (props) => {
                   <p>{t('page.settings.popup.mouserCartApiKey', "Your api key for accessing the shopping cart api.")}</p>
                 }
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.mouser.cartApiKey || ""}
                     name="mouserCartApiKey"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -980,7 +980,7 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.mouserApiUrl', "Mouser's API Url. This will be api.mouser.com")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder="api.mouser.com"
                     value={(settings.mouser.apiUrl || "")
@@ -988,10 +988,11 @@ export const Settings = (props) => {
                       .replace("https://", "")}
                     name="mouserApiUrl"
                     onChange={handleChange}
+                    type="Input"
                   >
                     <Label>https://</Label>
                     <input />
-                  </Input>
+                  </ClearableInput>
                 }
               />
             </Form.Field>
@@ -1048,13 +1049,13 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.arrowUsername', "Your username/login for Arrow.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.arrow.username || ""}
                     name="arrowUsername"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -1066,13 +1067,13 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.arrowApiKey', "Your api key for Arrow.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.arrow.apiKey || ""}
                     name="arrowApiKey"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -1084,7 +1085,7 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.arrowApiUrl', "Arrow's API Url. This will be api.arrow.com")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     action
                     className="labeled"
                     placeholder="api.arrow.com"
@@ -1093,10 +1094,11 @@ export const Settings = (props) => {
                       .replace("https://", "")}
                     name="arrowApiUrl"
                     onChange={handleChange}
+                    type="Input"
                   >
                     <Label>https://</Label>
                     <input />
-                  </Input>
+                  </ClearableInput>
                 }
               />
             </Form.Field>
@@ -1153,13 +1155,13 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.octopartClientId', "Your Client Id for Octopart/Nexar.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.octopart.clientId || ""}
                     name="octopartClientId"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -1171,13 +1173,13 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.octopartClientSecret', "Your Client Secret for Octopart/Nexar.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.octopart.clientSecret || ""}
                     name="octopartClientSecret"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -1212,13 +1214,13 @@ export const Settings = (props) => {
             trigger={
               <Form.Field width={10}>
                 <label>{t('page.settings.printerName', "Printer Name")}</label>
-                <Input
+                <ClearableInput
                   className="labeled"
                   placeholder="DYMO LabelWriter 450 Twin Turbo"
                   value={settings.printer.printerName || ""}
                   name="printerPrinterName"
                   onChange={handleChange}
-                ></Input>
+                />
               </Form.Field>
             }
           />
@@ -1251,13 +1253,13 @@ export const Settings = (props) => {
             trigger={
               <Form.Field width={10}>
                 <label>{t('page.settings.partLabelName', "Part Label Name")}</label>
-                <Input
+                <ClearableInput
                   className="labeled"
                   placeholder="30346"
                   value={settings.printer.partLabelName || ""}
                   name="printerPartLabelName"
                   onChange={handleChange}
-                ></Input>
+                />
               </Form.Field>
             }
           />
@@ -1368,14 +1370,14 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.barcodeBufferTime', "The buffer time the barcode will scan data for. Some scanners require more or less time.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     icon="clock"
                     className="labeled"
                     placeholder=""
                     value={settings.barcode.bufferTimeMs || ""}
                     name="barcodeBufferTimeMs"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -1388,13 +1390,13 @@ export const Settings = (props) => {
                 hoverable
                 content={<p>{t('page.settings.popup.barcodePrefix', "The prefix used for 2D barcodes, usually '[)>'.")}</p>}
                 trigger={
-                  <Input
+                  <ClearableInput
                     className="labeled"
                     placeholder=""
                     value={settings.barcode.barcodePrefix2D || ""}
                     name="barcodePrefix2D"
                     onChange={handleChange}
-                  ></Input>
+                  />
                 }
               />
             </Form.Field>
@@ -1425,7 +1427,7 @@ export const Settings = (props) => {
           </Segment>
 
           <Form.Field inline>
-            <Button type="submit" primary style={{ marginTop: "10px" }}>
+            <Button type="submit" primary style={{ marginTop: "10px" }} disabled={!isDirty}>
               <Icon name="save" />
               {t('button.save', "Save")}
             </Button>
@@ -1436,7 +1438,7 @@ export const Settings = (props) => {
 
           <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.05,0.8"}>
             <Form.Field inline>
-              <Button type="submit" primary style={{ marginTop: "10px" }}>
+              <Button type="submit" primary style={{ marginTop: "10px" }} disabled={!isDirty}>
                 <Icon name="save" />
                 {t('button.save', "Save")}
               </Button>

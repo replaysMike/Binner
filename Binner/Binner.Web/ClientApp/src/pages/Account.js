@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
-import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb, Popup } from "semantic-ui-react";
+import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { config } from "../common/config";
-import { formatNumber, MD5 } from "../common/Utils";
+import { MD5 } from "../common/Utils";
 import { fetchApi, getErrorsString } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
 import { getAuthToken } from "../common/authentication";

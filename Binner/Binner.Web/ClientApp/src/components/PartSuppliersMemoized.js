@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, Popup, Button, Input, Icon, Table, Header, Segment, Label } from "semantic-ui-react";
 import { formatCurrency, formatNumber } from "../common/Utils";
@@ -7,23 +7,38 @@ import _ from "underscore";
 import { toast } from "react-toastify";
 import PropTypes from "prop-types";
 
-// { loadingPartMetadata, part, metadataParts }
-export function PartSuppliers(props) {
+/**
+ * List the suppliers for a given part, and allow adding of manual supplier records
+ * [memoized]
+ */
+export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts }) {
   const { t } = useTranslation();
   const defaultPartSupplier = { name: "", supplierPartNumber: "", cost: "0", quantityAvailable: "0", minimumOrderQuantity: "0", productUrl: "", imageUrl: "" };
 
-  const [loadingPartMetadata, setLoadingPartMetadata] = useState(props.loadingPartMetadata);
-  const [part, setPart] = useState(props.part);
+  const [isLoadingPartMetadata, setIsLoadingPartMetadata] = useState(loadingPartMetadata);
+  const [thePart, setThePart] = useState(part);
   const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
-  const [metadataParts, setMetadataParts] = useState(props.metadataParts);
+  const [theMetadataParts, setTheMetadataParts] = useState(metadataParts);
   const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
+
+	useEffect(() => {
+		setIsLoadingPartMetadata(loadingPartMetadata);
+	}, [loadingPartMetadata]);
+
+	useEffect(() => {
+		setThePart(part);
+	}, [part]);
+
+	useEffect(() => {
+		setTheMetadataParts(metadataParts);
+	}, [metadataParts]);
 
   const createPartSupplier = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setLoadingPartMetadata(true);
+    setIsLoadingPartMetadata(true);
     const request = {
-      partId: part.partId,
+      partId: thePart.partId,
       name: partSupplier.name,
       supplierPartNumber: partSupplier.supplierPartNumber,
       cost: parseFloat(partSupplier.cost || "0") || 0,
@@ -42,7 +57,7 @@ export function PartSuppliers(props) {
     if (response && response.responseObject.status === 200) {
       const data = response.data;
       // add part supplier to ui
-      const newMetadataParts = [...metadataParts];
+      const newMetadataParts = [...theMetadataParts];
       newMetadataParts.push({
         additionalPartNumbers: [],
         basePartNumber: null,
@@ -55,7 +70,7 @@ export function PartSuppliers(props) {
         imageUrl: data.imageUrl,
         keywords: [],
         manufacturer: null,
-        manufacturerPartNumber: part.manufacturerPartNumber,
+        manufacturerPartNumber: thePart.manufacturerPartNumber,
         minimumOrderQuantity: data.minimumOrderQuantity,
         mountingTypeId: 0,
         packageType: null,
@@ -71,17 +86,17 @@ export function PartSuppliers(props) {
         swarmPartNumberManufacturerId: null
       });
       setPartSupplier(defaultPartSupplier);
-      setMetadataParts(newMetadataParts);
+      setTheMetadataParts(newMetadataParts);
       setShowAddPartSupplier(false);
     }
-    setLoadingPartMetadata(false);
+    setIsLoadingPartMetadata(false);
   };
 
   const deletePartSupplier = async (e, partSupplier) => {
     e.preventDefault();
     e.stopPropagation();
     if (!partSupplier.partSupplierId || partSupplier.partSupplierId <= 0) return; // ignore request to delete, not a valid partSupplier object
-    setLoadingPartMetadata(true);
+    setIsLoadingPartMetadata(true);
     const request = {
       partSupplierId: partSupplier.partSupplierId
     };
@@ -96,13 +111,13 @@ export function PartSuppliers(props) {
       const isSuccess = response.data;
       // add part supplier to ui
       if (isSuccess) {
-        const newMetadataParts = [...metadataParts.filter((x) => x.partSupplierId !== request.partSupplierId)];
-        setMetadataParts(newMetadataParts);
+        const newMetadataParts = [...theMetadataParts.filter((x) => x.partSupplierId !== request.partSupplierId)];
+        setTheMetadataParts(newMetadataParts);
       } else {
         toast.error(t("message.failedToDeleteSupplierPart", "Failed to delete supplier part!"));
       }
     }
-    setLoadingPartMetadata(false);
+    setIsLoadingPartMetadata(false);
   };
 
   const handleVisitLink = (e, url) => {
@@ -124,8 +139,53 @@ export function PartSuppliers(props) {
     setShowAddPartSupplier(!showAddPartSupplier);
   };
 
+	const renderSuppliers = useMemo(() => {
+		return (<Table compact celled sortable selectable striped unstackable size="small">
+		<Table.Header>
+			<Table.Row>
+				<Table.HeaderCell textAlign="center">{t("label.supplier", "Supplier")}</Table.HeaderCell>
+				<Table.HeaderCell textAlign="center">{t("label.supplierPartNumber", "Supplier Part Number")}</Table.HeaderCell>
+				<Table.HeaderCell textAlign="center">{t("label.cost", "Cost")}</Table.HeaderCell>
+				<Table.HeaderCell textAlign="center">{t("label.quantityAvailable", "Quantity Available")}</Table.HeaderCell>
+				<Table.HeaderCell textAlign="center">{t("label.minimumOrderQuantity", "Minimum Order Quantity")}</Table.HeaderCell>
+				<Table.HeaderCell textAlign="center">{t("label.image", "Image")}</Table.HeaderCell>
+				<Table.HeaderCell textAlign="center">{t("label.productUrl", "Product Url")}</Table.HeaderCell>
+				<Table.HeaderCell></Table.HeaderCell>
+			</Table.Row>
+		</Table.Header>
+		<Table.Body>
+			{thePart &&
+				theMetadataParts &&
+				_.filter(theMetadataParts, (p) => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
+					<Table.Row key={supplierKey}>
+						<Table.Cell textAlign="center">{supplier.supplier}</Table.Cell>
+						<Table.Cell textAlign="center">{supplier.supplierPartNumber}</Table.Cell>
+						<Table.Cell textAlign="center">{formatCurrency(supplier.cost, supplier.currency)}</Table.Cell>
+						<Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
+						<Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
+						<Table.Cell textAlign="center">
+							{supplier.imageUrl && supplier.imageUrl.length > 10 && supplier.imageUrl.startsWith("http") && (
+								<img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />
+							)}
+						</Table.Cell>
+						<Table.Cell textAlign="center">
+							{supplier.productUrl && supplier.productUrl.length > 10 && supplier.productUrl.startsWith("http") && (
+								<a href={supplier.productUrl} target="_blank" rel="noreferrer">
+									{t("button.visit", "Visit")}
+								</a>
+							)}
+						</Table.Cell>
+						<Table.Cell textAlign="center">
+							{supplier.partSupplierId && supplier.partSupplierId > 0 && <Button icon="delete" size="tiny" onClick={(e) => deletePartSupplier(e, supplier)} title="Delete supplier part" />}
+						</Table.Cell>
+					</Table.Row>
+				))}
+		</Table.Body>
+	</Table>);
+	}, [theMetadataParts, thePart]);
+
   return (
-    <Segment loading={loadingPartMetadata} color="violet">
+    <Segment loading={isLoadingPartMetadata} color="violet">
       <Header dividing as="h3">
         {t("page.inventory.suppliers", "Suppliers")}
       </Header>
@@ -136,7 +196,7 @@ export function PartSuppliers(props) {
             hoverable
             content={
               <p>
-                {part.partId <= 0 ? (
+                {thePart.partId <= 0 ? (
                   <span>
                     <Icon name="warning sign" color="yellow" /> {t("page.inventory.popup.mustAddPart", "You must save the part before adding custom suppliers to it.")}
                   </span>
@@ -147,7 +207,7 @@ export function PartSuppliers(props) {
             }
             trigger={
               <span>
-                <Button primary onClick={handleShowAddPartSupplier} size="tiny" disabled={part.partId <= 0}>
+                <Button primary onClick={handleShowAddPartSupplier} size="tiny" disabled={thePart.partId <= 0}>
                   <Icon name="plus" /> {t("button.add", "Add")}
                 </Button>
               </span>
@@ -214,62 +274,22 @@ export function PartSuppliers(props) {
               </Button>
             </Input>
           </Form.Field>
-          <Button primary icon onClick={createPartSupplier} disabled={part.partId <= 0}>
+          <Button primary icon onClick={createPartSupplier} disabled={thePart.partId <= 0}>
             <Icon name="save" /> {t("button.save", "Save")}
           </Button>
         </Segment>
       )}
 
-      <Table compact celled sortable selectable striped unstackable size="small">
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell textAlign="center">{t("label.supplier", "Supplier")}</Table.HeaderCell>
-            <Table.HeaderCell textAlign="center">{t("label.supplierPartNumber", "Supplier Part Number")}</Table.HeaderCell>
-            <Table.HeaderCell textAlign="center">{t("label.cost", "Cost")}</Table.HeaderCell>
-            <Table.HeaderCell textAlign="center">{t("label.quantityAvailable", "Quantity Available")}</Table.HeaderCell>
-            <Table.HeaderCell textAlign="center">{t("label.minimumOrderQuantity", "Minimum Order Quantity")}</Table.HeaderCell>
-            <Table.HeaderCell textAlign="center">{t("label.image", "Image")}</Table.HeaderCell>
-            <Table.HeaderCell textAlign="center">{t("label.productUrl", "Product Url")}</Table.HeaderCell>
-            <Table.HeaderCell></Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {part &&
-            metadataParts &&
-            _.filter(metadataParts, (p) => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
-              <Table.Row key={supplierKey}>
-                <Table.Cell textAlign="center">{supplier.supplier}</Table.Cell>
-                <Table.Cell textAlign="center">{supplier.supplierPartNumber}</Table.Cell>
-                <Table.Cell textAlign="center">{formatCurrency(supplier.cost, supplier.currency)}</Table.Cell>
-                <Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
-                <Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
-                <Table.Cell textAlign="center">
-                  {supplier.imageUrl && supplier.imageUrl.length > 10 && supplier.imageUrl.startsWith("http") && (
-                    <img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />
-                  )}
-                </Table.Cell>
-                <Table.Cell textAlign="center">
-                  {supplier.productUrl && supplier.productUrl.length > 10 && supplier.productUrl.startsWith("http") && (
-                    <a href={supplier.productUrl} target="_blank" rel="noreferrer">
-                      {t("button.visit", "Visit")}
-                    </a>
-                  )}
-                </Table.Cell>
-                <Table.Cell textAlign="center">
-                  {supplier.partSupplierId && supplier.partSupplierId > 0 && <Button icon="delete" size="tiny" onClick={(e) => deletePartSupplier(e, supplier)} title="Delete supplier part" />}
-                </Table.Cell>
-              </Table.Row>
-            ))}
-        </Table.Body>
-      </Table>
+			{renderSuppliers}
+      
     </Segment>
   );
 }
 
-PartSuppliers.propTypes = {
+PartSuppliersMemoized.propTypes = {
   loadingPartMetadata: PropTypes.bool,
   part: PropTypes.object,
   metadataParts: PropTypes.array
 };
 
-PartSuppliers.defaultProps = {};
+PartSuppliersMemoized.defaultProps = {};

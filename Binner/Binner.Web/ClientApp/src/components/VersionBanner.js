@@ -5,6 +5,9 @@ import PropTypes from "prop-types";
 import { Converter } from "showdown";
 import "./VersionBanner.css";
 
+/**
+ * Displays a top banner when a new Binner version is available
+ */
 export function VersionBanner(props) {
 	const { t } = useTranslation();
 	const [isOpen, setIsOpen] = useState(false);
@@ -50,8 +53,7 @@ export function VersionBanner(props) {
 	};
 
 	return (
-		<>
-		{<div className={`version-banner ${isOpen ? 'open' : ''}`}>
+		<div className={`version-banner ${isOpen ? 'open' : ''}`}>
 			<span>
 				<Icon name="close" style={{marginRight: '20px', cursor: 'pointer'}} onClick={handleSkip} />
 				<Trans i18nKey="notification.versionBanner.newVersion" version={version}>
@@ -75,9 +77,8 @@ export function VersionBanner(props) {
 					<Button onClick={handleReleaseNotesModalClose}>{t('notification.versionBanner.close', "Close")}</Button>
         </Modal.Actions>
       </Modal>
-		</div>}
-		</>);
-
+		</div>
+		);
 };
 
 VersionBanner.propTypes = {
