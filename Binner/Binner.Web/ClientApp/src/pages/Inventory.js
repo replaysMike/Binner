@@ -87,7 +87,7 @@ export function Inventory(props) {
     storedFiles: []
   };
 
-  const [inputPartNumber, setInputPartNumber] = useState("");
+  const [inputPartNumber, setInputPartNumber] = useState(props.params.partNumberToAdd || "");
   const [infoResponse, setInfoResponse] = useState({});
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState(defaultPart);
@@ -136,6 +136,9 @@ export function Inventory(props) {
         var loadedPart = await fetchPart(partNumberStr);
         if (isEditing) setInputPartNumber(partNumberStr);
         await fetchPartMetadataAndInventory(partNumberStr, loadedPart || part);
+      } else if (props.params.partNumberToAdd) {
+        const { data } = await doFetchPartMetadata(props.params.partNumberToAdd, loadedPart || part, false);
+        processPartMetadataResponse(data, loadedPart || part);
       } else {
         resetForm();
       }
@@ -145,6 +148,11 @@ export function Inventory(props) {
       searchDebounced.cancel();
     };
   }, [props.params.partNumber]);
+
+  useEffect(() => {
+    if (!props.params.partNumberToAdd)
+      resetForm();
+  }, [props.params.partNumberToAdd]);
 
   const fetchPartMetadataAndInventory = async (input, localPart) => {
     if (partTypesRef.current.length === 0)
@@ -161,36 +169,7 @@ export function Inventory(props) {
       const { data, existsInInventory } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
       if (existsInInventory) setPartExistsInInventory(true);
 
-      // cancelled or auth required
-      if (!data) return;
-
-      if (data.errors && data.errors.length > 0) {
-        setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
-        setMetadataParts([]);
-        setInfoResponse({});
-        setLoadingPartMetadata(false);
-        return;
-      }
-
-      let metadataParts = [];
-      const infoResponse = mergeInfoResponse(data.response, localPart.storedFiles);
-      if (infoResponse && infoResponse.parts && infoResponse.parts.length > 0) {
-        metadataParts = infoResponse.parts;
-
-        const suggestedPart = infoResponse.parts[0];
-        // populate the form with data from the part metadata
-        if(!pageHasParameters) setPartFromMetadata(metadataParts, {...suggestedPart, quantity: -1 });
-      } else {
-        // no part metadata available
-        setPartMetadataIsSubscribed(true);
-      }
-
-      // set the first datasheet meta display, because the carousel component doesnt fire the first event
-      if (infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0) setDatasheetMeta(infoResponse.datasheets[0]);
-
-      setInfoResponse(infoResponse);
-      setMetadataParts(metadataParts);
-      setLoadingPartMetadata(false);
+      processPartMetadataResponse(data, localPart);
     } catch (ex) {
       console.error("Exception", ex);
       if (ex.name === "AbortError") {
@@ -198,6 +177,39 @@ export function Inventory(props) {
       }
       throw ex;
     }
+  };
+
+  const processPartMetadataResponse = (data, localPart) => {
+    // cancelled or auth required
+    if (!data) return;
+
+    if (data.errors && data.errors.length > 0) {
+      setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
+      setMetadataParts([]);
+      setInfoResponse({});
+      setLoadingPartMetadata(false);
+      return;
+    }
+
+    let metadataParts = [];
+    const infoResponse = mergeInfoResponse(data.response, localPart.storedFiles);
+    if (infoResponse && infoResponse.parts && infoResponse.parts.length > 0) {
+      metadataParts = infoResponse.parts;
+
+      const suggestedPart = infoResponse.parts[0];
+      // populate the form with data from the part metadata
+      if(!pageHasParameters) setPartFromMetadata(metadataParts, {...suggestedPart, quantity: -1 });
+    } else {
+      // no part metadata available
+      setPartMetadataIsSubscribed(true);
+    }
+
+    // set the first datasheet meta display, because the carousel component doesnt fire the first event
+    if (infoResponse && infoResponse.datasheets && infoResponse.datasheets.length > 0) setDatasheetMeta(infoResponse.datasheets[0]);
+
+    setInfoResponse(infoResponse);
+    setMetadataParts(metadataParts);
+    setLoadingPartMetadata(false);
   };
 
   /**
@@ -972,14 +984,14 @@ export function Inventory(props) {
                     <div className="suggested-part">
                       {<span>{t('page.inventory.suggestedPart')}: <button className="link-button" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</button></span>}
                     </div>}
-                  {<div className="suggested-part">
+                  <div className="suggested-part">
                     {!isEditing && partExistsInInventory && 
                       <span><Icon name="warning sign" color="yellow" />
                       <Trans i18nKey="page.inventory.partExists">
                         This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.
                       </Trans>
                       </span>}
-                  </div>}
+                  </div>
                 </Form.Field>
                 {!disableRendering.current && <>
                   <Form.Field width={6}>

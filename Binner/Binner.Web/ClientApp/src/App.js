@@ -160,6 +160,7 @@ export const App = (props) => {
           <Route exact path="/accessdenied" element={<PageWrapper><AccessDenied /></PageWrapper>} />
           <Route exact path="/login" element={<PageWrapper><Login /></PageWrapper>} />
           <Route exact path="/account" element={<PageWrapper><Account /></PageWrapper>} />
+          <Route exact path="/inventory/add/:partNumberToAdd" element={<PageWrapper><Inventory /></PageWrapper>} />
           <Route exact path="/inventory/add" element={<PageWrapper><Inventory /></PageWrapper>} />
           <Route exact path="/inventory/:partNumber" element={<PageWrapper><Inventory /></PageWrapper>} />
           <Route exact path="/inventory" element={<PageWrapper><Search /></PageWrapper>} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import debounce from "lodash.debounce";
 import { Button, Icon, Form, Breadcrumb } from "semantic-ui-react";
@@ -34,6 +34,7 @@ export function Search(props) {
   const [totalRecords, setTotalRecords] = useState(0);
   const [renderIsDirty, setRenderIsDirty] = useState(true);
   const [initComplete, setInitComplete] = useState(false);
+  const [showPartNotFound, setShowPartNotFound] = useState(false);
 
   const handleInit = (config) => {
     setPageSize(config.pageSize);
@@ -42,7 +43,6 @@ export function Search(props) {
 
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = async (e, input) => {
-    console.log('handleBarcodeInput', input);
     let cleanPartNumber = "";
     if (input.type === "datamatrix") {
       if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
@@ -114,6 +114,7 @@ export function Search(props) {
     setFilterByValue("");
 
     setLoading(true);
+    setShowPartNotFound(false);
 
     try {
       await fetchApi(`api/part/search?keywords=${keyword || ""}`, {
@@ -124,6 +125,7 @@ export function Search(props) {
           setParts(data || []);
           setLoading(false);
         } else {
+          setShowPartNotFound(true);
           setParts([]);
           setLoading(false);
         }
@@ -131,6 +133,7 @@ export function Search(props) {
       }).catch((response) => {
         if (response.responseObject.status === 404){
           // part not found
+          setShowPartNotFound(true);
           setParts([]);
           setLoading(false);
           setRenderIsDirty(!renderIsDirty);
@@ -241,7 +244,7 @@ export function Search(props) {
       </Breadcrumb>
       <FormHeader name={t('page.search.title', "Inventory")} to="/" />
       <Form>
-        <Form.Field width={5}>
+        <Form.Field width={5} style={{margin: 0}}>
           <ProtectedInput            
             focus
             placeholder={t('page.search.search', "Search")}
@@ -256,6 +259,14 @@ export function Search(props) {
             onBarcodeReadReceived={(e) => { searchDebounced.cancel();  }}
           />
         </Form.Field>
+        <div className="suggested-part">
+            {showPartNotFound && 
+              <span><Icon name="warning sign" color="yellow" />
+              <Trans i18nKey="page.inventory.searchNotFound">
+                No resuts found in inventory. Do you want to <Link to={`/inventory/add/${keyword}`}>Add</Link> it?
+              </Trans>
+              </span>}
+          </div>
       </Form>
       <div style={{ paddingTop: "10px", marginBottom: "10px" }}>
         {filterBy && (

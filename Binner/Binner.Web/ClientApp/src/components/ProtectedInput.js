@@ -40,9 +40,9 @@ export default function ProtectedInput(props) {
 
 	const barcodeReadReceived = (e) => {
 		window.requestAnimationFrame(() => { inputReceiving.current = false; });
-		if (IsDebug) console.log(`PI: sending read complete id: ${id} dest: ${e.detail.destination.id}`);
-		if (e.detail.destination.id !== id) return;
-		if (IsDebug) console.log('PI: barcodeReadReceived', e, e.detail.destination.id, id, props.clearOnScan);
+		if (IsDebug) console.log(`PI: sending read complete id: ${id} dest: ${e.detail.destination?.id}`);
+		if (e.detail.destination && e.detail.destination.id !== id) return;
+		if (IsDebug) console.log('PI: barcodeReadReceived', e, e.detail.destination?.id, id, props.clearOnScan);
 		// replace the text input control to the original before the barcode scan took place
 		bufferedValue.current = bufferedValue.current?.replaceAll(e.detail.text, "");
 		inputRef.current.classList.remove(DefaultIsScanningClassName);
