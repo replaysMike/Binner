@@ -1130,7 +1130,7 @@ export function Inventory(props) {
                 />
               }
               <Button.Group>
-                <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty || inputPartNumber.length === 0}>
+                <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
                   <Icon name="save" />
                   {t('button.save', "Save")}
                 </Button>
@@ -1151,7 +1151,7 @@ export function Inventory(props) {
             </Form.Field>
             <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.20,0.55"}>
               <Button.Group>
-                <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty || inputPartNumber.length === 0}>
+                <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
                   <Icon name="save" />
                   {t('button.save', "Save")}
                 </Button>

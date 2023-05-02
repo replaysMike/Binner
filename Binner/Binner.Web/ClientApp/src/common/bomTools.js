@@ -63,12 +63,12 @@ export const getTotalOutOfStockParts = (parts) => {
  */
 export const getProducibleUnassociatedCount = (parts) => {
 	if (parts === undefined) return 0;
-
+	const maxIteration = 10000;
 	// deep clone the parts array
 	const partsConsumed = parts.filter(x => x.pcbId === null).map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0 }}));
 	let pcbsProduced = 0;
 	let pcbsExceeded = false;
-	for(let virtualPcb = 0; virtualPcb < 10000; virtualPcb++){
+	for(let virtualPcb = 0; virtualPcb < maxIteration; virtualPcb++){
 		for(let i = 0; i < partsConsumed.length; i++) {
 			partsConsumed[i].part.quantity -= partsConsumed[i].quantity;
 			if (partsConsumed[i].part.quantity < 0) {
@@ -80,6 +80,7 @@ export const getProducibleUnassociatedCount = (parts) => {
 			break;
 		pcbsProduced++;
 	}
+	if (pcbsProduced === maxIteration) pcbsProduced = 0;
 	return pcbsProduced;
 };
 
@@ -91,6 +92,7 @@ export const getProducibleUnassociatedCount = (parts) => {
  */
 export const getProduciblePcbCount = (parts, pcb) => {
 	if (parts === undefined) return { count: 0, limitingPcb: -1 };
+	const maxIteration = 10000;
 
 	// deep clone the parts array
 	const pcbParts = pcb && pcb.pcbId > 0 ? _.filter(parts, p => p.pcbId === pcb.pcbId) : parts;
@@ -98,7 +100,7 @@ export const getProduciblePcbCount = (parts, pcb) => {
 	let pcbsProduced = 0;
 	let pcbsExceeded = false;
 	let limitingPcb = -1;
-	for(let virtualPcb = 0; virtualPcb < 10000; virtualPcb++){
+	for(let virtualPcb = 0; virtualPcb < maxIteration; virtualPcb++){
 		for(let i = 0; i < partsConsumed.length; i++) {
 			const pcbId = partsConsumed[i].part.pcbId;
 			// if a pcb is provided, take into consideration the pcb quantity as well.
@@ -121,5 +123,6 @@ export const getProduciblePcbCount = (parts, pcb) => {
 			break;
 		pcbsProduced++;
 	}
+	if (pcbsProduced === maxIteration) pcbsProduced = 0;
 	return { count: pcbsProduced, limitingPcb };
 };
