@@ -25,7 +25,7 @@
         /// <summary>
         /// The part cost
         /// </summary>
-        public decimal Cost { get; set; }
+        public double Cost { get; set; }
 
         /// <summary>
         /// Currency of part cost

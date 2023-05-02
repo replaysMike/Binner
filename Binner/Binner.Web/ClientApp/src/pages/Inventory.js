@@ -139,6 +139,7 @@ export function Inventory(props) {
       } else if (props.params.partNumberToAdd) {
         const { data } = await doFetchPartMetadata(props.params.partNumberToAdd, loadedPart || part, false);
         processPartMetadataResponse(data, loadedPart || part);
+        setIsDirty(true);
       } else {
         resetForm();
       }
