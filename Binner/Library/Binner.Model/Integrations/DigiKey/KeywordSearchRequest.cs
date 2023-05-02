@@ -5,10 +5,10 @@
         public string? Keywords { get; set; }
         public int RecordCount { get; set; } = 25;
         public int RecordStartPosition { get; set; } = 0;
-        public Filters Filters { get; set; } = new Filters();
-        public SortParameters Sort { get; set; } = new SortParameters();
+        public Filters Filters { get; set; } = new ();
+        public SortParameters Sort { get; set; } = new ();
         public int RequestedQuantity { get; set; }
-        public ICollection<SearchOptions> SearchOptions { get; set; } = new List<SearchOptions> { DigiKey.SearchOptions.InStock };
+        public ICollection<SearchOptions> SearchOptions { get; set; } = new List<SearchOptions>();
     }
 
     public enum SearchOptions
