@@ -62,7 +62,7 @@ export const getTotalOutOfStockParts = (parts) => {
  * @returns The count of how many PCBs can be produced
  */
 export const getProducibleUnassociatedCount = (parts) => {
-	if (parts === undefined) return 0;
+	if (parts === undefined || parts.length === 0) return 0;
 	const maxIteration = 10000;
 	// deep clone the parts array
 	const partsConsumed = parts.filter(x => x.pcbId === null).map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0 }}));
@@ -91,7 +91,7 @@ export const getProducibleUnassociatedCount = (parts) => {
  * @returns The count of how many PCBs can be produced
  */
 export const getProduciblePcbCount = (parts, pcb) => {
-	if (parts === undefined) return { count: 0, limitingPcb: -1 };
+	if (parts === undefined || parts.count === 0) return { count: 0, limitingPcb: -1 };
 	const maxIteration = 10000;
 
 	// deep clone the parts array
