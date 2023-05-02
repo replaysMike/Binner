@@ -262,7 +262,7 @@ export function Search(props) {
         <div className="suggested-part">
             {showPartNotFound && 
               <span><Icon name="warning sign" color="yellow" />
-              <Trans i18nKey="page.inventory.searchNotFound">
+              <Trans i18nKey="page.search.searchNotFound">
                 No resuts found in inventory. Do you want to <Link to={`/inventory/add/${keyword}`}>Add</Link> it?
               </Trans>
               </span>}

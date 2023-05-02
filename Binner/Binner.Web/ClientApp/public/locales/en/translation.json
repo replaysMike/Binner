@@ -23,7 +23,8 @@
     },
     "search": {
       "title":"Inventory",
-      "search":"Seach"
+      "search":"Seach",
+      "searchNotFound": "No resuts found in inventory. Do you want to <1>Add</1> it?"
     },
     "inventory": {
       "addtitle": "Add Inventory",
