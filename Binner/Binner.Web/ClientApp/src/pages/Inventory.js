@@ -323,7 +323,6 @@ export function Inventory(props) {
       setScannedPartsBarcodeInput({ cleanPartNumber, input });
     } else {
       // scan single part
-      // console.log('bulk scan is NOT open', cleanPartNumber);
       // fetch metadata on the barcode, don't await, do a background update
       const scannedPart = {
         partNumber: cleanPartNumber,
@@ -332,7 +331,6 @@ export function Inventory(props) {
       setInputPartNumber(cleanPartNumber);
       doBarcodeLookup(scannedPart, (partInfo) => {
         // barcode found
-        // console.log("Barcode info found!", partInfo);
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
           setPartMetadataError(null);
@@ -637,7 +635,6 @@ export function Inventory(props) {
   }
 
   const handleChange = (e, control) => {
-    console.log('handleChange', control.name);
     e.preventDefault();
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
@@ -925,12 +922,9 @@ export function Inventory(props) {
   /* RENDER */
 
   /*<MatchingPartsMemoized part={part} metadataParts={metadataParts} partTypes={partTypes} setPartFromMetadata={setPartFromMetadata} />*/
-  const renderForm = useMemo(() => {
-    console.log('render!', disableRendering.current);
-    
+  const renderForm = useMemo(() => {   
     return (
     <>
-
     <div className="page-banner">
       {partMetadataIsSubscribed && (
         <div className="page-notice" onClick={() => setPartMetadataIsSubscribed(false)}>
