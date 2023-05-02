@@ -30,7 +30,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		isDebug: DefaultIsDebug,
 		maxKeystrokeThresholdMs: DefaultMaxKeystrokeThresholdMs,
 		bufferTime: DefaultDebounceIntervalMs,
-		barcodePrefix2D: "[)>",
+		prefix2D: "[)>",
 		profile: BarcodeProfiles.Default
 	});
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
@@ -48,7 +48,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 	const lastKeyTime = useRef(0);
 
   const onReceivedBarcodeInput = (e, buffer) => {
-    if (buffer.length < MinBufferLengthToAccept && processKeyBuffer(buffer, barcodeConfig.barcodePrefix2D.length) !== barcodeConfig.barcodePrefix2D) {
+    if (buffer.length < MinBufferLengthToAccept && processKeyBuffer(buffer, barcodeConfig.prefix2D.length) !== barcodeConfig.prefix2D) {
 			keyBufferRef.current.length = 0;
 			if(barcodeConfig.isDebug) console.log('BSI: timeout: barcode dropped input', buffer);
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
@@ -172,7 +172,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		let rsDetected = false;
 		let eotDetected = false;
 		let invalidBarcodeDetected = false;
-    if (value.startsWith(barcodeConfig.barcodePrefix2D)) {
+    if (value.startsWith(barcodeConfig.prefix2D)) {
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
       const parseResult = parseDataMatrix(value);
@@ -211,7 +211,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
 		const sohCharCodes = ["\u0001"]; // CTRL-A, \u0001 START OF HEADER
 		const stxCharCodes = ["\u0002"]; // CTRL-B, \u0002 START OF TEXT
 		const etxCharCodes = ["\u0003"]; // CTRL-C, \u0003 END OF TEXT
-    const header = barcodeConfig.barcodePrefix2D;
+    const header = barcodeConfig.prefix2D;
     const expectedFormatNumber = 6; /** 22z22 barcode */
     const controlChars = ["P", "1P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z"];
 
@@ -367,7 +367,7 @@ export function BarcodeScannerInput({ listening, minInputLength, onReceived, hel
   };
 
 	const buildBarcode = (formatNumber, gsLines) => {
-		let barcode = `${barcodeConfig.barcodePrefix2D}\u241e${formatNumber.toString().padStart(2, '0')}`; // Header + RS + formatNumber
+		let barcode = `${barcodeConfig.prefix2D}\u241e${formatNumber.toString().padStart(2, '0')}`; // Header + RS + formatNumber
 		for(let i = 0; i < gsLines.length; i++){
 			barcode = barcode + "\u241d" + gsLines[i]; // GS
 		}

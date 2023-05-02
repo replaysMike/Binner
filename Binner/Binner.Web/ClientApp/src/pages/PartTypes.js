@@ -463,7 +463,7 @@ export function PartTypes(props) {
           <Breadcrumb.Section active>{t("page.partTypes.title", "Part Types")}</Breadcrumb.Section>
         )}
       </Breadcrumb>
-      <FormHeader name={t("page.partTypes.title", "Part Types")} to="..">
+      <FormHeader name={t("page.partTypes.title", "Part Types")} to="/">
         <Trans i18nKey="page.partTypes.description">
           Part Types allow you to separate your parts by type. <i>Parent</i> types allow for unlimited part type hierarchy.
           <br />

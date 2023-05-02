@@ -1009,7 +1009,7 @@ export function Bom(props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t("bc.bom", "BOM")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t("page.bom.header.title", "Bill of Materials")} to="..">
+      <FormHeader name={t("page.bom.header.title", "Bill of Materials")} to="/">
         <Trans i18nKey="page.bom.header.description">Manage your BOM by creating PCB(s) and adding your parts.</Trans>
       </FormHeader>
       <AddBomPartModal isOpen={addPartModalOpen} onAdd={handleAddPart} onClose={() => setAddPartModalOpen(false)} pcbs={project.pcbs || []} />

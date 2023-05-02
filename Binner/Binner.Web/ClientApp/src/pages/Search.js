@@ -251,9 +251,9 @@ export function Search(props) {
             id="keyword"
             name="keyword"
             clearOnScan={false}
-            onBarcodeReadStarted={(e) => { console.log('onBarcodeReadStarted'); searchDebounced.cancel();  }}
+            onBarcodeReadStarted={(e) => { searchDebounced.cancel();  }}
             onBarcodeReadCancelled={(e) => { searchDebounced.cancel();  }}
-            onBarcodeReadReceived={(e) => { console.log('onBarcodeReadDone'); searchDebounced.cancel();  }}
+            onBarcodeReadReceived={(e) => { searchDebounced.cancel();  }}
           />
         </Form.Field>
       </Form>

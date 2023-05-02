@@ -167,6 +167,10 @@
       "barcodeConfiguration": "Barcode Configuration",
       "barcodeSupport": "Barcode Support",
       "barcodeProfile": "Barcode Profile",
+      "isBarcodeDebug": "Debug Mode",
+      "bufferTime": "Buffer Time (ms)",
+      "prefix2d": "2D Barcode Prefix",
+      "maxKeystrokeThresholdMs": "Max Keystroke Threshold (ms)",
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
         "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
@@ -197,11 +201,15 @@
         "barcodeSupportEnabled": "Choose if you would like to enable barcode support.",
         "barcodeProfile": "Choose the barcode profile to use for your scanner.",
         "barcodePrefix": "The prefix used for 2D barcodes, usually '[)>'.",
-        "barcodeBufferTime": "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80"
+        "barcodeBufferTime": "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80",
+        "barcodeIsDebug": "Enabling Barcode debug mode will print diagnostic information to the browser console.",
+        "maxKeystrokeThresholdMs": "The maximum amount of time in milliseconds to wait between keypresses.",
+        "prefix2d": "The prefix used for 2D barcodes, usually '[)>'."
       }
     },
     "datasheet": {
       "title": "Datasheet Search",
+      "description": "Search for datasheets by part number.",
       "partType": "Part Type",
       "manufacturerPartNumber": "Manufacturer Part",
       "manufacturer": "Manufacturer",
@@ -301,8 +309,12 @@
       "description": ""
     },
     "admin": {
+      "title": "Admin",
+      "description": "System administration for managing your installation.",
+      "header": "Choose an administration task",
       "users": {
         "title": "User Management",
+        "baseDescription": "Manage the users of your system.",
         "description": "Administration of users.",
         "accountType": "Account Type",
         "masterAccount": "Master Admin Account",
@@ -326,6 +338,7 @@
       },
       "systemInfo": {
         "title": "System Information",
+        "baseDescription": "Get information on your Binner installation.",
         "description": "Information about your Binner installation. These settings can be found in the service configuration file 'appsettings.json'",
         "version": "Version",
         "lastestVersion": "Latest Binner Version",
@@ -335,6 +348,7 @@
         "language": "Language",
         "currency": "Currency",
         "server": "Server",
+        "data": "Data",
         "storageProvider": "Storage Provider",
         "storageProviderConfig": "Storage Provider Config",
         "installationPath": "Installation Path",
@@ -342,7 +356,6 @@
         "logPath": "Log Path",
         "ip": "IP",
         "port": "Port",
-        "data": "Data",
         "totalParts": "Total Parts",
         "totalUsers": "Total Users",
         "totalPartTypes": "Total Part Types",
@@ -352,6 +365,7 @@
     },
     "backup": {
       "title": "Backup / Restore",
+      "baseDescription": "Backup or restore your Binner installation.",
       "description": "Create a backup or restore from a backup.",
       "acceptedFileTypes": "Accepted file types: \"*.bak\"",
       "backupDescription": "Create a snapshot of your Binner installation."
@@ -692,8 +706,6 @@
     "consumed": "Consumed",
     "serial": "Serial",
     "allowLogin": "Allow Login",
-    "bufferTime": "Buffer Time (ms)",
-    "barcodePrefix2d": "2D Barcode Prefix",
     "active": "Active",
     "inactive": "Inactive",
     "rowsPerPage": "Rows per page"

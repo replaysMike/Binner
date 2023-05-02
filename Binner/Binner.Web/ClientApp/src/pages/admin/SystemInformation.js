@@ -126,7 +126,7 @@ export const SystemInformation = () => {
           </Segment>
 
           <Segment color="green" style={{marginTop: '50px'}}>
-            <Header>{t("page.systemInfo.data", "Data")}</Header>
+            <Header>{t("page.admin.systemInfo.data", "Data")}</Header>
             <Form.Group>
               <Form.Field width={3}>
                 <label>{t("page.admin.systemInfo.totalParts", "Total Parts")}</label>

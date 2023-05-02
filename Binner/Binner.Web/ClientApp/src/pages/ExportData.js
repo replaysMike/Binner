@@ -131,7 +131,7 @@ export const ExportData = (props) => {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('page.exportData.title', "Import/Export Data")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.exportData.title', "Import/Export Data")} to={".."}>
+      <FormHeader name={t('page.exportData.title', "Import/Export Data")} to="/">
         {t('page.exportData.description', "Import or Export your Binner database to a human-readable format.")}
 			</FormHeader>
       <Segment loading={loading}>

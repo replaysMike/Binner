@@ -329,7 +329,8 @@ export function Datasheets (props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('page.datasheet.title', "Datasheet Search")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.datasheet.title', "Datasheet Search")} to={".."}>
+      <FormHeader name={t('page.datasheet.title', "Datasheet Search")} to="/">
+      {t('page.datasheet.description', "Search for datasheets by part number.")}
 			</FormHeader>
       {contents}
     </div>

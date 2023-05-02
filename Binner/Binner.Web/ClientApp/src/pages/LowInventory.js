@@ -124,7 +124,7 @@ export function LowInventory (props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('page.lowInventory.title', "Low Inventory")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.lowInventory.title', "Low Inventory")} to={".."}>
+      <FormHeader name={t('page.lowInventory.title', "Low Inventory")} to="/">
         <Trans i18nKey="page.lowInventory.description">
           Use this page to reorder parts you are low on.<br/>
           You can define a custom <i>Low Stock</i> value per part in your inventory.

@@ -367,7 +367,7 @@ export function PrintLabels(props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('page.printLabels.title', "Print Label")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.printLabels.title', "Print Label")} to={".."}>
+      <FormHeader name={t('page.printLabels.title', "Print Label")} to="/">
         <Trans i18nKey="page.printLabels.description">
           Print custom multi-line labels for your storage bins.
           <br />

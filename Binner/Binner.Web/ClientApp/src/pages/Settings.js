@@ -550,7 +550,7 @@ export const Settings = (props) => {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('page.settings.title', "Settings")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.settings.title', "Settings")} to={".."}>
+      <FormHeader name={t('page.settings.title', "Settings")} to="/">
         <Trans i18nKey="page.settings.description">
           Configure your integrations, printer configuration, as well as label
           part templates.<br />Additional help can be found on the <a href="https://github.com/replaysMike/Binner/wiki/Configuration" target="_blank" rel="noreferrer">Wiki</a>
@@ -1421,7 +1421,7 @@ export const Settings = (props) => {
             </Form.Field>
             
             <Form.Field width={10}>
-              <label>{t('label.bufferTime', "Buffer Time (ms)")}</label>
+              <label>{t('page.settings.bufferTime', "Buffer Time (ms)")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1441,7 +1441,7 @@ export const Settings = (props) => {
             </Form.Field>
 
             <Form.Field width={10}>
-              <label>{t('label.maxKeystrokeThresholdMs', "Max Keystroke Threshold (ms)")}</label>
+              <label>{t('page.settings.maxKeystrokeThresholdMs', "Max Keystroke Threshold (ms)")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}
@@ -1461,7 +1461,7 @@ export const Settings = (props) => {
             </Form.Field>
 
             <Form.Field width={10}>
-              <label>{t('label.prefix2d', "2D Barcode Prefix")}</label>
+              <label>{t('page.settings.prefix2d', "2D Barcode Prefix")}</label>
               <Popup
                 position="top left"
                 offset={[65, 0]}

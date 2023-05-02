@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Segment, Breadcrumb, Icon } from "semantic-ui-react";
+import { FormHeader } from "../../components/FormHeader";
 
 export const Admin = () => {
   const { t } = useTranslation();
@@ -13,12 +14,14 @@ export const Admin = () => {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('bc.admin', "Admin")}</Breadcrumb.Section>
       </Breadcrumb>
-      <h1>Admin</h1>
-
-      <p>System administration for managing your installation.</p>
+      <FormHeader name={t('page.admin.title', "Admin")} to="/">
+        <Trans i18nKey="page.admin.description">
+        System administration for managing your installation.
+        </Trans>
+			</FormHeader>
 
       <Segment raised>
-        <h3>Choose an administration task</h3>
+        <h3>{t('page.admin.header', "Choose an administration task")}</h3>
 
         <div className="helpcontainer">
           <ul>

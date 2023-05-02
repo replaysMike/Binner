@@ -20,7 +20,7 @@ export function Tools(props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('bc.tools', "Tools")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.tools.title', "Tools")} to={".."}>
+      <FormHeader name={t('page.tools.title', "Tools")} to="/">
         {t('page.tools.description', "Binner includes a suite of free utilities common to daily life in electrical engineering.")}
 			</FormHeader>
       <Segment style={{ padding: "40px 40px" }} className="tools">
