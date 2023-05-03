@@ -45,7 +45,7 @@ export const ExportData = (props) => {
       let errorMsg = "";
       for (let i = 0; i < acceptedFiles.length; i++) {
         if (!acceptedMimeTypes.includes(acceptedFiles[i].type)) {
-          errorMsg += `File '${acceptedFiles[i].name}' with mime type '${acceptedFiles[i].type}' is not an accepted image type!\r\n`;
+          errorMsg += `${t('page.exportData.fileNotSupported', "File '{{name}}' with mime type '{{type}}' is not an accepted image type!", { name: acceptedFiles[i].name, type: acceptedFiles[i].type})}\r\n`;
         }
       }
       if (errorMsg.length > 0) {
@@ -82,12 +82,12 @@ export const ExportData = (props) => {
           a.download = `binner-export-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.zip`;
           a.click();
           window.URL.revokeObjectURL(file);
-          toast.success('Data exported successfully!');
+          toast.success(t('page.exportData.exportSuccess', "Data exported successfully!"));
         })
         .catch((error) => {
           toast.dismiss();
           console.error("error", error);
-          toast.error(`Export data failed!`);
+          toast.error(t('page.exportData.exportFailed', "Export data failed!"));
         });
     });
 
@@ -113,20 +113,20 @@ export const ExportData = (props) => {
           .then((data) => {
             console.log("data", data);
             if (data.success) {
-              toast.success(`Data imported successfully!`);
+              toast.success(t('page.exportData.importSuccess', "Data imported successfully!"));
             } else {
-              toast.error('Failed to import data.');
+              toast.error(t('page.exportData.importFailed', "Failed to import data."));
             }
             setImportResult(data.data);
           })
           .catch((error) => {
             toast.dismiss();
             console.error("error", error);
-            toast.error(`Import upload failed!`);
+            toast.error(t('page.exportData.importUploadFailed', "Import upload failed!"));
           });
       });
     } else {
-      toast.error("No files selected for upload!");
+      toast.error(t('page.exportData.noFilesSelected', "No files selected for upload!"));
     }
     setLoading(false);
   };
@@ -178,7 +178,7 @@ export const ExportData = (props) => {
               <div style={{ padding: "50px", marginBottom: "20px", height: "140px" }}>
                 <Form.Dropdown
                   label="Format"
-                  placeholder="Choose a format"
+                  placeholder={t('page.exportData.chooseFormat', "Choose a format")}
                   selection
                   value={exportFormat}
                   options={exportFormats}

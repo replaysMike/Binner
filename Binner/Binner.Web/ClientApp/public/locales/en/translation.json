@@ -113,7 +113,15 @@
       "totalRowsImported": "Total Rows Imported",
       "totalProjectsImported": "Projects Imported",
       "totalPartTypesImported": "Part Types Imported",
-      "totalPartsImported": "Parts Imported"
+      "totalPartsImported": "Parts Imported",
+      "noFilesSelected": "No files selected for upload!",
+      "importUploadFailed": "Import upload failed!",
+      "importFailed": "Failed to import data.",
+      "importSuccess": "Data imported successfully!",
+      "exportFailed": "Export data failed!",
+      "exportSuccess": "Data exported successfully!",
+      "fileNotSupported": "File '{{name}}' with mime type '{{type}}' is not an accepted image type!",
+      "chooseFormat": "Choose a format"
     },
     "tools": {
       "title": "Tools",
