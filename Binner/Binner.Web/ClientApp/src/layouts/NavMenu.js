@@ -99,7 +99,6 @@ export function NavMenu(props) {
                           }
                           <Dropdown.Item icon="help circle" text="Help" as={Link} to="/help" />
                           <Dropdown.Item icon="bug" text="Report a Bug" as={Link} to="https://github.com/replaysMike/Binner/issues" target="_blank" />
-                          <Dropdown.Item icon="comment" text="Support" as={Link} to="/support" />
                           <Dropdown.Item icon="sign out" text="Logout" onClick={logout} />
                         </Dropdown.Menu>
                       </Dropdown>
