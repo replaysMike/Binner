@@ -1031,6 +1031,24 @@ INNER JOIN (
                 }
             }
 
+            // finally, do any keyword filtering
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                entitiesQueryable = entitiesQueryable.Where(x => 
+                    EF.Functions.Like(x.PartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.ManufacturerPartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.Description, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.Manufacturer, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.Keywords, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.DigiKeyPartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.MouserPartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.ArrowPartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.Location, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.BinNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.BinNumber2, '%' + request.Keyword + '%')
+                );
+            }
+
             if (additionalPredicate != null)
                 entitiesQueryable = entitiesQueryable.Where(additionalPredicate);
 

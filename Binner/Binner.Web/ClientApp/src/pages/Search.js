@@ -10,7 +10,6 @@ import PartsGrid2Memoized from "../components/PartsGrid2Memoized";
 import { fetchApi } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
-import { CatchingPokemonSharp } from "@mui/icons-material";
 
 export function Search(props) {
   const DebounceTimeMs = 400;
@@ -90,16 +89,20 @@ export function Search(props) {
     }
   };
 
-  const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
+  const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection, keyword = null) => {
     const response = await fetchApi(
-      `api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by?.join(',')}&value=${byValue?.join(',')}`
+      `api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&keyword=${keyword || ""}&by=${by?.join(',')}&value=${byValue?.join(',')}`
     );
     const { data } = response;
     const pageOfData = data.items;
     const totalPages = Math.ceil(data.totalItems / results);
     let newData = [];
-    if (reset) newData = [...pageOfData];
-    else newData = [...parts, ...pageOfData];
+    if (pageOfData) {
+      if (reset) 
+        newData = [...pageOfData];
+      else 
+        newData = [...parts, ...pageOfData];
+    }
     setParts(newData);
     setPage(page);
     setTotalPages(totalPages);
@@ -109,7 +112,7 @@ export function Search(props) {
     return response;
   };
 
-  const search = useCallback(async (keyword) => {
+  const search = useCallback(async (keyword, by = filterBy, byValue = filterByValue) => {
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
     // if there's a keyword we should clear binning (because they use different endpoints)
@@ -151,52 +154,33 @@ export function Search(props) {
   }, [renderIsDirty]);
 
   const searchDebounced = useMemo(() => debounce(search, DebounceTimeMs), []);
+  const loadPartsDebounced = useMemo(() => debounce(loadParts, DebounceTimeMs), []);
 
   useEffect(() => {
     if (pageSize === -1) return;
-    if (keywordParam !== keyword) {
-      if (keywordParam && keywordParam.length > 0) {
-        // if there's a keyword we should clear binning (because they use different endpoints)
-        setKeyword(keywordParam);
-        setFilterBy([]);
-        setFilterByValue([]);
-        setPage(1);
-        search(keywordParam);
-      } else if (by && by.length > 0) {
-        // likewise, clear keyword if we're in a bin search
-        setFilterBy(by);
-        setFilterByValue(byValue);
-        setKeyword("");
-        setPage(1);
-        loadParts(page, true, by, byValue, pageSize);
-      } else {
-        setPage(1);
-        loadParts(page, true, [], [], pageSize);
-      }
-    } else {
-      if (keyword && keyword.length > 0) search(keyword);
-      else loadParts(page);
-    }
-
+    setPage(1);
+    setKeyword(keywordParam || "");
+    setFilterBy(byParam?.split(',') || []);
+    setFilterByValue(valueParam?.split(',') || []);
+    loadParts(1, true, by, byValue, pageSize, sortBy, sortDirection, keywordParam || "");
     return () => {
       Search.abortController.abort();
     };
   }, [byParam, valueParam, keywordParam, initComplete]);
+
+  useEffect(() => {
+    loadPartsDebounced(1, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, keyword || "");
+  }, [filterBy, filterByValue, keyword]);
 
   const handlePartClick = (e, part) => {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
   const handleNextPage = async (e, page) => {
-    await loadParts(page, true);
+    await loadParts(page, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, keyword || "");
   };
 
   const handleSearch = (e, control) => {
-    if (control.value && control.value.length > 0) {
-      searchDebounced(control.value);
-    } else {
-      loadParts(page, true);
-    }
     setKeyword(control.value);
   };
 
@@ -213,15 +197,25 @@ export function Search(props) {
     setFilterBy(newFilterBy);
     setFilterByValue(newFilterByValue);
     // go
-    if (newFilterBy.length > 0)
-      props.history(`/inventory?by=${newFilterBy.join(',')}&value=${newFilterByValue.join(',')}`);
-    else
-      props.history('/inventory');
+
+    // replace the browser url
+    let newBrowserUrl = '/inventory';
+    if (newFilterBy.length > 0 || newFilterByValue.length > 0 || keyword.length > 0) {
+      newBrowserUrl += '?';
+      if (newFilterBy.length > 0)
+        newBrowserUrl += `by=${newFilterBy.join(',')}&value=${newFilterByValue.join(',')}`;
+      if (newFilterBy.length > 0 && keyword.length > 0)
+        newBrowserUrl += `&`;
+      if (keyword.length > 0)
+        newBrowserUrl += `keyword=${keyword}`;
+    }
+    window.history.pushState(null, null, newBrowserUrl);
+    setRenderIsDirty(!renderIsDirty);
   };
 
   const handlePageSizeChange = async (e, pageSize) => {
     setPageSize(pageSize);
-    await loadParts(page, true, filterBy, filterByValue, pageSize);
+    await loadParts(page, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, keyword || "");
   };
 
   const handleSortChange = async (sortBy, sortDirection) => {
@@ -229,7 +223,7 @@ export function Search(props) {
     const newSortDirection = sortDirection || "Descending";
     setSortBy(newSortBy);
     setSortDirection(newSortDirection);
-    return await loadParts(page, true, filterBy, filterByValue, pageSize, newSortBy, newSortDirection);
+    return await loadParts(page, true, filterBy, filterByValue, pageSize, newSortBy, newSortDirection, keyword || "");
   };
 
   const renderPartsTable = useMemo(() => {
@@ -244,9 +238,12 @@ export function Search(props) {
         onPageSizeChange={handlePageSizeChange}
         onSortChange={handleSortChange}
         onInit={handleInit}
+        by={filterBy}
+        byValue={filterByValue}
+        keyword={keyword}
         name="partsGrid"
       >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2Memoized>);
-  }, [renderIsDirty, parts, page, totalPages, totalRecords, loading]);
+  }, [renderIsDirty, parts, page, totalPages, totalRecords, loading, filterBy, filterByValue]);
 
 
   return (
@@ -264,7 +261,7 @@ export function Search(props) {
             focus
             placeholder={t('page.search.search', "Search")}
             icon="search"
-            value={keyword}
+            value={keyword || ""}
             onChange={handleSearch}
             id="keyword"
             name="keyword"

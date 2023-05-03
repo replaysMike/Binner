@@ -42,10 +42,12 @@ export function LowInventory (props) {
     const totalPages = Math.ceil(data.totalItems / results);
     setTotalRecords(data.totalItems);
     let newData = [];
-    if (reset)
-      newData = [...pageOfData];
-    else
-      newData = [...parts, ...pageOfData];
+    if (pageOfData) {
+      if (reset)
+        newData = [...pageOfData];
+      else
+        newData = [...parts, ...pageOfData];
+    }
     setParts(newData);
     setPage(page);
     setTotalPages(totalPages);
@@ -74,6 +76,10 @@ export function LowInventory (props) {
     };
   }, [byParam, valueParam, initComplete]);
 
+  useEffect(() => {
+    loadParts(1, true, filterBy, filterByValue, pageSize, sortBy, sortDirection);
+  }, [filterBy, filterByValue]);
+
   const handleNextPage = async (e, page) => {
     await loadParts(page, true);
   };
@@ -94,11 +100,16 @@ export function LowInventory (props) {
     }
     setFilterBy(newFilterBy);
     setFilterByValue(newFilterByValue);
-    // go
-    if (newFilterBy.length > 0)
-      props.history(`/lowstock?by=${newFilterBy.join(',')}&value=${newFilterByValue.join(',')}`);
-    else
-      props.history('/lowstock');
+
+    // replace the browser url
+    let newBrowserUrl = '/lowstock';
+    if (newFilterBy.length > 0 || newFilterByValue.length > 0) {
+      newBrowserUrl += '?';
+      if (newFilterBy.length > 0)
+        newBrowserUrl += `by=${newFilterBy.join(',')}&value=${newFilterByValue.join(',')}`;
+    }
+    window.history.pushState(null, null, newBrowserUrl);
+    setRenderIsDirty(!renderIsDirty);
   };
 
   const handlePageSizeChange = async (e, pageSize) => {
@@ -128,10 +139,12 @@ export function LowInventory (props) {
       onPageSizeChange={handlePageSizeChange}
       onSortChange={handleSortChange}
       onInit={handleInit}
+      by={filterBy}
+      byValue={filterByValue}
       name='partsGrid' 
       visitUrl="/lowstock"
     >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2Memoized>);
-  }, [renderIsDirty, parts, page, totalPages, totalRecords, loading]);
+  }, [renderIsDirty, parts, page, totalPages, totalRecords, loading, filterBy, filterByValue]);
   
   return (
     <div>

@@ -720,6 +720,8 @@ namespace Binner.Common.Integrations
         private string GetResistance(string resistance)
         {
             var val = new String(resistance.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
+            if (string.IsNullOrEmpty(val))
+                val = "0";
             var unitsParsed = resistance.Replace(val, "").ToLower();
             var units = "ohms";
             switch (unitsParsed)

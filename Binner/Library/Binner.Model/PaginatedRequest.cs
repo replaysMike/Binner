@@ -38,5 +38,10 @@ namespace Binner.Model
         /// Property value to filter by
         /// </summary>
         public string? Value { get; set; }
+
+        /// <summary>
+        /// Keyword to filter by
+        /// </summary>
+        public string? Keyword { get; set; }
     }
 }
