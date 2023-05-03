@@ -10,21 +10,24 @@ import PartsGrid2Memoized from "../components/PartsGrid2Memoized";
 import { fetchApi } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
+import { CatchingPokemonSharp } from "@mui/icons-material";
 
 export function Search(props) {
   const DebounceTimeMs = 400;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const by = searchParams.get("by");
-  const byValue = searchParams.get("value");
+  var byParam = searchParams.get("by");
+  var valueParam = searchParams.get("value");
+  const by = byParam?.split(',') || [];
+  const byValue = valueParam?.split(',') || [];
   const keywordParam = searchParams.get("keyword");
   Search.abortController = new AbortController();
 
   const [parts, setParts] = useState([]);
   const [keyword, setKeyword] = useState(keywordParam || "");
-  const [filterBy, setFilterBy] = useState(by || "");
-  const [filterByValue, setFilterByValue] = useState(byValue || "");
+  const [filterBy, setFilterBy] = useState(by || []);
+  const [filterByValue, setFilterByValue] = useState(byValue || []);
   const [sortBy, setSortBy] = useState("DateCreatedUtc");
   const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
@@ -89,7 +92,7 @@ export function Search(props) {
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
     const response = await fetchApi(
-      `api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by || ""}&value=${byValue || ""}`
+      `api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by?.join(',')}&value=${byValue?.join(',')}`
     );
     const { data } = response;
     const pageOfData = data.items;
@@ -110,8 +113,8 @@ export function Search(props) {
     Search.abortController.abort(); // Cancel the previous request
     Search.abortController = new AbortController();
     // if there's a keyword we should clear binning (because they use different endpoints)
-    setFilterBy("");
-    setFilterByValue("");
+    setFilterBy([]);
+    setFilterByValue([]);
 
     setLoading(true);
     setShowPartNotFound(false);
@@ -155,8 +158,8 @@ export function Search(props) {
       if (keywordParam && keywordParam.length > 0) {
         // if there's a keyword we should clear binning (because they use different endpoints)
         setKeyword(keywordParam);
-        setFilterBy("");
-        setFilterByValue("");
+        setFilterBy([]);
+        setFilterByValue([]);
         setPage(1);
         search(keywordParam);
       } else if (by && by.length > 0) {
@@ -168,7 +171,7 @@ export function Search(props) {
         loadParts(page, true, by, byValue, pageSize);
       } else {
         setPage(1);
-        loadParts(page, true, "", "", pageSize);
+        loadParts(page, true, [], [], pageSize);
       }
     } else {
       if (keyword && keyword.length > 0) search(keyword);
@@ -178,7 +181,7 @@ export function Search(props) {
     return () => {
       Search.abortController.abort();
     };
-  }, [by, byValue, keywordParam, initComplete]);
+  }, [byParam, valueParam, keywordParam, initComplete]);
 
   const handlePartClick = (e, part) => {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
@@ -197,11 +200,23 @@ export function Search(props) {
     setKeyword(control.value);
   };
 
-  const removeFilter = (e) => {
+  const removeFilter = (e, filterName) => {
     e.preventDefault();
-    setFilterBy("");
-    setFilterByValue("");
-    props.history(`/inventory`);
+    let newFilterBy = [];
+    let newFilterByValue = [];
+    for(let i =0; i < filterBy.length; i++) {
+      if (filterBy[i] !== filterName) {
+        newFilterBy.push(filterBy[i]);
+        newFilterByValue.push(filterByValue[i]);
+      }
+    }
+    setFilterBy(newFilterBy);
+    setFilterByValue(newFilterByValue);
+    // go
+    if (newFilterBy.length > 0)
+      props.history(`/inventory?by=${newFilterBy.join(',')}&value=${newFilterByValue.join(',')}`);
+    else
+      props.history('/inventory');
   };
 
   const handlePageSizeChange = async (e, pageSize) => {
@@ -269,12 +284,13 @@ export function Search(props) {
           </div>
       </Form>
       <div style={{ paddingTop: "10px", marginBottom: "10px" }}>
-        {filterBy && (
-          <Button primary size="mini" onClick={removeFilter}>
-            <Icon name="delete" />
-            {filterBy}: {filterByValue}
-          </Button>
-        )}
+        {filterBy && filterBy.map((filterName, index) => (
+            <Button key={index} primary size="mini" onClick={e => removeFilter(e, filterName)}>
+              <Icon name="delete" />
+              {filterName}: {filterByValue[index]}
+            </Button>       
+          ))
+        }
       </div>
       {renderPartsTable}
     </div>

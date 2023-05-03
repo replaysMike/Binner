@@ -944,57 +944,95 @@ INNER JOIN (
             return _mapper.Map<Part?>(entity);
         }
 
-        private async Task<IQueryable<DataModel.Part>> GetPartsQueryableAsync(BinnerContext context, PaginatedRequest? request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null) {
+        private async Task<IQueryable<DataModel.Part>> GetPartsQueryableAsync(BinnerContext context, PaginatedRequest? request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
+        {
+            var stringCompare = StringComparison.InvariantCultureIgnoreCase;
             DataModel.PartType? partType = null;
-            // special case for partTypes
-            if (request.Value != null && request?.By.Equals("partType", StringComparison.InvariantCultureIgnoreCase) == true)
+            var filterBy = request?.By?.Split(',') ?? Array.Empty<string>();
+            var filterByValues = request?.Value?.Split(',') ?? Array.Empty<string>();
+            if (filterBy.Any())
             {
-                partType = await context.PartTypes.Where(x => x.Name == request.Value).FirstOrDefaultAsync();
-                if (partType == null) throw new ArgumentException($"Unknown part type: {request.Value}");
-                request.Value = partType.PartTypeId.ToString();
-                request.By = "partTypeId";
-            } else if (request.Value != null && request?.By.Equals("partTypeId", StringComparison.InvariantCultureIgnoreCase) == true)
-            {
-                partType = await context.PartTypes.Where(x => x.PartTypeId == int.Parse(request.Value)).FirstOrDefaultAsync();
-                if (partType == null) throw new ArgumentException($"Unknown part type: {request.Value}");
+                if (filterBy.Contains("partType", stringCompare))
+                {
+                    // special case for partTypes
+                    // translate the part type name to part type id and then make sure it exists
+                    var index = filterBy.Select((value, index) => new { value, index })
+                        .Where(x => x.value.Equals("partType", stringCompare))
+                        .Select(x => x.index)
+                        .First();
+                    if (index < filterByValues.Length)
+                    {
+
+                        var filterByPartTypeValue = filterByValues[index];
+                        partType = await context.PartTypes.Where(x => x.Name == filterByPartTypeValue).FirstOrDefaultAsync();
+                        if (partType == null) throw new ArgumentException($"Unknown part type: {filterByPartTypeValue}");
+                        filterByValues[index] = partType.PartTypeId.ToString();
+                    }
+                }
+                else if (filterBy.Contains("partTypeId", stringCompare))
+                {
+                    // ensure part type exists by partTypeId
+                    var index = filterBy.Select((value, index) => new { value, index })
+                        .Where(x => x.value.Equals("partTypeId", stringCompare))
+                        .Select(x => x.index)
+                        .First();
+                    if (index < filterByValues.Length)
+                    {
+                        var filterByPartTypeValue = filterByValues[index];
+                        partType = await context.PartTypes.Where(x => x.PartTypeId == int.Parse(filterByPartTypeValue)).FirstOrDefaultAsync();
+                        if (partType == null) throw new ArgumentException($"Unknown part type: {filterByPartTypeValue}");
+                    }
+                }
             }
 
             var entitiesQueryable = context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId);
             var orderingApplied = false;
-            if (!string.IsNullOrEmpty(request.By) && (request.By.Equals("PartType", StringComparison.InvariantCultureIgnoreCase) ||
-                                                      request.By.Equals("PartTypeId", StringComparison.InvariantCultureIgnoreCase)) 
-                                                  && partType != null)
+            
+            if (filterBy.Any())
             {
-                // recursively get part types and their children
-                var allPartTypes = await GetPartsByPartTypeAsync(context, partType, userContext);
-                // query all the children using a custom predicate builder
-                var predicate = PredicateBuilder.True<DataModel.Part>();
-                predicate = predicate.AND(x => x.PartTypeId == partType.PartTypeId);
-                if (additionalPredicate != null)
-                    predicate = predicate.AND(additionalPredicate);
-                foreach (var childPartType in allPartTypes)
+                if (partType != null && (filterBy.Contains("partType", stringCompare) || filterBy.Contains("partTypeId", stringCompare)))
                 {
-                    predicate = predicate.OR(x => x.PartTypeId == childPartType.PartTypeId);
+                    // recursively get part types and their children
+                    var allPartTypes = await GetPartsByPartTypeAsync(context, partType, userContext);
+                    // query all the children using a custom predicate builder
+                    var predicate = PredicateBuilder.True<DataModel.Part>();
+                    predicate = predicate.AND(x => x.PartTypeId == partType.PartTypeId);
+                    if (additionalPredicate != null)
+                        predicate = predicate.AND(additionalPredicate);
+                    foreach (var childPartType in allPartTypes)
+                    {
+                        predicate = predicate.OR(x => x.PartTypeId == childPartType.PartTypeId);
+                    }
+
+                    // apply the predicate
+                    entitiesQueryable = entitiesQueryable.Where(predicate);
+                    // apply sorting
+                    if (!string.IsNullOrEmpty(request.OrderBy))
+                    {
+                        orderingApplied = true;
+                        entitiesQueryable = entitiesQueryable.OrderBy(p => p.PartTypeId)
+                            .ThenByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+                    }
                 }
 
-                // apply the predicate
-                entitiesQueryable = entitiesQueryable.Where(predicate);
-                // apply sorting
-                if (!string.IsNullOrEmpty(request.OrderBy))
+                // do any non-part type filtering
+                foreach (var by in filterBy.Where(x => !x.Equals("partType", stringCompare)))
                 {
-                    orderingApplied = true;
-                    entitiesQueryable = entitiesQueryable.OrderBy(p => p.PartTypeId)
-                        .ThenByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+                    var index = filterBy.Select((value, index) => new { value, index })
+                        .Where(x => x.value.Equals(by, stringCompare))
+                        .Select(x => x.index)
+                        .First();
+                    if (index < filterByValues.Length)
+                    {
+                        var value = filterByValues[index];
+                        entitiesQueryable = entitiesQueryable.WhereIf(!string.IsNullOrEmpty(by), x => EF.Property<string>(x, by!.UcFirst()) == value);
+                    }
                 }
             }
-            else
-            {
-                // build a normal where
-                entitiesQueryable = entitiesQueryable.WhereIf(!string.IsNullOrEmpty(request.By), x => EF.Property<string>(x, request.By!.UcFirst()) == request.Value);
-                if (additionalPredicate != null)
-                    entitiesQueryable = entitiesQueryable.Where(additionalPredicate);
-            }
+
+            if (additionalPredicate != null)
+                entitiesQueryable = entitiesQueryable.Where(additionalPredicate);
 
             // apply specified sorting
             if (!orderingApplied)

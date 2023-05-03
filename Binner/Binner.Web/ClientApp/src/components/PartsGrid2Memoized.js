@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { createMedia } from "@artsy/fresnel";
 import { Button, Confirm, Modal, Header, Dropdown, Pagination, Popup } from "semantic-ui-react";
@@ -31,6 +31,11 @@ export default function PartsGrid2Memoized(props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  var byParam = searchParams.get("by");
+  var valueParam = searchParams.get("value");
+  const by = byParam?.split(',') || [];
+  const byValue = valueParam?.split(',') || [];
 
   const getViewPreference = (preferenceName) => {
     return getLocalData(preferenceName, { settingsName: 'partsGridViewPreferences', location })
@@ -210,14 +215,38 @@ export default function PartsGrid2Memoized(props) {
       default:
         return 180;
     }
-  };  
+  };
+
+  const indexOfBy = (filterBy) => {
+    for(let i = 0; i < by.length; i++) {
+      if (by[i] === filterBy) {
+        return i;
+      }
+    }
+    return -1;
+  };
+
+  const createFilterBy = (filterByToAdd) => {
+    const newFilterBy = [...by];
+    
+    if (!by.includes(filterByToAdd))
+      newFilterBy.push(filterByToAdd);
+    return newFilterBy.join(',');
+  };
+
+  const createFilterByValue = (filterByValueToAdd) => {
+    const newFilterByValue = [...byValue];
+    if (!by.includes(filterByValueToAdd))
+      newFilterByValue.push(filterByValueToAdd);
+    return newFilterByValue.join(',');
+  };
 
   const tableColumns = useMemo(() => {
     const handleSelfLink = (e, part, propertyName) => {
       e.preventDefault();
       e.stopPropagation();
       if (part[propertyName]) {
-        const url = `${props.visitUrl}?by=${propertyName}&value=${part[propertyName]}`;
+        const url = `${props.visitUrl}?by=${createFilterBy(propertyName)}&value=${createFilterByValue(part[propertyName])}`;
         navigate(url);
       }
     };
@@ -252,7 +281,7 @@ export default function PartsGrid2Memoized(props) {
               <div onClick={e => handleSelfLink(e, row.original, columnName)}>
                 <div className="icon-container small">{getIconForPart(row.original)} 
                   <div>
-                    <Link to={`${props.visitUrl}?by=partType&value=${row.original.partType}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
+                    <Link style={{minWidth: '25px'}} to={`${props.visitUrl}?by=${createFilterBy(columnName)}&value=${createFilterByValue(row.original.partType)}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
                       {row.original.partType}
                     </Link>
                   </div>
@@ -262,11 +291,15 @@ export default function PartsGrid2Memoized(props) {
         case 'binNumber':
         case 'binNumber2':
         case 'location':
+          
           return {...def, Cell: ({row}) => (
             <div onClick={e => handleSelfLink(e, row.original, columnName)}>
-              <Link to={`${props.visitUrl}?by=${columnName}&value=${row.original[columnName]}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
-                <span className='truncate'>{row.original[columnName]}</span>
-              </Link>
+              {by.includes(columnName) && byValue[indexOfBy(columnName, row.original[columnName])]?.toString() === row.original[columnName]?.toString()
+              ? <span className='truncate'>{row.original[columnName]}</span>
+              : <Link style={{minWidth: '25px'}} to={`${props.visitUrl}?by=${createFilterBy(columnName)}&value=${createFilterByValue(row.original[columnName])}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
+                  <span className='truncate'>{row.original[columnName]}</span>
+                </Link> 
+              }
             </div>
           )};
         case 'cost':

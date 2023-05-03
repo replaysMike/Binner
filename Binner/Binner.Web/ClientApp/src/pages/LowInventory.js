@@ -10,12 +10,14 @@ export function LowInventory (props) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const by = searchParams.get("by");
-  const byValue = searchParams.get("value");
+  var byParam = searchParams.get("by");
+  var valueParam = searchParams.get("value");
+  const by = byParam?.split(',') || [];
+  const byValue = valueParam?.split(',') || [];
   LowInventory.abortController = new AbortController();
   const [parts, setParts] = useState([]);
-  const [filterBy, setFilterBy] = useState(by || "");
-  const [filterByValue, setFilterByValue] = useState(byValue || "");
+  const [filterBy, setFilterBy] = useState(by || []);
+  const [filterByValue, setFilterByValue] = useState(byValue || []);
   const [sortBy, setSortBy] = useState("DateCreatedUtc");
   const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
@@ -33,7 +35,7 @@ export function LowInventory (props) {
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
     const response = await fetchApi(
-      `api/part/low?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by || ""}&value=${byValue || ""}`
+      `api/part/low?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by?.join(',')}&value=${byValue?.join(',')}`
     );
     const { data } = response;
     const pageOfData = data.items;
@@ -62,13 +64,15 @@ export function LowInventory (props) {
       loadParts(page, true, by, byValue, pageSize, sortBy, sortDirection);
     } else {
       setPage(1);
-      loadParts(page, true, "", "", pageSize, sortBy, sortDirection);
+      setFilterBy([]);
+      setFilterByValue([]);
+      loadParts(page, true, [], [], pageSize, sortBy, sortDirection);
     }
 
     return () => {
       LowInventory.abortController.abort();
     };
-  }, [by, byValue, initComplete]);
+  }, [byParam, valueParam, initComplete]);
 
   const handleNextPage = async (e, page) => {
     await loadParts(page, true);
@@ -78,11 +82,23 @@ export function LowInventory (props) {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
-  const removeFilter = (e) => {
+  const removeFilter = (e, filterName) => {
     e.preventDefault();
-    setFilterBy("");
-    setFilterByValue("");
-    props.history(`/lowstock`);
+    let newFilterBy = [];
+    let newFilterByValue = [];
+    for(let i =0; i < filterBy.length; i++) {
+      if (filterBy[i] !== filterName) {
+        newFilterBy.push(filterBy[i]);
+        newFilterByValue.push(filterByValue[i]);
+      }
+    }
+    setFilterBy(newFilterBy);
+    setFilterByValue(newFilterByValue);
+    // go
+    if (newFilterBy.length > 0)
+      props.history(`/lowstock?by=${newFilterBy.join(',')}&value=${newFilterByValue.join(',')}`);
+    else
+      props.history('/lowstock');
   };
 
   const handlePageSizeChange = async (e, pageSize) => {
@@ -131,12 +147,13 @@ export function LowInventory (props) {
         </Trans>
 			</FormHeader>
       <div style={{ paddingTop: "10px", marginBottom: "10px" }}>
-        {filterBy && (
-          <Button primary size="mini" onClick={removeFilter}>
-            <Icon name="delete" />
-            {filterBy}: {filterByValue}
-          </Button>
-        )}
+        {filterBy && filterBy.map((filterName, index) => (
+              <Button key={index} primary size="mini" onClick={e => removeFilter(e, filterName)}>
+                <Icon name="delete" />
+                {filterName}: {filterByValue[index]}
+              </Button>       
+            ))
+          }
       </div>
       {renderPartsTable}
     </div>
