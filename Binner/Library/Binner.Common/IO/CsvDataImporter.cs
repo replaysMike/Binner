@@ -60,6 +60,14 @@ namespace Binner.Common.IO
             return result;
         }
 
+        private string? GetValueFromHeader(string[] rowData, Header header, string name)
+        {
+            var headerIndex = header.GetHeaderIndex("Description");
+            if (headerIndex >= 0)
+                return rowData[headerIndex];
+            return null;
+        }
+
         public async Task<ImportResult> ImportAsync(string filename, Stream stream, IUserContext? userContext)
         {
             var result = new ImportResult();
@@ -130,22 +138,29 @@ namespace Binner.Common.IO
                                 var isDateModifiedValid = TryGet<DateTime>(rowData, header, "DateModifiedUtc", out var dateModifiedUtc);
                                 if (!isColorValid || !isDateCreatedValid || !isDateModifiedValid)
                                     continue;
-                                var name = GetQuoted(rowData[header.GetHeaderIndex("Name")])?.Trim();
+                                var name = GetQuoted(GetValueFromHeader(rowData, header, "Name"))?.Trim();
 
                                 if (!string.IsNullOrEmpty(name) && await _storageProvider.GetProjectAsync(name, userContext) == null)
                                 {
                                     var project = new Project
                                     {
                                         Name = name,
-                                        Description = GetQuoted(rowData[header.GetHeaderIndex("Description")]),
-                                        Location = GetQuoted(rowData[header.GetHeaderIndex("Location")]),
+                                        Description = GetQuoted(GetValueFromHeader(rowData, header, "Description")),
+                                        Location = GetQuoted(GetValueFromHeader(rowData, header, "Location")),
                                         Color = color,
                                         DateCreatedUtc = dateCreatedUtc
                                     };
-                                    project = await _storageProvider.AddProjectAsync(project, userContext);
-                                    _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
-                                    result.TotalRowsImported++;
-                                    result.RowsImportedByTable["Projects"]++;
+                                    try
+                                    {
+                                        project = await _storageProvider.AddProjectAsync(project, userContext);
+                                        _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
+                                        result.TotalRowsImported++;
+                                        result.RowsImportedByTable["Projects"]++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        result.Errors.Add($"[Row {rowNumber}, Project with name '{name}' could not be added. Error: {ex.Message}");
+                                    }
                                 }
                                 else
                                 {
@@ -162,10 +177,12 @@ namespace Binner.Common.IO
                                 if (!isParentPartTypeIdValid || !isDateCreatedValid)
                                     continue;
 
-                                var name = GetQuoted(rowData[header.GetHeaderIndex("Name")])?.Trim();
+                                var name = GetQuoted(GetValueFromHeader(rowData, header, "Name"))?.Trim();
                                 // part types need to have a unique name for the user and can not be part of global part types
                                 if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name?.Equals(name, StringComparison.InvariantCultureIgnoreCase) == true))
                                 {
+                                    if (parentPartTypeId == 0)
+                                        parentPartTypeId = null;
                                     var partType = new PartType
                                     {
                                         ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
@@ -251,10 +268,22 @@ namespace Binner.Common.IO
                                         //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
                                         DateCreatedUtc = dateCreatedUtc
                                     };
-                                    part = await _storageProvider.AddPartAsync(part, userContext);
-                                    _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);
-                                    result.TotalRowsImported++;
-                                    result.RowsImportedByTable["Parts"]++;
+                                    // some data validation required
+                                    if (part.ProjectId == 0) part.ProjectId = null;
+                                    if (part.UserId == 0) part.UserId = userContext?.UserId;
+                                    if (part.PartTypeId == 0) part.PartTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
+                                    try
+                                    {
+                                        part = await _storageProvider.AddPartAsync(part, userContext);
+                                        _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);
+                                        result.TotalRowsImported++;
+                                        result.RowsImportedByTable["Parts"]++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        // failed to add part
+                                        result.Errors.Add($"[Row {rowNumber}, Part with PartNumber '{partNumber}' could not be added. Error: {ex.Message}");
+                                    }
                                 }
                                 else
                                 {
@@ -275,11 +304,17 @@ namespace Binner.Common.IO
             return result;
         }
 
-        private bool TryGet<T>(string[] rowData, Header header, string name, out T? value)
+        private bool TryGet<T>(string?[] rowData, Header header, string name, out T? value)
         {
             value = default;
             var type = typeof(T);
             var columnIndex = header.GetHeaderIndex(name);
+            if (columnIndex < 0 || columnIndex >= rowData.Length)
+            {
+                value = default;
+                return true;
+            }
+
             if (Nullable.GetUnderlyingType(type) != null && rowData[columnIndex] == null)
                 return true;
             var unquotedValue = GetQuoted(rowData[columnIndex]);
@@ -323,7 +358,7 @@ namespace Binner.Common.IO
             return false;
         }
 
-        private string? GetQuoted(string val)
+        private string? GetQuoted(string? val)
         {
             if (val == null)
                 return null;
@@ -392,7 +427,9 @@ namespace Binner.Common.IO
 
             public int GetHeaderIndex(string name)
             {
-                var header = Headers.First(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                var header = Headers.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                if (header == null)
+                    return -1;
                 return header.Index;
             }
         }

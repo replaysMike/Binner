@@ -827,3 +827,17 @@ div:has(.popup),div:has(.Toastify>*) {
     -webkit-filter: none !important;
     filter: none !important;
 }
+
+.error {
+    color: #000;
+    font-weight: 400;
+}
+
+.error b {
+    color: #c00;
+    font-weight: 700;
+}
+
+.error.small {
+    font-size: 0.9em;
+}

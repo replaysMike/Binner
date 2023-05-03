@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { useTranslation, Trans } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { Button, Form, Divider, Grid, Segment, Breadcrumb } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { fetchApi } from "../common/fetchApi";
 import { useDropzone } from "react-dropzone";
+import { humanFileSize } from "../common/files";
 import { FormHeader } from "../components/FormHeader";
 import { getAuthToken } from "../common/authentication";
 
@@ -16,6 +18,7 @@ export const ExportData = (props) => {
   const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState(null);
   const [file, setFile] = useState(null);
+  const [acceptedFile, setAcceptedFile] = useState(null);
   const [importResult, setImportResult] = useState(null);
   const [exportFormats] = useState([
     {
@@ -34,57 +37,59 @@ export const ExportData = (props) => {
       text: "SQL"
     }
   ]);
-  const { acceptedFiles, fileRejections, isDragAccept, isDragReject, getRootProps, getInputProps } = useDropzone({
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     maxFiles: 3,
-    accept: "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/sql,text/csv",
     onDrop: (acceptedFiles, rejectedFiles, e) => {
-      if (acceptedFiles.length > 0) {
+      // do accept manually
+      const acceptedMimeTypes = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/sql", "text/csv"];
+      let errorMsg = "";
+      for (let i = 0; i < acceptedFiles.length; i++) {
+        if (!acceptedMimeTypes.includes(acceptedFiles[i].type)) {
+          errorMsg += `File '${acceptedFiles[i].name}' with mime type '${acceptedFiles[i].type}' is not an accepted image type!\r\n`;
+        }
+      }
+      if (errorMsg.length > 0) {
+        setFile(null);
+        setAcceptedFile(null);
+        setError(errorMsg);
+      } else {
         setFile(URL.createObjectURL(acceptedFiles[0]));
+        setAcceptedFile(acceptedFiles[0]);
         setIsDirty(true);
         setError(null);
       }
-      if (rejectedFiles.length > 0) {
-        let errorMsg = "";
-        for (let i = 0; i < rejectedFiles.length; i++)
-          errorMsg += `File '${rejectedFiles[i].file.name}' with mime type '${rejectedFiles[i].file.type}' invalid!\r\n`;
-        setError(errorMsg);
-      }
     }
   });
-  const acceptedFileItems = acceptedFiles.map((file) => (
-    <li key={file.path}>
-      {file.path} - {file.size} bytes
-    </li>
-  ));
 
   const onExportSubmit = async (e) => {
     setLoading(true);
-
-    axios
-      .request({
-        method: "get",
-        url: `api/data/export?exportFormat=${exportFormat}`,
-        headers: { Authorization: `Bearer ${getAuthToken()}` },
-        responseType: "blob"
-      })
-      .then((blob) => {
-        // specifying blob filename, must create an anchor tag and use it as suggested: https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
-        var file = window.URL.createObjectURL(blob.data);
-        var a = document.createElement("a");
-        document.body.appendChild(a);
-        a.style = "display: none";
-        a.href = file;
-        const today = new Date();
-        a.download = `binner-export-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.zip`;
-        a.click();
-        window.URL.revokeObjectURL(file);
-        toast.info(`Data exported successfully!`);
-      })
-      .catch((error) => {
-        toast.dismiss();
-        console.error("error", error);
-        toast.error(`Export data failed!`);
-      });
+    fetchApi("api/authentication/identity").then((_) => {
+      axios
+        .request({
+          method: "get",
+          url: `api/data/export?exportFormat=${exportFormat}`,
+          headers: { Authorization: `Bearer ${getAuthToken()}` },
+          responseType: "blob"
+        })
+        .then((blob) => {
+          // specifying blob filename, must create an anchor tag and use it as suggested: https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
+          var file = window.URL.createObjectURL(blob.data);
+          var a = document.createElement("a");
+          document.body.appendChild(a);
+          a.style = "display: none";
+          a.href = file;
+          const today = new Date();
+          a.download = `binner-export-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.zip`;
+          a.click();
+          window.URL.revokeObjectURL(file);
+          toast.success('Data exported successfully!');
+        })
+        .catch((error) => {
+          toast.dismiss();
+          console.error("error", error);
+          toast.error(`Export data failed!`);
+        });
+    });
 
     setLoading(false);
   };
@@ -97,23 +102,29 @@ export const ExportData = (props) => {
         formData.append("files", acceptedFiles[i], acceptedFiles[i].name);
       }
 
-      axios
-        .request({
-          method: "post",
-          url: "api/data/import",
-          data: formData,
-          headers: { Authorization: `Bearer ${getAuthToken()}` }
-        })
-        .then((data) => {
-          console.log("data", data);
-          toast.info(`Data imported successfully!`);
-          setImportResult(data.data);
-        })
-        .catch((error) => {
-          toast.dismiss();
-          console.error("error", error);
-          toast.error(`Import upload failed!`);
-        });
+      fetchApi("api/authentication/identity").then((_) => {
+        axios
+          .request({
+            method: "post",
+            url: "api/data/import",
+            data: formData,
+            headers: { Authorization: `Bearer ${getAuthToken()}` }
+          })
+          .then((data) => {
+            console.log("data", data);
+            if (data.success) {
+              toast.success(`Data imported successfully!`);
+            } else {
+              toast.error('Failed to import data.');
+            }
+            setImportResult(data.data);
+          })
+          .catch((error) => {
+            toast.dismiss();
+            console.error("error", error);
+            toast.error(`Import upload failed!`);
+          });
+      });
     } else {
       toast.error("No files selected for upload!");
     }
@@ -152,9 +163,14 @@ export const ExportData = (props) => {
                 </div>
               )}
               <aside>
-                <ol>{acceptedFileItems}</ol>
+                <ol>
+                  {acceptedFile && 
+                  <li key={acceptedFile.path}>
+                    {acceptedFile.path} - {humanFileSize(acceptedFile.size)}
+                  </li>}
+                </ol>
               </aside>
-              <Button primary>{t('button.import', "Import")}</Button>
+              <Button primary disabled={!isDirty || !acceptedFile}>{t('button.import', "Import")}</Button>
             </Form>
           </Grid.Column>
           <Grid.Column className="centered" style={{ padding: "50px" }}>

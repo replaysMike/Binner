@@ -45,6 +45,14 @@ namespace Binner.Common.IO
             return result;
         }
 
+        private string? GetCellValue(Header header, IRow? rowData, string name)
+        {
+            var index = header.GetHeaderIndex(name);
+            if (index >= 0)
+                return rowData?.GetCell(index)?.ToString();
+            return null;
+        }
+
         public async Task<ImportResult> ImportAsync(string filename, Stream stream, IUserContext? userContext)
         {
             var result = new ImportResult();
@@ -55,10 +63,10 @@ namespace Binner.Common.IO
             try
             {
                 stream.Position = 0;
-                IWorkbook workbook = WorkbookFactory.Create(stream);
+                var workbook = WorkbookFactory.Create(stream);
                 foreach (var table in SupportedTables)
                 {
-                    ISheet worksheet = workbook.GetSheet(table);
+                    var worksheet = workbook.GetSheet(table);
                     if (worksheet != null)
                     {
                         // parse worksheet
@@ -77,7 +85,7 @@ namespace Binner.Common.IO
                                         var isDateModifiedValid = TryGet<DateTime>(rowData, header, "DateModifiedUtc", out var dateModifiedUtc);
                                         if (!isColorValid || !isDateCreatedValid || !isDateModifiedValid)
                                             continue;
-                                        var cellValue = rowData.GetCell(header.GetHeaderIndex("Name")).ToString();
+                                        var cellValue = GetCellValue(header, rowData, "Name");
                                         if (string.IsNullOrEmpty(cellValue))
                                             continue;
                                         var name = GetQuoted(cellValue)?.Trim();
@@ -87,16 +95,23 @@ namespace Binner.Common.IO
                                             var project = new Project
                                             {
                                                 Name = name,
-                                                Description = GetQuoted(rowData.GetCell(header.GetHeaderIndex("Description"))?.ToString()),
-                                                Location = GetQuoted(rowData.GetCell(header.GetHeaderIndex("Location"))?.ToString()),
+                                                Description = GetQuoted(GetCellValue(header, rowData, "Description")),
+                                                Location = GetQuoted(GetCellValue(header, rowData, "Location")),
                                                 Color = color,
                                                 DateCreatedUtc = dateCreatedUtc,
                                                 //DateModifiedUtc = dateModifiedUtc
                                             };
-                                            project = await _storageProvider.AddProjectAsync(project, userContext);
-                                            _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
-                                            result.TotalRowsImported++;
-                                            result.RowsImportedByTable["Projects"]++;
+                                            try
+                                            {
+                                                project = await _storageProvider.AddProjectAsync(project, userContext);
+                                                _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
+                                                result.TotalRowsImported++;
+                                                result.RowsImportedByTable["Projects"]++;
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                result.Errors.Add($"[Row {rowNumber}, Sheet '{table}'] Project with name '{name}' could not be added. Error: {ex.Message}");
+                                            }
                                         }
                                         else
                                         {
@@ -113,7 +128,7 @@ namespace Binner.Common.IO
                                         if (!isParentPartTypeIdValid || !isDateCreatedValid)
                                             continue;
 
-                                        var cellValue = rowData.GetCell(header.GetHeaderIndex("Name")).ToString();
+                                        var cellValue = GetCellValue(header, rowData, "Name");
                                         if (string.IsNullOrEmpty(cellValue))
                                             continue;
 
@@ -121,6 +136,8 @@ namespace Binner.Common.IO
                                         // part types need to have a unique name for the user and can not be part of global part types
                                         if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name != null && x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
                                         {
+                                            if (parentPartTypeId == 0)
+                                                parentPartTypeId = null;
                                             var partType = new PartType
                                             {
                                                 ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
@@ -206,7 +223,20 @@ namespace Binner.Common.IO
                                                 //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
                                                 DateCreatedUtc = dateCreatedUtc
                                             };
-                                            part = await _storageProvider.AddPartAsync(part, userContext);
+                                            // some data validation required
+                                            if (part.ProjectId == 0) part.ProjectId = null;
+                                            if (part.UserId == 0) part.UserId = userContext?.UserId;
+                                            if (part.PartTypeId == 0) part.PartTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
+                                            try
+                                            {
+                                                part = await _storageProvider.AddPartAsync(part, userContext);
+                                            }
+                                            catch (Exception ex) 
+                                            {
+                                                // failed to add part
+                                                result.Errors.Add($"[Row {rowNumber}, Sheet '{table}'] Part with PartNumber '{partNumber}' could not be added. Error: {ex.Message}");
+                                            }
+
                                             _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);
                                             result.TotalRowsImported++;
                                             result.RowsImportedByTable["Parts"]++;
@@ -237,10 +267,10 @@ namespace Binner.Common.IO
             value = default;
             var type = typeof(T);
             var columnIndex = header.GetHeaderIndex(name);
-            var cellValue = rowData.GetCell(columnIndex);
-            if (Nullable.GetUnderlyingType(type) != null && cellValue.ToString() == null)
+            var cellValue = columnIndex >= 0 ? rowData.GetCell(columnIndex) : null;
+            if (Nullable.GetUnderlyingType(type) != null && cellValue?.ToString() == null)
                 return true;
-            var unquotedValue = GetQuoted(cellValue.ToString());
+            var unquotedValue = GetQuoted(cellValue?.ToString());
 
             if (type == typeof(string))
             {
@@ -314,7 +344,9 @@ namespace Binner.Common.IO
 
             public int GetHeaderIndex(string name)
             {
-                var header = Headers.First(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                var header = Headers.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                if (header == null)
+                    return -1;
                 return header.Index;
             }
         }

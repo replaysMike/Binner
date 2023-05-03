@@ -57,12 +57,12 @@ namespace Binner.Common.IO
             if (Options.HasFlag(CsvOptions.QuoteStrings))
             {
                 if (dataType == typeof(string))
-                    return $@"""{value?.ToString()}""";
+                    return $@"""{value?.ToString().Replace("\"", "\"\"")}""";
                 if (dataType == typeof(ICollection<string>))
-                    return $@"""{string.Join(",", value)}""";
+                    return $@"""{string.Join(",", value).Replace("\"", "\"\"")}""";
             }
             if (dataType == typeof(ICollection<string>))
-                return $@"{string.Join(" ", value)}";
+                return $@"{string.Join(" ", value).Replace("\"", "\"\"")}";
             if (dataType == typeof(DateTime))
                 return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
             return value.ToString() ?? string.Empty;
