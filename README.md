@@ -106,9 +106,18 @@ Binner is designed for electronics in mind, however it could be used for other t
 
 I welcome all who want to contribute to this project, and please suggest features in the Issues section.
 
-## What if I want to use it but not bother to set it up myself?
+## What if I want to use it but not to install it myself?
 
-A free online version of Binner is available at [Binner.io](http://binner.io). This service offers both free and paid subscriptions based on inventory size requirements and extra features. Compared to other options out there it's incredibly useful for makers, and it helps me keep this project alive!
+A free online version of Binner is available at [Binner.io](http://binner.io). This service offers both free and paid subscriptions based on inventory size requirements and additional features. Compared to other options out there it's incredibly useful for makers, and it helps me keep this project alive!
+
+## Getting Help
+
+Help with your installation, questions, reporting bugs, suggesting features can be provided in multiple ways:
+
+* If you simply have a question or need help with installation issues, you have 2 options:
+  * create a post in [Discussions](https://github.com/replaysMike/Binner/discussions)
+  * join our [Discord server](https://discord.gg/74GEJY5g7G) for a more real-time response
+* If you are reporting a bug or suggesting a feature, create a [New Issue](https://github.com/replaysMike/Binner/issues)
 
 ## Storage Provider
 
@@ -216,3 +225,4 @@ Binner currently has limited label printing support. It works best with a Dymo L
 
 ### Label Example
 ![Binner](https://github.com/replaysMike/Binner/wiki/binner-label.png)
+
