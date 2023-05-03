@@ -226,7 +226,8 @@
       "datasheet": "Datasheet",
       "packageType": "Package Type",
       "status": "Status",
-      "datasheets": "Datasheets"
+      "datasheets": "Datasheets",
+      "actions": "Actions"
     },
     "orderImport": {
       "title": "Order Import",
