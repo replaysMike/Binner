@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import ReactDOM from 'react-dom';
 import { useTranslation } from "react-i18next";
@@ -111,16 +111,9 @@ export function Datasheets (props) {
     setLoading(false);
   };
 
-  const handleSort = (clickedColumn) => () => {
-    if (column !== clickedColumn) {
-      setColumn(clickedColumn);
-      setParts(_.sortBy(parts, [clickedColumn]));
-      setDirection('ascending');
-    } else {
-      setParts(parts.reverse());
-      setDirection(direction === 'ascending' ? 'descending' : 'ascending');
-    }
-  };
+  useEffect(() => {
+    fetchPartTypes();
+  }, []);
 
   const handleChange = (e, control) => {
     part[control.name] = control.value;
@@ -199,9 +192,11 @@ export function Datasheets (props) {
 
     const getIconForPart = (p) => {
       const partType = _.find(partTypes, (x) => x.partTypeId === p.partTypeId);
-      const basePartTypeName = partType.parentPartTypeId && _.find(partTypes, (x) => x.partTypeId === partType.parentPartTypeId)?.name;
-      const partTypeName = partType.name;
-      if (partType) return getIcon(partTypeName, basePartTypeName)({className: `parttype-${basePartTypeName || partTypeName}`});
+      if (partType) {
+        const basePartTypeName = partType.parentPartTypeId && _.find(partTypes, (x) => x.partTypeId === partType.parentPartTypeId)?.name;
+        const partTypeName = partType.name;
+        if (partType) return getIcon(partTypeName, basePartTypeName)({className: `parttype-${basePartTypeName || partTypeName}`});
+      }
       return "";
     };
 

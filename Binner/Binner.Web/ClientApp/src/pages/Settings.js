@@ -455,7 +455,7 @@ export const Settings = (props) => {
           clientSecret: settings.digikey.clientSecret,
           oAuthPostbackUrl: settings.digikey.oAuthPostbackUrl,
           apiUrl: settings.digikey.apiUrl,
-          })
+        });
         break;
       case "mouser":
         configuration.push({ key: "enabled", value: settings.mouser.enabled + "" });
@@ -623,11 +623,7 @@ export const Settings = (props) => {
                 position="top left"
                 offset={[65, 0]}
                 hoverable
-                content={
-                  <p>{t('page.settings.popup.swarmApiKey', "Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.")}
-                    
-                  </p>
-                }
+                content={<p>{t('page.settings.popup.swarmApiKey', "Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.")}</p>}
                 trigger={
                   <ClearableInput
                     className="labeled"
@@ -1509,9 +1505,7 @@ export const Settings = (props) => {
               <Icon name="save" />
               {t('button.save', "Save")}
             </Button>
-            {saveMessage.length > 0 && (
-              <Label pointing="left">{saveMessage}</Label>
-            )}
+            {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
           </Form.Field>
 
           <div className="sticky-target" style={{padding: '10px 10px 20px 10%'}} data-bounds={"0.05,0.8"}>
