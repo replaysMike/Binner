@@ -60,7 +60,7 @@ export function Datasheets (props) {
     Datasheets.abortController = new AbortController();
     setLoading(true);
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${part.partNumber}&partType=${part.partType}&mountingType=${part.mountingType}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${part.partNumber.trim()}&partType=${part.partType}&mountingType=${part.mountingType}`, {
         signal: Datasheets.abortController.signal
       });
       const responseData = response.data;
@@ -108,14 +108,14 @@ export function Datasheets (props) {
   const handlePartTypeChange = (e, partType) => { 
     const newPart = {...part, partTypeId: partType.partTypeId, partType: partType.name };
     setPart(newPart);
-    if (newPart.partNumber.length > 0)
+    if (newPart.partNumber.trim().length > 0)
       searchDebounced(newPart);
   }
 
   const handleChange = (e, control) => {
     part[control.name] = control.value;
     const newPart = {...part};
-    if (newPart.partNumber.length > 0)
+    if (newPart.partNumber.trim().length > 0)
       searchDebounced(newPart);
     setPart(newPart);
   };

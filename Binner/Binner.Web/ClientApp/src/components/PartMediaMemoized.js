@@ -493,7 +493,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 
 PartMediaMemoized.propTypes = {
   /** part metadata info */
-  infoResponse: PropTypes.object.isRequired,
+  infoResponse: PropTypes.object,
   part: PropTypes.object,
   datasheet: PropTypes.object,
 	loadingPartMetadata: PropTypes.bool.isRequired

@@ -841,3 +841,17 @@ div:has(.popup),div:has(.Toastify>*) {
 .error.small {
     font-size: 0.9em;
 }
+
+.suggested-part {
+	font-size: 0.8em;
+	height: 19px;
+}
+
+.suggested-part span {
+	font-style: italic;
+}
+
+.suggested-part button {
+	font-weight: 500;
+	font-style: normal;
+}

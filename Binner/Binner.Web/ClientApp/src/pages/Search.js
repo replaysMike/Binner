@@ -104,6 +104,10 @@ export function Search(props) {
       else 
         newData = [...parts, ...pageOfData];
     }
+    if (newData.length > 0)
+      setShowPartNotFound(false);
+    else 
+      setShowPartNotFound(true);
     setParts(newData);
     setPage(page);
     setTotalPages(totalPages);

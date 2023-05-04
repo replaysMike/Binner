@@ -55,7 +55,7 @@ export function Inventory(props) {
     rememberLast: true
   };
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
-  const pageHasParameters = (props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0);
+  const pageHasParameters = props.params?.partNumber?.length > 0;
   const defaultPart = {
     partId: 0,
     partNumber: props.params.partNumber || "",
@@ -126,7 +126,8 @@ export function Inventory(props) {
 
   useEffect(() => {
     const partNumberStr = props.params.partNumber;
-    setIsEditing((props.params && props.params.partNumber !== undefined && props.params.partNumber.length > 0));
+    const newIsEditing = partNumberStr?.length > 0;
+    setIsEditing(newIsEditing);
     const fetchData = async () => {
       setPartMetadataIsSubscribed(false);
       setPartMetadataError(null);
@@ -134,7 +135,8 @@ export function Inventory(props) {
       await fetchRecentRows();
       if (partNumberStr) {
         var loadedPart = await fetchPart(partNumberStr);
-        if (isEditing) setInputPartNumber(partNumberStr);
+        if (newIsEditing) setInputPartNumber(partNumberStr);
+        setInputPartNumber(partNumberStr);
         await fetchPartMetadataAndInventory(partNumberStr, loadedPart || part);
       } else if (props.params.partNumberToAdd) {
         const { data } = await doFetchPartMetadata(props.params.partNumberToAdd, loadedPart || part, false);
@@ -150,15 +152,16 @@ export function Inventory(props) {
     };
   }, [props.params.partNumber]);
 
-  useEffect(() => {
-    if (!props.params.partNumberToAdd)
+  /*useEffect(() => {
+    if (!props.params.partNumberToAdd) {
       resetForm();
-  }, [props.params.partNumberToAdd]);
+    }
+  }, [props.params.partNumberToAdd]);*/
 
   const fetchPartMetadataAndInventory = async (input, localPart) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
-    if (input.length < MinSearchKeywordLength)
+    if (input.trim().length < MinSearchKeywordLength)
       return;
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
@@ -226,7 +229,7 @@ export function Inventory(props) {
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${partNumber}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${partNumber.trim()}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
 
@@ -265,7 +268,7 @@ export function Inventory(props) {
   const doInventoryPartSearch = async (partNumber) => {
     if (partNumber.length < MinSearchKeywordLength)
       return { exists: false, data: null, error: `Ignoring search as keywords are less than the minimum required (${MinSearchKeywordLength}).` };
-    const existsResponse = await fetchApi(`api/part/search?keywords=${partNumber}&exactMatch=true`, {
+    const existsResponse = await fetchApi(`api/part/search?keywords=${partNumber.trim()}&exactMatch=true`, {
       signal: Inventory.infoAbortController.signal,
       catchErrors: true
     });
@@ -393,7 +396,7 @@ export function Inventory(props) {
     Inventory.partAbortController = new AbortController();
     setLoadingPartMetadata(true);
     try {
-      const response = await fetchApi(`api/part?partNumber=${partNumber}`, {
+      const response = await fetchApi(`api/part?partNumber=${partNumber.trim()}`, {
         signal: Inventory.partAbortController.signal
       });
       const { data } = response;
@@ -495,13 +498,18 @@ export function Inventory(props) {
     const isExisting = part.partId > 0;
 
     const request = { ...part };
-    request.partNumber = inputPartNumber;
+    request.partNumber = inputPartNumber.trim();
     request.partTypeId = (parseInt(part.partTypeId) || 0) + "";
     request.mountingTypeId = (parseInt(part.mountingTypeId) || 0) + "";
     request.quantity = parseInt(part.quantity) || 0;
     request.lowStockThreshold = parseInt(part.lowStockThreshold) || 0;
     request.cost = parseFloat(part.cost) || 0.0;
     request.projectId = parseInt(part.projectId) || null;
+
+    if (request.partNumber.length === 0) {
+      toast.error("Part Number is empty!");
+      return;
+    }
 
     const saveMethod = isExisting ? "PUT" : "POST";
     const response = await fetchApi("api/part", {
@@ -698,7 +706,7 @@ export function Inventory(props) {
   const printLabel = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`api/part/print?partNumber=${part.partNumber}&generateImageOnly=false`, { method: "POST" });
+    await fetchApi(`api/part/print?partNumber=${part.partNumber.trim()}&generateImageOnly=false`, { method: "POST" });
   };
 
   const setPartFromMetadata = (metadataParts, suggestedPart) => {
@@ -933,6 +941,9 @@ export function Inventory(props) {
   };
 
   /* RENDER */
+  const title = isEditing 
+    ? t('page.inventory.edittitle', "Edit Inventory") 
+    : t('page.inventory.addtitle', "Add Inventory");
 
   /*<MatchingPartsMemoized part={part} metadataParts={metadataParts} partTypes={partTypes} setPartFromMetadata={setPartFromMetadata} />*/
   const renderForm = useMemo(() => {   
@@ -1353,11 +1364,7 @@ export function Inventory(props) {
 
  
     </>);
-  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPartMetadata, partMetadataError, disableRendering.current]);
-
-  const title = isEditing 
-    ? t('page.inventory.edittitle', "Edit Inventory") 
-    : t('page.inventory.addtitle', "Add Inventory");
+  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPartMetadata, partMetadataError, disableRendering.current, isEditing, allPartTypes]);
 
   return (
     <div className="inventory mask">
