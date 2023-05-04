@@ -154,7 +154,7 @@ export const getErrorsString = (response) => {
 const handle401UnauthorizedAsync = async (response, requestContext, isReissuedRequest) => {
   if (response.status === 401 || response.status === 403) {
     // unauthorized
-    if (isReissuedRequest){
+    if (isReissuedRequest) {
       deAuthenticateUserAccount();
       window.location.replace("/login");
       return {
@@ -162,20 +162,49 @@ const handle401UnauthorizedAsync = async (response, requestContext, isReissuedRe
         response: Promise.reject(response)
       };
     }
-    // unauthorized, must ask for new jwt token
-    const reissuedResponse = await refreshTokenAuthorizationAsync(response, requestContext);
-    const reissuedResponseData = await reissuedResponse.clone().json();
-    if (reissuedResponse.status === 401 || reissuedResponseData.status === 403 || reissuedResponseData.isAuthenticated === false) {
-      // cannot get a new token, user must login
-      deAuthenticateUserAccount();
-      window.location.replace("/login");
-      return {
-        ok: false,
-        response: Promise.reject(reissuedResponse)
-      };
-    }
-    // continue with re-issued response
-    response = reissuedResponse;
+
+    // custom refresh token interceptor blocks requests when a refresh-token is required.
+    // alternatives are axios.interceptors.response, or a convoluted react solution but this works well with little overhead.
+    if (!window.tokenInterceptor) {
+      window.tokenInterceptor = new Promise(async (tokenRenewalRequestSuccess, rejectTokenRenewalRequest) => {
+        // unauthorized, try to request a new JWT refresh token
+        // if successful, refreshTokenAuthorizationAsync will re-issue the original request
+        const reissuedOriginalRequestResponse = await refreshTokenAuthorizationAsync(response, requestContext);
+        const reissuedOriginalRequestResponseData = await reissuedOriginalRequestResponse.clone().json();
+        if (reissuedOriginalRequestResponse.status === 401 || reissuedOriginalRequestResponseData.status === 403 || reissuedOriginalRequestResponseData.isAuthenticated === false) {
+          // cannot get a new token, user must re-login
+          deAuthenticateUserAccount();
+          window.location.replace("/login");
+          rejectTokenRenewalRequest();
+        }
+
+        // refresh token renewal succeeded, return the re-issued original request response
+        tokenRenewalRequestSuccess(reissuedOriginalRequestResponse);
+        return reissuedOriginalRequestResponse;
+      });
+      response = await window.tokenInterceptor;
+      // reset the tokenInterceptor to null so we don't keep queueing requests
+      window.tokenInterceptor = null;
+    } else {
+      // someone has already requested a new refresh token, this request must wait until the refresh token response is received
+      // wait for the promise to finish
+      const queuedRequestResponse = await window.tokenInterceptor.then((reissuedResponse) => {
+        // we are now unblocked and can continue with re-issuing our request
+        const originalRequestThatWonRefresh = reissuedResponse; // we don't care about this
+        const myRequestThatHasBeenWaiting = requestContext;
+        // return the queued request to be retried
+        return myRequestThatHasBeenWaiting;
+      }, (failed) => {
+        // attempt to refresh jwt token failed, all queued requests are to be aborted.
+        console.error('Request aborted, re-login required.', failed);
+        return null;
+      });
+      if (queuedRequestResponse) {
+        // retry the queued request
+        const reissuedQueuedRequestResponse = await fetchApi(queuedRequestResponse.url, queuedRequestResponse.data, true);
+        response = reissuedQueuedRequestResponse.responseObject;
+      }
+    } 
   }
 
   if (!response.ok) {
@@ -194,6 +223,7 @@ const handle401UnauthorizedAsync = async (response, requestContext, isReissuedRe
     }
   }
 
+  // return the response
   return {
     ok: true,
     response

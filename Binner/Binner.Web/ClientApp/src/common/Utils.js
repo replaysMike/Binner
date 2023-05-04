@@ -133,3 +133,8 @@ export const generatePassword = () => {
   }
   return retVal;
 };
+
+/** Simple async sleep */
+export const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

@@ -431,7 +431,7 @@ export const Settings = (props) => {
     });
   };
   
-  const handleTestApi = (e, apiName) => {
+  const handleTestApi = async (e, apiName) => {
     e.preventDefault();
     const configuration = [];
     switch(apiName){
@@ -483,7 +483,7 @@ export const Settings = (props) => {
       configuration
     };
     setTesting(true);
-    fetchApi("api/settings/testapi", {
+    await fetchApi("api/settings/testapi", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
