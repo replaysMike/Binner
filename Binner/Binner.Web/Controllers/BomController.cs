@@ -178,6 +178,18 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Move parts to a different PCB (BOM)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("move")]
+        public async Task<IActionResult> MovePartAsync(MoveBomPartRequest request)
+        {
+            var isMoved = await _projectService.MovePartAsync(request);
+            return Ok(isMoved);
+        }
+
+        /// <summary>
         /// Get pcb
         /// </summary>
         /// <param name="request"></param>

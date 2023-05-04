@@ -604,7 +604,8 @@
     "specs": "Specs",
     "compliance": "Compliance",
     "cadModels": "CAD Models",
-    "addAnyway": "Add Anyway"
+    "addAnyway": "Add Anyway",
+    "move": "Move"
   },
   "label": {
     "name": "Name",
@@ -820,7 +821,8 @@
       "editSchematicReferenceId": "Edit your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
       "customDescription": "Provide a custom description",
       "customNote": "Provide a custom note",
-      "produceHistory": "View production history"
+      "produceHistory": "View production history",
+      "movePart": "Move selected parts to another tab"
     }
   },
   "footer": {

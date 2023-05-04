@@ -40,7 +40,7 @@ export function Bom(props) {
   const [project, setProject] = useState(defaultProject);
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
-  const [btnDeleteDisabled, setBtnDeleteDisabled] = useState(true);
+  const [btnSelectToolsDisabled, setBtnSelectToolsDisabled] = useState(true);
   const [addPartModalOpen, setAddPartModalOpen] = useState(false);
   const [addPcbModalOpen, setAddPcbModalOpen] = useState(false);
   const [producePcbModalOpen, setProducePcbModalOpen] = useState(false);
@@ -52,6 +52,7 @@ export function Bom(props) {
   const [pageDisabled, setPageDisabled] = useState(false);
   const [btnDeleteText, setBtnDeleteText] = useState(t("button.removePart", "Remove Part"));
   const [currentPcbPages, setCurrentPcbPages] = useState([]);
+  const [activeTab, setActiveTab] = useState(-1);
 
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -76,6 +77,13 @@ export function Bom(props) {
     { key: "csv", icon: "file text", text: "Csv", value: "csv" },
     { key: "excel", icon: "file excel", text: "Excel", value: "excel" }
   ];
+
+  const moveOptions = [
+    { key: 0, icon: "folder open", text: "Unassociated", value: 0 },
+    ...project.pcbs.map((pcb, key) => (
+    { key: key + 1, icon: <i className="pcb-icon tiny" />, text: pcb.name, value: pcb.pcbId, disabled: project.pcbs[activeTab - 1]?.pcbId === pcb.pcbId }
+  ))];
+  
 
   const loadProject = async (projectName) => {
     setLoading(true);
@@ -179,9 +187,11 @@ export function Bom(props) {
       setInventoryMessage(getInventoryMessage(newProject));
       setTotalPages(Math.ceil(parts.length / pageSize));
       setCurrentPcbPages(_.map(newProject.pcbs, (x) => ({ pcbId: x.pcbId, page: 1 })));
-    } else toast.error(t("error.failedToRemoveBomParts", "Failed to remove parts from BOM!"));
+    } else {
+      toast.error(t("error.failedToRemoveBomParts", "Failed to remove parts from BOM!"));
+    }
     setLoading(false);
-    setBtnDeleteDisabled(true);
+    setBtnSelectToolsDisabled(true);
     setConfirmDeleteIsOpen(false);
   };
 
@@ -208,10 +218,10 @@ export function Bom(props) {
     if (checkboxesChecked.length > 0) {
       if (checkboxesChecked.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: checkboxesChecked.length }));
       else setBtnDeleteText(t("button.removePart", "Remove Part"));
-      setBtnDeleteDisabled(false);
+      setBtnSelectToolsDisabled(false);
     } else {
       setBtnDeleteText(t("button.removePart", "Remove Part"));
-      setBtnDeleteDisabled(true);
+      setBtnSelectToolsDisabled(true);
     }
   };
 
@@ -296,6 +306,10 @@ export function Bom(props) {
         break;
     }
     setProject({ ...project });
+  };
+
+  const handleTabChange = (e, data) => {
+    setActiveTab(data.activeIndex);
   };
 
   const getPage = (pcb) => {
@@ -428,6 +442,53 @@ export function Bom(props) {
       toast.error(message, { autoClose: 10000 });
     }
     setLoading(false);
+  };
+
+  const handleMove = async (e, control) => {
+    const checkboxes = document.getElementsByName("chkSelect");
+    let checkedValues = [];
+    for (let i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) checkedValues.push(parseInt(checkboxes[i].value));
+    }
+    const request = {
+      projectId: project.projectId,
+      ids: checkedValues,
+      pcbId: control.value
+    };
+    setLoading(true);
+    const response = await fetchApi("api/bom/move", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request),
+      catchErrors: true
+    });
+    if (response.responseObject.status === 200 && response.data) {
+      // success
+      // todo: finish move internal data
+      const parts = _.map(project.parts, (part) => {
+        if (checkedValues.includes(part.projectPartAssignmentId)) {
+          part.pcbId = control.value;
+          console.log('moving', part.projectPartAssignmentId, part.pcbId);
+        }
+        return part;
+      });
+      console.log('newParts', parts);
+      // also reset the checkboxes
+      for (let i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = false;
+      }
+      const newProject = { ...project, parts: parts };
+      setProject(newProject);
+      setInventoryMessage(getInventoryMessage(newProject));
+      setTotalPages(Math.ceil(parts.length / pageSize));
+      setCurrentPcbPages(_.map(newProject.pcbs, (x) => ({ pcbId: x.pcbId, page: 1 })));
+    } else {
+      toast.error(t("error.failedToMoveBomParts", "Failed to move parts!"));
+    }
+    setLoading(false);
+    setBtnSelectToolsDisabled(true);
   };
 
   const handleDownload = async (e, control) => {
@@ -1096,14 +1157,6 @@ export function Bom(props) {
               }
             />
             <Popup
-              content={t("popup.bom.removePart", "Remove selected parts from the BOM")}
-              trigger={
-                <Button onClick={confirmDeleteOpen} disabled={btnDeleteDisabled} size="mini">
-                  <Icon name="trash alternate" /> {btnDeleteText}
-                </Button>
-              }
-            />
-            <Popup
               wide
               content={t("popup.bom.addPcb", "Add a PCB to this project")}
               trigger={
@@ -1140,11 +1193,32 @@ export function Bom(props) {
               />
             </div>
           </div>
+          <div className="buttons small" style={{marginTop: '5px'}}>
+            <Popup
+              content={t("popup.bom.removePart", "Remove selected parts from the BOM")}
+              trigger={
+                <Button onClick={confirmDeleteOpen} disabled={btnSelectToolsDisabled} size="mini">
+                  <Icon name="trash alternate" /> {btnDeleteText}
+                </Button>
+              }
+            />
+            <Popup
+              content={t("popup.bom.movePart", "Move selected parts to another tab")}
+              trigger={
+                <Button.Group size="mini">
+                  <Button onClick={handleDownload} size="mini" style={{ marginRight: "0" }} disabled={btnSelectToolsDisabled}>
+                    <Icon name="mail forward" /> {t("button.move", "Move")}
+                  </Button>
+                  <Dropdown className="button icon" floating options={moveOptions} trigger={<></>} value={-1} onChange={handleMove} disabled={btnSelectToolsDisabled} />
+                </Button.Group>
+              }
+            />
+          </div>
 
           <div id="activePartName" />
 
           <Segment loading={loading}>
-            <Tab panes={tabs}></Tab>
+            <Tab panes={tabs} onTabChange={handleTabChange}></Tab>
           </Segment>
         </Segment>
       </Form>

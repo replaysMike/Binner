@@ -75,6 +75,20 @@
 	margin-right: 10px;
 }
 
+.buttons.small .ui.button {
+	padding: 5px 15px;
+	background-color: #ccc;
+}
+
+.buttons.small .ui.button:hover {
+	background-color: #bbb;
+}
+
+.buttons.small .menu .item {
+	padding: .6rem 0.9rem!important;	
+	font-size: 1em;
+}
+
 .ui.form.bom .ui.tabular.menu > .item {
 	max-width: 220px;
 }

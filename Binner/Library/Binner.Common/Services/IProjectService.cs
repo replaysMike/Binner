@@ -86,6 +86,13 @@ namespace Binner.Common.Services
         Task<bool> RemovePartAsync(RemoveBomPartRequest request);
 
         /// <summary>
+        /// Move part to another PCB (BOM)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<bool> MovePartAsync(MoveBomPartRequest request);
+
+        /// <summary>
         /// Get the produce history for a BOM project
         /// </summary>
         /// <param name="request"></param>

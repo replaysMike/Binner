@@ -272,6 +272,46 @@ namespace Binner.Common.Services
             return success;
         }
 
+        /// <summary>
+        /// Move parts to a different PCB (BOM)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<bool> MovePartAsync(MoveBomPartRequest request)
+        {
+            Project? project = null;
+            var user = _requestContext.GetUserContext();
+
+            if (!request.Ids.Any())
+                return false;
+            if (request.ProjectId != null)
+                project = await _storageProvider.GetProjectAsync(request.ProjectId.Value, user);
+            else if (!string.IsNullOrEmpty(request.Project))
+                project = await _storageProvider.GetProjectAsync(request.Project, user);
+            if (project == null) return false;
+
+            var success = false;
+            foreach (var projectPartAssignmentId in request.Ids)
+            {
+                var assignment = await _storageProvider.GetProjectPartAssignmentAsync(projectPartAssignmentId, user);
+                if (assignment == null) continue;
+                
+                if (request.PcbId > 0)
+                    assignment.PcbId = request.PcbId;   // move to Pcb
+                else
+                    assignment.PcbId = null; // move to Unassociated
+
+                assignment = await _storageProvider.UpdateProjectPartAssignmentAsync(assignment, user);
+                success = true;
+            }
+
+            // update project (DateModified)
+            project.DateModifiedUtc = DateTime.UtcNow;
+            await _storageProvider.UpdateProjectAsync(project, user);
+
+            return success;
+        }
+
         public async Task<ICollection<ProjectProduceHistory>> GetProduceHistoryAsync(GetProduceHistoryRequest request)
         {
             var user = _requestContext.GetUserContext();
