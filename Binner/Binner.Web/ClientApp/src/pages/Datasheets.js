@@ -56,7 +56,6 @@ export function Datasheets (props) {
   const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
 
   const fetchPartMetadata = async (part) => {
-    console.log('part', part);
     Datasheets.abortController.abort(); // Cancel the previous request
     Datasheets.abortController = new AbortController();
     setLoading(true);
@@ -111,7 +110,7 @@ export function Datasheets (props) {
     setPart(newPart);
     if (newPart.partNumber.length > 0)
       searchDebounced(newPart);
-}
+  }
 
   const handleChange = (e, control) => {
     part[control.name] = control.value;
