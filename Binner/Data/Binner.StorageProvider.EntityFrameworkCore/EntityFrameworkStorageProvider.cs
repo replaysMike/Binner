@@ -548,7 +548,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.StoredFiles
-                .Where(x => x.PartId == partId && x.StoredFileType == fileType && x.OrganizationId == userContext.OrganizationId)
+                .Where(x => x.PartId == partId && (fileType == null || x.StoredFileType == fileType) && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<StoredFile>>(entities);
         }

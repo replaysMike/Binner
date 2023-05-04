@@ -808,7 +808,6 @@ namespace Binner.Common.Services
                 arrowResponse = (ArrowResponse?)apiResponse.Response;
             }
 
-            // todo: cache part types (I think we already have it somewhere)
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
             var productImageUrls = new List<NameValuePair<string>>();
             var datasheetUrls = new List<NameValuePair<DatasheetSource>>();
