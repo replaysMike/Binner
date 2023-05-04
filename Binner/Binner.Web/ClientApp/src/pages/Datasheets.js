@@ -7,6 +7,8 @@ import debounce from "lodash.debounce";
 import { Form, Segment, Breadcrumb, Button } from 'semantic-ui-react';
 import { FormHeader } from "../components/FormHeader";
 import ClearableInput from "../components/ClearableInput";
+import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
+import { MountingTypes, GetAdvancedTypeDropdown } from "../common/Types";
 import { getIcon } from "../common/partTypes";
 import { fetchApi } from '../common/fetchApi';
 import { getLocalData, setLocalData } from "../common/storage";
@@ -48,31 +50,18 @@ export function Datasheets (props) {
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingPartTypes, setLoadingPartTypes] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
-  const [mountingTypes] = useState([
-    {
-      key: 999,
-      value: null,
-      text: '',
-    },
-    {
-      key: 1,
-      value: 'through hole',
-      text: 'Through Hole',
-    },
-    {
-      key: 2,
-      value: 'surface mount',
-      text: 'Surface Mount',
-    },
-  ]);
+  const [allPartTypes, setAllPartTypes] = useState([]);
+  const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
 
-  const fetchPartMetadata = async (input) => {
+  const fetchPartMetadata = async (part) => {
+    console.log('part', part);
     Datasheets.abortController.abort(); // Cancel the previous request
     Datasheets.abortController = new AbortController();
     setLoading(true);
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${input}&partType=${part.partType}&mountingType=${part.mountingType}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${part.partNumber}&partType=${part.partType}&mountingType=${part.mountingType}`, {
         signal: Datasheets.abortController.signal
       });
       const responseData = response.data;
@@ -92,48 +81,44 @@ export function Datasheets (props) {
     setLoading(false);
   };
 
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, DebounceTimeMs), []);
+  const searchDebounced = useMemo(() => debounce(fetchPartMetadata, DebounceTimeMs), [part]);
 
   const fetchPartTypes = async () => {
-    setLoading(true);
-    const response = await fetchApi('api/partType/list');
+    setLoadingPartTypes(true);
+    const response = await fetchApi("api/partType/all");
     const { data } = response;
-    const blankRow = { key: 999, value: null, text: '' };
-    let partTypes = _.sortBy(data.map((item) => {
-      return {
-        key: item.partTypeId,
-        value: item.name,
-        text: item.name,
-      };
-    }), 'text');
-    partTypes.unshift(blankRow);
+    const partTypes = _.sortBy(
+      data.map((item) => {
+        return {
+          key: item.partTypeId,
+          value: item.partTypeId,
+          text: item.name
+        };
+      }),
+      "text"
+    );
     setPartTypes(partTypes);
-    setLoading(false);
+    setAllPartTypes(data);
+    setLoadingPartTypes(false);
   };
 
   useEffect(() => {
     fetchPartTypes();
   }, []);
 
+  const handlePartTypeChange = (e, partType) => { 
+    const newPart = {...part, partTypeId: partType.partTypeId, partType: partType.name };
+    setPart(newPart);
+    if (newPart.partNumber.length > 0)
+      searchDebounced(newPart);
+}
+
   const handleChange = (e, control) => {
     part[control.name] = control.value;
-    switch (control.name) {
-      case 'partNumber':
-        if (control.value && control.value.length > 0)
-          searchDebounced(control.value);
-        break;
-      case 'partType':
-        if (control.value && control.value.length > 0 && part.partNumber.length > 0)
-          searchDebounced(control.value);
-        break;
-      case 'mountingType':
-        if (control.value && control.value.length > 0 && part.partNumber.length > 0)
-          searchDebounced(control.value);
-        break;
-      default:
-        break;
-    }
-    setPart({...part});
+    const newPart = {...part};
+    if (newPart.partNumber.length > 0)
+      searchDebounced(newPart);
+    setPart(newPart);
   };
 
   const handleVisitLink = (e, url) => {
@@ -279,9 +264,28 @@ export function Datasheets (props) {
       <div id="datasheets">
         <Form>
           <Form.Group>
-            <ClearableInput label={t('label.part', "Part")} required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={handleChange} name='partNumber' />
-            <Form.Dropdown label={t('label.partType', "Part Type")} placeholder='Part Type' search selection value={part.partType} options={partTypes} onChange={handleChange} name='partType' />
-            <Form.Dropdown label={t('label.mountingType', "Mounting Type")} placeholder='Mounting Type' search selection value={part.mountingType} options={mountingTypes} onChange={handleChange} name='mountingType' />
+            <ClearableInput width={5} label={t('label.part', "Part")} required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={handleChange} name='partNumber' />
+            <Form.Field width={6}>
+              <PartTypeSelectorMemoized 
+                label={t('label.partType', "Part Type")}
+                name="partTypeId"
+                value={part.partTypeId || ""}
+                partTypes={allPartTypes} 
+                onSelect={handlePartTypeChange}
+                loadingPartTypes={loadingPartTypes}
+              />
+            </Form.Field>
+            <Form.Dropdown
+              width={4}
+              label={t('label.mountingType', "Mounting Type")}
+              placeholder={t('label.mountingType', "Mounting Type")}
+              search
+              selection
+              value={(part.mountingType || "")}
+              options={mountingTypeOptions}
+              onChange={handleChange}
+              name="mountingType"
+            />
           </Form.Group>
         </Form>
         <Segment loading={loading}>
