@@ -450,15 +450,19 @@ UPDATE Users SET OrganizationId = 1;
                     IsAdmin = true
                 });
 
-                foreach (var e in db.PartTypes)
+                var partTypes = db.PartTypes.GroupBy(x => x.PartTypeId);
+                foreach (var e in partTypes)
                 {
+                    var firstInGroup = e.FirstOrDefault();
+                    if (e.Count() > 1)
+                        _logger.Warn($"Found a duplicate part type record '{firstInGroup.PartTypeId}'! Filtering out");
                     context.PartTypes.Add(new Data.Model.PartType
                     {
-                        PartTypeId = e.PartTypeId,
-                        ParentPartTypeId = e.ParentPartTypeId,
-                        Name = e.Name,
-                        DateCreatedUtc = e.DateCreatedUtc,
-                        DateModifiedUtc = e.DateCreatedUtc,
+                        PartTypeId = firstInGroup.PartTypeId,
+                        ParentPartTypeId = firstInGroup.ParentPartTypeId,
+                        Name = firstInGroup.Name,
+                        DateCreatedUtc = firstInGroup.DateCreatedUtc,
+                        DateModifiedUtc = firstInGroup.DateCreatedUtc,
                         UserId = userId
                     });
                 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useTranslation, Trans } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { Button, Form, Modal, Image, Header, Popup, Input, Table, Icon } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import NumberPicker from "./NumberPicker";
@@ -15,7 +15,7 @@ export function ProducePcbModal(props) {
   const [project, setProject] = useState({ parts:[], pcbs: []});
   const [pcbOptions, setPcbOptions] = useState([]);
 
-  const canProducePcb = (pcb) => {
+  const canProducePcb = (project, pcb = null) => {
     const formQuantity = parseInt(form.quantity) || 1;
     if (pcb && pcb.pcbId > 0) {
       const pcbParts = _.filter(project.parts, p => p.pcbId === pcb.pcbId);
@@ -30,12 +30,12 @@ export function ProducePcbModal(props) {
   const createPcbOptions = (project) => {
     const options = [
       { key: -1, text: t('comp.producePcbModal.options.all', "All"), description: t('comp.producePcbModal.options.allDescription', "Produce the entire BOM"), value: -1 },
-      { key: 0, text: t('comp.producePcbModal.options.unassociated', "Unassociated"), description: t('comp.producePcbModal.options.unassociatedDescription', "Produce parts not associated to a PCB"), value: 0, icon: !canProducePcb() && "warning circle", disabled: getProducibleUnassociatedCount(project.parts) === 0 },
+      { key: 0, text: t('comp.producePcbModal.options.unassociated', "Unassociated"), description: t('comp.producePcbModal.options.unassociatedDescription', "Produce parts not associated to a PCB"), value: 0, icon: !canProducePcb(project) && "warning circle", disabled: getProducibleUnassociatedCount(project.parts) === 0 },
     ];
   
     if (project && project.pcbs && project.pcbs.length > 0) {
       for(let i = 0; i < project.pcbs.length; i++) {
-        options.push({ key: i + 1, text: project.pcbs[i].name, description: project.pcbs[i].description, value: project.pcbs[i].pcbId, icon: !canProducePcb(project.pcbs[i]) && "warning circle",  disabled: !canProducePcb(project.pcbs[i])});
+        options.push({ key: i + 1, text: project.pcbs[i].name, description: project.pcbs[i].description, value: project.pcbs[i].pcbId, icon: !canProducePcb(project, project.pcbs[i]) && "warning circle",  disabled: !canProducePcb(project, project.pcbs[i])});
       }
     }
     return options;
@@ -108,14 +108,14 @@ export function ProducePcbModal(props) {
       // ensure we don't pass any pcb's to produce that don't have enough parts
       const validPcbsToProcess = [];
       for(let i = 0; i < pcbsToProcess.length; i++){
-        if (canProducePcb(pcbsToProcess[i])){
+        if (canProducePcb(project, pcbsToProcess[i])){
           validPcbsToProcess.push(pcbsToProcess[i]);
         }
       }
 
       // only process unassociated if parts are available
       let processUnassociated = false;
-      if ((form.pcbs.includes(0) || form.pcbs.includes(-1)) && canProducePcb())
+      if ((form.pcbs.includes(0) || form.pcbs.includes(-1)) && canProducePcb(project))
         processUnassociated = true;
 
       props.onSubmit(e, { ...form,
@@ -200,7 +200,7 @@ export function ProducePcbModal(props) {
                   </Table.Header>
                   <Table.Body>
                   {getPcbsToDisplay(project).map((p, key) => (
-                    <Table.Row key={key} className={!canProducePcb(p) ? "disabled" : ""}>
+                    <Table.Row key={key} className={!canProducePcb(project, p) ? "disabled" : ""}>
                       <Table.Cell>{p.name}</Table.Cell>
                       <Table.Cell>
                         {p.pcbId && <Form.Field>
@@ -208,7 +208,7 @@ export function ProducePcbModal(props) {
                             wide
                             content={t('comp.producePcbModal.popup.serialNumber', "The next PCB will have it's serial number started at this value.")}
                             trigger={
-                              <Input disabled={!canProducePcb(p)} style={{display: 'inline-block', width: '200px'}} placeholder="SN00000000" name="serialNumber" value={p.serialNumber || ''} id={p.pcbId} onChange={handleSerialNumberChange} />
+                              <Input disabled={!canProducePcb(project, p)} style={{display: 'inline-block', width: '200px'}} placeholder="SN00000000" name="serialNumber" value={p.serialNumber || ''} id={p.pcbId} onChange={handleSerialNumberChange} />
                             }
                           />
                         </Form.Field>}
@@ -216,7 +216,7 @@ export function ProducePcbModal(props) {
                       <Table.Cell textAlign="center">{p.pcbId > 0 ? getProduciblePcbCount(project.parts, p).count : getProducibleUnassociatedCount(project.parts)}</Table.Cell>
                       <Table.Cell textAlign="center">{p.pcbId > 0 ? _.filter(project.parts, x => x.pcbId === p.pcbId).length : _.filter(project.parts, x => x.pcbId === null).length}</Table.Cell>
                       <Table.Cell textAlign="center">{getTotalPartsOutOfStock(p.pcbId && p.pcbId > 0 ? p : null)}</Table.Cell>
-                      <Table.Cell>{!canProducePcb(p) && <span><Icon name="warning circle" color="red" /> {t('message.notEnoughParts', "Not enough parts")}</span>}</Table.Cell>
+                      <Table.Cell>{!canProducePcb(project, p) && (p.pcbId > 0 ? _.filter(project.parts, x => x.pcbId === p.pcbId).length : _.filter(project.parts, x => x.pcbId === null).length > 0) && <span><Icon name="warning circle" color="red" /> {t('message.notEnoughParts', "Not enough parts")}</span>}</Table.Cell>
                     </Table.Row>
                   ))}
                   </Table.Body>

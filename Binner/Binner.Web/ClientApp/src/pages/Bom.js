@@ -895,12 +895,16 @@ export function Bom(props) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={12} textAlign="center" style={{ padding: "30px" }}>
-                  {t("message.noPartsAdded", "No parts added.")}
-                  <br />
-                  <br />
-                  <Link to="" onClick={handleOpenAddPart}>
-                    {t("button.addFirstPart", "Add your first part!")}
-                  </Link>
+                  {filterInStock ? t("message.noOutOfStockParts", "No out of stock parts.") :
+                    <>
+                    {t("message.noPartsAdded", "No parts added.")}
+                    <br />
+                    <br />
+                    <Link to="" onClick={handleOpenAddPart}>
+                      {t("button.addFirstPart", "Add your first part!")}
+                    </Link>
+                    </>
+                  }
                 </Table.Cell>
               </Table.Row>
             )}

@@ -739,7 +739,8 @@
     "addedPart": "Added part {{partNumber}}!",
     "failedSavePart": "Failed to update, check Part Type and Mounting Type",
     "noPartMetadata": "No part metadata found!",
-    "scanPartExists": "Part exists in inventory. You can edit it's details or remove it from your scan."
+    "scanPartExists": "Part exists in inventory. You can edit it's details or remove it from your scan.",
+    "noOutOfStockParts": "No out of stock parts."
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
