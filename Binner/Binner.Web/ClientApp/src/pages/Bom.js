@@ -470,11 +470,9 @@ export function Bom(props) {
       const parts = _.map(project.parts, (part) => {
         if (checkedValues.includes(part.projectPartAssignmentId)) {
           part.pcbId = control.value;
-          console.log('moving', part.projectPartAssignmentId, part.pcbId);
         }
         return part;
       });
-      console.log('newParts', parts);
       // also reset the checkboxes
       for (let i = 0; i < checkboxes.length; i++) {
         checkboxes[i].checked = false;

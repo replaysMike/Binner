@@ -23,7 +23,8 @@
 		},
 		"search": {
 			"title":"Inventario",
-			"search":"Cerca"
+			"search":"Cerca",
+			"searchNotFound": "Nessun risultato trovato in inventario. <1>Aggiungere</1> il componente?"
 		},
 		"inventory": {
 			"addtitle": "Nuovo componente",
@@ -41,8 +42,9 @@
 			"privatePartInfoMessage": "Questi valori possono essere inseriti manualmente e non saranno sincronizzati automaticamente tramite APIs.",
 			"suppliers": "Fornitori",
 			"addKeyword": "Aggiungi parola chiave",
-			"chooseAlternatePart": "Sceglere un componente alternativo ({{count}})",
+			"chooseAlternatePart": "Scegliere un componente alternativo ({{count}})",
 			"suggestedPart": "Codice suggerito",
+			"partExists": "Questo <1>componente</1> <3>esiste già</3> in inventario.",
 			"placeholder": {
 				"location": "Laboratorio",
 				"keywords": "op amp",
@@ -63,7 +65,10 @@
 				"alternateParts": "Scegliere un componente diverso da cui estrarre le informazioni per i metadati. Di default Binner sceglie il componente più simile e con la maggiore quantità disponibile.",
 				"mustAddPart": "Bisogna salvare il componente prima di poter aggiungere fornitori.",
 				"addSupplier": "Aggiungere un fornitore manualmente",
-				"deleteLocalFile": "Cancellare questo file locale"
+				"deleteLocalFile": "Cancellare questo file locale",
+				"technicalSpecs": "Visualizzare specifiche tecniche",
+				"compliance": "Visualizzare le informazioni di conformità",
+				"cadModels": "Visualizzare i modelli CAD disponibili per questo componente"
 			}
 		},
 		"lowInventory": {
@@ -95,7 +100,9 @@
 		"partTypes": {
 			"title": "Categorie",
 			"description": "Le categorie e le sottocategorie sono utilizzate per organizzare i componenti in modo logico e ordinato. Non c'è limite al numero di livelli nella gerarchia, basta collegare alla categoria <1>Parent</1> la sottocategoria voluta.<3 />Ad esempio: gli amplificatori operazionali possono essere un sottotipo dei Circuiti Integrati, quindi il <1>Parent</1> degli amplificatori operazionali è la categoria Circuiti Integrati.",
-			"rename": "Rinominare Categoria"
+			"rename": "Rinominare Categoria",
+			"partCount": "Il numero di componenti in questa categoria",
+      		"viewParts": "Vedi Compoonenti"
 		},
 		"exportData": {
 			"title": "Importare/Esportare",
@@ -106,7 +113,15 @@
 			"totalRowsImported": "Righe totali importate",
 			"totalProjectsImported": "Progetti importati",
 			"totalPartTypesImported": "Categorie importate",
-			"totalPartsImported": "Compoonenti importati"
+			"totalPartsImported": "Compoonenti importati",
+			"noFilesSelected": "Nessun file selezionato per il caricamento!",
+			"importUploadFailed": "Importazione non riuscita!",
+			"importFailed": "Impossibile importare i dati.",
+			"importSuccess": "Dati importati con successo!",
+			"exportFailed": "Esportazione dati non riuscita!",
+			"exportSuccess": "Dati esportati con successo!",
+			"fileNotSupported": "Il file '{{name}}' con tipo mime '{{type}}' non è un tipo di immagine accettato!",
+			"chooseFormat": "Scegliere un formato"
 		},
 		"tools": {
 			"title": "Strumenti",
@@ -156,8 +171,15 @@
 			"partLabelName": "Nome etichetta",
 			"partLabelTemplate": "Modello etichetta",
 			"partLabelTemplateDescription": "Le etichette dei componenti saranno stampate secondo questo modello.",
-			"lineX": "Line {{number}}",
-			"identifierX": "Identifier {{number}}",
+			"lineX": "Linea {{number}}",
+			"identifierX": "Identificatore {{number}}",
+			"barcodeConfiguration": "Configurazione Codice a barre",
+      		"barcodeSupport": "Supporto Codice a barre",
+      		"barcodeProfile": "Profilo del codice a barre",
+      		"isBarcodeDebug": "Modalità di debug",
+      		"bufferTime": "Tempo di Buffer (ms)",
+      		"prefix2d": "Prefisso codice a barre 2D",
+      		"maxKeystrokeThresholdMs": "Soglia massima digitazione (ms)",
 			"popup": {
         		"forgetCredentials": "Eliminare tutte le credenziali memorizzate nella cache e forzare l'autenticazione con DigiKey",
         		"swarmEnabled": "Scegliere se si vuole abilitare il supporto di Binner Swarm.",
@@ -184,11 +206,28 @@
 				"octopartClientSecret": "Indicare il Client Secret per Octopart/Nexar.",
 				"printerPrinterName": "Indicare il nome della stampante così come appare in Windows, o in CUPS (Unix).",
 				"printerPartLabelSource": "Indicare l'origine delle etichette da utilizzare.",
-				"partLabelName": "Indicare il nome del modello di etichetta installato nella stampante. Questo sarà specifico per la stampante in uso e deve essere definito nel file appsettings.json in <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>"
-      }
+				"partLabelName": "Indicare il nome del modello di etichetta installato nella stampante. Questo sarà specifico per la stampante in uso e deve essere definito nel file appsettings.json in <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>",
+				"barcodeSupportEnabled": "Scegliere se abilitare il supporto del codice a barre.",
+				"barcodeProfile": "Scegliere il profilo del codice a barre da utilizzare per il tuo scanner.",
+				"barcodePrefix": "Il prefisso usato per il codice a barre 2D, di solito '[)>'.",
+				"barcodeBufferTime": "Il tempo di buffer in millisecondi per il quale lo scanner eseguirà la scansione dei dati. Alcuni scanner richiedono più o meno tempo. Predefinito: 80",
+				"barcodeIsDebug": "L'abilitazione della modalità di debug dello scanner invierà le informazioni di diagnostica sulla console del browser.",
+				"maxKeystrokeThresholdMs": "Il tempo massimo di attesa in millisecondi tra le pressioni dei tasti.",
+				"prefix2d": "Il prefisso usato per il codice a barre 2D, di solito '[)>'."
+      		}
 		},
 		"datasheet": {
-			"title": "Ricerca Datasheet"
+			"title": "Ricerca Datasheet",
+			"description": "Ricerca datasheet per codice componente.",
+			"partType": "Categoria",
+			"manufacturerPartNumber": "Codice Produtt.",
+			"manufacturer": "Produttore",
+			"website": "Sito Web",
+			"datasheet": "Datasheet",
+			"packageType": "Tipo di package",
+			"status": "Stato",
+			"datasheets": "Datasheets",
+			"actions": "Azioni"
 		},
 		"orderImport": {
 			"title": "Importazione Ordine",
@@ -224,9 +263,11 @@
 			"title": "Modifica Progetto",
 			"description": "I progetti vengono utilizzati come parte della DBA, permettendo di associare componenti a più PCB contemporaneamente.",
 			"pcbs": "PCBs",
+			"produceHistory": "Cronologia di Produzione",
 			"confirm": {
 				"deleteProjectHeader": "Cancella Progetto",
-				"deletePcbHeader": "Cancella Pcb"
+				"deletePcbHeader": "Cancella Pcb",
+				"deleteProduceHistoryHeader": "Cancellare Record Cronologia"
 			},
 			"placeholder": {
 				"name": "Il mio Progetto",
@@ -235,7 +276,7 @@
 			"popup": {
 				"name": "Digitare il nome del progetto/DBA",
 				"description": "Digitare una descrizione sommaria del progetto",
-				"location": "Località del progetto <1>(opzionale)</1>",
+				"location": "Ubicazione del progetto <1>(opzionale)</1>",
 				"color": "Assegnare un colore a questo progetto per una più semplice identificazione",
         			"quantityProduced": "La quantità di produzione specificata",
         			"includeUnassociated": "Indica se sono stati prodotti componenti non associati a un PCB",
@@ -278,8 +319,12 @@
 		  "description": ""
 		},
 		"admin": {
+		  "title": "Admin",
+      	  "description": "Amministrazione di sistema per la gestione dell'installazione.",
+      	  "header": "Scegliere un'attività di amministrazione",
 		  "users": {
 			"title": "Gestione Utenti",
+			"baseDescription": "Gestire gli utenti del sistema.",
 			"description": "Gestione degli Utenti.",
 			"accountType": "Tipo Utente",
 			"masterAccount": "Account Amministratore",
@@ -300,11 +345,38 @@
 		  "updateParts": {
 			"title": "Aggiornare i metadati del componente",
 			"description": "Aggiornare le informazioni tramite le API esterne e scegliere quali campi modificare."
-		  }
+		  },
+		  "systemInfo": {
+			"title": "Informazioni di Sistema",
+			"baseDescription": "Ottenere informazioni sulla installazione di Binner.",
+			"description": "Informazioni sull'installazione di Binner. Queste impostazioni possono essere trovate nel file di configurazione del servizio 'appsettings.json'",
+			"version": "Versione",
+			"lastestVersion": "Ultima Versione di Binner",
+			"license": "Licenza",
+			"api": "API",
+			"enabledIntegrations": "Integrazioni abilitate",
+			"language": "Lingua",
+			"currency": "Valuta",
+			"server": "Server",
+			"data": "Data",
+			"storageProvider": "Storage Provider",
+			"storageProviderConfig": "Configurazione dello Storage Provider",
+			"installationPath": "Percorso di installazione",
+			"userFilesUploadPath": "Percorso caricamento file utente",
+			"logPath": "Percorso dei log",
+			"ip": "IP",
+			"port": "Port",
+			"totalParts": "N.Totale Componenti",
+			"totalUsers": "N.Totale Utenti",
+			"totalPartTypes": "N.Totale Categorie",
+			"totalUserFiles": "N.Totale Files Utente",
+			"userFilesSize": "Dimensione Files Utente"
+		  } 
 		},
 		"backup": {
 		  "title": "Backup / Restore",
-		  "description": "Creare un backup o recuperare da un precedente backup.",
+		  "baseDescription": "Backup o ripristino dell'installazione di Binner.",
+		  "description": "Creare un backup o ripristinare da un precedente backup.",
 		  "acceptedFileTypes": "Tipi di file accettati: \"*.bak\"",
 		  "backupDescription": "Creare una istantanea dell'installazione di Binner."
 		}
@@ -325,7 +397,8 @@
 		"updatePartMetadata": "Aggiorna dati componente",
 		"backupRestore": "Backup / Restore",
 		"accountSettings": "Dati Utente",
-		"activateLicense": "Attivare Licenza"
+		"activateLicense": "Attivare Licenza",
+		"systemInfo": "Informazioni di Sistema"
 	},
 	"comp": {
 		"navBar": {
@@ -344,10 +417,10 @@
 		"partsGrid": {
 			"recordsPerPage": "righe per pagina",
 			"parts": "Componenti",
-			"part": "Cod. Componente",
+			"partNumber": "Cod.componente",
 			"quantity": "Quantità",
 			"lowStock": "Scorta Min.",
-			"mfrPart": "Codice produt.",
+			"manufacturerPartNumber": "Codice Produtt.",
 			"description": "Descrizione",
 			"location": "Ubicazione",
 			"binNumber": "Contenitore",
@@ -359,12 +432,13 @@
 			"datasheet": "Datasheet",
 			"noResults": "Nessun risultato.",
 			"partType": "Categoria",
-      "lowStockThreshold": "Low Stock Threshold",
-      "digikeyPartNumber": "DigiKey Part Number",
-      "mouserPartNumber": "Mouser Part Number",
-      "arrowPartNumber": "Arrow Part Number",
-      "packageType": "Tipo di package",
-      "mountingType": "Tipo montaggio",
+			"actions": "Azioni",
+			"lowStockThreshold": "Scorta minima",
+			"digikeyPartNumber": "DigiKey Part Number",
+			"mouserPartNumber": "Mouser Part Number",
+			"arrowPartNumber": "Arrow Part Number",
+			"packageType": "Tipo di package",
+			"mountingType": "Tipo montaggio",
 			"ok": "Ok",
 			"popup": {
 				"lowStock": "Se la disponibilità del componente è inferiore a questo valore il componente sarà considerato sottoscorta.",
@@ -440,7 +514,7 @@
 			}
 		},
 		"chooseAlternatePartModal": {
-			"title": "Componenti corrispondenti"
+			"title": "Scegliere un componente alternativo"
 		},
 		"lineTemplate": {
 			"label": {
@@ -468,8 +542,20 @@
 		"pcbHistoryModal": {
 		  "header": "Cronologia della produzione di PCB",
 		  "title": "Gestione DBA"
-		}
-	},
+		},
+    "bulkScanModal": {
+      "autoIncrement": "Incremento automatico",
+      "rememberLocation": "Ricordare l'Ubicazione",
+      "popup": {
+        "autoIncrement": "Incremento automatico numero del Contenitore 2",
+        "rememberLocation": "Ripetere l'ubicazione di ogni componente aggiunto"
+      }
+    },
+    "duplicatePartModal": {
+      "title": "Componente Duplicato",
+      "description": "C'è già un possibile componente duplicato nel tuo inventario."
+	 }
+  	},
 	"button": {
 		"addBomProject": "Aggiungi un Progetto DBA",
 		"addPart": "Aggiungi componente",
@@ -512,12 +598,17 @@
     	"restore": "Restore",
     	"createBackup": "Creare Backup",
     	"produceHistory": "Cronologia",
-    	"rename": "Rinominare"
+    	"rename": "Rinominare",
+		"parts": "Componenti",
+    	"specs": "Specifiche",
+    	"compliance": "Conformità",
+    	"cadModels": "Modelli CAD",
+    	"addAnyway": "Aggiungere comunque"
 	},
 	"label": {
 		"name": "Nome",
 		"description": "Descrizione",
-		"location": "Località",
+		"location": "Ubicazione",
 		"color": "Colore",
 		"project": "Progetto",
 		"parts": "Cod.Componente",
@@ -624,7 +715,10 @@
 		"date": "Data",
 		"consumed": "Utilizzato",
 		"serial": "Serial",
-		"allowLogin": "Consentire Accesso"
+		"allowLogin": "Consentire Accesso",
+		"active": "Attivo",
+    	"inactive": "Inattivo",
+    	"rowsPerPage": "Righe per pagina"
 	},
 	"message": {
 		"noPartsAdded": "Nessun componente aggiunto.",
@@ -643,7 +737,10 @@
     	"addXParts": "Aggiunti {{count}} nuovi componenti!",
     	"savedPart": "Salvato il componente {{partNumber}}!",
     	"addedPart": "Aggiunto il componente {{partNumber}}!",
-    	"failedSavePart": "Errore nell'aggiornamento, controllare Categoria e Tipo di montaggio"
+    	"failedSavePart": "Errore nell'aggiornamento, controllare Categoria e Tipo di montaggio",
+		"noPartMetadata": "Non ci sono metadati per il componente!",
+		"scanPartExists": "Il componente esiste nell'inventario. E' possibile modificare i suoi dettagli o rimuoverlo dalla scansione.",
+		"noOutOfStockParts": "Non ci sono componenti sottoscorta."
 	},
 	"confirm": {
 		"deleteProject": "Sicuro di voler eliminare questo progetto e l'intera DBA?",
@@ -656,10 +753,12 @@
 		"deleteRecord": "Sicuro di voler eliminare il record?",
     	"deleteHistory": "Sicuro di voler eliminare quest record di cronologia?",
     	"partsWillBeBackInStock": "Tutti i componenti utilizzati saranno resi <1>nuovamente disponibili</1>.",
+		"clearScan": "Sicuro di voler cancellare i risultati della scansione?",
 		"header": {
 			"removeBomPart": "Elimina componenente dalla DBA",
 			"deleteFile": "Cancella File",
-			"deletePart": "Cancella Componente"
+			"deletePart": "Cancella Componente",
+			"clearScan": "Cancella i componenti scansionati"
 		}    
 	},
 	"error": {
@@ -681,7 +780,8 @@
 		"testFailed": "Test fallito",
 		"invalidOrder": "Hmmm, questo non sembra un numero d'ordine valido!",
 		"invalid2dBarcode": "Hmmm, codice a barre 2D non riconosciuto!",
-		"failedDeleteRecord": "Errore in cancellazione record!"
+		"failedDeleteRecord": "Errore in cancellazione record!",
+		"failedToSaveSettings": "Impossibile salvare le impostazioni!"
 	},
 	"success": {
 		"producedPcbs": "{{quantity}} PCB sono stati prodotti!",
@@ -748,5 +848,6 @@
 		"white": "Bianco",
 		"gold": "Oro",
 		"silver": "Argento"
-	}
+	},
+	"noop": "-do-not-translate-"
 }
