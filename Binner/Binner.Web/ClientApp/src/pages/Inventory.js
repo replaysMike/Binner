@@ -1360,7 +1360,7 @@ export function Inventory(props) {
     : t('page.inventory.addtitle', "Add Inventory");
 
   return (
-    <div className="mask">
+    <div className="inventory mask">
       <DuplicatePartModal 
         isOpen={duplicatePartModalOpen}
         part={part}

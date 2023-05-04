@@ -1,15 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Binner.Model
+﻿namespace Binner.Model
 {
     public class ProjectPcbAssignment : IEntity
     {
         /// <summary>
         /// Primary key
         /// </summary>
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ProjectPcbAssignmentId { get; set; }
 
         /// <summary>

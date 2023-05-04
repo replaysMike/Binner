@@ -21,7 +21,6 @@ export function Layout(props) {
 
   return (
     <div className="centered" style={{marginBottom: '50px', position: 'relative', zIndex: '50', textAlign: 'left'}}>
-      
       <div id="banner" />
       <Container>
         <Header />

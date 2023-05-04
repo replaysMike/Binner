@@ -1,6 +1,7 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
-import { Form, Popup, Input, Icon, Button } from "semantic-ui-react";
+import { Form, Popup, Input, Icon, Button, Breadcrumb } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
 import { GetTypeName, BarcodeProfiles } from "../../common/Types";
@@ -10,6 +11,7 @@ import "./BarcodeScanner.css";
 
 export function BarcodeScanner(props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -126,6 +128,13 @@ export function BarcodeScanner(props) {
         onSetConfig={handleSetConfig} 
         onDisabled={() => toast.error('Barcode scanning support is currently disabled. See Settings page.', { autoClose: false })} 
       />
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+				<Breadcrumb.Section link onClick={() => navigate("/tools")}>{t('bc.tools', "Tools")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('bc.barcodeScanner', "Barcode Scanner")}</Breadcrumb.Section>
+      </Breadcrumb>
       <h1>{t('page.barcodeScanner.title', "Barcode Scanner")}</h1>
       <p>{t('page.barcodeScanner.description', "Test your barcode scanner to see what values it outputs.")}</p>
       <Form>

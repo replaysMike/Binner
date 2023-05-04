@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Binner.Common.Integrations.Models
+﻿namespace Binner.Common.Integrations.Models
 {
     /// <summary>
     /// An api response

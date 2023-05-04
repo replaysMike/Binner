@@ -57,6 +57,11 @@
         public string? CorsAllowOrigin { get; set; }
 
         /// <summary>
+        /// The lifetime of the part types cache
+        /// </summary>
+        public TimeSpan MaxPartTypesCacheLifetime { get; set; } = TimeSpan.FromMinutes(30);
+
+        /// <summary>
         /// Locale configuration
         /// </summary>
         public LocaleConfiguration Locale { get; set; } = new();

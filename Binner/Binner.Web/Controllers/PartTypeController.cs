@@ -41,34 +41,7 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> GetAllPartTypesAsync()
         {
             var partTypes = await _partService.GetPartTypesWithPartCountsAsync();
-
-            // recursively accumulate the part counts for each part type, since we can't easily do this with a sql query
-            partTypes = GetPartTypesWithPartCounts(partTypes);
             return Ok(partTypes);
-        }
-
-        private ICollection<PartTypeResponse> GetPartTypesWithPartCounts(ICollection<PartTypeResponse> partTypes)
-        {
-            foreach (var partType in partTypes)
-            {
-                partType.Parts = GetPartTypeCount(partTypes, partType);
-            }
-            return partTypes;
-        }
-
-        private long GetPartTypeCount(ICollection<PartTypeResponse> partTypes, PartTypeResponse child)
-        {
-            var partCount = child.Parts;
-            var children = partTypes.Where(x => x.ParentPartTypeId == child.PartTypeId).ToList();
-            if (children.Any())
-            {
-                foreach (var child2 in children)
-                {
-                    partCount += GetPartTypeCount(partTypes, child2);
-                }
-            }
-
-            return partCount;
         }
 
         /// <summary>

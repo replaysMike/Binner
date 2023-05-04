@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Binner.Model
+﻿namespace Binner.Model
 {
     /// <summary>
     /// A stored file associated with a pcb
@@ -11,8 +8,6 @@ namespace Binner.Model
         /// <summary>
         /// Primary key
         /// </summary>
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PcbStoredFileAssignmentId { get; set; }
 
         public long PcbId { get; set; }

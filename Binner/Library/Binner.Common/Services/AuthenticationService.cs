@@ -230,8 +230,8 @@ namespace Binner.Common.Services
         public async Task RevokeTokenAsync(string token)
         {
             if (string.IsNullOrEmpty(token)) throw new ArgumentNullException(nameof(token));
-            using var context = await _contextFactory.CreateDbContextAsync();
-            using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            await using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             try
             {
                 var refreshToken = await GetRefreshTokenAsync(context, token);
@@ -263,8 +263,8 @@ namespace Binner.Common.Services
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            using var context = await _contextFactory.CreateDbContextAsync();
-            using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            await using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             try
             {
                 // check if account exists

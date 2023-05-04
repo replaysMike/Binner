@@ -438,7 +438,7 @@ export function PartTypes(props) {
         onNodeSelect={handleOnNodeSelect}
         onNodeToggle={handleOnNodeToggle}
         expanded={expandedNodeIds}
-        sx={{ height: 500, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
+        sx={{ height: 650, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
       >
         {recursiveTreeItem(partTypesFiltered).map((x) => x)}
       </TreeView>);
@@ -497,7 +497,7 @@ export function PartTypes(props) {
         </Modal.Actions>
       </Modal>
 
-      <Segment loading={loading} style={{ marginBottom: "50px" }}>
+      <Segment loading={loading}>
         <div style={{ marginBottom: "10px", padding: "5px", backgroundColor: "#fafafa" }}>
           {/** Tools Header */}
           <div style={{ float: "left", lineHeight: "2.25em" }}>

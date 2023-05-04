@@ -137,7 +137,6 @@ namespace Binner.Data
             if (!optionsBuilder.IsConfigured)
             {
             }
-            
         }
     }
 }

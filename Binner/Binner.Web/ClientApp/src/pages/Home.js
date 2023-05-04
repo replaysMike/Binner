@@ -15,7 +15,6 @@ export function Home(props) {
   const [loading, setLoading] = useState(true);
   const [versionData, setVersionData] = useState({});
   const [newVersionBannerIsOpen, setNewVersionBannerIsOpen] = useState(false);
-  const [subscription, setSubscription] = useState(null);
   const [version, setVersion] = useState(null);
 
   /**
@@ -38,38 +37,37 @@ export function Home(props) {
    * When we receive a version header from an api request, update it.
    * This callback will be called on all updates to version
    */
-  const updateVersion = useCallback((installedVersionData, subscriptionId) => {
+  const updateVersion = useCallback((installedVersionData) => {
     setVersion(installedVersionData.version);
   }, []);
 
   useEffect(() => {
-    setSubscription(customEvents.subscribe("version", (data, subscriptionId) => updateVersion(data, subscriptionId)));
-  }, [updateVersion, setSubscription]);
+    const subscriptionId = customEvents.subscribe("version", (data) => updateVersion(data));
+    return () => {
+      customEvents.unsubscribe(subscriptionId);
+    };
+  }, [updateVersion]);
 
   let navigate = useNavigate();
 
   useEffect(() => {
-    async function load() {
-      Home.abortController = new AbortController();
-      if (Home.abortController) {
-        Home.abortController.abort(); // Cancel the previous request
-      }
-      Home.abortController = new AbortController();
-      setLoading(true);
-      await fetchApi(`api/part/summary`, {
-        signal: Home.abortController.signal,
-      }).then((response) => {
-        const { data } = response;
-        setSummary(data || {});
-        setLoading(false);
-      });
-
-      return async function cleanup() {
-        await Home.abortController.abort();
-      };
+    Home.abortController = new AbortController();
+    if (Home.abortController) {
+      Home.abortController.abort(); // Cancel the previous request
     }
+    Home.abortController = new AbortController();
+    setLoading(true);
+    fetchApi(`api/part/summary`, {
+      signal: Home.abortController.signal,
+    }).then((response) => {
+      const { data } = response;
+      setSummary(data || {});
+      setLoading(false);
+    });
 
-    load();
+    return () => {
+      Home.abortController.abort();
+    };
   }, [setLoading, setSummary]);
 
   useEffect(() => {

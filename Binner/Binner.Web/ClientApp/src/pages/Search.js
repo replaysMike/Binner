@@ -18,6 +18,7 @@ export function Search(props) {
   const [searchParams] = useSearchParams();
   var byParam = searchParams.get("by");
   var valueParam = searchParams.get("value");
+  var routeCacheKill = searchParams.get("_");
   const by = byParam?.split(',') || [];
   const byValue = valueParam?.split(',') || [];
   const keywordParam = searchParams.get("keyword");
@@ -162,11 +163,11 @@ export function Search(props) {
     setKeyword(keywordParam || "");
     setFilterBy(byParam?.split(',') || []);
     setFilterByValue(valueParam?.split(',') || []);
-    loadParts(1, true, by, byValue, pageSize, sortBy, sortDirection, keywordParam || "");
+    loadPartsDebounced(1, true, by, byValue, pageSize, sortBy, sortDirection, keywordParam || "");
     return () => {
       Search.abortController.abort();
     };
-  }, [byParam, valueParam, keywordParam, initComplete]);
+  }, [byParam, valueParam, keywordParam, routeCacheKill, initComplete]);
 
   useEffect(() => {
     loadPartsDebounced(1, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, keyword || "");

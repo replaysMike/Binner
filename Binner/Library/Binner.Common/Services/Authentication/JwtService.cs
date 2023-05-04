@@ -1,11 +1,8 @@
 ﻿using Binner.Common.Auth;
 using Binner.Common.IO;
-using Binner.Data;
-using Binner.Data.Model;
 using Binner.Global.Common;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -13,7 +10,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Binner.Common.Services.Authentication
 {
@@ -126,7 +122,6 @@ namespace Binner.Common.Services.Authentication
         /// <summary>
         /// Get the token validation parameters that indicate how a Jwt token should be validated
         /// </summary>
-        /// <param name="authConfig"></param>
         /// <returns></returns>
         public TokenValidationParameters GetTokenValidationParameters()
         {

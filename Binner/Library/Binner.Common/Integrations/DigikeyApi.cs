@@ -148,6 +148,7 @@ namespace Binner.Common.Integrations
         /// Get information about a DigiKey product via a barcode value
         /// </summary>
         /// <param name="barcode"></param>
+        /// <param name="barcodeType"></param>
         /// <returns></returns>
         public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode, ScannedBarcodeType barcodeType)
         {

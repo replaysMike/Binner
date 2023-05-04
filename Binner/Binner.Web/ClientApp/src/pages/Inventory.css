@@ -1,9 +1,9 @@
-.render-disabled {
+.inventory .render-disabled {
 	background-color: #f0f0f0 !important;
 	background-image: linear-gradient(#fff, #bbb);
 }
 
-.inventory-container.render-disabled .row::before {
+.inventory .inventory-container.render-disabled .row::before {
 	content: 'SCANNING';
 	position: absolute;
 	margin: 0 auto;
@@ -19,7 +19,7 @@
 	min-height: 50px;
 }
 
-.carousel-control-next-icon {
+.inventory .carousel-control-next-icon {
 	background-color: rgb(255,255,255,0.15);
 	border-radius: 80px;
 	padding: 5px;
@@ -27,7 +27,7 @@
 	background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27%23fff%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath d=%27M2.75 0l-1.5 1.5L3.75 4l-2.5 2.5L2.75 8l4-4-4-4z%27/%3e%3c/svg%3e") !important;
 }
 
-.carousel-control-prev-icon {
+.inventory .carousel-control-prev-icon {
 	background-color: rgb(255,255,255,0.15);
 	border-radius: 80px;
 	padding: 5px;
@@ -36,11 +36,11 @@
 	background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27%23fff%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath d=%27M5.25 0l-4 4 4 4 1.5-1.5L4.25 4l2.5-2.5L5.25 0z%27/%3e%3c/svg%3e") !important;   
 }
 
-.card .content {
+.inventory .card .content {
 	padding: 8px;
 }
 
-.card .header {
+.inventory .card .header {
 	font-size: 1.1em;
 	font-weight: 500;
 	line-height: 1.2;
@@ -48,63 +48,63 @@
 	margin-bottom: 0.2rem;
 }
 
-.card .meta {
+.inventory .card .meta {
 	font-size: 0.7em !important;
 	margin-bottom: 0.6rem;
 }
 
-.card .description {
+.inventory .card .description {
 	font-size: 0.8em;
 }
 
-.card > .placeholder img {
+.inventory .card > .placeholder img {
 	width: 100%;
 	min-height: 245px;
 }
 
-.product-images, .datasheets, .pinout-images, .circuit-images {
+.inventory .product-images, .datasheets, .pinout-images, .circuit-images {
 	cursor: pointer;
 }
 
-.product-images .carousel-item img, .pinout-images .carousel-item img, .circuit-images .carousel-item img {
+.inventory .product-images .carousel-item img, .pinout-images .carousel-item img, .circuit-images .carousel-item img {
 	min-height: 247px;
 	max-height: 247px;
 }
 
-.datasheets .carousel-inner {
+.inventory .datasheets .carousel-inner {
 	min-height: 247px;
 	max-height: 247px;
 }
 
-.ui.menu.shortcuts {
+.inventory .ui.menu.shortcuts {
 	line-height: 1;
 	min-height: unset;
 }
 
-.ui.menu.shortcuts .item {
+.inventory .ui.menu.shortcuts .item {
 	font-size: 0.90vw;
 	justify-content: center;
 	width: 33%;
 }
 
-.ui.menu.shortcuts .item:nth-child(3):before {
+.inventory .ui.menu.shortcuts .item:nth-child(3):before {
 	width: 0;
 }
 
-.ui.menu.shortcuts .item:nth-child(3) {
+.inventory .ui.menu.shortcuts .item:nth-child(3) {
 	content: none;
 }
 
-.placeholder {
+.inventory .placeholder {
 	cursor: default;
 }
 
-.product.productshot {
+.inventory .product.productshot {
 	height: 75px;
 	width: auto;
 }
 
-.part-metadata-info h1, .part-metadata-info h2 {
+.inventory .part-metadata-info h1, .part-metadata-info h2 {
 	font-size: 1em;
 	padding: 0;
 	margin: 0;
@@ -113,56 +113,56 @@
 	display: inline-block;
 }
 
-.part-metadata-info h2 {
+.inventory .part-metadata-info h2 {
 	color: #2185d0;
 	font-size: 0.9em;
 }
 
-.part-metadata-info {
+.inventory .part-metadata-info {
 	font-size: 0.9em;
 }
 
-.part-metadata-info b {
+.inventory .part-metadata-info b {
 	font-weight: 500;
 }
 
-.part-metadata-info .inactive {
+.inventory .part-metadata-info .inactive {
 	font-weight: 500;
 	color: #c00;
 }
 
-.ui.toggle.checkbox.left label {
+.inventory .ui.toggle.checkbox.left label {
 	padding-left: 0;
 	padding-right: 4em;
 }
 
-.ui.checkbox.left input,
-.ui.toggle.checkbox.left label:before {
+.inventory .ui.checkbox.left input,
+.inventory .ui.toggle.checkbox.left label:before {
 	left: auto;
 	right: 0;
 }
 
-.ui.toggle.checkbox.left label:after {
+.inventory .ui.toggle.checkbox.left label:after {
 	left: auto;
 	right: 2.2em;
 	transition: background 0.3s ease 0s, right 0.3s ease 0s;
 }
 
-.ui.toggle.checkbox.left input:checked + label:after {
+.inventory .ui.toggle.checkbox.left input:checked + label:after {
 	left: auto;
 	right: 0;
 	transition: background 0.3s ease 0s, right 0.3s ease 0s;
 }
 
-.ui.toggle.checkbox.small {
+.inventory .ui.toggle.checkbox.small {
 	font-size: 0.9em;
 }
 
-.ui.toggle.checkbox.small label:before {
+.inventory .ui.toggle.checkbox.small label:before {
 	transform: scale(0.75);
 }
 
-.ui.toggle.checkbox.small label:after {
+.inventory .ui.toggle.checkbox.small label:after {
 	transform: scale(0.75);
 }
 
@@ -175,48 +175,48 @@
 	top: 3px;
 }
 
-.ui.celled.grid.inventory-container {
+.inventory .ui.celled.grid.inventory-container {
 	margin: 0.3em 0 1em 0;
 }
 
-.suggested-part {
+.inventory .suggested-part {
 	font-size: 0.8em;
 	height: 19px;
 }
 
-.suggested-part span {
+.inventory .suggested-part span {
 	font-style: italic;
 }
 
-.suggested-part button {
+.inventory .suggested-part button {
 	font-weight: 500;
 	font-style: normal;
 }
 
-.ui.dropdown .menu>.item  {
+.inventory .ui.dropdown .menu>.item  {
 	display: flex;
 	flex-direction: column-reverse;
 	position: relative;
 }
 
-.ui.dropdown .menu>.item>.icon,.ui.dropdown .menu>.item>.MuiSvgIcon-root {
+.inventory .ui.dropdown .menu>.item>.icon,.ui.dropdown .menu>.item>.MuiSvgIcon-root {
 	position: absolute;
 	top: 14px;
 	left: 2px;
 }
 
-.ui.dropdown .menu>.item>.MuiSvgIcon-root {
+.inventory .ui.dropdown .menu>.item>.MuiSvgIcon-root {
 	color: #ccc;
 }
 
-.ui.dropdown .menu>.item>.text {
+.inventory .ui.dropdown .menu>.item>.text {
 	display:flex;
 	justify-content: start;
 	margin: 0;
 	padding-left: 10px;
 }
 
-.ui.dropdown .menu>.item>.description {
+.inventory .ui.dropdown .menu>.item>.description {
 	display:flex;
 	justify-content: start;
 	flex: 1;
@@ -227,48 +227,48 @@
 	font-weight: normal;
 }
 
-.ui.dropdown.label.currency .menu {
+.inventory .ui.dropdown.label.currency .menu {
 	width: 170px;
 }
 
-.ui.dropdown.label.currency .item {
+.inventory .ui.dropdown.label.currency .item {
 	font-size: 0.9em;
 }
 
-.ui.dropdown.label.currency .item.selected {
+.inventory .ui.dropdown.label.currency .item.selected {
 	font-size: 0.9em;
 	color: #2185d0;
 }
 
-.ui.dropdown.label.currency .item .description {
+.inventory .ui.dropdown.label.currency .item .description {
 	font-size: 0.8em;
 	font-weight: normal;
 }
 
-.part-metadata-buttons {
+.inventory .part-metadata-buttons {
 	display: flex;
 	align-items: end;
 	justify-content: end;
 }
 
-.part-metadata-buttons .ui.button {
+.inventory .part-metadata-buttons .ui.button {
 	height: 43px;
 	line-height: 1.21428571em;
 	padding: 0.68em 1.5em 0.68em 1.5em;
 }
 
-.part-metadata-buttons .MuiSvgIcon-root {
+.inventory .part-metadata-buttons .MuiSvgIcon-root {
 	margin-right: 5px;
 }
 
-.part-metadata-buttons .MuiSvgIcon-root.technical-specs {
+.inventory .part-metadata-buttons .MuiSvgIcon-root.technical-specs {
 	color: rgb(8, 114, 212);
 }
 
-.part-metadata-buttons .MuiSvgIcon-root.compliance {
+.inventory .part-metadata-buttons .MuiSvgIcon-root.compliance {
 	color: rgb(3, 175, 3);
 }
 
-.part-metadata-buttons .MuiSvgIcon-root.cadModels {
+.inventory .part-metadata-buttons .MuiSvgIcon-root.cadModels {
 	color: rgb(231, 66, 231);
 }

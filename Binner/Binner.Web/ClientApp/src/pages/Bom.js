@@ -453,27 +453,35 @@ export function Bom(props) {
       projectId: project.projectId,
       format
     };
-    axios
-      .post(`bom/download`, request, { responseType: "blob" })
-      .then((blob) => {
-        // specifying blob filename, must create an anchor tag and use it as suggested: https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
-        var file = window.URL.createObjectURL(blob.data);
-        var a = document.createElement("a");
-        document.body.appendChild(a);
-        a.style = "display: none";
-        a.href = file;
-        a.download = `${project.name}-${label}-BOM.zip`;
-        a.click();
-        window.URL.revokeObjectURL(file);
-        toast.success(t("success.bomExported", "BOM exported successfully!"));
-        setLoading(false);
-      })
-      .catch((error) => {
-        toast.dismiss();
-        console.error("error", error);
-        toast.error(t("error.failedBomExport", "BOM export failed!"));
-        setLoading(false);
-      });
+    // first fetch some data using fetchApi, to leverage 401 token refresh
+    fetchApi("api/authentication/identity").then((_) => {
+      axios
+        .post(`api/bom/download`, 
+          request, 
+          { 
+            responseType: "blob", 
+            headers: { Authorization: `Bearer ${getAuthToken()}` } 
+          })
+        .then((blob) => {
+          // specifying blob filename, must create an anchor tag and use it as suggested: https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
+          var file = window.URL.createObjectURL(blob.data);
+          var a = document.createElement("a");
+          document.body.appendChild(a);
+          a.style = "display: none";
+          a.href = file;
+          a.download = `${project.name}-${label}-BOM.zip`;
+          a.click();
+          window.URL.revokeObjectURL(file);
+          toast.success(t("success.bomExported", "BOM exported successfully!"));
+          setLoading(false);
+        })
+        .catch((error) => {
+          toast.dismiss();
+          console.error("error", error);
+          toast.error(t("error.failedBomExport", "BOM export failed!"));
+          setLoading(false);
+        });
+    });
   };
 
   const confirmDeleteOpen = (e) => {

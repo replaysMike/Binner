@@ -26,16 +26,16 @@ export const Admin = () => {
         <div className="helpcontainer">
           <ul>
 						<li onClick={() => navigate("/admin/users")}>
-              <h1>User Management</h1>
-              <p>Manage the users of your system.</p>
+              <h1>{t('page.admin.users.title', "User Management")}</h1>
+              <p>{t('page.admin.users.baseDescription', "Manage the users of your system.")}</p>
             </li>
             <li onClick={() => navigate("/admin/backup")}>
-              <h1>Backup/Restore</h1>
-              <p>Backup or restore your Binner installation.</p>
+            <h1>{t('page.admin.backupRestore.title', "Backup/Restore")}</h1>
+              <p>{t('page.admin.backupRestore.baseDescription', "Backup or restore your Binner installation.")}</p>
             </li>
             <li onClick={() => navigate("/admin/info")}>
-              <h1>System Information</h1>
-              <p>Get information on your Binner installation.</p>
+            <h1>{t('page.admin.systemInfo.title', "System Information")}</h1>
+              <p>{t('page.admin.systemInfo.baseDescription', "Get information on your Binner installation.")}</p>
             </li>
             {/*<li onClick={() => navigate("/admin/updateParts")}>
               <h1>Update Part Metadata</h1>

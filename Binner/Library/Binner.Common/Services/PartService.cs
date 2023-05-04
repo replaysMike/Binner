@@ -12,6 +12,7 @@ using Binner.Model.Integrations.Mouser;
 using Binner.Model.Integrations.Nexar;
 using Binner.Model.Responses;
 using Binner.Model.Swarm;
+using Binner.StorageProvider.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -38,9 +39,10 @@ namespace Binner.Common.Services
         private readonly RequestContextAccessor _requestContext;
         private readonly ISwarmService _swarmService;
         private readonly ILogger<PartService> _logger;
+        private readonly IPartTypesCache _partTypesCache;
         private readonly ILicensedService _licensedService;
 
-        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor, ILicensedService licensedService)
+        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor, IPartTypesCache partTypesCache, ILicensedService licensedService)
         {
             _contextFactory = contextFactory;
             _configuration = configuration;
@@ -50,6 +52,7 @@ namespace Binner.Common.Services
             _integrationApiFactory = integrationApiFactory;
             _requestContext = requestContextAccessor;
             _swarmService = swarmService;
+            _partTypesCache = partTypesCache;
             _licensedService = licensedService;
         }
 
@@ -153,27 +156,16 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
         }
 
-        public async Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync()
+        public Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync()
         {
             var userContext = _requestContext.GetUserContext();
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            await using var context = await _contextFactory.CreateDbContextAsync();
-            var models = await context.PartTypes
-                .Include(x => x.Parts)
+            var models = _partTypesCache.Cache
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .OrderBy(x => x.ParentPartType != null ? x.ParentPartType.Name : "")
                 .ThenBy(x => x.Name)
-                .Select(x => new PartTypeResponse
-                {
-                    PartTypeId = x.PartTypeId,
-                    Name = x.Name,
-                    ParentPartTypeId = x.ParentPartTypeId,
-                    ParentPartType = x.ParentPartType != null ? x.ParentPartType.Name : null,
-                    Parts = x.Parts.Count,
-                    DateCreatedUtc = x.DateCreatedUtc
-                })
-                .ToListAsync();
-            return models;
+                .ToList();
+            return Task.FromResult(_mapper.Map<ICollection<PartTypeResponse>>(models));
         }
 
         public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId)

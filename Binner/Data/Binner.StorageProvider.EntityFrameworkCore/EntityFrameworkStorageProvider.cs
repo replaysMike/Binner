@@ -20,14 +20,16 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         private readonly string _providerName;
         private readonly IDictionary<string, string> _config;
         private readonly IMapper _mapper;
+        private readonly IPartTypesCache _partTypesCache;
         private readonly ILicensedStorageProvider _licensedStorageProvider;
 
-        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, ILicensedStorageProvider licensedStorageProvider)
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _providerName = providerName;
             _config = config;
+            _partTypesCache = partTypesCache;
             _licensedStorageProvider = licensedStorageProvider;
         }
 
@@ -40,6 +42,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
             part.PartId = entity.PartId;
+            _partTypesCache.InvalidateCache();
             return part;
         }
 
@@ -65,6 +68,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             EnforceIntegrityCreate(entity, userContext);
             context.Parts.Remove(entity);
             await context.SaveChangesAsync();
+            _partTypesCache.InvalidateCache();
             return true;
         }
 
@@ -102,6 +106,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             context.PartTypes.Remove(entity);
 
             await context.SaveChangesAsync();
+            _partTypesCache.InvalidateCache();
             return true;
         }
 
@@ -474,7 +479,7 @@ INNER JOIN (
             var entities = await context.OAuthCredentials
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
-            return _mapper.Map<ICollection<OAuthCredential>>(entities); ;
+            return _mapper.Map<ICollection<OAuthCredential>>(entities);
         }
 
         private async Task<ICollection<Project>> GetProjectsAsync(IUserContext userContext)
@@ -496,7 +501,7 @@ INNER JOIN (
                 request.OrderBy = request.OrderBy.UcFirst();
             }
 
-            var entitiesQueryable = await GetPartsQueryableAsync(context, request, userContext, x => x.Quantity <= x.LowStockThreshold);
+            var entitiesQueryable = GetPartsQueryable(context, request, userContext, x => x.Quantity <= x.LowStockThreshold);
 
             var pageRecords = (request.Page - 1) * request.Results;
             var totalItems = await entitiesQueryable.CountAsync();
@@ -892,22 +897,22 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthCredentials
-                .Where(x => x.Provider == providerName && x.OrganizationId == userContext.OrganizationId)
+                .Where(x => x.Provider == providerName && x.UserId == userContext.UserId)
                 .FirstOrDefaultAsync();
             if (entity == null)
                 return null;
             return _mapper.Map<OAuthCredential?>(entity);
         }
 
-        public async Task<PartType> GetOrCreatePartTypeAsync(PartType partType, IUserContext? userContext)
+        public async Task<PartType?> GetOrCreatePartTypeAsync(PartType partType, IUserContext? userContext)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            var existingEntity = await context.PartTypes
-                .FirstOrDefaultAsync(x => x.Name != null && x.Name == partType.Name && x.OrganizationId == userContext.OrganizationId);
+            var existingEntity = _partTypesCache.Cache
+                .FirstOrDefault(x => x.Name != null && x.Name == partType.Name && x.OrganizationId == userContext.OrganizationId);
             if (existingEntity == null)
             {
-                existingEntity = new DataModel.PartType
+                var entity = new DataModel.PartType
                 {
                     DateCreatedUtc = DateTime.UtcNow,
                     //DateModifiedUtc = DateTime.UtcNow,
@@ -917,9 +922,10 @@ INNER JOIN (
                     UserId = userContext.UserId,
                     OrganizationId = userContext.OrganizationId
                 };
-                context.PartTypes.Add(existingEntity);
-
+                context.PartTypes.Add(entity);
                 await context.SaveChangesAsync();
+                _partTypesCache.InvalidateCache();
+                return _mapper.Map<PartType>(entity);
             }
             return _mapper.Map<PartType>(existingEntity);
         }
@@ -944,46 +950,12 @@ INNER JOIN (
             return _mapper.Map<Part?>(entity);
         }
 
-        private async Task<IQueryable<DataModel.Part>> GetPartsQueryableAsync(BinnerContext context, PaginatedRequest? request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
+        private IQueryable<DataModel.Part> GetPartsQueryable(BinnerContext context, PaginatedRequest? request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
         {
             var stringCompare = StringComparison.InvariantCultureIgnoreCase;
             DataModel.PartType? partType = null;
             var filterBy = request?.By?.Split(',') ?? Array.Empty<string>();
             var filterByValues = request?.Value?.Split(',') ?? Array.Empty<string>();
-            if (filterBy.Any())
-            {
-                if (filterBy.Contains("partType", stringCompare))
-                {
-                    // special case for partTypes
-                    // translate the part type name to part type id and then make sure it exists
-                    var index = filterBy.Select((value, index) => new { value, index })
-                        .Where(x => x.value.Equals("partType", stringCompare))
-                        .Select(x => x.index)
-                        .First();
-                    if (index < filterByValues.Length)
-                    {
-
-                        var filterByPartTypeValue = filterByValues[index];
-                        partType = await context.PartTypes.Where(x => x.Name == filterByPartTypeValue).FirstOrDefaultAsync();
-                        if (partType == null) throw new ArgumentException($"Unknown part type: {filterByPartTypeValue}");
-                        filterByValues[index] = partType.PartTypeId.ToString();
-                    }
-                }
-                else if (filterBy.Contains("partTypeId", stringCompare))
-                {
-                    // ensure part type exists by partTypeId
-                    var index = filterBy.Select((value, index) => new { value, index })
-                        .Where(x => x.value.Equals("partTypeId", stringCompare))
-                        .Select(x => x.index)
-                        .First();
-                    if (index < filterByValues.Length)
-                    {
-                        var filterByPartTypeValue = filterByValues[index];
-                        partType = await context.PartTypes.Where(x => x.PartTypeId == int.Parse(filterByPartTypeValue)).FirstOrDefaultAsync();
-                        if (partType == null) throw new ArgumentException($"Unknown part type: {filterByPartTypeValue}");
-                    }
-                }
-            }
 
             var entitiesQueryable = context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId);
@@ -991,16 +963,33 @@ INNER JOIN (
             
             if (filterBy.Any())
             {
-                if (partType != null && (filterBy.Contains("partType", stringCompare) || filterBy.Contains("partTypeId", stringCompare)))
+                if (filterBy.Contains("partType", stringCompare) || filterBy.Contains("partTypeId", stringCompare))
                 {
+                    ICollection<CachedPartTypeResponse> matchingPartTypes = Array.Empty<CachedPartTypeResponse>();
                     // recursively get part types and their children
-                    var allPartTypes = await GetPartsByPartTypeAsync(context, partType, userContext);
+                    if (filterBy.Contains("partTypeId"))
+                    {
+                        // ensure part type exists by partTypeId
+                        var index = filterBy.Select((value, index) => new { value, index })
+                            .Where(x => x.value.Equals("partTypeId", stringCompare))
+                            .Select(x => x.index)
+                            .First();
+                        var partTypeId = int.Parse(filterByValues[index]);
+                        matchingPartTypes = GetPartTypesFromId(partTypeId, userContext);
+                    }else if (filterBy.Contains("partType"))
+                    {
+                        // ensure part type exists by partTypeId
+                        var index = filterBy.Select((value, index) => new { value, index })
+                            .Where(x => x.value.Equals("partType", stringCompare))
+                            .Select(x => x.index)
+                            .First();
+                        var partTypeName = filterByValues[index];
+                        matchingPartTypes = GetPartTypesFromName(partTypeName, userContext);
+                    }
                     // query all the children using a custom predicate builder
                     var predicate = PredicateBuilder.True<DataModel.Part>();
-                    predicate = predicate.AND(x => x.PartTypeId == partType.PartTypeId);
-                    if (additionalPredicate != null)
-                        predicate = predicate.AND(additionalPredicate);
-                    foreach (var childPartType in allPartTypes)
+                    predicate = predicate.AND(x => x.PartTypeId == 0); // force the following predicates to be grouped together as an OR
+                    foreach (var childPartType in matchingPartTypes)
                     {
                         predicate = predicate.OR(x => x.PartTypeId == childPartType.PartTypeId);
                     }
@@ -1076,7 +1065,7 @@ INNER JOIN (
                 request.OrderBy = request.OrderBy.UcFirst();
             }
 
-            var entitiesQueryable = await GetPartsQueryableAsync(context, request, userContext);
+            var entitiesQueryable = GetPartsQueryable(context, request, userContext);
 
             var pageRecords = (request.Page - 1) * request.Results;
             var totalParts = await entitiesQueryable.CountAsync();
@@ -1097,16 +1086,48 @@ INNER JOIN (
             }
         }
 
-        private async Task<ICollection<DataModel.PartType>> GetPartsByPartTypeAsync(BinnerContext context, DataModel.PartType partType, IUserContext? userContext)
+        private ICollection<CachedPartTypeResponse> GetPartTypesFromId(int partTypeId, IUserContext? userContext)
         {
-            var allPartTypes = new List<DataModel.PartType>();
-            var childPartTypes = await context.PartTypes
-                .Where(x => x.ParentPartTypeId == partType.PartTypeId)
-                .ToListAsync();
+            var allPartTypes = new List<CachedPartTypeResponse>();
+            var matchingPartTypes = _partTypesCache.Cache
+                .Where(x => x.PartTypeId == partTypeId && (x.OrganizationId == userContext.OrganizationId || (x.OrganizationId == null && x.UserId == null)))
+                .ToList();
+            allPartTypes.AddRange(matchingPartTypes);
+            foreach (var partType in matchingPartTypes)
+            {
+                var children = GetPartTypesWithChildren(partType, userContext);
+                allPartTypes.AddRange(children);
+            }
+
+            return allPartTypes;
+        }
+
+        private ICollection<CachedPartTypeResponse> GetPartTypesFromName(string name, IUserContext? userContext)
+        {
+            var allPartTypes = new List<CachedPartTypeResponse>();
+            var matchingPartTypes = _partTypesCache.Cache
+                .Where(x => x.Name == name && (x.OrganizationId == userContext.OrganizationId || (x.OrganizationId == null && x.UserId == null)))
+                .ToList();
+            allPartTypes.AddRange(matchingPartTypes);
+            foreach (var partType in matchingPartTypes)
+            {
+                var children = GetPartTypesWithChildren(partType, userContext);
+                allPartTypes.AddRange(children);
+            }
+
+            return allPartTypes;
+        }
+
+        private ICollection<CachedPartTypeResponse> GetPartTypesWithChildren(CachedPartTypeResponse partType, IUserContext? userContext)
+        {
+            var allPartTypes = new List<CachedPartTypeResponse>();
+            var childPartTypes = _partTypesCache.Cache
+                .Where(x => x.ParentPartTypeId == partType.PartTypeId && (x.OrganizationId == userContext.OrganizationId || (x.OrganizationId == null && x.UserId == null)))
+                .ToList();
             allPartTypes.AddRange(childPartTypes);
             foreach (var child in childPartTypes)
             {
-                var children = await GetPartsByPartTypeAsync(context, child, userContext);
+                var children = GetPartTypesWithChildren(child, userContext);
                 if (children.Any())
                     allPartTypes.AddRange(children);
             }
@@ -1195,32 +1216,28 @@ INNER JOIN (
             if (entity == null)
                 return null;
             return _mapper.Map<PartType?>(entity);
-
         }
 
-        public async Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext)
+        public Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            await using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.PartTypes
-                .FirstOrDefaultAsync(x => x.Name == name && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
+            var entity = _partTypesCache.Cache
+                .FirstOrDefault(x => x.Name == name && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
             if (entity == null)
                 return null;
-            return _mapper.Map<PartType?>(entity);
-
+            return Task.FromResult(_mapper.Map<PartType?>(entity));
         }
 
-        public async Task<ICollection<PartType>> GetPartTypesAsync(IUserContext? userContext)
+        public Task<ICollection<PartType>> GetPartTypesAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
-            await using var context = await _contextFactory.CreateDbContextAsync();
-            var entities = await context.PartTypes
+            var entities = _partTypesCache.Cache
                 .Where(x => x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null)
                 .OrderBy(x => x.OrganizationId == null)
-                .ThenBy(x => x.ParentPartType.Name)
+                .ThenBy(x => x.ParentPartType?.Name)
                 .ThenBy(x => x.Name)
-                .ToListAsync();
-            return _mapper.Map<ICollection<PartType>>(entities);
+                .ToList();
+            return Task.FromResult(_mapper.Map<ICollection<PartType>>(entities));
         }
 
         public async Task<Project?> GetProjectAsync(long projectId, IUserContext? userContext)
@@ -1273,7 +1290,7 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthCredentials
-                .FirstOrDefaultAsync(x => x.Provider == providerName && x.OrganizationId == userContext.OrganizationId);
+                .FirstOrDefaultAsync(x => x.Provider == providerName && x.UserId == userContext.UserId);
             if (entity != null)
                 context.Remove(entity);
             await context.SaveChangesAsync();
@@ -1319,6 +1336,7 @@ INNER JOIN (
                 entity = _mapper.Map(part, entity);
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
+                _partTypesCache.InvalidateCache();
                 return _mapper.Map<Part>(entity);
             }
             return null;
@@ -1335,6 +1353,7 @@ INNER JOIN (
                 entity = _mapper.Map(partType, entity);
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
+                _partTypesCache.InvalidateCache();
                 return _mapper.Map<PartType?>(entity);
             }
             return null;
@@ -1444,94 +1463,4 @@ INNER JOIN (
             _config.Clear();
         }
     }
-
-    // <summary>
-/// Enables the efficient, dynamic composition of query predicates.
-/// </summary>
-public static class PredicateBuilder
-{
-    /// <summary>
-    /// Creates a predicate that evaluates to true.
-    /// </summary>
-    public static Expression<Func<T, bool>> True<T>() { return param => true; }
-
-    /// <summary>
-    /// Creates a predicate that evaluates to false.
-    /// </summary>
-    public static Expression<Func<T, bool>> False<T>() { return param => false; }
-
-    /// <summary>
-    /// Creates a predicate expression from the specified lambda expression.
-    /// </summary>
-    public static Expression<Func<T, bool>> Create<T>(Expression<Func<T, bool>> predicate) { return predicate; }
-
-    /// <summary>
-    /// Combines the first predicate with the second using the logical "and".
-    /// </summary>
-    public static Expression<Func<T, bool>> AND<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
-    {
-        return first.Compose(second, Expression.AndAlso);
-    }
-
-    /// <summary>
-    /// Combines the first predicate with the second using the logical "or".
-    /// </summary>
-    public static Expression<Func<T, bool>> OR<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
-    {
-        return first.Compose(second, Expression.OrElse);
-    }
-
-    /// <summary>
-    /// Negates the predicate.
-    /// </summary>
-    public static Expression<Func<T, bool>> Not<T>(this Expression<Func<T, bool>> expression)
-    {
-        var negated = Expression.Not(expression.Body);
-        return Expression.Lambda<Func<T, bool>>(negated, expression.Parameters);
-    }
-
-    /// <summary>
-    /// Combines the first expression with the second using the specified merge function.
-    /// </summary>
-    static Expression<T> Compose<T>(this Expression<T> first, Expression<T> second, Func<Expression, Expression, Expression> merge)
-    {
-        // zip parameters (map from parameters of second to parameters of first)
-        var map = first.Parameters
-            .Select((f, i) => new { f, s = second.Parameters[i] })
-            .ToDictionary(p => p.s, p => p.f);
-
-        // replace parameters in the second lambda expression with the parameters in the first
-        var secondBody = ParameterRebinder.ReplaceParameters(map, second.Body);
-
-        // create a merged lambda expression with parameters from the first expression
-        return Expression.Lambda<T>(merge(first.Body, secondBody), first.Parameters);
-    }
-
-    class ParameterRebinder : ExpressionVisitor
-    {
-        readonly Dictionary<ParameterExpression, ParameterExpression> map;
-
-        ParameterRebinder(Dictionary<ParameterExpression, ParameterExpression> map)
-        {
-            this.map = map ?? new Dictionary<ParameterExpression, ParameterExpression>();
-        }
-
-        public static Expression ReplaceParameters(Dictionary<ParameterExpression, ParameterExpression> map, Expression exp)
-        {
-            return new ParameterRebinder(map).Visit(exp);
-        }
-
-        protected override Expression VisitParameter(ParameterExpression p)
-        {
-            ParameterExpression replacement;
-
-            if (map.TryGetValue(p, out replacement))
-            {
-                p = replacement;
-            }
-
-            return base.VisitParameter(p);
-        }
-    }
-}
 }

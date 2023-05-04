@@ -269,6 +269,7 @@ namespace Binner.Web.Controllers
                                 .OrderByDescending(x => x.DatasheetUrls.Any())
                                 .ThenBy(x => x.Cost)
                                 .ToList();
+                            var arrowParts = metadataResponse.Response.Parts.Where(x => x.Supplier.Equals("Arrow", StringComparison.InvariantCultureIgnoreCase)).OrderByDescending(x => x.DatasheetUrls.Any()).ThenBy(x => x.Cost).ToList();
                             var metadata = metadataResponse.Response.Parts.FirstOrDefault();
                             if (metadata != null)
                             {
@@ -280,6 +281,7 @@ namespace Binner.Web.Controllers
                                 mappedPart.DatasheetUrl = metadata.DatasheetUrls.FirstOrDefault();
                                 mappedPart.DigiKeyPartNumber = digikeyParts.FirstOrDefault()?.SupplierPartNumber;
                                 mappedPart.MouserPartNumber = mouserParts.FirstOrDefault()?.SupplierPartNumber;
+                                mappedPart.ArrowPartNumber = arrowParts.FirstOrDefault()?.SupplierPartNumber;
                                 mappedPart.ImageUrl = metadata.ImageUrl;
                                 mappedPart.Manufacturer = metadata.Manufacturer;
                                 mappedPart.ManufacturerPartNumber = metadata.ManufacturerPartNumber;
@@ -511,6 +513,7 @@ namespace Binner.Web.Controllers
                     var part = Mapper.Map<CommonPart, Part>(commonPart);
                     part.Quantity += commonPart.QuantityAvailable;
                     part.Cost = commonPart.Cost;
+                    part.Currency = commonPart.Currency;
                     if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
                         part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
                     if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)

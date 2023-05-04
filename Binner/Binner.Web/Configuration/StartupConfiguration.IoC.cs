@@ -15,6 +15,7 @@ using Binner.Web.ServiceHost;
 using LightInject;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Binner.StorageProvider.EntityFrameworkCore;
 
 namespace Binner.Web.Configuration
 {
@@ -110,6 +111,7 @@ namespace Binner.Web.Configuration
 
         private static void RegisterServices(IServiceContainer container)
         {
+            container.Register<IPartTypesCache, PartTypesCache>(new PerContainerLifetime());
             container.Register<IPartService, PartService>(new PerScopeLifetime());
             container.Register<IPartTypeService, PartTypeService>(new PerScopeLifetime());
             container.Register<IProjectService, ProjectService>(new PerScopeLifetime());

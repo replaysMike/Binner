@@ -398,7 +398,8 @@
     "backupRestore": "Backup / Restore",
     "accountSettings": "Account Settings",
     "activateLicense": "Activate License",
-    "systemInfo": "System Info"
+    "systemInfo": "System Info",
+    "barcodeScanner": "Barcode Scanner"
   },
   "comp": {
     "navBar": {
