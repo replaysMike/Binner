@@ -4,7 +4,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import _ from "underscore";
 import { FormHeader } from "../../components/FormHeader";
-import { Popup, Dropdown, Table, Breadcrumb, Input } from "semantic-ui-react";
+import { Popup, Dropdown, Table, Breadcrumb, Input, Button, Icon } from "semantic-ui-react";
 import { LabelDropContainer } from "./LabelDropContainer";
 import { DndProvider } from 'react-dnd'
 import { DraggableBox } from './DraggableBox';
@@ -30,13 +30,16 @@ export function LabelEditor(props) {
 	const [selectedItemProperties, setSelectedItemProperties] = useState({});
 
 	const labelTemplateOptions = [
-		{ key: 0, text: "30277 (Dual 9/16\" x 3 7/16\")", value: 0, printwidth: 3.4375, printheight: 0.5625, printdpi: 300 },
-		{ key: 1, text: "30346 (1/2\" x 1 7/8\")", value: 1, printwidth: 1.875, printheight: 0.5, printdpi: 300 },
-		{ key: 2, text: "Custom", value: 2, printwidth: 1.875, printheight: 0.5625, printdpi: 300 },
+		{ key: -1, text: "Custom", value: -1, printwidth: 1.875, printheight: 0.5625, printdpi: 300, printmargin: 0, printpadding: 0 },
+		{ key: 0, text: "30277 (Dual 9/16\" x 3 7/16\")", value: 0, printwidth: 3.4375, printheight: 0.5625, printdpi: 300, printmargin: 0, printpadding: 0 },
+		{ key: 1, text: "30346 (1/2\" x 1 7/8\")", value: 1, printwidth: 1.875, printheight: 0.5, printdpi: 300, printmargin: 0, printpadding: 0 },
 	];
 	const [labelTemplateWidth, setLabelTemplateWidth] = useState(labelTemplateOptions[0].printwidth);
 	const [labelTemplateHeight, setLabelTemplateHeight] = useState(labelTemplateOptions[0].printheight);
 	const [labelTemplateDpi, setLabelTemplateDpi] = useState(labelTemplateOptions[0].printdpi);
+	const [labelTemplateMargin, setLabelTemplateMargin] = useState(labelTemplateOptions[0].printmargin);
+	const [labelTemplatePadding, setLabelTemplatePadding] = useState(labelTemplateOptions[0].printpadding);
+	const [labelTemplateNew, setLabelTemplateNew] = useState("");
 
 	const alignOptions = [
 		{ key: 0, text: "Center", value: 0 },
@@ -129,6 +132,8 @@ export function LabelEditor(props) {
 		return properties[name];
 	};
 
+	console.log('labelTemplate', labelTemplate);
+
 	return (
 		<div className="labelEditor">
 			<DndProvider backend={HTML5Backend}>
@@ -138,16 +143,16 @@ export function LabelEditor(props) {
 							<label>Barcode Labels</label>
 						</div>
 						<div className="wrapper" style={{flex: '1', padding: '0 20px'}}>
-							<DraggableBox name="qrCode" resize="both"><Popup wide content="QR Code" trigger={<QRCodeIcon />} /></DraggableBox>
-							<DraggableBox name="dataMatrix2d" resize="both"><Popup wide content="Data Matrix (2D) Barcode" trigger={<DataMatrixIcon />} /></DraggableBox>
-							<DraggableBox name="code128" resize="both"><Popup wide content="Code-128 Barcode (with text)" trigger={<Code128Icon style={{width: '160px'}} />} /></DraggableBox>
-							<DraggableBox name="code128NoText" resize="both"><Popup wide content="Code-128 Barcode (without text)" trigger={<Code128NoTextIcon style={{width: '160px'}} />} /></DraggableBox>
+							<DraggableBox name="qrCode" resize="both" acceptsValue={true}><Popup wide content="QR Code" trigger={<QRCodeIcon />} /></DraggableBox>
+							<DraggableBox name="dataMatrix2d" resize="both" acceptsValue={true}><Popup wide content="Data Matrix (2D) Barcode" trigger={<DataMatrixIcon />} /></DraggableBox>
+							<DraggableBox name="code128" resize="both" acceptsValue={true}><Popup wide content="Code-128 Barcode (with text)" trigger={<Code128Icon style={{width: '160px'}} />} /></DraggableBox>
+							<DraggableBox name="code128NoText" resize="both" acceptsValue={true}><Popup wide content="Code-128 Barcode (without text)" trigger={<Code128NoTextIcon style={{width: '160px'}} />} /></DraggableBox>
 						</div>
 						<div className="header" style={{flex: '0'}}>
 							<label>Custom</label>
 						</div>
 						<div className="wrapper" style={{flex: '1', padding: '0 20px'}}>
-							<DraggableBox name="text" acceptsValue={true} ><Popup wide content="Custom text string" trigger={<span>Regular Text</span>} /></DraggableBox>
+							<DraggableBox name="text" acceptsValue={true} displaysValue={true}><Popup wide content="Custom text string" trigger={<span>Regular Text</span>} /></DraggableBox>
 						</div>
 					</div>
 				</div>
@@ -156,13 +161,17 @@ export function LabelEditor(props) {
 						<div className="header" style={{flex: '0'}}>
 							<label>Label Editor</label>
 						</div>
-						<div className="wrapper" style={{flex: '1'}}>
+						<div className="wrapper" style={{flex: '1' }}>
 							<LabelDropContainer 
 								onSelectedItemChanged={handleSelectedItemChanged} 
 								width={convertInchesToPixels(labelTemplateWidth)} 
 								height={convertInchesToPixels(labelTemplateHeight)}
+								margin={parseInt(labelTemplateMargin)}
+								padding={parseInt(labelTemplatePadding)}
 								itemProperties={itemProperties}
 							/>
+							<div style={{fontSize: '0.9em', fontWeight: '700', color: '#333'}}>{_.find(labelTemplateOptions, i => i.value === labelTemplate)?.text}</div>
+							<div style={{fontSize: '0.7em', color: '#999'}}>Drag and drop components onto the label surface above</div>
 						</div>
 						<div className="header" style={{flex: '0'}}>
 							<label>Label Properties</label>
@@ -171,7 +180,7 @@ export function LabelEditor(props) {
 									<Table.Body>
 										<Table.Row>
 											<Table.Cell><b>Label Template:</b></Table.Cell>
-											<Table.Cell colSpan={5}><Dropdown fluid selection name="align" options={labelTemplateOptions} value={labelTemplate} onChange={handleLabelTemplateChange} /></Table.Cell>
+											<Table.Cell colSpan={5}><Dropdown fluid selection name="align" options={labelTemplateOptions} value={labelTemplate || 0} onChange={handleLabelTemplateChange} /></Table.Cell>
 										</Table.Row>
 										<Table.Row>
 											<Table.Cell><b>Width:</b></Table.Cell>
@@ -183,11 +192,18 @@ export function LabelEditor(props) {
 										</Table.Row>
 										<Table.Row>
 											<Table.Cell><b>Margin:</b></Table.Cell>
-											<Table.Cell>0</Table.Cell>
+											<Table.Cell><Input style={{width: '60px'}} name="labelTemplateMargin" value={labelTemplateMargin} onChange={(e, control) => setLabelTemplateMargin(control.value)} /></Table.Cell>
 											<Table.Cell><b>Padding:</b></Table.Cell>
-											<Table.Cell>0</Table.Cell>
+											<Table.Cell><Input style={{width: '60px'}} name="labelTemplatePadding" value={labelTemplatePadding} onChange={(e, control) => setLabelTemplatePadding(control.value)} /></Table.Cell>
 											<Table.Cell colSpan={2}></Table.Cell>
 										</Table.Row>
+										{labelTemplate === -1 && <Table.Row>
+											<Table.Cell><b>Template Name:</b></Table.Cell>
+											<Table.Cell colSpan={5}>
+												<Input icon="file" style={{ width: '400px'}} name="labelTemplateNew" placeholder="Enter a template name" value={labelTemplateNew} onChange={(e, control) => setLabelTemplateNew(control.value)} />
+												<Button size="mini" style={{height: '26px', padding: '8px 10px', marginLeft: '5px' }}><Icon name="save" /> Save</Button>
+											</Table.Cell>
+										</Table.Row>}
 									</Table.Body>
 								</Table>
 							</div>
@@ -212,8 +228,8 @@ export function LabelEditor(props) {
 											<Table.Cell style={{width: '100px'}}><Dropdown selection name="color" options={colorOptions} value={selectedItemProperties?.color || 0} onChange={handleItemPropertyChange} /></Table.Cell>
 										</Table.Row>
 										<Table.Row>
-											<Table.Cell><b>Value:</b></Table.Cell>
-											<Table.Cell style={{width: '100px'}} colSpan={4}><Input style={{width: '240px'}} name="value" value={selectedItemProperties?.value} onChange={handleItemPropertyChange} /></Table.Cell>
+											<Table.Cell><b>Text Value:</b></Table.Cell>
+											<Table.Cell colSpan={5}><Input style={{width: '400px'}} name="value" placeholder="Enter some text" value={selectedItemProperties?.value || ""} disabled={!(selectedItem?.acceptsValue)} onChange={handleItemPropertyChange} /></Table.Cell>
 										</Table.Row>
 									</Table.Body>
 								</Table>

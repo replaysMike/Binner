@@ -12,7 +12,7 @@ const style = {
   position: 'relative',
 };
 
-export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, onSelectedItemChanged, itemProperties, clearSelectedItem }) => {
+export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin, padding, onSelectedItemChanged, itemProperties, clearSelectedItem }) => {
 	const [boxes, setBoxes] = useState([]);
 
 	const deselectAll = useCallback(() => {
@@ -60,6 +60,7 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, onSele
 				let name = newItem.name;
 				let resize = newItem.resize;
 				let acceptsValue = newItem.acceptsValue;
+				let displayValue = newItem.displayValue;
 				let left = newItem.left;
 				let top = newItem.top;
 				const boundingBox = document.getElementById('container').getBoundingClientRect();
@@ -80,7 +81,8 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, onSele
 						children: item.children || (<span>No label set!</span>),
 						selected: false,
 						resize: resize,
-						acceptsValue: acceptsValue
+						acceptsValue: acceptsValue,
+						displayValue: displayValue
 					};
 					top = newItem.top;
 					left = newItem.left;
@@ -164,23 +166,26 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, onSele
 		switch(p.fontSize){
 			default:
 			case 0:
-				fontSize='0.8em'
+				fontSize='0.5em'
 				break;
 				case 1:
-					fontSize='1.2em'
+					fontSize='0.6em'
 					break;
-					case 2:
-						fontSize='1.4em'
-						break;
-						case 3:
-							fontSize='1.6em'
-						break;
-						case 4:
-							fontSize='1.8em'
-							break;
-							case 5:
-								fontSize='2.0em'
-								break;
+				case 2:
+					fontSize='0.7em'
+					break;
+				case 3:
+					fontSize='0.8em'
+				break;
+				case 4:
+					fontSize='0.9em'
+					break;
+				case 5:
+					fontSize='1.0em'
+					break;
+				case 6:
+				fontSize='1.2em'
+				break;
 		}
 		let fontWeight='300';
 		switch(p.fontWeight){
@@ -251,7 +256,7 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, onSele
 
 	const getBox = (box) => {
 		const propsForBox = _.find(itemProperties, i => i.name === box.name);
-		if (propsForBox.value && propsForBox.value.length > 0 && box.acceptsValue) {
+		if (propsForBox.value && propsForBox.value.length > 0 && box.acceptsValue && box.displayValue) {
 			return {...box, children: propsForBox.value };
 		} else{
 			return box;
@@ -260,6 +265,7 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, onSele
 	
   return (
     <div ref={drop} id="container" style={stylesToApply}>
+			<div style={{border: '1px dotted #c00', position: 'absolute', top: margin, left: margin, width: (width - (margin * 2) - 1) + 'px', height: (height - (margin * 2) - 1) + 'px'}} />
       {boxes.map((box, key) => (
         <DraggableBox 
 					key={key} 
@@ -268,7 +274,6 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, onSele
 					style={getItemPropertyStyle(box.name)} 
 					absolute 
 					onClick={e => handleSelectedPart(e, box, key)} 
-					className="draggableBox" 
 					onKeyDown={handleKeyDown}
 					resize={box.resize}
 				/>
