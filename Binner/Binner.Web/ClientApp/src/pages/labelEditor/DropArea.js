@@ -12,7 +12,7 @@ const style = {
   position: 'relative',
 };
 
-export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin, padding, onSelectedItemChanged, itemProperties, clearSelectedItem }) => {
+export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, height = 300, margin, padding, onSelectedItemChanged, itemProperties, clearSelectedItem }) => {
 	const [boxes, setBoxes] = useState([]);
 
 	const deselectAll = useCallback(() => {
@@ -26,6 +26,7 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin
 	useEffect(() => {
 		deselectAll();
 		setBoxes([...boxes]);
+		if (onSelectedItemChanged) onSelectedItemChanged(null, null);
 	}, [clearSelectedItem]);
 
 	const setSelectedItem = (item) => {
@@ -89,6 +90,7 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin
 					newBoxes.push(newItem);
 					setBoxes([...newBoxes]);
 					setSelectedItem(newItem);
+					if (onDrop) onDrop(newItem);
 				} else {
 					// move an existing item on the drop area
 					const delta = monitor.getDifferenceFromInitialOffset();
@@ -98,9 +100,9 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin
 						[left, top] = doSnapToGrid(left, top);
 					}
 					moveBox(newBoxes, newItem.id, left, top);
+					if (onMove) onMove(newItem);
 				}       
 				
-				if (onDrop) onDrop(monitor.getItemType());
         return undefined;
       },
 			collect: (monitor) => ({
@@ -218,6 +220,8 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin
 		switch(e.key) {
 			case "Delete":
 				// delete the focused box
+				const itemToRemove = _.find(boxes, i => i.name === name);
+				if (onRemove) onRemove(itemToRemove);
 				const newBoxes = _.filter(boxes, i => i.name !== name);
 				setBoxes(newBoxes);
 				break;
@@ -256,7 +260,7 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin
 
 	const getBox = (box) => {
 		const propsForBox = _.find(itemProperties, i => i.name === box.name);
-		if (propsForBox.value && propsForBox.value.length > 0 && box.acceptsValue && box.displayValue) {
+		if (propsForBox && propsForBox.value && propsForBox.value.length > 0 && box.acceptsValue && box.displayValue) {
 			return {...box, children: propsForBox.value };
 		} else{
 			return box;
@@ -284,6 +288,9 @@ export const DropArea = ({ snapToGrid, onDrop, width = 300, height = 300, margin
 
 DropArea.propTypes = {
   onSelectedItemChanged: PropTypes.func,
+	onDrop: PropTypes.func,
+	onMove: PropTypes.func,
+	onRemove: PropTypes.func,
 	itemProperties: PropTypes.array,
 	clearSelectedItem: PropTypes.any
 };

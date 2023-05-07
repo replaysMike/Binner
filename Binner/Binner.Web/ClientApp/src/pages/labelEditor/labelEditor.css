@@ -55,6 +55,10 @@
 	font-size: 0.8em !important;
 }
 
+.labelEditor .header table {
+	background-color: #f0f0f0 !important;
+}
+
 .labelEditor .header table input {
 	padding: 4px 5px !important;
 }

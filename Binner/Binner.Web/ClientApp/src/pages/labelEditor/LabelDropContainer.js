@@ -1,9 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import PropTypes from "prop-types";
 import { DropArea } from './DropArea';
 import { CustomDragLayer } from './CustomDragLayer';
 
-export const LabelDropContainer = ({width, height, margin, padding, onSelectedItemChanged, itemProperties}) => {
+export const LabelDropContainer = ({width, height, margin, padding, onSelectedItemChanged, onDrop, onMove, onRemove, itemProperties, resetSelectedItem}) => {
   const [snapToGridAfterDrop, setSnapToGridAfterDrop] = useState(false);
   const [snapToGridWhileDragging, setSnapToGridWhileDragging] = useState(false);
   const [clearSelectedItem, setClearSelectedItem] = useState(null);
@@ -15,6 +15,11 @@ export const LabelDropContainer = ({width, height, margin, padding, onSelectedIt
   const handleSnapToGridWhileDraggingChange = useCallback(() => {
     setSnapToGridWhileDragging(!snapToGridWhileDragging)
   }, [snapToGridWhileDragging]);
+
+  useEffect(() => {
+    // using this as a cheap hack to reset the selected item
+    setClearSelectedItem(Math.random());
+  }, [resetSelectedItem]);
 
   const handleOnClick = (e) => {
     // using this as a cheap hack to reset the selected item
@@ -30,6 +35,9 @@ export const LabelDropContainer = ({width, height, margin, padding, onSelectedIt
         margin={margin}
         padding={padding}
         onSelectedItemChanged={onSelectedItemChanged} 
+        onDrop={onDrop}
+        onMove={onMove}
+        onRemove={onRemove}
         itemProperties={itemProperties}
         clearSelectedItem={clearSelectedItem}
       />
@@ -40,11 +48,15 @@ export const LabelDropContainer = ({width, height, margin, padding, onSelectedIt
 
 DropArea.propTypes = {
   onSelectedItemChanged: PropTypes.func,
+  onDrop: PropTypes.func,
+  onMove: PropTypes.func,
+  onRemove: PropTypes.func,
   width: PropTypes.number,
   height: PropTypes.number,
   margin: PropTypes.number,
   padding: PropTypes.number,
-  itemProperties: PropTypes.array
+  itemProperties: PropTypes.array,
+  resetSelectedItem: PropTypes.any
 };
 
 DropArea.defaultProps = {
