@@ -6,6 +6,8 @@
 
 .labelEditor .tools {
 	width: 20%;
+	background: rgb(249,249,249);
+	background: linear-gradient(180deg, rgba(249,249,249,1) 0%, rgba(233,233,233,1) 100%);
 }
 
 .labelEditor .tools.left {
@@ -25,6 +27,8 @@
 	border-bottom: 1px solid #ccc;
 	justify-content: center;
 	text-align: center;
+	background: rgb(255,255,255);
+	background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(233,233,233,1) 100%);
 }
 
 .labelEditor .header {
@@ -39,7 +43,7 @@
 	margin: 0;
 	padding: 0;
 	font-weight: 600;
-	background-color: #f0f0f0;
+	background-color: #dfdfdf;
 	width: 100%;
 }
 
@@ -59,8 +63,19 @@
 	min-width: 90px !important;
 }
 
-.labelEditor #container .draggableBox {
+.labelEditor #container {
+	box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+	margin: 0 auto;
+}
+
+.labelEditor .draggableBox, .labelEditor .draggableBox div {
 	outline-width: 0 !important;
+}
+
+.labelEditor .tools .draggableBox div {
+	background-color: #fff;
+	margin: 4px 0;
+	border-radius: 4px;
 }
 
 .labelEditor #container .draggableBox div {
@@ -68,6 +83,7 @@
 	line-height: 1em;
 	background-color: #f0f0f0;
 	overflow: hidden;
+	border-radius: 4px;
 }
 
 .labelEditor #container .draggableBox.resizeBoth>.box>.MuiSvgIcon-root {
