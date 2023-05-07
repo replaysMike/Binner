@@ -44,6 +44,7 @@ import { Help } from "./pages/help/Home";
 import { Scanning } from "./pages/help/Scanning";
 import { ApiIntegrations } from "./pages/help/ApiIntegrations";
 import { BOM } from "./pages/help/BOM";
+import { PrintLabels2 } from "./pages/PrintLabels2";
 
 // admin
 import { Users } from "./pages/admin/users/Users";
@@ -174,6 +175,7 @@ export const App = (props) => {
           <Route path="/projects" element={<PageWrapper><Bom /></PageWrapper>} />
           <Route path="/exportData" element={<PageWrapper><ExportData /></PageWrapper>} />
           <Route path="/print" element={<PageWrapper><PrintLabels /></PageWrapper>} />
+          <Route path="/print2" element={<PageWrapper><PrintLabels2 /></PageWrapper>} />
           <Route exact path="/tools" element={<PageWrapper><Tools /></PageWrapper>} />
           <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
           <Route path="/tools/ohmslaw" element={<PageWrapper><OhmsLawCalculator /></PageWrapper>} />

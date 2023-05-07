@@ -1,0 +1,97 @@
+.labelEditor {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+.labelEditor .tools {
+	width: 20%;
+}
+
+.labelEditor .tools.left {
+	border: 1px solid #ccc;
+	justify-content: start;
+}
+
+.labelEditor .tools.right {
+	border: 1px solid #ccc;
+	justify-content: end;
+}
+
+.labelEditor .layout {
+	flex: 1;
+	display: flex;
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	justify-content: center;
+	text-align: center;
+}
+
+.labelEditor .header {
+	width: 100%;
+	margin: 0;
+	padding: 2px;
+	text-align: center;
+}
+
+.labelEditor .header label {
+	font-size: 0.8em;
+	margin: 0;
+	padding: 0;
+	font-weight: 600;
+	background-color: #f0f0f0;
+	width: 100%;
+}
+
+.labelEditor .layout .wrapper {
+	padding: 50px 0;
+}
+
+.labelEditor .header table {
+	font-size: 0.8em !important;
+}
+
+.labelEditor .header table input {
+	padding: 4px 5px !important;
+}
+
+.labelEditor .header table .ui.selection.dropdown {
+	min-width: 90px !important;
+}
+
+.labelEditor #container .draggableBox {
+	outline-width: 0 !important;
+}
+
+.labelEditor #container .draggableBox div {
+	padding: 0 0 !important;
+	line-height: 1em;
+	background-color: #f0f0f0;
+	overflow: hidden;
+}
+
+.labelEditor #container .draggableBox.resizeBoth>.box>.MuiSvgIcon-root {
+	min-width: 100%;
+	min-height: 100%;	
+}
+
+.labelEditor #container .draggableBox.resizeBoth {
+	aspect-ratio: 1 / 1;
+}
+
+.labelEditor #container .draggableBox.resizeBoth div  {
+	resize: both !important;
+	aspect-ratio: 1 / 1;
+}
+
+.labelEditor #container .draggableBox.resizeHorizontal div  {
+	resize: horizontal !important;
+}
+
+.labelEditor #container .draggableBox.resizeVertical div  {
+	resize: vertical !important;
+}
+
+.labelEditor #container .draggableBox div::-webkit-resizer {
+	background-color: transparent;
+}
