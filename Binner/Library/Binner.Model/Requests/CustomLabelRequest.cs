@@ -1,11 +1,7 @@
 ﻿namespace Binner.Model.Requests
 {
-    public class CustomLabelRequest : IImagesToken
+    public class CustomLabelRequest : CustomLabelDefinition, IImagesToken
     {
-        public ICollection<LabelBox> Boxes { get; set; } = new List<LabelBox>();
-
-        public PrinterLabel Label { get; set; } = new();
-
         /// <summary>
         /// True to generate image only
         /// </summary>
@@ -15,6 +11,13 @@
         /// The image token to validate the insecure request with
         /// </summary>
         public string? Token { get; set; }
+    }
+
+    public class CustomLabelDefinition
+    {
+        public ICollection<LabelBox> Boxes { get; set; } = new List<LabelBox>();
+
+        public PrinterLabel Label { get; set; } = new();
     }
 
     public class PrinterLabel

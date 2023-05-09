@@ -40,8 +40,10 @@ namespace Binner.Web.Controllers
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly IUserService _userService;
+        private readonly IPrintService _printService;
+        private readonly ILabelGenerator _labelGenerator;
 
-        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService, IPrintService printService, ILabelGenerator labelGenerator)
         {
             _logger = logger;
             _config = config;
@@ -51,6 +53,8 @@ namespace Binner.Web.Controllers
             _labelPrinter = labelPrinter;
             _barcodeGenerator = barcodeGenerator;
             _userService = userService;
+            _printService = printService;
+            _labelGenerator = labelGenerator;
         }
 
         /// <summary>
@@ -553,11 +557,33 @@ namespace Binner.Web.Controllers
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
                 var part = await _partService.GetPartAsync(request.PartNumber);
                 if (part == null) return NotFound();
-                var stream = new MemoryStream();
-                var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
-                image.SaveAsPng(stream);
-                stream.Seek(0, SeekOrigin.Begin);
-                return new FileStreamResult(stream, "image/png");
+
+                if (await _printService.HasPartLabelTemplateAsync())
+                {
+                    // use the new part label template
+                    var label = await _printService.GetPartLabelTemplateAsync();
+                    var image = _labelGenerator.CreateLabelImage(label, part);
+                    var stream = new MemoryStream();
+                    await image.SaveAsPngAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    // load the label template
+                    var template = await _printService.GetLabelTemplateAsync(label.LabelTemplateId);
+
+                    if (!request.GenerateImageOnly)
+                        _labelPrinter.PrintLabelImage(image, new PrinterOptions((LabelSource)(template?.LabelPaperSource ?? 0), template.Name, false));
+
+                    return new FileStreamResult(stream, "image/png");
+                }
+                else
+                {
+
+                    var stream = new MemoryStream();
+                    var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
+                    await image.SaveAsPngAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    return new FileStreamResult(stream, "image/png");
+                }
             }
             catch (Exception ex)
             {
@@ -582,21 +608,31 @@ namespace Binner.Web.Controllers
 
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
                 var part = await _partService.GetPartAsync(request.PartNumber);
-                Image<Rgba32> image;
-                if (part == null)
+
+                var stream = new MemoryStream();
+                if (await _printService.HasPartLabelTemplateAsync())
                 {
-                    // generate a general barcode as the part isn't created or doesn't exist
-                    image = _barcodeGenerator.GenerateBarcode(request.PartNumber, Color.Black, Color.White, 300, 25);
+                    // use the new part label template
+                    var label = await _printService.GetPartLabelTemplateAsync();
+                    var image = _labelGenerator.CreateLabelImage(label, part ?? new Part { PartNumber = request.PartNumber});
+                    await image.SaveAsPngAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    return new FileStreamResult(stream, "image/png");
                 }
                 else
                 {
                     // generate a label for a part
-                    image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(true));
+
+                    // generate a general barcode as the part isn't created or doesn't exist
+                    Image<Rgba32> image;
+                    if (part == null)
+                        image = _barcodeGenerator.GenerateBarcode(request.PartNumber, Color.Black, Color.White, 300, 25);
+                    else
+                        image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(true));
+                    await image.SaveAsPngAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    return new FileStreamResult(stream, "image/png");
                 }
-                var stream = new MemoryStream();
-                image.SaveAsPng(stream);
-                stream.Seek(0, SeekOrigin.Begin);
-                return new FileStreamResult(stream, "image/png");
             }
             catch (Exception ex)
             {
@@ -623,7 +659,7 @@ namespace Binner.Web.Controllers
                     return BadRequest("No part number specified.");
                 var stream = new MemoryStream();
                 var image = _barcodeGenerator.GenerateBarcode(request.PartNumber, Color.Black, Color.White, 300, 25);
-                image.SaveAsPng(stream);
+                await image.SaveAsPngAsync(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 return new FileStreamResult(stream, "image/png");
             }

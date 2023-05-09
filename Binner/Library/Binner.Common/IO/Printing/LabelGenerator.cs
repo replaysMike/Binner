@@ -3,6 +3,7 @@ using Binner.Common.Extensions;
 using Binner.Model;
 using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
+using Newtonsoft.Json;
 using QRCoder;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -47,18 +48,22 @@ namespace Binner.Common.IO.Printing
             _printer = new PrinterFactory().CreatePrinter(printerSettings);
         }
 
-        public Image<Rgba32> CreateLabelImage(CustomLabelRequest request, Part part)
+        public Image<Rgba32> CreateLabelImage(Label label, Part part)
+        {
+            var customLabelDefinition = JsonConvert.DeserializeObject<CustomLabelDefinition>(label.Template);
+            return CreateLabelImage(customLabelDefinition, part);
+        }
+
+        public Image<Rgba32> CreateLabelImage(CustomLabelDefinition labelDef, Part part)
         {
             // generate the print image and send to printer hardware
-            var widthInPixels = InchesToPixels(request.Label.Width, 96);
-            var heightInPixels = InchesToPixels(request.Label.Height, 96);
-            var image = CreateImage(request.Label);
+            var image = CreateImage(labelDef);
             if (image == null)
                 return new Image<Rgba32>(1, 1);
             // convert the screen dpi to print
-            var ratio = request.Label.Dpi / 96f;
+            var ratio = labelDef.Label.Dpi / 96f;
             var margins = new int [4] { 0, 0, 0, 0 };
-            var marginParts = request.Label.Margin?.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            var marginParts = labelDef.Label.Margin?.Split(' ', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x =>
                 {
                     int.TryParse(x, out var result);
@@ -80,7 +85,7 @@ namespace Binner.Common.IO.Printing
             }
 
             // draw margin
-            if (request.Label.ShowBoundaries)
+            if (labelDef.Label.ShowBoundaries)
             {
                 image.Mutate<Rgba32>(c => c.Draw(Pens.DashDotDot(Color.Red, 1),
                     new RectangleF(margins[3], margins[0], (image.Width - margins[1] - margins[3] - 1), (image.Height - margins[0] - margins[2] - 1))));
@@ -88,7 +93,7 @@ namespace Binner.Common.IO.Printing
                 image.Mutate<Rgba32>(c => c.Draw(Pens.DashDotDot(Color.Blue, 1), new RectangleF(0, 0, image.Width - 1, image.Height - 1)));
             }
 
-            foreach (var box in request.Boxes)
+            foreach (var box in labelDef.Boxes)
             {
                 var x = box.Left * ratio;
                 var y = box.Top * ratio;
@@ -110,30 +115,30 @@ namespace Binner.Common.IO.Printing
                     case "qrCode":
                         if (string.IsNullOrEmpty(dataToEncode))
                             dataToEncode = Encode2dBarcodePartData(part);
-                        DrawQrCode(request, image, box, dataToEncode, x, y, width, height);
+                        DrawQrCode(labelDef, image, box, dataToEncode, x, y, width, height);
                         break;
                     case "dataMatrix2d":
                         if (string.IsNullOrEmpty(dataToEncode))
                             dataToEncode = Encode2dBarcodePartData(part);
-                        DrawDataMatrix(request, image, box, dataToEncode, x, y, width, height);
+                        DrawDataMatrix(labelDef, image, box, dataToEncode, x, y, width, height);
                         break;
                     case "pdf417":
                         if (string.IsNullOrEmpty(dataToEncode))
                             dataToEncode = Encode2dBarcodePartData(part);
-                        DrawPdf417(request, image, box, dataToEncode, x, y, width, height);
+                        DrawPdf417(labelDef, image, box, dataToEncode, x, y, width, height);
                         break;
                     case "aztecCode":
                         if (string.IsNullOrEmpty(dataToEncode))
                             dataToEncode = Encode2dBarcodePartData(part);
-                        DrawAztecCode(request, image, box, dataToEncode, x, y, width, height);
+                        DrawAztecCode(labelDef, image, box, dataToEncode, x, y, width, height);
                         break;
                     case "code128":
                         if (string.IsNullOrEmpty(dataToEncode))
                             dataToEncode = Encode1dBarcodePartData(part);
-                        DrawCode128(request, image, box, dataToEncode, x, y, width, height);
+                        DrawCode128(labelDef, image, box, dataToEncode, x, y, width, height);
                         break;
                     default:
-                        DrawText(request, image, box, text, x, y, width, height);
+                        DrawText(labelDef, image, box, text, x, y, width, height);
                         break;
                 }
             }
@@ -141,7 +146,7 @@ namespace Binner.Common.IO.Printing
             return image;
         }
 
-        private void DrawQrCode(CustomLabelRequest request, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
+        private void DrawQrCode(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
             using var memoryStream = new MemoryStream();
             using var qrGenerator = new QRCodeGenerator();
@@ -152,7 +157,7 @@ namespace Binner.Common.IO.Printing
             image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
         }
 
-        private void DrawDataMatrix(CustomLabelRequest request, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
+        private void DrawDataMatrix(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
             using var memoryStream = new MemoryStream();
             var barcode = Barcoder.DataMatrix.DataMatrixEncoder.Encode(text);
@@ -162,7 +167,7 @@ namespace Binner.Common.IO.Printing
             image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
         }
 
-        private void DrawPdf417(CustomLabelRequest request, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
+        private void DrawPdf417(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
             using var memoryStream = new MemoryStream();
             var barcode = Barcoder.Pdf417.Pdf417Encoder.Encode(text, 2);
@@ -172,7 +177,7 @@ namespace Binner.Common.IO.Printing
             image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
         }
 
-        private void DrawAztecCode(CustomLabelRequest request, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
+        private void DrawAztecCode(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
             using var memoryStream = new MemoryStream();
             var barcode = Barcoder.Aztec.AztecEncoder.Encode(text);
@@ -182,7 +187,7 @@ namespace Binner.Common.IO.Printing
             image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
         }
 
-        private void DrawCode128(CustomLabelRequest request, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
+        private void DrawCode128(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
             using var memoryStream = new MemoryStream();
             if (text.Length > 80)
@@ -194,7 +199,7 @@ namespace Binner.Common.IO.Printing
             image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
         }
 
-        private void DrawText(CustomLabelRequest request, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
+        private void DrawText(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
             var drawingOptions = new DrawingOptions();
             var fontColor = GetColor(box.Properties.Color);
@@ -206,7 +211,7 @@ namespace Binner.Common.IO.Printing
                 Origin = new PointF(0, 0),
                 TabWidth = 4,
                 WordBreaking = WordBreaking.BreakAll,
-                Dpi = request.Label.Dpi,
+                Dpi = labelDef.Label.Dpi,
                 KerningMode = KerningMode.None,
                 LayoutMode = LayoutMode.HorizontalTopBottom,
                 TextDirection = TextDirection.LeftToRight,
@@ -248,7 +253,7 @@ namespace Binner.Common.IO.Printing
             image.Mutate<Rgba32>(c => c.DrawText(drawingOptions, textOptions, text, Brushes.Solid(fontColor), Pens.Solid(fontColor, 1)));
             
             // draw text box bounds border
-            if (request.Label.ShowBoundaries)
+            if (labelDef.Label.ShowBoundaries)
                 image.Mutate<Rgba32>(c => c.Draw(Pens.DashDotDot(Color.Red, 1), new RectangleF(x, y, width - 1, Math.Max(height, measure.Height - (fontSize * 1.5f)) - 1)));
         }
 
@@ -406,21 +411,21 @@ namespace Binner.Common.IO.Printing
             _fontFamily = FontCollection.Value.Get(DefaultFontName);
         }
 
-        private Image<Rgba32>? CreateImage(PrinterLabel label)
+        private Image<Rgba32>? CreateImage(CustomLabelDefinition labelDef)
         {
-            if (label.Width == 0)
-                label.Width = 1;
-            if (label.Height == 0)
-                label.Height = 1;
-            var widthInPixels = InchesToPixels(label.Width, label.Dpi);
-            var heightInPixels = InchesToPixels(label.Height, label.Dpi);
+            if (labelDef.Label.Width == 0)
+                labelDef.Label.Width = 1;
+            if (labelDef.Label.Height == 0)
+                labelDef.Label.Height = 1;
+            var widthInPixels = InchesToPixels(labelDef.Label.Width, labelDef.Label.Dpi);
+            var heightInPixels = InchesToPixels(labelDef.Label.Height, labelDef.Label.Dpi);
             // generate the label as an image
             _paperRect = new Rectangle(0, 0, widthInPixels, heightInPixels);
             if (_paperRect.Width > 0 && _paperRect.Height > 0)
             {
                 var printerImage = new Image<Rgba32>(_paperRect.Width, _paperRect.Height);
-                printerImage.Metadata.VerticalResolution = label.Dpi;
-                printerImage.Metadata.HorizontalResolution = label.Dpi;
+                printerImage.Metadata.VerticalResolution = labelDef.Label.Dpi;
+                printerImage.Metadata.HorizontalResolution = labelDef.Label.Dpi;
 
                 return printerImage;
             }
