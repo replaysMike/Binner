@@ -7,6 +7,16 @@ namespace Binner.Data
     public class BinnerContext : DbContext
     {
         /// <summary>
+        /// Label designs
+        /// </summary>
+        public DbSet<Label> Labels { get; set; } = null!;
+
+        /// <summary>
+        /// Label templates
+        /// </summary>
+        public DbSet<LabelTemplate> LabelTemplates { get; set; } = null!;
+
+        /// <summary>
         /// OAuth credentials for integration providers
         /// </summary>
         public DbSet<OAuthCredential> OAuthCredentials { get; set; } = null!;
@@ -60,7 +70,7 @@ namespace Binner.Data
         /// Produce history by pcb (BOM)
         /// </summary>
         public DbSet<ProjectPcbProduceHistory> ProjectPcbProduceHistory { get; set; } = null!;
-        
+
         /// <summary>
         /// Projects
         /// </summary>

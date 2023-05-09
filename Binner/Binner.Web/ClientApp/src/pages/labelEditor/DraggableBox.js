@@ -9,17 +9,17 @@ const style = {
 };
 
 export const DraggableBox = memo(function DraggableBox(props) {
-  const { id, left, top, children, name, resize, acceptsValue, displayValue } = props;
+  const { id, left, top, children, name, resize, acceptsValue, displaysValue } = props;
 
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: ItemTypes.Box,
-      item: { id, left, top, children, name, resize, acceptsValue, displayValue },
+      item: { id, left, top, children, name, resize, acceptsValue, displaysValue },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [id, left, top, children, resize, acceptsValue, displayValue],
+    [id, left, top, children, resize, acceptsValue, displaysValue],
   );
 
 	const containerStyle = useMemo(
@@ -71,7 +71,7 @@ DraggableBox.propTypes = {
 	/** True to allow this box to accept the value property (for custom text entry) */
 	acceptsValue: PropTypes.bool,
 	/** True to show the value */
-	displayValue: PropTypes.bool,
+	displaysValue: PropTypes.bool,
 	style: PropTypes.object,
 	onKeyDown: PropTypes.func,
 	/** The resize type to allow */
@@ -81,5 +81,5 @@ DraggableBox.propTypes = {
 DraggableBox.defaultProps = {
 	resize: 'horizontal',
 	acceptsValue: false,
-	displayValue: false
+	displaysValue: false
 };

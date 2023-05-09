@@ -23,6 +23,98 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Binner.Data.Model.Label", b =>
+                {
+                    b.Property<int>("LabelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LabelId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<bool>("IsPartLabelTemplate")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LabelTemplateId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LabelId");
+
+                    b.HasIndex("LabelTemplateId");
+
+                    b.ToTable("Labels", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.LabelTemplate", b =>
+                {
+                    b.Property<int>("LabelTemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LabelTemplateId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("Dpi")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Height")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("LabelPaperSource")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Margin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Width")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("LabelTemplateId");
+
+                    b.ToTable("LabelTemplates", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
                     b.Property<string>("Provider")
@@ -1216,6 +1308,17 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.ToTable("UserTokens", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.Label", b =>
+                {
+                    b.HasOne("Binner.Data.Model.LabelTemplate", "LabelTemplate")
+                        .WithMany("Labels")
+                        .HasForeignKey("LabelTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LabelTemplate");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
@@ -1508,6 +1611,11 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.LabelTemplate", b =>
+                {
+                    b.Navigation("Labels");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>

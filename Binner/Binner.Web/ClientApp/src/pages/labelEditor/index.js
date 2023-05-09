@@ -4,7 +4,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import _ from "underscore";
 import { FormHeader } from "../../components/FormHeader";
-import { Popup, Dropdown, Table, Breadcrumb, Input, Button, Icon, Image } from "semantic-ui-react";
+import { Popup, Dropdown, Table, Breadcrumb, Input, Button, Icon, Image, Checkbox } from "semantic-ui-react";
 import debounce from "lodash.debounce";
 import AlignVerticalTopIcon from '@mui/icons-material/AlignVerticalTop';
 import AlignVerticalCenterIcon from '@mui/icons-material/AlignVerticalCenter';
@@ -15,7 +15,7 @@ import AlignHorizontalRight from '@mui/icons-material/AlignHorizontalRight';
 import { LabelDropContainer } from "./LabelDropContainer";
 import { DndProvider } from "react-dnd";
 import { DraggableBox } from "./DraggableBox";
-import { QRCodeIcon, DataMatrixIcon, Code128Icon, Code128NoTextIcon } from "./icons";
+import { QRCodeIcon, DataMatrixIcon, AztecCodeIcon, Code128NoTextIcon, PDF417Icon } from "./icons";
 import { DEFAULT_FONT } from '../../common/Types';
 import { HandleBinaryResponse } from "../../common/handleResponse.js";
 import { fetchApi } from "../../common/fetchApi";
@@ -30,7 +30,7 @@ export function LabelEditor(props) {
   const defaultItemProperties = {
     align: 0,
     fontSize: 2,
-    fontWeight: 1,
+    fontWeight: 0,
     color: 0,
 		rotate: 0,
 		font: DEFAULT_FONT,
@@ -39,7 +39,6 @@ export function LabelEditor(props) {
   };
   const [boxes, setBoxes] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [labelTemplate, setLabelTemplate] = useState(0);
   const [itemProperties, setItemProperties] = useState([]);
   const [selectedItemProperties, setSelectedItemProperties] = useState({});
 	const [imgBase64, setImgBase64] = useState("");
@@ -51,18 +50,10 @@ export function LabelEditor(props) {
       text: "Loading"
     }
   ]);
-
-  const labelTemplateOptions = [
-    { key: -1, text: "Custom", value: -1, printwidth: 1.875, printheight: 0.5625, printdpi: 300, printmargin: 0, printpadding: 0 },
-    { key: 0, text: '30277 (Dual 9/16" x 3 7/16")', value: 0, printwidth: 3.4375, printheight: 0.5625, printdpi: 300, printmargin: 0, printpadding: 0 },
-    { key: 1, text: '30346 (1/2" x 1 7/8")', value: 1, printwidth: 1.875, printheight: 0.5, printdpi: 300, printmargin: 0, printpadding: 0 }
-  ];
-  const [labelTemplateWidth, setLabelTemplateWidth] = useState(labelTemplateOptions[0].printwidth);
-  const [labelTemplateHeight, setLabelTemplateHeight] = useState(labelTemplateOptions[0].printheight);
-  const [labelTemplateDpi, setLabelTemplateDpi] = useState(labelTemplateOptions[0].printdpi);
-  const [labelTemplateMargin, setLabelTemplateMargin] = useState(labelTemplateOptions[0].printmargin);
-  const [labelTemplatePadding, setLabelTemplatePadding] = useState(labelTemplateOptions[0].printpadding);
-  const [labelTemplateNew, setLabelTemplateNew] = useState("");
+	const [labelTemplates, setLabelTemplates] = useState([]);
+	const [labelTemplateOptions, setLabelTemplateOptions] = useState([]);
+  
+	const [labelTemplate, setLabelTemplate] = useState({});
 
   const alignOptions = [
     { key: 0, text: "Center", value: 0 },
@@ -92,10 +83,8 @@ export function LabelEditor(props) {
   ];
 
   const fontWeightOptions = [
-    { key: 0, text: "Light", value: 0 },
-    { key: 1, text: "Normal", value: 1 },
-    { key: 2, text: "Bold", value: 2 },
-    { key: 3, text: "Heavy Bold", value: 3 }
+    { key: 0, text: "Normal", value: 0 },
+    { key: 1, text: "Bold", value: 1 },
   ];
 
   const colorOptions = [
@@ -114,12 +103,16 @@ export function LabelEditor(props) {
   };
 
   const handleLabelTemplateChange = (e, control) => {
-    setLabelTemplate(control.value);
+		const newValue = {...labelTemplate, id: control.value };
     // resize the canvas
-    const templateOption = _.find(labelTemplateOptions, (i) => i.value === control.value);
-    setLabelTemplateWidth(templateOption.printwidth);
-    setLabelTemplateHeight(templateOption.printheight);
-		previewDebounced(boxes);
+    const templateOption = _.find(labelTemplates, (i) => i.id === control.value);
+		newValue["width"] = templateOption.width;
+		newValue["height"] = templateOption.height;
+		newValue["dpi"] = templateOption.dpi;
+		newValue["margin"] = templateOption.margin;
+		newValue["showBoundaries"] = templateOption.showBoundaries;
+    setLabelTemplate(newValue);
+		previewDebounced(boxes, newValue);
   };
 
   const handleItemPropertyChange = (e, control) => {
@@ -129,7 +122,7 @@ export function LabelEditor(props) {
       const newItemProperties = updateStateItem(itemProperties, selectedItemProperties, "name", selectedItem.name);
       setItemProperties(newItemProperties);
     }
-		previewDebounced(boxes);
+		previewDebounced(boxes, labelTemplate);
   };
 
   const handleSelectedItemChanged = (e, selectedItem) => {
@@ -147,7 +140,7 @@ export function LabelEditor(props) {
       setItemProperties(newItemProperties);
     }
     setSelectedItemProperties(itemProp);
-		previewDebounced(boxes);
+		previewDebounced(boxes, labelTemplate);
   };
 
   const getItemProperties = (item) => {
@@ -188,6 +181,37 @@ export function LabelEditor(props) {
   };
 
 	useEffect(() => {
+		const getLabelTemplates = async () => {
+			await fetchApi("api/print/templates", {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}).then((response) => {
+				const { data } = response;
+
+				const labelTemplates = [
+					{ name: "Custom", id: -1, width: 1.875, height: 0.5625, dpi: 300, margin: "0", showBoundaries: false },
+					{ name: '30277 (Dual 9/16" x 3 7/16")', id: 0, width: 3.4375, height: 0.5625, dpi: 300, margin: "0", showBoundaries: false },
+					{ name: '30346 (1/2" x 1 7/8")', id: 1, width: 1.875, height: 0.5, dpi: 300, margin: "0", showBoundaries: false }
+				];
+				for(let i = 0; i < data.length; i++)
+					labelTemplates.push(data[i]);
+				
+				setLabelTemplates(data);
+				setLabelTemplateOptions(labelTemplates.map((item, key) => ({ key, text: item.name, value: item.id })));
+				setLabelTemplate({
+					width: labelTemplates[1].width,
+					height: labelTemplates[1].height,
+					dpi: labelTemplates[1].dpi,
+					margin: labelTemplates[1].margin,
+					showBoundaries: labelTemplates[1].showBoundaries,
+					id: labelTemplates[1].id,
+					new: "",
+				});
+			});
+		};
+
     const loadFonts = async () => {
       await fetchApi("api/print/fonts", {
         method: "GET",
@@ -209,23 +233,16 @@ export function LabelEditor(props) {
     };
     
     loadFonts();
+		getLabelTemplates();
   }, []);  
 
-  const handlePreview = async (boxes) => {
+  const handlePreview = async (boxes, labelTemplate) => {
 		const request = {
 			token: getImagesToken(),
-			label: {
-				width: labelTemplateWidth,
-				height: labelTemplateHeight,
-				templateId: labelTemplate,
-				name: labelTemplateNew,
-				dpi: labelTemplateDpi,
-				margin: labelTemplateMargin,
-				padding: labelTemplatePadding,
-			},
+			label: {...labelTemplate, name: labelTemplate.new, templateId: labelTemplate.id },
 			boxes: boxes.map((box) => ({
 				acceptsValue: box.acceptsValue,
-				displayValue: box.displayValue,
+				displaysValue: box.displaysValue,
 				id: box.id,
 				left: Math.trunc(box.left),
 				name: box.name,
@@ -252,7 +269,7 @@ export function LabelEditor(props) {
     });
 	};
 
-	const previewDebounced = useMemo(() => debounce(handlePreview, PreviewDebounceTimeMs), []);
+	const previewDebounced = useMemo(() => debounce(handlePreview, PreviewDebounceTimeMs), [boxes, labelTemplate]);
 
 	const arrayBufferToBase64 = (buffer) => {
     let binary = "";
@@ -269,31 +286,51 @@ export function LabelEditor(props) {
 		const box = _.find(boxes, i => i.id === selectedItem.id);
 		const id = box.id;
 		const el = document.getElementById(id);
+		const margins = getMargins(labelTemplate.margin);
+		console.log('margins', margins);
+		// margins: top right bottom left
 		switch(alignTo){
 			case 'left':
-				box.left = 0;
+				box.left = margins[3];
 				break;
 			default:
 			case 'center':
-				box.left = ((convertInchesToPixels(labelTemplateWidth) / 2) - (el.offsetWidth / 2));
+				box.left = (((convertInchesToPixels(labelTemplate.width) - margins[1]) / 2.0) - (el.offsetWidth / 2.0));
 				break;
 			case 'right':
-				box.left = (convertInchesToPixels(labelTemplateWidth) - el.offsetWidth) - 3;
+				box.left = (convertInchesToPixels(labelTemplate.width) - el.offsetWidth - margins[1]) - 3;
 				break;
 			case 'top':
-				box.top = 0;
+				box.top = margins[0];
 				break;
 			case 'middle':
-				box.top = ((convertInchesToPixels(labelTemplateHeight) / 2) - (el.offsetHeight / 2));
+				console.log('height', el.offsetHeight);
+				box.top = (((convertInchesToPixels(labelTemplate.height) - margins[0]) / 2.0) - (el.offsetHeight / 2.0));
 				break;
 			case 'bottom':
-				box.top = (convertInchesToPixels(labelTemplateHeight) - el.offsetHeight);
+				box.top = (convertInchesToPixels(labelTemplate.height) - margins[2] - el.offsetHeight);
 				break;
 		}
 		setSelectedItem(box);
 		const newBoxes = [...boxes];
 		setBoxes(newBoxes);
-		previewDebounced(newBoxes);
+		previewDebounced(newBoxes, labelTemplate);
+	};
+
+	const getMargins = (margin) => {
+		const margins = [0, 0, 0, 0];
+		let marginDef = margin?.split(' ') || [];
+	
+		for(let i = 0; i < marginDef.length; i++)
+			margins[i] = parseInt(marginDef[i]);
+	
+		if (marginDef.length === 1) {
+			margins[1] = margins[2] = margins[3] = margins[0];
+		} else if (marginDef.length === 2) {
+			margins[2] = margins[0];
+			margins[3] = margins[1];
+		}
+		return margins;
 	};
 
   const handleSave = () => {};
@@ -313,11 +350,14 @@ export function LabelEditor(props) {
               <DraggableBox name="dataMatrix2d" resize="both" acceptsValue={true}>
                 <Popup wide content="Data Matrix (2D) Barcode" trigger={<DataMatrixIcon />} />
               </DraggableBox>
-              <DraggableBox name="code128" resize="both" acceptsValue={true}>
-                <Popup wide content="Code-128 Barcode (with text)" trigger={<Code128Icon style={{ width: "160px" }} />} />
+							<DraggableBox name="aztecCode" resize="both" acceptsValue={true}>
+                <Popup wide content="Aztec Code" trigger={<AztecCodeIcon />} />
               </DraggableBox>
-              <DraggableBox name="code128NoText" resize="both" acceptsValue={true}>
-                <Popup wide content="Code-128 Barcode (without text)" trigger={<Code128NoTextIcon style={{ width: "160px" }} />} />
+              <DraggableBox name="code128" resize="both" acceptsValue={true}>
+                <Popup wide content="Code-128 Barcode" trigger={<Code128NoTextIcon style={{ width: "160px" }} />} />
+              </DraggableBox>
+							<DraggableBox name="pdf417" resize="both" acceptsValue={true}>
+                <Popup wide content="PDF417 Barcode" trigger={<PDF417Icon style={{ width: "160px" }} />} />
               </DraggableBox>
             </div>
             <div className="header" style={{ flex: "0" }}>
@@ -359,10 +399,9 @@ export function LabelEditor(props) {
             </div>
             <div className="wrapper" style={{ flex: "1" }} onClick={handleClearSelectedItem}>
               <LabelDropContainer
-                width={convertInchesToPixels(labelTemplateWidth)}
-                height={convertInchesToPixels(labelTemplateHeight)}
-                margin={parseInt(labelTemplateMargin)}
-                padding={parseInt(labelTemplatePadding)}
+                width={convertInchesToPixels(labelTemplate?.width || 0)}
+                height={convertInchesToPixels(labelTemplate?.height || 0)}
+                margin={labelTemplate.margin}
                 itemProperties={itemProperties}
 								resetSelectedItem={clearSelectedItem}
                 onSelectedItemChanged={handleSelectedItemChanged}
@@ -395,7 +434,7 @@ export function LabelEditor(props) {
                               wide
                               content="Preview your label with content"
                               trigger={
-                                <Button size="mini" secondary onClick={() => handlePreview(boxes)}>
+                                <Button size="mini" secondary onClick={() => handlePreview(boxes, labelTemplate)}>
                                   <Icon name="eye" color="blue" /> Preview
                                 </Button>
                               }
@@ -429,7 +468,7 @@ export function LabelEditor(props) {
                         <b>Label Template:</b>
                       </Table.Cell>
                       <Table.Cell colSpan={5}>
-                        <Dropdown fluid selection name="align" options={labelTemplateOptions} value={labelTemplate || 0} onChange={handleLabelTemplateChange} />
+                        <Dropdown fluid selection name="align" options={labelTemplateOptions} value={labelTemplate?.id || 0} onChange={handleLabelTemplateChange} />
                       </Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -440,10 +479,11 @@ export function LabelEditor(props) {
                         <Input
                           style={{ width: "60px" }}
                           name="labelTemplateWidth"
-                          value={labelTemplateWidth}
+                          value={labelTemplate?.width || ""}
                           onChange={(e, control) => {
-                            setLabelTemplateWidth(control.value);
-                            setLabelTemplate(2);
+														const value = {...labelTemplate, width: control.value};
+                            setLabelTemplate(value);
+														previewDebounced(boxes, value);
                           }}
                         />{" "}
                         in.
@@ -455,10 +495,11 @@ export function LabelEditor(props) {
                         <Input
                           style={{ width: "60px" }}
                           name="labelTemplateWidth"
-                          value={labelTemplateHeight}
+                          value={labelTemplate?.height || ""}
                           onChange={(e, control) => {
-                            setLabelTemplateHeight(control.value);
-                            setLabelTemplate(2);
+                            const value = {...labelTemplate, height: control.value};
+														setLabelTemplate(value);
+														previewDebounced(boxes, value);
                           }}
                         />{" "}
                         in.
@@ -467,7 +508,7 @@ export function LabelEditor(props) {
                         <b>Dpi:</b>
                       </Table.Cell>
                       <Table.Cell>
-                        <Input style={{ width: "60px" }} name="labelTemplateDpi" value={labelTemplateDpi} onChange={(e, control) => setLabelTemplateDpi(control.value)} />
+                        <Input style={{ width: "60px" }} name="labelTemplateDpi" value={labelTemplate?.dpi || ""} onChange={(e, control) => { const value = {...labelTemplate, dpi: control.value}; setLabelTemplate(value); previewDebounced(boxes, value); }} />
                       </Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -475,17 +516,13 @@ export function LabelEditor(props) {
                         <b>Margin:</b>
                       </Table.Cell>
                       <Table.Cell>
-                        <Input style={{ width: "60px" }} name="labelTemplateMargin" value={labelTemplateMargin} onChange={(e, control) => setLabelTemplateMargin(control.value)} />
+                        <Input style={{ width: "120px" }} placeholder="0 0 0 0" name="labelTemplateMargin" value={labelTemplate?.margin || ""} onChange={(e, control) => { const value = {...labelTemplate, margin: control.value}; setLabelTemplate(value); previewDebounced(boxes, value); }} />
                       </Table.Cell>
-                      <Table.Cell>
-                        <b>Padding:</b>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Input style={{ width: "60px" }} name="labelTemplatePadding" value={labelTemplatePadding} onChange={(e, control) => setLabelTemplatePadding(control.value)} />
-                      </Table.Cell>
-                      <Table.Cell colSpan={2}></Table.Cell>
+                      <Table.Cell colSpan={4}>
+												<Checkbox toggle name="showBoundaries" label="Display Boundaries" checked={labelTemplate?.showBoundaries || false} onChange={(e, control) => { const value = {...labelTemplate, showBoundaries: control.checked}; setLabelTemplate(value); previewDebounced(boxes, value); }} />
+											</Table.Cell>
                     </Table.Row>
-                    {labelTemplate === -1 && (
+                    {labelTemplate?.id === -1 && (
                       <Table.Row>
                         <Table.Cell>
                           <b>Template Name:</b>
@@ -496,8 +533,8 @@ export function LabelEditor(props) {
                             style={{ width: "400px" }}
                             name="labelTemplateNew"
                             placeholder="Enter a template name"
-                            value={labelTemplateNew}
-                            onChange={(e, control) => setLabelTemplateNew(control.value)}
+                            value={labelTemplate?.new || ""}
+                            onChange={(e, control) => setLabelTemplate({...labelTemplate, new: control.value})}
                           />
                           <Button size="mini" style={{ height: "26px", padding: "8px 10px", marginLeft: "5px" }}>
                             <Icon name="save" /> Save

@@ -95,13 +95,15 @@
 	min-height: 100%;	
 }
 
-.labelEditor #container .draggableBox.resizeBoth {
+.labelEditor #container .draggableBox.square {
 	aspect-ratio: 1 / 1;
+}
+
+.labelEditor #container .draggableBox.resizeBoth {
 }
 
 .labelEditor #container .draggableBox.resizeBoth div  {
 	resize: both !important;
-	aspect-ratio: 1 / 1;
 }
 
 .labelEditor #container .draggableBox.resizeHorizontal div  {
