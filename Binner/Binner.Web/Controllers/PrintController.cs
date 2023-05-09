@@ -76,6 +76,13 @@ namespace Binner.Web.Controllers
                 var image = _labelGenerator.CreateLabelImage(request, part);
                 image.SaveAsPng(stream);
                 stream.Seek(0, SeekOrigin.Begin);
+
+                // load the label template
+                var template = await _printService.GetLabelTemplateAsync(request.Label.LabelTemplateId.Value);
+
+                if (!request.GenerateImageOnly)
+                    _labelPrinter.PrintLabelImage(image, new PrinterOptions((LabelSource)(template?.LabelPaperSource ?? 0), template.Name, false));
+
                 return new FileStreamResult(stream, "image/png");
             }
             catch (Exception ex)

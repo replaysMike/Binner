@@ -28,5 +28,12 @@ namespace Binner.Model.IO.Printing.PrinterHardware
         /// <param name="options"></param>
         /// <returns></returns>
         Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options);
+
+        /// <summary>
+        /// Print a label image
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="options"></param>
+        void PrintLabelImage(Image<Rgba32> image, PrinterOptions options);
     }
 }

@@ -73,6 +73,16 @@ namespace Binner.Common.Services
             return false;
         }
 
+        public async Task<LabelTemplate?> GetLabelTemplateAsync(int labelTemplateId)
+        {
+            var user = _requestContext.GetUserContext();
+            var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.LabelTemplates
+                .Where(x => x.LabelTemplateId == labelTemplateId && x.OrganizationId == user.OrganizationId)
+                .FirstOrDefaultAsync();
+            return _mapper.Map<LabelTemplate?>(entity);
+        }
+
         public async Task<ICollection<LabelTemplate>> GetLabelTemplatesAsync()
         {
             var user = _requestContext.GetUserContext();

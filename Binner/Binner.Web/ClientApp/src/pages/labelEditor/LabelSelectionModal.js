@@ -89,7 +89,7 @@ export function LabelSelectionModal({ isOpen, onSelect, onClose }) {
         <Modal.Actions>
           <Button onClick={handleModalClose}>{t('button.cancel', "Cancel")}</Button>
           <Button primary onClick={handleSelect}>
-            <Icon name="edit" /> {t('button.select', "Select")}
+            <Icon name="check" /> {t('button.select', "Select")}
           </Button>
         </Modal.Actions>
       </Modal>

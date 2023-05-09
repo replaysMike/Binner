@@ -72,6 +72,17 @@ namespace Binner.Common.IO.Printing
             _fontFamily = FontCollection.Value.Get(DefaultFontName);
         }
 
+        /// <summary>
+        /// Print a label image
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="options"></param>
+        public void PrintLabelImage(Image<Rgba32> image, PrinterOptions options)
+        {
+            var labelProperties = GetLabelDimensions(options.LabelName);
+            _printer.PrintLabel(options, labelProperties, image);
+        }
+
         public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
         {
             // generate the print image and send to printer hardware

@@ -1,7 +1,11 @@
 ﻿using AnyMapper;
 using Binner.Common;
+using Binner.Common.IO.Printing;
+using Binner.Common.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
+using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,13 +23,6 @@ using System.Net;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Binner.Common.IO.Printing;
-using Binner.Common.Services;
-using Binner.Model.IO.Printing;
-using Binner.Model.IO.Printing.PrinterHardware;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Processing;
 
 namespace Binner.Web.Controllers
 {
