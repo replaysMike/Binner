@@ -1,6 +1,7 @@
 ﻿using Binner.Common;
 using Binner.Legacy.StorageProviders;
 using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
 using LightInject;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,15 @@ namespace Binner.Web.Configuration
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
             if (storageProviderConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             var binnerConfig = new BinnerFileStorageConfiguration(storageProviderConfiguration.ProviderConfiguration);
+            var printerConfiguration = serviceConfiguration.PrinterConfiguration;
+            var printerSettings = new PrinterSettings
+            {
+                PrinterName = printerConfiguration.PrinterName,
+                PartLabelName = printerConfiguration.PartLabelName,
+                PartLabelSource = printerConfiguration.PartLabelSource,
+                PartLabelTemplate = printerConfiguration.PartLabelTemplate,
+                LabelDefinitions = printerConfiguration.LabelDefinitions
+            };
 
             // support IOptions<> MS dependency injection
             services.Configure<WebHostServiceConfiguration>(options => configuration.GetSection(nameof(WebHostServiceConfiguration)).Bind(options));
@@ -40,6 +50,10 @@ namespace Binner.Web.Configuration
             container.RegisterInstance(configuration);
             services.AddSingleton(serviceConfiguration);
             container.RegisterInstance(serviceConfiguration);
+            services.AddSingleton(printerConfiguration);
+            container.RegisterInstance(printerConfiguration);
+            services.AddSingleton<IPrinterSettings>(printerSettings);
+            container.RegisterInstance<IPrinterSettings>(printerSettings);
             services.AddSingleton(integrationConfiguration);
             container.RegisterInstance(integrationConfiguration);
             services.AddSingleton(storageProviderConfiguration);

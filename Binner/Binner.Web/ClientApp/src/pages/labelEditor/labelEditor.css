@@ -5,7 +5,7 @@
 }
 
 .labelEditor .tools {
-	width: 20%;
+	width: 18%;
 	background: rgb(249,249,249);
 	background: linear-gradient(180deg, rgba(249,249,249,1) 0%, rgba(233,233,233,1) 100%);
 }
@@ -114,4 +114,13 @@
 
 .labelEditor #container .draggableBox div::-webkit-resizer {
 	background-color: transparent;
+}
+
+.labelEditor .ui.table td:has(.itemProperties) {
+	padding: 0.2em;
+	font-size: 0.9em;
+}
+
+.labelEditor .itemProperties span {
+	margin: 0 5px;
 }

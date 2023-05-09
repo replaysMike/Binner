@@ -12,94 +12,94 @@ const style = {
   position: 'relative',
 };
 
-export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, height = 300, margin, padding, onSelectedItemChanged, itemProperties, clearSelectedItem }) => {
-	const [boxes, setBoxes] = useState([]);
+export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, height = 300, margin, padding, onSelectedItemChanged, itemProperties, clearSelectedItem, boxes }) => {
+	const [internalBoxes, setInternalBoxes] = useState(boxes);
 
 	const deselectAll = useCallback(() => {
-		if (boxes.length > 0) {
-			for(var i = 0; i < boxes.length; i++) {
-				boxes[i].selected = false;
+		if (internalBoxes.length > 0) {
+			for(var i = 0; i < internalBoxes.length; i++) {
+				internalBoxes[i].selected = false;
 			}
 		}
-	}, [boxes]);
+	}, [internalBoxes]);
 
 	useEffect(() => {
 		deselectAll();
-		setBoxes([...boxes]);
+		setInternalBoxes([...internalBoxes]);
 		if (onSelectedItemChanged) onSelectedItemChanged(null, null);
 	}, [clearSelectedItem]);
 
-	const setSelectedItem = (item) => {
+	useEffect(() => {
+		setInternalBoxes(boxes);
+	}, [boxes]);
+
+	const setSelectedItem = useCallback((item) => {
 		const originalSelected = item.selected;
 		deselectAll();
 		item.selected = true;
 		if (onSelectedItemChanged && originalSelected !== item.selected) onSelectedItemChanged(null, item);
-	};
+	}, [deselectAll, onSelectedItemChanged]);
 
-  const moveBox = useCallback(
-    (boxes, id, left, top) => {
-			const newBoxes = [...boxes];
-			const item = _.find(newBoxes, i => i.id === id);
-			if (item) {
-				item.left = left;
-				item.top = top;
-				setSelectedItem(item);
-				setBoxes(newBoxes);
-			} else {
-				console.log('err could not find item with id ', id, boxes);
-			}
-    },
-    [],
-  );
   const [{ isOver, draggingColor, canDrop }, drop] = useDrop(
     () => ({
       accept: [ItemTypes.DraggableBox, ItemTypes.Box],
       drop(item, monitor) {
 				// fired when a new box has been dropped on the drop area
-				let newBoxes = boxes;
+				let newBoxes = internalBoxes;
 				let newItem = item;
 				let name = newItem.name;
 				let resize = newItem.resize;
+				let rotate = newItem.rotate;
 				let acceptsValue = newItem.acceptsValue;
 				let displayValue = newItem.displayValue;
-				let left = newItem.left;
-				let top = newItem.top;
+				let left = newItem.left || 0;
+				let top = newItem.top || 0;
 				const boundingBox = document.getElementById('container').getBoundingClientRect();
 
-				const exists = _.find(boxes, i => i.id === item.id);
+				const exists = _.find(internalBoxes, i => i.id === item.id);
 				if (!exists) {
 					// add new item to the drop area
 					const offset = monitor.getSourceClientOffset();
 					const deltaX = offset.x - boundingBox.x;
 					const deltaY = offset.y - boundingBox.y;
-					newBoxes = [...boxes];
+
+					newBoxes = [...internalBoxes];
 					const id = newBoxes.length > 0 ? newBoxes[newBoxes.length - 1].id + 1 : 1;
 					newItem = {
-						id: id,
+						id: `${id}-${name}`,
 						name: name,
 						top: deltaY, 
 						left: deltaX, 
 						children: item.children || (<span>No label set!</span>),
 						selected: false,
 						resize: resize,
+						rotate: rotate,
 						acceptsValue: acceptsValue,
 						displayValue: displayValue
 					};
 					top = newItem.top;
 					left = newItem.left;
 					newBoxes.push(newItem);
-					setBoxes([...newBoxes]);
+					setInternalBoxes([...newBoxes]);
 					setSelectedItem(newItem);
 					if (onDrop) onDrop(newItem);
 				} else {
 					// move an existing item on the drop area
+					const elBounds = document.getElementById(newItem.id)?.getBoundingClientRect();
 					const delta = monitor.getDifferenceFromInitialOffset();
 					left = Math.round(newItem.left + delta.x);
 					top = Math.round(newItem.top + delta.y);
 					if (snapToGrid) {
 						[left, top] = doSnapToGrid(left, top);
 					}
-					moveBox(newBoxes, newItem.id, left, top);
+					if (left + elBounds.width + 2 > width) left = width - elBounds.width - 2;
+					if (left < 0) left = 0;
+					if (top + elBounds.height + 2 > height) top = height - elBounds.height - 2;
+					if (top < 0) top = 0;
+					newItem.left = left;
+					newItem.top = top;
+					setSelectedItem(newItem);
+					setInternalBoxes(updateStateItem(internalBoxes, newItem, "name", name));
 					if (onMove) onMove(newItem);
 				}       
 				
@@ -111,13 +111,13 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
         draggingColor: monitor.getItemType(),
       }),
     }),
-    [boxes, moveBox],
+    [internalBoxes],
   );
 
-	const handleSelectedPart = (e, box, key) => {
+	const handleSelectedPart = (e, box) => {
 		deselectAll();
 		setSelectedItem(box);
-		setBoxes([...boxes]);
+		setInternalBoxes([...internalBoxes]);
 	};
 
 	const getItemPropertyStyle = (name) => {
@@ -168,48 +168,71 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 		switch(p.fontSize){
 			default:
 			case 0:
-				fontSize='0.5em'
+				fontSize='0.55em'
 				break;
-				case 1:
-					fontSize='0.6em'
-					break;
-				case 2:
-					fontSize='0.7em'
-					break;
-				case 3:
-					fontSize='0.8em'
+			case 1:
+				fontSize='0.6em'
 				break;
-				case 4:
-					fontSize='0.9em'
-					break;
-				case 5:
-					fontSize='1.0em'
-					break;
-				case 6:
-				fontSize='1.2em'
+			case 2:
+				fontSize='0.7em'
 				break;
+			case 3:
+				fontSize='0.9em'
+				break;
+			case 4:
+				fontSize='1.0em'
+				break;
+			case 5:
+				fontSize='1.1em'
+				break;
+			case 6:
+			fontSize='1.4em'
+			break;
 		}
 		let fontWeight='300';
 		switch(p.fontWeight){
 			default:
 			case 0:
-				fontWeight='100'
+				fontWeight='300'
 				break;
-				case 1:
-					fontWeight='300'
-					break;
-				case 2:
-					fontWeight='500'
-					break;
-					case 3:
-					fontWeight='700'
-					break;
+			case 1:
+				fontWeight='700'
+				break;
+		}
+		let rotate = '0';
+		switch(p.rotate) {
+			default:
+			case 0:
+				rotate='rotate(0)';
+				break;
+			case 1:
+				rotate='rotate(45deg)';
+				break;
+			case 2:
+				rotate='rotate(90deg)';
+				break;
+			case 3:
+				rotate='rotate(135deg)';
+				break;
+			case 4:
+				rotate='rotate(180deg)';
+				break;
+			case 5:
+				rotate='rotate(225deg)';
+				break;
+			case 6:
+				rotate='rotate(270deg)';
+				break;
+			case 7:
+				rotate='rotate(315deg)';
+				break;
 		}
 		return {
 			color: color,
 			textAlign: align,
 			fontSize: fontSize,
-			fontWeight: fontWeight
+			fontWeight: fontWeight,
+			transform: rotate
 		};
 	};
 
@@ -217,40 +240,58 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 
 	const handleKeyDown = (e) => {
 		const name = e.target.getAttribute("name");
+		const elBounds = document.getElementById(e.target.getAttribute("id"))?.getBoundingClientRect();
 		switch(e.key) {
 			case "Delete":
 				// delete the focused box
-				const itemToRemove = _.find(boxes, i => i.name === name);
+				const itemToRemove = _.find(internalBoxes, i => i.name === name);
 				if (onRemove) onRemove(itemToRemove);
-				const newBoxes = _.filter(boxes, i => i.name !== name);
-				setBoxes(newBoxes);
+				const newBoxes = _.filter(internalBoxes, i => i.name !== name);
+				setInternalBoxes(newBoxes);
 				break;
 			case "ArrowUp": 
 			{
-				const boxToMove = _.find(boxes, i => i.name === name);
+				e.preventDefault();
+				const boxToMove = _.find(internalBoxes, i => i.name === name);
 				boxToMove.top -= 1;
-				setBoxes(updateStateItem(boxes, boxToMove, "name", name));
+				if (boxToMove.top < 0)
+					boxToMove.top = 0;
+				setInternalBoxes(updateStateItem(internalBoxes, boxToMove, "name", name));
+				if (onMove) onMove(boxToMove);
 				break;
 			}
 			case "ArrowDown":
 			{
-				const boxToMove = _.find(boxes, i => i.name === name);
+				e.preventDefault();
+				const boxToMove = _.find(internalBoxes, i => i.name === name);
 				boxToMove.top += 1;
-				setBoxes(updateStateItem(boxes, boxToMove, "name", name));
+				if (boxToMove.top + elBounds.height + 2 > height)
+					boxToMove.top = height - elBounds.height - 2;
+					setInternalBoxes(updateStateItem(internalBoxes, boxToMove, "name", name));
+				if (onMove) onMove(boxToMove);
 				break;
 			}
 			case "ArrowLeft":
 			{
-				const boxToMove = _.find(boxes, i => i.name === name);
+				e.preventDefault();
+				const boxToMove = _.find(internalBoxes, i => i.name === name);
 				boxToMove.left -= 1;
-				setBoxes(updateStateItem(boxes, boxToMove, "name", name));
+				if (boxToMove.left < 0)
+					boxToMove.left = 0;
+					setInternalBoxes(updateStateItem(internalBoxes, boxToMove, "name", name));
+				if (onMove) onMove(boxToMove);
 				break;
 			}
 			case "ArrowRight":
 			{
-				const boxToMove = _.find(boxes, i => i.name === name);
+				e.preventDefault();
+				const boxToMove = _.find(internalBoxes, i => i.name === name);
 				boxToMove.left += 1;
-				setBoxes(updateStateItem(boxes, boxToMove, "name", name));
+				if (boxToMove.left + elBounds.width + 2 >= width) {
+					boxToMove.left = width - elBounds.width - 2;
+				}
+				setInternalBoxes(updateStateItem(internalBoxes, boxToMove, "name", name));
+				if (onMove) onMove(boxToMove);
 				break;
 			}
 			default:
@@ -270,14 +311,14 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
   return (
     <div ref={drop} id="container" style={stylesToApply}>
 			<div style={{border: '1px dotted #c00', position: 'absolute', top: margin, left: margin, width: (width - (margin * 2) - 1) + 'px', height: (height - (margin * 2) - 1) + 'px'}} />
-      {boxes.map((box, key) => (
+      {internalBoxes.map((box, key) => (
         <DraggableBox 
 					key={key} 
-					id={key} 
+					id={`${box.id}-${box.name}`}
 					{...getBox(box)} 
 					style={getItemPropertyStyle(box.name)} 
 					absolute 
-					onClick={e => handleSelectedPart(e, box, key)} 
+					onClick={e => handleSelectedPart(e, box)} 
 					onKeyDown={handleKeyDown}
 					resize={box.resize}
 				/>
@@ -292,5 +333,10 @@ DropArea.propTypes = {
 	onMove: PropTypes.func,
 	onRemove: PropTypes.func,
 	itemProperties: PropTypes.array,
-	clearSelectedItem: PropTypes.any
+	clearSelectedItem: PropTypes.any,
+	boxes: PropTypes.array
+};
+
+DropArea.defaultProps = {
+	boxes: []
 };

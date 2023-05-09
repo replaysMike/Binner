@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using Binner.Model;
 
 namespace Binner.Web.Controllers
 {
@@ -30,17 +31,47 @@ namespace Binner.Web.Controllers
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
         private readonly ILabelPrinterHardware _labelPrinter;
+        private readonly ILabelGenerator _labelGenerator;
         private readonly FontManager _fontManager;
         private readonly IUserService _userService;
 
-        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, FontManager fontManager, IUserService userService)
+        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, ILabelGenerator labelGenerator, FontManager fontManager, IUserService userService)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
             _labelPrinter = labelPrinter;
+            _labelGenerator = labelGenerator;
             _fontManager = fontManager;
             _userService = userService;
+        }
+
+        [HttpPost("beta")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PreviewLabel(CustomLabelRequest request)
+        {
+            try
+            {
+                var userContext = await _userService.ValidateUserImageToken(request.Token ?? string.Empty);
+                if (userContext == null) return GetInvalidTokenImage();
+                System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
+
+                var stream = new MemoryStream();
+
+                var part = new Part
+                {
+                    PartNumber = "SC4096", Description = "Test simulation of a printed part", ManufacturerPartNumber = "SC4096STG-11", Manufacturer = "Texas Instruments",
+                    Location = "Vancouver", BinNumber = "Bin 11", BinNumber2 = "21"
+                };
+                var image = _labelGenerator.CreateLabelImage(request, part);
+                image.SaveAsPng(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                return new FileStreamResult(stream, "image/png");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
         }
 
         /// <summary>
