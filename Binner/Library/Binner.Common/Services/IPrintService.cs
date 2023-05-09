@@ -28,6 +28,12 @@ namespace Binner.Common.Services
         Task<bool> DeleteLabelTemplateAsync(LabelTemplate model);
 
         /// <summary>
+        /// Get a label template
+        /// </summary>
+        /// <returns></returns>
+        Task<LabelTemplate?> GetLabelTemplateAsync(int labelTemplateId);
+
+        /// <summary>
         /// Get all label templates
         /// </summary>
         /// <returns></returns>

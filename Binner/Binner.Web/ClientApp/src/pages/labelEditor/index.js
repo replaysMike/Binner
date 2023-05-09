@@ -272,7 +272,11 @@ export function LabelEditor(props) {
     });
 	};
 
-  const handlePreview = async (boxes, labelTemplate) => {
+	const handlePrint = () => {
+		previewDebounced(boxes, labelTemplate, false);
+	};
+
+  const handlePreview = async (boxes, labelTemplate, generateImageOnly = true) => {
 		const request = {
 			token: getImagesToken(),
 			label: {...labelTemplate },
@@ -288,7 +292,7 @@ export function LabelEditor(props) {
 				width: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().width) || 0,
 				height: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().height) || 0,
 			})),
-			generateImageOnly: true
+			generateImageOnly: generateImageOnly
 		};
 
 		await fetchApi("api/print/beta", {
@@ -542,19 +546,28 @@ export function LabelEditor(props) {
 											</Table.Cell>
                       <Table.Cell colSpan={3}>
                         <div style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "100%" }}>
-                          <div style={{ flex: "1", display: "flex", justifyContent: "start" }}>
-                            <Popup
+                          <div style={{ display: "flex", justifyContent: "start" }}>
+														<Popup
                               wide
-                              content="Load another label or create a new one"
+                              content="Print the label"
                               trigger={
-                                <Button size="mini" onClick={() => handleLoad()}>
-                                  <Icon name="folder open" color="blue" /> Load / Create...
+                                <Button size="mini" onClick={() => handlePrint()}>
+                                  <Icon name="print" /> Print
                                 </Button>
                               }
                             />
                           </div>
                           <div style={{ flex: "1", display: "flex", justifyContent: "end" }}>
-                            <Popup
+														<Popup
+                              wide
+                              content="Load another label or create a new one"
+                              trigger={
+                                <Button size="mini" onClick={() => handleLoad()}>
+                                  <Icon name="folder open" color="blue" /> Load...
+                                </Button>
+                              }
+                            />
+														<Popup
                               wide
                               content="Save your label design"
                               trigger={
