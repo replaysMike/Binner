@@ -1,10 +1,11 @@
 import { useCallback, useState, useEffect } from 'react';
 import PropTypes from "prop-types";
 import { useDrop } from 'react-dnd';
-import { DraggableBox } from './DraggableBox.js';
-import { ItemTypes } from './ItemTypes.js';
-import { snapToGrid as doSnapToGrid } from './snapToGrid.js';
-import { updateStateItem } from '../../common/reactHelpers.js';
+import { DraggableBox } from './DraggableBox';
+import { ItemTypes } from './ItemTypes';
+import { snapToGrid as doSnapToGrid } from './snapToGrid';
+import { updateStateItem } from '../../common/reactHelpers';
+import { getChildrenByName } from './labelEditorComponents';
 import _ from 'underscore';
 
 const style = {
@@ -121,6 +122,7 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 	};
 
 	const getItemPropertyStyle = (name) => {
+		const box = _.find(boxes, i => i.name === name);
 		const p = _.find(itemProperties, i => i.name === name);
 		if (!p) return {};
 		let color = 'black';
@@ -232,7 +234,9 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 			textAlign: align,
 			fontSize: fontSize,
 			fontWeight: fontWeight,
-			transform: rotate
+			transform: rotate,
+			width: box.width,
+			height: box.height
 		};
 	};
 
@@ -303,7 +307,9 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 		const propsForBox = _.find(itemProperties, i => i.name === box.name);
 		if (propsForBox && propsForBox.value && propsForBox.value.length > 0 && box.acceptsValue && box.displayValue) {
 			return {...box, children: propsForBox.value };
-		} else{
+		} else if(propsForBox && !propsForBox.children && propsForBox.name) {
+			return {...box, children: getChildrenByName(propsForBox.name) };
+		} else {
 			return box;
 		}
 	};
@@ -327,6 +333,7 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 	const margins = getMargins(margin);
   return (
     <div ref={drop} id="container" style={stylesToApply}>
+			{/* draw margin box */}
 			<div style={{
 				border: '1px dotted #c00', 
 				position: 'absolute', 

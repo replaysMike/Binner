@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 
 export const Box = memo(function Box({ name, children, style, preview, selected, className }) {
 	const [isSelected, setIsSelected] = useState(selected);
-
 	useEffect(() => {
 		setIsSelected(selected);
 	}, [selected]);

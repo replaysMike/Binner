@@ -21,6 +21,10 @@ import { HandleBinaryResponse } from "../../common/handleResponse.js";
 import { fetchApi } from "../../common/fetchApi";
 import { getImagesToken } from "../../common/authentication";
 import { updateStateItem } from "../../common/reactHelpers";
+import { LabelSelectionModal } from "./LabelSelectionModal";
+import { LabelSetNameModal } from "./LabelSetNameModal";
+import { getChildrenByName } from './labelEditorComponents';
+import { toast } from "react-toastify";
 import "./labelEditor.css";
 
 export function LabelEditor(props) {
@@ -37,7 +41,10 @@ export function LabelEditor(props) {
 		name: "",
     value: ""
   };
+	const [labelSelectionModalIsOpen, setLabelSelectionModalIsOpen] = useState(false);
+	const [labelSetNameModalIsOpen, setLabelSetNameModalIsOpen] = useState(false);	
   const [boxes, setBoxes] = useState([]);
+	const [label, setLabel] = useState({ labelId: -1, name: "" });
   const [selectedItem, setSelectedItem] = useState(null);
   const [itemProperties, setItemProperties] = useState([]);
   const [selectedItemProperties, setSelectedItemProperties] = useState({});
@@ -52,8 +59,9 @@ export function LabelEditor(props) {
   ]);
 	const [labelTemplates, setLabelTemplates] = useState([]);
 	const [labelTemplateOptions, setLabelTemplateOptions] = useState([]);
-  
 	const [labelTemplate, setLabelTemplate] = useState({});
+	const [labelTemplateIsDirty, setLabelTemplateIsDirty] = useState(false);
+	const [isDirty, setIsDirty] = useState(false);
 
   const alignOptions = [
     { key: 0, text: "Center", value: 0 },
@@ -103,14 +111,15 @@ export function LabelEditor(props) {
   };
 
   const handleLabelTemplateChange = (e, control) => {
-		const newValue = {...labelTemplate, id: control.value };
+		const newValue = {...labelTemplate, labelTemplateId: control.value };
     // resize the canvas
-    const templateOption = _.find(labelTemplates, (i) => i.id === control.value);
-		newValue["width"] = templateOption.width;
-		newValue["height"] = templateOption.height;
-		newValue["dpi"] = templateOption.dpi;
-		newValue["margin"] = templateOption.margin;
-		newValue["showBoundaries"] = templateOption.showBoundaries;
+    const templateOption = _.find(labelTemplates, (i) => i.labelTemplateId === control.value);
+		newValue.width = templateOption.width;
+		newValue.height = templateOption.height;
+		newValue.dpi = templateOption.dpi;
+		newValue.margin = templateOption.margin;
+		newValue.showBoundaries = templateOption.showBoundaries || false;
+		newValue.name = templateOption.name;
     setLabelTemplate(newValue);
 		previewDebounced(boxes, newValue);
   };
@@ -123,6 +132,7 @@ export function LabelEditor(props) {
       setItemProperties(newItemProperties);
     }
 		previewDebounced(boxes, labelTemplate);
+		setIsDirty(true);
   };
 
   const handleSelectedItemChanged = (e, selectedItem) => {
@@ -161,22 +171,25 @@ export function LabelEditor(props) {
 	};
 
   const handleOnDrop = (box) => {
-    console.log("Drop received", box);
+		try {
 		const newBoxes = [...boxes];
 		newBoxes.push({...box});
 		setBoxes(newBoxes);
+		setIsDirty(true);
+		} catch {}
   };
 
   const handleOnMove = (box) => {
-    console.log("Move received", box);
     try {
       setBoxes(updateStateItem(boxes, box, "id", box.id));
+			setIsDirty(true);
     } catch {}
   };
 
   const handleOnRemove = (box) => {
     try {
       setBoxes(_.filter(boxes, (i) => i.id !== box.id));
+			setIsDirty(true);
     } catch {}
   };
 
@@ -191,24 +204,14 @@ export function LabelEditor(props) {
 				const { data } = response;
 
 				const labelTemplates = [
-					{ name: "Custom", id: -1, width: 1.875, height: 0.5625, dpi: 300, margin: "0", showBoundaries: false },
-					{ name: '30277 (Dual 9/16" x 3 7/16")', id: 0, width: 3.4375, height: 0.5625, dpi: 300, margin: "0", showBoundaries: false },
-					{ name: '30346 (1/2" x 1 7/8")', id: 1, width: 1.875, height: 0.5, dpi: 300, margin: "0", showBoundaries: false }
+					{ name: "Custom", labelTemplateId: -1, width: "1.875", height: "0.5625", dpi: 300, margin: "0", showBoundaries: false },
 				];
 				for(let i = 0; i < data.length; i++)
 					labelTemplates.push(data[i]);
 				
-				setLabelTemplates(data);
-				setLabelTemplateOptions(labelTemplates.map((item, key) => ({ key, text: item.name, value: item.id })));
-				setLabelTemplate({
-					width: labelTemplates[1].width,
-					height: labelTemplates[1].height,
-					dpi: labelTemplates[1].dpi,
-					margin: labelTemplates[1].margin,
-					showBoundaries: labelTemplates[1].showBoundaries,
-					id: labelTemplates[1].id,
-					new: "",
-				});
+				setLabelTemplates(labelTemplates);
+				setLabelTemplateOptions(labelTemplates.map((item, key) => ({ key, text: item.name, value: item.labelTemplateId })));
+				setLabelTemplate({..._.find(labelTemplates, i => i.labelTemplateId === 1), showBoundaries: false});
 			});
 		};
 
@@ -234,12 +237,45 @@ export function LabelEditor(props) {
     
     loadFonts();
 		getLabelTemplates();
+		setLabelSelectionModalIsOpen(true);
   }, []);  
+
+	const handleSaveTemplate = async () => {
+		// save the template
+		const request = {
+			...labelTemplate,
+			width: labelTemplate.width + "",
+			height: labelTemplate.height + ""
+		};
+
+		await fetchApi("api/print/template", {
+      method: request.labelTemplateId === -1 ? "POST" : "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    }).then((response) => {
+			if (response.responseObject.ok) {
+				const { data } = response;
+				// add it to the list
+				const newLabelTemplates = [...labelTemplates];
+				if (request.labelTemplateId === -1){
+					newLabelTemplates.push(data);
+					setLabelTemplates(newLabelTemplates);
+					setLabelTemplateOptions(newLabelTemplates.map((item, key) => ({ key, text: item.name, value: item.labelTemplateId })));
+					setLabelTemplate({..._.find(newLabelTemplates, i => i.labelTemplateId === data.labelTemplateId), showBoundaries: false });
+				}
+			} else {
+				toast.error('Failed to save label template!');
+			}
+			setLabelTemplateIsDirty(false);
+    });
+	};
 
   const handlePreview = async (boxes, labelTemplate) => {
 		const request = {
 			token: getImagesToken(),
-			label: {...labelTemplate, name: labelTemplate.new, templateId: labelTemplate.id },
+			label: {...labelTemplate },
 			boxes: boxes.map((box) => ({
 				acceptsValue: box.acceptsValue,
 				displaysValue: box.displaysValue,
@@ -287,7 +323,6 @@ export function LabelEditor(props) {
 		const id = box.id;
 		const el = document.getElementById(id);
 		const margins = getMargins(labelTemplate.margin);
-		console.log('margins', margins);
 		// margins: top right bottom left
 		switch(alignTo){
 			case 'left':
@@ -304,7 +339,6 @@ export function LabelEditor(props) {
 				box.top = margins[0];
 				break;
 			case 'middle':
-				console.log('height', el.offsetHeight);
 				box.top = (((convertInchesToPixels(labelTemplate.height) - margins[0]) / 2.0) - (el.offsetHeight / 2.0));
 				break;
 			case 'bottom':
@@ -315,6 +349,7 @@ export function LabelEditor(props) {
 		const newBoxes = [...boxes];
 		setBoxes(newBoxes);
 		previewDebounced(newBoxes, labelTemplate);
+		setIsDirty(true);
 	};
 
 	const getMargins = (margin) => {
@@ -333,10 +368,88 @@ export function LabelEditor(props) {
 		return margins;
 	};
 
-  const handleSave = () => {};
+  const handleSave = async (e, labelNameForm) => {
+		const request = {
+			name: labelNameForm.name,
+			labelId: label.labelId,
+			isDefaultPartLabel: labelNameForm.isDefaultPartLabel,
+			label: {...labelTemplate },
+			boxes: boxes.map((box) => ({
+				acceptsValue: box.acceptsValue,
+				displaysValue: box.displaysValue,
+				id: box.id,
+				left: Math.trunc(box.left),
+				name: box.name,
+				resize: box.resize,
+				top: Math.trunc(box.top),
+				properties: getItemProperties(box) || defaultItemProperties,
+				width: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().width) || 0,
+				height: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().height) || 0,
+			}))
+		};
+
+		await fetchApi("api/print/label", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    }).then((response) => {
+      if (response.responseObject.ok) {
+				setIsDirty(false);
+				toast.success("Label saved!");
+			} else {
+				toast.error("Failed to save label!");
+			}
+			setLabelSetNameModalIsOpen(false);
+    });
+
+	};
+
+	const handleLabelTemplateValueChange = (e, control, propertyName) => {
+		const value = {...labelTemplate};
+		switch(control.type){
+			case 'checkbox':
+				value[propertyName] = control.checked;
+				break;
+			default:
+				value[propertyName] = control.value;
+				break;
+		}
+		setLabelTemplate(value);
+		previewDebounced(boxes, value);
+		setLabelTemplateIsDirty(true);
+	};
+
+	const handleSelectLabel = (e, label) => {
+		setLabelSelectionModalIsOpen(false);
+		if (label?.labelId > 0) {
+			setLabel(label);
+			const template = JSON.parse(label.template);
+			setBoxes(template.boxes);
+			setLabelTemplate({ ...template.label, showBoundaries: false });
+			const newItemProperties = template.boxes.map((item, key) => ({
+				...item.properties, name: item.name
+			}));
+			setItemProperties(newItemProperties);
+		} else {
+			setBoxes([]);
+			setItemProperties([]);
+			setSelectedItem(null);
+			setSelectedItemProperties({});
+			setLabel({ labelId: -1, name: "" });
+			setImgBase64("");
+		}
+	};
+
+	const handleLoad = () => {
+		setLabelSelectionModalIsOpen(true);
+	};
 
   return (
     <div className="labelEditor">
+			<LabelSelectionModal isOpen={labelSelectionModalIsOpen} onSelect={handleSelectLabel} onClose={() => setLabelSelectionModalIsOpen(false)} />
+			<LabelSetNameModal isOpen={labelSetNameModalIsOpen} name={label?.name || ""} isDefaultPartLabel={label?.isPartLabelTemplate || false} onSave={handleSave} onClose={() => setLabelSetNameModalIsOpen(false)} />
       <DndProvider backend={HTML5Backend}>
         <div className="tools left">
           <div style={{ display: "flex", flexDirection: "column", flex: "1", alignItems: "start" }}>
@@ -345,19 +458,19 @@ export function LabelEditor(props) {
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
               <DraggableBox name="qrCode" resize="both" acceptsValue={true}>
-                <Popup wide content="QR Code" trigger={<QRCodeIcon />} />
+                <Popup wide content="QR Code" trigger={getChildrenByName('qrCode')} />
               </DraggableBox>
               <DraggableBox name="dataMatrix2d" resize="both" acceptsValue={true}>
-                <Popup wide content="Data Matrix (2D) Barcode" trigger={<DataMatrixIcon />} />
+                <Popup wide content="Data Matrix (2D) Barcode" trigger={getChildrenByName('dataMatrix2d')} />
               </DraggableBox>
 							<DraggableBox name="aztecCode" resize="both" acceptsValue={true}>
-                <Popup wide content="Aztec Code" trigger={<AztecCodeIcon />} />
+                <Popup wide content="Aztec Code" trigger={getChildrenByName('aztecCode')} />
               </DraggableBox>
               <DraggableBox name="code128" resize="both" acceptsValue={true}>
-                <Popup wide content="Code-128 Barcode" trigger={<Code128NoTextIcon style={{ width: "160px" }} />} />
+                <Popup wide content="Code-128 Barcode" trigger={getChildrenByName('code128')} />
               </DraggableBox>
 							<DraggableBox name="pdf417" resize="both" acceptsValue={true}>
-                <Popup wide content="PDF417 Barcode" trigger={<PDF417Icon style={{ width: "160px" }} />} />
+                <Popup wide content="PDF417 Barcode" trigger={getChildrenByName('pdf417')} />
               </DraggableBox>
             </div>
             <div className="header" style={{ flex: "0" }}>
@@ -365,7 +478,7 @@ export function LabelEditor(props) {
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
               <DraggableBox name="text" acceptsValue={true} displaysValue={true}>
-                <Popup wide content="Custom text string" trigger={<span>Regular Text</span>} />
+                <Popup wide content="Custom text string" trigger={getChildrenByName('text')} />
               </DraggableBox>
             </div>
 						<div className="header" style={{ flex: "0" }}>
@@ -432,10 +545,10 @@ export function LabelEditor(props) {
                           <div style={{ flex: "1", display: "flex", justifyContent: "start" }}>
                             <Popup
                               wide
-                              content="Preview your label with content"
+                              content="Load another label or create a new one"
                               trigger={
-                                <Button size="mini" secondary onClick={() => handlePreview(boxes, labelTemplate)}>
-                                  <Icon name="eye" color="blue" /> Preview
+                                <Button size="mini" onClick={() => handleLoad()}>
+                                  <Icon name="folder open" color="blue" /> Load / Create...
                                 </Button>
                               }
                             />
@@ -445,7 +558,7 @@ export function LabelEditor(props) {
                               wide
                               content="Save your label design"
                               trigger={
-                                <Button size="mini" primary onClick={handleSave}>
+                                <Button size="mini" primary onClick={e => setLabelSetNameModalIsOpen(true)} disabled={!isDirty}>
                                   <Icon name="save" /> Save
                                 </Button>
                               }
@@ -468,7 +581,7 @@ export function LabelEditor(props) {
                         <b>Label Template:</b>
                       </Table.Cell>
                       <Table.Cell colSpan={5}>
-                        <Dropdown fluid selection name="align" options={labelTemplateOptions} value={labelTemplate?.id || 0} onChange={handleLabelTemplateChange} />
+                        <Dropdown fluid selection name="align" options={labelTemplateOptions} value={labelTemplate?.labelTemplateId || 0} onChange={handleLabelTemplateChange} />
                       </Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -478,13 +591,9 @@ export function LabelEditor(props) {
                       <Table.Cell>
                         <Input
                           style={{ width: "60px" }}
-                          name="labelTemplateWidth"
+                          name="width"
                           value={labelTemplate?.width || ""}
-                          onChange={(e, control) => {
-														const value = {...labelTemplate, width: control.value};
-                            setLabelTemplate(value);
-														previewDebounced(boxes, value);
-                          }}
+                          onChange={(e, control) => handleLabelTemplateValueChange(e, control, 'width')}
                         />{" "}
                         in.
                       </Table.Cell>
@@ -494,13 +603,9 @@ export function LabelEditor(props) {
                       <Table.Cell>
                         <Input
                           style={{ width: "60px" }}
-                          name="labelTemplateWidth"
+                          name="height"
                           value={labelTemplate?.height || ""}
-                          onChange={(e, control) => {
-                            const value = {...labelTemplate, height: control.value};
-														setLabelTemplate(value);
-														previewDebounced(boxes, value);
-                          }}
+                          onChange={(e, control) => handleLabelTemplateValueChange(e, control, 'height')}
                         />{" "}
                         in.
                       </Table.Cell>
@@ -508,7 +613,11 @@ export function LabelEditor(props) {
                         <b>Dpi:</b>
                       </Table.Cell>
                       <Table.Cell>
-                        <Input style={{ width: "60px" }} name="labelTemplateDpi" value={labelTemplate?.dpi || ""} onChange={(e, control) => { const value = {...labelTemplate, dpi: control.value}; setLabelTemplate(value); previewDebounced(boxes, value); }} />
+                        <Input 
+													style={{ width: "60px" }} 
+													name="dpi" value={labelTemplate?.dpi || ""} 
+													onChange={(e, control) => handleLabelTemplateValueChange(e, control, 'dpi')}
+												/>
                       </Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -516,13 +625,28 @@ export function LabelEditor(props) {
                         <b>Margin:</b>
                       </Table.Cell>
                       <Table.Cell>
-                        <Input style={{ width: "120px" }} placeholder="0 0 0 0" name="labelTemplateMargin" value={labelTemplate?.margin || ""} onChange={(e, control) => { const value = {...labelTemplate, margin: control.value}; setLabelTemplate(value); previewDebounced(boxes, value); }} />
+                        <Input 
+													style={{ width: "120px" }} 
+													placeholder="0 0 0 0" 
+													name="margin" 
+													value={labelTemplate?.margin || ""} 
+													onChange={(e, control) => handleLabelTemplateValueChange(e, control, 'margin')}
+												/>
                       </Table.Cell>
                       <Table.Cell colSpan={4}>
-												<Checkbox toggle name="showBoundaries" label="Display Boundaries" checked={labelTemplate?.showBoundaries || false} onChange={(e, control) => { const value = {...labelTemplate, showBoundaries: control.checked}; setLabelTemplate(value); previewDebounced(boxes, value); }} />
+												<Popup 
+													content={<p>Turn on to display the margins and bounding boxes in the rendered preview</p>}
+													trigger={<Checkbox 
+														toggle 
+														name="showBoundaries" 
+														label="Display Boundaries" 
+														checked={labelTemplate?.showBoundaries || false} 
+														onChange={(e, control) => handleLabelTemplateValueChange(e, control, 'showBoundaries')}
+													/>} 
+												/>
 											</Table.Cell>
                     </Table.Row>
-                    {labelTemplate?.id === -1 && (
+                    {(labelTemplate?.labelTemplateId === -1 || labelTemplateIsDirty) && (
                       <Table.Row>
                         <Table.Cell>
                           <b>Template Name:</b>
@@ -531,12 +655,13 @@ export function LabelEditor(props) {
                           <Input
                             icon="file"
                             style={{ width: "400px" }}
-                            name="labelTemplateNew"
+                            name="name"
                             placeholder="Enter a template name"
-                            value={labelTemplate?.new || ""}
-                            onChange={(e, control) => setLabelTemplate({...labelTemplate, new: control.value})}
+                            value={labelTemplate?.name || ""}
+														onChange={(e, control) => handleLabelTemplateValueChange(e, control, 'name')}
+														disabled={labelTemplate?.labelTemplateId !== -1}
                           />
-                          <Button size="mini" style={{ height: "26px", padding: "8px 10px", marginLeft: "5px" }}>
+                          <Button size="mini" onClick={handleSaveTemplate} style={{ height: "26px", padding: "8px 10px", marginLeft: "5px" }}>
                             <Icon name="save" /> Save
                           </Button>
                         </Table.Cell>
@@ -630,23 +755,22 @@ export function LabelEditor(props) {
               <label>Part Information</label>
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
-              <DraggableBox name="partNumber">Part Number</DraggableBox>
-              <DraggableBox name="manufacturerPartNumber">Mfr Part Number</DraggableBox>
-              <DraggableBox name="manufacturer">Manufacturer</DraggableBox>
-              <DraggableBox name="description">Description</DraggableBox>
-              <DraggableBox name="partType">Part Type</DraggableBox>
-              <DraggableBox name="mountingType">Mounting Type</DraggableBox>
-              <DraggableBox name="packageType">Package Type</DraggableBox>
-              <DraggableBox name="cost">Cost</DraggableBox>
-              <DraggableBox name="keywords">Keywords</DraggableBox>
-              <DraggableBox name="image">Image</DraggableBox>
-              <DraggableBox name="quantity">Quantity</DraggableBox>
-              <DraggableBox name="digikeyPartNumber">DigiKey P/N</DraggableBox>
-              <DraggableBox name="mouserPartNumber">Mouser P/N</DraggableBox>
-              <DraggableBox name="arrowPartNumber">Arrow P/N</DraggableBox>
-              <DraggableBox name="location">Location</DraggableBox>
-              <DraggableBox name="binNumber">Bin Number</DraggableBox>
-              <DraggableBox name="binNumber2">Bin Number2</DraggableBox>
+              <DraggableBox name="partNumber">{getChildrenByName('partNumber')}</DraggableBox>
+              <DraggableBox name="manufacturerPartNumber">{getChildrenByName('manufacturerPartNumber')}</DraggableBox>
+              <DraggableBox name="manufacturer">{getChildrenByName('manufacturer')}</DraggableBox>
+              <DraggableBox name="description">{getChildrenByName('description')}</DraggableBox>
+              <DraggableBox name="partType">{getChildrenByName('partType')}</DraggableBox>
+              <DraggableBox name="mountingType">{getChildrenByName('mountingType')}</DraggableBox>
+              <DraggableBox name="packageType">{getChildrenByName('packageType')}</DraggableBox>
+              <DraggableBox name="cost">{getChildrenByName('cost')}</DraggableBox>
+              <DraggableBox name="keywords">{getChildrenByName('keywords')}</DraggableBox>
+              <DraggableBox name="quantity">{getChildrenByName('quantity')}</DraggableBox>
+              <DraggableBox name="digikeyPartNumber">{getChildrenByName('digikeyPartNumber')}</DraggableBox>
+              <DraggableBox name="mouserPartNumber">{getChildrenByName('mouserPartNumber')}</DraggableBox>
+              <DraggableBox name="arrowPartNumber">{getChildrenByName('arrowPartNumber')}</DraggableBox>
+              <DraggableBox name="location">{getChildrenByName('location')}</DraggableBox>
+              <DraggableBox name="binNumber">{getChildrenByName('binNumber')}</DraggableBox>
+              <DraggableBox name="binNumber2">{getChildrenByName('binNumber2')}</DraggableBox>
             </div>
           </div>
         </div>

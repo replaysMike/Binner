@@ -41,6 +41,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("LabelTemplateId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
 

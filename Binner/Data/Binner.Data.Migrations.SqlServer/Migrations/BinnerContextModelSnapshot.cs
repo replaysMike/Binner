@@ -47,6 +47,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("LabelTemplateId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 

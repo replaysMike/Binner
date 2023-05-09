@@ -52,7 +52,9 @@ namespace Binner.Common.IO.Printing
             // generate the print image and send to printer hardware
             var widthInPixels = InchesToPixels(request.Label.Width, 96);
             var heightInPixels = InchesToPixels(request.Label.Height, 96);
-            var image = CreateLabelImage(request.Label);
+            var image = CreateImage(request.Label);
+            if (image == null)
+                return new Image<Rgba32>(1, 1);
             // convert the screen dpi to print
             var ratio = request.Label.Dpi / 96f;
             var margins = new int [4] { 0, 0, 0, 0 };
@@ -404,17 +406,26 @@ namespace Binner.Common.IO.Printing
             _fontFamily = FontCollection.Value.Get(DefaultFontName);
         }
 
-        private Image<Rgba32> CreateLabelImage(PrinterLabel label)
+        private Image<Rgba32>? CreateImage(PrinterLabel label)
         {
+            if (label.Width == 0)
+                label.Width = 1;
+            if (label.Height == 0)
+                label.Height = 1;
             var widthInPixels = InchesToPixels(label.Width, label.Dpi);
             var heightInPixels = InchesToPixels(label.Height, label.Dpi);
             // generate the label as an image
             _paperRect = new Rectangle(0, 0, widthInPixels, heightInPixels);
-            var printerImage = new Image<Rgba32>(_paperRect.Width, _paperRect.Height);
-            printerImage.Metadata.VerticalResolution = label.Dpi;
-            printerImage.Metadata.HorizontalResolution = label.Dpi;
+            if (_paperRect.Width > 0 && _paperRect.Height > 0)
+            {
+                var printerImage = new Image<Rgba32>(_paperRect.Width, _paperRect.Height);
+                printerImage.Metadata.VerticalResolution = label.Dpi;
+                printerImage.Metadata.HorizontalResolution = label.Dpi;
 
-            return printerImage;
+                return printerImage;
+            }
+
+            return null;
         }
 
         private int InchesToPixels(double inches, int dpi)

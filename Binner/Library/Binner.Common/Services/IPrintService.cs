@@ -38,7 +38,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        Task<Label> AddLabelAsync(Label model);
+        Task<Label> AddOrUpdateLabelAsync(Label model);
 
         /// <summary>
         /// Update an existing label

@@ -21,7 +21,7 @@
     {
         public double Width { get; set; }
         public double Height { get; set; }
-        public int? TemplateId { get; set; }
+        public int? LabelTemplateId { get; set; }
         public string? Name { get; set; }
         public int Dpi { get; set; }
         public string? Margin { get; set; }
