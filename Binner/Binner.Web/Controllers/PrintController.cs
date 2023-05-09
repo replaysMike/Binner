@@ -18,6 +18,9 @@ using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Binner.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System.Collections.Generic;
 
 namespace Binner.Web.Controllers
 {
@@ -63,7 +66,12 @@ namespace Binner.Web.Controllers
                 var part = new Part
                 {
                     PartNumber = "SC4096", Description = "Test simulation of a printed part", ManufacturerPartNumber = "SC4096STG-11", Manufacturer = "Texas Instruments",
-                    Location = "Vancouver", BinNumber = "Bin 11", BinNumber2 = "21"
+                    Location = "Vancouver", BinNumber = "Bin 11", BinNumber2 = "21",
+                    Cost = 0.99, MountingTypeId = 1, PartTypeId = 18, PackageType = "DIP8", Quantity = 500,
+                    Keywords = new List<string>{ "example product", "ic", "sensor"  },
+                    DigiKeyPartNumber = "701-7011-1-ND",
+                    MouserPartNumber = "MS-7011",
+                    ArrowPartNumber = "AR-7011"
                 };
                 var image = _labelGenerator.CreateLabelImage(request, part);
                 image.SaveAsPng(stream);
@@ -97,6 +105,26 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Update a label template
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("template")]
+        public async Task<IActionResult> UpdateLabelTemplateAsync(LabelTemplate request)
+        {
+            try
+            {
+                var model = await _printService.UpdateLabelTemplateAsync(request);
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
+        }
+
+        /// <summary>
         /// List all label templates
         /// </summary>
         /// <returns></returns>
@@ -116,16 +144,26 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Create a label
+        /// Create or update a label
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost("label")]
-        public async Task<IActionResult> CreateLabelAsync(Label request)
+        [HttpPut("label")]
+        public async Task<IActionResult> CreateLabelAsync(CreateLabelRequest request)
         {
             try
             {
-                var model = await _printService.AddLabelAsync(request);
+                if (request.Label.LabelTemplateId == null)
+                    return BadRequest();
+                var label = new Label
+                {
+                    LabelId = request.LabelId ?? 0,
+                    LabelTemplateId = request.Label.LabelTemplateId.Value,
+                    Template = JsonConvert.SerializeObject((CustomLabelRequest)request, new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                    Name = request.Name,
+                    IsPartLabelTemplate = request.IsDefaultPartLabel
+                };
+                var model = await _printService.AddOrUpdateLabelAsync(label);
 
                 return Ok(model);
             }

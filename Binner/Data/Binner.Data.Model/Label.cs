@@ -18,6 +18,11 @@ namespace Binner.Data.Model
         public int LabelTemplateId { get; set; }
 
         /// <summary>
+        /// The name of the label
+        /// </summary>
+        public string Name { get; set; } = null!;
+
+        /// <summary>
         /// Template stored as JSON
         /// </summary>
         public string Template { get; set; } = null!;

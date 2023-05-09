@@ -13,6 +13,11 @@
         public int LabelTemplateId { get; set; }
 
         /// <summary>
+        /// The label name
+        /// </summary>
+        public string Name { get; set; } = null!;
+
+        /// <summary>
         /// Template stored as JSON
         /// </summary>
         public string Template { get; set; } = null!;

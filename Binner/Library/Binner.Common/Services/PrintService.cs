@@ -83,14 +83,41 @@ namespace Binner.Common.Services
             return _mapper.Map<ICollection<LabelTemplate>>(entities);
         }
 
-        public async Task<Label> AddLabelAsync(Label model)
+        public async Task<Label> AddOrUpdateLabelAsync(Label model)
         {
             var user = _requestContext.GetUserContext();
             var context = await _contextFactory.CreateDbContextAsync();
-            var entity = _mapper.Map<DataModel.Label>(model);
+            if (model.IsPartLabelTemplate)
+            {
+                // unset any labels marked as the part label template
+                var defaultPartLabel = await context.Labels.Where(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId).ToListAsync();
+                foreach (var label in defaultPartLabel)
+                    label.IsPartLabelTemplate = false;
+            }
+
+            DataModel.Label? entity = null;
+
+            if (model.LabelId > 0)
+            {
+                entity = await context.Labels
+                    .Where(x => x.LabelId == model.LabelId && x.OrganizationId == user.OrganizationId)
+                    .FirstOrDefaultAsync();
+                if (entity != null)
+                {
+                    entity = _mapper.Map(model, entity);
+                    entity.LabelId = model.LabelId;
+                }
+            }
+
+            if (entity == null)
+            {
+                entity = _mapper.Map<DataModel.Label>(model);
+                context.Labels.Add(entity);
+                entity.DateModifiedUtc = DateTime.UtcNow;
+            }
+
             entity.UserId = user.UserId;
             entity.OrganizationId = user.OrganizationId;
-            context.Labels.Add(entity);
             await context.SaveChangesAsync();
             return _mapper.Map<Label>(entity);
         }

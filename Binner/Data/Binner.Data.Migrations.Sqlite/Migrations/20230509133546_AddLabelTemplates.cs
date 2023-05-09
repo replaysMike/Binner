@@ -66,6 +66,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                 schema: "dbo",
                 table: "Labels",
                 column: "LabelTemplateId");
+
+            migrationBuilder.Sql(@"
+INSERT INTO LabelTemplates (Name, Width, Height, Margin, Dpi, LabelPaperSource, OrganizationId, UserId) VALUES('30277 (Dual 9/16"" x 3 7/16"")', '3.4375','0.5625', '0', '300', 0, 1, 1);
+INSERT INTO LabelTemplates (Name, Width, Height, Margin, Dpi, LabelPaperSource, OrganizationId, UserId) VALUES('30346 (1/2"" x 1 7/8"")', '1.875','0.5', '0', '300', 0, 1, 1);");
         }
 
         /// <inheritdoc />

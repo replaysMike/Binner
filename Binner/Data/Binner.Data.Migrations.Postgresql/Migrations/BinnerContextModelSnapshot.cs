@@ -47,6 +47,10 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("LabelTemplateId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("integer");
 
