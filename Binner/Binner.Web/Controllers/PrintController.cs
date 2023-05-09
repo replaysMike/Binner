@@ -34,8 +34,9 @@ namespace Binner.Web.Controllers
         private readonly ILabelGenerator _labelGenerator;
         private readonly FontManager _fontManager;
         private readonly IUserService _userService;
+        private readonly IPrintService _printService;
 
-        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, ILabelGenerator labelGenerator, FontManager fontManager, IUserService userService)
+        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, ILabelGenerator labelGenerator, FontManager fontManager, IUserService userService, IPrintService printService)
         {
             _logger = logger;
             _config = config;
@@ -44,6 +45,7 @@ namespace Binner.Web.Controllers
             _labelGenerator = labelGenerator;
             _fontManager = fontManager;
             _userService = userService;
+            _printService = printService;
         }
 
         [HttpPost("beta")]
@@ -67,6 +69,84 @@ namespace Binner.Web.Controllers
                 image.SaveAsPng(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 return new FileStreamResult(stream, "image/png");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
+        }
+
+        /// <summary>
+        /// Create a label template
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("template")]
+        public async Task<IActionResult> CreateLabelTemplateAsync(LabelTemplate request)
+        {
+            try
+            {
+                var model = await _printService.AddLabelTemplateAsync(request);
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
+        }
+
+        /// <summary>
+        /// List all label templates
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("templates")]
+        public async Task<IActionResult> GetLabelTemplatesAsync()
+        {
+            try
+            {
+                var models = await _printService.GetLabelTemplatesAsync();
+
+                return Ok(models);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
+        }
+
+        /// <summary>
+        /// Create a label
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("label")]
+        public async Task<IActionResult> CreateLabelAsync(Label request)
+        {
+            try
+            {
+                var model = await _printService.AddLabelAsync(request);
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+            }
+        }
+
+        /// <summary>
+        /// List all labels
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("labels")]
+        public async Task<IActionResult> GetLabelsAsync()
+        {
+            try
+            {
+                var models = await _printService.GetLabelsAsync();
+
+                return Ok(models);
             }
             catch (Exception ex)
             {

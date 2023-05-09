@@ -46,6 +46,7 @@
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AnySerializer" Version="1.2.5" />
     <PackageReference Include="AutoMapper" Version="11.0.0" />
+    <PackageReference Include="Barcoder" Version="2.0.0" />
     <PackageReference Include="Binner.SwarmApi" Version="1.0.5" />
     <PackageReference Include="libc.hwid" Version="6.0.1" />
     <PackageReference Include="LightInject" Version="6.4.0" />
@@ -64,6 +65,7 @@
     <PackageReference Include="NLog" Version="4.7.13" />
     <PackageReference Include="NPOI" Version="2.6.0" />
     <PackageReference Include="Octokit" Version="5.0.2" />
+    <PackageReference Include="QRCoder-ImageSharp" Version="0.9.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
@@ -75,6 +77,16 @@
 
   <ItemGroup>
     <Folder Include="Integrations\DigikeyClient\Core\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('..\..\..\..\Barcoder\src\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
+    <!-- Use the Barcoder public package -->
+    <PackageReference Include="Barcoder" Version="2.0.0" PrivateAssets="Compile" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('..\..\..\..\Barcoder\src\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
+    <!-- Use the Barcoder private build -->
+    <ProjectReference Include="..\..\..\..\Barcoder\src\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj" />
   </ItemGroup>
 
   <ItemGroup>

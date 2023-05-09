@@ -12,7 +12,7 @@ const style = {
   position: 'relative',
 };
 
-export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, height = 300, margin, padding, onSelectedItemChanged, itemProperties, clearSelectedItem, boxes }) => {
+export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, height = 300, margin,  onSelectedItemChanged, itemProperties, clearSelectedItem, boxes }) => {
 	const [internalBoxes, setInternalBoxes] = useState(boxes);
 
 	const deselectAll = useCallback(() => {
@@ -307,10 +307,34 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 			return box;
 		}
 	};
+
+	const getMargins = (margin) => {
+		const margins = [0, 0, 0, 0];
+		let marginDef = margin?.split(' ') || [];
 	
+		for(let i = 0; i < marginDef.length; i++)
+			margins[i] = parseInt(marginDef[i]);
+	
+		if (marginDef.length === 1) {
+			margins[1] = margins[2] = margins[3] = margins[0];
+		} else if (marginDef.length === 2) {
+			margins[2] = margins[0];
+			margins[3] = margins[1];
+		}
+		return margins;
+	};
+
+	const margins = getMargins(margin);
   return (
     <div ref={drop} id="container" style={stylesToApply}>
-			<div style={{border: '1px dotted #c00', position: 'absolute', top: margin, left: margin, width: (width - (margin * 2) - 1) + 'px', height: (height - (margin * 2) - 1) + 'px'}} />
+			<div style={{
+				border: '1px dotted #c00', 
+				position: 'absolute', 
+				left: margins[3] + 'px', 
+				top: margins[0] + 'px', 
+				width: (width - margins[1] - margins[3] - 1) + 'px', 
+				height: (height - margins[0] - margins[2] - 1) + 'px'
+			}} />
       {internalBoxes.map((box, key) => (
         <DraggableBox 
 					key={key} 
@@ -334,9 +358,13 @@ DropArea.propTypes = {
 	onRemove: PropTypes.func,
 	itemProperties: PropTypes.array,
 	clearSelectedItem: PropTypes.any,
-	boxes: PropTypes.array
+	boxes: PropTypes.array,
+	margin: PropTypes.string,
+	width: PropTypes.number,
+	height: PropTypes.number,
 };
 
 DropArea.defaultProps = {
-	boxes: []
+	boxes: [],
+	margin: "0 0 0 0"
 };

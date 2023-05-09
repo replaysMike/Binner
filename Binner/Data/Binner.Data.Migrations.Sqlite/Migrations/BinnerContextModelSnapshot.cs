@@ -19,6 +19,94 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                 .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "7.0.4");
 
+            modelBuilder.Entity("Binner.Data.Model.Label", b =>
+                {
+                    b.Property<int>("LabelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<bool>("IsPartLabelTemplate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LabelTemplateId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("LabelId");
+
+                    b.HasIndex("LabelTemplateId");
+
+                    b.ToTable("Labels", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.LabelTemplate", b =>
+                {
+                    b.Property<int>("LabelTemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("Dpi")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Height")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LabelPaperSource")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Margin")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Width")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("LabelTemplateId");
+
+                    b.ToTable("LabelTemplates", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
                     b.Property<string>("Provider")
@@ -1174,6 +1262,17 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.ToTable("UserTokens", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.Label", b =>
+                {
+                    b.HasOne("Binner.Data.Model.LabelTemplate", "LabelTemplate")
+                        .WithMany("Labels")
+                        .HasForeignKey("LabelTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LabelTemplate");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
@@ -1466,6 +1565,11 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.LabelTemplate", b =>
+                {
+                    b.Navigation("Labels");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>

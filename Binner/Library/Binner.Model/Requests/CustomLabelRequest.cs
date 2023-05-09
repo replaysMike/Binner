@@ -24,8 +24,8 @@
         public int? TemplateId { get; set; }
         public string? Name { get; set; }
         public int Dpi { get; set; }
-        public int Margin { get; set; }
-        public int Padding { get; set; }
+        public string? Margin { get; set; }
+        public bool ShowBoundaries { get; set; }
     }
 
     public class LabelBox
@@ -79,10 +79,8 @@
 
     public enum FontWeights
     {
-        Light = 0,
-        Normal,
-        Bold,
-        HeavyBold
+        Normal = 0,
+        Bold
     }
 
     public enum FontSizes

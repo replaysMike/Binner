@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { DropArea } from './DropArea';
 import { CustomDragLayer } from './CustomDragLayer';
 
-export const LabelDropContainer = ({width, height, margin, padding, onSelectedItemChanged, onDrop, onMove, onRemove, itemProperties, resetSelectedItem, updateState, boxes}) => {
+export const LabelDropContainer = ({width, height, margin, onSelectedItemChanged, onDrop, onMove, onRemove, itemProperties, resetSelectedItem, updateState, boxes}) => {
   const [snapToGridAfterDrop, setSnapToGridAfterDrop] = useState(false);
   const [snapToGridWhileDragging, setSnapToGridWhileDragging] = useState(false);
   const [clearSelectedItem, setClearSelectedItem] = useState(null);
@@ -33,7 +33,6 @@ export const LabelDropContainer = ({width, height, margin, padding, onSelectedIt
         width={width} 
         height={height} 
         margin={margin}
-        padding={padding}
         onSelectedItemChanged={onSelectedItemChanged} 
         onDrop={onDrop}
         onMove={onMove}
@@ -55,8 +54,7 @@ DropArea.propTypes = {
   onRemove: PropTypes.func,
   width: PropTypes.number,
   height: PropTypes.number,
-  margin: PropTypes.number,
-  padding: PropTypes.number,
+  margin: PropTypes.string,
   itemProperties: PropTypes.array,
   resetSelectedItem: PropTypes.any,
   updateState: PropTypes.any,
@@ -66,7 +64,6 @@ DropArea.propTypes = {
 DropArea.defaultProps = {
   width: 500,
   height: 300,
-  margin: 0,
-  padding: 0,
+  margin: "0 0 0 0",
   boxes: []
 };
