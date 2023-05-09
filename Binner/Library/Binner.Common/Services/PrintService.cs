@@ -26,11 +26,29 @@ namespace Binner.Common.Services
             _contextFactory = contextFactory;
         }
 
+        public async Task<bool> HasPartLabelTemplateAsync()
+        {
+            var user = _requestContext.GetUserContext();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Labels
+                .Where(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId)
+                .AnyAsync();
+        }
+
+        public async Task<Label> GetPartLabelTemplateAsync()
+        {
+            var user = _requestContext.GetUserContext();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Labels
+                .Where(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId)
+                .FirstOrDefaultAsync();
+            return _mapper.Map<Label>(entity);
+        }
 
         public async Task<LabelTemplate> AddLabelTemplateAsync(LabelTemplate model)
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.LabelTemplate>(model);
             entity.UserId = user.UserId;
             entity.OrganizationId = user.OrganizationId;
@@ -42,7 +60,7 @@ namespace Binner.Common.Services
         public async Task<LabelTemplate> UpdateLabelTemplateAsync(LabelTemplate model)
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.LabelTemplates
                 .Where(x => x.LabelTemplateId == model.LabelTemplateId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -61,7 +79,7 @@ namespace Binner.Common.Services
         public async Task<bool> DeleteLabelTemplateAsync(LabelTemplate model)
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.LabelTemplates
                 .Where(x => x.LabelTemplateId == model.LabelTemplateId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -76,7 +94,7 @@ namespace Binner.Common.Services
         public async Task<LabelTemplate?> GetLabelTemplateAsync(int labelTemplateId)
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.LabelTemplates
                 .Where(x => x.LabelTemplateId == labelTemplateId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -96,7 +114,7 @@ namespace Binner.Common.Services
         public async Task<Label> AddOrUpdateLabelAsync(Label model)
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             if (model.IsPartLabelTemplate)
             {
                 // unset any labels marked as the part label template
@@ -135,7 +153,7 @@ namespace Binner.Common.Services
         public async Task<Label> UpdateLabelAsync(Label model)
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Labels
                 .Where(x => x.LabelId == model.LabelId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -154,7 +172,7 @@ namespace Binner.Common.Services
         public async Task<bool> DeleteLabelAsync(Label model)
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Labels
                 .Where(x => x.LabelId == model.LabelId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
@@ -169,7 +187,7 @@ namespace Binner.Common.Services
         public async Task<ICollection<Label>> GetLabelsAsync()
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Labels
                 .Where(x => x.OrganizationId == user.OrganizationId)
                 .ToListAsync();

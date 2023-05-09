@@ -16,8 +16,16 @@ public interface ILabelGenerator
     /// <summary>
     /// Create a label image
     /// </summary>
+    /// <param name="label"></param>
+    /// <param name="part"></param>
+    /// <returns></returns>
+    Image<Rgba32> CreateLabelImage(Label label, Part part);
+
+    /// <summary>
+    /// Create a label image
+    /// </summary>
     /// <param name="request"></param>
     /// <param name="part"></param>
     /// <returns></returns>
-    Image<Rgba32> CreateLabelImage(CustomLabelRequest request, Part part);
+    Image<Rgba32> CreateLabelImage(CustomLabelDefinition request, Part part);
 }

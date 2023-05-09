@@ -7,6 +7,18 @@ namespace Binner.Common.Services
     public interface IPrintService
     {
         /// <summary>
+        /// Check if a part label template exists
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> HasPartLabelTemplateAsync();
+
+        /// <summary>
+        /// Get the part label template
+        /// </summary>
+        /// <returns></returns>
+        Task<Label> GetPartLabelTemplateAsync();
+
+        /// <summary>
         /// Add a new label template
         /// </summary>
         /// <param name="model"></param>
