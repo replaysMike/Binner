@@ -94,19 +94,8 @@ namespace Binner.Web.Configuration
         private static void RegisterPrinterService(IServiceContainer container)
         {
             container.Register<IBarcodeGenerator, BarcodeGenerator>(new PerScopeLifetime());
-            container.Register<ILabelPrinterHardware>((serviceFactory) =>
-            {
-                var config = serviceFactory.GetInstance<WebHostServiceConfiguration>();
-                var barcodeGenerator = serviceFactory.GetInstance<IBarcodeGenerator>();
-                return new DymoLabelPrinterHardware(new PrinterSettings
-                {
-                    PrinterName = config.PrinterConfiguration.PrinterName,
-                    PartLabelName = config.PrinterConfiguration.PartLabelName,
-                    PartLabelSource = config.PrinterConfiguration.PartLabelSource,
-                    PartLabelTemplate = config.PrinterConfiguration.PartLabelTemplate,
-                    LabelDefinitions = config.PrinterConfiguration.LabelDefinitions
-                }, barcodeGenerator);
-            }, new PerScopeLifetime());
+            container.Register<ILabelGenerator, LabelGenerator>(new PerScopeLifetime());
+            container.Register<ILabelPrinterHardware, DymoLabelPrinterHardware>(new PerScopeLifetime());
         }
 
         private static void RegisterServices(IServiceContainer container)

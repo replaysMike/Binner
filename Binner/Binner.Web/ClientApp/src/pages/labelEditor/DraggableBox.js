@@ -54,7 +54,7 @@ export const DraggableBox = memo(function DraggableBox(props) {
 	const boxStyleToApply = {...props.style};
 
   return (
-    <div ref={drag} name={props.name} style={styleToApply} role="DraggableBox" onClick={handleClick} className={`draggableBox ${getResizeClass(props.resize)}`} onKeyDown={props.onKeyDown} tabIndex={-1}>
+    <div ref={drag} id={id} name={props.name} style={styleToApply} role="DraggableBox" onClick={handleClick} className={`draggableBox ${getResizeClass(props.resize)}`} onKeyDown={props.onKeyDown} tabIndex={-1}>
       <Box style={boxStyleToApply} name={props.name} selected={props.selected} className="box">{props.children}</Box>
     </div>
   );
@@ -62,6 +62,7 @@ export const DraggableBox = memo(function DraggableBox(props) {
 
 DraggableBox.propTypes = {
 	name: PropTypes.string,
+	id: PropTypes.string,
   onClick: PropTypes.func,
 	/** True if currently selected */
 	selected: PropTypes.bool,

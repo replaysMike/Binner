@@ -1,14 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import _ from "underscore";
 import { FormHeader } from "../../components/FormHeader";
-import { Popup, Dropdown, Table, Breadcrumb, Input, Button, Icon } from "semantic-ui-react";
+import { Popup, Dropdown, Table, Breadcrumb, Input, Button, Icon, Image } from "semantic-ui-react";
+import debounce from "lodash.debounce";
+import AlignVerticalTopIcon from '@mui/icons-material/AlignVerticalTop';
+import AlignVerticalCenterIcon from '@mui/icons-material/AlignVerticalCenter';
+import AlignVerticalBottomIcon from '@mui/icons-material/AlignVerticalBottom';
+import AlignHorizontalLeft from '@mui/icons-material/AlignHorizontalLeft';
+import AlignHorizontalCenter from '@mui/icons-material/AlignHorizontalCenter';
+import AlignHorizontalRight from '@mui/icons-material/AlignHorizontalRight';
 import { LabelDropContainer } from "./LabelDropContainer";
 import { DndProvider } from "react-dnd";
 import { DraggableBox } from "./DraggableBox";
 import { QRCodeIcon, DataMatrixIcon, Code128Icon, Code128NoTextIcon } from "./icons";
+import { DEFAULT_FONT } from '../../common/Types';
 import { HandleBinaryResponse } from "../../common/handleResponse.js";
 import { fetchApi } from "../../common/fetchApi";
 import { getImagesToken } from "../../common/authentication";
@@ -16,15 +24,17 @@ import { updateStateItem } from "../../common/reactHelpers";
 import "./labelEditor.css";
 
 export function LabelEditor(props) {
+	const PreviewDebounceTimeMs = 500;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const defaultItemProperties = {
     align: 0,
-    fontSize: 1,
+    fontSize: 2,
     fontWeight: 1,
     color: 0,
-    width: "",
-    height: "",
+		rotate: 0,
+		font: DEFAULT_FONT,
+		name: "",
     value: ""
   };
   const [boxes, setBoxes] = useState([]);
@@ -34,6 +44,13 @@ export function LabelEditor(props) {
   const [selectedItemProperties, setSelectedItemProperties] = useState({});
 	const [imgBase64, setImgBase64] = useState("");
 	const [clearSelectedItem, setClearSelectedItem] = useState(null);
+	const [fontOptions, setFontOptions] = useState([
+    {
+      key: 1,
+      value: 0,
+      text: "Loading"
+    }
+  ]);
 
   const labelTemplateOptions = [
     { key: -1, text: "Custom", value: -1, printwidth: 1.875, printheight: 0.5625, printdpi: 300, printmargin: 0, printpadding: 0 },
@@ -65,13 +82,13 @@ export function LabelEditor(props) {
   ];
 
   const fontSizeOptions = [
-    { key: 0, text: "12pt", value: 0 },
-    { key: 1, text: "14pt", value: 1 },
-    { key: 2, text: "16pt", value: 2 },
-    { key: 3, text: "18pt", value: 3 },
-    { key: 4, text: "24pt", value: 4 },
-    { key: 5, text: "32pt", value: 5 },
-    { key: 6, text: "48pt", value: 6 }
+    { key: 0, text: "Tiny", value: 0 },
+    { key: 1, text: "Small", value: 1 },
+    { key: 2, text: "Normal", value: 2 },
+    { key: 3, text: "Medium", value: 3 },
+    { key: 4, text: "Large", value: 4 },
+    { key: 5, text: "ExtraLarge", value: 5 },
+    { key: 6, text: "VeryLarge", value: 6 }
   ];
 
   const fontWeightOptions = [
@@ -102,6 +119,7 @@ export function LabelEditor(props) {
     const templateOption = _.find(labelTemplateOptions, (i) => i.value === control.value);
     setLabelTemplateWidth(templateOption.printwidth);
     setLabelTemplateHeight(templateOption.printheight);
+		previewDebounced(boxes);
   };
 
   const handleItemPropertyChange = (e, control) => {
@@ -111,6 +129,7 @@ export function LabelEditor(props) {
       const newItemProperties = updateStateItem(itemProperties, selectedItemProperties, "name", selectedItem.name);
       setItemProperties(newItemProperties);
     }
+		previewDebounced(boxes);
   };
 
   const handleSelectedItemChanged = (e, selectedItem) => {
@@ -128,6 +147,7 @@ export function LabelEditor(props) {
       setItemProperties(newItemProperties);
     }
     setSelectedItemProperties(itemProp);
+		previewDebounced(boxes);
   };
 
   const getItemProperties = (item) => {
@@ -162,39 +182,63 @@ export function LabelEditor(props) {
   };
 
   const handleOnRemove = (box) => {
-    console.log("Remove received", box);
     try {
       setBoxes(_.filter(boxes, (i) => i.id !== box.id));
     } catch {}
   };
 
-  const handlePreview = async () => {
-		console.log('Preview', boxes);
+	useEffect(() => {
+    const loadFonts = async () => {
+      await fetchApi("api/print/fonts", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((response) => {
+        const { data } = response;
+        const newFonts = data.map((l, k) => {
+          return {
+            key: k,
+            value: l,
+            text: l
+          };
+        });
+        const selectedFont = _.find(newFonts, (x) => x && x.text === DEFAULT_FONT);
+        setFontOptions(newFonts);
+    });
+    };
+    
+    loadFonts();
+  }, []);  
+
+  const handlePreview = async (boxes) => {
 		const request = {
 			token: getImagesToken(),
 			label: {
-				labelTemplateWidth,
-				labelTemplateHeight,
-				labelTemplate,
-				labelTemplateDpi,
-				labelTemplateMargin,
-				labelTemplatePadding,
+				width: labelTemplateWidth,
+				height: labelTemplateHeight,
+				templateId: labelTemplate,
+				name: labelTemplateNew,
+				dpi: labelTemplateDpi,
+				margin: labelTemplateMargin,
+				padding: labelTemplatePadding,
 			},
 			boxes: boxes.map((box) => ({
 				acceptsValue: box.acceptsValue,
 				displayValue: box.displayValue,
 				id: box.id,
-				left: box.left,
+				left: Math.trunc(box.left),
 				name: box.name,
 				resize: box.resize,
-				top: box.top,
-				properties: getItemProperties(box)
+				top: Math.trunc(box.top),
+				properties: getItemProperties(box) || defaultItemProperties,
+				width: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().width) || 0,
+				height: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().height) || 0,
 			})),
 			generateImageOnly: true
 		};
-		console.log('request', request);
 
-		await fetchApi("api/print/custom2", {
+		await fetchApi("api/print/beta", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -208,6 +252,8 @@ export function LabelEditor(props) {
     });
 	};
 
+	const previewDebounced = useMemo(() => debounce(handlePreview, PreviewDebounceTimeMs), []);
+
 	const arrayBufferToBase64 = (buffer) => {
     let binary = "";
     let bytes = [].slice.call(new Uint8Array(buffer));
@@ -216,6 +262,39 @@ export function LabelEditor(props) {
 
     return btoa(binary);
   };
+
+	const handleAlignSelected = (alignTo) => {
+		if (!selectedItem) return;
+
+		const box = _.find(boxes, i => i.id === selectedItem.id);
+		const id = box.id;
+		const el = document.getElementById(id);
+		switch(alignTo){
+			case 'left':
+				box.left = 0;
+				break;
+			default:
+			case 'center':
+				box.left = ((convertInchesToPixels(labelTemplateWidth) / 2) - (el.offsetWidth / 2));
+				break;
+			case 'right':
+				box.left = (convertInchesToPixels(labelTemplateWidth) - el.offsetWidth) - 3;
+				break;
+			case 'top':
+				box.top = 0;
+				break;
+			case 'middle':
+				box.top = ((convertInchesToPixels(labelTemplateHeight) / 2) - (el.offsetHeight / 2));
+				break;
+			case 'bottom':
+				box.top = (convertInchesToPixels(labelTemplateHeight) - el.offsetHeight);
+				break;
+		}
+		setSelectedItem(box);
+		const newBoxes = [...boxes];
+		setBoxes(newBoxes);
+		previewDebounced(newBoxes);
+	};
 
   const handleSave = () => {};
 
@@ -249,6 +328,28 @@ export function LabelEditor(props) {
                 <Popup wide content="Custom text string" trigger={<span>Regular Text</span>} />
               </DraggableBox>
             </div>
+						<div className="header" style={{ flex: "0" }}>
+              <label>Preview</label>
+            </div>
+            <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
+							{imgBase64 && (
+								<Popup 
+									hoverable
+									size="huge"
+									wide="very"
+									content={<Image
+										name="previewImage"
+										src={`data:image/png;base64,${imgBase64}`}
+										style={{ border: '1px solid #000', backgroundColor: '#fff' }}
+									/>}
+									trigger={<Image
+										name="previewImage"
+										src={`data:image/png;base64,${imgBase64}`}
+										size="medium"
+										style={{ marginTop: "20px", border: '1px solid #000', backgroundColor: '#fff' }}
+								/>} />
+							)}
+            </div>
           </div>
         </div>
         <div className="layout">
@@ -268,6 +369,7 @@ export function LabelEditor(props) {
                 onDrop={handleOnDrop}
                 onMove={handleOnMove}
                 onRemove={handleOnRemove}
+								boxes={boxes}
               />
               <div style={{ fontSize: "0.9em", fontWeight: "700", color: "#333" }}>{_.find(labelTemplateOptions, (i) => i.value === labelTemplate)?.text}</div>
               <div style={{ fontSize: "0.7em", color: "#999" }}>Drag and drop components onto the label surface above</div>
@@ -278,14 +380,22 @@ export function LabelEditor(props) {
                 <Table celled>
                   <Table.Body>
                     <Table.Row>
-                      <Table.Cell colSpan={6}>
+											<Table.Cell colSpan={3}>
+												<Button icon onClick={() => handleAlignSelected('left')} disabled={!selectedItem} size="tiny" title="Align left"><AlignHorizontalLeft /></Button>
+												<Button icon onClick={() => handleAlignSelected('center')} disabled={!selectedItem} size="tiny" title="Align center"><AlignHorizontalCenter /></Button>
+												<Button icon onClick={() => handleAlignSelected('right')} disabled={!selectedItem} size="tiny" title="Align right"><AlignHorizontalRight /></Button>
+												<Button icon onClick={() => handleAlignSelected('top')} disabled={!selectedItem} size="tiny" title="Align top"><AlignVerticalTopIcon /></Button>
+												<Button icon onClick={() => handleAlignSelected('middle')} disabled={!selectedItem} size="tiny" title="Align middle"><AlignVerticalCenterIcon /></Button>
+												<Button icon onClick={() => handleAlignSelected('bottom')} disabled={!selectedItem} size="tiny" title="Align bottom"><AlignVerticalBottomIcon /></Button>
+											</Table.Cell>
+                      <Table.Cell colSpan={3}>
                         <div style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "100%" }}>
                           <div style={{ flex: "1", display: "flex", justifyContent: "start" }}>
                             <Popup
                               wide
                               content="Preview your label with content"
                               trigger={
-                                <Button size="mini" secondary onClick={handlePreview}>
+                                <Button size="mini" secondary onClick={() => handlePreview(boxes)}>
                                   <Icon name="eye" color="blue" /> Preview
                                 </Button>
                               }
@@ -404,18 +514,36 @@ export function LabelEditor(props) {
               <div>
                 <Table celled>
                   <Table.Body>
+										<Table.Row>
+											<Table.Cell colSpan={6}>
+												{selectedItem && 
+												<div className="itemProperties">
+													<span>X: {selectedItem.left}</span>
+													<span>Y: {selectedItem.top}</span>
+													<span>Width: {Math.trunc(document.getElementById(selectedItem.id)?.getBoundingClientRect().width)}</span>
+													<span>Height: {Math.trunc(document.getElementById(selectedItem.id)?.getBoundingClientRect().height)}</span>
+												</div>
+												}
+											</Table.Cell>
+										</Table.Row>
                     <Table.Row>
                       <Table.Cell>
                         <b>Align:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
-                        <Dropdown selection name="align" options={alignOptions} value={selectedItemProperties?.align || 0} onChange={handleItemPropertyChange} />
+                        <Dropdown selection name="align" options={alignOptions} value={selectedItemProperties?.align || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
+                      </Table.Cell>
+											<Table.Cell>
+                        <b>Font:</b>
+                      </Table.Cell>
+                      <Table.Cell style={{ width: "150px" }}>
+                        <Dropdown style={{ width: "150px" }} selection name="font" options={fontOptions} value={selectedItemProperties?.font || ""} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                       <Table.Cell>
                         <b>Rotate:</b>
                       </Table.Cell>
-                      <Table.Cell colSpan={3}>
-                        <Dropdown style={{ width: "150px" }} selection name="rotate" options={rotateOptions} value={selectedItemProperties?.rotate || 0} onChange={handleItemPropertyChange} />
+                      <Table.Cell>
+                        <Dropdown style={{ width: "150px" }} selection name="rotate" options={rotateOptions} value={selectedItemProperties?.rotate || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -423,19 +551,19 @@ export function LabelEditor(props) {
                         <b>Font Size:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
-                        <Dropdown selection name="fontSize" options={fontSizeOptions} value={selectedItemProperties?.fontSize || 0} onChange={handleItemPropertyChange} />
+                        <Dropdown selection name="fontSize" options={fontSizeOptions} value={selectedItemProperties?.fontSize || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                       <Table.Cell>
                         <b>Font Weight:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
-                        <Dropdown selection name="fontWeight" options={fontWeightOptions} value={selectedItemProperties?.fontWeight || 0} onChange={handleItemPropertyChange} />
+                        <Dropdown selection name="fontWeight" options={fontWeightOptions} value={selectedItemProperties?.fontWeight || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                       <Table.Cell>
                         <b>Color:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
-                        <Dropdown selection name="color" options={colorOptions} value={selectedItemProperties?.color || 0} onChange={handleItemPropertyChange} />
+                        <Dropdown selection name="color" options={colorOptions} value={selectedItemProperties?.color || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -448,7 +576,7 @@ export function LabelEditor(props) {
                           name="value"
                           placeholder="Enter some text"
                           value={selectedItemProperties?.value || ""}
-                          disabled={!selectedItem?.acceptsValue}
+                          disabled={!selectedItem?.acceptsValue || !selectedItem}
                           onChange={handleItemPropertyChange}
                         />
                       </Table.Cell>
@@ -465,12 +593,8 @@ export function LabelEditor(props) {
               <label>Part Information</label>
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
-              <DraggableBox name="partNumber">
-                <span style={{ color: "#0c8" }}>Part Number</span>
-              </DraggableBox>
-              <DraggableBox name="manufacturerPartNumber">
-                <span style={{ color: "#0a6" }}>Mfr Part Number</span>
-              </DraggableBox>
+              <DraggableBox name="partNumber">Part Number</DraggableBox>
+              <DraggableBox name="manufacturerPartNumber">Mfr Part Number</DraggableBox>
               <DraggableBox name="manufacturer">Manufacturer</DraggableBox>
               <DraggableBox name="description">Description</DraggableBox>
               <DraggableBox name="partType">Part Type</DraggableBox>
@@ -483,15 +607,9 @@ export function LabelEditor(props) {
               <DraggableBox name="digikeyPartNumber">DigiKey P/N</DraggableBox>
               <DraggableBox name="mouserPartNumber">Mouser P/N</DraggableBox>
               <DraggableBox name="arrowPartNumber">Arrow P/N</DraggableBox>
-              <DraggableBox name="location">
-                <span style={{ color: "#08c" }}>Location</span>
-              </DraggableBox>
-              <DraggableBox name="binNumber">
-                <span style={{ color: "#08c" }}>Bin Number</span>
-              </DraggableBox>
-              <DraggableBox name="binNumber2">
-                <span style={{ color: "#08c" }}>Bin Number2</span>
-              </DraggableBox>
+              <DraggableBox name="location">Location</DraggableBox>
+              <DraggableBox name="binNumber">Bin Number</DraggableBox>
+              <DraggableBox name="binNumber2">Bin Number2</DraggableBox>
             </div>
           </div>
         </div>

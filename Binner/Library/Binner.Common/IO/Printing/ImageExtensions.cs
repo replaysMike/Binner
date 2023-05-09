@@ -21,7 +21,7 @@ namespace Binner.Common.IO.Printing
         {
             using var memoryStream = new MemoryStream();
             var imageConfiguration = image.GetConfiguration();
-            var imageEncoder = imageConfiguration.ImageFormatsManager.FindEncoder(PngFormat.Instance);
+            var imageEncoder = imageConfiguration.ImageFormatsManager.GetEncoder(PngFormat.Instance);
             image.Save(memoryStream, imageEncoder);
             memoryStream.Seek(0, SeekOrigin.Begin);
             var bitmap = new Bitmap(memoryStream);
