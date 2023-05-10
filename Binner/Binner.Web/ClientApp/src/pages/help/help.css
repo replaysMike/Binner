@@ -131,6 +131,9 @@
   font-size: 1.1em;
   min-height: 50px;
   padding: 10px;
+}
+
+.help .helpcontainer li h1 span {
 	text-decoration: underline;
 }
 

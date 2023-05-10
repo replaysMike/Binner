@@ -33,7 +33,10 @@ import LowInventory from "./pages/LowInventory";
 import { OrderImport } from "./pages/OrderImport";
 import { PartTypes } from "./pages/PartTypes";
 import { ExportData } from "./pages/ExportData";
-import { PrintLabels } from "./pages/PrintLabels";
+import { Printing } from "./pages/printing/Home";
+import { PrintLabels } from "./pages/printing/PrintLabels";
+import { PrintLabels2 } from "./pages/printing/PrintLabels2";
+import { BulkPrint } from "./pages/printing/BulkPrint";
 import { Tools } from "./pages/Tools";
 import { Settings } from "./pages/Settings";
 import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
@@ -44,7 +47,6 @@ import { Help } from "./pages/help/Home";
 import { Scanning } from "./pages/help/Scanning";
 import { ApiIntegrations } from "./pages/help/ApiIntegrations";
 import { BOM } from "./pages/help/BOM";
-import { PrintLabels2 } from "./pages/PrintLabels2";
 
 // admin
 import { Users } from "./pages/admin/users/Users";
@@ -174,8 +176,10 @@ export const App = (props) => {
           <Route path="/partTypes" element={<PageWrapper><PartTypes /></PageWrapper>} />
           <Route path="/projects" element={<PageWrapper><Bom /></PageWrapper>} />
           <Route path="/exportData" element={<PageWrapper><ExportData /></PageWrapper>} />
-          <Route path="/print" element={<PageWrapper><PrintLabels /></PageWrapper>} />
-          <Route path="/print2" element={<PageWrapper><PrintLabels2 /></PageWrapper>} />
+          <Route path="/printing" element={<PageWrapper><Printing /></PageWrapper>} />
+          <Route path="/printing/printLabels" element={<PageWrapper><PrintLabels /></PageWrapper>} />
+          <Route path="/printing/labelTemplates" element={<PageWrapper><PrintLabels2 /></PageWrapper>} />
+          <Route path="/printing/bulkPrint" element={<PageWrapper><BulkPrint /></PageWrapper>} />
           <Route exact path="/tools" element={<PageWrapper><Tools /></PageWrapper>} />
           <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
           <Route path="/tools/ohmslaw" element={<PageWrapper><OhmsLawCalculator /></PageWrapper>} />
