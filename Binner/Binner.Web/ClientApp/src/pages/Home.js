@@ -132,7 +132,7 @@ export function Home(props) {
               </Statistic.Value>
               <Statistic.Label>{t('page.home.importExport', "Import/Export")}</Statistic.Label>
             </Statistic>
-            <Statistic onClick={(e) => route(e, "/print")} style={{ cursor: "pointer" }}>
+            <Statistic onClick={(e) => route(e, "/printing")} style={{ cursor: "pointer" }}>
               <Statistic.Value>
                 <Icon name="print" />
               </Statistic.Value>

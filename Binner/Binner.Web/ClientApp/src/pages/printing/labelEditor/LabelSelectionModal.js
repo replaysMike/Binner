@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Icon, Button, Form, Modal, Header } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import _ from "underscore";
-import { fetchApi } from "../../common/fetchApi";
+import { fetchApi } from "../../../common/fetchApi";
 
 /**
  * Select or create a label

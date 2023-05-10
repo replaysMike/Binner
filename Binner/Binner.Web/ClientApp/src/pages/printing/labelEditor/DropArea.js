@@ -4,7 +4,7 @@ import { useDrop } from 'react-dnd';
 import { DraggableBox } from './DraggableBox';
 import { ItemTypes } from './ItemTypes';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
-import { updateStateItem } from '../../common/reactHelpers';
+import { updateStateItem } from '../../../common/reactHelpers';
 import { getChildrenByName } from './labelEditorComponents';
 import _ from 'underscore';
 

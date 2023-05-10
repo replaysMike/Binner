@@ -24,23 +24,23 @@ export const Help = () => {
         <div className="helpcontainer">
           <ul>
 						<li onClick={() => navigate("/help/scanning")}>
-              <h1>Barcode Scanning</h1>
+              <h1><span>Barcode Scanning</span></h1>
               <p>Learn more about what types of features are available using a handheld barcode scanner.</p>
             </li>
             <li onClick={() => navigate("/help/api-integrations")}>
-              <h1>Api Integrations</h1>
+              <h1><span>Api Integrations</span></h1>
               <p>Configuring Api integrations are an important part of using Binner effectively.</p>
             </li>
             <li onClick={() => navigate("/help/bom")}>
-              <h1>BOM</h1>
+              <h1><span>BOM</span></h1>
               <p>Learn how to configure BOM (Bill of Materials) projects to aid in managing your inventory usage.</p>
             </li>
             <li onClick={() => window.open("https://github.com/replaysMike/Binner/wiki", "_blank")}>
-              <h1>Wiki</h1>
+              <h1><span>Wiki</span></h1>
               <p>Get more help from the wiki on GitHub</p>
             </li>
 						<li onClick={() => window.open("https://github.com/replaysMike/Binner/issues", "_blank")}>
-							<h1>Report a Bug</h1>
+							<h1><span>Report a Bug</span></h1>
 							<Icon name="bug" color="blue" size="large" />
               <p>Help the community build a great free product by reporting bugs online.</p>
             </li>
