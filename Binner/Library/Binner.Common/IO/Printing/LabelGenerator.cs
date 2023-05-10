@@ -1,4 +1,5 @@
-﻿using Barcoder.Renderer.Image;
+﻿using AnyBarcode;
+using Barcoder.Renderer.Image;
 using Binner.Common.Extensions;
 using Binner.Model;
 using Binner.Model.IO.Printing;
@@ -153,8 +154,14 @@ namespace Binner.Common.IO.Printing
             using var qrCodeData = qrGenerator.CreateQrCode(text, QRCodeGenerator.ECCLevel.Q);
             using var qrCode = new QRCode(qrCodeData);
             using var barcodeImage = qrCode.GetGraphic(20);
+            var marginPerc = 0.075f;
+            var marginSize = (int)(barcodeImage.Size.Width * marginPerc);
+
+            // crop and remove the white margin around the code
+            barcodeImage.Mutate(c => c.Crop(new Rectangle(marginSize, marginSize, barcodeImage.Width - marginSize - marginSize, barcodeImage.Height - marginSize - marginSize)));
             barcodeImage.Mutate(c => c.Resize((int)width, (int)height));
-            image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
+            image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x + 1, (int)y + 1), new GraphicsOptions()));
+            //image.Mutate<Rgba32>(c => c.Draw(Pens.Solid(Color.Red, 1), new RectangleF(x, y, width - 1, height - 1)));
         }
 
         private void DrawDataMatrix(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
@@ -163,8 +170,13 @@ namespace Binner.Common.IO.Printing
             var barcode = Barcoder.DataMatrix.DataMatrixEncoder.Encode(text);
             var renderer = new ImageRenderer();
             using var barcodeImage = renderer.Render(barcode);
+            var marginPerc = ((barcode.Margin - 1) / (float)barcode.Bounds.X);
+            var marginSize = (int)(barcodeImage.Size.Width * marginPerc);
+            // crop and remove the white margin around the code
+            barcodeImage.Mutate(c => c.Crop(new Rectangle(marginSize, marginSize, barcodeImage.Width - marginSize - marginSize, barcodeImage.Height - marginSize - marginSize)));
             barcodeImage.Mutate(c => c.Resize((int)width, (int)height));
-            image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
+            image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x + 1, (int)y + 1), new GraphicsOptions()));
+            //image.Mutate<Rgba32>(c => c.Draw(Pens.Solid(Color.Red, 1), new RectangleF(x, y, width - 1, height - 1)));
         }
 
         private void DrawPdf417(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
@@ -175,6 +187,7 @@ namespace Binner.Common.IO.Printing
             using var barcodeImage = renderer.Render(barcode);
             barcodeImage.Mutate(c => c.Resize((int)width, (int)height));
             image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
+            //image.Mutate<Rgba32>(c => c.Draw(Pens.Solid(Color.Red, 1), new RectangleF(x, y, width - 1, height - 1)));
         }
 
         private void DrawAztecCode(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
@@ -183,8 +196,13 @@ namespace Binner.Common.IO.Printing
             var barcode = Barcoder.Aztec.AztecEncoder.Encode(text);
             var renderer = new ImageRenderer();
             using var barcodeImage = renderer.Render(barcode);
+            var marginPerc = ((barcode.Margin - 1) / (float)barcode.Bounds.X);
+            var marginSize = (int)(barcodeImage.Size.Width * marginPerc);
+            // crop and remove the white margin around the code
+            barcodeImage.Mutate(c => c.Crop(new Rectangle(marginSize, marginSize, barcodeImage.Width - marginSize - marginSize, barcodeImage.Height - marginSize - marginSize)));
             barcodeImage.Mutate(c => c.Resize((int)width, (int)height));
-            image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x, (int)y), new GraphicsOptions()));
+            image.Mutate(c => c.DrawImage(barcodeImage, new Point((int)x + 1, (int)y + 1), new GraphicsOptions()));
+            //image.Mutate<Rgba32>(c => c.Draw(Pens.Solid(Color.Red, 1), new RectangleF(x, y, width - 1, height - 1)));
         }
 
         private void DrawCode128(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
