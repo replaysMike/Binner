@@ -17,16 +17,16 @@ import "./PartTypeSelector.css";
  * Part type selector dropdown (treeview with icons)
  * [memoized]
  */
-export default function PartTypeSelectorMemoized(props) {
+export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, label, name, value, onSelect, onBlur, onFocus }) {
   const { t } = useTranslation();
   PartTypeSelectorMemoized.abortController = new AbortController();
-  const [partTypes, setPartTypes] = useState(props.partTypes);
-	const [partTypesFiltered, setPartTypesFiltered] = useState([]);
+  const [internalPartTypes, setInternalPartTypes] = useState(partTypes);
+	const [internalPartTypesFiltered, setInternalPartTypesFiltered] = useState([]);
 	const [partTypeId, setPartTypeId] = useState(0);
   const [partType, setPartType] = useState({ partTypeId: 0, name: ""});
 	const [filter, setFilter] = useState('');
 	const [expandedNodeIds, setExpandedNodeIds] = useState([]);
-  const [loadingPartTypes, setLoadingPartTypes] = useState(false);
+  const [loading, setLoading] = useState(false);
 
 	const getPartTypeFromId = useCallback((partTypeId) => {
 		let partTypeIdInt = partTypeId;
@@ -34,32 +34,27 @@ export default function PartTypeSelectorMemoized(props) {
 			partTypeIdInt = parseInt(partTypeId);
 		else if(typeof partTypeId === "object")
 			return partTypeId;
-		return _.find(partTypes, (i) => i.partTypeId === partTypeIdInt);
-	}, [partTypes]);
-
-	const getPartTypeFromName = (name) => {
-		const lcName = name.toLowerCase();
-		return _.find(partTypes, (i) => i.name.toLowerCase() === lcName)
-	};
+		return _.find(internalPartTypes, (i) => i.partTypeId === partTypeIdInt);
+	}, [internalPartTypes]);
 
   useEffect(() => {
-    setPartTypes(props.partTypes);
-		setPartTypesFiltered(props.partTypes);
-  }, [props.partTypes]);
+    setInternalPartTypes(partTypes);
+		setInternalPartTypesFiltered(partTypes);
+  }, [partTypes]);
 
   useEffect(() => {
-    setLoadingPartTypes(props.loadingPartTypes);
-  }, [props.loadingPartTypes]);
+    setLoading(loadingPartTypes);
+  }, [loadingPartTypes]);
 
   useEffect(() => {
-		const type = typeof props.value;
+		const type = typeof value;
 		let newPartTypeId = 0;
 		if (type === "string") {
-			newPartTypeId = parseInt(props.value);
+			newPartTypeId = parseInt(value);
 		} else if (type === "number") {
-			newPartTypeId = props.value;
+			newPartTypeId = value;
 		} else {
-			console.error(`Unknown value type specified: ${props.value} = ${type}`);
+			console.error(`Unknown value type specified: ${value} = ${type}`);
 			return;
 		}
 		const newPartType = getPartTypeFromId(newPartTypeId);
@@ -67,7 +62,7 @@ export default function PartTypeSelectorMemoized(props) {
 			setPartTypeId(newPartTypeId);
 			setPartType(newPartType);
 		}
-  }, [props.value, props.partTypes, getPartTypeFromId]);
+  }, [value, partTypes, getPartTypeFromId]);
 
   const StyledTreeItemRoot = styled(TreeItem)(({ theme }) => ({
     color: theme.palette.text.secondary,
@@ -125,12 +120,12 @@ export default function PartTypeSelectorMemoized(props) {
     );
   };
 
-	const recursivePreFilter = (partTypes, parentPartTypeId, filterBy) => {
+	const recursivePreFilter = useCallback(() => (allPartTypes, parentPartTypeId, filterBy) => {
 		// go through every child, mark filtered matches
 
 		const filterByLowerCase = filterBy.toLowerCase();
 		const childrenComponents = [];
-		let partTypesInCategory = _.filter(partTypes, (i) => i.parentPartTypeId === parentPartTypeId);
+		let partTypesInCategory = _.filter(allPartTypes, (i) => i.parentPartTypeId === parentPartTypeId);
 		for(let i = 0; i < partTypesInCategory.length; i++){
 			partTypesInCategory[i].exactMatch = partTypesInCategory[i].name.toLowerCase() === filterByLowerCase;
 			if (partTypesInCategory[i].name.toLowerCase().includes(filterByLowerCase)){
@@ -141,7 +136,7 @@ export default function PartTypeSelectorMemoized(props) {
 			childrenComponents.push(partTypesInCategory[i]);
 
 			// now filter the children of this category
-			const childs = recursivePreFilter(partTypes, partTypesInCategory[i].partTypeId, filterBy);
+			const childs = recursivePreFilter(allPartTypes, partTypesInCategory[i].partTypeId, filterBy);
 			if (_.find(childs, i => i.filterMatch)) {
 				// make sure the parent matches the filter because it has children that does
 				partTypesInCategory[i].filterMatch = true;
@@ -151,20 +146,20 @@ export default function PartTypeSelectorMemoized(props) {
 			}
 		}
 		return childrenComponents;
-	};
+	}, []);
 
-  const recursiveTreeItem = (partTypes, parentPartTypeId = null) => {
+  const recursiveTreeItem = useCallback((allPartTypes, parentPartTypeId = null) => {
     // build a tree graph
 
-    let children = _.filter(partTypes, (i) => i.parentPartTypeId === parentPartTypeId);
+    let children = _.filter(allPartTypes, (i) => i.parentPartTypeId === parentPartTypeId);
 		
     const childrenComponents = [];
     if (children && children.length > 0) {
       for (let i = 0; i < children.length; i++) {
         const key = `${children[i].name}-${i}`;
         const nodeId = `${children[i].name}`;
-        const childs = recursiveTreeItem(partTypes, children[i].partTypeId);
-        const basePartTypeName = _.find(partTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
+        const childs = recursiveTreeItem(allPartTypes, children[i].partTypeId);
+        const basePartTypeName = _.find(allPartTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
         const partTypeName = children[i].name;
         childrenComponents.push(
           <StyledTreeItem
@@ -186,88 +181,93 @@ export default function PartTypeSelectorMemoized(props) {
     }
 
     return childrenComponents;
-  };
-
-	const handleOnSearchChange = (e, control) => {
-		// process keyboard input
-		setFilter(control.searchQuery);
-		let newPartTypesFiltered = recursivePreFilter(partTypes, null, control.searchQuery.toLowerCase());
-    // now remove all part types that don't match the filter
-    newPartTypesFiltered = _.filter(partTypes, i => i.filterMatch === true);
-    const newPartTypesFilteredOrdered = _.sortBy(newPartTypesFiltered, x => x.exactMatch ? 0 : 1);
-    setPartTypesFiltered(newPartTypesFilteredOrdered);
-    if (control.searchQuery.length > 1) {
-      setExpandedNodeIds(_.map(newPartTypesFiltered, (i) => (i.name)));
-    }else{
-      setExpandedNodeIds([]);
-    }
-	};
-
-  const handleOnNodeSelect = (e, selectedPartTypeName) => {
-    const selectedPartType = getPartTypeFromName(selectedPartTypeName);
-    if (selectedPartType) {
-      setPartType(selectedPartType);
-      // fire event
-			if (props.onSelect) props.onSelect(e, selectedPartType);
-    }
-  };
-
-  const handleOnNodeToggle = (e, node) => {
-    //e.preventDefault();
-    //e.stopPropagation();
-		// preventing event propagation leads to ui weirdness unfortunately
-		if (expandedNodeIds.includes(node))
-			setExpandedNodeIds(_.filter(expandedNodeIds, i => i !== node));
-		else
-			setExpandedNodeIds(node);
-  };
-
-  const handleOnBlur = (e, control) => {
-		e.stopPropagation();
-		if (props.onBlur) props.onBlur(e, control);
-    // reset the search filtering
-    setFilter(null);
-    setExpandedNodeIds([]);
-    setPartTypesFiltered([...partTypes]);
-  };
-
-  const handleOnFocus = (e, control) => {
-		setFilter('');
-    if (props.onFocus) props.onFocus(e, control);
-  };
-
-	const handleInternalOnBlur = (e, control) => {
-		if (props.onBlur) props.onBlur(e, control);
-	};
-
-	const handleInternalOnFocus = (e, control) => {
-		document.getElementById("partTypeDropdown").firstChild.focus();
-    if (props.onFocus) props.onFocus(e, control);
-  };
+  }, []);
 
   const getSelectedText = (partType) => {
     if (partType) {
       return partType?.name || "";
     }
     return "";
-  };
-
-  const getSelectedIcon = (partType) => {
-    if (partType) {
-      const basePartTypeName = partType?.parentPartTypeId && _.find(partTypes, x => x.partTypeId === partType?.parentPartTypeId)?.name;
-      const partTypeName = partType?.name;
-      return (partType && getIcon(partType?.name, basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`}));
-    }
-    return "";
-  };
+  };  
 
   const render = useMemo(() => {
+    const getPartTypeFromName = (name) => {
+      const lcName = name.toLowerCase();
+      return _.find(internalPartTypes, (i) => i.name.toLowerCase() === lcName)
+    };
+    
+    const handleOnSearchChange = (e, control) => {
+      // process keyboard input
+      setFilter(control.searchQuery);
+      let newPartTypesFiltered = recursivePreFilter(internalPartTypes, null, control.searchQuery.toLowerCase());
+      // now remove all part types that don't match the filter
+      newPartTypesFiltered = _.filter(internalPartTypes, i => i.filterMatch === true);
+      const newPartTypesFilteredOrdered = _.sortBy(newPartTypesFiltered, x => x.exactMatch ? 0 : 1);
+      setInternalPartTypesFiltered(newPartTypesFilteredOrdered);
+      if (control.searchQuery.length > 1) {
+        setExpandedNodeIds(_.map(newPartTypesFiltered, (i) => (i.name)));
+      }else{
+        setExpandedNodeIds([]);
+      }
+    };
+  
+    const handleOnNodeSelect = (e, selectedPartTypeName) => {
+      const selectedPartType = getPartTypeFromName(selectedPartTypeName);
+      if (selectedPartType) {
+        setPartType(selectedPartType);
+        // fire event
+        if (onSelect) onSelect(e, selectedPartType);
+      }
+    };
+  
+    const handleOnNodeToggle = (e, node) => {
+      //e.preventDefault();
+      //e.stopPropagation();
+      // preventing event propagation leads to ui weirdness unfortunately
+      if (expandedNodeIds.includes(node))
+        setExpandedNodeIds(_.filter(expandedNodeIds, i => i !== node));
+      else
+        setExpandedNodeIds(node);
+    };
+
+    const handleOnBlur = (e, control) => {
+      e.stopPropagation();
+      if (onBlur) onBlur(e, control);
+      // reset the search filtering
+      setFilter(null);
+      setExpandedNodeIds([]);
+      setInternalPartTypesFiltered([...internalPartTypes]);
+    };
+  
+    const handleOnFocus = (e, control) => {
+      setFilter('');
+      if (onFocus) onFocus(e, control);
+    };
+  
+    const handleInternalOnBlur = (e, control) => {
+      if (onBlur) onBlur(e, control);
+    };
+  
+    const handleInternalOnFocus = (e, control) => {
+      document.getElementById("partTypeDropdown").firstChild.focus();
+      if (onFocus) onFocus(e, control);
+    };
+
+    const getSelectedIcon = (partType) => {
+      if (partType) {
+        const basePartTypeName = partType?.parentPartTypeId && _.find(internalPartTypes, x => x.partTypeId === partType?.parentPartTypeId)?.name;
+        const partTypeName = partType?.name;
+        return (partType && getIcon(partType?.name, basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`}));
+      }
+      return "";
+    };
+
     return (
     <div className="partTypeSelector-container">
       <div className="icon">{getSelectedIcon(partType)}</div>
       <Dropdown
         id="partTypeDropdown"
-        name={props.name || ""} 
+        name={name || ""} 
         text={getSelectedText(partType)}
         search 
         floating
@@ -277,8 +277,8 @@ export default function PartTypeSelectorMemoized(props) {
         onSearchChange={handleOnSearchChange}
         onBlur={handleOnBlur}
         onFocus={handleOnFocus}
-        disabled={loadingPartTypes}
-        loading={loadingPartTypes}
+        disabled={loading}
+        loading={loading}
       >
         <Dropdown.Menu>
           <Dropdown.Item>
@@ -296,17 +296,17 @@ export default function PartTypeSelectorMemoized(props) {
               selected={partType?.name || ""}
               sx={{ flexGrow: 1, maxWidth: "100%" }}
             >
-              {recursiveTreeItem(partTypesFiltered).map((x) => x)}
+              {recursiveTreeItem(internalPartTypesFiltered).map((x) => x)}
             </TreeView>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
     </div>);
-  }, [partType, partTypesFiltered, expandedNodeIds]);
+  }, [partType, internalPartTypes, internalPartTypesFiltered, expandedNodeIds, onSelect]);
 
   return (
     <>
-			<label>{props.label}</label>
+			<label>{label}</label>
 			{render}
     </>
   );
