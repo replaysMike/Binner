@@ -86,12 +86,30 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<int>("Dpi")
                         .HasColumnType("integer");
+
+                    b.Property<int>("DriverHeight")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DriverName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DriverWidth")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ExtraData")
+                        .HasColumnType("text");
 
                     b.Property<string>("Height")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("LabelCount")
+                        .HasColumnType("integer");
 
                     b.Property<int>("LabelPaperSource")
                         .HasColumnType("integer");

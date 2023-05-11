@@ -1,5 +1,7 @@
 using Binner.Common.Extensions;
 using NUnit.Framework;
+using System;
+using System.IO;
 
 namespace Binner.Common.Tests
 {
@@ -28,6 +30,11 @@ namespace Binner.Common.Tests
             var test = $"5.50";
             var value = test.FromCurrency();
             Assert.That(value, Is.EqualTo(5.50));
+        }
+
+        [Test]
+        public void UriTests()
+        {
         }
     }
 }

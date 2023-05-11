@@ -84,7 +84,6 @@
 .labelEditor .tools .draggableBox div {
 	background-color: #fff;
 	margin: 4px 0;
-	border-radius: 4px;
 }
 
 .labelEditor #container .draggableBox div {
@@ -92,7 +91,6 @@
 	line-height: 1em;
 	background-color: #f0f0f0;
 	overflow: hidden;
-	border-radius: 4px;
 }
 
 .labelEditor #container .draggableBox.resizeBoth>.box>.MuiSvgIcon-root {
@@ -109,14 +107,20 @@
 
 .labelEditor #container .draggableBox.resizeBoth div  {
 	resize: both !important;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .labelEditor #container .draggableBox.resizeHorizontal div  {
 	resize: horizontal !important;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .labelEditor #container .draggableBox.resizeVertical div  {
 	resize: vertical !important;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .labelEditor #container .draggableBox div::-webkit-resizer {
@@ -162,11 +166,12 @@ td.zoomTools div {
 	outline-style: dotted;
 	outline-color: gray;
 	outline-offset: -1px;
+	overflow: hidden;
 }
 
 .labelEditor .draggableBox .box.selected {
 	outline-width: 2px !important;
 	outline-style: dashed;
 	outline-color: #0478d1;
-	outline-offset: -3px;
+	outline-offset: -1px;
 }

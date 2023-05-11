@@ -3,6 +3,7 @@ using System;
 using Binner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Binner.Data.Migrations.MySql.Migrations
 {
     [DbContext(typeof(BinnerContext))]
-    partial class BinnerContextModelSnapshot : ModelSnapshot
+    [Migration("20230511063052_AddLabelTemplateDescription")]
+    partial class AddLabelTemplateDescription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,24 +88,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int>("Dpi")
                         .HasColumnType("int");
 
-                    b.Property<int>("DriverHeight")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DriverName")
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("DriverWidth")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ExtraData")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("Height")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<int>("LabelCount")
-                        .HasColumnType("int");
 
                     b.Property<int>("LabelPaperSource")
                         .HasColumnType("int");
