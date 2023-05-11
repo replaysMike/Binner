@@ -17,7 +17,7 @@ export function BulkPrint(props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('bc.bulkPrint', "Bulk Print")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.printing.bulkPrint.title', "Bulk Print")} to="/">
+      <FormHeader name={t('page.printing.bulkPrint.title', "Bulk Print")} to="/printing">
         <Trans i18nKey="page.printing.bulkPrint.description">
         Print labels for multiple parts at once.
         </Trans>

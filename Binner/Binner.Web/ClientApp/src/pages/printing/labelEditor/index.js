@@ -508,7 +508,7 @@ export function LabelEditor(props) {
         <div className="tools left">
           <div style={{ display: "flex", flexDirection: "column", flex: "1", alignItems: "start" }}>
             <div className="header" style={{ flex: "0" }}>
-              <label>Barcode Labels</label>
+              <label>{t('page.printing.labelTemplates.barcodeLabels', "Barcode Labels")}</label>
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
               <DraggableBox name="qrCode" resize="both" acceptsValue={true}>
@@ -528,7 +528,7 @@ export function LabelEditor(props) {
               </DraggableBox>
             </div>
             <div className="header" style={{ flex: "0" }}>
-              <label>Custom</label>
+              <label>{t('page.printing.labelTemplates.custom', "Custom")}</label>
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
               <DraggableBox name="text" acceptsValue={true} displaysValue={true}>
@@ -536,7 +536,7 @@ export function LabelEditor(props) {
               </DraggableBox>
             </div>
 						<div className="header" style={{ flex: "0" }}>
-              <label>Preview</label>
+              <label>{t('page.printing.labelTemplates.preview', "Preview")}</label>
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
 							{imgBase64 && (
@@ -562,7 +562,7 @@ export function LabelEditor(props) {
         <div className="layout">
           <div style={{ display: "flex", flexDirection: "column", flex: "1", alignItems: "center" }}>
             <div className="header" style={{ flex: "0" }}>
-              <label>Label Editor</label>
+              <label>{t('page.printing.labelTemplates.labelEditor', "Label Editor")}</label>
             </div>
             <div className="wrapper" style={{ flex: "1" }} onClick={handleClearSelectedItem}>
               <div className="zoomContainer" style={{ transform: `scale(${zoomLevel})` }}>
@@ -583,7 +583,7 @@ export function LabelEditor(props) {
               </div>
             </div>
             <div className="header" style={{ flex: "0" }}>
-              <label>Manage</label>
+              <label>{t('page.printing.labelTemplates.manage', "Manage")}</label>
               <div>
                 <Table celled>
                   <Table.Body>
@@ -599,7 +599,7 @@ export function LabelEditor(props) {
                       <Table.Cell className="zoomTools">
                         <Button icon="zoom out" onClick={() => handleZoomOut()} size="tiny" title="Zoom Out" disabled={zoomLevel <= 0.5}  />
                         <Button icon="zoom in" onClick={() => handleZoomIn()} size="tiny" title="Zoom In" disabled={zoomLevel >= 2.0} />
-                        <div>Zoom level: {(zoomLevel * 100).toFixed(0)}%</div>
+                        <div>{t('page.printing.labelTemplates.zoomLevel', "Zoom level")}: {(zoomLevel * 100).toFixed(0)}%</div>
                       </Table.Cell>
                       <Table.Cell colSpan={3} className="ioTools">
                         <div style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "100%" }}>
@@ -609,7 +609,7 @@ export function LabelEditor(props) {
                               content="Print the label"
                               trigger={
                                 <Button size="mini" onClick={() => handlePrint()}>
-                                  <Icon name="print" /> Print
+                                  <Icon name="print" /> {t('page.printing.labelTemplates.button.print', "Print")}
                                 </Button>
                               }
                             />
@@ -620,7 +620,7 @@ export function LabelEditor(props) {
                               content="Load another label or create a new one"
                               trigger={
                                 <Button size="mini" onClick={() => handleLoad()}>
-                                  <Icon name="folder open" color="blue" /> Load...
+                                  <Icon name="folder open" color="blue" /> {t('page.printing.labelTemplates.button.load', "Load...")}
                                 </Button>
                               }
                             />
@@ -629,7 +629,7 @@ export function LabelEditor(props) {
                               content="Save your label design"
                               trigger={
                                 <Button size="mini" primary onClick={e => setLabelSetNameModalIsOpen(true)} disabled={!isDirty}>
-                                  <Icon name="save" /> Save
+                                  <Icon name="save" /> {t('button.save', "Save")}
                                 </Button>
                               }
                             />
@@ -642,13 +642,13 @@ export function LabelEditor(props) {
               </div>
             </div>
             <div className="header" style={{ flex: "0" }}>
-              <label>Label Properties</label>
+              <label>{t('page.printing.labelTemplates.labelProperties', "Label Properties")}</label>
               <div className="labelProperties">
                 <Table celled>
                   <Table.Body>
                     <Table.Row>
                       <Table.Cell>
-                        <b>Label Template:</b>
+                        <b>{t('page.printing.labelTemplates.labelTemplate', "Label Template")}:</b>
                       </Table.Cell>
                       <Table.Cell colSpan={5}>
                         <Dropdown fluid selection loading={labelTemplatesLoading} name="align" options={labelTemplateOptions} value={labelTemplate?.labelTemplateId || -1} onChange={handleLabelTemplateChange} />
@@ -656,7 +656,7 @@ export function LabelEditor(props) {
                     </Table.Row>
                     <Table.Row>
                       <Table.Cell>
-                        <b>Width:</b>
+                        <b>{t('page.printing.labelTemplates.width', "Width")}:</b>
                       </Table.Cell>
                       <Table.Cell>
                         <Input
@@ -668,7 +668,7 @@ export function LabelEditor(props) {
                         in.
                       </Table.Cell>
                       <Table.Cell>
-                        <b>Height:</b>
+                        <b>{t('page.printing.labelTemplates.height', "Height")}:</b>
                       </Table.Cell>
                       <Table.Cell>
                         <Input
@@ -680,7 +680,7 @@ export function LabelEditor(props) {
                         in.
                       </Table.Cell>
                       <Table.Cell>
-                        <b>Dpi:</b>
+                        <b>{t('page.printing.labelTemplates.dpi', "Dpi")}:</b>
                       </Table.Cell>
                       <Table.Cell>
                         <Input 
@@ -692,7 +692,7 @@ export function LabelEditor(props) {
                     </Table.Row>
                     <Table.Row>
                       <Table.Cell>
-                        <b>Margin:</b>
+                        <b>{t('page.printing.labelTemplates.margin', "Margin")}:</b>
                       </Table.Cell>
                       <Table.Cell>
                         <Input 
@@ -719,7 +719,7 @@ export function LabelEditor(props) {
                     {(labelTemplate?.labelTemplateId === -1 || labelTemplateIsDirty) && (
                       <Table.Row>
                         <Table.Cell>
-                          <b>Template Name:</b>
+                          <b>{t('page.printing.labelTemplates.templateName', "Template Name")}:</b>
                         </Table.Cell>
                         <Table.Cell colSpan={5}>
                           <Input
@@ -732,7 +732,7 @@ export function LabelEditor(props) {
 														disabled={labelTemplate?.labelTemplateId !== -1}
                           />
                           <Button size="mini" onClick={handleSaveTemplate} style={{ height: "26px", padding: "8px 10px", marginLeft: "5px" }}>
-                            <Icon name="save" /> Save
+                            <Icon name="save" /> {t('button.save', "Save")}
                           </Button>
                         </Table.Cell>
                       </Table.Row>
@@ -742,7 +742,7 @@ export function LabelEditor(props) {
               </div>
             </div>
             <div className="header" style={{ flex: "0" }}>
-              <label>Item Properties - {selectedItem?.name}</label>
+              <label>{t('page.printing.labelTemplates.itemProperties', "Item Properties")} - {selectedItem?.name}</label>
               <div className="itemProperties">
                 <Table celled>
                   <Table.Body>
@@ -752,27 +752,27 @@ export function LabelEditor(props) {
 												<div className="itemProperties">
                           <span>X: <Input name="itemPropertyX" transparent value={selectedItem?.left.toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
                           <span>Y: <Input name="itemPropertyY" transparent value={selectedItem?.top.toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
-                          <span>Width: <Input name="itemPropertyWidth" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientWidth || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
-                          <span>Height: <Input name="itemPropertyHeight" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientHeight || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>{t('page.printing.labelTemplates.width', "Width")}: <Input name="itemPropertyWidth" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientWidth || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>{t('page.printing.labelTemplates.height', "Height")}: <Input name="itemPropertyHeight" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientHeight || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
 												</div>
 												}
 											</Table.Cell>
 										</Table.Row>
                     <Table.Row>
                       <Table.Cell>
-                        <b>Align:</b>
+                        <b>{t('page.printing.labelTemplates.align', "Align")}:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
                         <Dropdown selection name="align" options={alignOptions} value={selectedItemProperties?.align || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
 											<Table.Cell>
-                        <b>Font:</b>
+                        <b>{t('page.printing.labelTemplates.font', "Font")}:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "150px" }}>
                         <Dropdown style={{ width: "150px" }} selection loading={fontsLoading} name="font" options={fontOptions} value={selectedItemProperties?.font || ""} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                       <Table.Cell>
-                        <b>Rotate:</b>
+                        <b>{t('page.printing.labelTemplates.rotate', "Rotate")}:</b>
                       </Table.Cell>
                       <Table.Cell>
                         <Dropdown style={{ width: "150px" }} selection name="rotate" options={rotateOptions} value={selectedItemProperties?.rotate || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
@@ -780,19 +780,19 @@ export function LabelEditor(props) {
                     </Table.Row>
                     <Table.Row>
                       <Table.Cell>
-                        <b>Font Size:</b>
+                        <b>{t('page.printing.labelTemplates.fontSize', "Font Size")}:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
                         <Dropdown selection name="fontSize" options={fontSizeOptions} value={selectedItemProperties?.fontSize || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                       <Table.Cell>
-                        <b>Font Weight:</b>
+                        <b>{t('page.printing.labelTemplates.fontWeight', "Font Weight")}:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
                         <Dropdown selection name="fontWeight" options={fontWeightOptions} value={selectedItemProperties?.fontWeight || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                       <Table.Cell>
-                        <b>Color:</b>
+                        <b>{t('page.printing.labelTemplates.color', "Color")}:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "100px" }}>
                         <Dropdown selection name="color" options={colorOptions} value={selectedItemProperties?.color || 0} onChange={handleItemPropertyChange} disabled={!selectedItem} />
@@ -800,7 +800,7 @@ export function LabelEditor(props) {
                     </Table.Row>
                     <Table.Row>
                       <Table.Cell>
-                        <b>Text/Barcode Value:</b>
+                        <b>{t('page.printing.labelTemplates.textBarcodeValue', "Text/Barcode Value")}:</b>
                       </Table.Cell>
                       <Table.Cell colSpan={5}>
                         <Popup 
@@ -815,7 +815,7 @@ export function LabelEditor(props) {
                             onChange={handleItemPropertyChange}
                           />} 
                         />
-                        <div style={{fontSize: '0.8em', textAlign: 'right'}}>Length: {selectedItemProperties?.value?.length || 0}</div>
+                        <div style={{fontSize: '0.8em', textAlign: 'right'}}>{t('page.printing.labelTemplates.length', "Length")}: {selectedItemProperties?.value?.length || 0}</div>
                       </Table.Cell>
                     </Table.Row>
                   </Table.Body>
@@ -827,7 +827,7 @@ export function LabelEditor(props) {
         <div className="tools right">
           <div style={{ display: "flex", flexDirection: "column", flex: "1", alignItems: "start" }}>
             <div className="header" style={{ flex: "0" }}>
-              <label>Part Information</label>
+              <label>{t('page.printing.labelTemplates.partInformation', "Part Information")}</label>
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
               <DraggableBox name="partNumber">{getChildrenByName('partNumber')}</DraggableBox>

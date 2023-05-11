@@ -60,7 +60,7 @@ export function LabelSelectionModal({ isOpen, onSelect, onClose }) {
 				const { data } = response;
 				setLabels(data);
 				const newLabelOptions = [
-          { key: -1, text: 'Create a new label...', value: -1 }, 
+          { key: -1, text: t('comp.labelSelectionModal.createNewLabel', "Create a new label..."), value: -1 }, 
           ...data.map((item, key) => ({ key: key, text: item.name, value: item.labelId, icon: item.isPartLabelTemplate ? "checkmark" : "", description: item.isPartLabelTemplate ? "Default Part Label" : "" }))
         ];
 				setLabelOptions(newLabelOptions);
@@ -83,7 +83,7 @@ export function LabelSelectionModal({ isOpen, onSelect, onClose }) {
         <Modal.Content style={{width: "100%", minHeight: '300px'}}>
           <Form style={{ marginBottom: "10px", marginLeft: '50px', width: '50%' }}>
             <Form.Field>
-							<label>Choose the label you wish to edit</label>
+							<label>{t('comp.labelSelectionModal.chooseLabel', "Choose the label you wish to edit")}</label>
 							<Form.Dropdown name="labelId" style={{zIndex: '9999'}} placeholder="Select a label..." fluid selection value={form.labelId} options={labelOptions} onChange={handleChange} />
 						</Form.Field>
           </Form>

@@ -18,7 +18,7 @@ export function PrintLabels2(props) {
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('bc.labelTemplates', "Label Templates")}</Breadcrumb.Section>
       </Breadcrumb>
-      <FormHeader name={t('page.printing.labelTemplates.title', "Label Templates")} to="/">
+      <FormHeader name={t('page.printing.labelTemplates.title', "Label Templates")} to="/printing">
         <Trans i18nKey="page.printing.labelTemplates.description">
         Edit part label and custom label templates.
         </Trans>

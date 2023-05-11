@@ -379,6 +379,52 @@
       "description": "Create a backup or restore from a backup.",
       "acceptedFileTypes": "Accepted file types: \"*.bak\"",
       "backupDescription": "Create a snapshot of your Binner installation."
+    },
+    "printing": {
+      "title": "Printing",
+      "description": "Printing of labels and label templates.",
+      "header": "Choose a printing task",
+      "labelTemplates": {
+        "title": "Label Templates",
+        "description": "Edit part label and custom label templates.",
+        "baseDescription": "Create and edit label templates.",
+        "barcodeLabels": "Barcode Labels",
+        "custom": "Custom",
+        "preview": "Preview",
+        "labelEditor": "Label Editor",
+        "manage": "Manage",
+        "zoomLevel": "Zoom level",
+        "labelProperties": "Label Properties",
+        "labelTemplate": "Label Template",
+        "width": "Width",
+        "height": "Height",
+        "dpi": "Dpi",
+        "margin": "Margin",
+        "templateName": "Template Name",
+        "itemProperties": "Item Properties",
+        "align": "Align",
+        "font": "Font",
+        "rotate": "Rotate",
+        "fontSize": "Font Size",
+        "fontWeight": "Font Weight",
+        "color": "Color",
+        "length": "Length",
+        "textBarcodeValue": "Text/Barcode Value",
+        "partInformation": "Part Information",
+        "button": {
+          "print": "Print",
+          "load": "Load..."
+        }
+      },
+      "printLabels": {
+        "title": "Print Custom Labels",
+        "baseDescription": "Print custom labels for any task."
+      },
+      "bulkprint": {
+        "title": "Bulk Print",
+        "description": "Print labels for multiple parts at once.",
+        "baseDescription": "Batch print labels for parts."
+      }
     }
   },
   "bc": {
@@ -399,7 +445,10 @@
     "accountSettings": "Account Settings",
     "activateLicense": "Activate License",
     "systemInfo": "System Info",
-    "barcodeScanner": "Barcode Scanner"
+    "barcodeScanner": "Barcode Scanner",
+    "printing": "Printing",
+    "labelTemplates": "Label Templates",
+    "bulkPrint": "Bulk Print"
   },
   "comp": {
     "navBar": {
@@ -555,6 +604,18 @@
     "duplicatePartModal": {
       "title": "Duplicate Part",
       "description": "There is a possible duplicate part already in your inventory."
+    },
+    "labelSelectionModal": {
+      "title": "Label Editor",
+      "header": "Select Label",
+      "description": "Select an existing label to edit or create a new one.",
+      "chooseLabel": "Choose the label you wish to edit",
+      "createNewLabel": "Create a new label..."
+    },
+    "labelSetNameModal": {
+      "description": "Enter a name for your new label.",
+      "labelName": "Label Name",
+      "makeDefault": "Make default part label?"
     }
   },
   "button": {
@@ -605,7 +666,8 @@
     "compliance": "Compliance",
     "cadModels": "CAD Models",
     "addAnyway": "Add Anyway",
-    "move": "Move"
+    "move": "Move",
+    "select": "Select"
   },
   "label": {
     "name": "Name",
