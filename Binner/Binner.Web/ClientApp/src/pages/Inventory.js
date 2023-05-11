@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation, Trans } from 'react-i18next';
 import PropTypes from "prop-types";
@@ -653,7 +653,7 @@ export function Inventory(props) {
     if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({lastPartTypeId: partType.partTypeId});
     setPart({...part, partTypeId: partType.partTypeId});
     setIsDirty(true); 
-  }
+  };
 
   const handleChange = (e, control) => {
     e.preventDefault();
@@ -946,7 +946,8 @@ export function Inventory(props) {
     : t('page.inventory.addtitle', "Add Inventory");
 
   /*<MatchingPartsMemoized part={part} metadataParts={metadataParts} partTypes={partTypes} setPartFromMetadata={setPartFromMetadata} />*/
-  const renderForm = useMemo(() => {   
+  const renderForm = useMemo(() => {
+
     return (
     <>
     <div className="page-banner">
@@ -1374,7 +1375,6 @@ export function Inventory(props) {
         duplicateParts={duplicateParts}
         onSetPart={setPart}
         onSubmit={onSubmit}
-
       />
       <Confirm
         className="confirm"
