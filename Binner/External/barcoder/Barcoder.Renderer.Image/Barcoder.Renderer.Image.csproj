@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
     <Title>Barcoder.Renderer.Image</Title>
     <Description>Image Renderer for Barcoder (.NET Framework, .NET Standard and .NET Core).</Description>
