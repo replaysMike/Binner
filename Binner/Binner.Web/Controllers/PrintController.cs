@@ -66,6 +66,9 @@ namespace Binner.Web.Controllers
                 if (userContext == null) return GetInvalidTokenImage();
                 System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
 
+                if (request.Label.LabelTemplateId == null)
+                    return BadRequest("Label must have a LabelTemplateId!");
+
                 var stream = new MemoryStream();
 
                 var part = new Part
@@ -167,12 +170,17 @@ namespace Binner.Web.Controllers
             {
                 if (request.Label.LabelTemplateId == null)
                     return BadRequest();
-                var labelDef = request as CustomLabelDefinition;
+                var jsonOptions = new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+                var labelDef = new CustomLabelDefinition
+                {
+                    Boxes = request.Boxes,
+                    Label = request.Label
+                };
                 var label = new Label
                 {
                     LabelId = request.LabelId ?? 0,
                     LabelTemplateId = request.Label.LabelTemplateId.Value,
-                    Template = JsonConvert.SerializeObject(labelDef, new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                    Template = JsonConvert.SerializeObject(labelDef, jsonOptions),
                     Name = request.Name,
                     IsPartLabelTemplate = request.IsDefaultPartLabel
                 };

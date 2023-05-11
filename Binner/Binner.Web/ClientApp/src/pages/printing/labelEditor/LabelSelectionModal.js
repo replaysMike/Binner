@@ -61,7 +61,7 @@ export function LabelSelectionModal({ isOpen, onSelect, onClose }) {
 				setLabels(data);
 				const newLabelOptions = [
           { key: -1, text: 'Create a new label...', value: -1 }, 
-          ...data.map((item, key) => ({ key: key, text: item.name, value: item.labelId }))
+          ...data.map((item, key) => ({ key: key, text: item.name, value: item.labelId, icon: item.isPartLabelTemplate ? "checkmark" : "", description: item.isPartLabelTemplate ? "Default Part Label" : "" }))
         ];
 				setLabelOptions(newLabelOptions);
 			}

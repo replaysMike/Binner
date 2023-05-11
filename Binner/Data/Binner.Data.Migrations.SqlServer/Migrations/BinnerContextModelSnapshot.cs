@@ -86,12 +86,30 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Dpi")
                         .HasColumnType("int");
+
+                    b.Property<int>("DriverHeight")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DriverName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DriverWidth")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExtraData")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Height")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LabelCount")
+                        .HasColumnType("int");
 
                     b.Property<int>("LabelPaperSource")
                         .HasColumnType("int");

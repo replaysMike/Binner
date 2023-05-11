@@ -56,7 +56,9 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 				let left = newItem.left || 0;
 				let top = newItem.top || 0;
 				const containerEl = document.getElementById('container');
-				const boundingBox = { width: containerEl?.clientWidth || 0, height: containerEl?.clientHeight || 0, x: containerEl?.clientLeft || 0, left: containerEl?.clientLeft || 0, y: containerEl?.clientTop || 0, top: containerEl?.clientTop || 0 };
+				const boundingBox = containerEl.getBoundingClientRect();
+				// this seems to break dropping as it contains unexpected values
+				//const boundingBox = { width: containerEl?.clientWidth || 0, height: containerEl?.clientHeight || 0, x: containerEl?.clientLeft || 0, left: containerEl?.clientLeft || 0, y: containerEl?.clientTop || 0, top: containerEl?.clientTop || 0 };
 
 				const exists = _.find(internalBoxes, i => i.id === item.id);
 				if (!exists) {
@@ -66,9 +68,14 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 					const deltaY = offset.y - boundingBox.y;
 
 					newBoxes = [...internalBoxes];
-					const id = newBoxes.length > 0 ? newBoxes[newBoxes.length - 1].id + 1 : 1;
+					const lastBox = newBoxes.length > 0 ? newBoxes[newBoxes.length - 1] : null;
+					let lastId = 0;
+					if (lastBox) {
+						lastId = parseInt(lastBox.id.split('-')[0]);
+					}
+					let nextId = lastId + 1;
 					newItem = {
-						id: `${id}-${name}`,
+						id: `${nextId}-${name}`,
 						name: name,
 						top: deltaY, 
 						left: deltaX, 
@@ -337,14 +344,15 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
   return (
     <div ref={drop} id="container" style={stylesToApply}>
 			{/* draw margin box */}
-			<div style={{
+			{(margins[0] > 0 || margins[1] > 0 || margins[2] > 0 || margins[3] > 0) 
+			? <div style={{
 				border: '1px dotted #c00', 
 				position: 'absolute', 
 				left: margins[3] + 'px', 
 				top: margins[0] + 'px', 
 				width: (width - margins[1] - margins[3] - 1) + 'px', 
 				height: (height - margins[0] - margins[2] - 1) + 'px'
-			}} />
+			}} /> : ''}
       {internalBoxes.map((box, key) => (
         <DraggableBox 
 					key={key} 

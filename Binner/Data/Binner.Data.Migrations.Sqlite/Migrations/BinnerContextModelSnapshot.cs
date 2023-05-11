@@ -78,12 +78,30 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Dpi")
                         .HasColumnType("INTEGER");
+
+                    b.Property<int>("DriverHeight")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DriverName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DriverWidth")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ExtraData")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Height")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("LabelCount")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("LabelPaperSource")
                         .HasColumnType("INTEGER");

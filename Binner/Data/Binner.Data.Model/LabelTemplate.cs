@@ -18,14 +18,44 @@ namespace Binner.Data.Model
         public string Name { get; set; } = null!;
 
         /// <summary>
-        /// Width of label in inches
+        /// Template description
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Driver name value (for CUPS drivers)
+        /// </summary>
+        public string? DriverName { get; set; }
+
+        /// <summary>
+        /// Driver extra data value
+        /// </summary>
+        public string? ExtraData { get; set; }
+
+        /// <summary>
+        /// Driver width value in pixels (imageable area)
+        /// </summary>
+        public int DriverWidth { get; set; }
+
+        /// <summary>
+        /// Driver height value in pixels (imageable area)
+        /// </summary>
+        public int DriverHeight { get; set; }
+
+        /// <summary>
+        /// Width of label in inches (physical size)
         /// </summary>
         public string Width { get; set; } = null!;
 
         /// <summary>
-        /// Height of label in inches
+        /// Height of label in inches (physical size)
         /// </summary>
         public string Height { get; set; } = null!;
+
+        /// <summary>
+        /// Number of labels (for 2 up stacked labels)
+        /// </summary>
+        public int LabelCount { get; set; }
 
         /// <summary>
         /// Label margins in the format of "0 0 0 0" or "0" or "0 0"

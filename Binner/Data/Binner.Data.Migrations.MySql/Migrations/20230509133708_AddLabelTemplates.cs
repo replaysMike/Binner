@@ -74,10 +74,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                 schema: "dbo",
                 table: "Labels",
                 column: "LabelTemplateId");
-
-            migrationBuilder.Sql(@"
-INSERT INTO dbo.LabelTemplates (Name, Width, Height, Margin, Dpi, LabelPaperSource, OrganizationId, UserId) VALUES('30277', '3.4375','0.5625', '0', '300', 0, 1, 1);
-INSERT INTO dbo.LabelTemplates (Name, Width, Height, Margin, Dpi, LabelPaperSource, OrganizationId, UserId) VALUES('30346', '1.875','0.5', '0', '300', 0, 1, 1);");
         }
 
         /// <inheritdoc />

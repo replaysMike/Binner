@@ -49,15 +49,10 @@ export function LabelEditor(props) {
   const [selectedItemProperties, setSelectedItemProperties] = useState({});
 	const [imgBase64, setImgBase64] = useState("");
 	const [clearSelectedItem, setClearSelectedItem] = useState(null);
-	const [fontOptions, setFontOptions] = useState([
-    {
-      key: 1,
-      value: 0,
-      text: "Loading"
-    }
-  ]);
-  const [itemPropertyDimensions, setItemPropertyDimensions] = useState({ x: 0, y: 0, width: 0, height: 0});
+	const [fontOptions, setFontOptions] = useState([]);
+  const [fontsLoading, setFontsLoading] = useState(true);
 	const [labelTemplates, setLabelTemplates] = useState([]);
+  const [labelTemplatesLoading, setLabelTemplatesLoading] = useState(true);
 	const [labelTemplateOptions, setLabelTemplateOptions] = useState([]);
 	const [labelTemplate, setLabelTemplate] = useState({});
 	const [labelTemplateIsDirty, setLabelTemplateIsDirty] = useState(false);
@@ -165,11 +160,6 @@ export function LabelEditor(props) {
     return null;
   };
 
-  const getItemProperty = (item, name) => {
-    const properties = getItemProperties(item);
-    return properties[name];
-  };
-
 	const handleClearSelectedItem = () => {
 		setClearSelectedItem(Math.random());
 	};
@@ -199,6 +189,7 @@ export function LabelEditor(props) {
 
 	useEffect(() => {
 		const getLabelTemplates = async () => {
+      setLabelTemplatesLoading(true);
 			await fetchApi("api/print/templates", {
 				method: "GET",
 				headers: {
@@ -208,18 +199,22 @@ export function LabelEditor(props) {
 				const { data } = response;
 
 				const labelTemplates = [
-					{ name: "Custom", labelTemplateId: -1, width: "1.875", height: "0.5625", dpi: 300, margin: "0", showBoundaries: false },
+					{ name: "Custom", description: "Create a custom label template", labelTemplateId: -1, width: "1.875", height: "0.5625", dpi: 300, margin: "0", showBoundaries: false },
 				];
 				for(let i = 0; i < data.length; i++)
 					labelTemplates.push(data[i]);
 				
 				setLabelTemplates(labelTemplates);
-				setLabelTemplateOptions(labelTemplates.map((item, key) => ({ key, text: item.name, value: item.labelTemplateId })));
-				setLabelTemplate({..._.find(labelTemplates, i => i.labelTemplateId === 1), showBoundaries: false});
+				setLabelTemplateOptions(labelTemplates.map((item, key) => ({ key, text: item.name, description: item.description, value: item.labelTemplateId })));
+        // select the first template as the default value
+        const defaultTemplate = _.find(labelTemplates, i => i.labelTemplateId !== -1);
+				setLabelTemplate({...defaultTemplate, showBoundaries: false});
+        setLabelTemplatesLoading(false);
 			});
 		};
 
     const loadFonts = async () => {
+      setFontsLoading(true);
       await fetchApi("api/print/fonts", {
         method: "GET",
         headers: {
@@ -236,6 +231,7 @@ export function LabelEditor(props) {
         });
         const selectedFont = _.find(newFonts, (x) => x && x.text === DEFAULT_FONT);
         setFontOptions(newFonts);
+        setFontsLoading(false);
     });
     };
     if(fontOptions.length === 0)
@@ -449,14 +445,11 @@ export function LabelEditor(props) {
       previewDebounced(template.boxes, newLabelTemplate);
 		} else {
 			setBoxes([]);
-      setLabelTemplate([]);
 			setItemProperties([]);
 			setSelectedItem(null);
 			setSelectedItemProperties({});
 			setLabel({ labelId: -1, name: "" });
 			setImgBase64("");
-      // force a preview
-      previewDebounced([], {});
 		}
 	};
 
@@ -658,7 +651,7 @@ export function LabelEditor(props) {
                         <b>Label Template:</b>
                       </Table.Cell>
                       <Table.Cell colSpan={5}>
-                        <Dropdown fluid selection name="align" options={labelTemplateOptions} value={labelTemplate?.labelTemplateId || 0} onChange={handleLabelTemplateChange} />
+                        <Dropdown fluid selection loading={labelTemplatesLoading} name="align" options={labelTemplateOptions} value={labelTemplate?.labelTemplateId || -1} onChange={handleLabelTemplateChange} />
                       </Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -757,10 +750,10 @@ export function LabelEditor(props) {
 											<Table.Cell colSpan={6}>
 												{selectedItem && 
 												<div className="itemProperties">
-                          <span>X: <Input name="itemPropertyX" transparent value={selectedItem.left} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
-                          <span>Y: <Input name="itemPropertyY" transparent value={selectedItem.top} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
-                          <span>Width: <Input name="itemPropertyWidth" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientWidth)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
-                          <span>Height: <Input name="itemPropertyHeight" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientHeight)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>X: <Input name="itemPropertyX" transparent value={selectedItem?.left.toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>Y: <Input name="itemPropertyY" transparent value={selectedItem?.top.toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>Width: <Input name="itemPropertyWidth" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientWidth || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>Height: <Input name="itemPropertyHeight" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientHeight || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
 												</div>
 												}
 											</Table.Cell>
@@ -776,7 +769,7 @@ export function LabelEditor(props) {
                         <b>Font:</b>
                       </Table.Cell>
                       <Table.Cell style={{ width: "150px" }}>
-                        <Dropdown style={{ width: "150px" }} selection name="font" options={fontOptions} value={selectedItemProperties?.font || ""} onChange={handleItemPropertyChange} disabled={!selectedItem} />
+                        <Dropdown style={{ width: "150px" }} selection loading={fontsLoading} name="font" options={fontOptions} value={selectedItemProperties?.font || ""} onChange={handleItemPropertyChange} disabled={!selectedItem} />
                       </Table.Cell>
                       <Table.Cell>
                         <b>Rotate:</b>
@@ -840,7 +833,7 @@ export function LabelEditor(props) {
               <DraggableBox name="partNumber">{getChildrenByName('partNumber')}</DraggableBox>
               <DraggableBox name="manufacturerPartNumber">{getChildrenByName('manufacturerPartNumber')}</DraggableBox>
               <DraggableBox name="manufacturer">{getChildrenByName('manufacturer')}</DraggableBox>
-              <DraggableBox name="description">{getChildrenByName('description')}</DraggableBox>
+              <DraggableBox name="description" resize="both">{getChildrenByName('description')}</DraggableBox>
               <DraggableBox name="partType">{getChildrenByName('partType')}</DraggableBox>
               <DraggableBox name="mountingType">{getChildrenByName('mountingType')}</DraggableBox>
               <DraggableBox name="packageType">{getChildrenByName('packageType')}</DraggableBox>
