@@ -1,4 +1,5 @@
-﻿using Binner.Common.Services.Authentication;
+﻿using Binner.Common.Services;
+using Binner.Common.Services.Authentication;
 using Binner.Model.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -31,10 +32,10 @@ namespace Binner.Web.Authorization
             });
 
             JwtService Configure() {
-                var authConfig = new AuthenticationConfiguration();
-                configuration.Bind("WebHostServiceConfiguration:Authentication", authConfig);
+                var authConfig = new WebHostServiceConfiguration();
+                configuration.Bind("WebHostServiceConfiguration", authConfig);
                 services.AddSingleton(authConfig);
-                return new JwtService(authConfig);
+                return new JwtService(authConfig, new SettingsService());
             }
         }
     }

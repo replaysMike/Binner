@@ -28,6 +28,7 @@ namespace Binner.Web.Configuration
             var serviceConfiguration = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
             if (serviceConfiguration == null) throw new InvalidOperationException($"Could not load WebHostServiceConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             var integrationConfiguration = serviceConfiguration.Integrations;
+            var authenticationConfiguration = serviceConfiguration.Authentication;
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
             if (storageProviderConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             var binnerConfig = new BinnerFileStorageConfiguration(storageProviderConfiguration.ProviderConfiguration);
@@ -50,6 +51,8 @@ namespace Binner.Web.Configuration
             container.RegisterInstance(configuration);
             services.AddSingleton(serviceConfiguration);
             container.RegisterInstance(serviceConfiguration);
+            services.AddSingleton(authenticationConfiguration);
+            container.RegisterInstance(authenticationConfiguration);
             services.AddSingleton(printerConfiguration);
             container.RegisterInstance(printerConfiguration);
             services.AddSingleton<IPrinterSettings>(printerSettings);
