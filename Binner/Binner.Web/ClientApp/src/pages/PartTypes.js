@@ -150,7 +150,7 @@ export function PartTypes(props) {
 
   const handleRenamePartType = async (e) => {
     const request = {
-      partTypeId: modalContext.partTypeId,
+      ...modalContext,
       name: modalContext.name,
     };
     const response = await fetchApi("api/partType", {
@@ -478,9 +478,7 @@ export function PartTypes(props) {
         onConfirm={handleDelete}
         content={confirmPartDeleteContent}
       />
-      <Modal 
-        open={isRenameModalOpen}
-      >
+      <Modal open={isRenameModalOpen}>
         <Modal.Header>{t('page.partTypes.rename', "Rename Part Type")}</Modal.Header>
         <Modal.Content>
           <Form>
