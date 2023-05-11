@@ -33,8 +33,8 @@ export const Printing = () => {
             <h1><span>{t('page.printing.printLabels.title', "Print Custom Labels")}</span></h1>
               <p>{t('page.printing.printLabels.baseDescription', "Print custom labels for any task.")}</p>
             </li>
-            <li onClick={() => navigate("/printing/bulkprint")}>
-            <h1 className="pro"><span>{t('page.printing.bulkprint.title', "Bulk Print")}</span></h1>
+            <li /*onClick={() => navigate("/printing/bulkprint")}*/ className="disabled">
+            	<h1 className="maker"><span>{t('page.printing.bulkprint.title', "Bulk Print")}</span></h1>
               <p>{t('page.printing.bulkprint.baseDescription', "Batch print labels for parts.")}</p>
             </li>
           </ul>

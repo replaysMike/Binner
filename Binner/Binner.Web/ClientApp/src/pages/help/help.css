@@ -124,6 +124,11 @@
   border-top: 5px solid #DF1461;
 }
 
+.help .helpcontainer li.disabled:HOVER{
+  background-color: #f6f6f6;
+  border-top: 5px solid #999999;
+}
+
 .help .helpcontainer li h1 {
   display: block;
   color: #000;
