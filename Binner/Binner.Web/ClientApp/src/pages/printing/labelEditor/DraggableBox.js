@@ -50,9 +50,8 @@ export const DraggableBox = memo(function DraggableBox(props) {
 		if (props.onClick) props.onClick(e);
 	};
 
-	const styleToApply = {...containerStyle, ...(props.absolute && { position: 'absolute' })};
+	const styleToApply = {...containerStyle, ...(props.absolute && { position: 'absolute' }), width: props.style?.width, height: props.style?.height };
 	const boxStyleToApply = {...props.style};
-
   return (
     <div ref={drag} id={id} name={props.name} style={styleToApply} role="DraggableBox" onClick={handleClick} className={`draggableBox ${getResizeClass(props.resize)}`} onKeyDown={props.onKeyDown} tabIndex={-1}>
       <Box style={boxStyleToApply} name={props.name} selected={props.selected} className="box">{props.children}</Box>

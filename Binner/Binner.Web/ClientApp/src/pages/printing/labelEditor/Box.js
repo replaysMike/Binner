@@ -20,10 +20,12 @@ export const Box = memo(function Box({ name, children, style, preview, selected,
     [isSelected],
   );
 
+	const styleIsEmpty = Object.keys(style).length === 0;
+
 	return (
     <div
 			name={name}
-      style={{ ...boxStyle, ...style }}
+      style={{ ...boxStyle, ...style, ...(!styleIsEmpty && { width: '100%', height: '100%' }) }}
       role={preview ? 'BoxPreview' : 'Box'}
 			className={`${className} ${isSelected ? "selected" : ""}`}
     >{children}</div>

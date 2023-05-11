@@ -55,7 +55,8 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 				let displayValue = newItem.displayValue;
 				let left = newItem.left || 0;
 				let top = newItem.top || 0;
-				const boundingBox = document.getElementById('container').getBoundingClientRect();
+				const containerEl = document.getElementById('container');
+				const boundingBox = { width: containerEl?.clientWidth || 0, height: containerEl?.clientHeight || 0, x: containerEl?.clientLeft || 0, left: containerEl?.clientLeft || 0, y: containerEl?.clientTop || 0, top: containerEl?.clientTop || 0 };
 
 				const exists = _.find(internalBoxes, i => i.id === item.id);
 				if (!exists) {
@@ -86,7 +87,8 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 					if (onDrop) onDrop(newItem);
 				} else {
 					// move an existing item on the drop area
-					const elBounds = document.getElementById(newItem.id)?.getBoundingClientRect();
+					const el = document.getElementById(newItem.id);
+					const elBounds = { width: el?.clientWidth || 0, height: el?.clientHeight || 0, x: el?.clientLeft || 0, left: el?.clientLeft || 0, y: el?.clientTop || 0, top: el?.clientTop || 0 };
 					const delta = monitor.getDifferenceFromInitialOffset();
 					left = Math.round(newItem.left + delta.x);
 					top = Math.round(newItem.top + delta.y);
@@ -244,7 +246,8 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 
 	const handleKeyDown = (e) => {
 		const name = e.target.getAttribute("name");
-		const elBounds = document.getElementById(e.target.getAttribute("id"))?.getBoundingClientRect();
+		const el = document.getElementById(e.target.getAttribute("id"));
+		const elBounds = { width: el?.clientWidth || 0, height: el?.clientHeight || 0, x: el?.clientLeft || 0, left: el?.clientLeft || 0, y: el?.clientTop || 0, top: el?.clientTop || 0 };
 		switch(e.key) {
 			case "Delete":
 				// delete the focused box
@@ -292,7 +295,7 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 				const boxToMove = _.find(internalBoxes, i => i.name === name);
 				boxToMove.left += 1;
 				if (boxToMove.left + elBounds.width + 2 >= width) {
-					boxToMove.left = width - elBounds.width - 2;
+					boxToMove.left = width - elBounds.width - 3;
 				}
 				setInternalBoxes(updateStateItem(internalBoxes, boxToMove, "name", name));
 				if (onMove) onMove(boxToMove);
