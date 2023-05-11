@@ -442,7 +442,7 @@ export function PartTypes(props) {
       >
         {recursiveTreeItem(partTypesFiltered).map((x) => x)}
       </TreeView>);
-  }, [updateTreeView, expandedNodeIds, partTypesFiltered]);
+  }, [updateTreeView, expandedNodeIds, partTypesFiltered, chkHideEmptyTypes]);
 
   return (
     <div>
