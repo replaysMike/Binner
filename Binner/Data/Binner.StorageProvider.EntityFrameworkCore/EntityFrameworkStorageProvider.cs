@@ -958,6 +958,7 @@ INNER JOIN (
             var filterByValues = request?.Value?.Split(',') ?? Array.Empty<string>();
 
             var entitiesQueryable = context.Parts
+                .Include(x => x.PartType)
                 .Where(x => x.OrganizationId == userContext.OrganizationId);
             var orderingApplied = false;
             
@@ -1035,6 +1036,7 @@ INNER JOIN (
                     || EF.Functions.Like(x.Location, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.BinNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.BinNumber2, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.PartType.Name, '%' + request.Keyword + '%')
                 );
             }
 
