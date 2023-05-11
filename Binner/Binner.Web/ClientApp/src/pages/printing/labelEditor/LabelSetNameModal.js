@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
-import { Icon, Button, Form, Modal, Header, Popup } from "semantic-ui-react";
+import { Icon, Button, Form, Modal } from "semantic-ui-react";
 import PropTypes from "prop-types";
 
 /**
@@ -51,11 +51,11 @@ export function LabelSetNameModal(props) {
         <Modal.Content style={{width: "100%"}}>
           <Form style={{ marginBottom: "10px", marginLeft: '50px', width: '50%' }}>
             <Form.Field>
-							<label>Label Name</label>
+							<label>{t('comp.labelSetNameModal.labelName', "Label Name")}</label>
 							<Form.Input name="name" placeholder="Parts Label" fluid required value={form.name || props.name} onChange={handleChange} />
 						</Form.Field>
             <Form.Field>
-							<label>Make default part label?</label>
+							<label>{t('comp.labelSetNameModal.makeDefault', "Make default part label?")}</label>
 							<Form.Checkbox toggle name="isDefaultPartLabel" checked={form.isDefaultPartLabel || props.isDefaultPartLabel} onChange={handleChange} />
 						</Form.Field>
           </Form>
