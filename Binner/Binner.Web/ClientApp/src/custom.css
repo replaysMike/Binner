@@ -856,6 +856,23 @@ div:has(.popup),div:has(.Toastify>*) {
 	font-style: normal;
 }
 
+.disabled>* {
+    opacity: 0.5;
+}
+
+h1.maker::after {
+    content: 'MAKER';
+    background-color:rgb(0, 100, 230);
+    color: #fff;
+    font-size: 0.5em;
+    vertical-align: super;
+    text-decoration: none !important;
+    padding: 1px 2px;
+    letter-spacing: 0.2em;
+    text-align: center;
+    margin-left: 2px;
+}
+
 h1.pro::after {
     content: 'PRO';
     background-color:rgb(0, 100, 230);

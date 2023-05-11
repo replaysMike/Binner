@@ -73,7 +73,7 @@
 }
 
 .labelEditor .draggableBox {
-	transition-property: left, top;
+	transition-property: left, top, width, height;
 	transition-duration: 0.15s;
 }
 
