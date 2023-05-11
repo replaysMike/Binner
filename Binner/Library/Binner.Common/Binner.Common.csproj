@@ -76,6 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Auth\" />
     <Folder Include="Integrations\DigikeyClient\Core\" />
   </ItemGroup>
 

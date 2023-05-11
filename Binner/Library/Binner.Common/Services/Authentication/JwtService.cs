@@ -1,6 +1,4 @@
-﻿using Binner.Common.Auth;
-using Binner.Common.IO;
-using Binner.Global.Common;
+﻿using Binner.Global.Common;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -18,11 +16,15 @@ namespace Binner.Common.Services.Authentication
     /// </summary>
     public class JwtService
     {
-        private readonly AuthenticationConfiguration _configuration;
+        private const string AppSettingsFilename = "appsettings.json";
 
-        public JwtService(AuthenticationConfiguration configuration)
+        private readonly WebHostServiceConfiguration _configuration;
+        private readonly ISettingsService _settingsService;
+
+        public JwtService(WebHostServiceConfiguration configuration, ISettingsService settingsService)
         {
             _configuration = configuration;
+            _settingsService = settingsService;
         }
 
         public IEnumerable<Claim> GetClaims(UserContext user)
@@ -35,7 +37,7 @@ namespace Binner.Common.Services.Authentication
                 new (ClaimTypes.Name, user.EmailAddress),
                 new (ClaimTypes.HomePhone, user.PhoneNumber),
                 new (JwtClaimTypes.CanLogin, user.CanLogin.ToString()),
-                new (ClaimTypes.Expiration, DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
+                new (ClaimTypes.Expiration, DateTime.UtcNow.Add(_configuration.Authentication.JwtAccessTokenExpiryTime).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
             };
             if (user.IsAdmin)
                 claims.Add(new Claim(JwtClaimTypes.Admin, true.ToString()));
@@ -53,16 +55,15 @@ namespace Binner.Common.Services.Authentication
             // generate token that is valid for 15 minutes
             var tokenHandler = new JwtSecurityTokenHandler();
             var claims = GetClaims(user);
-            var signingKey = GetJwtSigningKey();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Issuer = _configuration.JwtIssuer,
-                Audience = _configuration.JwtAudience,
+                Issuer = _configuration.Authentication.JwtIssuer,
+                Audience = _configuration.Authentication.JwtAudience,
                 Subject = new ClaimsIdentity(claims, "Password"),
                 IssuedAt = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.Add(_configuration.JwtAccessTokenExpiryTime),
+                Expires = DateTime.UtcNow.Add(_configuration.Authentication.JwtAccessTokenExpiryTime),
                 NotBefore = DateTime.UtcNow,
-                SigningCredentials = new SigningCredentials(signingKey, GetSecurityAlgorithm(_configuration.EncryptionBits))
+                SigningCredentials = new SigningCredentials(GetOrCreateJwtSigningKey(), GetSecurityAlgorithm(_configuration.Authentication.EncryptionBits))
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
@@ -92,7 +93,7 @@ namespace Binner.Common.Services.Authentication
             {
                 Token = GetUniqueToken(),
                 // token expires after configured value
-                Expires = DateTime.UtcNow.Add(_configuration.JwtRefreshTokenExpiryTime),
+                Expires = DateTime.UtcNow.Add(_configuration.Authentication.JwtRefreshTokenExpiryTime),
                 Created = DateTime.UtcNow
             };
 
@@ -100,7 +101,7 @@ namespace Binner.Common.Services.Authentication
 
             string GetUniqueToken()
             {
-                var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(_configuration.TokenLength));
+                var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(_configuration.Authentication.TokenLength));
                 return token;
             }
         }
@@ -125,41 +126,34 @@ namespace Binner.Common.Services.Authentication
         /// <returns></returns>
         public TokenValidationParameters GetTokenValidationParameters()
         {
-            var signingKey = GetJwtSigningKey();
             return new TokenValidationParameters
             {
-                IssuerSigningKey = signingKey,
-                ValidateIssuerSigningKey = _configuration.ValidateIssuerSigningKey,
-                ValidateIssuer = _configuration.ValidateIssuer,
-                ValidIssuer = _configuration.JwtIssuer,
-                ValidateAudience = _configuration.ValidateAudience,
-                ValidAudience = _configuration.JwtAudience,
-                RequireExpirationTime = _configuration.RequireExpirationTime,
-                ValidateLifetime = _configuration.ValidateLifetime,
-                ClockSkew = _configuration.ClockSkew,
+                IssuerSigningKey = GetOrCreateJwtSigningKey(),
+                ValidateIssuerSigningKey = _configuration.Authentication.ValidateIssuerSigningKey,
+                ValidateIssuer = _configuration.Authentication.ValidateIssuer,
+                ValidIssuer = _configuration.Authentication.JwtIssuer,
+                ValidateAudience = _configuration.Authentication.ValidateAudience,
+                ValidAudience = _configuration.Authentication.JwtAudience,
+                RequireExpirationTime = _configuration.Authentication.RequireExpirationTime,
+                ValidateLifetime = _configuration.Authentication.ValidateLifetime,
+                ClockSkew = _configuration.Authentication.ClockSkew,
                 // LifetimeValidator = TokenLifetimeValidator.Validate
             };
         }
 
-        private static SecurityKey GetJwtSigningKey()
+        private SecurityKey GetOrCreateJwtSigningKey()
         {
-            var keyProvider = new SecurityKeyProvider();
-            var key = string.Empty;
-            try
+            var signingKey = _configuration.Authentication.JwtSecretKey;
+            if (string.IsNullOrEmpty(signingKey))
             {
-                // use the machine's hardware id to sign jwt
-                key = HardwareId.Get();
-            }
-            catch (Exception)
-            {
-                // use fallback
+                signingKey = ConfirmationTokenGenerator.NewSecurityToken(40);
+                _configuration.Authentication.JwtSecretKey = signingKey;
+                // save to appsettings
+                _settingsService.SaveSettingsAs(_configuration, nameof(WebHostServiceConfiguration), AppSettingsFilename, true);
             }
 
-            if (string.IsNullOrWhiteSpace(key))
-                key = keyProvider.LoadOrGenerateKey(SecurityKeyProvider.KeyTypes.Jwt, 40);
-            return GetSecurityKey(key);
+            return GetSecurityKey(signingKey);
         }
-            
 
         public static class TokenLifetimeValidator
         {
