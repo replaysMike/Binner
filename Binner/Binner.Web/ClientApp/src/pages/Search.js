@@ -106,7 +106,7 @@ export function Search(props) {
     }
     if (newData.length > 0)
       setShowPartNotFound(false);
-    else 
+    else if(keyword.length > 0)
       setShowPartNotFound(true);
     setParts(newData);
     setPage(page);
