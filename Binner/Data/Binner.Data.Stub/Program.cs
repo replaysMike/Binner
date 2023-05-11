@@ -2,6 +2,7 @@
 
 using Binner.Data;
 using Binner.Data.Generators;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -34,21 +35,21 @@ var host = Host.CreateDefaultBuilder(args)
 
             services.AddDbContext<BinnerContext>(optionsBuilder =>
             {
-                string switchOnProviderName;
+                StorageProviders switchOnProviderName;
                 if (!string.IsNullOrEmpty(provider))
                 {
-                    switchOnProviderName = provider.ToLower();
+                    switchOnProviderName = Enum.Parse<StorageProviders>(provider, true);
                     Console.WriteLine($"Using provider passed from arguments: {provider}");
                 }
                 else
                 {
-                    switchOnProviderName = storageProviderConfiguration.Provider.ToLower();
+                    switchOnProviderName = storageProviderConfiguration.StorageProvider;
                     Console.WriteLine($"Using provider from configuration: {storageProviderConfiguration.Provider}");
                 }
 
                 switch (switchOnProviderName)
                 {
-                    case "binner":
+                    case StorageProviders.Binner:
                         {
                             // treated as Sqlite, but inserting the filename into the connection string
                             var filename = storageProviderConfiguration.ProviderConfiguration
@@ -60,7 +61,7 @@ var host = Host.CreateDefaultBuilder(args)
                             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>();
                         }
                         break;
-                    case "sqlite":
+                    case StorageProviders.Sqlite:
                         {
                             var filename = storageProviderConfiguration.ProviderConfiguration
                                 .Where(x => x.Key == "Filename").Select(x => x.Value).FirstOrDefault();
@@ -71,7 +72,7 @@ var host = Host.CreateDefaultBuilder(args)
                             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>();
                         }
                         break;
-                    case "sqlserver":
+                    case StorageProviders.SqlServer:
                         {
                             var connectionString = storageProviderConfiguration.ProviderConfiguration
                                 .Where(x => x.Key == "SqlServerConnectionString").Select(x => x.Value).FirstOrDefault();
@@ -79,7 +80,7 @@ var host = Host.CreateDefaultBuilder(args)
                             optionsBuilder.UseSqlServer(connectionString, x => x.MigrationsAssembly("Binner.Data.Migrations.SqlServer"));
                         }
                         break;
-                    case "postgresql":
+                    case StorageProviders.Postgresql:
                         {
                             var connectionString = storageProviderConfiguration.ProviderConfiguration
                                 .Where(x => x.Key == "PostgresqlConnectionString").Select(x => x.Value).FirstOrDefault();
@@ -93,7 +94,7 @@ var host = Host.CreateDefaultBuilder(args)
                             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, PostgresqlCustomMigrationsSqlGenerator>();
                         }
                         break;
-                    case "mysql":
+                    case StorageProviders.MySql:
                         {
                             var connectionString = storageProviderConfiguration.ProviderConfiguration
                                 .Where(x => x.Key == "MySqlConnectionString").Select(x => x.Value).FirstOrDefault();

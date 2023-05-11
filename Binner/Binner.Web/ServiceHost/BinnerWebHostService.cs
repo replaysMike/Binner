@@ -1,4 +1,5 @@
 ﻿using Binner.Common;
+using Binner.Common.Configuration;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
 using Binner.Common.StorageProviders;
@@ -14,8 +15,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
+using NPOI.OpenXmlFormats.Dml;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -45,7 +48,7 @@ namespace Binner.Web.ServiceHost
         private bool _isDisposed;
         private ILogger<BinnerWebHostService>? _logger;
         private WebHostServiceConfiguration? _config;
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
         private IWebHost? _webHost;
 
         public bool Start(HostControl hostControl)
@@ -93,19 +96,29 @@ namespace Binner.Web.ServiceHost
             var configFile = Path.Combine(configPath, ConfigFile);
             var configuration = Config.GetConfiguration(configFile);
             _nlogLogger.Info($"Loading configuration at {configFile}");
-            _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>() ?? throw new BinnerConfigurationException($"Configuration section '{nameof(WebHostServiceConfiguration)}' does not exist!");
+            _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>() ??
+                      throw new BinnerConfigurationException($"Configuration section '{nameof(WebHostServiceConfiguration)}' does not exist!");
+
+            var configValidator = new ConfigurationValidator(_nlogLogger);
+
+            configValidator.ValidateConfiguration(_config);
 
             // parse the requested IP from the config
             var ipAddress = IPAddress.Any;
             var ipString = _config.IP;
             if (!string.IsNullOrEmpty(ipString) && ipString != "*")
-                if (!IPAddress.TryParse(_config.IP, out ipAddress)) throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
+                if (!IPAddress.TryParse(_config.IP, out ipAddress))
+                    throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
 
             // use embedded certificate
             var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
             var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
 
-            var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ?? throw new BinnerConfigurationException($"Configuration section '{nameof(StorageProviderConfiguration)}' does not exist!");
+            var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ??
+                                throw new BinnerConfigurationException($"Configuration section '{nameof(StorageProviderConfiguration)}' does not exist!");
+
+            configValidator.ValidateConfiguration(storageConfig);
+
             var migrationHostBuilder = HostBuilderFactory.Create(storageConfig);
             var migrationHost = migrationHostBuilder.Build();
             var contextFactory = migrationHost.Services.GetRequiredService<IDbContextFactory<BinnerContext>>();
@@ -139,28 +152,22 @@ namespace Binner.Web.ServiceHost
 
             _nlogLogger.Info($"Building the WebHost on {ipAddress}:{_config.Port} ...");
             var host = Microsoft.AspNetCore.WebHost
-            .CreateDefaultBuilder()
-            .ConfigureKestrel(options =>
-            {
-                options.ConfigureHttpsDefaults(opt =>
+                .CreateDefaultBuilder()
+                .ConfigureKestrel(options =>
                 {
-                    opt.ServerCertificate = certificate;
-                    opt.ClientCertificateMode = ClientCertificateMode.NoCertificate;
-                    opt.CheckCertificateRevocation = false;
-                    opt.AllowAnyClientCertificate();
-                });
-                options.Listen(ipAddress, _config.Port, c =>
-                {
-                    c.UseHttps();
-                });
-            })
-            .UseEnvironment(_config.Environment.ToString())
-            .UseStartup<Startup>()
-            .ConfigureLogging(logging =>
-            {
-                logging.AddNLogWeb();
-            })
-            .UseNLog();
+                    options.ConfigureHttpsDefaults(opt =>
+                    {
+                        opt.ServerCertificate = certificate;
+                        opt.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+                        opt.CheckCertificateRevocation = false;
+                        opt.AllowAnyClientCertificate();
+                    });
+                    options.Listen(ipAddress, _config.Port, c => { c.UseHttps(); });
+                })
+                .UseEnvironment(_config.Environment.ToString())
+                .UseStartup<Startup>()
+                .ConfigureLogging(logging => { logging.AddNLogWeb(); })
+                .UseNLog();
             _webHost = host.Build();
             ApplicationLogging.LoggerFactory = _webHost.Services.GetRequiredService<ILoggerFactory>();
             _logger = _webHost.Services.GetRequiredService<ILogger<BinnerWebHostService>>();

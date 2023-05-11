@@ -63,6 +63,18 @@ namespace Binner.Common.Extensions
         }
 
         /// <summary>
+        /// Check if a string is surrounded by another string
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="characters">The characters the string must be surrounded by</param>
+        /// <returns></returns>
+        public static bool SurroundedBy(this string? str, string characters)
+        {
+            if (string.IsNullOrEmpty(str)) return false;
+            return str.StartsWith(characters) && str.EndsWith(characters);
+        }
+
+        /// <summary>
         /// Get the numeric value from a currency formatted string
         /// </summary>
         /// <param name="input"></param>
