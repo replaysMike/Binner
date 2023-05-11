@@ -82,19 +82,15 @@
     <Folder Include="Integrations\DigikeyClient\Core\" />
   </ItemGroup>
 
-  <ItemGroup Condition="!Exists('..\..\..\..\Barcoder\src\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
+  <ItemGroup Condition="!Exists('..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
     <!-- Use the Barcoder public package -->
     <PackageReference Include="Barcoder" Version="2.0.0" PrivateAssets="Compile" />
-  </ItemGroup>
-
-  <ItemGroup Condition="Exists('..\..\..\..\Barcoder\src\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
-    <!-- Use the Barcoder private build -->
-    <ProjectReference Include="..\..\..\..\Barcoder\src\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Data\Binner.Data\Binner.Data.csproj" />
     <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj" />
     <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
     <ProjectReference Include="..\Binner.Legacy\Binner.Legacy.csproj" />
     <ProjectReference Include="..\Binner.Model\Binner.Model.csproj" />
