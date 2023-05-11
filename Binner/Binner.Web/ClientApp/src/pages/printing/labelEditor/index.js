@@ -56,6 +56,7 @@ export function LabelEditor(props) {
       text: "Loading"
     }
   ]);
+  const [itemPropertyDimensions, setItemPropertyDimensions] = useState({ x: 0, y: 0, width: 0, height: 0});
 	const [labelTemplates, setLabelTemplates] = useState([]);
 	const [labelTemplateOptions, setLabelTemplateOptions] = useState([]);
 	const [labelTemplate, setLabelTemplate] = useState({});
@@ -118,7 +119,11 @@ export function LabelEditor(props) {
 		newValue.dpi = templateOption.dpi;
 		newValue.margin = templateOption.margin;
 		newValue.showBoundaries = templateOption.showBoundaries || false;
-		newValue.name = templateOption.name;
+		if (templateOption.name === "Custom")
+      newValue.name = "";
+    else
+      newValue.name = templateOption.name;
+
     setLabelTemplate(newValue);
 		previewDebounced(boxes, newValue);
   };
@@ -233,9 +238,10 @@ export function LabelEditor(props) {
         setFontOptions(newFonts);
     });
     };
-    
-    loadFonts();
-		getLabelTemplates();
+    if(fontOptions.length === 0)
+      loadFonts();
+    if (labelTemplates.length === 0)
+		  getLabelTemplates();
     if (label?.labelId === -1)
 		  setLabelSelectionModalIsOpen(true);
   }, []);  
@@ -277,6 +283,8 @@ export function LabelEditor(props) {
 	};
 
   const handlePreview = async (boxes, labelTemplate, generateImageOnly = true) => {
+    let zoomAdjust = 1.0 - (zoomLevel - 1.0);
+    zoomAdjust = 1;
 		const request = {
 			token: getImagesToken(),
 			label: {...labelTemplate },
@@ -284,13 +292,13 @@ export function LabelEditor(props) {
 				acceptsValue: box.acceptsValue,
 				displaysValue: box.displaysValue,
 				id: box.id,
-				left: Math.trunc(box.left),
+				left: Math.trunc(box.left * zoomAdjust),
 				name: box.name,
 				resize: box.resize,
-				top: Math.trunc(box.top),
+				top: Math.trunc(box.top * zoomAdjust),
 				properties: getItemProperties(box) || defaultItemProperties,
-				width: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().width) || 0,
-				height: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().height) || 0,
+				width: (Math.trunc(document.getElementById(box.id)?.clientWidth * zoomAdjust) || 0),
+				height: (Math.trunc(document.getElementById(box.id)?.clientHeight * zoomAdjust) || 0),
 			})),
 			generateImageOnly: generateImageOnly
 		};
@@ -309,7 +317,7 @@ export function LabelEditor(props) {
     });
 	};
 
-	const previewDebounced = useMemo(() => debounce(handlePreview, PreviewDebounceTimeMs), [boxes, labelTemplate]);
+	const previewDebounced = useMemo(() => debounce(handlePreview, PreviewDebounceTimeMs), [boxes, labelTemplate, zoomLevel]);
 
 	const arrayBufferToBase64 = (buffer) => {
     let binary = "";
@@ -346,7 +354,7 @@ export function LabelEditor(props) {
 				box.top = (((convertInchesToPixels(labelTemplate.height) - margins[0]) / 2.0) - (el.offsetHeight / 2.0));
 				break;
 			case 'bottom':
-				box.top = (convertInchesToPixels(labelTemplate.height) - margins[2] - el.offsetHeight);
+				box.top = (convertInchesToPixels(labelTemplate.height) - margins[2] - el.offsetHeight - 2);
 				break;
 		}
 		setSelectedItem(box);
@@ -387,8 +395,8 @@ export function LabelEditor(props) {
 				resize: box.resize,
 				top: Math.trunc(box.top),
 				properties: getItemProperties(box) || defaultItemProperties,
-				width: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().width) || 0,
-				height: Math.trunc(document.getElementById(box.id)?.getBoundingClientRect().height) || 0,
+				width: Math.trunc(document.getElementById(box.id)?.clientWidth) || 0,
+				height: Math.trunc(document.getElementById(box.id)?.clientHeight) || 0,
 			}))
 		};
 
@@ -468,6 +476,35 @@ export function LabelEditor(props) {
     if (newZoomLevel < 0.5)
       newZoomLevel = 0.5;
     setZoomLevel(newZoomLevel);
+  };
+
+  const handleSelectedItemLocationChange = (e, control) => {
+    // handle manual entry of selected item x/y/width/height
+    if (selectedItem) {
+      const el = document.getElementById(selectedItem.id);
+      switch(control.name) {
+        case 'itemPropertyX':
+          setSelectedItem({...selectedItem, left: parseInt(control.value) });
+          el.style.left = parseInt(control.value) + 'px';
+          break;
+        case 'itemPropertyY':
+          setSelectedItem({...selectedItem, top: control.value });
+          el.style.top = parseInt(control.value) + 'px';
+          break;
+        case 'itemPropertyWidth':
+          el.style.width = parseInt(control.value) + 'px';
+          setSelectedItem({...selectedItem });
+          break;
+        case 'itemPropertyHeight':
+          el.style.height = parseInt(control.value) + 'px';
+          setSelectedItem({...selectedItem });
+          break;
+        default:
+          break;
+      }
+      previewDebounced(boxes, labelTemplate);
+      setIsDirty(true);
+    }
   };
 
   return (
@@ -720,10 +757,10 @@ export function LabelEditor(props) {
 											<Table.Cell colSpan={6}>
 												{selectedItem && 
 												<div className="itemProperties">
-													<span>X: {selectedItem.left}</span>
-													<span>Y: {selectedItem.top}</span>
-													<span>Width: {Math.trunc(document.getElementById(selectedItem.id)?.getBoundingClientRect().width)}</span>
-													<span>Height: {Math.trunc(document.getElementById(selectedItem.id)?.getBoundingClientRect().height)}</span>
+                          <span>X: <Input name="itemPropertyX" transparent value={selectedItem.left} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>Y: <Input name="itemPropertyY" transparent value={selectedItem.top} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>Width: <Input name="itemPropertyWidth" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientWidth)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
+                          <span>Height: <Input name="itemPropertyHeight" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientHeight)} style={{ padding: '2px', margin: '0', fontSize: '0.9em'}} /></span>
 												</div>
 												}
 											</Table.Cell>
