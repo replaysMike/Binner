@@ -222,19 +222,15 @@ export default function PartsGrid2Memoized(props) {
     return -1;
   };
 
-  const createFilterBy = (filterByToAdd) => {
+  const createFilterBy = (filterByToAdd, filterByValueToAdd) => {
     const newFilterBy = [...props.by];
-    
-    if (!newFilterBy.includes(filterByToAdd))
-      newFilterBy.push(filterByToAdd);
-    return newFilterBy.join(',');
-  };
-
-  const createFilterByValue = (filterByValueToAdd) => {
     const newFilterByValue = [...props.byValue];
-    if (!newFilterByValue.includes(filterByValueToAdd))
+    
+    if (filterByValueToAdd?.length > 0 && !newFilterByValue.includes(filterByValueToAdd)) {
+      newFilterBy.push(filterByToAdd);
       newFilterByValue.push(filterByValueToAdd);
-    return newFilterByValue.join(',');
+    }
+    return `by=${newFilterBy.join(',')}&value=${newFilterByValue.join(',')}`;
   };
 
   const tableColumns = useMemo(() => {
@@ -242,7 +238,7 @@ export default function PartsGrid2Memoized(props) {
       e.preventDefault();
       e.stopPropagation();
       if (part[propertyName]) {
-        const url = `${props.visitUrl}?by=${createFilterBy(propertyName)}&value=${createFilterByValue(part[propertyName])}&keyword=${props.keyword}&_=${Math.random()}`;
+        const url = `${props.visitUrl}?${createFilterBy(propertyName, part[propertyName])}&keyword=${props.keyword}&_=${Math.random()}`;
         navigate(url);
       }
     };
@@ -281,9 +277,9 @@ export default function PartsGrid2Memoized(props) {
               <div onClick={e => handleSelfLink(e, row.original, columnName)}>
                 <div className="icon-container small">{getIconForPart(row.original)} 
                   <div>
-                    {props.by.includes(columnName) && props.byValue[indexOfBy(columnName, row.original[columnName])]?.toString() === row.original[columnName]?.toString()
+                    {props.by.includes(columnName) && props.byValue.includes(row.original[columnName])
                     ? <span>{row.original.partType}</span>
-                    :  <Link style={{minWidth: '25px'}} to={`${props.visitUrl}?by=${createFilterBy(columnName)}&value=${createFilterByValue(row.original.partType)}&keyword=${props.keyword}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
+                    :  <Link style={{minWidth: '25px'}} to={`${props.visitUrl}?${createFilterBy(columnName, row.original.partType)}&keyword=${props.keyword}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
                         {row.original.partType}
                       </Link>
                     }
@@ -296,9 +292,9 @@ export default function PartsGrid2Memoized(props) {
         case 'location':
           return {...def, Cell: ({row}) => (
             <div onClick={e => handleSelfLink(e, row.original, columnName)}>
-              {props.by.includes(columnName) && props.byValue[indexOfBy(columnName, row.original[columnName])]?.toString() === row.original[columnName]?.toString()
+              {props.by.includes(columnName) && props.byValue.includes(row.original[columnName])
               ? <span className='truncate'>{row.original[columnName]}</span>
-              : <Link style={{minWidth: '25px'}} to={`${props.visitUrl}?by=${createFilterBy(columnName)}&value=${createFilterByValue(row.original[columnName])}&keyword=${props.keyword}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
+              : <Link style={{minWidth: '25px'}} to={`${props.visitUrl}?${createFilterBy(columnName, row.original[columnName])}&keyword=${props.keyword}`} onClick={e => handleSelfLink(e, row.original, columnName)}>
                   <span className='truncate'>{row.original[columnName]}</span>
                 </Link> 
               }

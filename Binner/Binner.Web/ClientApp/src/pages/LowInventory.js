@@ -88,12 +88,14 @@ export function LowInventory (props) {
     props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
-  const removeFilter = (e, filterName) => {
+  const removeFilter = (e, filterName, filterValue) => {
     e.preventDefault();
     let newFilterBy = [];
     let newFilterByValue = [];
     for(let i =0; i < filterBy.length; i++) {
-      if (filterBy[i] !== filterName) {
+      if (filterBy[i] === filterName && filterByValue[i] === filterValue) {
+        // remove it
+      }else{
         newFilterBy.push(filterBy[i]);
         newFilterByValue.push(filterByValue[i]);
       }
@@ -161,7 +163,7 @@ export function LowInventory (props) {
 			</FormHeader>
       <div style={{ paddingTop: "10px", marginBottom: "10px" }}>
         {filterBy && filterBy.map((filterName, index) => (
-              <Button key={index} primary size="mini" onClick={e => removeFilter(e, filterName)}>
+              <Button key={index} primary size="mini" onClick={e => removeFilter(e, filterName, filterByValue[index])}>
                 <Icon name="delete" />
                 {filterName}: {filterByValue[index]}
               </Button>       
