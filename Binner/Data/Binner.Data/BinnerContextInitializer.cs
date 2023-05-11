@@ -26,12 +26,16 @@ namespace Binner.Data
             {
                 // seed data
                 SeedInitialUsers(context, passwordHasher);
+                if (context.ChangeTracker.HasChanges())
+                {
+                    context.SaveChanges();
+                }
                 SeedSystemPartTypes(context);
                 if (context.ChangeTracker.HasChanges())
                 {
                     context.SaveChanges();
-                    transaction.Commit();
                 }
+                transaction.Commit();
             }
             catch(Exception)
             {
@@ -74,6 +78,8 @@ namespace Binner.Data
                     Name = partType.Value,
                     ParentPartTypeId = parentPartTypeId,
                     DateCreatedUtc = DateTime.UtcNow,
+                    OrganizationId = 1,
+                    UserId = 1
                 };
                 context.PartTypes.Add(record);
             }
