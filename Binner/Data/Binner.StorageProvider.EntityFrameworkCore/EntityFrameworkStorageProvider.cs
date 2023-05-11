@@ -1,15 +1,14 @@
 ﻿using AutoMapper;
 using Binner.Data;
+using Binner.Global.Common;
+using Binner.LicensedProvider;
+using Binner.Model;
+using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using Binner.Global.Common;
 using TypeSupport.Extensions;
-using Binner.Model;
-using Binner.Model.Responses;
 using DataModel = Binner.Data.Model;
-using Binner.LicensedProvider;
-using System;
 
 namespace Binner.StorageProvider.EntityFrameworkCore
 {

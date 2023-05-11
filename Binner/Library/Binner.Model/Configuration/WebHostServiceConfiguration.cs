@@ -29,7 +29,7 @@
         /// <summary>
         /// The port number to host
         /// </summary>
-        public int Port { get; set; } = 4433;
+        public int Port { get; set; } = 8090;
 
         /// <summary>
         /// Public resource web address (without https://) for serving public resources
