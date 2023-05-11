@@ -72,6 +72,11 @@
 	margin: 0 auto;
 }
 
+.labelEditor .draggableBox {
+	transition-property: left, top;
+	transition-duration: 0.15s;
+}
+
 .labelEditor .draggableBox, .labelEditor .draggableBox div {
 	outline-width: 0 !important;
 }
@@ -125,4 +130,43 @@
 
 .labelEditor .itemProperties span {
 	margin: 0 5px;
+}
+
+.zoomContainer {
+	transition-property: transform;
+	transition-duration: 0.2s;
+}
+
+.ui.celled.table tr td.alignTools, .ui.celled.table tr td.zoomTools {
+	text-align: center !important;
+}
+
+td.zoomTools div {
+	position: relative;
+	font-size: 0.7em;
+	line-height: 0em;
+	text-align: center;
+	top: 5px;
+}
+
+.alignTools .ui.button svg {
+	font-size: 1.0em;
+}
+
+.zoomTools .ui.button .ui.icon {
+	font-size: 1.0em;
+}
+
+.labelEditor .draggableBox .box {
+	outline-width: 1px !important;
+	outline-style: dotted;
+	outline-color: gray;
+	outline-offset: -1px;
+}
+
+.labelEditor .draggableBox .box.selected {
+	outline-width: 2px !important;
+	outline-style: dashed;
+	outline-color: #0478d1;
+	outline-offset: -3px;
 }

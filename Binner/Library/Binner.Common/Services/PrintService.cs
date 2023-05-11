@@ -190,6 +190,7 @@ namespace Binner.Common.Services
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Labels
                 .Where(x => x.OrganizationId == user.OrganizationId)
+                .OrderByDescending(x => x.DateModifiedUtc)
                 .ToListAsync();
             return _mapper.Map<ICollection<Label>>(entities);
         }

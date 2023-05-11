@@ -9,7 +9,11 @@ export const Box = memo(function Box({ name, children, style, preview, selected,
 
 	const boxStyle = useMemo(
     () => ({
-			border: isSelected ? '2px dashed black' : '1px dashed gray',
+			//border: isSelected ? '2px dashed black' : '1px dashed gray',
+			//outline: isSelected ? '2px dashed black' : '1px dashed gray',
+			//outlineStyle: 'dashed',
+			//outlineColor: isSelected ? 'black' : 'gray',
+			//outlineWidth: isSelected ? '2px !important' : '1px !important',
 			padding: '0.1rem 0.5rem',
 			cursor: 'move',
     }),
@@ -21,7 +25,7 @@ export const Box = memo(function Box({ name, children, style, preview, selected,
 			name={name}
       style={{ ...boxStyle, ...style }}
       role={preview ? 'BoxPreview' : 'Box'}
-			className={className}
+			className={`${className} ${isSelected ? "selected" : ""}`}
     >{children}</div>
   );
 });

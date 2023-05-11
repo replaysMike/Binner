@@ -39,6 +39,7 @@ export function LabelEditor(props) {
 		name: "",
     value: ""
   };
+  const [zoomLevel, setZoomLevel] = useState(1);
 	const [labelSelectionModalIsOpen, setLabelSelectionModalIsOpen] = useState(false);
 	const [labelSetNameModalIsOpen, setLabelSetNameModalIsOpen] = useState(false);	
   const [boxes, setBoxes] = useState([]);
@@ -235,7 +236,8 @@ export function LabelEditor(props) {
     
     loadFonts();
 		getLabelTemplates();
-		setLabelSelectionModalIsOpen(true);
+    if (label?.labelId === -1)
+		  setLabelSelectionModalIsOpen(true);
   }, []);  
 
 	const handleSaveTemplate = async () => {
@@ -429,24 +431,44 @@ export function LabelEditor(props) {
 			setLabel(label);
 			const template = JSON.parse(label.template);
 			setBoxes(template.boxes);
-			setLabelTemplate({ ...template.label, showBoundaries: false });
+			const newLabelTemplate = { ...template.label, showBoundaries: false };
+      setLabelTemplate(newLabelTemplate);
 			const newItemProperties = template.boxes.map((item, key) => ({
 				...item.properties, name: item.name
 			}));
 			setItemProperties(newItemProperties);
+      // force a preview
+      previewDebounced(template.boxes, newLabelTemplate);
 		} else {
 			setBoxes([]);
+      setLabelTemplate([]);
 			setItemProperties([]);
 			setSelectedItem(null);
 			setSelectedItemProperties({});
 			setLabel({ labelId: -1, name: "" });
 			setImgBase64("");
+      // force a preview
+      previewDebounced([], {});
 		}
 	};
 
 	const handleLoad = () => {
 		setLabelSelectionModalIsOpen(true);
 	};
+
+  const handleZoomIn = () => {
+    let newZoomLevel = zoomLevel + 0.1;
+    if (newZoomLevel > 2)
+      newZoomLevel = 2;
+    setZoomLevel(newZoomLevel);
+  };
+
+  const handleZoomOut = () => {
+    let newZoomLevel = zoomLevel - 0.1;
+    if (newZoomLevel < 0.5)
+      newZoomLevel = 0.5;
+    setZoomLevel(newZoomLevel);
+  };
 
   return (
     <div className="labelEditor">
@@ -513,20 +535,22 @@ export function LabelEditor(props) {
               <label>Label Editor</label>
             </div>
             <div className="wrapper" style={{ flex: "1" }} onClick={handleClearSelectedItem}>
-              <LabelDropContainer
-                width={convertInchesToPixels(labelTemplate?.width || 0)}
-                height={convertInchesToPixels(labelTemplate?.height || 0)}
-                margin={labelTemplate.margin}
-                itemProperties={itemProperties}
-								resetSelectedItem={clearSelectedItem}
-                onSelectedItemChanged={handleSelectedItemChanged}
-                onDrop={handleOnDrop}
-                onMove={handleOnMove}
-                onRemove={handleOnRemove}
-								boxes={boxes}
-              />
-              <div style={{ fontSize: "0.9em", fontWeight: "700", color: "#333" }}>{_.find(labelTemplateOptions, (i) => i.value === labelTemplate)?.text}</div>
-              <div style={{ fontSize: "0.7em", color: "#999" }}>Drag and drop components onto the label surface above</div>
+              <div className="zoomContainer" style={{ transform: `scale(${zoomLevel})` }}>
+                <LabelDropContainer
+                  width={convertInchesToPixels(labelTemplate?.width || 0)}
+                  height={convertInchesToPixels(labelTemplate?.height || 0)}
+                  margin={labelTemplate.margin}
+                  itemProperties={itemProperties}
+                  resetSelectedItem={clearSelectedItem}
+                  onSelectedItemChanged={handleSelectedItemChanged}
+                  onDrop={handleOnDrop}
+                  onMove={handleOnMove}
+                  onRemove={handleOnRemove}
+                  boxes={boxes}
+                />
+                <div style={{ fontSize: "0.9em", fontWeight: "700", color: "#333" }}>{_.find(labelTemplateOptions, (i) => i.value === labelTemplate)?.text}</div>
+                <div style={{ fontSize: "0.7em", color: "#999" }}>Drag and drop components onto the label surface above</div>
+              </div>
             </div>
             <div className="header" style={{ flex: "0" }}>
               <label>Manage</label>
@@ -534,7 +558,7 @@ export function LabelEditor(props) {
                 <Table celled>
                   <Table.Body>
                     <Table.Row>
-											<Table.Cell colSpan={3}>
+											<Table.Cell colSpan={2} className="alignTools">
 												<Button icon onClick={() => handleAlignSelected('left')} disabled={!selectedItem} size="tiny" title="Align left"><AlignHorizontalLeft /></Button>
 												<Button icon onClick={() => handleAlignSelected('center')} disabled={!selectedItem} size="tiny" title="Align center"><AlignHorizontalCenter /></Button>
 												<Button icon onClick={() => handleAlignSelected('right')} disabled={!selectedItem} size="tiny" title="Align right"><AlignHorizontalRight /></Button>
@@ -542,7 +566,12 @@ export function LabelEditor(props) {
 												<Button icon onClick={() => handleAlignSelected('middle')} disabled={!selectedItem} size="tiny" title="Align middle"><AlignVerticalCenterIcon /></Button>
 												<Button icon onClick={() => handleAlignSelected('bottom')} disabled={!selectedItem} size="tiny" title="Align bottom"><AlignVerticalBottomIcon /></Button>
 											</Table.Cell>
-                      <Table.Cell colSpan={3}>
+                      <Table.Cell className="zoomTools">
+                        <Button icon="zoom out" onClick={() => handleZoomOut()} size="tiny" title="Zoom Out" disabled={zoomLevel <= 0.5}  />
+                        <Button icon="zoom in" onClick={() => handleZoomIn()} size="tiny" title="Zoom In" disabled={zoomLevel >= 2.0} />
+                        <div>Zoom level: {(zoomLevel * 100).toFixed(0)}%</div>
+                      </Table.Cell>
+                      <Table.Cell colSpan={3} className="ioTools">
                         <div style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "100%" }}>
                           <div style={{ display: "flex", justifyContent: "start" }}>
 														<Popup
@@ -584,7 +613,7 @@ export function LabelEditor(props) {
             </div>
             <div className="header" style={{ flex: "0" }}>
               <label>Label Properties</label>
-              <div>
+              <div className="labelProperties">
                 <Table celled>
                   <Table.Body>
                     <Table.Row>
@@ -684,7 +713,7 @@ export function LabelEditor(props) {
             </div>
             <div className="header" style={{ flex: "0" }}>
               <label>Item Properties - {selectedItem?.name}</label>
-              <div>
+              <div className="itemProperties">
                 <Table celled>
                   <Table.Body>
 										<Table.Row>
@@ -741,17 +770,22 @@ export function LabelEditor(props) {
                     </Table.Row>
                     <Table.Row>
                       <Table.Cell>
-                        <b>Text Value:</b>
+                        <b>Text/Barcode Value:</b>
                       </Table.Cell>
                       <Table.Cell colSpan={5}>
-                        <Input
-                          style={{ width: "400px" }}
-                          name="value"
-                          placeholder="Enter some text"
-                          value={selectedItemProperties?.value || ""}
-                          disabled={!selectedItem?.acceptsValue || !selectedItem}
-                          onChange={handleItemPropertyChange}
+                        <Popup 
+                          content={<p>The text to display (for a Custom text box) or override the value assigned to a barcode with static text or a part template value. Part template values should be of the following format: <i><b>&#123;</b>partNumber<b>&#125;</b></i></p>}
+                          trigger={<Input
+                            fluid
+                            icon="code"
+                            name="value"
+                            placeholder="Automatic"
+                            value={selectedItemProperties?.value || ""}
+                            disabled={!selectedItem?.acceptsValue || !selectedItem}
+                            onChange={handleItemPropertyChange}
+                          />} 
                         />
+                        <div style={{fontSize: '0.8em', textAlign: 'right'}}>Length: {selectedItemProperties?.value?.length || 0}</div>
                       </Table.Cell>
                     </Table.Row>
                   </Table.Body>

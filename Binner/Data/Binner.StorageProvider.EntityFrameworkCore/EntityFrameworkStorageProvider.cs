@@ -1211,8 +1211,8 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.PartTypes
-                .FirstOrDefaultAsync(x => x.PartTypeId == partTypeId && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
+            var entity = _partTypesCache.Cache
+                .FirstOrDefault(x => x.PartTypeId == partTypeId && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
             if (entity == null)
                 return null;
             return _mapper.Map<PartType?>(entity);

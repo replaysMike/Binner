@@ -1,9 +1,11 @@
 ﻿using AnyBarcode;
 using Barcoder.Renderer.Image;
 using Binner.Common.Extensions;
+using Binner.Common.Services;
 using Binner.Model;
 using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
+using Binner.StorageProvider.EntityFrameworkCore;
 using Newtonsoft.Json;
 using QRCoder;
 using SixLabors.Fonts;
@@ -31,6 +33,7 @@ namespace Binner.Common.IO.Printing
         private readonly List<PointF> _labelStart = new();
         private readonly IPrinterEnvironment _printer;
         private Rectangle _paperRect;
+        private readonly IPartTypeService _partTypeService;
 
         /// <summary>
         /// Printer settings
@@ -42,10 +45,11 @@ namespace Binner.Common.IO.Printing
             LoadFonts();
         }
 
-        public LabelGenerator(IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator)
+        public LabelGenerator(IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator, IPartTypeService partTypeService)
         {
             PrinterSettings = printerSettings ?? throw new ArgumentNullException(nameof(printerSettings));
             _barcodeGenerator = barcodeGenerator;
+            _partTypeService = partTypeService;
             _printer = new PrinterFactory().CreatePrinter(printerSettings);
         }
 
@@ -101,17 +105,10 @@ namespace Binner.Common.IO.Printing
                 var width = box.Width * ratio;
                 var height = box.Height * ratio;
 
-                var field = box.Name;
-                var text = string.Empty;
-                var propertyName = field.UcFirst();
-                if(part.ContainsProperty(propertyName))
-                    text = part.GetPropertyValue<string>(propertyName);
-
-                if (!string.IsNullOrEmpty(box.Properties.Value))
-                    text = box.Properties.Value;
+                var text = GetTextValue(box, part);
 
                 var dataToEncode = text;
-                switch (field)
+                switch (box.Name)
                 {
                     case "qrCode":
                         if (string.IsNullOrEmpty(dataToEncode))
@@ -147,8 +144,70 @@ namespace Binner.Common.IO.Printing
             return image;
         }
 
+        private string GetTextValue(LabelBox box, Part part)
+        {
+            var text = string.Empty;
+            var propertyName = box.Name.UcFirst();
+            if (part.ContainsProperty(propertyName))
+            {
+                switch (propertyName)
+                {
+                    case "Keywords":
+                        if (part.Keywords?.Any() == true)
+                            text = string.Join(",", part.Keywords);
+                        break;
+                    default:
+                        text = part.GetPropertyValue<string>(propertyName);
+                        break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(box.Properties.Value))
+                text = box.Properties.Value;
+
+            switch (propertyName)
+            {
+                case "PartType":
+                    // get the part type name
+                    var partType = _partTypeService.GetPartTypeAsync(part.PartTypeId).GetAwaiter().GetResult();
+                    text = partType?.Name ?? string.Empty;
+                    if (text.Contains("{") && text.Contains("}"))
+                        text = text.Replace("{partType}", partType?.Name);
+                    break;
+                case "MountingType":
+                    var mountingType = ((MountingType)part.MountingTypeId).ToString();
+                    text = mountingType;
+                    if (text.Contains("{") && text.Contains("}"))
+                        text = text.Replace("{mountingType}", mountingType);
+                    break;
+            }
+
+            if (text.Contains("{") && text.Contains("}"))
+            {
+                text = text.Replace("{partNumber}", part.PartNumber);
+                text = text.Replace("{mfrPartNumber}", part.ManufacturerPartNumber);
+                text = text.Replace("{description}", part.Description);
+                text = text.Replace("{manufacturer}", part.Manufacturer);
+                text = text.Replace("{packageType}", part.PackageType);
+                text = text.Replace("{cost}", part.Cost.ToString());
+                if (part.Keywords?.Any() == true)
+                    text = text.Replace("{keywords}", string.Join(",", part.Keywords));
+                text = text.Replace("{quantity}", part.Quantity.ToString());
+                text = text.Replace("{digiKeyPartNumber}", part.DigiKeyPartNumber);
+                text = text.Replace("{mouserPartNumber}", part.MouserPartNumber);
+                text = text.Replace("{arrowNumber}", part.ArrowPartNumber);
+                text = text.Replace("{location}", part.Location);
+                text = text.Replace("{binNumber}", part.BinNumber);
+                text = text.Replace("{binNumber2}", part.BinNumber2);
+            }
+
+            return text;
+        }
+
         private void DrawQrCode(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
+            if (width == 0 || height == 0)
+                return;
             using var memoryStream = new MemoryStream();
             using var qrGenerator = new QRCodeGenerator();
             using var qrCodeData = qrGenerator.CreateQrCode(text, QRCodeGenerator.ECCLevel.Q);
@@ -166,11 +225,13 @@ namespace Binner.Common.IO.Printing
 
         private void DrawDataMatrix(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
+            if (width == 0 || height == 0)
+                return;
             using var memoryStream = new MemoryStream();
             var barcode = Barcoder.DataMatrix.DataMatrixEncoder.Encode(text);
             var renderer = new ImageRenderer();
             using var barcodeImage = renderer.Render(barcode);
-            var marginPerc = ((barcode.Margin - 1) / (float)barcode.Bounds.X);
+            var marginPerc = ((barcode.Margin - 2) / (float)barcode.Bounds.X);
             var marginSize = (int)(barcodeImage.Size.Width * marginPerc);
             // crop and remove the white margin around the code
             barcodeImage.Mutate(c => c.Crop(new Rectangle(marginSize, marginSize, barcodeImage.Width - marginSize - marginSize, barcodeImage.Height - marginSize - marginSize)));
@@ -181,6 +242,8 @@ namespace Binner.Common.IO.Printing
 
         private void DrawPdf417(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
+            if (width == 0 || height == 0)
+                return;
             using var memoryStream = new MemoryStream();
             var barcode = Barcoder.Pdf417.Pdf417Encoder.Encode(text, 2);
             var renderer = new ImageRenderer();
@@ -192,11 +255,13 @@ namespace Binner.Common.IO.Printing
 
         private void DrawAztecCode(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
+            if (width == 0 || height == 0)
+                return;
             using var memoryStream = new MemoryStream();
             var barcode = Barcoder.Aztec.AztecEncoder.Encode(text);
             var renderer = new ImageRenderer();
             using var barcodeImage = renderer.Render(barcode);
-            var marginPerc = ((barcode.Margin - 1) / (float)barcode.Bounds.X);
+            var marginPerc = ((barcode.Margin - 2) / (float)barcode.Bounds.X);
             var marginSize = (int)(barcodeImage.Size.Width * marginPerc);
             // crop and remove the white margin around the code
             barcodeImage.Mutate(c => c.Crop(new Rectangle(marginSize, marginSize, barcodeImage.Width - marginSize - marginSize, barcodeImage.Height - marginSize - marginSize)));
@@ -207,9 +272,11 @@ namespace Binner.Common.IO.Printing
 
         private void DrawCode128(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
+            if (width == 0 || height == 0)
+                return;
             using var memoryStream = new MemoryStream();
             if (text.Length > 80)
-                text = text.Substring(0, 80);
+                throw new InvalidOperationException("Max data encoding length is 80 characters.");
             var barcode = Barcoder.Code128.Code128Encoder.Encode(text);
             var renderer = new ImageRenderer();
             using var barcodeImage = renderer.Render(barcode);
@@ -219,6 +286,8 @@ namespace Binner.Common.IO.Printing
 
         private void DrawText(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
+            if (width == 0 || height == 0)
+                return;
             var drawingOptions = new DrawingOptions();
             var fontColor = GetColor(box.Properties.Color);
             var fontFamily = GetOrCreateFontFamily(box.Properties.Font);
@@ -228,19 +297,33 @@ namespace Binner.Common.IO.Printing
             {
                 Origin = new PointF(0, 0),
                 TabWidth = 4,
-                WordBreaking = WordBreaking.BreakAll,
                 Dpi = labelDef.Label.Dpi,
+                WordBreaking = WordBreaking.BreakAll,
                 KerningMode = KerningMode.None,
-                LayoutMode = LayoutMode.HorizontalTopBottom,
-                TextDirection = TextDirection.LeftToRight,
-                //HorizontalAlignment = GetTextAlignment(box.Properties.Align),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                WrappingLength = width
+                WrappingLength = width,
             };
+
             var measure = TextMeasurer.Measure(text, textOptions);
             var textX = x;
             var textY = y - (fontSize * 1.5f);
             textOptions.Origin = new PointF(textX, textY);
+
+            /*
+             // text alignment doesn't seem to work: https://github.com/SixLabors/ImageSharp.Drawing/issues/275
+            switch (box.Properties.Align)
+            {
+                case LabelAlign.Left:
+                    textOptions.TextAlignment = TextAlignment.Start;
+                    break;
+                case LabelAlign.Center:
+                    textOptions.TextAlignment = TextAlignment.Center;
+                    break;
+                case LabelAlign.Right:
+                    textOptions.TextAlignment = TextAlignment.End;
+                    break;
+            }*/
+
+            // manually align text since above doesn't work
             if (box.Properties.Align == LabelAlign.Center)
                 textOptions.Origin = new PointF(textX + (width / 2f) - (measure.Width / 2f), textY);
             else if(box.Properties.Align == LabelAlign.Right)
