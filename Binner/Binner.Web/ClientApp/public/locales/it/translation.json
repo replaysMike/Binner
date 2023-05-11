@@ -792,7 +792,7 @@
 		"systemSettingsSaved": "Le impostazioni di sistema sono state salvate.",
 		"clearedCredentials": "Le credenziali per {{apiName}} sono state cancellate",
 		"testPassed": "Test superato",
-		"partsImported": "Sono stati importati {{count}} componenti!",
+		"partsImported": "Sono stati importati {{count}} o {{totalCount}} componenti!",
 		"deletedProject": "Il progetto è stato cancellato!",
 		"deletedPcb": "Il PCB è stato cancellato!",
 		"deletedRecord": "Il record è stato cancellato!"

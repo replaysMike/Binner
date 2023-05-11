@@ -17,7 +17,8 @@ export function OrderImport(props) {
   OrderImport.abortController = new AbortController();
   const [orderLabel, setOrderLabel] = useState(t('page.orderImport.salesOrderNum', "Sales Order #"));
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState({});
+  const [orderImportSearchResult, setOrderImportSearchResult] = useState(null);
+  const [importResult, setImportResult] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
@@ -82,6 +83,7 @@ export function OrderImport(props) {
   };
 
   const handleImportParts = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
@@ -90,7 +92,7 @@ export function OrderImport(props) {
       supplier: order.supplier,
       username: order.username,
       password: order.password,
-      parts: _.where(results.parts, { selected: true })
+      parts: _.where(orderImportSearchResult.parts, { selected: true })
     };
     await fetchApi("api/part/importparts", {
       method: "POST",
@@ -100,19 +102,21 @@ export function OrderImport(props) {
       body: JSON.stringify(request)
     }).then((response) => {
       const { data } = response;
-      // reset form
+      // show results
       setLoading(false);
-      setResults({});
-      toast.success(t('success.partsImported', "{{count}} parts were imported!", { count: data.length }));
+      setOrderImportSearchResult(null);
+      setImportResult(data);
+      toast.success(t('success.partsImported', "{{count}} of {{totalCount}} parts were imported!", { count: _.filter(data.parts, i => i.isImported).length, totalCount: data.parts.length }));
     });
   };
 
   const getPartsToImport = async (e, order) => {
+    e.preventDefault();
     OrderImport.abortController.abort(); // Cancel the previous request
     OrderImport.abortController = new AbortController();
     setLoading(true);
     setError(null);
-    setResults({});
+    setOrderImportSearchResult(null);
 
     const request = {
       orderId: order.orderId,
@@ -152,7 +156,7 @@ export function OrderImport(props) {
             data.response.parts.forEach((i) => {
               i.selected = true;
             });
-            setResults(data.response);
+            setOrderImportSearchResult(data.response);
             setLoading(false);
           }
         } else {
@@ -172,8 +176,10 @@ export function OrderImport(props) {
   };
 
   const handleClear = (e) => {
+    e.preventDefault();
     setOrder({ orderId: "", supplier: order.supplier });
-    setResults({});
+    setOrderImportSearchResult(null);
+    setImportResult(null);
   };
 
   const handleArrowEmail = (e, order) => {
@@ -253,7 +259,7 @@ export function OrderImport(props) {
 
   const handleChecked = (e, p) => {
     p.selected = !p.selected;
-    setResults({...results});
+    setOrderImportSearchResult({...orderImportSearchResult});
   };
 
   const formatTrackingNumber = (trackingNumber) => {
@@ -269,36 +275,89 @@ export function OrderImport(props) {
   const renderAllMatchingParts = (order) => {
     return (
       <div>
-        <Form onSubmit={handleImportParts}>
+        <Table compact celled selectable size="small" className="partstable">
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell colSpan="11">
+                <Table>
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell>
+                        <Label>{t('label.customerId', "Customer Id")}:</Label>
+                        {order.customerId || "Unspecified"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Label>{t('label.orderAmount', "Order Amount")}:</Label>${order.amount.toFixed(2)} {order.currency}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Label>{t('label.orderDate', "Order Date")}:</Label>
+                        {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
+                        {formatTrackingNumber(order.trackingNumber)}
+                      </Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                </Table>
+              </Table.HeaderCell>
+            </Table.Row>
+            <Table.Row>
+              <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.supplierPart', "Supplier Part")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.quantityShort', "Qty")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
+              <Table.HeaderCell></Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {order.parts.map((p, index) => (
+              <Table.Row key={index}>
+                <Table.Cell>
+                  <Checkbox toggle checked={p.selected} onChange={(e) => handleChecked(e, p)} data={p} />
+                </Table.Cell>
+                <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.description}>
+                  {p.description}
+                </Table.Cell>
+                <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
+                <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.manufacturer}>
+                  {p.manufacturer}
+                </Table.Cell>
+                <Table.Cell>{p.partType}</Table.Cell>
+                <Table.Cell>{p.supplierPartNumber}</Table.Cell>
+                <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
+                <Table.Cell>{p.quantityAvailable}</Table.Cell>
+                <Table.Cell>
+                  <Image src={p.imageUrl} size="mini"></Image>
+                </Table.Cell>
+                <Table.Cell>
+                  {p.datasheetUrls.map((d, dindex) => (
+                    <Link key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)} to="">
+                      {t('button.viewDatasheet', "View Datasheet")}
+                    </Link>
+                  ))}
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+        <Button primary onClick={handleImportParts} disabled={_.filter(orderImportSearchResult.parts, i => i.selected).length === 0}>{t('button.importParts', "Import Parts")}</Button>
+      </div>
+    );
+  };
+
+  const renderImportResult = (importResult) => {
+    return (
+      <div>
           <Table compact celled selectable size="small" className="partstable">
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell colSpan="11">
-                  <Table>
-                    <Table.Body>
-                      <Table.Row>
-                        <Table.Cell>
-                          <Label>{t('label.customerId', "Customer Id")}:</Label>
-                          {order.customerId || "Unspecified"}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Label>{t('label.orderAmount', "Order Amount")}:</Label>${order.amount.toFixed(2)} {order.currency}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Label>{t('label.orderDate', "Order Date")}:</Label>
-                          {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
-                          {formatTrackingNumber(order.trackingNumber)}
-                        </Table.Cell>
-                      </Table.Row>
-                    </Table.Body>
-                  </Table>
-                </Table.HeaderCell>
-              </Table.Row>
-              <Table.Row>
-                <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
+                <Table.HeaderCell></Table.HeaderCell>
                 <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
                 <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
                 <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
@@ -307,42 +366,40 @@ export function OrderImport(props) {
                 <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
                 <Table.HeaderCell>{t('label.quantityShort', "Qty")}</Table.HeaderCell>
                 <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
-                <Table.HeaderCell></Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {order.parts.map((p, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell>
-                    <Checkbox toggle checked={p.selected} onChange={(e) => handleChecked(e, p)} data={p} />
-                  </Table.Cell>
-                  <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.description}>
-                    {p.description}
-                  </Table.Cell>
-                  <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                  <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.manufacturer}>
-                    {p.manufacturer}
-                  </Table.Cell>
-                  <Table.Cell>{p.partType}</Table.Cell>
-                  <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-                  <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
-                  <Table.Cell>{p.quantityAvailable}</Table.Cell>
-                  <Table.Cell>
-                    <Image src={p.imageUrl} size="mini"></Image>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {p.datasheetUrls.map((d, dindex) => (
-                      <Link key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)} to="">
-                        {t('button.viewDatasheet', "View Datasheet")}
-                      </Link>
-                    ))}
-                  </Table.Cell>
-                </Table.Row>
+              {importResult.parts.map((p, index) => (
+                <React.Fragment key={index}>
+                  <Table.Row>
+                    <Table.Cell>
+                      <Icon name={p.isImported ? "check circle" : "times circle"} color={p.isImported ? "green" : "red"} />
+                    </Table.Cell>
+                    <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.description}>
+                      {p.description}
+                    </Table.Cell>
+                    <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
+                    <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.manufacturer}>
+                      {p.manufacturer}
+                    </Table.Cell>
+                    <Table.Cell>{p.partType}</Table.Cell>
+                    <Table.Cell>{p.supplierPartNumber}</Table.Cell>
+                    <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
+                    <Table.Cell>{p.quantityAvailable}</Table.Cell>
+                    <Table.Cell><Image src={p.imageUrl} size="mini"></Image></Table.Cell>
+                  </Table.Row>
+                  <Table.Row style={{backgroundColor: '#fafafa'}}>
+                    <Table.Cell></Table.Cell>
+                    <Table.Cell colSpan={8} style={{fontSize: '0.8em'}}>
+                      {p.errorMessage && <div style={{color: '#c00', fontWeight: '500'}}>{t('label.error', "Error")}: {p.errorMessage}</div>}
+                      <div>{p.quantityAdded} {t('page.orderImport.addedToInventory', "added to inventory")}{p.quantityExisting > 0 && <span>, {p.quantityExisting} {t('page.orderImport.alreadyInInventory', "already in inventory")}</span>}</div>
+                    </Table.Cell>
+                  </Table.Row>
+                </React.Fragment>
               ))}
             </Table.Body>
           </Table>
-          <Button primary disabled={_.filter(results.parts, i => i.selected).length === 0}>{t('button.importParts', "Import Parts")}</Button>
-        </Form>
+          <Button primary onClick={handleClear}>{t('button.reset', "Reset")}</Button>
       </div>
     );
   };
@@ -351,7 +408,7 @@ export function OrderImport(props) {
     <div>
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} />
       <h1>{t('page.orderImport.title', "Order Import")}</h1>
-      <Form onSubmit={(e) => getPartsToImport(e, order)}>
+      <Form>
         <Form.Group>
           <Form.Dropdown label="Supplier" selection value={order.supplier} options={supplierOptions} onChange={handleChange} name="supplier" />
           <Popup
@@ -415,10 +472,10 @@ export function OrderImport(props) {
           </>}
         </Form.Group>
         <div style={{ height: "30px" }}>{message}</div>
-        <Button primary disabled={loading || order.orderId.length === 0}>
+        <Button primary onClick={e => getPartsToImport(e, order)} disabled={loading || order.orderId.length === 0}>
           {t('button.search', "Search")}
         </Button>
-        <Button onClick={handleClear} disabled={!(results.parts && results.parts.length > 0)}>
+        <Button onClick={handleClear} disabled={!(orderImportSearchResult?.parts?.length > 0 || importResult?.parts?.length > 0)}>
         {t('button.clear', "Clear")}
         </Button>
       </Form>
@@ -428,11 +485,14 @@ export function OrderImport(props) {
           <Dimmer active={loading} inverted>
             <Loader inverted />
           </Dimmer>
-          {(!loading && results && results.parts && renderAllMatchingParts(results)) 
-          || <div style={{ lineHeight: "100px" }}>
-              {enableArrowPrepareEmail && <div><Popup wide='very' position="top center" hoverable content={<p>Clicking this button will open an email template in your default mail application. You will need to send this email to api@arrow.com</p>} trigger={<Button primary onClick={e => handleArrowEmail(e, order)}><Icon name="mail" /> Create Arrow Email</Button>}/></div>}
-              {t('message.noResults', "No Results")}
-            </div>}
+          {!loading && importResult && importResult.parts 
+            ? renderImportResult(importResult)
+            : (!loading && orderImportSearchResult && orderImportSearchResult.parts && renderAllMatchingParts(orderImportSearchResult)) 
+                || <div style={{ lineHeight: "100px" }}>
+                  {enableArrowPrepareEmail && <div><Popup wide='very' position="top center" hoverable content={<p>Clicking this button will open an email template in your default mail application. You will need to send this email to api@arrow.com</p>} trigger={<Button primary onClick={e => handleArrowEmail(e, order)}><Icon name="mail" /> Create Arrow Email</Button>}/></div>}
+                  {t('message.noResults', "No Results")}
+                </div>
+            }
         </Segment>
       </div>
     </div>

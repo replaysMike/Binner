@@ -688,7 +688,7 @@
     "systemSettingsSaved": "已保存系统配置。",
     "clearedCredentials": "Successfully cleared cached credentials for {{apiName}}",
     "testPassed": "Test passed",
-    "partsImported": "{{count}} parts were imported!",
+    "partsImported": "{{count}} of {{totalCount}} parts were imported!",
     "deletedProject": "工程已删除!",
     "deletedPcb": "已删除指定的PCB板!",
     "deletedRecord": "Record was deleted!"

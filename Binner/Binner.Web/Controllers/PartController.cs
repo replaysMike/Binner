@@ -352,7 +352,7 @@ namespace Binner.Web.Controllers
                 {
                     mappedPart
                 };
-                
+
                 return Ok(partResponse);
             }
             else
@@ -492,56 +492,86 @@ namespace Binner.Web.Controllers
         [HttpPost("importparts")]
         public async Task<IActionResult> OrderImportPartsAsync(OrderImportPartsRequest request)
         {
-            var parts = new List<PartResponse>();
+            var response = new OrderImportResponse
+            {
+                OrderId = request.OrderId,
+                Supplier = request.Supplier
+            };
             if (request.Parts == null || request.Parts.Count == 0)
-                return Ok();
+                return Ok(response);
+
             foreach (var commonPart in request.Parts)
             {
-                var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == commonPart.ManufacturerPartNumber);
-                if (existingParts.Any())
+                try
                 {
-                    var existingPart = existingParts.First();
-                    // update quantity and cost
-                    existingPart.Quantity += commonPart.QuantityAvailable;
-                    existingPart.Cost = commonPart.Cost;
-                    existingPart.Currency = commonPart.Currency;
-                    existingPart = await _partService.UpdatePartAsync(existingPart);
-                    parts.Add(Mapper.Map<Part, PartResponse>(existingPart));
-                }
-                else
-                {
-                    // create new part
-                    var part = Mapper.Map<CommonPart, Part>(commonPart);
-                    part.Quantity += commonPart.QuantityAvailable;
-                    part.Cost = commonPart.Cost;
-                    part.Currency = commonPart.Currency;
-                    if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
-                        part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
-                    if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
-                        part.MouserPartNumber = commonPart.SupplierPartNumber;
-                    if (commonPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
-                        part.ArrowPartNumber = commonPart.SupplierPartNumber;
-                    part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
-                    part.PartNumber = commonPart.ManufacturerPartNumber;
-
-                    PartType? partType = null;
-                    if (!string.IsNullOrEmpty(commonPart.PartType))
+                    var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == commonPart.ManufacturerPartNumber);
+                    if (existingParts.Any())
                     {
-                        partType = await GetPartTypeAsync(commonPart.PartType);
-                        part.PartTypeId = partType?.PartTypeId ?? 0;
+                        var existingPart = existingParts.First();
+                        // update quantity and cost
+                        var existingQuantity = existingPart.Quantity;
+                        existingPart.Quantity += commonPart.QuantityAvailable;
+                        existingPart.Cost = commonPart.Cost;
+                        existingPart.Currency = commonPart.Currency;
+                        existingPart = await _partService.UpdatePartAsync(existingPart);
+                        var successPart = Mapper.Map<CommonPart, ImportPartResponse>(commonPart);
+                        if (string.IsNullOrEmpty(commonPart.PartType))
+                        {
+                            successPart.PartType = SystemDefaults.DefaultPartTypes.Other.ToString();
+                        }
+                        successPart.QuantityExisting = existingQuantity;
+                        successPart.QuantityAdded = commonPart.QuantityAvailable;
+                        successPart.IsImported = true;
+                        response.Parts.Add(successPart);
                     }
+                    else
+                    {
+                        // create new part
+                        var part = Mapper.Map<CommonPart, Part>(commonPart);
+                        part.Quantity += commonPart.QuantityAvailable;
+                        part.Cost = commonPart.Cost;
+                        part.Currency = commonPart.Currency;
+                        if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
+                            part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
+                        if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
+                            part.MouserPartNumber = commonPart.SupplierPartNumber;
+                        if (commonPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
+                            part.ArrowPartNumber = commonPart.SupplierPartNumber;
+                        part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
+                        part.PartNumber = commonPart.ManufacturerPartNumber;
 
-                    part.DateCreatedUtc = DateTime.UtcNow;
-                    part = await _partService.AddPartAsync(part);
-                    var mappedPart = Mapper.Map<Part, PartResponse>(part);
-                    mappedPart.PartType = partType?.Name;
-                    mappedPart.PartTypeId = part.PartTypeId;
-                    mappedPart.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
-                    parts.Add(mappedPart);
+                        PartType? partType = null;
+                        if (!string.IsNullOrEmpty(commonPart.PartType))
+                        {
+                            partType = await GetPartTypeAsync(commonPart.PartType);
+                            part.PartTypeId = partType?.PartTypeId ?? (int)SystemDefaults.DefaultPartTypes.Other;
+                        }
+                        else if (part.PartTypeId == 0)
+                        {
+                            part.PartTypeId = (int)SystemDefaults.DefaultPartTypes.Other;
+                        }
+
+                        part.DateCreatedUtc = DateTime.UtcNow;
+                        part = await _partService.AddPartAsync(part);
+                        var successPart = Mapper.Map<CommonPart, ImportPartResponse>(commonPart);
+                        successPart.PartType = partType?.Name ?? SystemDefaults.DefaultPartTypes.Other.ToString();
+
+                        successPart.QuantityExisting = 0;
+                        successPart.QuantityAdded = commonPart.QuantityAvailable;
+                        successPart.IsImported = true;
+                        response.Parts.Add(successPart);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var failedPart = Mapper.Map<CommonPart, ImportPartResponse>(commonPart);
+                    failedPart.IsImported = false;
+                    failedPart.ErrorMessage = ex.GetBaseException().Message;
+                    response.Parts.Add(failedPart);
                 }
             }
 
-            return Ok(parts);
+            return Ok(response);
         }
 
         /// <summary>
@@ -614,7 +644,7 @@ namespace Binner.Web.Controllers
                 {
                     // use the new part label template
                     var label = await _printService.GetPartLabelTemplateAsync();
-                    var image = _labelGenerator.CreateLabelImage(label, part ?? new Part { PartNumber = request.PartNumber});
+                    var image = _labelGenerator.CreateLabelImage(label, part ?? new Part { PartNumber = request.PartNumber });
                     await image.SaveAsPngAsync(stream);
                     stream.Seek(0, SeekOrigin.Begin);
                     return new FileStreamResult(stream, "image/png");
