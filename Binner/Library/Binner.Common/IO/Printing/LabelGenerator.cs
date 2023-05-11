@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.IO.Printing
@@ -182,7 +183,7 @@ namespace Binner.Common.IO.Printing
                     break;
             }
 
-            if (text.Contains("{") && text.Contains("}"))
+            if (!string.IsNullOrEmpty(text) && text.Contains("{") && text.Contains("}"))
             {
                 text = text.Replace("{partNumber}", part.PartNumber);
                 text = text.Replace("{mfrPartNumber}", part.ManufacturerPartNumber);
@@ -199,6 +200,14 @@ namespace Binner.Common.IO.Printing
                 text = text.Replace("{location}", part.Location);
                 text = text.Replace("{binNumber}", part.BinNumber);
                 text = text.Replace("{binNumber2}", part.BinNumber2);
+            }
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                text = text.Replace("\r", " ").Replace("\n", " ");
+                var options = RegexOptions.None;
+                var regex = new Regex("[ ]{2,}", options);     
+                text = regex.Replace(text, " ");
             }
 
             return text;
@@ -286,7 +295,7 @@ namespace Binner.Common.IO.Printing
 
         private void DrawText(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)
         {
-            if (width == 0 || height == 0)
+            if (width == 0 || height == 0 || string.IsNullOrEmpty(text))
                 return;
             var drawingOptions = new DrawingOptions();
             var fontColor = GetColor(box.Properties.Color);
@@ -298,12 +307,41 @@ namespace Binner.Common.IO.Printing
                 Origin = new PointF(0, 0),
                 TabWidth = 4,
                 Dpi = labelDef.Label.Dpi,
-                WordBreaking = WordBreaking.BreakAll,
+                WordBreaking = WordBreaking.Normal,
                 KerningMode = KerningMode.None,
                 WrappingLength = width,
             };
 
             var measure = TextMeasurer.Measure(text, textOptions);
+            while (measure.Height - (fontSize * 1.5f) > height)
+            {
+                if (fontSize > 5.0f)
+                {
+                    // text is too big for the bounding box
+                    fontSize -= 0.5f;
+                }
+                else
+                {
+                    // font scale can't be reduced, trim the text until it fits
+                    text = text.Substring(0, text.Length - 1);
+                    // do a sanity check and break from the loop otherwise
+                    if (text.Length <= 3)
+                        break;
+                }
+
+                font = new Font(fontFamily, fontSize, box.Properties.FontWeight != FontWeights.Normal ? FontStyle.Bold : FontStyle.Regular);
+                textOptions = new TextOptions(font)
+                {
+                    Origin = new PointF(0, 0),
+                    TabWidth = 4,
+                    Dpi = labelDef.Label.Dpi,
+                    WordBreaking = WordBreaking.Normal,
+                    KerningMode = KerningMode.None,
+                    WrappingLength = width,
+                };
+                measure = TextMeasurer.Measure(text, textOptions);
+            }
+
             var textX = x;
             var textY = y - (fontSize * 1.5f);
             textOptions.Origin = new PointF(textX, textY);
@@ -355,7 +393,7 @@ namespace Binner.Common.IO.Printing
             
             // draw text box bounds border
             if (labelDef.Label.ShowBoundaries)
-                image.Mutate<Rgba32>(c => c.Draw(Pens.DashDotDot(Color.Red, 1), new RectangleF(x, y, width - 1, Math.Max(height, measure.Height - (fontSize * 1.5f)) - 1)));
+                image.Mutate<Rgba32>(c => c.Draw(Pens.DashDotDot(Color.Red, 1), new RectangleF(x, y, width - 1, height - 1)));
         }
 
         private string Encode2dBarcodePartData(Part part)
@@ -407,18 +445,18 @@ namespace Binner.Common.IO.Printing
                 case FontSizes.Tiny:
                     return 6f;
                 case FontSizes.Small:
-                    return 10f;
+                    return 7f;
                 default:
                 case FontSizes.Normal:
-                    return 12f;
+                    return 8f;
                 case FontSizes.Medium:
-                    return 16f;
+                    return 10f;
                 case FontSizes.Large:
-                    return 18f;
+                    return 12f;
                 case FontSizes.ExtraLarge:
-                    return 22f;
+                    return 14f;
                 case FontSizes.VeryLarge:
-                    return 26f;
+                    return 28f;
             }
         }
 
