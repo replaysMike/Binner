@@ -450,7 +450,8 @@
     "barcodeScanner": "Barcode Scanner",
     "printing": "Printing",
     "labelTemplates": "Label Templates",
-    "bulkPrint": "Bulk Print"
+    "bulkPrint": "Bulk Print",
+    "inventory": "Inventory"
   },
   "comp": {
     "navBar": {

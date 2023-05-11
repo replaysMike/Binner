@@ -119,6 +119,8 @@ export function Inventory(props) {
   const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
 
   // todo: find a better alternative, we shouldn't need to do this!
+  const partRef = useRef();
+  partRef.current = part;
   const bulkScanIsOpenRef = useRef();
   bulkScanIsOpenRef.current = bulkScanIsOpen;
   const partTypesRef = useRef();
@@ -183,7 +185,135 @@ export function Inventory(props) {
     }
   };
 
-  const processPartMetadataResponse = (data, localPart) => {
+  const setPartFromMetadata = useCallback((metadataParts, suggestedPart) => {
+    if (partTypesRef.current.length === 0)
+      console.error("There are no partTypes! This shouldn't happen and is a bug.");
+
+    const entity = { ...partRef.current };
+    const mappedPart = {
+      partNumber: suggestedPart.basePartNumber,
+      partTypeId: getPartTypeId(suggestedPart.partType, partTypesRef.current),
+      mountingTypeId: suggestedPart.mountingTypeId,
+      packageType: suggestedPart.packageType,
+      keywords: suggestedPart.keywords && suggestedPart.keywords.join(" ").toLowerCase(),
+      description: suggestedPart.description,
+      datasheetUrls: suggestedPart.datasheetUrls,
+      supplier: suggestedPart.supplier,
+      supplierPartNumber: suggestedPart.supplierPartNumber,
+      cost: suggestedPart.cost,
+      productUrl: suggestedPart.productUrl,
+      manufacturer: suggestedPart.manufacturer,
+      manufacturerPartNumber: suggestedPart.manufacturerPartNumber,
+      imageUrl: suggestedPart.imageUrl,
+      status: suggestedPart.status,
+      quantity: suggestedPart.quantity,
+    };
+
+    if (mappedPart.quantity > 0)
+      entity.quantity = mappedPart.quantity;
+    
+    entity.partNumber = mappedPart.partNumber;
+    entity.supplier = mappedPart.supplier;
+    entity.supplierPartNumber = mappedPart.supplierPartNumber;
+    if (mappedPart.partTypeId) entity.partTypeId = mappedPart.partTypeId || "";
+    if (mappedPart.mountingTypeId) entity.mountingTypeId = mappedPart.mountingTypeId || "";
+    entity.packageType = mappedPart.packageType || "";
+    entity.cost = mappedPart.cost || 0.0;
+    entity.keywords = mappedPart.keywords || "";
+    entity.description = mappedPart.description || "";
+    entity.manufacturer = mappedPart.manufacturer || "";
+    entity.manufacturerPartNumber = mappedPart.manufacturerPartNumber || "";
+    entity.productUrl = mappedPart.productUrl || "";
+    entity.imageUrl = mappedPart.imageUrl || "";
+    if (mappedPart.datasheetUrls.length > 0) {
+      entity.datasheetUrl = _.first(mappedPart.datasheetUrls) || "";
+    }
+    if (mappedPart.supplier === "DigiKey") {
+      entity.digiKeyPartNumber = mappedPart.supplierPartNumber || "";
+      // also map mouser
+      let searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.mouserPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map arrow
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.arrowPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      
+    }
+    if (mappedPart.supplier === "Mouser") {
+      entity.mouserPartNumber = mappedPart.supplierPartNumber || "";
+      // also map digikey
+      let searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map arrow
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.arrowPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+    }
+    if (mappedPart.supplier === "Arrow") {
+      entity.arrowPartNumber = mappedPart.supplierPartNumber || "";
+      // also map digikey
+      let searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map mouser
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.mouserPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+    }
+
+    const lowestCostPart = _.first(
+      _.sortBy(
+        _.filter(metadataParts, (i) => i.cost > 0),
+        "cost"
+      )
+    );
+
+    if (lowestCostPart) {
+      entity.lowestCostSupplier = lowestCostPart.supplier;
+      entity.lowestCostSupplierUrl = lowestCostPart.productUrl;
+    }
+    setPart(entity);
+  }, [part]);
+
+  const processPartMetadataResponse = useCallback((data, localPart) => {
     // cancelled or auth required
     if (!data) return;
 
@@ -214,7 +344,7 @@ export function Inventory(props) {
     setInfoResponse(infoResponse);
     setMetadataParts(metadataParts);
     setLoadingPartMetadata(false);
-  };
+  }, [part, pageHasParameters, setPartFromMetadata]);
 
   /**
    * Do a part information search
@@ -707,134 +837,6 @@ export function Inventory(props) {
     e.preventDefault();
     e.stopPropagation();
     await fetchApi(`api/part/print?partNumber=${part.partNumber.trim()}&generateImageOnly=false`, { method: "POST" });
-  };
-
-  const setPartFromMetadata = (metadataParts, suggestedPart) => {
-    if (partTypesRef.current.length === 0)
-      console.error("There are no partTypes! This shouldn't happen and is a bug.");
-
-    const entity = { ...part };
-    const mappedPart = {
-      partNumber: suggestedPart.basePartNumber,
-      partTypeId: getPartTypeId(suggestedPart.partType, partTypesRef.current),
-      mountingTypeId: suggestedPart.mountingTypeId,
-      packageType: suggestedPart.packageType,
-      keywords: suggestedPart.keywords && suggestedPart.keywords.join(" ").toLowerCase(),
-      description: suggestedPart.description,
-      datasheetUrls: suggestedPart.datasheetUrls,
-      supplier: suggestedPart.supplier,
-      supplierPartNumber: suggestedPart.supplierPartNumber,
-      cost: suggestedPart.cost,
-      productUrl: suggestedPart.productUrl,
-      manufacturer: suggestedPart.manufacturer,
-      manufacturerPartNumber: suggestedPart.manufacturerPartNumber,
-      imageUrl: suggestedPart.imageUrl,
-      status: suggestedPart.status,
-      quantity: suggestedPart.quantity,
-    };
-
-    if (mappedPart.quantity > 0)
-      entity.quantity = mappedPart.quantity;
-
-    entity.partNumber = mappedPart.partNumber;
-    entity.supplier = mappedPart.supplier;
-    entity.supplierPartNumber = mappedPart.supplierPartNumber;
-    if (mappedPart.partTypeId) entity.partTypeId = mappedPart.partTypeId || "";
-    if (mappedPart.mountingTypeId) entity.mountingTypeId = mappedPart.mountingTypeId || "";
-    entity.packageType = mappedPart.packageType || "";
-    entity.cost = mappedPart.cost || 0.0;
-    entity.keywords = mappedPart.keywords || "";
-    entity.description = mappedPart.description || "";
-    entity.manufacturer = mappedPart.manufacturer || "";
-    entity.manufacturerPartNumber = mappedPart.manufacturerPartNumber || "";
-    entity.productUrl = mappedPart.productUrl || "";
-    entity.imageUrl = mappedPart.imageUrl || "";
-    if (mappedPart.datasheetUrls.length > 0) {
-      entity.datasheetUrl = _.first(mappedPart.datasheetUrls) || "";
-    }
-    if (mappedPart.supplier === "DigiKey") {
-      entity.digiKeyPartNumber = mappedPart.supplierPartNumber || "";
-      // also map mouser
-      let searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.mouserPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map arrow
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.arrowPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      
-    }
-    if (mappedPart.supplier === "Mouser") {
-      entity.mouserPartNumber = mappedPart.supplierPartNumber || "";
-      // also map digikey
-      let searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map arrow
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.arrowPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-    }
-    if (mappedPart.supplier === "Arrow") {
-      entity.arrowPartNumber = mappedPart.supplierPartNumber || "";
-      // also map digikey
-      let searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map mouser
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.mouserPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-    }
-
-    const lowestCostPart = _.first(
-      _.sortBy(
-        _.filter(metadataParts, (i) => i.cost > 0),
-        "cost"
-      )
-    );
-
-    if (lowestCostPart) {
-      entity.lowestCostSupplier = lowestCostPart.supplier;
-      entity.lowestCostSupplierUrl = lowestCostPart.productUrl;
-    }
-    setPart(entity);
   };
 
   const handleChooseAlternatePart = (e, part) => {

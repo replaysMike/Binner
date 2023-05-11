@@ -1136,10 +1136,18 @@ namespace Binner.Common.Services
                         if (string.IsNullOrEmpty(basePart))
                             basePart = part.ManufacturerPartNumber;
                         var mountingTypeId = MountingType.None;
-                        Enum.TryParse<MountingType>(part.Parameters
+                        var mountingTypeParameter = part.Parameters
                             .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
                             .Select(x => x.Value?.Replace(" ", ""))
-                            .FirstOrDefault(), out mountingTypeId);
+                            .FirstOrDefault();
+
+                        if (mountingTypeParameter?.Contains(",") == true)
+                        {
+                            // DigiKey very rarely returns a part as being more than one mounting type. Pick the last one.
+                            mountingTypeParameter = mountingTypeParameter.Split(",", StringSplitOptions.RemoveEmptyEntries).Last();
+                        }
+
+                        Enum.TryParse<MountingType>(mountingTypeParameter, out mountingTypeId);
                         var currency = digikeyResponse.SearchLocaleUsed.Currency;
                         if (string.IsNullOrEmpty(currency))
                             currency = _configuration.Locale.Currency.ToString().ToUpper();

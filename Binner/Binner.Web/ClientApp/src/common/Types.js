@@ -51,7 +51,7 @@ export const BooleanTypes = {
   switch(typeof valueType){
     case "object":
       const matchingType = _.findWhere(typeValues, { value: value });
-      return matchingType.name;
+      return matchingType?.name;
     default:
       return typeKeys[value];
   }
