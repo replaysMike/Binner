@@ -73,7 +73,7 @@ namespace Binner.Web.Controllers
 
                 var part = new Part
                 {
-                    PartNumber = "SC4096", Description = "Test simulation of a printed part", ManufacturerPartNumber = "SC4096STG-11", Manufacturer = "Texas Instruments",
+                    PartNumber = "NCC-1701-G", Description = "This part is an placeholder for an actual part for print testing purposes.", ManufacturerPartNumber = "NCC-1701-G-TI4473", Manufacturer = "Texas Instruments",
                     Location = "Vancouver", BinNumber = "Bin 11", BinNumber2 = "21",
                     Cost = 0.99, MountingTypeId = 1, PartTypeId = 18, PackageType = "DIP8", Quantity = 500,
                     Keywords = new List<string>{ "example product", "ic", "sensor"  },
