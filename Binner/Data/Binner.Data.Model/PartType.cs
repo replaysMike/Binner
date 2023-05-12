@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Defines a type of part or category/sub-category
     /// </summary>
-    public class PartType 
+    public class PartType
 #if INITIALCREATE
         : IEntity,
 #else
@@ -40,6 +40,12 @@ namespace Binner.Data.Model
         /// The name of the part type
         /// </summary>
         public string? Name { get; set; }
+
+        /// <summary>
+        /// Name or SVG content of icon.
+        /// If left empty, default icon choices will be applied.
+        /// </summary>
+        public string? Icon { get; set; }
 
         /// <summary>
         /// Creation date

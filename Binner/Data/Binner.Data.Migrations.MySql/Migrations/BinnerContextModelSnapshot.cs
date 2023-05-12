@@ -451,6 +451,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Icon")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Name")
                         .HasColumnType("varchar(255)");
 

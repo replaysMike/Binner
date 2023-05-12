@@ -16,3 +16,22 @@
 	margin-right: 4px;
 }
 
+.partTypesTreeView div.parttype:has(svg) {
+	color: #bbb;
+	margin-right: 4px;
+	vertical-align: baseline;
+}
+
+.partTypesTreeView div.parttype>svg {
+	max-width: 24px;
+	max-height: 24px;
+	vertical-align: baseline;
+}
+
+.field.icons .ui.dropdown .item svg {
+	margin-left: 10px;
+}
+
+.field.icons .ui.dropdown .item span {
+	margin-left: 40px;
+}

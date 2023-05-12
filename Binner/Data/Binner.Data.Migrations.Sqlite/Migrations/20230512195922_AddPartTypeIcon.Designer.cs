@@ -3,63 +3,60 @@ using System;
 using Binner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Binner.Data.Migrations.Postgresql.Migrations
+namespace Binner.Data.Migrations.Sqlite.Migrations
 {
     [DbContext(typeof(BinnerContext))]
-    partial class BinnerContextModelSnapshot : ModelSnapshot
+    [Migration("20230512195922_AddPartTypeIcon")]
+    partial class AddPartTypeIcon
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.4")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
-
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+                .HasAnnotation("ProductVersion", "7.0.4");
 
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
                 {
                     b.Property<int>("LabelId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LabelId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<bool>("IsPartLabelTemplate")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("LabelTemplateId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Template")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("LabelId");
 
@@ -72,65 +69,63 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("LabelTemplateId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LabelTemplateId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Dpi")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("DriverHeight")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("DriverName")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("DriverWidth")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ExtraData")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Height")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("LabelCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("LabelPaperSource")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Margin")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Width")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("LabelTemplateId");
 
@@ -141,37 +136,37 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<string>("Provider")
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("AccessToken")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateExpiresUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Provider");
 
@@ -184,54 +179,52 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("OAuthRequestId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OAuthRequestId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("AuthorizationCode")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("AuthorizationReceived")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Error")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ErrorDescription")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Provider")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ReturnToUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("OAuthRequestId");
 
@@ -244,21 +237,19 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("OrganizationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrganizationId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateModifiedUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("OrganizationId");
 
@@ -269,98 +260,96 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("PartId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ArrowPartNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("BinNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("BinNumber2")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
-                    b.Property<decimal>("Cost")
+                    b.Property<double>("Cost")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Currency")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("DatasheetUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("DigiKeyPartNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Keywords")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("LowStockThreshold")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("LowestCostSupplier")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("LowestCostSupplierUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Manufacturer")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ManufacturerPartNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("MountingTypeId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("MouserPartNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PackageType")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PartNumber")
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("PartTypeId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ProductUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<long?>("ProjectId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("Quantity")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("PartId");
 
@@ -397,49 +386,47 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("PartSupplierId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartSupplierId"));
-
-                    b.Property<decimal?>("Cost")
+                    b.Property<double?>("Cost")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("MinimumOrderQuantity")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("PartId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ProductUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("QuantityAvailable")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SupplierPartNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("PartSupplierId");
 
@@ -454,34 +441,32 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("PartTypeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartTypeId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Icon")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long?>("ParentPartTypeId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("PartTypeId");
 
@@ -498,43 +483,41 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("PcbId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PcbId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<double>("Cost")
-                        .HasColumnType("double precision");
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("LastSerialNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SerialNumberFormat")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("PcbId");
 
@@ -547,37 +530,35 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("PcbStoredFileAssignmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PcbStoredFileAssignmentId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("PcbId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("StoredFileId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("PcbStoredFileAssignmentId");
 
@@ -594,40 +575,38 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("ProjectId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Color")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("ProjectId");
 
@@ -642,61 +621,59 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("ProjectPartAssignmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectPartAssignmentId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<double>("Cost")
-                        .HasColumnType("double precision");
+                        .HasColumnType("REAL");
 
                     b.Property<string>("Currency")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CustomDescription")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long?>("PartId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PartName")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<long?>("PcbId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("ProjectId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("QuantityAvailable")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ReferenceId")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SchematicReferenceId")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("ProjectPartAssignmentId");
 
@@ -713,31 +690,29 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("ProjectPcbAssignmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectPcbAssignmentId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("PcbId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("ProjectId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("ProjectPcbAssignmentId");
 
@@ -754,43 +729,41 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("ProjectPcbProduceHistoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectPcbProduceHistoryId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PartsConsumed")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<double>("PcbCost")
-                        .HasColumnType("double precision");
+                        .HasColumnType("REAL");
 
                     b.Property<long?>("PcbId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PcbQuantity")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("ProjectProduceHistoryId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SerialNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("ProjectPcbProduceHistoryId");
 
@@ -807,37 +780,35 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("ProjectProduceHistoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProjectProduceHistoryId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PartsConsumed")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("ProduceUnassociated")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("ProjectId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("ProjectProduceHistoryId");
 
@@ -852,51 +823,49 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<long>("StoredFileId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("StoredFileId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Crc32")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int>("FileLength")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("FileName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("OriginalFileName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<long?>("PartId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long?>("RecordId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("RecordType")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("StoredFileType")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("StoredFileId");
 
@@ -911,88 +880,86 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime?>("DateEmailConfirmedUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateLastActiveUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateLastLoginUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateLockedUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("EmailAddress")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("EmailConfirmationToken")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("EmailConfirmedIp")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
                     b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsEmailConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsEmailSubscribed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("LastSetPasswordIp")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
                     b.Property<string>("LocaleCurrency")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("LocaleLanguage")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<byte[]>("ProfileImage")
-                        .HasColumnType("bytea");
+                        .HasColumnType("BLOB");
 
                     b.Property<double?>("ReCaptchaScore")
-                        .HasColumnType("double precision");
+                        .HasColumnType("REAL");
 
                     b.HasKey("UserId");
 
@@ -1009,89 +976,87 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("UserIntegrationConfigurationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserIntegrationConfigurationId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ArrowApiKey")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ArrowApiUrl")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("ArrowEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ArrowUsername")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("DigiKeyApiUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("DigiKeyClientId")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("DigiKeyClientSecret")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("DigiKeyEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("DigiKeyOAuthPostbackUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MouserApiUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MouserCartApiKey")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("MouserEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("MouserOrderApiKey")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MouserSearchApiKey")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("OctopartClientId")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("OctopartClientSecret")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("OctopartEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SwarmApiKey")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SwarmApiUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("SwarmEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<TimeSpan?>("SwarmTimeout")
-                        .HasColumnType("interval");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("UserIntegrationConfigurationId");
 
@@ -1104,45 +1069,43 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("UserLoginHistoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserLoginHistoryId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("CanLogin")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("EmailAddress")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
                     b.Property<bool>("IsSuccessful")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Message")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<double?>("ReCaptchaScore")
-                        .HasColumnType("double precision");
+                        .HasColumnType("REAL");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("UserLoginHistoryId");
 
@@ -1155,39 +1118,37 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("UserPrinterConfigurationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserPrinterConfigurationId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PartLabelName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("PartLabelSource")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PrinterName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("RemoteAddressUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("UserPrinterConfigurationId");
 
@@ -1200,77 +1161,75 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("UserPrinterTemplateConfigurationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserPrinterTemplateConfigurationId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("AutoSize")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("Barcode")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Color")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("FontName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("FontSize")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Label")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Line")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("LowerCase")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("MarginBottom")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("MarginLeft")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("MarginRight")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("MarginTop")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Position")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Rotate")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("UpperCase")
-                        .HasColumnType("boolean");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("UserPrinterConfigurationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("UserPrinterTemplateConfigurationId");
 
@@ -1285,46 +1244,44 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                 {
                     b.Property<int>("UserTokenId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserTokenId"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime?>("DateExpiredUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime?>("DateRevokedUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
 
                     b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ReplacedByToken")
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Token")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("TokenTypeId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("UserTokenId");
 

@@ -15,6 +15,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ParentPartTypeId, options => options.MapFrom(x => x.ParentPartTypeId))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.Icon, options => options.MapFrom(x => x.Icon))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
                 ;
 
@@ -22,6 +23,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ParentPartTypeId, options => options.MapFrom(x => x.ParentPartTypeId))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.Icon, options => options.MapFrom(x => x.Icon))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
@@ -36,6 +38,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ParentPartTypeId, options => options.MapFrom(x => x.ParentPartTypeId))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.Icon, options => options.MapFrom(x => x.Icon))
                 .ForMember(x => x.Parts, options => options.MapFrom(x => x.Parts != null ? x.Parts.Count : 0))
                 ;
 
@@ -43,6 +46,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ParentPartTypeId, options => options.MapFrom(x => x.ParentPartTypeId))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.Icon, options => options.MapFrom(x => x.Icon))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
@@ -55,6 +59,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ParentPartTypeId, options => options.MapFrom(x => x.ParentPartTypeId))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.Icon, options => options.MapFrom(x => x.Icon))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 ;
@@ -62,6 +67,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ParentPartTypeId, options => options.MapFrom(x => x.ParentPartTypeId))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.Icon, options => options.MapFrom(x => x.Icon))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 .ForMember(x => x.Parts, options => options.MapFrom(x => x.Parts))
                 .ForMember(x => x.ParentPartType, options => options.MapFrom(x => x.ParentPartType != null ? x.ParentPartType.Name : null))

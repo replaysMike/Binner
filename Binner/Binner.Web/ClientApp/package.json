@@ -33,6 +33,7 @@
     "imagesloaded": "^5.0.0",
     "immutability-helper": "^3.1.1",
     "install": "^0.13.0",
+    "is-svg": "^5.0.0",
     "jarallax": "^2.1.3",
     "jquery": "^3.6.4",
     "lg-fullscreen.js": "^1.2.0",

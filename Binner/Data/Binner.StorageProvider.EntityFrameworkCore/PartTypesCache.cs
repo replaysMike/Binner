@@ -1,6 +1,5 @@
 ﻿using Binner.Data;
 using Binner.Model.Configuration;
-using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Binner.StorageProvider.EntityFrameworkCore
@@ -55,6 +54,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
                 {
                     PartTypeId = x.PartTypeId,
                     Name = x.Name,
+                    Icon = x.Icon,
                     ParentPartTypeId = x.ParentPartTypeId,
                     Parts = x.Parts.Count,
                     DateCreatedUtc = x.DateCreatedUtc,

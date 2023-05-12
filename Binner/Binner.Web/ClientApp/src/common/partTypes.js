@@ -1,4 +1,5 @@
 import _ from "underscore";
+import isSvg from "is-svg";
 import {
   CableIcon,
   CapacitorIcon,
@@ -47,7 +48,15 @@ export const getPartTypeId = (partType, partTypes) => {
  * @param {string} parentName Name of parent type
  * @returns
  */
-export const getIcon = (name, parentName) => {
+export const getIcon = (name, parentName, iconSvg) => {
+	if (iconSvg?.length > 0) {
+		if (isSvg(iconSvg)) {
+			return () => (<div className="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium parttype parttype-Connector css-i4bv87-MuiSvgIcon-root" aria-hidden={true} dangerouslySetInnerHTML={{__html: iconSvg}}></div>);
+		} else {
+			// use the icon name
+			name = iconSvg.replace("Icon", "");
+		}
+	}
   let icon = getIconForType(name);
   if (icon === null && parentName) {
     icon = getIconForType(parentName);

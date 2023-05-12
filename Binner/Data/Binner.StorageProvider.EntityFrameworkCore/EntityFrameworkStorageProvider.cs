@@ -911,11 +911,17 @@ INNER JOIN (
                 .FirstOrDefault(x => x.Name != null && x.Name == partType.Name && x.OrganizationId == userContext.OrganizationId);
             if (existingEntity == null)
             {
+                if (!string.IsNullOrEmpty(partType.Icon))
+                {
+                    partType.Icon = SvgSanitizer.Sanitize(partType.Icon);
+                }
+
                 var entity = new DataModel.PartType
                 {
                     DateCreatedUtc = DateTime.UtcNow,
-                    //DateModifiedUtc = DateTime.UtcNow,
+                    DateModifiedUtc = DateTime.UtcNow,
                     Name = partType.Name,
+                    Icon = partType.Icon,
                     ParentPartTypeId = partType.ParentPartTypeId,
                     PartTypeId = partType.PartTypeId,
                     UserId = userContext.UserId,
@@ -1351,6 +1357,10 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
+                if (!string.IsNullOrEmpty(partType.Icon))
+                {
+                    partType.Icon = SvgSanitizer.Sanitize(partType.Icon);
+                }
                 entity = _mapper.Map(partType, entity);
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();

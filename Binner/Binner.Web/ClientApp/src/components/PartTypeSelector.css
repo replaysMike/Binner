@@ -46,4 +46,17 @@
 
 .partTypeSelector-container svg.parttype {
 	color: #bbb;
+	margin-right: 5px;
+	vertical-align: baseline;
+}
+
+.partTypeSelector-container div.parttype:has(svg) {
+	color: #bbb;
+	margin-right: 5px;
+}
+
+.partTypeSelector-container div.parttype>svg {
+	max-width: 24px;
+	max-height: 24px;
+	vertical-align: baseline;
 }

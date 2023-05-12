@@ -161,13 +161,14 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
         const childs = recursiveTreeItem(allPartTypes, children[i].partTypeId);
         const basePartTypeName = _.find(allPartTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
         const partTypeName = children[i].name;
+        const partTypeIcon = children[i].icon;
         childrenComponents.push(
           <StyledTreeItem
             nodeId={nodeId}
             key={key}
             data={children[i]}
             labelText={partTypeName}
-            labelIcon={() => getIcon(partTypeName, basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
+            labelIcon={() => getIcon(partTypeName, basePartTypeName, partTypeIcon)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
             labelInfo={`${children[i].parts}`}
             labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
             labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
@@ -257,7 +258,8 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
       if (partType) {
         const basePartTypeName = partType?.parentPartTypeId && _.find(internalPartTypes, x => x.partTypeId === partType?.parentPartTypeId)?.name;
         const partTypeName = partType?.name;
-        return (partType && getIcon(partType?.name, basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`}));
+        const partTypeIcon = partType?.icon;
+        return (partType && getIcon(partType?.name, basePartTypeName, partTypeIcon)({className: `parttype parttype-${basePartTypeName || partTypeName}`}));
       }
       return "";
     };

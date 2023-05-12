@@ -468,6 +468,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Icon")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
 

@@ -450,6 +450,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Icon")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 

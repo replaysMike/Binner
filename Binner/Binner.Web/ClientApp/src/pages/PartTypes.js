@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
+import isSvg from "is-svg";
 import { Button, Segment, Form, Icon, Confirm, Breadcrumb, Popup, Modal, Checkbox, Input } from "semantic-ui-react";
 import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
 import { fetchApi } from "../common/fetchApi";
@@ -16,6 +17,36 @@ import Typography from "@mui/material/Typography";
 import { Memory as MemoryTwoTone } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
+import {
+  CableIcon,
+  CapacitorIcon,
+  CeramicCapacitorIcon,
+  MicaCapacitorIcon,
+  PaperCapacitorIcon,
+	SuperCapacitorIcon,
+  MylarCapacitorIcon,
+  TantalumCapacitorIcon,
+  VariableCapacitorIcon,
+  PolyesterCapacitorIcon,
+  ConnectorIcon,
+  CrystalIcon,
+  DiodeIcon,
+	EvaluationIcon,
+  HardwareIcon,
+  ICIcon,
+  InductorIcon,
+  KitIcon,
+  LEDIcon,
+  ModuleIcon,
+  RelayIcon,
+  ResistorIcon,
+	PotentiometerIcon,
+  SCRIcon,
+  SensorIcon,
+  SwitchIcon,
+  TransformerIcon,
+  TransistorIcon
+} from "../common/icons";
 import "./PartTypes.css";
 
 export function PartTypes(props) {
@@ -42,7 +73,39 @@ export function PartTypes(props) {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [btnAddDisabled, setBtnAddDisabled] = useState(true);
   const [modalContext, setModalContext] = useState(null);
+  const [iconDropdown, setIconDropdown] = useState("");
   const [updateTreeView, setUpdateTreeView] = useState(true);
+  const iconNames = [
+  { key: -1, text: "None", value:"" },
+  { key: 0,  text: "CableIcon", value:"CableIcon", icon: <CableIcon /> },
+  { key: 1,  text: "CapacitorIcon", value:"CapacitorIcon", icon: <CapacitorIcon /> },
+  { key: 2,  text: "CeramicCapacitorIcon", value:"CeramicCapacitorIcon", icon: <CeramicCapacitorIcon /> },
+  { key: 3,  text: "MicaCapacitorIcon", value:"MicaCapacitorIcon", icon: <MicaCapacitorIcon /> },
+  { key: 4,  text: "PaperCapacitorIcon", value:"PaperCapacitorIcon", icon: <PaperCapacitorIcon /> },
+	{ key: 5,  text: "SuperCapacitorIcon", value:"SuperCapacitorIcon", icon: <SuperCapacitorIcon /> },
+  { key: 6,  text: "MylarCapacitorIcon", value:"MylarCapacitorIcon", icon: <MylarCapacitorIcon /> },
+  { key: 7,  text: "TantalumCapacitorIcon", value:"TantalumCapacitorIcon", icon: <TantalumCapacitorIcon /> },
+  { key: 8,  text: "VariableCapacitorIcon", value:"VariableCapacitorIcon", icon: <VariableCapacitorIcon /> },
+  { key: 9,  text: "PolyesterCapacitorIcon", value:"PolyesterCapacitorIcon", icon: <PolyesterCapacitorIcon /> },
+  { key: 10, text: "ConnectorIcon", value:"ConnectorIcon", icon: <ConnectorIcon /> },
+  { key: 11, text: "CrystalIcon", value:"CrystalIcon", icon: <CrystalIcon /> },
+  { key: 12, text: "DiodeIcon", value:"DiodeIcon", icon: <DiodeIcon /> },
+	{ key: 13, text: "EvaluationIcon", value:"EvaluationIcon", icon: <EvaluationIcon /> },
+  { key: 14, text: "HardwareIcon", value:"HardwareIcon", icon: <HardwareIcon /> },
+  { key: 15, text: "ICIcon", value:"ICIcon", icon: <ICIcon /> },
+  { key: 16, text: "InductorIcon", value:"InductorIcon", icon: <InductorIcon /> },
+  { key: 17, text: "KitIcon", value:"KitIcon", icon: <KitIcon /> },
+  { key: 18, text: "LEDIcon", value:"LEDIcon", icon: <LEDIcon /> },
+  { key: 19, text: "ModuleIcon", value:"ModuleIcon", icon: <ModuleIcon /> },
+  { key: 20, text: "RelayIcon", value:"RelayIcon", icon: <RelayIcon /> },
+  { key: 21, text: "ResistorIcon", value:"ResistorIcon", icon: <ResistorIcon /> },
+	{ key: 22, text: "PotentiometerIcon", value:"PotentiometerIcon", icon: <PotentiometerIcon /> },
+  { key: 23, text: "SCRIcon", value:"SCRIcon", icon: <SCRIcon /> },
+  { key: 24, text: "SensorIcon", value:"SensorIcon", icon: <SensorIcon /> },
+  { key: 25, text: "SwitchIcon", value:"SwitchIcon", icon: <SwitchIcon /> },
+  { key: 26, text: "TransformerIcon", value:"TransformerIcon", icon: <TransformerIcon /> },
+  { key: 27, text: "TransistorIcon", value:"TransistorIcon", icon: <TransistorIcon /> }
+  ];
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setLoading(true);
@@ -91,11 +154,20 @@ export function PartTypes(props) {
     setModalContext({ ...modalContext, name: control.value });
   };
 
+  const handleNewPartTypeIconNameChange = (e, control) => {
+    setModalContext({ ...modalContext, icon: control.value });
+  };
+
+  const handleNewPartTypeIconChange = (e, control) => {
+    setIconDropdown(control.value);
+    setModalContext({ ...modalContext, icon: control.value });
+  };
+
   /**
-   * Save new project
+   * Update part type
    * @param {any} e
    */
-  const onSubmit = async (e) => {
+  const onCreatePartType = async (e) => {
     setBtnAddDisabled(true);
     const request = {
       name: partType.name,
@@ -148,11 +220,12 @@ export function PartTypes(props) {
     }
   };
 
-  const handleRenamePartType = async (e) => {
-    const request = {
-      ...modalContext,
-      name: modalContext.name,
-    };
+  const handleEditPartType = async (e) => {
+    const request = {...modalContext};
+    if ((modalContext.icon.includes("<") || modalContext.icon.includes("&lt;")) && !isSvg(modalContext.icon)) {
+      toast.error("Icon contains invalid SVG!");
+      return;
+    }
     const response = await fetchApi("api/partType", {
       method: "PUT",
       headers: {
@@ -161,7 +234,8 @@ export function PartTypes(props) {
       body: JSON.stringify(request)
     });
     if (response.responseObject.status === 200) {
-      const newPartTypes = [..._.filter(partTypes, i => i.partTypeId !== modalContext.partTypeId), modalContext];
+      const { data } = response;
+      const newPartTypes = [..._.filter(partTypes, i => i.partTypeId !== modalContext.partTypeId), {...data, parts: modalContext.parts}];
       const sortedPartTypes = _.sortBy(newPartTypes, i => i.name);
       setPartTypes(sortedPartTypes);
       setPartTypesFiltered(sortedPartTypes);
@@ -287,13 +361,13 @@ export function PartTypes(props) {
             />
             <Popup
               position="left center"
-              content={<p>{t("button.rename", "Rename")}</p>}
+              content={<p>{t("button.edit", "Edit")}</p>}
               trigger={
                 <Button
                   size="tiny"
                   style={{ fontSize: "0.6em", padding: '0.5em 1.5em', marginLeft: "10px", marginTop: "-3px" }}
-                  onClick={(e) => handleOpenRenamePartModal(e, data)}
-                >{t("button.rename", "Rename")}</Button>
+                  onClick={(e) => handleOpenEditPartModal(e, data)}
+                >{t("button.edit", "Edit")}</Button>
               }
             />
             <Popup
@@ -367,13 +441,14 @@ export function PartTypes(props) {
         } else {
           const basePartTypeName = _.find(partTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
           const partTypeName = children[i].name;
+          const partTypeIcon = children[i].icon;
           childrenComponents.push(
             <StyledTreeItem
               nodeId={nodeId}
               key={key}
               data={children[i]}
               labelText={partTypeName}
-              labelIcon={() => getIcon(partTypeName, children[i].parentPartTypeId && basePartTypeName)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
+              labelIcon={() => getIcon(partTypeName, children[i].parentPartTypeId && basePartTypeName, partTypeIcon)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
               labelInfo={`${children[i].parts}`}
               labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
               labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
@@ -419,7 +494,7 @@ export function PartTypes(props) {
 			setExpandedNodeIds(node);
   };
 
-  const handleOpenRenamePartModal = (e, pt) => {
+  const handleOpenEditPartModal = (e, pt) => {
     setModalContext(pt);
     setIsRenameModalOpen(true);
   };
@@ -444,8 +519,23 @@ export function PartTypes(props) {
       </TreeView>);
   }, [updateTreeView, expandedNodeIds, partTypesFiltered, chkHideEmptyTypes]);
 
+  const GetIsSvgValidIcon = () => {
+    try{
+      if (modalContext?.icon.length > 0) {
+        if((modalContext?.icon.length > 0 && !modalContext.icon.includes("<")) || (modalContext?.icon.length > 0 && modalContext.icon.includes("<") && isSvg(modalContext.icon))){
+          return <Icon name="check circle" color="green" />;
+        }
+        return <Icon name="times circle" color="red" />;
+      } else {
+        return <></>;
+      }
+    }catch{
+      return <Icon name="times circle" color="red" />;
+    }
+  };
+
   return (
-    <div>
+    <div className="partTypes">
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>
           {t("bc.home", "Home")}
@@ -479,17 +569,24 @@ export function PartTypes(props) {
         content={confirmPartDeleteContent}
       />
       <Modal open={isRenameModalOpen}>
-        <Modal.Header>{t('page.partTypes.rename', "Rename Part Type")}</Modal.Header>
-        <Modal.Content>
+        <Modal.Header>{t('page.partTypes.edit', "Edit Part Type")}</Modal.Header>
+        <Modal.Content style={{minHeight: '500px'}}>
           <Form>
             <Form.Field>
               <Form.Input label="New Name" name="name" value={modalContext?.name || ''} onChange={handleNewPartTypeNameChange} />
+            </Form.Field>
+            <Form.Field>
+              <Form.Dropdown className="icons" selection fluid value={iconDropdown} options={iconNames} onChange={handleNewPartTypeIconChange}  />
+              <Form.Input label="or provide an SVG" icon disabled={iconDropdown !== ""} placeholder="<svg><path ... /></svg>" name="icon" value={modalContext?.icon || ''} onChange={handleNewPartTypeIconNameChange}>
+                <input />
+                {GetIsSvgValidIcon()}
+              </Form.Input>
             </Form.Field>
           </Form>
         </Modal.Content>
         <Modal.Actions>
         <Button onClick={() => setIsRenameModalOpen(false) }>{t('button.cancel', "Cancel")}</Button>
-          <Button primary onClick={handleRenamePartType}>
+          <Button primary onClick={handleEditPartType}>
             <Icon name="save" /> {t('button.save', "Save")}
           </Button>
         </Modal.Actions>
@@ -525,7 +622,7 @@ export function PartTypes(props) {
         <div>
           {addVisible && (
             <Segment>
-              <Form onSubmit={onSubmit}>
+              <Form onSubmit={onCreatePartType}>
                 <Form.Field width={8}>
                   <Form.Input
                     label={t("label.name", "Name")}

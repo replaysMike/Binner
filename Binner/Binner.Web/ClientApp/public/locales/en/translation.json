@@ -101,6 +101,7 @@
       "title": "Part Types",
       "description": "Part Types allow you to separate your parts by type. <1>Parent</1> types allow for unlimited part type hierarchy.<3 />For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.",
       "rename": "Rename Part Type",
+      "edit": "Edit Part Type",
       "partCount": "The number of parts in this category",
       "viewParts": "View Parts"
     },

@@ -24,6 +24,12 @@ namespace Binner.Model
         public string? Name { get; set; }
 
         /// <summary>
+        /// Name or SVG content of icon
+        /// If left empty, default icon choices will be applied.
+        /// </summary>
+        public string? Icon { get;set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
