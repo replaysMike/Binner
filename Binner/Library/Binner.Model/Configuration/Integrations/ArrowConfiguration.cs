@@ -5,7 +5,7 @@
     /// </summary>
     public class ArrowConfiguration : IApiConfiguration
     {
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = false;
 
         /// <summary>
         /// Your arrow.com account username/login

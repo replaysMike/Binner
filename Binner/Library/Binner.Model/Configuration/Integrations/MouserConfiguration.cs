@@ -5,7 +5,7 @@
     /// </summary>
     public class MouserConfiguration : IApiConfiguration
     {
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = false;
 
         public string? ApiKey => ApiKeys.SearchApiKey;
 

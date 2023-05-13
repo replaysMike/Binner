@@ -5,7 +5,7 @@
     /// </summary>
     public class SwarmConfiguration : IApiConfiguration
     {
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = false;
 
         /// <summary>
         /// The optional api key
