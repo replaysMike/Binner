@@ -27,8 +27,12 @@
 	margin-right: 10px;
 }
 
-.partTypeSelector .ui.default.dropdown:not(.button)>.text, .ui.dropdown:not(.button)>.default.text {
-	color: rgba(0,0,0,.87);
+.partTypeSelector.ui.active.search.dropdown input.search:focus+.text {
+	color: rgba(0,0,0,1)!important;
+}
+
+.partTypeSelector.ui.default.dropdown:not(.button)>.text, .partTypeSelector.ui.dropdown:not(.button)>.default.text {
+	color: rgba(0,0,0,0.87);
 }
 
 .partTypeSelectorTreeView .MuiTreeItem-group {

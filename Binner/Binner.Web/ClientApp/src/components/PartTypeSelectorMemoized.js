@@ -120,70 +120,6 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
     );
   };
 
-	const recursivePreFilter = useCallback(() => (allPartTypes, parentPartTypeId, filterBy) => {
-		// go through every child, mark filtered matches
-
-		const filterByLowerCase = filterBy.toLowerCase();
-		const childrenComponents = [];
-		let partTypesInCategory = _.filter(allPartTypes, (i) => i.parentPartTypeId === parentPartTypeId);
-		for(let i = 0; i < partTypesInCategory.length; i++){
-			partTypesInCategory[i].exactMatch = partTypesInCategory[i].name.toLowerCase() === filterByLowerCase;
-			if (partTypesInCategory[i].name.toLowerCase().includes(filterByLowerCase)){
-				partTypesInCategory[i].filterMatch = true;
-			} else {
-				partTypesInCategory[i].filterMatch = false;
-			}
-			childrenComponents.push(partTypesInCategory[i]);
-
-			// now filter the children of this category
-			const childs = recursivePreFilter(allPartTypes, partTypesInCategory[i].partTypeId, filterBy);
-			if (_.find(childs, i => i.filterMatch)) {
-				// make sure the parent matches the filter because it has children that does
-				partTypesInCategory[i].filterMatch = true;
-			}
-			for(var c = 0; c < childs.length; c++) {
-				childrenComponents.push(childs[c]);
-			}
-		}
-		return childrenComponents;
-	}, []);
-
-  const recursiveTreeItem = useCallback((allPartTypes, parentPartTypeId = null) => {
-    // build a tree graph
-
-    let children = _.filter(allPartTypes, (i) => i.parentPartTypeId === parentPartTypeId);
-		
-    const childrenComponents = [];
-    if (children && children.length > 0) {
-      for (let i = 0; i < children.length; i++) {
-        const key = `${children[i].name}-${i}`;
-        const nodeId = `${children[i].name}`;
-        const childs = recursiveTreeItem(allPartTypes, children[i].partTypeId);
-        const basePartTypeName = _.find(allPartTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
-        const partTypeName = children[i].name;
-        const partTypeIcon = children[i].icon;
-        childrenComponents.push(
-          <StyledTreeItem
-            nodeId={nodeId}
-            key={key}
-            data={children[i]}
-            labelText={partTypeName}
-            labelIcon={() => getIcon(partTypeName, basePartTypeName, partTypeIcon)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
-            labelInfo={`${children[i].parts}`}
-            labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
-            labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
-            color="#1a73e8"
-            bgColor="#e8f0fe"
-          >
-            {childs}
-          </StyledTreeItem>
-        );
-      }
-    }
-
-    return childrenComponents;
-  }, []);
-
   const getSelectedText = (partType) => {
     if (partType) {
       return partType?.name || "";
@@ -192,9 +128,74 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
   };  
 
   const render = useMemo(() => {
+    console.log('render partTypes');
     const getPartTypeFromName = (name) => {
       const lcName = name.toLowerCase();
       return _.find(internalPartTypes, (i) => i.name.toLowerCase() === lcName)
+    };
+
+    const recursivePreFilter = (allPartTypes, parentPartTypeId, filterBy) => {
+      // go through every child, mark filtered matches
+  
+      const filterByLowerCase = filterBy.toLowerCase();
+      const childrenComponents = [];
+      let partTypesInCategory = _.filter(allPartTypes, (i) => i.parentPartTypeId === parentPartTypeId);
+      for(let i = 0; i < partTypesInCategory.length; i++){
+        partTypesInCategory[i].exactMatch = partTypesInCategory[i].name.toLowerCase() === filterByLowerCase;
+        if (partTypesInCategory[i].name.toLowerCase().includes(filterByLowerCase)){
+          partTypesInCategory[i].filterMatch = true;
+        } else {
+          partTypesInCategory[i].filterMatch = false;
+        }
+        childrenComponents.push(partTypesInCategory[i]);
+  
+        // now filter the children of this category
+        const childs = recursivePreFilter(allPartTypes, partTypesInCategory[i].partTypeId, filterBy);
+        if (_.find(childs, i => i.filterMatch)) {
+          // make sure the parent matches the filter because it has children that does
+          partTypesInCategory[i].filterMatch = true;
+        }
+        for(var c = 0; c < childs.length; c++) {
+          childrenComponents.push(childs[c]);
+        }
+      }
+      return childrenComponents;
+    };
+  
+    const recursiveTreeItem = (allPartTypes, parentPartTypeId = null) => {
+      // build a tree graph
+  
+      let children = _.filter(allPartTypes, (i) => i.parentPartTypeId === parentPartTypeId);
+      
+      const childrenComponents = [];
+      if (children && children.length > 0) {
+        for (let i = 0; i < children.length; i++) {
+          const key = `${children[i].name}-${i}`;
+          const nodeId = `${children[i].name}`;
+          const childs = recursiveTreeItem(allPartTypes, children[i].partTypeId);
+          const basePartTypeName = _.find(allPartTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
+          const partTypeName = children[i].name;
+          const partTypeIcon = children[i].icon;
+          childrenComponents.push(
+            <StyledTreeItem
+              nodeId={nodeId}
+              key={key}
+              data={children[i]}
+              labelText={partTypeName}
+              labelIcon={() => getIcon(partTypeName, basePartTypeName, partTypeIcon)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
+              labelInfo={`${children[i].parts}`}
+              labelColor={children[i].parts > 0 ? "#1a73e8" : "inherit"}
+              labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
+              color="#1a73e8"
+              bgColor="#e8f0fe"
+            >
+              {childs}
+            </StyledTreeItem>
+          );
+        }
+      }
+  
+      return childrenComponents;
     };
     
     const handleOnSearchChange = (e, control) => {
@@ -304,7 +305,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
         </Dropdown.Menu>
       </Dropdown>
     </div>);
-  }, [partType, internalPartTypes, internalPartTypesFiltered, expandedNodeIds, onSelect]);
+  }, [partType, internalPartTypes, internalPartTypesFiltered, expandedNodeIds]);
 
   return (
     <>
