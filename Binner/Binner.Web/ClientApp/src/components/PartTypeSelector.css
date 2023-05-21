@@ -2,7 +2,8 @@
 	position: relative;
 }
 
-.partTypeSelector-container div.icon:has(+ .partTypeSelector) {
+/*.partTypeSelector-container div.icon:has(+ .partTypeSelector) { (no support in firefox yet) */
+	.partTypeSelector-container div.icon {
 	position: absolute;
 	top: 8px;
 	left: 10px;
