@@ -163,7 +163,11 @@ PartNumber = '{keywords}'
  OR Keywords = '{keywords}'
  OR Location = '{keywords}'
  OR BinNumber = '{keywords}'
- OR BinNumber2 = '{keywords}')
+ OR BinNumber2 = '{keywords}'
+ OR SymbolName = '{keywords}'
+ OR FootprintName = '{keywords}'
+ OR ExtensionValue1 = '{keywords}'
+ OR ExtensionValue2 = '{keywords}')
 ),
 PartsBeginsWith (PartId, Rank) AS
 (
@@ -176,7 +180,11 @@ PartNumber LIKE '{keywords}'  + '%'
  OR Keywords LIKE '{keywords}' + '%'
  OR Location LIKE '{keywords}' + '%'
  OR BinNumber LIKE '{keywords}' + '%'
- OR BinNumber2 LIKE '{keywords}'+ '%')
+ OR BinNumber2 LIKE '{keywords}'+ '%'
+ OR SymbolName LIKE '{keywords}' + '%'
+ OR FootprintName LIKE '{keywords}' + '%'
+ OR ExtensionValue1 LIKE '{keywords}' + '%'
+ OR ExtensionValue2 LIKE '{keywords}' + '%')
 ),
 PartsAny (PartId, Rank) AS
 (
@@ -189,7 +197,11 @@ PartNumber LIKE '%' + '{keywords}' + '%'
  OR Keywords LIKE '%' + '{keywords}' + '%'
  OR Location LIKE '%' + '{keywords}' + '%'
  OR BinNumber LIKE '%' + '{keywords}' + '%'
- OR BinNumber2 LIKE '%' + '{keywords}' + '%')
+ OR BinNumber2 LIKE '%' + '{keywords}' + '%'
+ OR SymbolName LIKE '%' + '{keywords}' + '%'
+ OR FootprintName LIKE '%' + '{keywords}' + '%'
+ OR ExtensionValue1 LIKE '%' + '{keywords}' + '%'
+ OR ExtensionValue2 LIKE '%' + '{keywords}' + '%')
 ),
 PartsMerged (PartId, Rank) AS
 (
@@ -221,7 +233,11 @@ PartNumber = '{keywords}'
  OR Keywords = '{keywords}'
  OR Location = '{keywords}'
  OR BinNumber = '{keywords}'
- OR BinNumber2 = '{keywords}')
+ OR BinNumber2 = '{keywords}'
+ OR SymbolName = '{keywords}'
+ OR FootprintName = '{keywords}'
+ OR ExtensionValue1 = '{keywords}'
+ OR ExtensionValue2 = '{keywords}')
 ),
 PartsBeginsWith (PartId, Rank) AS
 (
@@ -234,7 +250,11 @@ PartNumber LIKE '{keywords}' || '%'
  OR Keywords LIKE '{keywords}' || '%'
  OR Location LIKE '{keywords}' || '%'
  OR BinNumber LIKE '{keywords}' || '%'
- OR BinNumber2 LIKE '{keywords}' || '%')
+ OR BinNumber2 LIKE '{keywords}' || '%'
+ OR SymbolName LIKE '{keywords}' || '%'
+ OR FootprintName LIKE '{keywords}' || '%'
+ OR ExtensionValue1 LIKE '{keywords}' || '%'
+ OR ExtensionValue2 LIKE '{keywords}' || '%')
 ),
 PartsAny (PartId, Rank) AS
 (
@@ -247,7 +267,11 @@ PartNumber LIKE '%' + '{keywords}' || '%'
  OR Keywords LIKE '%' || '{keywords}' || '%'
  OR Location LIKE '%' || '{keywords}' || '%'
  OR BinNumber LIKE '%' || '{keywords}' || '%'
- OR BinNumber2 LIKE '%' || '{keywords}' || '%')
+ OR BinNumber2 LIKE '%' || '{keywords}' || '%'
+ OR SymbolName LIKE '%' || '{keywords}' || '%'
+ OR FootprintName LIKE '%' || '{keywords}' || '%'
+ OR ExtensionValue1 LIKE '%' || '{keywords}' || '%'
+ OR ExtensionValue2 LIKE '%' || '{keywords}' || '%')
 ),
 PartsMerged (PartId, Rank) AS
 (
@@ -279,7 +303,11 @@ PartNumber = '{keywords}'
  OR Keywords = '{keywords}'
  OR Location = '{keywords}'
  OR BinNumber = '{keywords}'
- OR BinNumber2 = '{keywords}')
+ OR BinNumber2 = '{keywords}'
+ OR SymbolName = '{keywords}'
+ OR FootprintName = '{keywords}'
+ OR ExtensionValue1 = '{keywords}'
+ OR ExtensionValue2 = '{keywords}')
 ),
 PartsBeginsWith (PartId, OrderRank) AS
 (
@@ -292,7 +320,11 @@ PartNumber LIKE CONCAT('{keywords}','%')
  OR Keywords LIKE CONCAT('{keywords}','%')
  OR Location LIKE CONCAT('{keywords}','%')
  OR BinNumber LIKE CONCAT('{keywords}','%')
- OR BinNumber2 LIKE CONCAT('{keywords}','%'))
+ OR BinNumber2 LIKE CONCAT('{keywords}','%')
+ OR SymbolName LIKE CONCAT('{keywords}','%')
+ OR FootprintName LIKE CONCAT('{keywords}','%')
+ OR ExtensionValue1 LIKE CONCAT('{keywords}','%')
+ OR ExtensionValue2 LIKE CONCAT('{keywords}','%'))
 ),
 PartsAny (PartId, OrderRank) AS
 (
@@ -305,7 +337,11 @@ PartNumber LIKE CONCAT('%','{keywords}','%')
  OR Keywords LIKE CONCAT('%','{keywords}','%')
  OR Location LIKE CONCAT('%','{keywords}','%')
  OR BinNumber LIKE CONCAT('%','{keywords}','%')
- OR BinNumber2 LIKE CONCAT('%','{keywords}','%'))
+ OR BinNumber2 LIKE CONCAT('%','{keywords}','%')
+ OR SymbolName LIKE CONCAT('%','{keywords}','%')
+ OR FootprintName LIKE CONCAT('%','{keywords}','%')
+ OR ExtensionValue1 LIKE CONCAT('%','{keywords}','%')
+ OR ExtensionValue2 LIKE CONCAT('%','{keywords}','%'))
 ),
 PartsMerged (PartId, OrderRank) AS
 (
@@ -338,7 +374,11 @@ OR ""Description"" ILIKE '{keywords}'
 OR ""Keywords"" ILIKE '{keywords}' 
 OR ""Location"" ILIKE '{keywords}' 
 OR ""BinNumber"" ILIKE '{keywords}' 
-OR ""BinNumber2"" ILIKE '{keywords}')
+OR ""BinNumber2"" ILIKE '{keywords}'
+OR ""SymbolName"" ILIKE '{keywords}'
+OR ""FootprintName"" ILIKE '{keywords}'
+OR ""ExtensionValue1"" ILIKE '{keywords}'
+OR ""ExtensionValue2"" ILIKE '{keywords}')
 ),
 ""PartsBeginsWith"" (""PartId"", ""Rank"") AS
 (
@@ -352,7 +392,11 @@ OR ""Description"" ILIKE CONCAT('{keywords}', '%')
 OR ""Keywords"" ILIKE CONCAT('{keywords}', '%')
 OR ""Location"" ILIKE CONCAT('{keywords}', '%')
 OR ""BinNumber"" ILIKE CONCAT('{keywords}', '%')
-OR ""BinNumber2"" ILIKE CONCAT('{keywords}', '%'))
+OR ""BinNumber2"" ILIKE CONCAT('{keywords}', '%')
+OR ""SymbolName"" ILIKE CONCAT('{keywords}', '%')
+OR ""FootprintName"" ILIKE CONCAT('{keywords}', '%')
+OR ""ExtensionValue1"" ILIKE CONCAT('{keywords}', '%')
+OR ""ExtensionValue2"" ILIKE CONCAT('{keywords}', '%'))
 ),
 ""PartsAny"" (""PartId"", ""Rank"") AS
 (
@@ -366,7 +410,11 @@ OR ""Description"" ILIKE CONCAT('%', '{keywords}', '%')
 OR ""Keywords"" ILIKE CONCAT('%', '{keywords}', '%')
 OR ""Location"" ILIKE CONCAT('%', '{keywords}', '%')
 OR ""BinNumber"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""BinNumber2"" ILIKE CONCAT('%', '{keywords}', '%'))
+OR ""BinNumber2"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""SymbolName"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""FootprintName"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""ExtensionValue1"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ""ExtensionValue2"" ILIKE CONCAT('%', '{keywords}', '%'))
 ),
 ""PartsMerged"" (""PartId"", ""Rank"") AS
 (
@@ -1042,6 +1090,10 @@ INNER JOIN (
                     || EF.Functions.Like(x.BinNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.BinNumber2, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.PartType.Name, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.SymbolName, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.FootprintName, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.ExtensionValue1, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.ExtensionValue2, '%' + request.Keyword + '%')
                 );
             }
 
@@ -1172,6 +1224,10 @@ INNER JOIN (
                 new (x => x.ProductUrl, x => x.ProductUrl),
                 new (x => x.ProjectId, x => x.ProjectId),
                 new (x => x.Quantity, x => x.Quantity),
+                new (x => x.SymbolName, x => x.SymbolName),
+                new (x => x.FootprintName, x => x.FootprintName),
+                new (x => x.ExtensionValue1, x => x.ExtensionValue1),
+                new (x => x.ExtensionValue2, x => x.ExtensionValue2),
                 // todo: migrate
                 // new (x => x.SwarmPartNumberManufacturerId, x => x.SwarmPartNumberManufacturerId),
                 new (x => x.UserId, x => x.UserId),

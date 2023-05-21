@@ -140,6 +140,26 @@ namespace Binner.Model
         public int? UserId { get; set; }
 
         /// <summary>
+        /// KiCad symbol name
+        /// </summary>
+        public string? SymbolName { get; set; }
+
+        /// <summary>
+        /// KiCad footprint name
+        /// </summary>
+        public string? FootprintName { get; set; }
+
+        /// <summary>
+        /// Extension value 1 (can be used to store custom information)
+        /// </summary>
+        public string? ExtensionValue1 { get; set; }
+
+        /// <summary>
+        /// Extension value 2 (can be used to store custom information)
+        /// </summary>
+        public string? ExtensionValue2 { get; set; }
+
+        /// <summary>
         /// The date the record was created
         /// </summary>
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;

@@ -68,7 +68,10 @@
         "deleteLocalFile": "Delete this local file",
         "technicalSpecs": "View technical specs",
         "compliance": "View compliance information",
-        "cadModels": "View CAD Models available for this part"
+        "cadModels": "View CAD Models available for this part",
+        "symbolName": "Associate a KiCad symbol name with this part",
+        "footprintName": "Associate a KiCad footprint name with this part",
+        "extensionValue": "Associate a custom value with this part"
       }
     },
     "lowInventory": {
@@ -493,6 +496,10 @@
       "arrowPartNumber": "Arrow Part Number",
       "packageType": "Package Type",
       "mountingType": "Mounting Type",
+      "symbolName": "Symbol Name",
+      "footprintName": "Footprint Name",
+      "extensionValue1": "Extension Value 1",
+      "extensionValue2": "Extension Value 2",
       "ok": "Ok",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
@@ -786,7 +793,11 @@
     "allowLogin": "Allow Login",
     "active": "Active",
     "inactive": "Inactive",
-    "rowsPerPage": "Rows per page"
+    "rowsPerPage": "Rows per page",
+    "symbolName": "KiCad Symbol Name",
+    "footprintName": "KiCad Footprint Name",
+    "extensionValue1": "Extension Value 1",
+    "extensionValue2": "Extension Value 2"
   },
   "message": {
     "noPartsAdded": "No parts added.",

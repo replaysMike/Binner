@@ -293,6 +293,15 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ExtensionValue1")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExtensionValue2")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FootprintName")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("TEXT");
 
@@ -344,6 +353,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<long>("Quantity")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("SymbolName")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
