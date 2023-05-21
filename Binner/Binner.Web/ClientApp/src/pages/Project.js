@@ -209,7 +209,7 @@ export function Project(props) {
     setLoading(true);
 		setBtnDeleteProjectDisabled(true);
     const request = {...project};
-    const response = await fetchApi("api/api/project", {
+    const response = await fetchApi("api/project", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
