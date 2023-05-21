@@ -307,6 +307,15 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("ExtensionValue1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExtensionValue2")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FootprintName")
+                        .HasColumnType("text");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
@@ -358,6 +367,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("SymbolName")
+                        .HasColumnType("text");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");

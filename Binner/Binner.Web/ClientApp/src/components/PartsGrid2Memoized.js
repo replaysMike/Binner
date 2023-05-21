@@ -488,7 +488,7 @@ PartsGrid2Memoized.propTypes = {
 
 PartsGrid2Memoized.defaultProps = {
   loading: true,
-  columns: "partNumber,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete",
+  columns: "partNumber,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
   defaultVisibleColumns: "partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
   page: 1,
   totalPages: 1,

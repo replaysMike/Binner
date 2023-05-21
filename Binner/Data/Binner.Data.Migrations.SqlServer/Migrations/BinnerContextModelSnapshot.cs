@@ -307,6 +307,15 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ExtensionValue1")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExtensionValue2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FootprintName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -358,6 +367,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("SymbolName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");

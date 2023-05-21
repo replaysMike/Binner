@@ -84,6 +84,10 @@ export function Inventory(props) {
     projectId: "",
     supplier: "",
     supplierPartNumber: "",
+    symbolName: "",
+    footprintName: "",
+    extensionValue1: "",
+    extensionValue2: "",
     storedFiles: []
   };
 
@@ -715,7 +719,11 @@ export function Inventory(props) {
       manufacturerPartNumber: "",
       imageUrl: "",
       supplier: "",
-      supplierPartNumber: ""
+      supplierPartNumber: "",
+      symbolName: "",
+      footprintName: "",
+      extensionValue1: "",
+      extensionValue2: "",
     };
     setPart(clearedPart);
     setLoadingPartMetadata(false);
@@ -1341,6 +1349,36 @@ export function Inventory(props) {
               <Form.Field width={4}>
                 <label>{t('label.arrowPartNumber', "Arrow Part Number")}</label>
                 <ClearableInput placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' />
+              </Form.Field>
+            </Form.Group>
+            <Form.Group>
+              <Form.Field width={4}>
+                <label>{t('label.symbolName', "KiCad Symbol Name")}</label>
+                <Popup 
+                  content={<p>{t('page.inventory.popup.symbolName', "Associate a KiCad symbol name with this part")}</p>}
+                  trigger={<ClearableInput placeholder='R_0601' value={part.symbolName || ''} onChange={handleChange} name='symbolName' />} 
+                 />
+              </Form.Field>
+              <Form.Field width={4}>
+                <label>{t('label.footprintName', "KiCad Footprint Name")}</label>
+                <Popup 
+                  content={<p>{t('page.inventory.popup.footprintName', "Associate a KiCad footprint name with this part")}</p>}
+                  trigger={<ClearableInput placeholder='Resistor SMD 0601_1608Matric' value={part.footprintName || ''} onChange={handleChange} name='footprintName' />} 
+                 />                
+              </Form.Field>
+              <Form.Field width={4}>
+                <label>{t('label.extensionValue1', "Extension Value 1")}</label>
+                <Popup 
+                  content={<p>{t('page.inventory.popup.extensionValue', "Associate a custom value with this part")}</p>}
+                  trigger={<ClearableInput placeholder='' value={part.extensionValue1 || ''} onChange={handleChange} name='extensionValue1' />} 
+                 />
+              </Form.Field>
+              <Form.Field width={4}>
+                <label>{t('label.extensionValue2', "Extension Value 2")}</label>
+                <Popup 
+                  content={<p>{t('page.inventory.popup.extensionValue', "Associate a custom value with this part")}</p>}
+                  trigger={<ClearableInput placeholder='' value={part.extensionValue2 || ''} onChange={handleChange} name='extensionValue2' />} 
+                 />
               </Form.Field>
             </Form.Group>
           </Segment>}
