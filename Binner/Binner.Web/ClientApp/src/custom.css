@@ -727,6 +727,11 @@ section.formHeader {
     margin-top: 0px;
 }
 
+/* fix for firefox */
+.ui.modal.pcbHistoryModal .content {
+    display: flex;
+}
+
 .ui.modal .content:has(.image.square) {
     display: flex;
 }
