@@ -94,7 +94,7 @@ export function PcbHistoryModal(props) {
     switch(e.target.name) {
       case "pcbCost":
         entity.pcbCost = parseFloat(entity.pcbCost).toFixed(2);
-        updatePcb(entity);
+        updatePcbHistory(entity);
         break;
       default:
         break;
@@ -102,15 +102,15 @@ export function PcbHistoryModal(props) {
     await inlineSave();
   };
 
-	const handleInlineChange = (e, control, pcb) => {   
-    pcb[control.name] = control.value;
-    updatePcb(pcb);
+	const handleInlineChange = (e, control, pcbHistory) => {   
+    pcbHistory[control.name] = control.value;
+    updatePcbHistory(pcbHistory);
   };
 
-  const updatePcb = (pcb) => {
+  const updatePcbHistory = (pcbHistory) => {
     const newPcbs = history.pcbs.map((item, i) => {
-      if (item.pcbId === pcb.pcbId)
-        return pcb;
+      if (item.projectPcbProduceHistoryId === pcbHistory.projectPcbProduceHistoryId)
+        return pcbHistory;
       else
         return item;
     });
@@ -180,6 +180,7 @@ export function PcbHistoryModal(props) {
               <Table className="history">
                 <Table.Header>
                   <Table.Row>
+                    <Table.HeaderCell>{t('label.id', "Id")}</Table.HeaderCell>
                     <Table.HeaderCell>{t('label.pcb', "PCB")}</Table.HeaderCell>
                     <Table.HeaderCell width={1}>
                       <Popup 
@@ -201,6 +202,7 @@ export function PcbHistoryModal(props) {
                 <Table.Body>
                   {history && history.pcbs && history.pcbs.map((hpcb, key) => (
                     <Table.Row key={key} onMouseOver={() => setImageIndex(key)}>
+                      <Table.Cell>{hpcb.projectPcbProduceHistoryId}</Table.Cell>
                       <Table.Cell>{hpcb.pcb.name}</Table.Cell>
                       <Table.Cell><Input className="inline-editable" transparent type='text' name='pcbQuantity' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, hpcb)} onChange={(e, control) => handleInlineChange(e, control, hpcb)} value={hpcb.pcbQuantity || ''} fluid /></Table.Cell>
                       <Table.Cell>{hpcb.partsConsumed}</Table.Cell>

@@ -15,7 +15,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartsConsumed, options => options.MapFrom(x => x.PartsConsumed))
                 .ForMember(x => x.PcbQuantity, options => options.MapFrom(x => x.PcbQuantity))
                 .ForMember(x => x.PcbCost, options => options.MapFrom(x => x.PcbCost))
-                .ForMember(x => x.ProjectPcbProduceHistoryId, options => options.MapFrom(x => x.ProjectPcbProduceHistoryId))
+                .ForMember(x => x.ProjectPcbProduceHistoryId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ForMember(x => x.Pcb, options => options.Ignore())

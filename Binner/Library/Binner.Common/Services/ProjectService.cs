@@ -356,11 +356,18 @@ namespace Binner.Common.Services
                 .FirstOrDefaultAsync();
 
             entity = _mapper.Map(request, entity);
-            foreach (var pcb in request.Pcbs)
+            foreach (var pcbEntity in entity.ProjectPcbProduceHistory)
             {
-                var pcbEntity = entity.ProjectPcbProduceHistory.FirstOrDefault(x => x.PcbId == pcb.PcbId);
-                if (pcbEntity != null)
-                    pcbEntity = _mapper.Map(pcb, pcbEntity);
+                var pcb = request.Pcbs.FirstOrDefault(x => x.ProjectPcbProduceHistoryId == pcbEntity.ProjectPcbProduceHistoryId);
+                if (pcb != null)
+                {
+                    var updatedPcbEntity = _mapper.Map(pcb, pcbEntity);
+                    pcbEntity.PartsConsumed = updatedPcbEntity.PartsConsumed;
+                    pcbEntity.PcbQuantity = updatedPcbEntity.PcbQuantity;
+                    pcbEntity.PcbCost = updatedPcbEntity.PcbCost;
+                    pcbEntity.SerialNumber = updatedPcbEntity.SerialNumber;
+                    pcbEntity.DateModifiedUtc = DateTime.UtcNow;
+                }
             }
             await context.SaveChangesAsync();
 
