@@ -44,12 +44,19 @@ namespace Binner.Common.Configuration
             }
             if (config.Integrations.Mouser.Enabled)
             {
-                if (string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.SearchApiKey) || config.Integrations.Mouser.ApiKeys.SearchApiKey.SurroundedBy("@"))
+                if (!string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.SearchApiKey) && config.Integrations.Mouser.ApiKeys.SearchApiKey.SurroundedBy("@"))
                     ConfigAssert("Integrations.Mouser.ApiKeys.SearchApiKey", config.Integrations.Mouser.ApiKeys.SearchApiKey);
-                if (string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.OrderApiKey) || config.Integrations.Mouser.ApiKeys.OrderApiKey.SurroundedBy("@"))
+                if (!string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.OrderApiKey) && config.Integrations.Mouser.ApiKeys.OrderApiKey.SurroundedBy("@"))
                     ConfigAssert("Integrations.Mouser.ApiKeys.OrderApiKey", config.Integrations.Mouser.ApiKeys.OrderApiKey);
-                if (string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.CartApiKey) || config.Integrations.Mouser.ApiKeys.CartApiKey.SurroundedBy("@"))
+                if (!string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.CartApiKey) && config.Integrations.Mouser.ApiKeys.CartApiKey.SurroundedBy("@"))
                     ConfigAssert("Integrations.Mouser.ApiKeys.CartApiKey", config.Integrations.Mouser.ApiKeys.CartApiKey);
+
+                if (string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.SearchApiKey)
+                    && string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.OrderApiKey)
+                    && string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.CartApiKey))
+                {
+                    ConfigAssert("Integrations.Mouser.ApiKeys.SearchApiKey", config.Integrations.Mouser.ApiKeys.SearchApiKey, "At least one api key must be provided.");
+                }
             }
             if (config.Integrations.Arrow.Enabled)
             {

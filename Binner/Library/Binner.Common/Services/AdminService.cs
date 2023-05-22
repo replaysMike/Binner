@@ -101,12 +101,31 @@ namespace Binner.Common.Services
                     model.StorageProviderSettings = _storageProviderConfiguration.ProviderConfiguration["Filename"];
                     break;
                 default:
-                    model.StorageProviderSettings = _storageProviderConfiguration.ProviderConfiguration["ConnectionString"];
-                    var builder = new DbConnectionStringBuilder();
-                    builder.ConnectionString = model.StorageProviderSettings;
-                    if (builder.ContainsKey("Password"))
+                    if (_storageProviderConfiguration.ProviderConfiguration.ContainsKey("ConnectionString") && !string.IsNullOrEmpty(_storageProviderConfiguration.ProviderConfiguration["ConnectionString"]))
                     {
-                        builder["Password"] = "********";
+                        model.StorageProviderSettings = _storageProviderConfiguration.ProviderConfiguration["ConnectionString"];
+                        var builder = new DbConnectionStringBuilder();
+                        builder.ConnectionString = model.StorageProviderSettings;
+                        if (builder.ContainsKey("Password"))
+                        {
+                            builder["Password"] = "********";
+                            model.StorageProviderSettings = builder.ToString();
+                        }
+                    }
+                    else
+                    {
+                        model.StorageProviderSettings = "";
+                        var builder = new DbConnectionStringBuilder();
+                        if (_storageProviderConfiguration.ProviderConfiguration.ContainsKey("Host") && !string.IsNullOrEmpty(_storageProviderConfiguration.ProviderConfiguration["Host"]))
+                            builder["Host"] = _storageProviderConfiguration.ProviderConfiguration["Host"];
+                        if (_storageProviderConfiguration.ProviderConfiguration.ContainsKey("Port") && !string.IsNullOrEmpty(_storageProviderConfiguration.ProviderConfiguration["Port"]))
+                            builder["Port"] = _storageProviderConfiguration.ProviderConfiguration["Port"];
+                        if (_storageProviderConfiguration.ProviderConfiguration.ContainsKey("Database") && !string.IsNullOrEmpty(_storageProviderConfiguration.ProviderConfiguration["Database"]))
+                            builder["Database"] = _storageProviderConfiguration.ProviderConfiguration["Database"];
+                        if (_storageProviderConfiguration.ProviderConfiguration.ContainsKey("Username") && !string.IsNullOrEmpty(_storageProviderConfiguration.ProviderConfiguration["Username"]))
+                            builder["Username"] = _storageProviderConfiguration.ProviderConfiguration["Username"];
+                        if (_storageProviderConfiguration.ProviderConfiguration.ContainsKey("Password") && !string.IsNullOrEmpty(_storageProviderConfiguration.ProviderConfiguration["Password"]))
+                            builder["Password"] = "********";
                         model.StorageProviderSettings = builder.ToString();
                     }
                     break;
