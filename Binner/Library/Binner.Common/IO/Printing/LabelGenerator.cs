@@ -157,6 +157,12 @@ namespace Binner.Common.IO.Printing
                         if (part.Keywords?.Any() == true)
                             text = string.Join(",", part.Keywords);
                         break;
+                    case "Quantity":
+                        text = part.GetPropertyValue<long>(propertyName).ToString();
+                        break;
+                    case "Cost":
+                        text = part.GetPropertyValue<double>(propertyName).ToString();
+                        break;
                     default:
                         text = part.GetPropertyValue<string>(propertyName);
                         break;
