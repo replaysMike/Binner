@@ -148,6 +148,10 @@ namespace Binner.Common.Services
                                 return new TestApiResponse(nameof(Integrations.MouserApi), string.Join(". ", result.Errors));
                             return new TestApiResponse(nameof(Integrations.MouserApi), true);
                         }
+                        catch (MouserErrorsException ex)
+                        {
+                            return new TestApiResponse(nameof(Integrations.MouserApi), string.Join(". ", ex.Errors.Select(x => x.Message)));
+                        }
                         catch (Exception ex)
                         {
                             return new TestApiResponse(nameof(Integrations.MouserApi), ex.GetBaseException().Message);
