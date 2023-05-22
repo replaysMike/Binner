@@ -1011,7 +1011,7 @@ export function Inventory(props) {
                     {!isEditing && partExistsInInventory && 
                       <span><Icon name="warning sign" color="yellow" />
                       <Trans i18nKey="page.inventory.partExists">
-                        This <Link to={`/inventory/${inputPartNumber}`}>part</Link> <span>already exists</span> in your inventory.
+                        This <Link to={`/inventory/${encodeURIComponent(inputPartNumber)}`}>part</Link> <span>already exists</span> in your inventory.
                       </Trans>
                       </span>}
                   </div>
