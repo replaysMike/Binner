@@ -214,15 +214,31 @@ namespace Binner.Common.StorageProviders
                 case "mysql":
                     {
                         var context = _contextFactory.CreateDbContext();
-                        var migrationName = "20230412193145_InitialCreate";
-                        var efVersion = "7.0.4";
-                        context.Database.ExecuteSql($@"CREATE TABLE __EFMigrationsHistory(MigrationId nvarchar(150) NOT NULL primary key, ProductVersion nvarchar(32) NOT NULL)");
-                        context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion});");
+                        // is this a brand new database or pre-existing? Brand new databases need the InitialCreate migration to be applied
+                        using var conn = context.Database.GetDbConnection(); 
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_NAME='OAuthCredentials' AND TABLE_TYPE = 'BASE TABLE'";
+                        conn.Open();
+                        var exists = ((long?)cmd.ExecuteScalar()) > 0;
+                        conn.Close();
+
+                        if (exists)
+                        {
+                            var migrationName = "20230412193145_InitialCreate";
+                            var efVersion = "7.0.4";
+                            context.Database.ExecuteSql(
+                                $@"CREATE TABLE __EFMigrationsHistory(MigrationId nvarchar(150) NOT NULL primary key, ProductVersion nvarchar(32) NOT NULL)");
+                            context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion});");
+                        }
+
                         // run the next migration which will apply most recent schema
                         context.Database.Migrate();
-                        // seed the default user
 #if INITIALCREATE
-                        context.Users.Add(defaultUser);
+                        if (exists)
+                        {
+                            // seed the default user
+                            context.Users.Add(defaultUser);
+                        }
 #endif
                         context.SaveChanges();
                         context.Database.ExecuteSql($"UPDATE OAuthCredentials SET UserId={userId};UPDATE OAuthRequests SET UserId={userId};UPDATE Parts SET UserId={userId};UPDATE PartSuppliers SET UserId={userId};UPDATE PartTypes SET UserId={userId};UPDATE Pcbs SET UserId={userId};UPDATE PcbStoredFileAssignments SET UserId={userId};UPDATE ProjectPartAssignments SET UserId={userId};UPDATE ProjectPcbAssignments SET UserId={userId};UPDATE Projects SET UserId={userId};UPDATE StoredFiles SET UserId={userId};");
@@ -233,16 +249,33 @@ namespace Binner.Common.StorageProviders
                         try
                         {
                             var context = _contextFactory.CreateDbContext();
-                            var migrationName = "20230412193100_InitialCreate";
-                            var efVersion = "7.0.4";
-                            context.Database.ExecuteSql(
-                                $@"CREATE TABLE dbo.""__EFMigrationsHistory"" (""MigrationId"" varchar(150) NOT NULL PRIMARY KEY, ""ProductVersion"" varchar(32) NOT NULL);");
-                            context.Database.ExecuteSql($@"INSERT INTO dbo.""__EFMigrationsHistory"" (""MigrationId"", ""ProductVersion"") VALUES({migrationName}, {efVersion});");
+
+                            // is this a brand new database or pre-existing? Brand new databases need the InitialCreate migration to be applied
+                            using var conn = context.Database.GetDbConnection(); 
+                            using var cmd = conn.CreateCommand();
+                            cmd.CommandText = "SELECT COUNT(*) FROM pg_tables WHERE schemaname='dbo' AND tablename='OAuthCredentials'";
+                            conn.Open();
+                            var exists = ((long?)cmd.ExecuteScalar()) > 0;
+                            conn.Close();
+
+                            if (exists)
+                            {
+                                var migrationName = "20230412193100_InitialCreate";
+                                var efVersion = "7.0.4";
+                                context.Database.ExecuteSql(
+                                    $@"CREATE TABLE dbo.""__EFMigrationsHistory"" (""MigrationId"" varchar(150) NOT NULL PRIMARY KEY, ""ProductVersion"" varchar(32) NOT NULL);");
+                                context.Database.ExecuteSql(
+                                    $@"INSERT INTO dbo.""__EFMigrationsHistory"" (""MigrationId"", ""ProductVersion"") VALUES({migrationName}, {efVersion});");
+                            }
+
                             // run the next migration which will apply most recent schema
                             context.Database.Migrate();
-                            // seed the default user
 #if INITIALCREATE
-                            context.Users.Add(defaultUser);
+                            if (exists)
+                            {
+                                // seed the default user
+                                context.Users.Add(defaultUser);
+                            }
 #endif
                             context.SaveChanges();
                             context.Database.ExecuteSql(
@@ -258,15 +291,41 @@ namespace Binner.Common.StorageProviders
                 case "sqlite":
                     {
                         var context = _contextFactory.CreateDbContext();
-                        var migrationName = "20230412171856_InitialCreate";
-                        var efVersion = "7.0.4";
-                        context.Database.ExecuteSql($@"CREATE TABLE __EFMigrationsHistory(MigrationId TEXT NOT NULL PRIMARY KEY, ProductVersion TEXT NOT NULL)");
-                        context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion})");
+                        // is this a brand new database or pre-existing? Brand new databases need the InitialCreate migration to be applied
+                        using var conn = context.Database.GetDbConnection(); 
+                        using var cmd = conn.CreateCommand();
+                        
+                        cmd.CommandText = "SELECT COUNT(*) FROM OAuthCredentials";
+                        conn.Open();
+                        var exists = false;
+                        try
+                        {
+                            cmd.ExecuteScalar();
+                            // no exception, table exists
+                            exists = true;
+                        }
+                        catch (SqliteException)
+                        {
+                            // table does not exist
+                            exists = false;
+                        }
+                        
+                        if (exists)
+                        {
+                            var migrationName = "20230412171856_InitialCreate";
+                            var efVersion = "7.0.4";
+                            context.Database.ExecuteSql($@"CREATE TABLE __EFMigrationsHistory(MigrationId TEXT NOT NULL PRIMARY KEY, ProductVersion TEXT NOT NULL)");
+                            context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion})");
+                        }
+
                         // run the next migration which will apply most recent schema
                         context.Database.Migrate();
-                        // seed the default user
 #if INITIALCREATE
-                        context.Users.Add(defaultUser);
+                        if (exists)
+                        {
+                            // seed the default user
+                            context.Users.Add(defaultUser);
+                        }
 #endif
                         context.SaveChanges();
                         context.Database.ExecuteSql($"UPDATE OAuthCredentials SET UserId={userId};UPDATE OAuthRequests SET UserId={userId};UPDATE Parts SET UserId={userId};UPDATE PartSuppliers SET UserId={userId};UPDATE PartTypes SET UserId={userId};UPDATE Pcbs SET UserId={userId};UPDATE PcbStoredFileAssignments SET UserId={userId};UPDATE ProjectPartAssignments SET UserId={userId};UPDATE ProjectPcbAssignments SET UserId={userId};UPDATE Projects SET UserId={userId};UPDATE StoredFiles SET UserId={userId};");
@@ -276,15 +335,31 @@ namespace Binner.Common.StorageProviders
                     {
                         // create a __EFMigrationsHistory table, and add the InitialCreate record
                         var context = _contextFactory.CreateDbContext();
-                        var migrationName = "20230412193201_InitialCreate";
-                        var efVersion = "7.0.4";
-                        context.Database.ExecuteSql($@"IF NOT EXISTS (select * from sysobjects where name='__EFMigrationsHistory' and xtype='U') CREATE TABLE [dbo].[__EFMigrationsHistory]([MigrationId] [nvarchar](150) NOT NULL, [ProductVersion] [nvarchar](32) NOT NULL, CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY CLUSTERED ([MigrationId] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]) ON [PRIMARY]");
-                        context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion});");
+                        // is this a brand new database or pre-existing? Brand new databases need the InitialCreate migration to be applied
+                        using var conn = context.Database.GetDbConnection(); 
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "SELECT COUNT(*) FROM sysobjects WHERE name='OAuthCredentials' and xtype='U'";
+                        conn.Open();
+                        var exists = ((int?)cmd.ExecuteScalar()) > 0;
+                        conn.Close();
+
+                        if (exists)
+                        {
+                            var migrationName = "20230412193201_InitialCreate";
+                            var efVersion = "7.0.4";
+                            context.Database.ExecuteSql(
+                                $@"IF NOT EXISTS (select * from sysobjects where name='__EFMigrationsHistory' and xtype='U') CREATE TABLE [dbo].[__EFMigrationsHistory]([MigrationId] [nvarchar](150) NOT NULL, [ProductVersion] [nvarchar](32) NOT NULL, CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY CLUSTERED ([MigrationId] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]) ON [PRIMARY]");
+                            context.Database.ExecuteSql($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES({migrationName}, {efVersion});");
+                        }
+
                         // run the next migration which will apply most recent schema
                         context.Database.Migrate();
-                        // seed the default user
 #if INITIALCREATE
-                        context.Users.Add(defaultUser);
+                        if (exists)
+                        {
+                            // seed the default user
+                            context.Users.Add(defaultUser);
+                        }
 #endif
                         context.SaveChanges();
                         context.Database.ExecuteSql($"UPDATE OAuthCredentials SET UserId={userId};UPDATE OAuthRequests SET UserId={userId};UPDATE Parts SET UserId={userId};UPDATE PartSuppliers SET UserId={userId};UPDATE PartTypes SET UserId={userId};UPDATE Pcbs SET UserId={userId};UPDATE PcbStoredFileAssignments SET UserId={userId};UPDATE ProjectPartAssignments SET UserId={userId};UPDATE ProjectPcbAssignments SET UserId={userId};UPDATE Projects SET UserId={userId};UPDATE StoredFiles SET UserId={userId};");
