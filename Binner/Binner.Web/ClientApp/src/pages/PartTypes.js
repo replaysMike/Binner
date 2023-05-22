@@ -155,12 +155,13 @@ export function PartTypes(props) {
   };
 
   const handleNewPartTypeIconNameChange = (e, control) => {
-    setModalContext({ ...modalContext, icon: control.value });
+    setIconDropdown("");
+    setModalContext({ ...modalContext, svg: control.value, icon: "" });
   };
 
   const handleNewPartTypeIconChange = (e, control) => {
     setIconDropdown(control.value);
-    setModalContext({ ...modalContext, icon: control.value });
+    setModalContext({ ...modalContext, icon: control.value, svg: "" });
   };
 
   /**
@@ -221,11 +222,15 @@ export function PartTypes(props) {
   };
 
   const handleEditPartType = async (e) => {
-    const request = {...modalContext};
-    if ((modalContext.icon.includes("<") || modalContext.icon.includes("&lt;")) && !isSvg(modalContext.icon)) {
-      toast.error("Icon contains invalid SVG!");
-      return;
+    const request = { ...modalContext };
+    if (request.svg) {
+      if ((request.svg.includes("<") || request.svg.includes("&lt;")) && !isSvg(request.svg)) {
+        toast.error("Icon contains invalid SVG!");
+        return;
+      }
+      request.icon = request.svg;
     }
+
     const response = await fetchApi("api/partType", {
       method: "PUT",
       headers: {
@@ -495,6 +500,15 @@ export function PartTypes(props) {
   };
 
   const handleOpenEditPartModal = (e, pt) => {
+    if (pt.icon) {
+      if (isSvg(pt.icon)) {
+        pt.svg = pt.icon;
+        pt.icon = "";
+      } else {
+        pt.svg = "";
+        setIconDropdown(pt.icon);
+      }
+    }
     setModalContext(pt);
     setIsRenameModalOpen(true);
   };
@@ -521,7 +535,7 @@ export function PartTypes(props) {
 
   const GetIsSvgValidIcon = () => {
     try{
-      if (modalContext?.icon.length > 0) {
+      if (modalContext?.icon?.length > 0) {
         if((modalContext?.icon.length > 0 && !modalContext.icon.includes("<")) || (modalContext?.icon.length > 0 && modalContext.icon.includes("<") && isSvg(modalContext.icon))){
           return <Icon name="check circle" color="green" />;
         }
@@ -530,7 +544,7 @@ export function PartTypes(props) {
         return <></>;
       }
     }catch{
-      return <Icon name="times circle" color="red" />;
+      return <Icon name="times circle" color="gray" />;
     }
   };
 
@@ -577,12 +591,26 @@ export function PartTypes(props) {
             </Form.Field>
             <Form.Field>
               <Form.Dropdown className="icons" selection fluid value={iconDropdown} options={iconNames} onChange={handleNewPartTypeIconChange}  />
-              <Form.Input label="or provide an SVG" icon disabled={iconDropdown !== ""} placeholder="<svg><path ... /></svg>" name="icon" value={modalContext?.icon || ''} onChange={handleNewPartTypeIconNameChange}>
-                <input />
-                {GetIsSvgValidIcon()}
-              </Form.Input>
+              <Popup 
+                wide="very"
+                hoverable
+                content={<p>Paste an SVG html tag here and a preview will be shown below. It should start with &lt;svg&gt; and contain any svg drawing operations.<br/><br/>Example: <i>&lt;svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"&gt;&lt;circle cx="10" cy="10" r="10" fill="green"/&gt;&lt;/svg&gt;</i></p>}
+                trigger={<Form.Input label="or provide an SVG" icon placeholder="<svg><path ... /></svg>" name="icon" value={modalContext?.svg || ''} onChange={handleNewPartTypeIconNameChange}>
+                  <input />
+                  {GetIsSvgValidIcon()}
+                </Form.Input>}
+              />
             </Form.Field>
           </Form>
+          {modalContext?.svg && 
+            <div style={{marginTop: '5px', minWidth: '60px', minHeight: '60px'}}>
+              <img src={`data:image/svg+xml;utf8,${encodeURIComponent(modalContext.svg)}`} alt="" style={{ maxWidth: '60px', maxHeight: 'auto', border: '1px solid #ccc', padding: '5px' }} />
+            </div>}
+          {modalContext?.icon && modalContext?.icon.length > 0 && partTypes && 
+            <div style={{color: '#bbb', marginTop: '5px', padding: '5px'}}>
+              {getIcon(modalContext.name, _.find(partTypes, x => x.partTypeId === modalContext.parentPartTypeId)?.name, modalContext.icon)()}
+            </div>
+          }
         </Modal.Content>
         <Modal.Actions>
         <Button onClick={() => setIsRenameModalOpen(false) }>{t('button.cancel', "Cancel")}</Button>
