@@ -377,6 +377,10 @@
         "totalPartTypes": "Total Part Types",
         "totalUserFiles": "Total User Files",
         "userFilesSize": "User Files Size"
+      },
+      "backupRestore": {
+        "title": "Backup/Restore",
+        "baseDescription": "Backup or restore your Binner installation."
       }
     },
     "backup": {
@@ -900,7 +904,9 @@
       "customNote": "Provide a custom note",
       "produceHistory": "View production history",
       "movePart": "Move selected parts to another tab"
-    }
+    },
+    "makerSubscriptionRequired": "Requires a Maker level subscription. <1>Click here</1> for details.",
+    "proSubscriptionRequired": "Requires a Professional level subscription. <1>Click here</1> for details."
   },
   "footer": {
     "version": "Version",
