@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Binner.Model.Configuration.Integrations;
 
 namespace Binner.Common.Services
 {
@@ -143,10 +144,23 @@ namespace Binner.Common.Services
                             return new TestApiResponse(nameof(Integrations.MouserApi), "Api is not enabled.");
                         try
                         {
-                            var result = await api.SearchAsync("LM555", 1);
-                            if (result.Errors.Any())
-                                return new TestApiResponse(nameof(Integrations.MouserApi), string.Join(". ", result.Errors));
-                            return new TestApiResponse(nameof(Integrations.MouserApi), true);
+                            if (((MouserConfiguration)api.Configuration).IsConfigured)
+                            {
+                                var result = await api.SearchAsync("LM555", 1);
+                                if (result.Errors.Any())
+                                    return new TestApiResponse(nameof(Integrations.MouserApi), string.Join(". ", result.Errors));
+                                return new TestApiResponse(nameof(Integrations.MouserApi), true);
+                            }
+
+                            if (((MouserConfiguration)api.Configuration).IsOrdersConfigured)
+                            {
+                                var result = await api.GetOrderAsync("1111111");
+                                if (result.Errors.Any() && !result.Errors.First().EndsWith("Not Found"))
+                                    return new TestApiResponse(nameof(Integrations.MouserApi), string.Join(". ", result.Errors));
+                                return new TestApiResponse(nameof(Integrations.MouserApi), true);
+                            }
+
+                            return new TestApiResponse(nameof(Integrations.MouserApi), false);
                         }
                         catch (MouserErrorsException ex)
                         {

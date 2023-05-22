@@ -349,35 +349,63 @@ namespace Binner.Common.Services
                     // get details on this mouser part
                     if (string.IsNullOrEmpty(lineItem.MouserPartNumber))
                         continue;
-                    var partResponse = await mouserApi.GetProductDetailsAsync(lineItem.MouserPartNumber);
-                    if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                    if (((MouserConfiguration)mouserApi.Configuration).IsConfigured)
                     {
-                        if (partResponse.Response != null)
+                        // request additional information for the part as orders doesn't return much
+                        var partResponse = await mouserApi.GetProductDetailsAsync(lineItem.MouserPartNumber);
+                        if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                         {
-                            var searchResults = (ICollection<MouserPart>)partResponse.Response;
-                            // convert the part to a common part
-                            var part = searchResults.First();
-                            commonParts.Add(new CommonPart
+                            if (partResponse.Response != null)
                             {
-                                SupplierPartNumber = part.MouserPartNumber,
-                                Supplier = "Mouser",
-                                ManufacturerPartNumber = part.ManufacturerPartNumber,
-                                Manufacturer = part.Manufacturer,
-                                Description = part.Description,
-                                ImageUrl = part.ImagePath,
-                                DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
-                                ProductUrl = part.ProductDetailUrl,
-                                Status = part.LifecycleStatus,
-                                Currency = mouserOrderResponse.CurrencyCode,
-                                AdditionalPartNumbers = new List<string>(),
-                                BasePartNumber = part.ManufacturerPartNumber,
-                                MountingTypeId = 0,
-                                PackageType = "",
-                                Cost = lineItem.UnitPrice,
-                                QuantityAvailable = lineItem.Quantity,
-                                Reference = lineItem.CartItemCustPartNumber,
-                            });
+                                var searchResults = (ICollection<MouserPart>)partResponse.Response;
+                                // convert the part to a common part
+                                var part = searchResults.First();
+                                commonParts.Add(new CommonPart
+                                {
+                                    SupplierPartNumber = part.MouserPartNumber,
+                                    Supplier = "Mouser",
+                                    ManufacturerPartNumber = part.ManufacturerPartNumber,
+                                    Manufacturer = part.Manufacturer,
+                                    Description = part.Description,
+                                    ImageUrl = part.ImagePath,
+                                    DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
+                                    ProductUrl = part.ProductDetailUrl,
+                                    Status = part.LifecycleStatus,
+                                    Currency = mouserOrderResponse.CurrencyCode,
+                                    AdditionalPartNumbers = new List<string>(),
+                                    BasePartNumber = part.ManufacturerPartNumber,
+                                    MountingTypeId = 0,
+                                    PackageType = "",
+                                    Cost = lineItem.UnitPrice,
+                                    QuantityAvailable = lineItem.Quantity,
+                                    Reference = lineItem.CartItemCustPartNumber,
+                                });
+                            }
                         }
+                    }
+                    else
+                    {
+                        // use the more minimal information provided by the order import call
+                        commonParts.Add(new CommonPart
+                        {
+                            SupplierPartNumber = lineItem.MouserPartNumber,
+                            Supplier = "Mouser",
+                            ManufacturerPartNumber = lineItem.MfrPartNumber,
+                            Manufacturer = lineItem.Manufacturer,
+                            Description = lineItem.Description,
+                            //ImageUrl = part.ImagePath,
+                            //DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
+                            //ProductUrl = lineItem.ProductDetailUrl,
+                            //Status = part.LifecycleStatus,
+                            Currency = mouserOrderResponse.CurrencyCode,
+                            AdditionalPartNumbers = new List<string>(),
+                            BasePartNumber = lineItem.MfrPartNumber,
+                            MountingTypeId = 0,
+                            PackageType = "",
+                            Cost = lineItem.UnitPrice,
+                            QuantityAvailable = lineItem.Quantity,
+                            Reference = lineItem.CartItemCustPartNumber,
+                        });
                     }
                 }
 
