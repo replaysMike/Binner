@@ -744,7 +744,7 @@ export function Bom(props) {
                   <Table.Cell>
                     <Clipboard text={bomPart.part?.partNumber || bomPart.partName} />
                     {bomPart.part ? (
-                      <Link to={`/inventory/${bomPart.part.partNumber}`}>{bomPart.part.partNumber}</Link>
+                      <Link to={`/inventory/${encodeURIComponent(bomPart.part.partNumber)}`}>{bomPart.part.partNumber}</Link>
                     ) : (
                       <Popup
                         wide
