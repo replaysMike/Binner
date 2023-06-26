@@ -68,6 +68,7 @@ export function NavMenu(props) {
                     onChange={handleChange}
                     value={searchKeyword}
                     name="searchKeyword"
+                    allowEnter
                     hideIcon
                   >
                     <input />
