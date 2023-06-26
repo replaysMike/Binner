@@ -363,7 +363,7 @@ export function Inventory(props) {
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${partNumber.trim()}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
 
@@ -402,7 +402,7 @@ export function Inventory(props) {
   const doInventoryPartSearch = async (partNumber) => {
     if (partNumber.length < MinSearchKeywordLength)
       return { exists: false, data: null, error: `Ignoring search as keywords are less than the minimum required (${MinSearchKeywordLength}).` };
-    const existsResponse = await fetchApi(`api/part/search?keywords=${partNumber.trim()}&exactMatch=true`, {
+    const existsResponse = await fetchApi(`api/part/search?keywords=${encodeURIComponent(partNumber.trim())}&exactMatch=true`, {
       signal: Inventory.infoAbortController.signal,
       catchErrors: true
     });
@@ -420,7 +420,7 @@ export function Inventory(props) {
    * @returns barcode metadata object
    */
   const doBarcodeLookup = async (scannedPart, onSuccess, onFailure) => {
-    const response = await fetchApi(`api/part/barcode/info?barcode=${scannedPart.barcode}`, {
+    const response = await fetchApi(`api/part/barcode/info?barcode=${encodeURIComponent(scannedPart.barcode.trim())}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -530,7 +530,7 @@ export function Inventory(props) {
     Inventory.partAbortController = new AbortController();
     setLoadingPartMetadata(true);
     try {
-      const response = await fetchApi(`api/part?partNumber=${partNumber.trim()}`, {
+      const response = await fetchApi(`api/part?partNumber=${encodeURIComponent(partNumber.trim())}`, {
         signal: Inventory.partAbortController.signal
       });
       const { data } = response;
@@ -844,7 +844,7 @@ export function Inventory(props) {
   const printLabel = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`api/part/print?partNumber=${part.partNumber.trim()}&generateImageOnly=false`, { method: "POST" });
+    await fetchApi(`api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}&generateImageOnly=false`, { method: "POST" });
   };
 
   const handleChooseAlternatePart = (e, part) => {
@@ -1463,7 +1463,7 @@ export function Inventory(props) {
           <Breadcrumb.Divider />
           <Breadcrumb.Section active>{isEditing ? part.partNumber : t('page.inventory.addtitle', "Add Inventory")}</Breadcrumb.Section>
         </Breadcrumb>
-        {part.partNumber && <Image src={`api/part/preview?partNumber=${part.partNumber}&token=${getImagesToken()}`} width={180} floated="right" style={{ marginTop: "0px" }} />}
+        {part.partNumber && <Image src={`api/part/preview?partNumber=${encodeURIComponent(part.partNumber.trim())}&token=${getImagesToken()}`} width={180} floated="right" style={{ marginTop: "0px" }} />}
         <div style={{display: 'flex'}}>
           <FormHeader name={title} to=".." />
           {!isEditing &&

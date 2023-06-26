@@ -60,7 +60,7 @@ export function Datasheets (props) {
     Datasheets.abortController = new AbortController();
     setLoading(true);
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${part.partNumber.trim()}&partType=${part.partType}&mountingType=${part.mountingType}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${encodeURIComponent(part.partNumber.trim())}&partType=${part.partType}&mountingType=${part.mountingType}`, {
         signal: Datasheets.abortController.signal
       });
       const responseData = response.data;
