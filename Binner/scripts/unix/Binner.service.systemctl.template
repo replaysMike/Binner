@@ -2,8 +2,12 @@
 Description=Binner
 
 [Service]
+Type=notify
 WorkingDirectory=@INSTALLPATH@
 ExecStart=@INSTALLPATH@/Binner.Web
+SyslogIdentifier=Binner
+Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
