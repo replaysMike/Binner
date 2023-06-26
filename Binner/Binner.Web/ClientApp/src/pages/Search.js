@@ -55,7 +55,7 @@ export function Search(props) {
     }
     setKeyword(cleanPartNumber);
 
-    const response = await fetchApi(`api/part/barcode/info?barcode=${cleanPartNumber}`, {
+    const response = await fetchApi(`api/part/barcode/info?barcode=${encodeURIComponent(cleanPartNumber.trim())}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -128,7 +128,7 @@ export function Search(props) {
     setShowPartNotFound(false);
 
     try {
-      await fetchApi(`api/part/search?keywords=${keyword || ""}`, {
+      await fetchApi(`api/part/search?keywords=${encodeURIComponent((keyword || "").trim())}`, {
         signal: Search.abortController.signal,
       }).then((response) => {
         const { data } = response;

@@ -174,7 +174,7 @@ export default function PartsGrid(props) {
   const handlePrintLabel = async (e, part) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`api/part/print?partNumber=${part.partNumber}`, { method: 'POST' });
+    await fetchApi(`api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}`, { method: 'POST' });
   };
 
   const handleDeletePart = async (e) => {
