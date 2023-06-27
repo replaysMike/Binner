@@ -25,3 +25,4 @@ cache:
 build_script:
 - ps: >-
     .\Scripts\appveyor-build.ps1
+test: off
