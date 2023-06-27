@@ -154,54 +154,57 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             return FormattableStringFactory.Create(
                 $@"WITH PartsExactMatch (PartId, Rank) AS
 (
-SELECT PartId, 10 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber = '{keywords}'
- OR DigiKeyPartNumber = '{keywords}'
- OR MouserPartNumber = '{keywords}'
- OR ManufacturerPartNumber = '{keywords}'
- OR Description = '{keywords}'
- OR Keywords = '{keywords}'
- OR Location = '{keywords}'
- OR BinNumber = '{keywords}'
- OR BinNumber2 = '{keywords}'
- OR SymbolName = '{keywords}'
- OR FootprintName = '{keywords}'
- OR ExtensionValue1 = '{keywords}'
- OR ExtensionValue2 = '{keywords}')
+SELECT p.PartId, 10 as Rank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber = '{keywords}'
+ OR p.DigiKeyPartNumber = '{keywords}'
+ OR p.MouserPartNumber = '{keywords}'
+ OR p.ManufacturerPartNumber = '{keywords}'
+ OR p.Description = '{keywords}'
+ OR p.Keywords = '{keywords}'
+ OR p.Location = '{keywords}'
+ OR p.BinNumber = '{keywords}'
+ OR p.BinNumber2 = '{keywords}'
+ OR p.SymbolName = '{keywords}'
+ OR p.FootprintName = '{keywords}'
+ OR p.ExtensionValue1 = '{keywords}'
+ OR p.ExtensionValue2 = '{keywords}'
+ OR ps.SupplierPartNumber = '{keywords}')
 ),
 PartsBeginsWith (PartId, Rank) AS
 (
-SELECT PartId, 100 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber LIKE '{keywords}'  + '%'
- OR DigiKeyPartNumber LIKE '{keywords}' + '%'
- OR MouserPartNumber LIKE '{keywords}' + '%'
- OR ManufacturerPartNumber LIKE '{keywords}' + '%'
- OR Description LIKE '{keywords}' + '%'
- OR Keywords LIKE '{keywords}' + '%'
- OR Location LIKE '{keywords}' + '%'
- OR BinNumber LIKE '{keywords}' + '%'
- OR BinNumber2 LIKE '{keywords}'+ '%'
- OR SymbolName LIKE '{keywords}' + '%'
- OR FootprintName LIKE '{keywords}' + '%'
- OR ExtensionValue1 LIKE '{keywords}' + '%'
- OR ExtensionValue2 LIKE '{keywords}' + '%')
+SELECT p.PartId, 100 as Rank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber LIKE '{keywords}'  + '%'
+ OR p.DigiKeyPartNumber LIKE '{keywords}' + '%'
+ OR p.MouserPartNumber LIKE '{keywords}' + '%'
+ OR p.ManufacturerPartNumber LIKE '{keywords}' + '%'
+ OR p.Description LIKE '{keywords}' + '%'
+ OR p.Keywords LIKE '{keywords}' + '%'
+ OR p.Location LIKE '{keywords}' + '%'
+ OR p.BinNumber LIKE '{keywords}' + '%'
+ OR p.BinNumber2 LIKE '{keywords}'+ '%'
+ OR p.SymbolName LIKE '{keywords}' + '%'
+ OR p.FootprintName LIKE '{keywords}' + '%'
+ OR p.ExtensionValue1 LIKE '{keywords}' + '%'
+ OR p.ExtensionValue2 LIKE '{keywords}' + '%'
+ OR ps.SupplierPartNumber LIKE '{keywords}' + '%')
 ),
 PartsAny (PartId, Rank) AS
 (
-SELECT PartId, 200 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber LIKE '%' + '{keywords}' + '%'
- OR DigiKeyPartNumber LIKE '%' + '{keywords}' + '%'
- OR MouserPartNumber LIKE '%' + '{keywords}' + '%'
- OR ManufacturerPartNumber LIKE '%' + '{keywords}' + '%'
- OR Description LIKE '%' + '{keywords}' + '%'
- OR Keywords LIKE '%' + '{keywords}' + '%'
- OR Location LIKE '%' + '{keywords}' + '%'
- OR BinNumber LIKE '%' + '{keywords}' + '%'
- OR BinNumber2 LIKE '%' + '{keywords}' + '%'
- OR SymbolName LIKE '%' + '{keywords}' + '%'
- OR FootprintName LIKE '%' + '{keywords}' + '%'
- OR ExtensionValue1 LIKE '%' + '{keywords}' + '%'
- OR ExtensionValue2 LIKE '%' + '{keywords}' + '%')
+SELECT p.PartId, 200 as Rank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber LIKE '%' + '{keywords}' + '%'
+ OR p.DigiKeyPartNumber LIKE '%' + '{keywords}' + '%'
+ OR p.MouserPartNumber LIKE '%' + '{keywords}' + '%'
+ OR p.ManufacturerPartNumber LIKE '%' + '{keywords}' + '%'
+ OR p.Description LIKE '%' + '{keywords}' + '%'
+ OR p.Keywords LIKE '%' + '{keywords}' + '%'
+ OR p.Location LIKE '%' + '{keywords}' + '%'
+ OR p.BinNumber LIKE '%' + '{keywords}' + '%'
+ OR p.BinNumber2 LIKE '%' + '{keywords}' + '%'
+ OR p.SymbolName LIKE '%' + '{keywords}' + '%'
+ OR p.FootprintName LIKE '%' + '{keywords}' + '%'
+ OR p.ExtensionValue1 LIKE '%' + '{keywords}' + '%'
+ OR p.ExtensionValue2 LIKE '%' + '{keywords}' + '%'
+ OR ps.SupplierPartNumber LIKE '%' + '{keywords}' + '%')
 ),
 PartsMerged (PartId, Rank) AS
 (
@@ -224,54 +227,57 @@ INNER JOIN (
             return FormattableStringFactory.Create(
                 $@"WITH PartsExactMatch (PartId, Rank) AS
 (
-SELECT PartId, 10 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber = '{keywords}'
- OR DigiKeyPartNumber = '{keywords}'
- OR MouserPartNumber = '{keywords}'
- OR ManufacturerPartNumber = '{keywords}'
- OR Description = '{keywords}'
- OR Keywords = '{keywords}'
- OR Location = '{keywords}'
- OR BinNumber = '{keywords}'
- OR BinNumber2 = '{keywords}'
- OR SymbolName = '{keywords}'
- OR FootprintName = '{keywords}'
- OR ExtensionValue1 = '{keywords}'
- OR ExtensionValue2 = '{keywords}')
+SELECT p.PartId, 10 as Rank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber = '{keywords}'
+ OR p.DigiKeyPartNumber = '{keywords}'
+ OR p.MouserPartNumber = '{keywords}'
+ OR p.ManufacturerPartNumber = '{keywords}'
+ OR p.Description = '{keywords}'
+ OR p.Keywords = '{keywords}'
+ OR p.Location = '{keywords}'
+ OR p.BinNumber = '{keywords}'
+ OR p.BinNumber2 = '{keywords}'
+ OR p.SymbolName = '{keywords}'
+ OR p.FootprintName = '{keywords}'
+ OR p.ExtensionValue1 = '{keywords}'
+ OR p.ExtensionValue2 = '{keywords}'
+ OR ps.SupplierPartNumber = '{keywords}')
 ),
 PartsBeginsWith (PartId, Rank) AS
 (
-SELECT PartId, 100 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber LIKE '{keywords}' || '%'
- OR DigiKeyPartNumber LIKE '{keywords}' || '%'
- OR MouserPartNumber LIKE '{keywords}' || '%'
- OR ManufacturerPartNumber LIKE '{keywords}' || '%'
- OR Description LIKE '{keywords}' || '%'
- OR Keywords LIKE '{keywords}' || '%'
- OR Location LIKE '{keywords}' || '%'
- OR BinNumber LIKE '{keywords}' || '%'
- OR BinNumber2 LIKE '{keywords}' || '%'
- OR SymbolName LIKE '{keywords}' || '%'
- OR FootprintName LIKE '{keywords}' || '%'
- OR ExtensionValue1 LIKE '{keywords}' || '%'
- OR ExtensionValue2 LIKE '{keywords}' || '%')
+SELECT p.PartId, 100 as Rank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber LIKE '{keywords}' || '%'
+ OR p.DigiKeyPartNumber LIKE '{keywords}' || '%'
+ OR p.MouserPartNumber LIKE '{keywords}' || '%'
+ OR p.ManufacturerPartNumber LIKE '{keywords}' || '%'
+ OR p.Description LIKE '{keywords}' || '%'
+ OR p.Keywords LIKE '{keywords}' || '%'
+ OR p.Location LIKE '{keywords}' || '%'
+ OR p.BinNumber LIKE '{keywords}' || '%'
+ OR p.BinNumber2 LIKE '{keywords}' || '%'
+ OR p.SymbolName LIKE '{keywords}' || '%'
+ OR p.FootprintName LIKE '{keywords}' || '%'
+ OR p.ExtensionValue1 LIKE '{keywords}' || '%'
+ OR p.ExtensionValue2 LIKE '{keywords}' || '%'
+ OR ps.SupplierPartNumber LIKE '{keywords}' || '%')
 ),
 PartsAny (PartId, Rank) AS
 (
-SELECT PartId, 200 as Rank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber LIKE '%' + '{keywords}' || '%'
- OR DigiKeyPartNumber LIKE '%' + '{keywords}' || '%'
- OR MouserPartNumber LIKE '%' || '{keywords}' || '%'
- OR ManufacturerPartNumber LIKE '%' || '{keywords}' || '%'
- OR Description LIKE '%' || '{keywords}' || '%'
- OR Keywords LIKE '%' || '{keywords}' || '%'
- OR Location LIKE '%' || '{keywords}' || '%'
- OR BinNumber LIKE '%' || '{keywords}' || '%'
- OR BinNumber2 LIKE '%' || '{keywords}' || '%'
- OR SymbolName LIKE '%' || '{keywords}' || '%'
- OR FootprintName LIKE '%' || '{keywords}' || '%'
- OR ExtensionValue1 LIKE '%' || '{keywords}' || '%'
- OR ExtensionValue2 LIKE '%' || '{keywords}' || '%')
+SELECT p.PartId, 200 as Rank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber LIKE '%' + '{keywords}' || '%'
+ OR p.DigiKeyPartNumber LIKE '%' + '{keywords}' || '%'
+ OR p.MouserPartNumber LIKE '%' || '{keywords}' || '%'
+ OR p.ManufacturerPartNumber LIKE '%' || '{keywords}' || '%'
+ OR p.Description LIKE '%' || '{keywords}' || '%'
+ OR p.Keywords LIKE '%' || '{keywords}' || '%'
+ OR p.Location LIKE '%' || '{keywords}' || '%'
+ OR p.BinNumber LIKE '%' || '{keywords}' || '%'
+ OR p.BinNumber2 LIKE '%' || '{keywords}' || '%'
+ OR p.SymbolName LIKE '%' || '{keywords}' || '%'
+ OR p.FootprintName LIKE '%' || '{keywords}' || '%'
+ OR p.ExtensionValue1 LIKE '%' || '{keywords}' || '%'
+ OR p.ExtensionValue2 LIKE '%' || '{keywords}' || '%'
+ OR ps.SupplierPartNumber LIKE '%' || '{keywords}' || '%')
 ),
 PartsMerged (PartId, Rank) AS
 (
@@ -294,54 +300,57 @@ INNER JOIN (
             return FormattableStringFactory.Create(
                 $@"WITH PartsExactMatch (PartId, OrderRank) AS
 (
-SELECT PartId, 10 as OrderRank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber = '{keywords}'
- OR DigiKeyPartNumber = '{keywords}'
- OR MouserPartNumber = '{keywords}'
- OR ManufacturerPartNumber = '{keywords}'
- OR Description = '{keywords}'
- OR Keywords = '{keywords}'
- OR Location = '{keywords}'
- OR BinNumber = '{keywords}'
- OR BinNumber2 = '{keywords}'
- OR SymbolName = '{keywords}'
- OR FootprintName = '{keywords}'
- OR ExtensionValue1 = '{keywords}'
- OR ExtensionValue2 = '{keywords}')
+SELECT p.PartId, 10 as OrderRank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber = '{keywords}'
+ OR p.DigiKeyPartNumber = '{keywords}'
+ OR p.MouserPartNumber = '{keywords}'
+ OR p.ManufacturerPartNumber = '{keywords}'
+ OR p.Description = '{keywords}'
+ OR p.Keywords = '{keywords}'
+ OR p.Location = '{keywords}'
+ OR p.BinNumber = '{keywords}'
+ OR p.BinNumber2 = '{keywords}'
+ OR p.SymbolName = '{keywords}'
+ OR p.FootprintName = '{keywords}'
+ OR p.ExtensionValue1 = '{keywords}'
+ OR p.ExtensionValue2 = '{keywords}'
+ OR ps.SupplierPartNumber = '{keywords}')
 ),
 PartsBeginsWith (PartId, OrderRank) AS
 (
-SELECT PartId, 100 as OrderRank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber LIKE CONCAT('{keywords}','%')
- OR DigiKeyPartNumber LIKE CONCAT('{keywords}','%')
- OR MouserPartNumber LIKE CONCAT('{keywords}','%')
- OR ManufacturerPartNumber LIKE CONCAT('{keywords}','%')
- OR Description LIKE CONCAT('{keywords}','%')
- OR Keywords LIKE CONCAT('{keywords}','%')
- OR Location LIKE CONCAT('{keywords}','%')
- OR BinNumber LIKE CONCAT('{keywords}','%')
- OR BinNumber2 LIKE CONCAT('{keywords}','%')
- OR SymbolName LIKE CONCAT('{keywords}','%')
- OR FootprintName LIKE CONCAT('{keywords}','%')
- OR ExtensionValue1 LIKE CONCAT('{keywords}','%')
- OR ExtensionValue2 LIKE CONCAT('{keywords}','%'))
+SELECT p.PartId, 100 as OrderRank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber LIKE CONCAT('{keywords}','%')
+ OR p.DigiKeyPartNumber LIKE CONCAT('{keywords}','%')
+ OR p.MouserPartNumber LIKE CONCAT('{keywords}','%')
+ OR p.ManufacturerPartNumber LIKE CONCAT('{keywords}','%')
+ OR p.Description LIKE CONCAT('{keywords}','%')
+ OR p.Keywords LIKE CONCAT('{keywords}','%')
+ OR p.Location LIKE CONCAT('{keywords}','%')
+ OR p.BinNumber LIKE CONCAT('{keywords}','%')
+ OR p.BinNumber2 LIKE CONCAT('{keywords}','%')
+ OR p.SymbolName LIKE CONCAT('{keywords}','%')
+ OR p.FootprintName LIKE CONCAT('{keywords}','%')
+ OR p.ExtensionValue1 LIKE CONCAT('{keywords}','%')
+ OR p.ExtensionValue2 LIKE CONCAT('{keywords}','%')
+ OR ps.SupplierPartNumber LIKE CONCAT('{keywords}','%'))
 ),
 PartsAny (PartId, OrderRank) AS
 (
-SELECT PartId, 200 as OrderRank FROM Parts WHERE UserId = {userContext.UserId} AND (
-PartNumber LIKE CONCAT('%','{keywords}','%')
- OR DigiKeyPartNumber LIKE CONCAT('%','{keywords}','%')
- OR MouserPartNumber LIKE CONCAT('%','{keywords}','%')
- OR ManufacturerPartNumber LIKE CONCAT('%','{keywords}','%')
- OR Description LIKE CONCAT('%','{keywords}','%')
- OR Keywords LIKE CONCAT('%','{keywords}','%')
- OR Location LIKE CONCAT('%','{keywords}','%')
- OR BinNumber LIKE CONCAT('%','{keywords}','%')
- OR BinNumber2 LIKE CONCAT('%','{keywords}','%')
- OR SymbolName LIKE CONCAT('%','{keywords}','%')
- OR FootprintName LIKE CONCAT('%','{keywords}','%')
- OR ExtensionValue1 LIKE CONCAT('%','{keywords}','%')
- OR ExtensionValue2 LIKE CONCAT('%','{keywords}','%'))
+SELECT p.PartId, 200 as OrderRank FROM Parts p LEFT JOIN PartSuppliers ps ON p.PartId=ps.PartId WHERE p.UserId = {userContext.UserId} AND (
+ p.PartNumber LIKE CONCAT('%','{keywords}','%')
+ OR p.DigiKeyPartNumber LIKE CONCAT('%','{keywords}','%')
+ OR p.MouserPartNumber LIKE CONCAT('%','{keywords}','%')
+ OR p.ManufacturerPartNumber LIKE CONCAT('%','{keywords}','%')
+ OR p.Description LIKE CONCAT('%','{keywords}','%')
+ OR p.Keywords LIKE CONCAT('%','{keywords}','%')
+ OR p.Location LIKE CONCAT('%','{keywords}','%')
+ OR p.BinNumber LIKE CONCAT('%','{keywords}','%')
+ OR p.BinNumber2 LIKE CONCAT('%','{keywords}','%')
+ OR p.SymbolName LIKE CONCAT('%','{keywords}','%')
+ OR p.FootprintName LIKE CONCAT('%','{keywords}','%')
+ OR p.ExtensionValue1 LIKE CONCAT('%','{keywords}','%')
+ OR p.ExtensionValue2 LIKE CONCAT('%','{keywords}','%')
+ OR ps.SupplierPartNumber LIKE CONCAT('%','{keywords}','%'))
 ),
 PartsMerged (PartId, OrderRank) AS
 (
@@ -364,57 +373,60 @@ INNER JOIN (
             return FormattableStringFactory.Create(
                 $@"WITH ""PartsExactMatch"" (""PartId"", ""Rank"") AS
 (
-SELECT ""PartId"", 10 as ""Rank"" FROM dbo.""Parts"" WHERE ""UserId"" = {userContext.UserId} AND (
-""PartNumber"" ILIKE '{keywords}' 
-OR ""DigiKeyPartNumber"" ILIKE '{keywords}' 
-OR ""MouserPartNumber"" ILIKE '{keywords}'
-OR ""ArrowPartNumber"" ILIKE '{keywords}'
-OR ""ManufacturerPartNumber"" ILIKE '{keywords}'
-OR ""Description"" ILIKE '{keywords}' 
-OR ""Keywords"" ILIKE '{keywords}' 
-OR ""Location"" ILIKE '{keywords}' 
-OR ""BinNumber"" ILIKE '{keywords}' 
-OR ""BinNumber2"" ILIKE '{keywords}'
-OR ""SymbolName"" ILIKE '{keywords}'
-OR ""FootprintName"" ILIKE '{keywords}'
-OR ""ExtensionValue1"" ILIKE '{keywords}'
-OR ""ExtensionValue2"" ILIKE '{keywords}')
+SELECT p.""PartId"", 10 as ""Rank"" FROM dbo.""Parts"" p LEFT JOIN dbo.""PartSuppliers"" ps ON p.""PartId""=ps.""PartId"" WHERE p.""UserId"" = {userContext.UserId} AND (
+p.""PartNumber"" ILIKE '{keywords}' 
+OR p.""DigiKeyPartNumber"" ILIKE '{keywords}' 
+OR p.""MouserPartNumber"" ILIKE '{keywords}'
+OR p.""ArrowPartNumber"" ILIKE '{keywords}'
+OR p.""ManufacturerPartNumber"" ILIKE '{keywords}'
+OR p.""Description"" ILIKE '{keywords}' 
+OR p.""Keywords"" ILIKE '{keywords}' 
+OR p.""Location"" ILIKE '{keywords}' 
+OR p.""BinNumber"" ILIKE '{keywords}' 
+OR p.""BinNumber2"" ILIKE '{keywords}'
+OR p.""SymbolName"" ILIKE '{keywords}'
+OR p.""FootprintName"" ILIKE '{keywords}'
+OR p.""ExtensionValue1"" ILIKE '{keywords}'
+OR p.""ExtensionValue2"" ILIKE '{keywords}'
+OR ps.""SupplierPartNumber"" ILIKE '{keywords}')
 ),
 ""PartsBeginsWith"" (""PartId"", ""Rank"") AS
 (
-SELECT ""PartId"", 100 as ""Rank"" FROM dbo.""Parts"" WHERE ""UserId"" = {userContext.UserId} AND (
-""PartNumber"" ILIKE CONCAT('{keywords}', '%')
-OR ""DigiKeyPartNumber"" ILIKE CONCAT('{keywords}', '%')
-OR ""MouserPartNumber"" ILIKE CONCAT('{keywords}', '%')
-OR ""ArrowPartNumber"" ILIKE CONCAT('{keywords}', '%')
-OR ""ManufacturerPartNumber"" ILIKE CONCAT('{keywords}', '%')
-OR ""Description"" ILIKE CONCAT('{keywords}', '%')
-OR ""Keywords"" ILIKE CONCAT('{keywords}', '%')
-OR ""Location"" ILIKE CONCAT('{keywords}', '%')
-OR ""BinNumber"" ILIKE CONCAT('{keywords}', '%')
-OR ""BinNumber2"" ILIKE CONCAT('{keywords}', '%')
-OR ""SymbolName"" ILIKE CONCAT('{keywords}', '%')
-OR ""FootprintName"" ILIKE CONCAT('{keywords}', '%')
-OR ""ExtensionValue1"" ILIKE CONCAT('{keywords}', '%')
-OR ""ExtensionValue2"" ILIKE CONCAT('{keywords}', '%'))
+SELECT p.""PartId"", 100 as ""Rank"" FROM dbo.""Parts"" p LEFT JOIN dbo.""PartSuppliers"" ps ON p.""PartId""=ps.""PartId"" WHERE p.""UserId"" = {userContext.UserId} AND (
+p.""PartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR p.""DigiKeyPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR p.""MouserPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR p.""ArrowPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR p.""ManufacturerPartNumber"" ILIKE CONCAT('{keywords}', '%')
+OR p.""Description"" ILIKE CONCAT('{keywords}', '%')
+OR p.""Keywords"" ILIKE CONCAT('{keywords}', '%')
+OR p.""Location"" ILIKE CONCAT('{keywords}', '%')
+OR p.""BinNumber"" ILIKE CONCAT('{keywords}', '%')
+OR p.""BinNumber2"" ILIKE CONCAT('{keywords}', '%')
+OR p.""SymbolName"" ILIKE CONCAT('{keywords}', '%')
+OR p.""FootprintName"" ILIKE CONCAT('{keywords}', '%')
+OR p.""ExtensionValue1"" ILIKE CONCAT('{keywords}', '%')
+OR p.""ExtensionValue2"" ILIKE CONCAT('{keywords}', '%')
+OR ps.""SupplierPartNumber"" ILIKE CONCAT('{keywords}', '%'))
 ),
 ""PartsAny"" (""PartId"", ""Rank"") AS
 (
-SELECT ""PartId"", 200 as ""Rank"" FROM dbo.""Parts"" WHERE ""UserId"" = {userContext.UserId} AND (
+SELECT p.""PartId"", 200 as ""Rank"" FROM dbo.""Parts"" p LEFT JOIN dbo.""PartSuppliers"" ps ON p.""PartId""=ps.""PartId"" WHERE p.""UserId"" = {userContext.UserId} AND (
 ""PartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""DigiKeyPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""MouserPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""ArrowPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""ManufacturerPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""Description"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""Keywords"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""Location"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""BinNumber"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""BinNumber2"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""SymbolName"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""FootprintName"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""ExtensionValue1"" ILIKE CONCAT('%', '{keywords}', '%')
-OR ""ExtensionValue2"" ILIKE CONCAT('%', '{keywords}', '%'))
+OR p.""DigiKeyPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""MouserPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""ArrowPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""ManufacturerPartNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""Description"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""Keywords"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""Location"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""BinNumber"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""BinNumber2"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""SymbolName"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""FootprintName"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""ExtensionValue1"" ILIKE CONCAT('%', '{keywords}', '%')
+OR p.""ExtensionValue2"" ILIKE CONCAT('%', '{keywords}', '%')
+OR ps.""SupplierPartNumber"" ILIKE CONCAT('%', '{keywords}', '%'))
 ),
 ""PartsMerged"" (""PartId"", ""Rank"") AS
 (
@@ -1012,6 +1024,7 @@ INNER JOIN (
 
             var entitiesQueryable = context.Parts
                 .Include(x => x.PartType)
+                .Include(x => x.PartSuppliers)
                 .Where(x => x.OrganizationId == userContext.OrganizationId);
             var orderingApplied = false;
             
@@ -1094,6 +1107,7 @@ INNER JOIN (
                     || EF.Functions.Like(x.FootprintName, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.ExtensionValue1, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.ExtensionValue2, '%' + request.Keyword + '%')
+                    || x.PartSuppliers.Any(y => EF.Functions.Like(y.SupplierPartNumber, '%' + request.Keyword + '%'))
                 );
             }
 
