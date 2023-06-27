@@ -20,6 +20,7 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
   const [partSupplier, setPartSupplier] = useState(defaultPartSupplier);
   const [theMetadataParts, setTheMetadataParts] = useState(metadataParts);
   const [showAddPartSupplier, setShowAddPartSupplier] = useState(false);
+  const [isEditing, setIsEditing] = useState('');
 
 	useEffect(() => {
 		setIsLoadingPartMetadata(loadingPartMetadata);
@@ -92,6 +93,31 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
     setIsLoadingPartMetadata(false);
   };
 
+  const saveSupplier = async (supplier) => {
+    const request = {
+      partId: thePart.partId,
+      partSupplierId: supplier.partSupplierId,
+      name: supplier.supplier,
+      supplierPartNumber: supplier.supplierPartNumber,
+      cost: parseFloat(supplier.cost || "0") || 0,
+      quantityAvailable: parseInt(supplier.quantityAvailable || "0") || 0,
+      minimumOrderQuantity: parseInt(supplier.minimumOrderQuantity || "0") || 0,
+      productUrl: supplier.productUrl && supplier.productUrl.length > 4 ? `https://${supplier.productUrl.replace("https://", "").replace("http://", "")}` : null,
+      imageUrl: supplier.imageUrl && supplier.imageUrl.length > 4 ? `https://${supplier.imageUrl.replace("https://", "").replace("http://", "")}` : null
+    };
+    const response = await fetchApi("api/part/partSupplier", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
+    });
+    if (response.responseObject.status === 200) {
+      const { data } = response;
+      toast.success(t("message.savedSupplier", "Saved supplier!"));
+    } else toast.error(t("error.failedSaveSupplier", "Failed to save supplier change!"));
+  };
+
   const deletePartSupplier = async (e, partSupplier) => {
     e.preventDefault();
     e.stopPropagation();
@@ -139,6 +165,37 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
     setShowAddPartSupplier(!showAddPartSupplier);
   };
 
+  const handleFocus = (e, control, supplier) => {
+    e.target.value = supplier[e.target.name];
+    setIsEditing(e.target.name);
+  };
+
+  const handleInlineChange = (e, control, supplier) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    switch(control.name) {
+      case 'cost':
+        supplier[control.name] = parseFloat(control.value);
+        break;
+      case 'quantityAvailable':
+        supplier[control.name] = parseInt(control.value);
+        break;
+      case 'minimumOrderQuantity':
+        supplier[control.name] = parseInt(control.value);
+        break;
+      default:
+        supplier[control.name] = control.value;
+        break;
+    }
+    setTheMetadataParts({ ...theMetadataParts });
+  };
+
+  const saveColumn = async (e, supplier) => {
+    setIsEditing('');
+    await saveSupplier(supplier);
+  };
+
 	const renderSuppliers = useMemo(() => {
 		return (<Table compact celled sortable selectable striped unstackable size="small">
 		<Table.Header>
@@ -158,11 +215,11 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
 				theMetadataParts &&
 				_.filter(theMetadataParts, (p) => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
 					<Table.Row key={supplierKey}>
-						<Table.Cell textAlign="center">{supplier.supplier}</Table.Cell>
-						<Table.Cell textAlign="center">{supplier.supplierPartNumber}</Table.Cell>
-						<Table.Cell textAlign="center">{formatCurrency(supplier.cost, supplier.currency)}</Table.Cell>
-						<Table.Cell textAlign="center">{formatNumber(supplier.quantityAvailable)}</Table.Cell>
-						<Table.Cell textAlign="center">{formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
+						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="supplier" value={supplier.supplier} /></Table.Cell>
+						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="supplierPartNumber" value={supplier.supplierPartNumber} /></Table.Cell>
+						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="cost" value={isEditing === 'cost' ? supplier.cost : formatCurrency(supplier.cost, supplier.currency)} style={{width: '40px'}} /></Table.Cell>
+						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="quantityAvailable" value={isEditing === 'quantityAvailable' ? supplier.quantityAvailable : formatNumber(supplier.quantityAvailable)} /></Table.Cell>
+						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="minimumOrderQuantity" value={!isEditing === 'minimumOrderQuantity' ? supplier.minimumOrderQuantity : formatNumber(supplier.minimumOrderQuantity)} /></Table.Cell>
 						<Table.Cell textAlign="center">
 							{supplier.imageUrl && supplier.imageUrl.length > 10 && supplier.imageUrl.startsWith("http") && (
 								<img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />
