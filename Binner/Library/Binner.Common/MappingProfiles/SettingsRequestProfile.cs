@@ -56,6 +56,7 @@ namespace Binner.Common.MappingProfiles
             CreateMap<SettingsRequest, PrinterConfiguration>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.Printer.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.Printer.PartLabelSource))
+                .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.Printer.PrintMode))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.Printer.PrinterName))
                 // complex mapping situation
                 .ForMember(x => x.PartLabelTemplate, options =>

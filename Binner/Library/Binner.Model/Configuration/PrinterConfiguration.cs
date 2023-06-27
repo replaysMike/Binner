@@ -5,6 +5,11 @@ namespace Binner.Model.Configuration
     public class PrinterConfiguration
     {
         /// <summary>
+        /// Choose the print mode to use for printing labels.
+        /// </summary>
+        public PrintModes PrintMode { get; set; } = PrintModes.Direct;
+
+        /// <summary>
         /// Full name of printer
         /// Default: Dymo LabelWriter 450
         /// </summary>

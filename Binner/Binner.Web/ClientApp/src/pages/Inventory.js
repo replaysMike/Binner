@@ -850,7 +850,13 @@ export function Inventory(props) {
   const printLabel = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}&generateImageOnly=false`, { method: "POST" });
+    if (systemSettings.printer.printMode === 0){
+      // direct print
+      await fetchApi(`api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}&generateImageOnly=false`, { method: "POST" });
+    }else{
+      window.print();
+    }
+
   };
 
   const handleChooseAlternatePart = (e, part) => {
@@ -1469,7 +1475,7 @@ export function Inventory(props) {
           <Breadcrumb.Divider />
           <Breadcrumb.Section active>{isEditing ? part.partNumber : t('page.inventory.addtitle', "Add Inventory")}</Breadcrumb.Section>
         </Breadcrumb>
-        {part.partNumber && <Image src={`api/part/preview?partNumber=${encodeURIComponent(part.partNumber.trim())}&token=${getImagesToken()}`} width={180} floated="right" style={{ marginTop: "0px" }} />}
+        {part.partNumber && <Image src={`api/part/preview?partNumber=${encodeURIComponent(part.partNumber.trim())}&token=${getImagesToken()}`} id="printarea" width={180} floated="right" style={{ marginTop: "0px" }} />}
         <div style={{display: 'flex'}}>
           <FormHeader name={title} to=".." />
           {!isEditing &&
