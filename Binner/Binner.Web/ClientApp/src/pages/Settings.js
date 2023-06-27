@@ -39,6 +39,20 @@ export const Settings = (props) => {
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [printModes] = useState([
+    {
+      key: 1,
+      value: 0,
+      text: "Direct",
+      description: "Print using built-in SDK support"
+    },
+    {
+      key: 2,
+      value: 1,
+      text: "Web Browser",
+      description: "Print using the web browser's print dialog"
+    },
+  ]);
   const [labelSources] = useState([
     {
       key: 1,
@@ -305,6 +319,7 @@ export const Settings = (props) => {
       clientSecret: "",
     },
     printer: {
+      printMode: 0,
       printerName: "",
       partLabelSource: "",
       partLabelName: "",
@@ -468,7 +483,6 @@ export const Settings = (props) => {
         setLoading(false);
         setSettings({ ...data, barcode: {...data.barcode }});
         setSystemSettings(data);
-        console.log('settings', data);
         const digikeyTempSettings = getViewPreference("digikey");
         if (digikeyTempSettings) {
           setSettings({...data, digikey: digikeyTempSettings});
@@ -572,6 +586,7 @@ export const Settings = (props) => {
             control
           );
       } else {
+        console.log('set printer setting', control.name);
         setControlValue(newSettings.printer, "printer", control);
       }
     } else {
@@ -1594,6 +1609,26 @@ export const Settings = (props) => {
               {t('page.settings.printerConfigDescription', "Configure your printer name as it shows up in your environment (Windows Printers or CUPS Printer Name)")}
             </i>
           </p>
+          <Popup
+            wide
+            content={
+              <p>{t('page.settings.popup.printMode', "Choose if you would like to print directly to the printer (default) or using the web browser.")}</p>
+            }
+            trigger={
+              <Form.Field width={10}>
+                <label>{t('page.settings.printMode', "Print Mode")}</label>
+                <Dropdown
+                  name="printerPrintMode"
+                  placeholder="Select the print mode"
+                  selection
+                  required
+                  value={settings.printer.printMode}
+                  options={printModes}
+                  onChange={handleChange}
+                />
+              </Form.Field>
+            }
+          />
           <Popup
             content={
               <p>{t('page.settings.popup.printerPrinterName', "Your printer name as it appears in Windows, or CUPS (Unix).")}</p>

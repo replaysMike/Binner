@@ -96,6 +96,7 @@ namespace Binner.Common.MappingProfiles
             CreateMap<PrinterConfiguration, PrinterSettingsResponse>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
                 // complex mapping situation
                 .ForMember(x => x.Lines, options => options.MapFrom(x => new List<LineConfiguration> {
@@ -115,6 +116,7 @@ namespace Binner.Common.MappingProfiles
             CreateMap<PrinterSettingsResponse, PrinterConfiguration>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
                 .ForMember(x => x.LabelDefinitions, options => options.Ignore())
                 // complex mapping situation

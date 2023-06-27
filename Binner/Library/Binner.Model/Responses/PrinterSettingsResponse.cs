@@ -1,9 +1,15 @@
-﻿using Binner.Model.IO.Printing;
+﻿using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
 
 namespace Binner.Model.Responses
 {
     public class PrinterSettingsResponse
     {
+        /// <summary>
+        /// Choose the print mode to use for printing labels.
+        /// </summary>
+        public PrintModes PrintMode { get; set; } = PrintModes.Direct;
+
         /// <summary>
         /// Full name of printer
         /// </summary>

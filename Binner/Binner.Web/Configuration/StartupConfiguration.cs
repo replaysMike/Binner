@@ -35,6 +35,7 @@ namespace Binner.Web.Configuration
             var printerConfiguration = serviceConfiguration.PrinterConfiguration;
             var printerSettings = new PrinterSettings
             {
+                PrintMode = printerConfiguration.PrintMode,
                 PrinterName = printerConfiguration.PrinterName,
                 PartLabelName = printerConfiguration.PartLabelName,
                 PartLabelSource = printerConfiguration.PartLabelSource,
