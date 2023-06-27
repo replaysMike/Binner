@@ -27,6 +27,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
 	const [filter, setFilter] = useState('');
 	const [expandedNodeIds, setExpandedNodeIds] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
 	const getPartTypeFromId = useCallback((partTypeId) => {
 		let partTypeIdInt = partTypeId;
@@ -128,7 +129,6 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
   };  
 
   const render = useMemo(() => {
-    console.log('render partTypes');
     const getPartTypeFromName = (name) => {
       const lcName = name.toLowerCase();
       return _.find(internalPartTypes, (i) => i.name.toLowerCase() === lcName)
@@ -199,6 +199,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
     };
     
     const handleOnSearchChange = (e, control) => {
+      setSearchQuery(control.searchQuery);
       // process keyboard input
       setFilter(control.searchQuery);
       let newPartTypesFiltered = recursivePreFilter(internalPartTypes, null, control.searchQuery.toLowerCase());
@@ -217,6 +218,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
       const selectedPartType = getPartTypeFromName(selectedPartTypeName);
       if (selectedPartType) {
         setPartType(selectedPartType);
+        setSearchQuery(selectedPartTypeName);
         // fire event
         if (onSelect) onSelect(e, selectedPartType);
       }
@@ -272,6 +274,8 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
         id="partTypeDropdown"
         name={name || ""} 
         text={getSelectedText(partType)}
+        // searchQuery allows us to force set the search text when node changes, due to weird behavior in semantic's dropdown
+        searchQuery={searchQuery}
         search 
         floating
         fluid
