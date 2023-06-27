@@ -2,24 +2,24 @@
   "page": {
     "home": {
       "title": "首页看板",
-      "description": "Binner is an inventory management app for makers, hobbyists and professionals.",
+      "description": "Binner是一款为创客、爱好者和专业人士设计的库存管理系统。",
       "addInventory": "录入元器件",
       "searchInventory": "搜索元器件",
       "bom": "BOM",
-      "datasheets": "Datasheets",
+      "datasheets": "规格书",
       "viewLowStock": "查看缺货器件",
       "partTypes": "元器件类别",
-      "importExport": "备份/还原",
+      "importExport": "导入/导出",
       "printLabels": "打印标签卡",
       "tools": "小工具",
-      "settings": "参数设置",
+      "settings": "设置",
       "yourOverview": "仓库总览",
-      "lowStock": "Low Stock",
+      "lowStock": "库存低",
       "parts": "库存合计",
       "uniqueParts": "已录入条目",
       "value": "库存估值",
       "projects": "BOM工程",
-      "admin": "权限管理"
+      "admin": "管理员设置"
     },
     "search": {
       "title":"搜索现有库存",
@@ -28,13 +28,13 @@
     "inventory": {
       "addtitle": "录入元器件",
       "edittitle": "编辑元器件",
-      "datasheets": "Datasheet",
+      "datasheets": "规格书",
       "pinout": "引脚图",
       "circuits": "电路图",
       "productImages": "产品外观",
       "referenceDesigns": "电路设计参考",
-      "bulkScan": "Bulk Scan",
-      "startScanning": "Start scanning parts...",
+      "bulkScan": "批量扫码",
+      "startScanning": "开始扫码...",
       "recentlyAdded": "近期添加的元器件",
       "partMetadata": "元器件详情",
       "privatePartInfo": "非标器件数据手动录入",
@@ -53,17 +53,17 @@
         "uploadWait": "必须先保存元器件，之后才能上传文件。"
       },
       "popup": {
-        "bulkAddParts": "Bulk add parts using a barcode scanner",
+        "bulkAddParts": "使用扫码枪批量添加零部件",
         "quantity": "设定元器件库存数量",
         "lowStock": "当库存量低于该阈值时会被标红进行预警提醒",
         "location": "记录元器件所在仓库楼层及房号",
         "binNumber": "记录元器件所在格子或货架位置，暂不支持中文字符",
-        "rememberLastSelection": "Enable this toggle to remember the last selected values of: <1>Part Type, Mounting Type, Quantity, Low Stock, Project, Location, Bin Number, Bin Number 2</1>",
-        "clear": "Clear the form to default values",
+        "rememberLastSelection": "勾选启用上次选择的值: <1>零件分类, 安装方法, 数量, 缺货预警值, 项目, 位置, 货架号1, 货架号2</1>",
+        "clear": "重置整个表单",
         "alternateParts": "备选替代部件",
         "mustAddPart": "添加供应商条目之前，必须先保存当前元器件信息",
         "addSupplier": "添加供应商条目",
-        "deleteLocalFile": "Delete this local file"
+        "deleteLocalFile": "删除此本地文件"
       }
     },
     "lowInventory": {
@@ -89,7 +89,7 @@
     },
     "boms": {
       "header": {
-        "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>Choose or create the project to manage BOM for.<br/>" 
+        "description": "你可以使用物料清单工具，按照项目来管理零部件。你可以直接按照PCB板的套数扣除对应零件数量，或者检查还需要购买哪些零件以及分析成本。<br/><br/>请选择或创建需要管理BOM的项目。<br/>" 
       }
     },
     "partTypes": {
@@ -99,7 +99,7 @@
     },
     "exportData": {
       "title": "导入/导出数据",
-      "description": "Import or Export your Binner database to a human-readable format.",
+      "description": "在此导入Binner数据库或导出为人类可读的格式。",
       "uploadNote": "将文件拖动到此处，或鼠标点击此处然后从目录中选择文件",
       "acceptedFileTypes": "支持下列文件格式：\"*.sql, *.xls, *.xlsx, *.csv\"",
       "importResult": "导入情况报告",
@@ -126,8 +126,8 @@
       "title": "系统配置",
       "description": "主要包括对接第三方网站、配置本地打印机以及创建条码标签模板。<1 /> 使用说明参见在线<3>Wiki</3>手册（目前只有英文帮助文档，位于Github网站）",
       "confirm": {
-        "mustAuthenticateHeader": "Must Authenticate",
-        "mustAuthenticate": "External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider."
+        "mustAuthenticateHeader": "需要认证",
+        "mustAuthenticate": "你需要先认证才能使用外部接口。在服务提供商认证完成后，页面将会重新定向回来。"
       },
       "integrations": "第三方网站接口集成",
       "integrationsDescription": "要对接集成第三方网站，包括：德捷电子(DigiKey)、贸泽电子(Mouser)、艾睿电子(Arrow)，以及Octopart和Nexar等电子零件搜索引擎的API接口，请将第三方网站提供的API接口令牌导入本系统。<1 />借助第三方网站API接口提供的海量电子元器件数据，能够显著提升。",
@@ -140,9 +140,9 @@
       "mouser": "Mouser(贸泽电子)",
       "mouserDescription": "Mouser API Keys can be obtained at <1>https://www.mouser.com/api-hub/</1>",
       "mouserSupport": "接入Mouser(贸泽电子)第三方数据接口",
-      "searchApiKey": "Search Api Key",
-      "ordersApiKey": "Orders Api Key",
-      "cartApiKey": "Cart Api Key",
+      "searchApiKey": "搜索接口密钥",
+      "ordersApiKey": "订单接口密钥",
+      "cartApiKey": "采购单接口密钥",
       "arrow": "Arrow(艾睿电子)",
       "arrowDescription": "Arrow API Keys can be obtained at <1>https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey</1>",
       "arrowSupport": "接入Arrow(艾睿电子)第三方数据接口",
@@ -153,10 +153,10 @@
       "printerConfigDescription": "Configure your printer name as it shows up in your environment (Windows Printers or CUPS Printer Name)",
       "printerName": "打印机名称",
       "partLabelSource": "打印机纸盒切换",
-      "partLabelName": "Part Label Name",
+      "partLabelName": "零件标签名称",
       "partLabelTemplate": "元器件标签模板",
-      "partLabelTemplateDescription": "Part labels are printed according to this template.",
-      "lineX": "Line {{number}}",
+      "partLabelTemplateDescription": "将按照此模板打印零件标签",
+      "lineX": "第{{number}}行",
       "identifierX": "Identifier {{number}}",
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
@@ -188,7 +188,7 @@
       }
     },
     "datasheet": {
-      "title": "Datasheet搜索"
+      "title": "规格书搜索"
     },
     "orderImport": {
       "title": "导入采购订单",
@@ -222,7 +222,7 @@
     },
     "project": {
       "title": "编辑工程",
-      "description": "Projects are used as part of your BOM, allowing you to associate parts to multiple PCBs.",
+      "description": "项目被用作你的BOM的一部分，允许你将零件与多个PCB相关联。",
       "pcbs": "PCB板列表",
       "produceHistory": "历史生产记录",
       "confirm": {
@@ -249,30 +249,30 @@
       "ohmsLaw": {
         "title": "欧姆定律换算",
         "description": "Ohms Law explains the relationship between voltage, current and resistance. Input any 2 values to calculate the other 2 values.",
-        "voltage": "Voltage",
-        "current": "Current",
-        "resistance": "Resistance",
-        "power": "Power"
+        "voltage": "电压",
+        "current": "电流",
+        "resistance": "电阻",
+        "power": "功率"
       },
       "resistanceColorCalc": {
         "title": "电阻色环换算",
-        "4band": "4 Band",
-        "5band": "5 Band",
-        "6band": "6 Band",
-        "numOfBands": "Choose the number of bands",
-        "chooseBands": "Choose bands...",
-        "resistance": "Resistance"
+        "4band": "4环",
+        "5band": "5环",
+        "6band": "6环",
+        "numOfBands": "选择环数",
+        "chooseBands": "选择颜色...",
+        "resistance": "阻值"
       },
       "voltDividerCalc": {
         "title": "分压电阻计算",
         "description": "A voltage divider uses 2 resistors to reduce a voltage to a fraction of its input voltage.",
-        "voltageInput": "Voltage Input",
-        "resistor": "Resistor",
-        "outputVoltage": "Output Voltage"
+        "voltageInput": "输入电压",
+        "resistor": "阻值",
+        "outputVoltage": "输出电压"
       }
     },
     "accountSettings": {
-      "title": "登录账号",
+      "title": "账号设置",
       "description": "配置账号基本信息及登录密码"
     },
     "activateLicense": {
@@ -296,16 +296,16 @@
         }
       },
       "activateLicense": {
-        "title": "Activate License",
+        "title": "激活许可",
         "description": "Enter your license key to enable pro features on your local Binner installation. Don't have a license key? Visit <1>Binner Cloud</1>"
       },
       "updateParts": {
-        "title": "Update Part Metadata",
+        "title": "更新零件详情",
         "description": "Refresh information from external APIs and choose which fields you would like to update."
       }
     },
     "backup": {
-      "title": "备份 / 还原",
+      "title": "备份/还原",
       "description": "创建备份或还原到之前的备份状态。",
       "acceptedFileTypes": "文件类型: \"*.bak\"",
       "backupDescription": "创建当前系统的快照备份。"
@@ -370,13 +370,13 @@
         "deletePart": "真的确定要删除元器件{{partNumber}}吗?"
       },
       "error": {
-        "failedSave": "Error! 保存元器件{{partNumber}}时发生错误，信息如下: {{statusText}}"
+        "failedSave": "错误! 保存元器件{{partNumber}}时发生错误，信息如下: {{statusText}}"
       }
     },
     "addBomPartModal": {
-      "title": "BOM Management",
-      "description": "Add a part to your BOM, optionally associating it with a particular PCB.",
-      "none": "None",
+      "title": "BOM管理",
+      "description": "在BOM中添加一个零件，可以选择将其与特定的PCB联系起来",
+      "none": "无",
       "confirmHeader": "添加部件",
       "confirmAddUnassociated": "You have not selected a part from your inventory.<1/>Are you sure you want to add this part <3>{{keyword}}</3> without associating it to a part in your inventory?<5/><6/><7>Note: You will still be able to manage it's quantity if you choose to proceed, but it will not appear in your inventory.</7>",
       "selectPcb": "选择PCB板",
@@ -392,7 +392,7 @@
       }
     },
     "addPcbModal": {
-      "title": "BOM Management",
+      "title": "BOM管理",
       "description": "Adding a PCB allows you to associate your parts with a specific PCB, and even multiple PCBs within a project.",
       "header": "添加PCB",
       "popup": {
@@ -408,7 +408,7 @@
       }
     },
     "producePcbModal": {
-      "title": "BOM Management",
+      "title": "BOM管理",
       "description": "",
       "header": "生产出库",
       "nextSerialNumber": "产品序列号",
@@ -417,7 +417,7 @@
         "all": "全部",
         "allDescription": "BOM清单内的全部PCB板，外加独立零部件",
         "unassociated": "独立零部件",
-        "unassociatedDescription": "Produce parts not associated to a PCB"
+        "unassociatedDescription": "使用独立零件生产"
       },
       "popup": {
         "pcbs": "请选择计划生产的PCB板。若当前BOM工程中不包含任何PCB板，也可点击【独立零部件】或点击【全部】，之后继续进行生产备料",
@@ -547,27 +547,27 @@
     "recordsPerPage": "条/页",
     "parent": "上级结点",
     "partsCount": "剩余数量盘点",
-    "systemType": "System Type",
+    "systemType": "系统分类",
     "resistors": "填写元器件类别名称……",
     "hideEmptyTypes": "隐藏未使用的类别",
-    "error": "Error",
-    "errors": "Errors",
+    "error": "错误",
+    "errors": "错误",
     "or": "或",
     "status": "状态",
-    "success": "Success",
-    "failed": "Failed",
-    "warnings": "Warnings",
-    "apiKey": "Api Key",
-    "apiUrl": "Api Url",
-    "site": "Site",
-    "clientId": "Client Id",
+    "success": "成功",
+    "failed": "失败",
+    "warnings": "警告",
+    "apiKey": "接口密钥",
+    "apiUrl": "接口URL",
+    "site": "网站",
+    "clientId": "客户端ID",
     "clientSecret": "Client Secret",
     "timeout": "超时参数",
     "postbackUrl": "Postback Url",
     "username": "用户名",
     "password": "密码",
     "website": "网址",
-    "datasheet": "Datasheet数据手册",
+    "datasheet": "规格书数据手册",
     "package": "封装",
     "importQuestion": "立即导入吗?",
     "image": "外观图",
@@ -590,7 +590,7 @@
     "binNumber2": "货架编号/小车编号",
     "manufacturerPart": "制造商产品命名",
     "packageType": "封装",
-    "primaryDatasheetUrl": "Datasheet数据手册下载地址",
+    "primaryDatasheetUrl": "规格书数据手册下载地址",
     "productUrl": "产品URL网址",
     "digikeyPartNumber": "德捷DigiKey部件序号",
     "mouserPartNumber": "贸泽Mouser部件序号",
@@ -624,59 +624,59 @@
   },
   "message": {
     "noPartsAdded": "尚未添加部件",
-    "noChildPartTypes": "There are no child part types.",
+    "noChildPartTypes": "暂无零件子分类",
     "noResults": "暂无记录",
     "loadingOrder": "Loading order# {{order}}",
     "noMatchingResults":"未搜到与之相匹配的条目。",
-    "notEnoughParts": "Not enough parts",
+    "notEnoughParts": "零件不足",
     "noPartInfo": "No part information is available for '{{partNumber}}'. You are subscribed to updates and will be automatically updated when the part is indexed.",
-    "uploadFailed": "Failed to upload file!",
-    "uploadSuccess": "File uploaded.",
-    "uploadSuccessX": "{{count}} files uploaded.",
-    "unableToUpload": "Unable to upload. Check that the file is not locked or deleted.",
-    "noFilesSelected": "No files selected for upload!",
-    "failedToDeleteSupplierPart": "Failed to delete supplier part!",
-    "addXParts": "Added {{count}} new parts!",
+    "uploadFailed": "上传文件失败!",
+    "uploadSuccess": "文件已上传.",
+    "uploadSuccessX": "已上传{{count}} 个文件.",
+    "unableToUpload": "无法上传. 请检查文件是否被锁定或被删除",
+    "noFilesSelected": "你还没有选择需要上传的文件!",
+    "failedToDeleteSupplierPart": "删除供应商零件失败!",
+    "addXParts": "已添加 {{count}} 个新零件!",
     "savedPart": "元器件{{partNumber}}已保存!",
     "addedPart": "元器件{{partNumber}}已添加!",
-    "failedSavePart": "Failed to update, check Part Type and Mounting Type"
+    "failedSavePart": "更新失败, 请检查零件分类和安装方式"
   },
   "confirm": {
-    "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
-    "removeBomParts": "Are you sure you want to remove these <1>{{quantity}}</1> part(s) from your BOM?",
-    "deletePcb": "Are you sure you want to delete this PCB and it's parts from your BOM?",
-    "deletePartType": "Are you sure you want to delete part type <1>{{name}}</1>?",
-    "deletePart": "Are you sure you want to delete part <1>{{name}}</1>?",
-    "deleteLocalFile": "Are you sure you want to delete this local file named <1>{{name}}</1>?",
-    "permanent": "This action is <1>permanent and cannot be recovered</1>.",
-    "deleteRecord": "Are you sure you want to delete this record?",
-    "deleteHistory": "Are you sure you want to delete this history record?",
-    "partsWillBeBackInStock": "All consumed parts will be placed <1>back in stock</1>.",
+    "deleteProject": "确定删除此项目以及整个BOM吗?",
+    "removeBomParts": "确定从BOM中删除 <1>{{quantity}}</1> 个零件吗?",
+    "deletePcb": "确定从BOM中删除此PCB及其零件吗?",
+    "deletePartType": "确定删除零件分类： <1>{{name}}</1> 吗?",
+    "deletePart": "确定删除零件 <1>{{name}}</1> 吗?",
+    "deleteLocalFile": "确定删除本地文件 <1>{{name}}</1> 吗?",
+    "permanent": "此操作是 <1>永久生效且无法恢复的</1>.",
+    "deleteRecord": "确定删除这项记录吗?",
+    "deleteHistory": "确定删除这条历史记录吗?",
+    "partsWillBeBackInStock": "所有被使用的零件将会被 <1>重新增补会库存中</1>.",
     "header": {
-      "removeBomPart": "Remove Part from BOM",
-      "deleteFile": "Delete File",
-      "deletePart": "Delete Part"
+      "removeBomPart": "从BOM中删除零件",
+      "deleteFile": "删除文件",
+      "deletePart": "删除零件"
     }    
   },
   "error": {
-    "deleteProjectFailed": "Failed to delete project!",
-    "failedToRemoveBomParts": "Failed to remove parts from BOM!",
-    "projectNotFound": "Could not find project named {{projectName}}",
-    "failedSaveProject": "Failed to save project change!",
-    "failedSavePcb": "Failed to save pcb!",
-    "failedDeleteProject": "Failed to remove project!",
-    "failedSavePartType": "Failed to save Part Type!",
-    "failedDeletePcb": "Failed to remove pcb!",
-    "noPartSelected": "No part selected!",
-    "failedAddPart": "Failed to add part!",
-    "failedAddPcb": "Failed to add pcb!",
+    "deleteProjectFailed": "删除项目失败!",
+    "failedToRemoveBomParts": "从BOM中删除零件失败!",
+    "projectNotFound": "无法找到项目 {{projectName}}",
+    "failedSaveProject": "保存项目更改失败!",
+    "failedSavePcb": "保存PCB失败!",
+    "failedDeleteProject": "删除项目失败!",
+    "failedSavePartType": "保存零件分类失败!",
+    "failedDeletePcb": "移除PCB失败!",
+    "noPartSelected": "尚未选择零件!",
+    "failedAddPart": "增加零件失败!",
+    "failedAddPcb": "增加PCB失败!",
     "failedBomExport": "BOM清单导出失败!",
-    "failedDeletedPartType": "Failed to delete part type {{name}}",
-    "failedAddedPartType": "Failed to add part type {{name}}",
-    "failedClearedCredentials": "Failed to clear cached credentials for {{apiName}}",
-    "testFailed": "Test failed",
-    "invalidOrder": "Hmmm, that doesn't look like a valid order number!",
-    "invalid2dBarcode": "Hmmm, I don't recognize that 2D barcode!",
+    "failedDeletedPartType": "删除零件分类{{name}}失败",
+    "failedAddedPartType": "增加零件分类{{name}}失败",
+    "failedClearedCredentials": "清除{{apiName}}的证书缓存失败",
+    "testFailed": "未通过测试",
+    "invalidOrder": "输入非法，不是合法的订单号!",
+    "invalid2dBarcode": "无法识别该条形码!",
     "failedDeleteRecord": "未能删除该条生产记录!"
   },
   "success": {
