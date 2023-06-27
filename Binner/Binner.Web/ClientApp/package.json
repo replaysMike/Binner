@@ -73,7 +73,7 @@
     "reactstrap": "^9.1.8",
     "rimraf": "^4.4.1",
     "semantic-ui-react": "^2.1.4",
-    "semver": "^7.3.8",
+    "semver": "^7.5.2",
     "showdown": "^2.1.0",
     "shufflejs": "^6.1.0",
     "simplebar": "^6.2.4",
