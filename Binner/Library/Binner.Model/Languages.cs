@@ -1,5 +1,8 @@
 ﻿namespace Binner.Model
 {
+    /// <summary>
+    /// Languages
+    /// </summary>
     public enum Languages
     {
         En, 

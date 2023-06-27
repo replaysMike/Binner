@@ -215,6 +215,9 @@
 
 .inventory .ui.dropdown.label.currency .menu {
 	width: 170px;
+	max-height: 300px;
+	overflow-y: scroll;
+	bottom: unset;
 }
 
 .inventory .ui.dropdown.label.currency .item {

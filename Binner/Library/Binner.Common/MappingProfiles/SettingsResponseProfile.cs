@@ -20,6 +20,12 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
+                .ForMember(x => x.Language, options => options.MapFrom(x => x.Language))
+                .ForMember(x => x.Currency, options => options.MapFrom(x => x.Currency))
+                .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
+                .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
+                .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
+                .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, SettingsResponse>()
@@ -62,6 +68,12 @@ namespace Binner.Common.MappingProfiles
                 }))
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
+                .ForMember(x => x.Language, options => options.Ignore())
+                .ForMember(x => x.Currency, options => options.Ignore())
+                .ForMember(x => x.LicenseKey, options => options.Ignore())
+                .ForMember(x => x.MaxCacheItems, options => options.Ignore())
+                .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
                 .ReverseMap();
 
             CreateMap<MouserConfiguration, MouserConfigurationResponse>()

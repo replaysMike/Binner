@@ -10,7 +10,9 @@ import { DigiKeySites } from "../common/digiKeySites";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
+import { setSystemSettings } from "../common/applicationSettings";
 import { toast } from "react-toastify";
+import { getCurrencySymbol } from "../common/Utils";
 import "./Settings.css";
 
 export const Settings = (props) => {
@@ -66,9 +68,209 @@ export const Settings = (props) => {
       text: "Enabled",
     },
   ]);
+  const [languages] = useState([{
+    key: 1,
+    value: "en",
+    text: "English",
+  },{
+    key: 2,
+    value: "br",
+    text: "Breton",
+  },{
+    key: 3,
+    value: "cs",
+    text: "Czech",
+  },{
+    key: 4,
+    value: "da",
+    text: "Danish",
+  },{
+    key: 5,
+    value: "de",
+    text: "German",
+  },{
+    key: 6,
+    value: "es",
+    text: "Spanish",
+  },{
+    key: 7,
+    value: "fi",
+    text: "Finnish",
+  },{
+    key: 8,
+    value: "fr",
+    text: "French",
+  },{
+    key: 9,
+    value: "he",
+    text: "Hebrew",
+  },{
+    key: 10,
+    value: "hu",
+    text: "Hungarian",
+  },{
+    key: 11,
+    value: "it",
+    text: "Italian",
+  },{
+    key: 12,
+    value: "ja",
+    text: "Japanese",
+  },{
+    key: 13,
+    value: "ko",
+    text: "Korean",
+  },{
+    key: 14,
+    value: "nl",
+    text: "Dutch",
+  },{
+    key: 15,
+    value: "no",
+    text: "Norwegian",
+  },{
+    key: 16,
+    value: "pl",
+    text: "Polish",
+  },{
+    key: 17,
+    value: "pt",
+    text: "Portuguese",
+  },{
+    key: 18,
+    value: "ro",
+    text: "Romanian",
+  },{
+    key: 19,
+    value: "sv",
+    text: "Swedish",
+  },{
+    key: 20,
+    value: "th",
+    text: "Thai",
+  },{
+    key: 21,
+    value: "zhs",
+    text: "Chinese (Simplified)",
+  },{
+    key: 22,
+    value: "zht",
+    text: "Chinese (Traditional)",
+  },]);
+  const [currencies] = useState([{
+    key: 1,
+    value: "USD",
+    text: `${getCurrencySymbol("USD")} - US Dollar`,
+  },{
+    key: 2,
+    value: "CAD",
+    text: `${getCurrencySymbol("CAD")} - Canadian Dollar`,
+  },{
+    key: 3,
+    value: "JPY",
+    text: `${getCurrencySymbol("JPY")} - Japanese Yen`,
+  },{
+    key: 4,
+    value: "GBP",
+    text: `${getCurrencySymbol("GBP")} - Pound sterling`,
+  },{
+    key: 5,
+    value: "EUR",
+    text: `${getCurrencySymbol("EUR")} - Euro`,
+  },{
+    key: 6,
+    value: "HKD",
+    text: `${getCurrencySymbol("HKD")} - Hong Kong dollar`,
+  },{
+    key: 7,
+    value: "SGD",
+    text: `${getCurrencySymbol("SGD")} - Singapore dollar`,
+  },{
+    key: 8,
+    value: "TWD",
+    text: `${getCurrencySymbol("TWD")} - New Taiwan dollar`,
+  },{
+    key: 9,
+    value: "KRW",
+    text: `${getCurrencySymbol("KRW")} - South Korean won`,
+  },{
+    key: 10,
+    value: "AUD",
+    text: `${getCurrencySymbol("AUD")} - Australian dollar`,
+  },{
+    key: 11,
+    value: "NZD",
+    text: `${getCurrencySymbol("NZD")} - New Zealand dollar`,
+  },{
+    key: 12,
+    value: "INR",
+    text: `${getCurrencySymbol("INR")} - Indian Rupee`,
+  },{
+    key: 13,
+    value: "DKK",
+    text: `${getCurrencySymbol("DKK")} - Danish krone`,
+  },{
+    key: 14,
+    value: "NOK",
+    text: `${getCurrencySymbol("NOK")} - Norwegian krone`,
+  },{
+    key: 15,
+    value: "SEK",
+    text: `${getCurrencySymbol("SEK")} - Swedish krona`,
+  },{
+    key: 16,
+    value: "ILS",
+    text: `${getCurrencySymbol("ILS")} - Israeli new shekel`,
+  },{
+    key: 17,
+    value: "CNY",
+    text: `${getCurrencySymbol("CNY")} - Chinese Yuan (Renminbi)`,
+  },{
+    key: 18,
+    value: "PLN",
+    text: `${getCurrencySymbol("PLN")} - Polish Zloty`,
+  },{
+    key: 19,
+    value: "CHF",
+    text: `${getCurrencySymbol("CHF")} - Swiss Franc`,
+  },{
+    key: 20,
+    value: "CZK",
+    text: `${getCurrencySymbol("CZK")} - Czech Koruna`,
+  },{
+    key: 21,
+    value: "HUF",
+    text: `${getCurrencySymbol("HUF")} - Hungarian Forint`,
+  },{
+    key: 22,
+    value: "RON",
+    text: `${getCurrencySymbol("RON")} - Romanian Leu`,
+  },{
+    key: 23,
+    value: "ZAR",
+    text: `${getCurrencySymbol("ZAR")} - South African Rand`,
+  },{
+    key: 24,
+    value: "MYR",
+    text: `${getCurrencySymbol("MYR")} - Malaysian Ringgit`,
+  },{
+    key: 25,
+    value: "THB",
+    text: `${getCurrencySymbol("THB")} - Thai Baht`,
+  },{
+    key: 26,
+    value: "PHP",
+    text: `${getCurrencySymbol("PHP")} - Philippine peso`,
+  },]);
   const barcodeProfileOptions = GetTypeDropdown(BarcodeProfiles);
   const digikeySites = GetAdvancedTypeDropdown(DigiKeySites);
   const [settings, setSettings] = useState({
+    licenseKey: "",
+    language: "",
+    currency: "",
+    maxCacheItems: 1024,
+    cacheAbsoluteExpirationMinutes: 0,
+    cacheSlidingExpirationMinutes: 30,
     binner: {
       enabled: true,
       apiKey: "",
@@ -265,6 +467,8 @@ export const Settings = (props) => {
         const { data } = response;
         setLoading(false);
         setSettings({ ...data, barcode: {...data.barcode }});
+        setSystemSettings(data);
+        console.log('settings', data);
         const digikeyTempSettings = getViewPreference("digikey");
         if (digikeyTempSettings) {
           setSettings({...data, digikey: digikeyTempSettings});
@@ -292,6 +496,7 @@ export const Settings = (props) => {
       body: JSON.stringify(newSettings),
     }).then((response) => {
       if (response.responseObject.ok) {
+        setSystemSettings(newSettings);
         const saveMessage = t('success.systemSettingsSaved', "System settings were saved.");
         toast.success(saveMessage);
         setSaveMessage(saveMessage);
@@ -313,24 +518,21 @@ export const Settings = (props) => {
     if (control.name.startsWith("swarm")) {
       setControlValue(newSettings.binner, "swarm", control);
     }
-    if (control.name.startsWith("digikey")) {
+    else if (control.name.startsWith("digikey")) {
       setControlValue(newSettings.digikey, "digikey", control);
     }
-    if (control.name.startsWith("mouser")) {
+    else if (control.name.startsWith("mouser")) {
       setControlValue(newSettings.mouser, "mouser", control);
     }
-    if (control.name.startsWith("arrow")) {
+    else if (control.name.startsWith("arrow")) {
       setControlValue(newSettings.arrow, "arrow", control);
     }
-    if (control.name.startsWith("octopart")) {
+    else if (control.name.startsWith("octopart")) {
       setControlValue(newSettings.octopart, "octopart", control);
     }
-    if (control.name.startsWith("barcode")) {
+    else if (control.name.startsWith("barcode")) {
       setControlValue(newSettings.barcode, "barcode", control);
-    }
-
-    // todo: find a better way to clean up state changes
-    if (control.name.startsWith("printer")) {
+    } else if (control.name.startsWith("printer")) {
       if (control.name.startsWith("printerLine")) {
         if (control.name.startsWith("printerLine1"))
           setControlValue(
@@ -372,6 +574,8 @@ export const Settings = (props) => {
       } else {
         setControlValue(newSettings.printer, "printer", control);
       }
+    } else {
+      setControlValue(newSettings, "", control);
     }
     setSettings(newSettings);
     setIsDirty(true);
@@ -565,6 +769,158 @@ export const Settings = (props) => {
         content={t('page.settings.confirm.mustAuthenticate', "External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.")}
       />
       <Form onSubmit={onSubmit}>
+        <Segment loading={loading} color="blue" raised padded>
+          <Header dividing as="h3">
+            {t('page.settings.application', "Application")}
+          </Header>
+          
+          <Segment color="green" secondary>
+            <Header dividing as="h3">
+              {t('page.settings.global', "Global")}
+            </Header>
+            <p>
+              <i>
+                <Trans i18nKey="page.settings.globalDescription">
+                Global application settings are used across the entire application.
+                </Trans>
+              </i>
+            </p>
+
+            <Form.Field width={10}>
+              <label>{t('label.licenseKey', "License Key")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<Trans i18nKey="page.settings.popup.licenseKey">
+                  If you have a paid Binner license, enter the key here. License keys can be obtained at <a href="https://binner.io" target="_blank" rel="noreferrer">Binner.io</a>
+                </Trans>}
+                trigger={
+                  <ClearableInput
+                    className="labeled"
+                    placeholder=""
+                    value={settings.licenseKey || ""}
+                    name="licenseKey"
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('page.settings.language', "Language")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[120, 0]}
+                hoverable
+                content={
+                  <p>
+                    {t('page.settings.popup.language', "The language setting specified here is passed to external APIs as your preferred language. This does not indicate the language selected for the user interface.")}
+                  </p>
+                }
+                trigger={
+                  <Dropdown
+                    name="language"
+                    placeholder="English"
+                    selection
+                    value={settings.language}
+                    options={languages}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('page.settings.currency', "Currency")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[120, 0]}
+                hoverable
+                content={
+                  <p>
+                    {t('page.settings.popup.currency', "The currency setting will be used as your default currency. It is passed to external APIs as your preferred currency.")}
+                  </p>
+                }
+                trigger={
+                  <Dropdown
+                    name="currency"
+                    placeholder="USD"
+                    selection
+                    value={settings.currency}
+                    options={currencies}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('label.maxCacheItems', "Max Cache Items")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.maxCacheItems', "Specify the maximum number of items allowed in the cache.")}</p>}
+                trigger={
+                  <ClearableInput
+                    className="labeled"
+                    placeholder=""
+                    value={settings.maxCacheItems || 1024}
+                    name="maxCacheItems"
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('label.cacheAbsoluteExpirationMinutes', "Cache Absolute Expiration")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.cacheAbsoluteExpirationMinutes', "Specify the total minutes in which a cache item will be expired (default: 0).")}</p>}
+                trigger={
+                  <ClearableInput
+                    className="labeled"
+                    placeholder=""
+                    value={settings.cacheAbsoluteExpirationMinutes || 0}
+                    name="cacheAbsoluteExpirationMinutes"
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+
+            <Form.Field width={10}>
+              <label>{t('label.cacheSlidingExpirationMinutes', "Cache Sliding Expiration")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.cacheSlidingExpirationMinutes', "Specify the minutes in which a cache item will be kept if it's touched within the time period (default: 30).")}</p>}
+                trigger={
+                  <ClearableInput
+                    className="labeled"
+                    placeholder=""
+                    value={settings.cacheSlidingExpirationMinutes || 30}
+                    name="cacheSlidingExpirationMinutes"
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+          </Segment>
+
+        </Segment>
+
         <Segment loading={loading} color="blue" raised padded>
           <Header dividing as="h3">
             {t('page.settings.integrations', "Integrations")}
