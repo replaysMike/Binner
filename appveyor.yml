@@ -1,8 +1,8 @@
 version: 2.6.{build}
 pull_requests:
   do_not_increment_build_number: true
-branches:
-  only:
+#branches:
+  #only:
   #- master
 skip_branch_with_pr: true
 image: Visual Studio 2022
