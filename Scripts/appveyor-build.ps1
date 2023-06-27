@@ -23,7 +23,8 @@ $env:NODE_OPTIONS="--max_old_space_size=16384"
 Write-Host "NODE_OPTIONS=$env:NODE_OPTIONS" -ForegroundColor cyan
 
 Write-Host "Restoring packages..." -ForegroundColor green
-dotnet restore $project
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+dotnet restore -s https://api.nuget.org/v3/index.json $project
 if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "Building..." -ForegroundColor green
