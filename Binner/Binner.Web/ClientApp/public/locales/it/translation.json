@@ -68,7 +68,10 @@
 				"deleteLocalFile": "Cancellare questo file locale",
 				"technicalSpecs": "Visualizzare specifiche tecniche",
 				"compliance": "Visualizzare le informazioni di conformità",
-				"cadModels": "Visualizzare i modelli CAD disponibili per questo componente"
+				"cadModels": "Visualizzare i modelli CAD disponibili per questo componente",
+				"symbolName": "Associare un nome di simbolo KiCad a questo componente",
+        		"footprintName": "Associare un nome di impronta KiCad a questo componente",
+        		"extensionValue": "Associare un valore personalizzato a questo componente"
 			}
 		},
 		"lowInventory": {
@@ -88,8 +91,8 @@
 			"notEnoughPartsToProducePcb": "Non ci sono componenti sufficienti per produrre questo PCB.",
 			"notEnoughPartsToProduceBom": "Non ci sono componenti sufficienti per produrre l'intera DBA.",
 			"noPartsAssigned": "Assegnare i componenti per contare quante volte puoi produrre questo PCB.",
-			"pcbProduceCount": "Con le attuali disponibilità in inventario si può produrre questo PCB <b>{{count}}</b> volte.",
-			"bomProduceCount": "Con le attuali disponibilità in inventario si può produrre l'intera DBA <b>{{count}}</b> volte.",
+			"pcbProduceCount": "Con le attuali disponibilità in inventario si può produrre questo PCB <1>{{count}}</1> volte.",
+			"bomProduceCount": "Con le attuali disponibilità in inventario si può produrre l'intera DBA <1>{{count}}</1> volte.",
 			"lowestPcb": "<i>{{name}}</i> manda componenti in sottoscorta."
 		},
 		"boms": {
@@ -101,8 +104,9 @@
 			"title": "Categorie",
 			"description": "Le categorie e le sottocategorie sono utilizzate per organizzare i componenti in modo logico e ordinato. Non c'è limite al numero di livelli nella gerarchia, basta collegare alla categoria <1>Parent</1> la sottocategoria voluta.<3 />Ad esempio: gli amplificatori operazionali possono essere un sottotipo dei Circuiti Integrati, quindi il <1>Parent</1> degli amplificatori operazionali è la categoria Circuiti Integrati.",
 			"rename": "Rinominare Categoria",
+			"edit": "Modificare Categoria",
 			"partCount": "Il numero di componenti in questa categoria",
-      		"viewParts": "Vedi Compoonenti"
+      		"viewParts": "Vedi Componenti"
 		},
 		"exportData": {
 			"title": "Importare/Esportare",
@@ -113,7 +117,7 @@
 			"totalRowsImported": "Righe totali importate",
 			"totalProjectsImported": "Progetti importati",
 			"totalPartTypesImported": "Categorie importate",
-			"totalPartsImported": "Compoonenti importati",
+			"totalPartsImported": "Componenti importati",
 			"noFilesSelected": "Nessun file selezionato per il caricamento!",
 			"importUploadFailed": "Importazione non riuscita!",
 			"importFailed": "Impossibile importare i dati.",
@@ -237,7 +241,9 @@
 			"orderNum": "Order Number",
 			"instructions": "Per gli ordini <1>DigiKey</1>, questo è il <3>Sales Order #</3>.<4 />Per glii ordini <6>Mouser</6>, questo è il <8>Web Order #</8>.<10 />Per gli ordini <12>Arrow</12>, questo è l'<14>Order Number</14>.",
 			"mouserNote": "<0>Nota:</0> Mouser supporta soltanto Web Order # quindi quando si importa assicurarsi di utilizzare il Web Order # e <2>non il Sales Order #</2>",
-			"arrowNote": "<0>Note:</0> Arrow richiede che sia richiesto via email l'accesso al loro Order API. Vedi <2>Arrow Order Api</2>"
+			"arrowNote": "<0>Note:</0> Arrow richiede che sia richiesto via email l'accesso al loro Order API. Vedi <2>Arrow Order Api</2>",
+			"addedToInventory": "aggiunto all'inventario",
+      		"alreadyInInventory": "già presente in inventario"
 		},
 		"printLabels": {
 			"title": "Stampa Etichette",
@@ -371,7 +377,11 @@
 			"totalPartTypes": "N.Totale Categorie",
 			"totalUserFiles": "N.Totale Files Utente",
 			"userFilesSize": "Dimensione Files Utente"
-		  } 
+		  },
+		  "backupRestore": {
+			"title": "Backup/Restore",
+			"baseDescription": "Backup o ripristino dell'installazione di Binner."
+		  }
 		},
 		"backup": {
 		  "title": "Backup / Restore",
@@ -379,6 +389,52 @@
 		  "description": "Creare un backup o ripristinare da un precedente backup.",
 		  "acceptedFileTypes": "Tipi di file accettati: \"*.bak\"",
 		  "backupDescription": "Creare una istantanea dell'installazione di Binner."
+		},
+		"printing": {
+			"title": "Stampa",
+			"description": "Stampa etichette e modelli di etichette.",
+			"header": "Scegliere una attività",
+			"labelTemplates": {
+			  "title": "Modelli di etichette",
+			  "description": "Modificare le etichette dei componenti e i modelli di etichette personalizzate.",
+			  "baseDescription": "Creare e modificare modelli di etichette.",
+			  "barcodeLabels": "Etichette con codici a barre",
+			  "custom": "Testo personalizzato",
+			  "preview": "Anteprima",
+			  "labelEditor": "Editor di etichette",
+			  "manage": "Gestire",
+			  "zoomLevel": "Livello di ingrandimento",
+			  "labelProperties": "Proprietà dell'etichetta",
+			  "labelTemplate": "Modello etichetta",
+			  "width": "Larghezza",
+			  "height": "Altezza",
+			  "dpi": "Dpi",
+			  "margin": "Margine",
+			  "templateName": "Nome modello",
+			  "itemProperties": "Proprietà dell'elemento",
+			  "align": "Allineamento",
+			  "font": "Font",
+			  "rotate": "Ruotare",
+			  "fontSize": "Dimensione del Font",
+			  "fontWeight": "Spessore del Font",
+			  "color": "Colore",
+			  "length": "Lunghezza",
+			  "textBarcodeValue": "Valore del Testo/Barcode",
+			  "partInformation": "Dati del componente",
+			  "button": {
+					"print": "Stampare",
+					"load": "Caricare..."
+			  }
+			},
+			"printLabels": {
+				"title": "Stampa Etichette Personalizzate",
+				"baseDescription": "Stampa etichette personalizzate per qualsiasi attività."
+			  },
+			  "bulkprint": {
+				"title": "Stampa massiva",
+				"description": "Stampa etichette per più componenti contemporaneamente.",
+				"baseDescription": "Stampa massiva etichette per componenti"
+			  }
 		}
 	},
 	"bc": {
@@ -398,7 +454,12 @@
 		"backupRestore": "Backup / Restore",
 		"accountSettings": "Dati Utente",
 		"activateLicense": "Attivare Licenza",
-		"systemInfo": "Informazioni di Sistema"
+		"systemInfo": "Informazioni di Sistema",
+		"barcodeScanner": "Barcode Scanner",
+        "printing": "Stampa",
+        "labelTemplates": "Modelli di Etichette",
+        "bulkPrint": "Stampa massiva",
+        "inventory": "Inventario"
 	},
 	"comp": {
 		"navBar": {
@@ -439,6 +500,10 @@
 			"arrowPartNumber": "Arrow Part Number",
 			"packageType": "Tipo di package",
 			"mountingType": "Tipo montaggio",
+			"symbolName": "Nome Simbolo",
+      		"footprintName": "Nome Impronta",
+      		"extensionValue1": "Valore aggiuntivo 1",
+      		"extensionValue2": "Valore aggiuntivo 2",
 			"ok": "Ok",
 			"popup": {
 				"lowStock": "Se la disponibilità del componente è inferiore a questo valore il componente sarà considerato sottoscorta.",
@@ -554,7 +619,19 @@
     "duplicatePartModal": {
       "title": "Componente Duplicato",
       "description": "C'è già un possibile componente duplicato nel tuo inventario."
-	 }
+	 },
+	 "labelSelectionModal": {
+		"title": "Editor di Etichette",
+		"header": "Selezionare Etichetta",
+		"description": "Selezionare una etichetta esistente per modificarla o crearne una nuova.",
+		"chooseLabel": "Scegliere l'etichetta da modificare",
+		"createNewLabel": "Creare una nuova etichetta..."
+	  }, 
+	  "labelSetNameModal": {
+		"description": "Indicare un nome per la nuova etichetta.",
+		"labelName": "Nome etichetta",
+		"makeDefault": "Rendere questa l'etichetta di default?"
+	   }  
   	},
 	"button": {
 		"addBomProject": "Aggiungi un Progetto DBA",
@@ -603,7 +680,9 @@
     	"specs": "Specifiche",
     	"compliance": "Conformità",
     	"cadModels": "Modelli CAD",
-    	"addAnyway": "Aggiungere comunque"
+    	"addAnyway": "Aggiungere comunque",
+		"move": "Spostare",
+        "select": "Selezionare"
 	},
 	"label": {
 		"name": "Nome",
@@ -718,7 +797,11 @@
 		"allowLogin": "Consentire Accesso",
 		"active": "Attivo",
     	"inactive": "Inattivo",
-    	"rowsPerPage": "Righe per pagina"
+    	"rowsPerPage": "Righe per pagina",
+		"symbolName": "Nome Simbolo KiCad",
+    	"footprintName": "Nome Impronta KiCad",
+    	"extensionValue1": "Valore Aggiuntivo 1",
+    	"extensionValue2": "Valore Aggiuntivo 2"
 	},
 	"message": {
 		"noPartsAdded": "Nessun componente aggiunto.",
@@ -819,8 +902,11 @@
 			"editSchematicReferenceId": "Modifica l' <1 />Id(s) di riferimento nello schema usato per identificare il componente sulla serigrafia del PCB. <3 />Ad esempio: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
 			"customDescription": "Fornire una descrizione personale",
 			"customNote": "Fornire una nota personale",
-      		"produceHistory": "Visualizza cronologia di produzione"
-		}
+      		"produceHistory": "Visualizza cronologia di produzione",
+			"movePart": "Spostare i componenti selezionati in un altro tab"
+		},
+		"makerSubscriptionRequired": "Richiede un abbonamento di livello Maker. <1>Clicca qui</1> per dettagli.",
+    	"proSubscriptionRequired": "Richiede un abbonamento di livello Professional. <1>Clicca qui</1> per dettagli."
 	},
 	"footer": {
     		"version": "Version",
