@@ -37,6 +37,21 @@
         public string ResourceSource { get; set; } = "d6ng6g5o3ih7k.cloudfront.net";
 
         /// <summary>
+        /// Default language
+        /// </summary>
+        public string Language { get; set; } = "en";
+
+        /// <summary>
+        /// Default currency
+        /// </summary>
+        public string Currency { get; set; } = "USD";
+
+        /// <summary>
+        /// License key
+        /// </summary>
+        public string LicenseKey { get; set; } = string.Empty;
+
+        /// <summary>
         /// Maximum number of items to cache
         /// </summary>
         public int MaxCacheItems { get; set; } = 1024;

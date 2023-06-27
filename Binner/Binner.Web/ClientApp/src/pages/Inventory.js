@@ -30,6 +30,7 @@ import { StoredFileType } from "../common/StoredFileType";
 import { MountingTypes, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
+import { getSystemSettings } from "../common/applicationSettings";
 import "./Inventory.css";
 
 export function Inventory(props) {
@@ -121,6 +122,7 @@ export function Inventory(props) {
   const disableRendering = useRef(false);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
   const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
+  const [systemSettings, setSystemSettings] = useState({ currency: "USD" });
 
   // todo: find a better alternative, we shouldn't need to do this!
   const partRef = useRef();
@@ -153,6 +155,9 @@ export function Inventory(props) {
       }
     };
     fetchData().catch(console.error);
+    getSystemSettings().then((systemSettings) => {
+      setSystemSettings(systemSettings);
+    });    
     return () => {
       searchDebounced.cancel();
     };
@@ -639,6 +644,7 @@ export function Inventory(props) {
     request.lowStockThreshold = parseInt(part.lowStockThreshold) || 0;
     request.cost = parseFloat(part.cost) || 0.0;
     request.projectId = parseInt(part.projectId) || null;
+    request.currency = part.currency || systemSettings.currency || 'USD';
 
     if (request.partNumber.length === 0) {
       toast.error("Part Number is empty!");
@@ -1238,7 +1244,7 @@ export function Inventory(props) {
                     name="currency"
                     className="label currency"
                     placeholder="$"
-                    value={part.currency || 'USD'}
+                    value={part.currency || systemSettings.currency || 'USD'}
                     options={currencyOptions}
                     onChange={handleChange}
                   />
