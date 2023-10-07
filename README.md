@@ -69,6 +69,7 @@ Proceed to the web interface at https://localhost:8090 to start using Binner!
 The first time you login you will be prompted for a username and password. The default credentials are:
 
 Username: _admin_
+
 Password: _admin_
 
 ### Installation on Ubuntu
