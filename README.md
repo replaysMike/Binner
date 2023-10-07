@@ -64,6 +64,13 @@ To run as a console application:
 
 Proceed to the web interface at https://localhost:8090 to start using Binner!
 
+### Login
+
+The first time you login you will be prompted for a username and password. The default credentials are:
+
+Username: _admin_
+Password: _admin_
+
 ### Installation on Ubuntu
 
 Download the ubuntu.14.04-x64.tar.gz from the [latest release](https://github.com/replaysMike/Binner/releases) [![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/).
