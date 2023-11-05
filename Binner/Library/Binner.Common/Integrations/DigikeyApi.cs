@@ -123,7 +123,7 @@ namespace Binner.Common.Integrations
                 try
                 {
                     // set what fields we want from the API
-                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Products/", partNumber);
+                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Products/", HttpUtility.UrlEncode(partNumber));
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
