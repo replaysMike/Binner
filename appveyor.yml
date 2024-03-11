@@ -1,9 +1,9 @@
 version: 2.6.{build}
 pull_requests:
   do_not_increment_build_number: true
-branches:
-  only:
-  - master
+#branches:
+  #only:
+  #- master
 skip_branch_with_pr: true
 image: Visual Studio 2022
 dotnet_csproj:
@@ -25,3 +25,4 @@ cache:
 build_script:
 - ps: >-
     .\Scripts\appveyor-build.ps1
+test: off
