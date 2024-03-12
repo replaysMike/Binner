@@ -409,6 +409,7 @@ export default function PartsGrid2Memoized(props) {
             onColumnOrderChange={handleColumnOrderChange}
             onSortingChange={handleSortChange}
             state={{ 
+              showProgressBars: isLoading,
               columnVisibility, 
               columnOrder,
               sorting

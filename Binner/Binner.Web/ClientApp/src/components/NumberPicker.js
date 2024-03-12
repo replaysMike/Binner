@@ -53,10 +53,20 @@ export default class NumberPicker extends Component {
     this.handleWheel = this.handleWheel.bind(this);
     this.validateInput = this.validateInput.bind(this);
     this.handleSetValue = this.handleSetValue.bind(this);
+    this.inputRef = React.createRef();
+    this.preventDefault = e => e.preventDefault();
   }
 
+  componentDidMount() {
+    this.inputRef.current.addEventListener('wheel', this.preventDefault, { passive: true });
+  }
+
+  componentWillUnmount () {
+    this.inputRef.current.removeEventListener('wheel', this.preventDefault, { passive: true });
+}
+
   handleWheel(event, v) {
-    event.preventDefault();
+    event.stopPropagation();
     const direction = event.deltaY !== 0 ? (event.deltaY > 0 ? 1 : -1) : 0;
     let currentValue = event.currentTarget.value.replace(",", ".");
     let stepSize = this.props.step;
@@ -74,6 +84,7 @@ export default class NumberPicker extends Component {
       default:
         break;
     }
+    return false;
   }
 
   handleAction(event, v) {
@@ -151,6 +162,7 @@ export default class NumberPicker extends Component {
         <Button {...display} type="button" icon="minus" onClick={this.handleAction} name={DECREASE_VALUE} style={style.buttonLeft} disabled={value <= min} />
         <input
           type="text"
+          className="noscroll"
           name={name}
           min={min}
           max={max}
@@ -164,6 +176,7 @@ export default class NumberPicker extends Component {
           onWheel={this.handleWheel}
           style={style.input}
           autoComplete={autoComplete}
+          ref={this.inputRef}
         />
         <Button {...display} type="button" icon="plus" onClick={this.handleAction} name={INCREASE_VALUE} style={style.buttonRight} disabled={value >= max} />
       </Input>
