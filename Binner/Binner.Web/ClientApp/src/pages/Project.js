@@ -335,7 +335,7 @@ export function Project(props) {
   };
 
   return (
-    <div>
+    <div className="contentwrapper">
 			<Breadcrumb>
         <Breadcrumb.Section link onClick={() => props.history("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -452,7 +452,7 @@ export function Project(props) {
 					</Table>
 				</Segment>
 
-        <Segment disabled={pageDisabled} style={{minHeight: '500px'}}>
+        <Segment disabled={pageDisabled} style={{minHeight: '100px'}}>
 					<h2 id="history">{t('page.project.produceHistory', "Production History")}</h2>
 					<Table>
 						<Table.Header>

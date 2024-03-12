@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Breadcrumb, Button, Icon } from "semantic-ui-react";
@@ -22,7 +22,7 @@ export function LowInventory (props) {
   const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(-1);
+  const [pageSize, setPageSize] = useState(25);
   const [loading, setLoading] = useState(true);
   const [totalRecords, setTotalRecords] = useState(0);
   const [renderIsDirty, setRenderIsDirty] = useState(true);
@@ -33,7 +33,7 @@ export function LowInventory (props) {
     setInitComplete(true);
   };
 
-  const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
+  const loadParts = useCallback(async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
     const response = await fetchApi(
       `api/part/low?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by?.join(',')}&value=${byValue?.join(',')}`
     );
@@ -54,9 +54,10 @@ export function LowInventory (props) {
     setTotalRecords(data.totalItems);
     setLoading(false);
     setRenderIsDirty(!renderIsDirty);
-  };
+  }, [filterBy, filterByValue, pageSize, sortBy, sortDirection]);
 
-  useEffect(() => {
+  /*useEffect(() => {
+    console.log('useEffect 1', byParam, valueParam, initComplete);
     if (pageSize === -1) return;
     if (by && by.length > 0) {
       // likewise, clear keyword if we're in a bin search
@@ -74,11 +75,11 @@ export function LowInventory (props) {
     return () => {
       LowInventory.abortController.abort();
     };
-  }, [byParam, valueParam, initComplete]);
+  }, [byParam, valueParam]);*/
 
   useEffect(() => {
     loadParts(1, true, filterBy, filterByValue, pageSize, sortBy, sortDirection);
-  }, [filterBy, filterByValue]);
+  }, [filterBy, filterByValue, pageSize, sortBy, sortDirection, loadParts]);
 
   const handleNextPage = async (e, page) => {
     await loadParts(page, true);
