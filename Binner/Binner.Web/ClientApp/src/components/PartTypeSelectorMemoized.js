@@ -317,11 +317,11 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-        {partType && partType?.partTypeId > 0 && <div style={{ position: 'absolute', right: '10px', top: '6px', zIndex: '99999', padding: '2px', backgroundColor: '#fff', cursor: 'pointer' }} onClick={handleClear}>
-          <Icon name="delete" size="small" style={{ padding: '0', margin: '0', lineHeight: '1em' }} />
+        {partType && partType?.partTypeId > 0 && <div style={{ position: 'absolute', right: '10px', top: '6px', zIndex: '2', padding: '2px', backgroundColor: '#fff', cursor: 'pointer' }} onClick={handleClear}>
+          <Icon name="times" circular link size="small" className="clearIcon" style={{ opacity: '0.5', padding: '0', margin: '0', lineHeight: '1em', fontSize: '0.6em' }} />
         </div>}
       </div>);
-  }, [partType, internalPartTypes, internalPartTypesFiltered, expandedNodeIds]);
+  }, [partType, internalPartTypes, internalPartTypesFiltered, expandedNodeIds, loading]);
 
   return (
     <>
