@@ -12,7 +12,7 @@
 
 .ui.icon.input>i.icon.clearIcon {
 	cursor: pointer;
-	z-index: 99999;
+	z-index: 1;
 	top: 1.45em;
 	transition-property: opacity;
 	transition-duration: 0.2s;
