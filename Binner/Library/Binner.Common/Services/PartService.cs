@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Part = Binner.Model.Part;
@@ -195,28 +196,27 @@ namespace Binner.Common.Services
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
             if (!digikeyApi.IsEnabled)
-                return ServiceResult<CategoriesResponse>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
+                return ServiceResult<CategoriesResponse?>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             var apiResponse = await digikeyApi.GetCategoriesAsync();
             if (apiResponse.RequiresAuthentication)
-                return ServiceResult<CategoriesResponse>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                return ServiceResult<CategoriesResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
             else if (apiResponse.Errors?.Any() == true)
-                return ServiceResult<CategoriesResponse>.Create(apiResponse.Errors, apiResponse.ApiName);
+                return ServiceResult<CategoriesResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
 
             if (apiResponse.Response != null)
             {
                 var digikeyResponse = (CategoriesResponse)apiResponse.Response;
-                return ServiceResult<CategoriesResponse>.Create(digikeyResponse);
+                return ServiceResult<CategoriesResponse?>.Create(digikeyResponse);
             }
 
-            return ServiceResult<CategoriesResponse>.Create("Invalid response received", apiResponse.ApiName);
+            return ServiceResult<CategoriesResponse?>.Create("Invalid response received", apiResponse.ApiName);
         }
 
         /// <summary>
         /// Get an external order
         /// </summary>
-        /// <param name="orderId"></param>
-        /// <param name="supplier"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         public async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
@@ -247,7 +247,7 @@ namespace Binner.Common.Services
                 return ServiceResult<ExternalOrderResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
             else if (apiResponse.Errors?.Any() == true)
                 return ServiceResult<ExternalOrderResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
-            
+
             var messages = new List<Model.Responses.Message>();
             var digikeyResponse = (OrderSearchResponse?)apiResponse.Response ?? new OrderSearchResponse();
 
@@ -505,7 +505,7 @@ namespace Binner.Common.Services
                     OrderDate = mouserOrderResponse.OrderDate,
                     Currency = mouserOrderResponse.CurrencyCode,
                     CustomerId = mouserOrderResponse.BuyerName,
-                    Amount = double.Parse(mouserOrderResponse.SummaryDetail?.OrderTotal.Replace("$","") ?? "0"),
+                    Amount = double.Parse(mouserOrderResponse.SummaryDetail?.OrderTotal.Replace("$", "") ?? "0"),
                     TrackingNumber = mouserOrderResponse.DeliveryDetail?.ShippingMethodName,
                     Messages = messages,
                     Parts = commonParts
@@ -819,6 +819,7 @@ namespace Binner.Common.Services
                 return ServiceResult<PartResults>.Create(response);
             }
 
+            var apiResponses = new Dictionary<string, Model.Integrations.ApiResponseState>();
             var datasheets = new List<string>();
             var swarmResponse = new SwarmApi.Response.SearchPartResponse();
             var digikeyResponse = new KeywordSearchResponse();
@@ -829,7 +830,18 @@ namespace Binner.Common.Services
 
             if (digikeyApi.Configuration.IsConfigured)
             {
-                var apiResponse = await digikeyApi.SearchAsync(searchKeywords, partType, mountingType);
+                IApiResponse? apiResponse = null;
+                try
+                {
+                    apiResponse = await digikeyApi.SearchAsync(searchKeywords, partType, mountingType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"[{nameof(DigikeyApi)}]: {ex.GetBaseException().Message}");
+                    apiResponse = new ApiResponse(new List<string> { ex.GetBaseException().Message }, nameof(DigikeyApi));
+                }
+                apiResponses.Add(nameof(DigikeyApi), new Model.Integrations.ApiResponseState(false, apiResponse));
+
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                 if (apiResponse.Warnings?.Any() == true)
@@ -839,7 +851,7 @@ namespace Binner.Common.Services
                 if (apiResponse.Errors?.Any() == true)
                 {
                     _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
-                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    // return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 }
 
                 digikeyResponse = (KeywordSearchResponse?)apiResponse.Response;
@@ -852,10 +864,19 @@ namespace Binner.Common.Services
                         if (isNumber)
                         {
                             var barcode = searchKeywords;
-                            var barcodeResult = await GetBarcodeInfoProductAsync(barcode, ScannedBarcodeType.Product);
-                            digikeyResponse = new KeywordSearchResponse();
-                            if (barcodeResult.Response != null)
-                                digikeyResponse.Products.Add(barcodeResult.Response);
+                            IServiceResult<Product?> barcodeResult = null;
+                            try
+                            {
+                                barcodeResult = await GetBarcodeInfoProductAsync(barcode, ScannedBarcodeType.Product);
+                                digikeyResponse = new KeywordSearchResponse();
+                                if (barcodeResult.Response != null)
+                                    digikeyResponse.Products.Add(barcodeResult.Response);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, $"[{nameof(DigikeyApi)}]: {ex.GetBaseException().Message}");
+                                apiResponse.Errors.Add($"Error fetching barcode info on '{WebUtility.HtmlEncode(barcode)}': {ex.GetBaseException().Message}");
+                            }
                         }
                     }
 
@@ -874,12 +895,21 @@ namespace Binner.Common.Services
                                 if (!string.IsNullOrEmpty(supplierPartNumber))
                                 {
                                     // try looking it up via the digikey part number
-                                    var partResponse = await digikeyApi.GetProductDetailsAsync(supplierPartNumber);
-                                    if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                                    IApiResponse? partResponse = null;
+                                    try
                                     {
-                                        var part = (Product?)partResponse.Response;
-                                        if (part != null)
-                                            digikeyResponse.Products.Add(part);
+                                        partResponse = await digikeyApi.GetProductDetailsAsync(supplierPartNumber);
+                                        if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                                        {
+                                            var part = (Product?)partResponse.Response;
+                                            if (part != null)
+                                                digikeyResponse.Products.Add(part);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, $"[{nameof(DigikeyApi)}]: {ex.GetBaseException().Message}");
+                                        apiResponse.Errors.Add($"Error fetching product details on '{WebUtility.HtmlEncode(supplierPartNumber)}': {ex.GetBaseException().Message}");
                                     }
                                 }
                             }
@@ -891,22 +921,48 @@ namespace Binner.Common.Services
                     {
                         var supplierPartNumber = searchKeywords;
                         // try looking it up via the digikey part number
-                        var partResponse = await digikeyApi.GetProductDetailsAsync(supplierPartNumber);
-                        if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                        try
                         {
-                            var part = (Product?)partResponse.Response;
-                            if (part != null)
-                                digikeyResponse.Products.Add(part);
+                            var partResponse = await digikeyApi.GetProductDetailsAsync(supplierPartNumber);
+                            if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
+                            {
+                                var part = (Product?)partResponse.Response;
+                                if (part != null)
+                                    digikeyResponse.Products.Add(part);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"[{nameof(DigikeyApi)}]: {ex.GetBaseException().Message}");
+                            apiResponse.Errors.Add($"Error fetching product details on supplier part number '{WebUtility.HtmlEncode(supplierPartNumbers)}': {ex.GetBaseException().Message}");
+
                         }
                     }
+
+                    apiResponses[nameof(DigikeyApi)].IsSuccess = digikeyResponse.Products.Any();
                 }
             }
 
             if (mouserApi.Configuration.IsConfigured)
             {
-                var apiResponse = await mouserApi.SearchAsync(searchKeywords, partType, mountingType);
+                IApiResponse? apiResponse = null;
+                try
+                {
+                    apiResponse = await mouserApi.SearchAsync(searchKeywords, partType, mountingType);
+                }
+                catch (MouserErrorsException ex)
+                {
+                    _logger.LogError(ex, $"[{nameof(MouserApi)}]: {string.Join(", ", ex.Errors)}");
+                    apiResponse = new ApiResponse(ex.Errors.Select(x => x.Message).ToList(), nameof(MouserApi));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"[{nameof(MouserApi)}]: {ex.GetBaseException().Message}");
+                    apiResponse = new ApiResponse(new List<string> { ex.GetBaseException().Message }, nameof(MouserApi));
+                }
+                apiResponses.Add(nameof(MouserApi), new Model.Integrations.ApiResponseState(false, apiResponse));
                 if (apiResponse.RequiresAuthentication)
-                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                    return ServiceResult<PartResults?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                 if (apiResponse.Warnings?.Any() == true)
                 {
                     _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
@@ -914,15 +970,26 @@ namespace Binner.Common.Services
                 if (apiResponse.Errors?.Any() == true)
                 {
                     _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
-                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 }
 
                 mouserResponse = (SearchResultsResponse?)apiResponse.Response;
+                apiResponses[nameof(MouserApi)].IsSuccess = mouserResponse?.SearchResults?.Parts?.Any() == true;
             }
 
             if (nexarApi.Configuration.IsConfigured)
             {
-                var apiResponse = await nexarApi.SearchAsync(searchKeywords, partType, mountingType);
+                IApiResponse? apiResponse = null;
+                try
+                {
+                    apiResponse = await nexarApi.SearchAsync(searchKeywords, partType, mountingType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"[{nameof(NexarApi)}]: {ex.GetBaseException().Message}");
+                    apiResponse = new ApiResponse(new List<string> { ex.GetBaseException().Message }, nameof(NexarApi));
+                }
+                apiResponses.Add(nameof(NexarApi), new Model.Integrations.ApiResponseState(false, apiResponse));
                 if (apiResponse.RequiresAuthentication)
                     return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                 if (apiResponse.Warnings?.Any() == true)
@@ -932,15 +999,28 @@ namespace Binner.Common.Services
                 if (apiResponse.Errors?.Any() == true)
                 {
                     _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
-                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 }
                 nexarResponse = (NexarPartResults?)apiResponse.Response;
+                apiResponses[nameof(NexarApi)].IsSuccess = nexarResponse?.Parts?.Any() == true;
             }
 
             if (swarmApi.Configuration.IsConfigured)
             {
-                //var apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
-                var apiResponse = await swarmApi.SearchAsync(partNumber);
+                IApiResponse? apiResponse = null;
+                //apiResponse = await swarmApi.SearchAsync(partNumber, partType, mountingType);
+                try
+                {
+                    apiResponse = await swarmApi.SearchAsync(partNumber);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"[{nameof(SwarmApi)}]: {ex.GetBaseException().Message}");
+                    apiResponse = new ApiResponse(new List<string> { ex.GetBaseException().Message }, nameof(SwarmApi));
+
+                }
+                apiResponses.Add(nameof(SwarmApi), new Model.Integrations.ApiResponseState(false, apiResponse));
+
                 if (apiResponse.Warnings?.Any() == true)
                 {
                     _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
@@ -948,15 +1028,26 @@ namespace Binner.Common.Services
                 if (apiResponse.Errors?.Any() == true)
                 {
                     _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
-                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 }
 
                 swarmResponse = (SwarmApi.Response.SearchPartResponse?)apiResponse.Response ?? new SwarmApi.Response.SearchPartResponse();
+                apiResponses[nameof(SwarmApi)].IsSuccess = swarmResponse.Parts?.Any() == true;
             }
 
             if (arrowApi.Configuration.IsConfigured)
             {
-                var apiResponse = await arrowApi.SearchAsync(searchKeywords, partType, mountingType);
+                IApiResponse? apiResponse = null;
+                try
+                {
+                    apiResponse = await arrowApi.SearchAsync(searchKeywords, partType, mountingType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"[{nameof(ArrowApi)}]: {ex.GetBaseException().Message}");
+                    apiResponse = new ApiResponse(new List<string> { ex.GetBaseException().Message }, nameof(ArrowApi));
+                }
+                apiResponses.Add(nameof(ArrowApi), new Model.Integrations.ApiResponseState(false, apiResponse));
                 if (apiResponse.Warnings?.Any() == true)
                 {
                     _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
@@ -964,10 +1055,26 @@ namespace Binner.Common.Services
                 if (apiResponse.Errors?.Any() == true)
                 {
                     _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
-                    return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                    //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
                 }
 
                 arrowResponse = (ArrowResponse?)apiResponse.Response;
+                apiResponses[nameof(ArrowApi)].IsSuccess = arrowResponse?.ItemServiceResult?.Data?.Any() == true;
+            }
+
+            if (!apiResponses.Any(x => x.Value.IsSuccess))
+            {
+                if (apiResponses.Any(x => x.Value.Response?.Errors.Any() == true))
+                {
+                    // there are errors, and no successful responses
+                    var errors = apiResponses
+                        .Where(x => x.Value.Response != null && x.Value.Response.Errors.Any())
+                        .SelectMany(x => x.Value.Response!.Errors.Select(errorMessage => $"[{x.Value.Response.ApiName}] {errorMessage}")).ToList();
+                    var apiNames = apiResponses.Where(x => x.Value.Response?.Errors.Any() == true).GroupBy(x => x.Key);
+                    var apiName = "Multiple";
+                    if (apiNames.Count() == 1) apiName = apiNames.First().Key;
+                    return ServiceResult<PartResults>.Create(errors, apiName);
+                }
             }
 
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
@@ -1032,7 +1139,12 @@ namespace Binner.Common.Services
             response.ProductImages = productImageUrls.DistinctBy(x => x.Value).ToList();
             response.Datasheets = datasheetUrls.DistinctBy(x => x.Value).ToList();
 
-            return ServiceResult<PartResults>.Create(response);
+            var serviceResult = ServiceResult<PartResults>.Create(response);
+            if (apiResponses.Any(x => x.Value.Response != null && x.Value.Response.Errors.Any()))
+                serviceResult.Errors = apiResponses
+                    .Where(x => x.Value.Response != null && x.Value.Response.Errors.Any())
+                    .SelectMany(x => x.Value.Response!.Errors.Select(errorMessage => $"[{x.Value.Response.ApiName}] {errorMessage}"));
+            return serviceResult;
 
             void ProcessSwarmResponse(string partNumber, PartResults response, SwarmApi.Response.SearchPartResponse swarmResponse, ICollection<PartType> partTypes, List<NameValuePair<string>> productImageUrls, List<NameValuePair<DatasheetSource>> datasheetUrls)
             {
