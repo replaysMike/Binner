@@ -86,7 +86,10 @@ export function LowInventory (props) {
   };
 
   const handlePartClick = (e, part) => {
-    props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
+    if (part.partId)
+      props.history(`/inventory/${encodeURIComponent(part.partNumber)}:${part.partId}`);
+    else
+      props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
   const removeFilter = (e, filterName, filterValue) => {

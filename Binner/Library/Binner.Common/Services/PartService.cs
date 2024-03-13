@@ -89,15 +89,18 @@ namespace Binner.Common.Services
             return await _storageProvider.GetLowStockAsync(request, _requestContext.GetUserContext());
         }
 
-        public async Task<Part?> GetPartAsync(string partNumber)
+        public async Task<Part?> GetPartAsync(GetPartRequest request)
         {
-            return await _storageProvider.GetPartAsync(partNumber, _requestContext.GetUserContext());
+            if (request.PartId > 0)
+                return await _storageProvider.GetPartAsync(request.PartId, _requestContext.GetUserContext());
+            else
+                return await _storageProvider.GetPartAsync(request.PartNumber ?? string.Empty, _requestContext.GetUserContext());
         }
 
-        public async Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber)
+        public async Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(GetPartRequest request)
         {
             var userContext = _requestContext.GetUserContext();
-            var partEntity = await _storageProvider.GetPartAsync(partNumber, userContext);
+            var partEntity = await GetPartAsync(request);
             var storedFiles = new List<StoredFile>();
             if (partEntity != null)
             {
@@ -1082,7 +1085,7 @@ namespace Binner.Common.Services
             var datasheetUrls = new List<NameValuePair<DatasheetSource>>();
 
             // fetch part if it's in inventory
-            var inventoryPart = await GetPartAsync(partNumber);
+            var inventoryPart = await GetPartAsync(new GetPartRequest { PartNumber = partNumber });
             if (inventoryPart != null && !string.IsNullOrEmpty(inventoryPart.DatasheetUrl))
                 datasheetUrls.Add(new NameValuePair<DatasheetSource>(inventoryPart.ManufacturerPartNumber ?? string.Empty, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", inventoryPart.DatasheetUrl, inventoryPart.ManufacturerPartNumber ?? string.Empty, inventoryPart.Description ?? string.Empty, inventoryPart.Manufacturer ?? string.Empty)));
             if (inventoryPart != null)

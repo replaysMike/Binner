@@ -101,3 +101,7 @@
 .MuiSwitch-root:hover {
 	scale: 0.9 !important;
 }
+
+.Mui-TableHeadCell-Content-Labels .Mui-TableHeadCell-Content-Wrapper {
+  padding-right: 2px;
+}
