@@ -182,6 +182,8 @@ export default function PartsGrid2Memoized(props) {
     switch (columnName) {
       case "partNumber":
         return 180;
+      case "partId":
+        return 180;
       case "quantity":
         return 140;
       case "lowStockThreshold":
@@ -268,6 +270,8 @@ export default function PartsGrid2Memoized(props) {
       switch(columnName){
         case 'partNumber':
           return {...def, Cell: ({row}) => (<span><Clipboard text={row.original.partNumber} /> <span className="text-highlight">{row.original.partNumber}</span></span>)};
+        case 'partId':
+          return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.partId.toString()} /> <span className="text-highlight">{row.original.partId}</span></span>) };
         case 'manufacturerPartNumber':
           return {...def, Cell: ({row}) => (<span><Clipboard text={row.original[columnName]} /> {row.original[columnName]}</span>)};
         case 'description':
@@ -489,7 +493,7 @@ PartsGrid2Memoized.propTypes = {
 
 PartsGrid2Memoized.defaultProps = {
   loading: true,
-  columns: "partNumber,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
+  columns: "partNumber,partId,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
   defaultVisibleColumns: "partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
   page: 1,
   totalPages: 1,

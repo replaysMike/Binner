@@ -134,7 +134,16 @@ export function Inventory(props) {
   partTypesRef.current = partTypes;
 
   useEffect(() => {
-    const partNumberStr = props.params.partNumber;
+    const partNumberRaw = props.params.partNumber;
+    let partNumberStr = partNumberRaw?.trim();
+    let partId = 0;
+    if (partNumberRaw?.includes(':')) {
+      const parts = partNumberRaw.split(':');
+      if (parts.length >= 1)
+        partNumberStr = parts[0].trim();
+      if (parts.length >= 2)
+        partId = parseInt(parts[1].trim());
+    }
     const newIsEditing = partNumberStr?.length > 0;
     setIsEditing(newIsEditing);
     const fetchData = async () => {
@@ -143,7 +152,7 @@ export function Inventory(props) {
       await fetchPartTypes();
       await fetchRecentRows();
       if (partNumberStr) {
-        var loadedPart = await fetchPart(partNumberStr);
+        var loadedPart = await fetchPart(partNumberStr, partId);
         if (newIsEditing) setInputPartNumber(partNumberStr);
         setInputPartNumber(partNumberStr);
         await fetchPartMetadataAndInventory(partNumberStr, loadedPart || part);
@@ -528,12 +537,16 @@ export function Inventory(props) {
     setPart(part);
   };
 
-  const fetchPart = async (partNumber) => {
+  const fetchPart = async (partNumber, partId) => {
     Inventory.partAbortController.abort();
     Inventory.partAbortController = new AbortController();
     setLoadingPart(true);
     try {
-      const response = await fetchApi(`api/part?partNumber=${encodeURIComponent(partNumber.trim())}`, {
+      let query = `partNumber=${encodeURIComponent(partNumber.trim())}`;
+      const validPartId = typeof partId === "number" ? partId : partId && parseInt(partId.trim());
+      if (validPartId > 0)
+        query += `&partId=${partId}`;
+      const response = await fetchApi(`api/part?${query}`, {
         signal: Inventory.partAbortController.signal
       });
       const { data } = response;
@@ -851,7 +864,7 @@ export function Inventory(props) {
     e.stopPropagation();
     if (systemSettings.printer.printMode === 0) {
       // direct print
-      await fetchApi(`api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}&generateImageOnly=false`, { method: "POST" });
+      await fetchApi(`api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}&partId=${part.partId}&generateImageOnly=false`, { method: "POST" });
     } else {
       window.print();
     }
@@ -881,8 +894,11 @@ export function Inventory(props) {
 
   const handleRecentPartClick = async (e, part) => {
     setPart(part);
-    props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
-    await fetchPart(part.partNumber);
+    if (part.partId)
+      props.history(`/inventory/${encodeURIComponent(part.partNumber)}:${part.partId}`);
+    else
+      props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
+    await fetchPart(part.partNumber, part.partId);
   };
 
   const handleSaveScannedParts = async (e, scannedParts) => {
@@ -1477,7 +1493,7 @@ export function Inventory(props) {
           <Breadcrumb.Divider />
           <Breadcrumb.Section active>{isEditing ? part.partNumber : t('page.inventory.addtitle', "Add Inventory")}</Breadcrumb.Section>
         </Breadcrumb>
-        {part.partNumber && <Image src={`api/part/preview?partNumber=${encodeURIComponent(part.partNumber.trim())}&token=${getImagesToken()}`} id="printarea" width={180} floated="right" style={{ marginTop: "0px" }} />}
+        {part.partNumber && <Image src={`api/part/preview?partNumber=${encodeURIComponent(part.partNumber.trim())}&partId=${part.partId}&token=${getImagesToken()}`} id="printarea" width={180} floated="right" style={{ marginTop: "0px" }} />}
         <div style={{ display: 'flex' }}>
           <FormHeader name={title} to=".." />
           {!isEditing &&

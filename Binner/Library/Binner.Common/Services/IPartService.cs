@@ -48,16 +48,16 @@ namespace Binner.Common.Services
         /// <summary>
         /// Get a part by part number
         /// </summary>
-        /// <param name="partNumber"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        Task<Part?> GetPartAsync(string partNumber);
+        Task<Part?> GetPartAsync(GetPartRequest request);
 
         /// <summary>
         /// Get a part with its associated stored files
         /// </summary>
-        /// <param name="partNumber"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber);
+        Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(GetPartRequest request);
 
         /// <summary>
         /// Get all parts

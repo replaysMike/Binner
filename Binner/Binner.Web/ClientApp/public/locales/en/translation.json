@@ -506,6 +506,7 @@
       "footprintName": "Footprint Name",
       "extensionValue1": "Extension Value 1",
       "extensionValue2": "Extension Value 2",
+      "partId": "Part Id",
       "ok": "Ok",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
@@ -803,7 +804,8 @@
     "symbolName": "KiCad Symbol Name",
     "footprintName": "KiCad Footprint Name",
     "extensionValue1": "Extension Value 1",
-    "extensionValue2": "Extension Value 2"
+    "extensionValue2": "Extension Value 2",
+    "partId": "Part Id"
   },
   "message": {
     "noPartsAdded": "No parts added.",
