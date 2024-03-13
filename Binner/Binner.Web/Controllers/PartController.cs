@@ -450,24 +450,31 @@ namespace Binner.Web.Controllers
         [HttpGet("info")]
         public async Task<IActionResult> GetPartInfoAsync([FromQuery] string partNumber, [FromQuery] string partTypeId = "", [FromQuery] string mountingTypeId = "", [FromQuery] string supplierPartNumbers = "")
         {
-            var partType = partTypeId;
-            var mountingType = mountingTypeId;
-            if (int.TryParse(partTypeId, out var parsedPartTypeId))
+            try
             {
-                var partTypeWithName = await _partTypeService.GetPartTypeAsync(parsedPartTypeId);
-                if (partTypeWithName != null) partType = partTypeWithName.Name;
-            }
-            if (int.TryParse(mountingTypeId, out var parsedMountingTypeId))
-            {
-                if (Enum.IsDefined(typeof(MountingType), parsedMountingTypeId))
+                var partType = partTypeId;
+                var mountingType = mountingTypeId;
+                if (int.TryParse(partTypeId, out var parsedPartTypeId))
                 {
-                    var mountingTypeEnum = (MountingType)parsedMountingTypeId;
-                    mountingType = mountingTypeEnum.ToString();
+                    var partTypeWithName = await _partTypeService.GetPartTypeAsync(parsedPartTypeId);
+                    if (partTypeWithName != null) partType = partTypeWithName.Name;
                 }
-            }
+                if (int.TryParse(mountingTypeId, out var parsedMountingTypeId))
+                {
+                    if (Enum.IsDefined(typeof(MountingType), parsedMountingTypeId))
+                    {
+                        var mountingTypeEnum = (MountingType)parsedMountingTypeId;
+                        mountingType = mountingTypeEnum.ToString();
+                    }
+                }
 
-            var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType, supplierPartNumbers);
-            return Ok(metadata);
+                var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType, supplierPartNumbers);
+                return Ok(metadata);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to fetch part information! ", ex));
+            }
         }
 
         /// <summary>

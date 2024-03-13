@@ -112,7 +112,7 @@ export function Inventory(props) {
   const [loadingPartTypes, setLoadingPartTypes] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [partMetadataIsSubscribed, setPartMetadataIsSubscribed] = useState(false);
-  const [partMetadataError, setPartMetadataError] = useState(null);
+  const [partMetadataErrors, setPartMetadataErrors] = useState([]);
   const [saveMessage, setSaveMessage] = useState("");
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
@@ -139,7 +139,7 @@ export function Inventory(props) {
     setIsEditing(newIsEditing);
     const fetchData = async () => {
       setPartMetadataIsSubscribed(false);
-      setPartMetadataError(null);
+      setPartMetadataErrors([]);
       await fetchPartTypes();
       await fetchRecentRows();
       if (partNumberStr) {
@@ -179,7 +179,7 @@ export function Inventory(props) {
     Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
     setPartMetadataIsSubscribed(false);
-    setPartMetadataError(null);
+    setPartMetadataErrors([]);
     try {
       const includeInventorySearch = !pageHasParameters;
       const { data, existsInInventory } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
@@ -328,11 +328,7 @@ export function Inventory(props) {
     if (!data) return;
 
     if (data.errors && data.errors.length > 0) {
-      setPartMetadataError(`Error: [${data.apiName}] ${data.errors.join()}`);
-      setMetadataParts([]);
-      setInfoResponse({});
-      setLoadingPartMetadata(false);
-      return;
+      setPartMetadataErrors(data.errors);
     }
 
     let metadataParts = [];
@@ -489,7 +485,7 @@ export function Inventory(props) {
         // barcode found
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
-          setPartMetadataError(null);
+          setPartMetadataErrors([]);
           if (!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable });
           if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: partInfo.quantityAvailable });
 
@@ -501,7 +497,7 @@ export function Inventory(props) {
         // no barcode info found, try searching the part number
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
-          setPartMetadataError(null);
+          setPartMetadataErrors([]);
           let newQuantity = parseInt(input.value?.quantity) || DefaultQuantity;
           if (isNaN(newQuantity)) newQuantity = 1;
           const newPart = {
@@ -780,7 +776,7 @@ export function Inventory(props) {
     //e.preventDefault();
     //e.stopPropagation();
     setPartMetadataIsSubscribed(false);
-    setPartMetadataError(null);
+    setPartMetadataErrors([]);
     let searchPartNumber = control.value;
 
     if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
@@ -806,7 +802,7 @@ export function Inventory(props) {
     e.preventDefault();
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
-    setPartMetadataError(null);
+    setPartMetadataErrors([]);
     const updatedPart = { ...part };
 
     updatedPart[control.name] = control.value;
@@ -985,10 +981,12 @@ export function Inventory(props) {
               </div>
             </div>
           )}
-          {partMetadataError && (
-            <div className="page-error" onClick={() => setPartMetadataError(null)}>
-              <Icon name="close" /> {partMetadataError}
-            </div>
+          {partMetadataErrors?.length > 0 && (
+            partMetadataErrors.map((error, key) => (
+              <div key={key} className="page-error" onClick={() => setPartMetadataErrors(_.filter(partMetadataErrors, i => i !== error))}>
+                <Icon name="close" /> {error}
+              </div>
+            ))
           )}
         </div>
 
@@ -1421,7 +1419,7 @@ export function Inventory(props) {
         </Dimmer.Dimmable>
 
       </>);
-  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPart, loadingPartMetadata, partMetadataError, isEditing, allPartTypes, isDirty, handlePartTypeChange]);
+  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPart, loadingPartMetadata, partMetadataErrors, isEditing, allPartTypes, isDirty, handlePartTypeChange]);
 
   return (
     <div className="inventory mask">

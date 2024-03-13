@@ -193,7 +193,7 @@ namespace Binner.Common.Integrations
     public class MouserErrorsException : Exception
     {
         public ICollection<Error> Errors { get; set; }
-        public MouserErrorsException(ICollection<Error> errors)
+        public MouserErrorsException(ICollection<Error> errors) : base(errors.FirstOrDefault()?.Message)
         {
             Errors = errors;
         }

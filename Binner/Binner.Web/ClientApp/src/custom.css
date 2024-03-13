@@ -605,7 +605,7 @@ section.formHeader {
 }
 
 .page-banner {
-    height: 30px;
+    min-height: 30px;
 }
 
 .page-notice {
@@ -648,6 +648,7 @@ section.formHeader {
     cursor: pointer;
 	width: 100%;
 	max-height: 28px;
+  margin-bottom: 1px;
 }
 
 .page-error div {
