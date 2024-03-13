@@ -65,6 +65,9 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (entity == null)
                 return false;
             EnforceIntegrityCreate(entity, userContext);
+            await context.PartSuppliers.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
+            await context.ProjectPartAssignments.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
+            await context.StoredFiles.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
             context.Parts.Remove(entity);
             await context.SaveChangesAsync();
             _partTypesCache.InvalidateCache();
