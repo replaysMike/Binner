@@ -896,3 +896,33 @@ h1.pro::after {
     text-align: center;
     margin-left: 2px;
 }
+
+ul.errors {
+  list-style-type: none;
+  padding: 0;
+  margin-left: 5px;
+}
+
+ul.errors li {
+  color: #999;
+}
+
+ul.errors li:before {
+  content: "\f06a";
+  font-family: Icons;
+  font-style: normal;
+  font-weight: 400;
+  padding-right: 10px;
+}
+
+ul.errors li.error {
+  color: #c00;
+}
+
+ul.errors li.error:before {
+  content: "\f071";
+  font-family: Icons;
+  font-style: normal;
+  font-weight: 400;
+  padding-right: 10px;
+}
