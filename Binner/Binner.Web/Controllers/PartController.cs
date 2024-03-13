@@ -480,8 +480,15 @@ namespace Binner.Web.Controllers
         {
             if (string.IsNullOrEmpty(request.OrderId)) return BadRequest("No OrderId specified");
             if (string.IsNullOrEmpty(request.Supplier)) return BadRequest("No Supplier specified");
-            var metadata = await _partService.GetExternalOrderAsync(request.OrderId, request.Supplier, request.Username, request.Password);
-            return Ok(metadata);
+            try
+            {
+                var metadata = await _partService.GetExternalOrderAsync(request);
+                return Ok(metadata);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to import order! ", ex));
+            }
         }
 
         /// <summary>

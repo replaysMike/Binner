@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -20,9 +20,12 @@ export function OrderImport(props) {
   const [orderImportSearchResult, setOrderImportSearchResult] = useState(null);
   const [importResult, setImportResult] = useState(null);
   const [error, setError] = useState(null);
+  const [apiMessages, setApiMessages] = useState([]);
   const [message, setMessage] = useState(null);
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [enableArrowPrepareEmail, setEnableArrowPrepareEmail] = useState(false);
+  const [requestProductInfo, setRequestProductInfo] = useState(true);
+
   const [order, setOrder] = useState({
     orderId: "",
     supplier: "DigiKey",
@@ -122,7 +125,9 @@ export function OrderImport(props) {
       orderId: order.orderId,
       supplier: order.supplier,
       username: order.username,
-      password: order.password
+      password: order.password,
+      // select if we should fetch all product information for each line item in the order
+      requestProductInfo: requestProductInfo
     };
 
     try {
@@ -153,6 +158,7 @@ export function OrderImport(props) {
             setLoading(false);
             toast.error(errorMessage);
           } else {
+            setApiMessages(data.response.messages);
             data.response.parts.forEach((i) => {
               i.selected = true;
             });
@@ -262,6 +268,10 @@ export function OrderImport(props) {
     setOrderImportSearchResult({...orderImportSearchResult});
   };
 
+  const handleToggleRequestProductInfo = () => {
+    setRequestProductInfo(!requestProductInfo);
+  };
+
   const formatTrackingNumber = (trackingNumber) => {
     if (trackingNumber && trackingNumber.includes("https:"))
       return (
@@ -302,6 +312,16 @@ export function OrderImport(props) {
                 </Table>
               </Table.HeaderCell>
             </Table.Row>
+            {order.messages.length > 0  && <Table.Row>
+              <Table.Cell colSpan={10}>
+                <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
+                <ul style={{ marginBottom: '10px' }} className="errors">
+                  {order.messages.map((messageItem, key) => (
+                    <li key={key} className={`${messageItem.isError ? 'error' : ''}`}>{messageItem.isError ? t('label.error', 'Error') + ': ' : ''}{messageItem.description}</li>
+                  ))}
+                </ul>
+              </Table.Cell>
+            </Table.Row>}
             <Table.Row>
               <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
               <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
@@ -353,7 +373,7 @@ export function OrderImport(props) {
 
   const renderImportResult = (importResult) => {
     return (
-      <div>
+      <div>        
           <Table compact celled selectable size="small" className="partstable">
             <Table.Header>
               <Table.Row>
@@ -472,12 +492,24 @@ export function OrderImport(props) {
           </>}
         </Form.Group>
         <div style={{ height: "30px" }}>{message}</div>
+
+        <div style={{marginTop: '20px', marginBottom: '10px'}}>
+          <Popup 
+            wide
+            position="top left"
+            positionFixed
+            content={<p>Enable to fetch all product information available for each item in the order.</p>}
+            trigger={<Checkbox toggle checked={requestProductInfo} name="requestProductInfo" onChange={handleToggleRequestProductInfo} label={t('page.orderImport.requestAllProductInformation', 'Request all product information')} style={{fontSize: '0.8em'}} />}
+          />
+          
+        </div>
         <Button primary onClick={e => getPartsToImport(e, order)} disabled={loading || order.orderId.length === 0}>
           {t('button.search', "Search")}
         </Button>
         <Button onClick={handleClear} disabled={!(orderImportSearchResult?.parts?.length > 0 || importResult?.parts?.length > 0)}>
         {t('button.clear', "Clear")}
         </Button>
+
       </Form>
       <div style={{ marginTop: "20px" }}>
         <Segment style={{ minHeight: "100px" }} className="centered">
