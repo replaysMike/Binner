@@ -12,6 +12,6 @@
     <PackageReference Include="TypeSupport" Version="1.2.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AnySerializer" Version="1.2.5" />
-    <PackageReference Include="AutoMapper" Version="11.0.0" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
   </ItemGroup>
 </Project>

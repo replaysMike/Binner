@@ -48,22 +48,22 @@
     <PackageReference Include="AnyBarcode" Version="1.1.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AnySerializer" Version="1.2.5" />
-    <PackageReference Include="AutoMapper" Version="11.0.0" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="Barcoder" Version="2.0.0" />
     <PackageReference Include="Binner.SwarmApi" Version="1.0.5" />
     <PackageReference Include="libc.hwid" Version="6.0.1" />
-    <PackageReference Include="LightInject" Version="6.4.0" />
+    <PackageReference Include="LightInject" Version="6.6.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nexar.Client.Token" Version="0.1.1" />
     <PackageReference Include="NLog" Version="4.7.13" />
     <PackageReference Include="NPOI" Version="2.6.0" />
