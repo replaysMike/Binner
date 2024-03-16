@@ -37,6 +37,7 @@ export const Settings = (props) => {
   const [saveMessage, setSaveMessage] = useState("");
   const [testing, setTesting] = useState(false);
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
+  const [authorizationApiName, setAuthorizationApiName] = useState('');
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
   const [printModes] = useState([
@@ -730,12 +731,11 @@ export const Settings = (props) => {
         testResult.message = message;
       }
       setApiTestResults([...apiTestResults]);
-      setTesting(false);
     }).catch((err) => {
       toast.error(`Error: ${err}`);
       console.error('Error!', err);
-      setTesting(false);
     });
+    setTesting(false);
   };
 
   const getTestResultIcon = (apiName) => {
@@ -1277,7 +1277,7 @@ export const Settings = (props) => {
                 >
                   {t('button.forgetCredentials', "Forget Credentials")}
                 </Button>}
-              />              
+              />
             </Form.Field>
             <Form.Field>
               <Button
