@@ -483,11 +483,12 @@ export const Settings = (props) => {
         setLoading(false);
         setSettings({ ...data, barcode: {...data.barcode }});
         setSystemSettings(data);
+        
         const digikeyTempSettings = getViewPreference("digikey");
         if (digikeyTempSettings) {
           setSettings({...data, digikey: digikeyTempSettings});
           setIsDirty(true);
-        }        
+        }
       });
     };
 
@@ -586,7 +587,6 @@ export const Settings = (props) => {
             control
           );
       } else {
-        console.log('set printer setting', control.name);
         setControlValue(newSettings.printer, "printer", control);
       }
     } else {
@@ -712,6 +712,7 @@ export const Settings = (props) => {
       const { data } = response;
       const { success, message, authorizationUrl } = data;
       if (authorizationUrl && authorizationUrl.length > 0){
+        setAuthorizationApiName(apiName);
         setAuthorizationUrl(authorizationUrl);
         setConfirmAuthIsOpen(true);
         return;
@@ -781,7 +782,12 @@ export const Settings = (props) => {
         open={confirmAuthIsOpen}
         onCancel={() => setConfirmAuthIsOpen(false)}
         onConfirm={handleAuthRedirect}
-        content={t('page.settings.confirm.mustAuthenticate', "External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.")}
+        content={<p>
+          <Trans i18nKey="page.settings.confirm.mustAuthenticate" name={authorizationApiName}>
+            External Api (<b>{{ name: authorizationApiName }}</b>) is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.
+          </Trans>
+          </p>
+        }
       />
       <Form onSubmit={onSubmit}>
         <Segment loading={loading} color="blue" raised padded>
@@ -1070,9 +1076,9 @@ export const Settings = (props) => {
               {t('page.settings.digikey', "DigiKey")}
             </Header>
             <p>
-            <Trans i18nKey="page.settings.digikeyDescription">
-            Digikey API Keys are free and can be obtained at <a href="https://developer.digikey.com/" target="_blank" rel="noreferrer">https://developer.digikey.com/</a>
-            </Trans>
+              <Trans i18nKey="page.settings.digikeyDescription">
+              Digikey API Keys are free and can be obtained at <a href="https://developer.digikey.com/" target="_blank" rel="noreferrer">https://developer.digikey.com/</a>
+              </Trans>
             </p>
             <Form.Field width={10}>
               <label>{t('page.settings.digikeySupport', "DigiKey Support")}</label>

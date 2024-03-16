@@ -23,6 +23,7 @@ import { PartSuppliersMemoized } from "../components/PartSuppliersMemoized";
 import { MatchingPartsMemoized } from "../components/MatchingPartsMemoized";
 import { DuplicatePartModal } from "../components/DuplicatePartModal";
 import { fetchApi } from "../common/fetchApi";
+import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { formatNumber } from "../common/Utils";
 import { getPartTypeId } from "../common/partTypes";
 import { getImagesToken } from "../common/authentication";
@@ -43,6 +44,19 @@ export function Inventory(props) {
   const MinSearchKeywordLength = 3;
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const getViewPreference = (preferenceName) => {
+    return getLocalData(preferenceName, { settingsName: 'inventory' })
+  };
+
+  const setViewPreference = (preferenceName, value) => {
+    setLocalData(preferenceName, value, { settingsName: 'inventory' });
+  };
+
+  const removeViewPreference = (preferenceName) => {
+    removeLocalData(preferenceName, { settingsName: 'inventory' });
+  };
+
   const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
     helpDisabled: false,
     lastPartTypeId: IcPartType, // IC
@@ -124,6 +138,9 @@ export function Inventory(props) {
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
   const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
   const [systemSettings, setSystemSettings] = useState({ currency: "USD" });
+  const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
+  const [authorizationApiName, setAuthorizationApiName] = useState('');
+  const [authorizationUrl, setAuthorizationUrl] = useState(null);
 
   // todo: find a better alternative, we shouldn't need to do this!
   const partRef = useRef();
@@ -146,6 +163,13 @@ export function Inventory(props) {
     }
     const newIsEditing = partNumberStr?.length > 0;
     setIsEditing(newIsEditing);
+    // restore input data on load, then remove it
+    const digikeyTempSettings = getViewPreference('digikey');
+    if (digikeyTempSettings?.partNumber) {
+      partNumberStr = digikeyTempSettings.partNumber;
+      removeViewPreference('digikey');
+    }
+
     const fetchData = async () => {
       setPartMetadataIsSubscribed(false);
       setPartMetadataErrors([]);
@@ -380,9 +404,17 @@ export function Inventory(props) {
 
       const data = response.data;
       if (data.requiresAuthentication) {
-        // redirect for authentication
-        window.open(data.redirectUrl, "_blank");
-        return { data: null, existsInInventory: false };
+        // notify and redirect for authentication
+        if (data.redirectUrl && data.redirectUrl.length > 0) {
+          setViewPreference('digikey', {
+            partNumber: partNumber,
+          });
+
+          setAuthorizationApiName(data.apiName);
+          setAuthorizationUrl(data.redirectUrl);
+          setConfirmAuthIsOpen(true);
+          return { data: null, existsInInventory: false };
+        }
       }
 
       let existsInInventory = false;
@@ -440,9 +472,13 @@ export function Inventory(props) {
     if (response.responseObject.status === 200) {
       const { data } = response;
       if (data.requiresAuthentication) {
-        // redirect for authentication
-        window.open(data.redirectUrl, "_blank");
-        return;
+        // notify and redirect for authentication
+        if (data.redirectUrl && data.redirectUrl.length > 0) {
+          setAuthorizationApiName(data.apiName);
+          setAuthorizationUrl(data.redirectUrl);
+          setConfirmAuthIsOpen(true);
+          return;
+        }
       }
       if (data.errors && data.errors.length > 0) {
         const errorMessage = data.errors.join("\n");
@@ -662,6 +698,7 @@ export function Inventory(props) {
       return;
     }
 
+    removeViewPreference('digikey');
     const saveMethod = isExisting ? "PUT" : "POST";
     const response = await fetchApi("api/part", {
       method: saveMethod,
@@ -702,6 +739,7 @@ export function Inventory(props) {
   };
 
   const resetForm = (saveMessage = "", clearAll = false) => {
+    removeViewPreference('digikey');
     setIsDirty(false);
     setIsEditing(false);
     setPartExistsInInventory(false);
@@ -975,6 +1013,11 @@ export function Inventory(props) {
     e.preventDefault();
     e.stopPropagation();
     setInputPartNumber(value);
+  };
+
+  const handleAuthRedirect = (e) => {
+    e.preventDefault();
+    window.location.href = authorizationUrl;
   };
 
   /* RENDER */
@@ -1454,7 +1497,19 @@ export function Inventory(props) {
         onConfirm={handleDeletePart}
         content={confirmPartDeleteContent}
       />
-
+      <Confirm
+        className="confirm"
+        header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
+        open={confirmAuthIsOpen}
+        onCancel={() => setConfirmAuthIsOpen(false)}
+        onConfirm={handleAuthRedirect}
+        content={<p>
+          <Trans i18nKey="page.settings.confirm.mustAuthenticate" name={authorizationApiName}>
+            External Api (<b>{{ name: authorizationApiName }}</b>) is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.
+          </Trans>
+        </p>
+        }
+      />
       <BulkScanModal
         isOpen={bulkScanIsOpen}
         onClose={() => setBulkScanIsOpen(false)}

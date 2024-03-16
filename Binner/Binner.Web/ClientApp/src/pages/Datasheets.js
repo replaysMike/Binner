@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import ReactDOM from 'react-dom';
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import _ from 'underscore';
 import debounce from "lodash.debounce";
-import { Form, Segment, Breadcrumb, Button } from 'semantic-ui-react';
+import { Icon, Form, Segment, Breadcrumb, Button, Confirm } from 'semantic-ui-react';
 import { FormHeader } from "../components/FormHeader";
 import ClearableInput from "../components/ClearableInput";
 import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
@@ -53,6 +53,9 @@ export function Datasheets (props) {
   const [loadingPartTypes, setLoadingPartTypes] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
   const [allPartTypes, setAllPartTypes] = useState([]);
+  const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
+  const [authorizationApiName, setAuthorizationApiName] = useState('');
+  const [authorizationUrl, setAuthorizationUrl] = useState(null);
   const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
 
   const fetchPartMetadata = async (part) => {
@@ -66,7 +69,9 @@ export function Datasheets (props) {
       const responseData = response.data;
       if (responseData.requiresAuthentication) {
         // redirect for authentication
-        window.open(responseData.redirectUrl, '_blank');
+        setAuthorizationApiName(responseData.apiName);
+        setAuthorizationUrl(responseData.redirectUrl);
+        setConfirmAuthIsOpen(true);
         return;
       }
       const { response: data } = responseData;
@@ -257,6 +262,11 @@ export function Datasheets (props) {
     }
   };
 
+  const handleAuthRedirect = (e) => {
+    e.preventDefault();
+    window.location.href = authorizationUrl;
+  };
+
   const renderParts = (parts, column, direction) => {
     const partsWithDatasheets = _.filter(parts, function (x) { return x.datasheetUrls.length > 0 && _.first(x.datasheetUrls).length > 0; });
     return (
@@ -330,6 +340,19 @@ export function Datasheets (props) {
       <FormHeader name={t('page.datasheet.title', "Datasheet Search")} to="/">
       {t('page.datasheet.description', "Search for datasheets by part number.")}
 			</FormHeader>
+      <Confirm
+        className="confirm"
+        header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
+        open={confirmAuthIsOpen}
+        onCancel={() => setConfirmAuthIsOpen(false)}
+        onConfirm={handleAuthRedirect}
+        content={<p>
+          <Trans i18nKey="page.settings.confirm.mustAuthenticate" name={authorizationApiName}>
+            External Api (<b>{{ name: authorizationApiName }}</b>) is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.
+          </Trans>
+        </p>
+        }
+      />
       {contents}
     </div>
   );
