@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.IO.Printing
@@ -163,6 +164,15 @@ namespace Binner.Common.IO.Printing
                     case "Cost":
                         text = part.GetPropertyValue<double>(propertyName).ToString();
                         break;
+                    case "PartId":
+                        text = part.GetPropertyValue<long>(propertyName).ToString();
+                        break;
+                    case "PartTypeId":
+                        text = part.GetPropertyValue<long>(propertyName).ToString();
+                        break;
+                    case "ProjectId":
+                        text = part.GetPropertyValue<long?>(propertyName).ToString();
+                        break;
                     default:
                         text = part.GetPropertyValue<string>(propertyName);
                         break;
@@ -191,21 +201,32 @@ namespace Binner.Common.IO.Printing
 
             if (!string.IsNullOrEmpty(text) && text.Contains("{") && text.Contains("}"))
             {
-                text = text.Replace("{partNumber}", part.PartNumber);
-                text = text.Replace("{mfrPartNumber}", part.ManufacturerPartNumber);
-                text = text.Replace("{description}", part.Description);
-                text = text.Replace("{manufacturer}", part.Manufacturer);
-                text = text.Replace("{packageType}", part.PackageType);
-                text = text.Replace("{cost}", part.Cost.ToString());
+                var urlEncode = false;
+                if (text.StartsWith("http"))
+                    urlEncode = true;
+
+                text = text.Replace("{partNumber}", Encode(part.PartNumber, urlEncode));
+                text = text.Replace("{partId}", Encode(part.PartId.ToString(), urlEncode));
+                text = text.Replace("{partTypeId}", Encode(part.PartTypeId.ToString(), urlEncode));
+                text = text.Replace("{mfrPartNumber}", Encode(part.ManufacturerPartNumber, urlEncode));
+                text = text.Replace("{description}", Encode(part.Description, urlEncode));
+                text = text.Replace("{manufacturer}", Encode(part.Manufacturer, urlEncode));
+                text = text.Replace("{packageType}", Encode(part.PackageType, urlEncode));
+                text = text.Replace("{cost}", Encode(part.Cost.ToString(), urlEncode));
                 if (part.Keywords?.Any() == true)
-                    text = text.Replace("{keywords}", string.Join(",", part.Keywords));
-                text = text.Replace("{quantity}", part.Quantity.ToString());
-                text = text.Replace("{digiKeyPartNumber}", part.DigiKeyPartNumber);
-                text = text.Replace("{mouserPartNumber}", part.MouserPartNumber);
-                text = text.Replace("{arrowNumber}", part.ArrowPartNumber);
-                text = text.Replace("{location}", part.Location);
-                text = text.Replace("{binNumber}", part.BinNumber);
-                text = text.Replace("{binNumber2}", part.BinNumber2);
+                    text = text.Replace("{keywords}", Encode(string.Join(",", part.Keywords), urlEncode));
+                text = text.Replace("{quantity}", Encode(part.Quantity.ToString(), urlEncode));
+                text = text.Replace("{digiKeyPartNumber}", Encode(part.DigiKeyPartNumber, urlEncode));
+                text = text.Replace("{mouserPartNumber}", Encode(part.MouserPartNumber, urlEncode));
+                text = text.Replace("{arrowNumber}", Encode(part.ArrowPartNumber, urlEncode));
+                text = text.Replace("{location}", Encode(part.Location, urlEncode));
+                text = text.Replace("{binNumber}", Encode(part.BinNumber, urlEncode));
+                text = text.Replace("{binNumber2}", Encode(part.BinNumber2, urlEncode));
+                text = text.Replace("{extensionValue1}", Encode(part.ExtensionValue1, urlEncode));
+                text = text.Replace("{extensionValue2}", Encode(part.ExtensionValue2, urlEncode));
+                text = text.Replace("{footprintName}", Encode(part.FootprintName, urlEncode));
+                text = text.Replace("{symbolName}", Encode(part.SymbolName, urlEncode));
+                text = text.Replace("{projectId}", Encode(part.ProjectId.ToString(), urlEncode));
             }
 
             if (!string.IsNullOrEmpty(text))
@@ -217,6 +238,13 @@ namespace Binner.Common.IO.Printing
             }
 
             return text;
+        }
+
+        private string? Encode(string? value, bool urlEncode)
+        {
+            if (urlEncode && !string.IsNullOrEmpty(value))
+                return HttpUtility.UrlEncode(value);
+            return value;
         }
 
         private void DrawQrCode(CustomLabelDefinition labelDef, Image<Rgba32> image, LabelBox box, string text, float x, float y, float width, float height)

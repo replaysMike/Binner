@@ -138,6 +138,11 @@
         public string? ArrowPartNumber { get; set; }
 
         /// <summary>
+        /// The TME part number
+        /// </summary>
+        public string? TmePartNumber { get; set; }
+
+        /// <summary>
         /// KiCad symbol name
         /// </summary>
         public string? SymbolName { get; set; }

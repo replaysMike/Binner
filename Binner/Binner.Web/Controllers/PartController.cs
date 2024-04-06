@@ -611,7 +611,7 @@ namespace Binner.Web.Controllers
                     await image.SaveAsPngAsync(stream);
                     stream.Seek(0, SeekOrigin.Begin);
 
-                    // load the label templatemin
+                    // load the label template
                     var template = await _printService.GetLabelTemplateAsync(label.LabelTemplateId);
 
                     if (!request.GenerateImageOnly)

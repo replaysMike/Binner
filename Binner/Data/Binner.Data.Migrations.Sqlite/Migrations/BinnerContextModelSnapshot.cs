@@ -17,7 +17,7 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.4");
+                .HasAnnotation("ProductVersion", "7.0.5");
 
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
                 {
@@ -355,6 +355,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("SymbolName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmePartNumber")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
