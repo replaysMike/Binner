@@ -27,17 +27,6 @@ namespace Binner.Common.Integrations
         /// </summary>
         /// <param name="userId">User Id</param>
         /// <param name="credentials">Key/value mappings of credential values</param>
-        public ApiCredential(int userId, IDictionary<string, object> credentials)
-        {
-            UserId = userId;
-            Credentials = credentials;
-        }
-
-        /// <summary>
-        /// Create an Api Credential
-        /// </summary>
-        /// <param name="userId">User Id</param>
-        /// <param name="credentials">Key/value mappings of credential values</param>
         /// <param name="apiName">Name of api to store the credentials as</param>
         public ApiCredential(int userId, IDictionary<string, object> credentials, string? apiName)
         {

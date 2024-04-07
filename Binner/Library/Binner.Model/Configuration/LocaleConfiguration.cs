@@ -4,7 +4,7 @@
     {
         /// <summary>
         /// Default language to be used by the API.
-        /// Valid values: en, br, cs, da, de, es, fi, fr, he, hu, it, ja, ko, nl, no, pl, pt, ro, sv, th, zhs, zht
+        /// Valid values: en, br, cs, da, de, es, fi, fr, he, hu, it, ja, ko, nl, no, pl, pt, ro, sv, th, zhs, zht, bg, rm, el, hr, lt, lv, ru, sk, tr, uk
         /// </summary>
         public Languages Language { get; set; } = Languages.En;
 

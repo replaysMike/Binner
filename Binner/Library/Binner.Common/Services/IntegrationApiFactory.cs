@@ -75,6 +75,13 @@ namespace Binner.Common.Services
                 if (resultTyped != null)
                     return resultTyped;
             }
+            if (apiType == typeof(TmeApi))
+            {
+                var result = CreateGlobalTmeApi();
+                var resultTyped = result as T;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
             throw new NotImplementedException($"Unhandled type '{apiType.Name}'");
         }
 
@@ -127,6 +134,11 @@ namespace Binner.Common.Services
                     NexarEnabled = _webHostServiceConfiguration.Integrations.Nexar.Enabled,
                     NexarClientId = _webHostServiceConfiguration.Integrations.Nexar.ClientId,
                     NexarClientSecret = _webHostServiceConfiguration.Integrations.Nexar.ClientSecret,
+
+                    TmeEnabled = _webHostServiceConfiguration.Integrations.Tme.Enabled,
+                    TmeApplicationSecret = _webHostServiceConfiguration.Integrations.Tme.ApplicationSecret,
+                    TmeApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
+                    TmeApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
                 };
 
                 // build the credentials list
@@ -180,6 +192,16 @@ namespace Binner.Common.Services
                 };
                 credentials.Add(new ApiCredential(userId, nexarConfiguration, nameof(NexarApi)));
 
+                var tmeConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", userIntegrationConfiguration.TmeEnabled },
+                    { "Country", userIntegrationConfiguration.TmeCountry },
+                    { "ApplicationSecret", userIntegrationConfiguration.TmeApplicationSecret ?? string.Empty },
+                    { "ApiKey", userIntegrationConfiguration.TmeApiKey ?? string.Empty },
+                    { "ApiUrl", userIntegrationConfiguration.TmeApiUrl },
+                };
+                credentials.Add(new ApiCredential(userId, tmeConfiguration, nameof(TmeApi)));
+
                 return new ApiCredentialConfiguration(userId, credentials);
             };
             return await CreateAsync<T>(userId, getCredentialsMethod, true);
@@ -230,6 +252,13 @@ namespace Binner.Common.Services
             if (apiType == typeof(ArrowApi))
             {
                 var result = await CreateArrowApiAsync(credentialKey, getCredentialsMethod, cache);
+                var resultTyped = result as T;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(TmeApi))
+            {
+                var result = await CreateTmeApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
@@ -403,6 +432,40 @@ namespace Binner.Common.Services
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
             var api = new ArrowApi(configuration, _httpContextAccessor);
+            return api;
+        }
+
+        private TmeApi CreateGlobalTmeApi()
+        {
+            var configuration = new TmeConfiguration
+            {
+                // system settings
+                Enabled = _integrationConfiguration.Tme.Enabled,
+                Country = _integrationConfiguration.Tme.Country,
+                ApplicationSecret = _integrationConfiguration.Tme.ApplicationSecret,
+                ApiKey = _integrationConfiguration.Tme.ApiKey,
+                ApiUrl = _integrationConfiguration.Tme.ApiUrl,
+            };
+            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
+            return api;
+        }
+
+        private async Task<TmeApi> CreateTmeApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
+        {
+            ApiCredential? credentials = null;
+            if (cache)
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(TmeApi), getCredentialsMethod);
+            else
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(TmeApi), getCredentialsMethod);
+            var configuration = new TmeConfiguration
+            {
+                Enabled = credentials.GetCredentialBool("Enabled"),
+                Country = credentials.GetCredentialString("Country"),
+                ApplicationSecret = credentials.GetCredentialString("ApplicationSecret"),
+                ApiKey = credentials.GetCredentialString("ApiKey"),
+                ApiUrl = credentials.GetCredentialString("ApiUrl"),
+            };
+            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
             return api;
         }
     }

@@ -30,6 +30,11 @@ namespace Binner.Model.Configuration
         public ArrowConfiguration Arrow { get; set; } = new ();
 
         /// <summary>
+        /// Tme config
+        /// </summary>
+        public TmeConfiguration Tme { get; set; } = new();
+
+        /// <summary>
         /// AliExpress config
         /// </summary>
         public AliExpressConfiguration AliExpress { get; set; } = new ();

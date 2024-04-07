@@ -1105,6 +1105,22 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("time");
 
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
