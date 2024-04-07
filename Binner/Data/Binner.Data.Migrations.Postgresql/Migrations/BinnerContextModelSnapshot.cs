@@ -1105,6 +1105,22 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("interval");
 
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 

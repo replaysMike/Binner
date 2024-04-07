@@ -5,6 +5,7 @@
     /// </summary>
     public enum Languages
     {
+        // DigiKey
         En, 
         De, 
         It, 
@@ -26,6 +27,17 @@
         Sv, 
         Th, 
         Zhs, 
-        Zht
+        Zht,
+        // TME
+        Bg,
+        Rm,
+        El,
+        Hr,
+        Lt,
+        Lv,
+        Ru,
+        Sk,
+        Tr,
+        Uk
     }
 }

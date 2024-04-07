@@ -17,6 +17,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Mouser, options => options.MapFrom(x => x.Integrations.Mouser))
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
+                .ForMember(x => x.Tme, options => options.MapFrom(x => x.Integrations.Tme))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
                 .ForMember(x => x.Language, options => options.MapFrom(x => x.Language))
@@ -49,6 +50,12 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.NexarEnabled, options => options.MapFrom(x => x.Octopart.Enabled))
                 .ForMember(x => x.NexarClientId, options => options.MapFrom(x => x.Octopart.ClientId))
                 .ForMember(x => x.NexarClientSecret, options => options.MapFrom(x => x.Octopart.ClientSecret))
+                .ForMember(x => x.TmeEnabled, options => options.MapFrom(x => x.Tme.Enabled))
+                .ForMember(x => x.TmeCountry, options => options.MapFrom(x => x.Tme.Country))
+                .ForMember(x => x.TmeApplicationSecret, options => options.MapFrom(x => x.Tme.ApplicationSecret))
+                .ForMember(x => x.TmeApiKey, options => options.MapFrom(x => x.Tme.ApiKey))
+                .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
+
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore());

@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb } from "semantic-ui-react";
+import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Flag } from "semantic-ui-react";
 import ClearableInput from "../components/ClearableInput";
 import LineTemplate from "../components/LineTemplate";
 import { DEFAULT_FONT, BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown } from "../common/Types";
 import { DigiKeySites } from "../common/digiKeySites";
+import { TmeCountries } from "../common/tmeCountries";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
@@ -87,91 +88,144 @@ export const Settings = (props) => {
     key: 1,
     value: "en",
     text: "English",
-  },{
+  }, {
     key: 2,
     value: "br",
     text: "Breton",
-  },{
+  }, {
     key: 3,
     value: "cs",
     text: "Czech",
-  },{
+  }, {
     key: 4,
     value: "da",
     text: "Danish",
-  },{
+  }, {
     key: 5,
     value: "de",
     text: "German",
-  },{
+  }, {
     key: 6,
     value: "es",
     text: "Spanish",
-  },{
+  }, {
     key: 7,
     value: "fi",
     text: "Finnish",
-  },{
+  }, {
     key: 8,
     value: "fr",
     text: "French",
-  },{
+  }, {
     key: 9,
     value: "he",
     text: "Hebrew",
-  },{
+  }, {
     key: 10,
     value: "hu",
     text: "Hungarian",
-  },{
+  }, {
     key: 11,
     value: "it",
     text: "Italian",
-  },{
+  }, {
     key: 12,
     value: "ja",
     text: "Japanese",
-  },{
+  }, {
     key: 13,
     value: "ko",
     text: "Korean",
-  },{
+  }, {
     key: 14,
     value: "nl",
     text: "Dutch",
-  },{
+  }, {
     key: 15,
     value: "no",
     text: "Norwegian",
-  },{
+  }, {
     key: 16,
     value: "pl",
     text: "Polish",
-  },{
+  }, {
     key: 17,
     value: "pt",
     text: "Portuguese",
-  },{
+  }, {
     key: 18,
     value: "ro",
     text: "Romanian",
-  },{
+  }, {
     key: 19,
     value: "sv",
     text: "Swedish",
-  },{
+  }, {
     key: 20,
     value: "th",
     text: "Thai",
-  },{
+  }, {
     key: 21,
     value: "zhs",
     text: "Chinese (Simplified)",
-  },{
+  }, {
     key: 22,
     value: "zht",
     text: "Chinese (Traditional)",
-  },]);
+  },
+  // languages below are compatible with TME, they don't use official language codes but rather country codes :P
+  {
+    key: 23,
+    value: "bg",
+    country: "BG",
+    text: "Bulgarian",
+  }, {
+    key: 24,
+    value: "rm",
+    country: "CH",
+    text: "Romansh",
+  }, {
+    key: 25,
+    value: "el",
+    country: "GR",
+    text: "Greek",
+  }, {
+    key: 26,
+    value: "hr",
+    country: "HR",
+    text: "Croatian",
+  }, {
+    key: 27,
+    value: "lt",
+    country: "LT",
+    text: "Lithuanian",
+  }, {
+    key: 28,
+    value: "lv",
+    country: "LV",
+    text: "Latvian",
+  }, {
+    key: 29,
+    value: "ru",
+    country: "RU",
+    text: "Russian",
+  }, {
+    key: 30,
+    value: "sk",
+    country: "SK",
+    text: "Slovak",
+  }, {
+    key: 31,
+    value: "tr",
+    country: "TR",
+    text: "Turkish",
+  }, {
+    key: 32,
+    value: "uk",
+    country: "UA",
+    text: "Ukraine",
+  },
+  ]);
   const [currencies] = useState([{
     key: 1,
     value: "USD",
@@ -279,6 +333,13 @@ export const Settings = (props) => {
   },]);
   const barcodeProfileOptions = GetTypeDropdown(BarcodeProfiles);
   const digikeySites = GetAdvancedTypeDropdown(DigiKeySites);
+  const noFlags = ['ss', 'sk', 'sx', 'mf', 'bl', 'im', 'xk', 'je', 'gg', 'cw', 'bq', 'aq'];
+  const tmeCountries = TmeCountries.map((i, key) => ({
+    key,
+    value: i.iso2,
+    text: i.name,
+    flag: !noFlags.includes(i.iso2.toLowerCase()) ? i.iso2.toLowerCase() : ""
+  }));
   const [settings, setSettings] = useState({
     licenseKey: "",
     language: "",
@@ -318,6 +379,13 @@ export const Settings = (props) => {
       enabled: false,
       clientId: "",
       clientSecret: "",
+    },
+    tme: {
+      enabled: false,
+      applicationSecret: "",
+      apiKey: "",
+      apiUrl: "",
+      country: "us"
     },
     printer: {
       printMode: 0,
@@ -546,6 +614,9 @@ export const Settings = (props) => {
     else if (control.name.startsWith("octopart")) {
       setControlValue(newSettings.octopart, "octopart", control);
     }
+    else if (control.name.startsWith("tme")) {
+      setControlValue(newSettings.tme, "tme", control);
+    }
     else if (control.name.startsWith("barcode")) {
       setControlValue(newSettings.barcode, "barcode", control);
     } else if (control.name.startsWith("printer")) {
@@ -694,6 +765,13 @@ export const Settings = (props) => {
         configuration.push({ key: "enabled", value: settings.octopart.enabled + "" });
         configuration.push({ key: "clientId", value: settings.octopart.clientId });
         configuration.push({ key: "clientSecret", value: settings.octopart.clientSecret });
+        break;
+      case "tme":
+        configuration.push({ key: "enabled", value: settings.tme.enabled + "" });
+        configuration.push({ key: "applicationSecret", value: settings.tme.applicationSecret });
+        configuration.push({ key: "country", value: settings.tme.country });
+        configuration.push({ key: "apiKey", value: settings.tme.apiKey });
+        configuration.push({ key: "apiUrl", value: settings.tme.apiUrl });
         break;
       default:
         break;
@@ -1602,6 +1680,134 @@ export const Settings = (props) => {
                 {t('button.testApi', "Test Api")}
               </Button>
               {getTestResultIcon("octopart")}
+            </Form.Field>
+          </Segment>
+
+          <Segment loading={loading} color="green" secondary>
+            <Header dividing as="h3">
+              {t('page.settings.tmeelectronics', "TME Electronics")}
+            </Header>
+            <p>
+              <Trans i18nKey="page.settings.tmeDescription">
+                TME API Keys can be obtained at <a href="https://developers.tme.eu" target="_blank" rel="noreferrer">https://developers.tme.eu</a>
+              </Trans>
+            </p>
+            <Form.Field width={10}>
+              <label>{t('page.settings.tmeSupport', "TME Support")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>{t('page.settings.popup.tmeEnabled', "Choose if you would like to enable TME support.")}</p>
+                }
+                trigger={
+                  <Dropdown
+                    name="tmeEnabled"
+                    placeholder="Disabled"
+                    selection
+                    value={settings.tme.enabled ? 1 : 0}
+                    options={enabledSources}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>{t('label.country', "Country")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>{t('page.settings.popup.country', "Choose the country to pass the API.")}</p>
+                }
+                trigger={
+                  <Dropdown
+                    name="tmeCountry"
+                    placeholder=""
+                    selection
+                    value={settings.tme.country || 'us'}
+                    options={tmeCountries}
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>{t('label.applicationSecret', "Application Secret")}</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.tmeApplicationSecret', "Your application secret for TME.")}</p>}
+                trigger={
+                  <ClearableInput
+                    className="labeled"
+                    placeholder=""
+                    value={settings.tme.applicationSecret || ""}
+                    name="tmeApplicationSecret"
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>{t('label.apiKey', "Api Key")}</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.tmeApiKey', "Your api key for TME.")}</p>}
+                trigger={
+                  <ClearableInput
+                    className="labeled"
+                    placeholder=""
+                    value={settings.tme.apiKey || ""}
+                    name="tmeApiKey"
+                    onChange={handleChange}
+                  />
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>{t('label.apiUrl', "Api Url")}</label>
+              <Popup
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.tmeApiUrl', "TME's API Url. This will be api.tme.eu")}</p>}
+                trigger={
+                  <ClearableInput
+                    action
+                    className="labeled"
+                    placeholder="api.tme.eu"
+                    value={(settings.tme.apiUrl || "")
+                      .replace("http://", "")
+                      .replace("https://", "")}
+                    name="tmeApiUrl"
+                    onChange={handleChange}
+                    type="Input"
+                  >
+                    <Label>https://</Label>
+                    <input />
+                  </ClearableInput>
+                }
+              />
+            </Form.Field>
+            <Form.Field>
+              <Button
+                primary
+                className="test"
+                type="button"
+                onClick={(e) => handleTestApi(e, "tme")}
+                disabled={testing}
+              >
+                {t('button.testApi', "Test Api")}
+              </Button>
+              {getTestResultIcon("tme")}
             </Form.Field>
           </Segment>
         </Segment>

@@ -132,6 +132,31 @@ namespace Binner.Data.Model
         public string? OctopartClientSecret { get; set; }
 
         /// <summary>
+        /// TME api enabled
+        /// </summary>
+        public bool TmeEnabled { get; set; } = true;
+
+        /// <summary>
+        /// The user's TME country
+        /// </summary>
+        public string? TmeCountry { get; set; } = "us";
+
+        /// <summary>
+        /// The user's TME application secret
+        /// </summary>
+        public string? TmeApplicationSecret { get; set; }
+
+        /// <summary>
+        /// The Api key
+        /// </summary>
+        public string? TmeApiKey { get; set; }
+
+        /// <summary>
+        /// TME api url
+        /// </summary>
+        public string TmeApiUrl { get; set; } = "https://api.tme.eu";
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

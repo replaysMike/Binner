@@ -1067,6 +1067,22 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 

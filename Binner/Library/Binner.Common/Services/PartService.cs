@@ -797,6 +797,7 @@ namespace Binner.Common.Services
             var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
             var nexarApi = await _integrationApiFactory.CreateAsync<Integrations.NexarApi>(user?.UserId ?? 0);
             var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0);
+            var tmeApi = await _integrationApiFactory.CreateAsync<Integrations.TmeApi>(user?.UserId ?? 0);
             if (partNumber.StartsWith("[)>"))
             {
                 if (digikeyApi.Configuration.IsConfigured)
@@ -829,6 +830,7 @@ namespace Binner.Common.Services
             var mouserResponse = new SearchResultsResponse();
             var arrowResponse = new ArrowResponse();
             var nexarResponse = new NexarPartResults();
+            var tmeResponse = new Model.Integrations.Tme.TmeResponse<Model.Integrations.Tme.ProductSearchResponse>();
             var searchKeywords = partNumber;
 
             if (digikeyApi.Configuration.IsConfigured)
@@ -1063,6 +1065,33 @@ namespace Binner.Common.Services
 
                 arrowResponse = (ArrowResponse?)apiResponse.Response;
                 apiResponses[nameof(ArrowApi)].IsSuccess = arrowResponse?.ItemServiceResult?.Data?.Any() == true;
+            }
+
+            if (tmeApi.Configuration.IsConfigured)
+            {
+                IApiResponse? apiResponse = null;
+                try
+                {
+                    apiResponse = await tmeApi.SearchAsync(searchKeywords, partType, mountingType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"[{nameof(TmeApi)}]: {ex.GetBaseException().Message}");
+                    apiResponse = new ApiResponse(new List<string> { ex.GetBaseException().Message }, nameof(TmeApi));
+                }
+                apiResponses.Add(nameof(TmeApi), new Model.Integrations.ApiResponseState(false, apiResponse));
+                if (apiResponse.Warnings?.Any() == true)
+                {
+                    _logger.LogWarning($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Warnings)}");
+                }
+                if (apiResponse.Errors?.Any() == true)
+                {
+                    _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
+                    //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                }
+
+                tmeResponse = (Model.Integrations.Tme.TmeResponse<Model.Integrations.Tme.ProductSearchResponse>?)apiResponse.Response;
+                apiResponses[nameof(TmeApi)].IsSuccess = tmeResponse?.Data?.ProductList?.Any() == true;
             }
 
             if (!apiResponses.Any(x => x.Value.IsSuccess))

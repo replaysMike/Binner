@@ -18,6 +18,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Mouser, options => options.MapFrom(x => x.Integrations.Mouser))
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
+                .ForMember(x => x.Tme, options => options.MapFrom(x => x.Integrations.Tme))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
                 .ForMember(x => x.Language, options => options.MapFrom(x => x.Language))
@@ -65,6 +66,14 @@ namespace Binner.Common.MappingProfiles
                     Enabled = x.NexarEnabled,
                     ClientId = x.NexarClientId,
                     ClientSecret = x.NexarClientSecret
+                }))
+                .ForMember(x => x.Tme, options => options.MapFrom(x => new TmeUserConfiguration
+                {
+                    Enabled = x.TmeEnabled,
+                    Country = x.TmeCountry,
+                    ApplicationSecret = x.TmeApplicationSecret,
+                    ApiUrl = x.TmeApiUrl,
+                    ApiKey = x.TmeApiKey
                 }))
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
@@ -163,7 +172,13 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.ClientId, options => options.MapFrom(x => x.ClientId))
                 .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.ClientSecret))
                 .ReverseMap();
-
+            CreateMap<TmeConfiguration, TmeUserConfiguration>()
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
+                .ForMember(x => x.Country, options => options.MapFrom(x => x.Country))
+                .ForMember(x => x.ApplicationSecret, options => options.MapFrom(x => x.ApplicationSecret))
+                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.ApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
+                .ReverseMap();
             CreateMap<UserIntegrationConfiguration, SwarmUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.SwarmEnabled))
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.SwarmApiKey))
@@ -199,6 +214,14 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.NexarEnabled))
                 .ForMember(x => x.ClientId, options => options.MapFrom(x => x.NexarClientId))
                 .ForMember(x => x.ClientSecret, options => options.MapFrom(x => x.NexarClientSecret))
+                .ReverseMap();
+
+            CreateMap<UserIntegrationConfiguration, TmeUserConfiguration>()
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.TmeEnabled))
+                .ForMember(x => x.Country, options => options.MapFrom(x => x.TmeCountry))
+                .ForMember(x => x.ApplicationSecret, options => options.MapFrom(x => x.TmeApplicationSecret))
+                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.TmeApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.TmeApiUrl))
                 .ReverseMap();
         }
     }
