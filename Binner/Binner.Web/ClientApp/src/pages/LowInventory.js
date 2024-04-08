@@ -134,7 +134,7 @@ export function LowInventory (props) {
   const renderPartsTable = useMemo(() => {
     return (<PartsGrid2Memoized 
       parts={parts} 
-      columns="partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete"
+      columns="partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete"
       defaultVisibleColumns='partNumber,lowStockThreshold,quantity,manufacturerPartNumber,description,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,datasheetUrl,print,delete' 
       page={page} 
       totalPages={totalPages} 

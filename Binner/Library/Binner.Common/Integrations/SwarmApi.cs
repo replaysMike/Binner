@@ -16,6 +16,7 @@ namespace Binner.Common.Integrations
 {
     public class SwarmApi : IIntegrationApi
     {
+        public string Name => "Swarm";
         private readonly SwarmConfiguration _configuration;
         private readonly ICredentialService _credentialService;
         private readonly IHttpContextAccessor _httpContextAccessor;

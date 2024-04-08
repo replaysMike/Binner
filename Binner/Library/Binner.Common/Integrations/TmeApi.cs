@@ -12,7 +12,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
-using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
 using static Binner.Common.Integrations.ArrowApi;
@@ -21,6 +20,7 @@ namespace Binner.Common.Integrations
 {
     public class TmeApi : IIntegrationApi
     {
+        public string Name => "TME";
         public const string BasePath = "/";
         private readonly TmeConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
@@ -57,7 +57,6 @@ namespace Binner.Common.Integrations
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
 
-
         public Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();
@@ -74,9 +73,8 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 20, Dictionary<string, string>? additionalOptions = null)
         {
-            if (string.IsNullOrEmpty(_configuration.ApplicationSecret)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApplicationSecret!");
-            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiKey!");
-            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiUrl!");
+            // Products/Search
+            ValidateConfiguration();
 
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
 
@@ -122,11 +120,101 @@ namespace Binner.Common.Integrations
             return new ApiResponse(results, nameof(TmeApi));
         }
 
+        /// <summary>
+        /// Get a list of files for a list of part numbers
+        /// </summary>
+        /// <param name="partNumbers"></param>
+        /// <returns></returns>
+        public async Task<IApiResponse> GetProductFilesAsync(List<string> partNumbers)
+        {
+            // Products/GetProductsFiles
+            ValidateConfiguration();
+
+            var format = "json";
+            var prefix = "Products";
+            var action = "GetProductsFiles";
+            var path = $"{prefix}/{action}.{format}";
+            var uri = Url.Combine(_configuration.ApiUrl, BasePath, path);
+
+            // build the api params request
+            // Text describing the searched product, may consist of multiple words. Example: "led diode","cover", "1N4007". (optional)
+            var apiParams = new Dictionary<string, object>();
+            var i = 0;
+            foreach(var partNumber in partNumbers)
+            {
+                // api supports a maximum of 50 symbols to be passed
+                if (i >= 50)
+                    break;
+                apiParams.Add($"SymbolList[{i}]", partNumber);
+                i++;
+            }
+
+            var urlEncodedContent = BuildApiParams(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+
+            // create POST message
+            var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
+
+            var response = await _client.SendAsync(requestMessage);
+            if (TryHandleResponse(response, out var apiResponse))
+            {
+                return apiResponse;
+            }
+
+            var resultString = response.Content.ReadAsStringAsync().Result;
+            var results = JsonConvert.DeserializeObject<TmeResponse<ProductFilesResponse>>(resultString, _serializerSettings) ?? new();
+            return new ApiResponse(results, nameof(TmeApi));
+        }
+
+        /// <summary>
+        /// Get pricing information for a list of part numbers
+        /// </summary>
+        /// <param name="partNumbers"></param>
+        /// <returns></returns>
+        public async Task<IApiResponse> GetProductPricesAsync(List<string> partNumbers)
+        {
+            // Products/GetProductsFiles
+            ValidateConfiguration();
+
+            var format = "json";
+            var prefix = "Products";
+            var action = "GetPricesAndStocks";
+            var path = $"{prefix}/{action}.{format}";
+            var uri = Url.Combine(_configuration.ApiUrl, BasePath, path);
+
+            // build the api params request
+            // Text describing the searched product, may consist of multiple words. Example: "led diode","cover", "1N4007". (optional)
+            var apiParams = new Dictionary<string, object>();
+            apiParams.Add("Currency", _localeConfiguration.Currency);
+            apiParams.Add("GrossPrices", false);
+            var i = 0;
+            foreach (var partNumber in partNumbers)
+            {
+                // api supports a maximum of 50 symbols to be passed
+                if (i >= 50)
+                    break;
+                apiParams.Add($"SymbolList[{i}]", partNumber);
+                i++;
+            }
+
+            var urlEncodedContent = BuildApiParams(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+
+            // create POST message
+            var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
+
+            var response = await _client.SendAsync(requestMessage);
+            if (TryHandleResponse(response, out var apiResponse))
+            {
+                return apiResponse;
+            }
+
+            var resultString = response.Content.ReadAsStringAsync().Result;
+            var results = JsonConvert.DeserializeObject<TmeResponse<PriceListResponse>>(resultString, _serializerSettings) ?? new();
+            return new ApiResponse(results, nameof(TmeApi));
+        }
+
         public async Task<IApiResponse> GetCategoriesAsync()
         {
-            if (string.IsNullOrEmpty(_configuration.ApplicationSecret)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApplicationSecret!");
-            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiKey!");
-            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiUrl!");
+            ValidateConfiguration();
 
             var format = "json";
             var prefix = "Products";
@@ -169,7 +257,7 @@ namespace Binner.Common.Integrations
                 {
                     var sb = new StringBuilder();
                     sb.AppendLine("private static Dictionary<int, Category> _categories = new Dictionary<int, Category>() {");
-                    foreach(var category in results.Data!.CategoryTree)
+                    foreach (var category in results.Data!.CategoryTree)
                     {
                         sb.AppendLine($@"    {{{category.Id}, new Category {{ Id = {category.Id}, ParentId = {category.ParentId}, Name = ""{category.Name.Replace("\"", "\\\"")}"" }} }},");
                     }
@@ -204,13 +292,14 @@ namespace Binner.Common.Integrations
                 apiParams.Add(kvp.Key, kvp.Value);
 
             // anonymous key or private token
-            // 3d3ed7d1003dd4a2c512a8c7c6f719b6a92b5025160f4f0318
             apiParams.Add("Token", _configuration.ApiKey);
-
 
             // Encode and normalize params
             // values must be sorted by key ASC, or the remote API will fail to match the signature
-            var urlEncodedContent = new FormUrlEncodedContent(apiParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value.ToString()));
+            var ordered = apiParams
+                .OrderByNaturalSort(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.Value.ToString());
+            var urlEncodedContent = new FormUrlEncodedContent(ordered);
             var encodedParams = urlEncodedContent.ReadAsStringAsync().Result;
 
             // Calculate signature basis according the documentation
@@ -225,7 +314,12 @@ namespace Binner.Common.Integrations
 
             // Add ApiSignature to params
             apiParams.Add("ApiSignature", apiSignature);
-            return new FormUrlEncodedContent(apiParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value.ToString()));
+
+            // resort keys
+            ordered = apiParams
+                .OrderByNaturalSort(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.Value.ToString());
+            return new FormUrlEncodedContent(ordered);
         }
 
         private bool TryHandleResponse(HttpResponseMessage response, out IApiResponse apiResponse)
@@ -293,6 +387,13 @@ namespace Binner.Common.Integrations
                 }
             }
             return new string(temp);
+        }
+
+        private void ValidateConfiguration()
+        {
+            if (string.IsNullOrEmpty(_configuration.ApplicationSecret)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApplicationSecret!");
+            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiKey!");
+            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiUrl!");
         }
     }
 }

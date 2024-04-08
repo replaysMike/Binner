@@ -208,6 +208,8 @@ export default function PartsGrid2Memoized(props) {
         return 220;
       case "arrowPartNumber":
         return 220;
+      case "tmePartNumber":
+        return 220;
       case "actions":
         return 150;
       default:
@@ -493,7 +495,7 @@ PartsGrid2Memoized.propTypes = {
 
 PartsGrid2Memoized.defaultProps = {
   loading: true,
-  columns: "partNumber,partId,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
+  columns: "partNumber,partId,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
   defaultVisibleColumns: "partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
   page: 1,
   totalPages: 1,

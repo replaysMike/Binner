@@ -17,6 +17,7 @@ namespace Binner.Common.Integrations
 {
     public class NexarApi : IIntegrationApi
     {
+        public string Name => "Nexar";
         private readonly OctopartConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
         private readonly IHttpContextAccessor _httpContextAccessor;
