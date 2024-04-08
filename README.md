@@ -23,7 +23,7 @@ Binner is a free open-source parts inventory tracking system you can run locally
 * Export your data to CSV / Excel if you need
 * Proprietary file-based database (or use providers for other formats such as SQL Server)
 * No web server installation required, uses standalone Kestrel service API
-* Based on .Net Core - runs on Windows and Unix
+* Based on .Net - runs on Windows, Unix and embedded devices like Raspberry PI
 * Simple web-based UI
 * Barcoding support
 * Label printing
@@ -238,7 +238,7 @@ Visit [https://developers.tme.eu/login](https://developers.tme.eu/login) and sig
 
 ## Label printing
 
-Binner currently has limited label printing support. It works best with a Dymo LabelWriter 450 series printer (Turbo dual label is supported too), model 30346 or 30277 labels. If desired additional label sizes and other printers can be easily added.
+Binner currently has label printing support. It works best with a Dymo LabelWriter 450 series printer (Turbo dual label is supported too), model 30346 or 30277 labels. If desired additional label sizes and other printers can be easily added. Label design can be customized with different types of barcodes and information.
 
 ### Label Example
 ![Binner](https://github.com/replaysMike/Binner/wiki/binner-label.png)
