@@ -8,7 +8,7 @@
         /// <summary>
         /// Array of product objects.
         /// </summary>
-        public List<Product> ProductList { get; set; } = new();
+        public List<TmeProduct> ProductList { get; set; } = new();
 
         /// <summary>
         /// Total amount of found products (pagination). PageSize is 20 rows and cannot be specified.
@@ -26,7 +26,7 @@
         public Dictionary<string, int> CategoryList { get; set; } = new();
     }
 
-    public class Product
+    public class TmeProduct
     {
         /// <summary>
         /// Unique product identifier
@@ -100,6 +100,14 @@
         /// Information about product's guarantee. Can be null when there is no guarantee for this product
         /// </summary>
         public Guarantee? Guarantee { get; set; }
+
+        // populated by other api calls
+        public virtual int QuantityAvailable { get; set; }
+        public virtual double Cost { get; set; }
+        public virtual string? Currency { get; set; }
+        public virtual List<TmeDocument> Datasheets { get; set; } = new();
+        public virtual List<TmeDocument> Videos { get; set; } = new();
+        public virtual List<TmePhotoFile> Photos { get; set; } = new();
     }
 
     public class Guarantee

@@ -90,6 +90,7 @@ namespace Binner.Web.Controllers
                     DigiKeyPartNumber = "701-7011-1-ND",
                     MouserPartNumber = "MS-7011",
                     ArrowPartNumber = "AR-7011",
+                    TmePartNumber = "TM-7011",
                     FootprintName = "DIP-20",
                     SymbolName = "IC1",
                     ExtensionValue1 = "Custom Value 1",

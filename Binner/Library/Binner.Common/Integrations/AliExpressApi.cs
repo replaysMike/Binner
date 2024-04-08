@@ -10,7 +10,8 @@ namespace Binner.Common.Integrations
 {
     public class AliExpressApi : IIntegrationApi
     {
-        private const string BasePath = "/api/v3/parts";
+        public string Name => "AliExpress";
+       private const string BasePath = "/api/v3/parts";
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _client;
         private readonly AliExpressConfiguration _configuration;

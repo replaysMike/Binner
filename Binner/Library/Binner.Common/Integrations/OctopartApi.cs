@@ -13,6 +13,7 @@ namespace Binner.Common.Integrations
 {
     public class OctopartApi : IIntegrationApi
     {
+        public string Name => "Octopart";
         public const string BasePath = "/api/v3/parts";
         private readonly OctopartConfiguration _configuration;
         private readonly HttpClient _client;

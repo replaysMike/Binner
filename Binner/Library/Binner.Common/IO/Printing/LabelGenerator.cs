@@ -219,6 +219,7 @@ namespace Binner.Common.IO.Printing
                 text = text.Replace("{digiKeyPartNumber}", Encode(part.DigiKeyPartNumber, urlEncode));
                 text = text.Replace("{mouserPartNumber}", Encode(part.MouserPartNumber, urlEncode));
                 text = text.Replace("{arrowNumber}", Encode(part.ArrowPartNumber, urlEncode));
+                text = text.Replace("{tmeNumber}", Encode(part.TmePartNumber, urlEncode));
                 text = text.Replace("{location}", Encode(part.Location, urlEncode));
                 text = text.Replace("{binNumber}", Encode(part.BinNumber, urlEncode));
                 text = text.Replace("{binNumber2}", Encode(part.BinNumber2, urlEncode));

@@ -18,6 +18,7 @@ namespace Binner.Common.Integrations
     public class MouserApi : IIntegrationApi
     {
         private const string BasePath = "/api/v1";
+        public string Name => "Mouser";
         private readonly MouserConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);

@@ -20,6 +20,7 @@ namespace Binner.Common.Integrations
     public partial class ArrowApi : IIntegrationApi
     {
         private const string BasePath = "";
+        public string Name => "Arrow";
         private readonly ArrowConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);

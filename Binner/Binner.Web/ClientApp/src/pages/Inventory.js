@@ -86,6 +86,7 @@ export function Inventory(props) {
     digiKeyPartNumber: "",
     mouserPartNumber: "",
     arrowPartNumber: "",
+    tmePartNumber: "",
     location: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastLocation) || "",
     binNumber: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber) || "",
     binNumber2: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber2) || "",
@@ -293,7 +294,16 @@ export function Inventory(props) {
         if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
         if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
       }
-
+      // also map tme
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "TME" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.tmePartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
     }
     if (mappedPart.supplier === "Mouser") {
       entity.mouserPartNumber = mappedPart.supplierPartNumber || "";
@@ -317,6 +327,16 @@ export function Inventory(props) {
         if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
         if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
       }
+      // also map tme
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "TME" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.tmePartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
     }
     if (mappedPart.supplier === "Arrow") {
       entity.arrowPartNumber = mappedPart.supplierPartNumber || "";
@@ -336,6 +356,49 @@ export function Inventory(props) {
       });
       if (searchResult) {
         entity.mouserPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map tme
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "TME" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.tmePartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+    }
+    if (mappedPart.supplier === "TME") {
+      entity.tmePartNumber = mappedPart.supplierPartNumber || "";
+      // also map digikey
+      let searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map mouser
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.mouserPartNumber = searchResult.supplierPartNumber;
+        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      }
+      // also map arrow
+      searchResult = _.find(metadataParts, (e) => {
+        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
+      });
+      if (searchResult) {
+        entity.arrowPartNumber = searchResult.supplierPartNumber;
         if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
         if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
         if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
@@ -398,7 +461,7 @@ export function Inventory(props) {
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber}`, {
+      const response = await fetchApi(`api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
 
@@ -763,6 +826,7 @@ export function Inventory(props) {
       digiKeyPartNumber: "",
       mouserPartNumber: "",
       arrowPartNumber: "",
+      tmePartNumber: "",
       location: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastLocation + "",
       binNumber: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber + "",
       binNumber2: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber2 + "",
@@ -1422,6 +1486,10 @@ export function Inventory(props) {
                     <Form.Field width={4}>
                       <label>{t('label.arrowPartNumber', "Arrow Part Number")}</label>
                       <ClearableInput placeholder='595-LM358AP' value={part.arrowPartNumber || ''} onChange={handleChange} name='arrowPartNumber' />
+                    </Form.Field>
+                    <Form.Field width={4}>
+                      <label>{t('label.tmePartNumber', "TME Part Number")}</label>
+                      <ClearableInput placeholder='LM358PWR' value={part.tmePartNumber || ''} onChange={handleChange} name='tmePartNumber' />
                     </Form.Field>
                   </Form.Group>
                   <Form.Group>

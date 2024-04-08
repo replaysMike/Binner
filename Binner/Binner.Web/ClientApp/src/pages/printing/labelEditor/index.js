@@ -915,6 +915,7 @@ export function LabelEditor(props) {
               <DraggableBox name="digikeyPartNumber">{getChildrenByName('digikeyPartNumber')}</DraggableBox>
               <DraggableBox name="mouserPartNumber">{getChildrenByName('mouserPartNumber')}</DraggableBox>
               <DraggableBox name="arrowPartNumber">{getChildrenByName('arrowPartNumber')}</DraggableBox>
+              <DraggableBox name="tmePartNumber">{getChildrenByName('tmePartNumber')}</DraggableBox>
               <DraggableBox name="location">{getChildrenByName('location')}</DraggableBox>
               <DraggableBox name="binNumber">{getChildrenByName('binNumber')}</DraggableBox>
               <DraggableBox name="binNumber2">{getChildrenByName('binNumber2')}</DraggableBox>

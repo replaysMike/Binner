@@ -6,6 +6,7 @@ using Binner.Model.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Services
@@ -224,6 +225,8 @@ namespace Binner.Common.Services
                         try
                         {
                             //var categories = await api.GetCategoriesAsync();
+                            //var files = await api.GetProductFilesAsync(new List<string> { "LM358AD-ST" });
+                            //var prices = await api.GetProductPricesAsync(new List<string> { "LM358AD-ST" });
                             var result = await api.SearchAsync("LM555", 1);
                             if (result.Errors.Any())
                                 return new TestApiResponse(nameof(Integrations.TmeApi), string.Join(". ", result.Errors));
