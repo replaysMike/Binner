@@ -122,7 +122,7 @@ namespace Binner.Common.IO.Printing
             var drawEveryY = _paperRect.Height / labelProperties.LabelCount;
             for (var i = 1; i < labelProperties.LabelCount; i++)
             {
-                image.Mutate(c => c.DrawLines(Pens.Solid(Color.Black, 2), new PointF(0, drawEveryY * i), new PointF(_paperRect.Width, drawEveryY * i)));
+                image.Mutate(c => c.DrawLine(Pens.Solid(Color.Black, 2), new PointF(0, drawEveryY * i), new PointF(_paperRect.Width, drawEveryY * i)));
             }
         }
 
@@ -242,7 +242,7 @@ namespace Binner.Common.IO.Printing
             // autowrap line 2
             do
             {
-                len = TextMeasurer.Measure(line1, new TextOptions(fontFirstLine) { Dpi = Dpi } );
+                len = TextMeasurer.MeasureSize(line1, new TextOptions(fontFirstLine) { Dpi = Dpi } );
                 if (len.Width > paperRect.Width - margins.Right - margins.Left)
                     line1 = line1.Substring(0, line1.Length - 1);
             } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -252,7 +252,7 @@ namespace Binner.Common.IO.Printing
                 line2 = description.Substring(line1.Length, description.Length - line1.Length).Trim();
                 do
                 {
-                    len = TextMeasurer.Measure(line2, new TextOptions(fontSecondLine) { Dpi = Dpi });
+                    len = TextMeasurer.MeasureSize(line2, new TextOptions(fontSecondLine) { Dpi = Dpi });
                     if (len.Width > paperRect.Width - margins.Right - margins.Left)
                         line2 = line2.Substring(0, line2.Length - 1);
                 } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -269,8 +269,8 @@ namespace Binner.Common.IO.Printing
             var font = CreateFont(template, text, paperRect);
             
             var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
-            var textOptions = new TextOptions(font) { Dpi = Dpi, KerningMode = KerningMode.Auto };
-            var textBounds = TextMeasurer.Measure(text, textOptions);
+            var textOptions = new RichTextOptions(font) { Dpi = Dpi, KerningMode = KerningMode.Auto };
+            var textBounds = TextMeasurer.MeasureSize(text, textOptions);
             var x = 0f;
             var y = lineOffset.Y;
             x += template.Margin.Left;
@@ -310,13 +310,13 @@ namespace Binner.Common.IO.Printing
                     {
                         Transform = builder.BuildMatrix(Rectangle.Round(new RectangleF(textBounds.X, textBounds.Y, textBounds.Width, textBounds.Height)))
                     };
-                    var textOptions2 = new TextOptions(font)
+                    var textOptions2 = new RichTextOptions(font)
                     {
                         Origin = new PointF(0, 0),
                         Dpi = Dpi,
-                        KerningMode = KerningMode.Normal,
+                        KerningMode = KerningMode.Standard,
                     };
-                    image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), Pens.Solid(fontColor, 1)));
+                    image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), null));
                 }
                 else
                 {
@@ -333,13 +333,13 @@ namespace Binner.Common.IO.Printing
                             break;
                     }
                     var drawingOptions = new DrawingOptions();
-                    var textOptions2 = new TextOptions(font)
+                    var textOptions2 = new RichTextOptions(font)
                     {
                         Origin = new PointF(x, y),
                         Dpi = Dpi,
-                        KerningMode = KerningMode.Normal
+                        KerningMode = KerningMode.Standard
                     };
-                    image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), Pens.Solid(fontColor, 1)));
+                    image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), null));
                 }
             }
             // return the new drawing cursor position
@@ -434,7 +434,7 @@ namespace Binner.Common.IO.Printing
                     {
                         Dpi = Dpi
                     };
-                    len = TextMeasurer.Measure(text, textOptions);
+                    len = TextMeasurer.MeasureSize(text, textOptions);
                     if (len.Width > maxWidth)
                         newFontSize -= 0.5f;
                 } while (len.Width > maxWidth);

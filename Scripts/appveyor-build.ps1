@@ -1,6 +1,6 @@
 $project = ".\Binner\Binner.ReleaseBuild.sln"
 $releaseConfiguration = "Release"
-$framework = "net7.0"
+$framework = "net8.0"
 
 Write-Host "Building $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
 
@@ -34,7 +34,7 @@ if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
 # publish specific profiles
 Write-Host "Publishing for each environment..." -ForegroundColor green
 
-$buildEnv = "win10-x64"
+$buildEnv = "win-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
 if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
@@ -69,13 +69,7 @@ dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
 if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
 robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
 
-$buildEnv = "ubuntu.14.04-x64"
-Write-Host "Publishing for $buildEnv.." -ForegroundColor cyan
-dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
-if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
-robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-
-$buildEnv = "osx.10.12-x64"
+$buildEnv = "osx-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
 if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
@@ -84,7 +78,7 @@ robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseCon
 # transform configurations per environment
 # windows does not need a transform
 
-$buildEnv = "win10-x64"
+$buildEnv = "win-x64"
 Copy-Item -Force -Path .\Binner\scripts\windows\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
 
 $buildEnv = "linux-x64"
@@ -108,15 +102,7 @@ Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\
 if (!$?) { exit -1  }
 Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
 
-$buildEnv = "ubuntu.14.04-x64"
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
-if (!$?) { exit -1  }
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
-if (!$?) { exit -1  }
-Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
-if (!$?) { exit -1  }
-
-$buildEnv = "osx.10.12-x64"
+$buildEnv = "osx-x64"
 Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
 if (!$?) { exit -1  }
 Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
@@ -146,9 +132,7 @@ tar -czf Binner_linux-arm.targz -C .\Binner\Binner.Web\bin\$($releaseConfigurati
 
 tar -czf Binner_linux-arm64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm64\publish .
 
-tar -czf Binner_ubuntu.14.04-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\ubuntu.14.04-x64\publish .
-
-tar -czf Binner_osx.10.12-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\osx.10.12-x64\publish .
+tar -czf Binner_osx-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\osx-x64\publish .
 
 Write-Host "Uploading Artifacts" -ForegroundColor green
 Get-ChildItem .\Binner\BinnerInstaller\*.exe | % { Push-AppveyorArtifact $_.FullName }
