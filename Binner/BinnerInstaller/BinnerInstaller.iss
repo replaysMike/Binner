@@ -18,7 +18,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\Binner.Web\LICENSE
 OutputDir=.\
-OutputBaseFilename=BinnerSetup-win10x64-{#MyAppVersion}
+OutputBaseFilename=BinnerSetup-winx64-{#MyAppVersion}
 SetupIconFile=.\binner128x128.ico
 Compression=lzma
 SolidCompression=yes
@@ -47,7 +47,7 @@ Name: "keepconfiguration"; Description: "Keep existing configuration"
 Name: "installservice"; Description: "Install {#MyAppName} as a Windows service"
 
 [Files]
-Source: "..\Binner.Web\bin\Release\net7.0\win10-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Binner.Web\bin\Release\net8.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

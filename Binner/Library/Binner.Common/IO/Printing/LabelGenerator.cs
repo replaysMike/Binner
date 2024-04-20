@@ -337,18 +337,18 @@ namespace Binner.Common.IO.Printing
             var fontFamily = GetOrCreateFontFamily(box.Properties.Font);
             var fontSize = GetFontSize(box.Properties.FontSize);
             var font = new Font(fontFamily, fontSize, box.Properties.FontWeight != FontWeights.Normal ? FontStyle.Bold : FontStyle.Regular);
-            var textOptions = new TextOptions(font)
+            var textOptions = new RichTextOptions(font)
             {
                 Origin = new PointF(0, 0),
                 TabWidth = 4,
                 Dpi = labelDef.Label.Dpi,
-                WordBreaking = WordBreaking.Normal,
+                WordBreaking = WordBreaking.Standard,
                 KerningMode = KerningMode.None,
                 WrappingLength = width,
             };
 
-            var measure = TextMeasurer.Measure(text, textOptions);
-            while (measure.Height - (fontSize * 1.5f) > height)
+            var measure = TextMeasurer.MeasureSize(text, textOptions);
+            while (measure.Height > height)
             {
                 if (fontSize > 5.0f)
                 {
@@ -365,20 +365,20 @@ namespace Binner.Common.IO.Printing
                 }
 
                 font = new Font(fontFamily, fontSize, box.Properties.FontWeight != FontWeights.Normal ? FontStyle.Bold : FontStyle.Regular);
-                textOptions = new TextOptions(font)
+                textOptions = new RichTextOptions(font)
                 {
                     Origin = new PointF(0, 0),
                     TabWidth = 4,
                     Dpi = labelDef.Label.Dpi,
-                    WordBreaking = WordBreaking.Normal,
+                    WordBreaking = WordBreaking.Standard,
                     KerningMode = KerningMode.None,
                     WrappingLength = width,
                 };
-                measure = TextMeasurer.Measure(text, textOptions);
+                measure = TextMeasurer.MeasureSize(text, textOptions);
             }
 
             var textX = x;
-            var textY = y - (fontSize * 1.5f);
+            var textY = y;
             textOptions.Origin = new PointF(textX, textY);
 
             /*
@@ -420,11 +420,11 @@ namespace Binner.Common.IO.Printing
                         textOptions.Origin =  new PointF(textX, textY - ((measure.Height / 2f) + (height / 2f)));
                         break;
                 }
-                drawingOptions.Transform = builder.BuildMatrix(Rectangle.Round(new RectangleF(x, y, width - 1, Math.Max(height, measure.Height - (fontSize * 1.5f)) - 1)));
+                drawingOptions.Transform = builder.BuildMatrix(Rectangle.Round(new RectangleF(x, y, width - 1, Math.Max(height, measure.Height) - 1)));
             }
 
             // draw text
-            image.Mutate<Rgba32>(c => c.DrawText(drawingOptions, textOptions, text, Brushes.Solid(fontColor), Pens.Solid(fontColor, 1)));
+            image.Mutate<Rgba32>(c => c.DrawText(drawingOptions, textOptions, text, Brushes.Solid(fontColor), null));
             
             // draw text box bounds border
             if (labelDef.Label.ShowBoundaries)

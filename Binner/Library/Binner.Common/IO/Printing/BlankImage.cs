@@ -69,14 +69,14 @@ namespace Binner.Common.IO.Printing
             if (drawGrid)
             {
                 for (var x = 0; x < width; x += 20)
-                    Image.Mutate(c => c.DrawLines(Brushes.Solid(Color.LightGray), 1f, new PointF(x, 0), new PointF(x, height)));
+                    Image.Mutate(c => c.DrawLine(Brushes.Solid(Color.LightGray), 1f, new PointF(x, 0), new PointF(x, height)));
                 for (var y = 0; y < height; y += 20)
-                    Image.Mutate(c => c.DrawLines(Brushes.Solid(Color.LightGray), 1f, new PointF(0, y), new PointF(width, y)));
+                    Image.Mutate(c => c.DrawLine(Brushes.Solid(Color.LightGray), 1f, new PointF(0, y), new PointF(width, y)));
             }
             if (text != null)
             {
                 var font = ff.CreateFont(fontSize ?? 24);
-                var len = TextMeasurer.Measure(text, new TextOptions(font));
+                var len = TextMeasurer.MeasureSize(text, new TextOptions(font));
                 Image.Mutate(c => c.DrawText(text, font, foreground ?? Color.Black, new PointF((width / 2f) - (len.Width / 2f), (height / 2f) - (len.Height / 2f))));
             }
         }
