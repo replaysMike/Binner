@@ -12,9 +12,9 @@ namespace Binner.Common.Integrations
 {
     public class PartInformationProvider : IPartInformationProvider
     {
-        private IIntegrationApiFactory _integrationApiFactory;
-        private ILogger _logger;
-        private WebHostServiceConfiguration _configuration;
+        private readonly IIntegrationApiFactory _integrationApiFactory;
+        private readonly ILogger _logger;
+        private readonly WebHostServiceConfiguration _configuration;
         private List<Type> _providers = new()
         {
             typeof(SwarmApi),
