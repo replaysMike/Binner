@@ -21,6 +21,7 @@ namespace Binner.Common.Integrations
     {
         public string Name => "TME";
         public const string BasePath = "/";
+        public const string DefaultApiUrl = "https://api.tme.eu/";
         private readonly TmeConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
         private readonly HttpClient _client;
@@ -82,7 +83,7 @@ namespace Binner.Common.Integrations
             var prefix = "Products";
             var action = "Search";
             var path = $"{prefix}/{action}.{format}";
-            var uri = Url.Combine(_configuration.ApiUrl, BasePath, path);
+            var uri = Url.Combine(GetApiUrl(), BasePath, path);
 
             // build the api params request
             // Text describing the searched product, may consist of multiple words. Example: "led diode","cover", "1N4007". (optional)
@@ -133,7 +134,7 @@ namespace Binner.Common.Integrations
             var prefix = "Products";
             var action = "GetProductsFiles";
             var path = $"{prefix}/{action}.{format}";
-            var uri = Url.Combine(_configuration.ApiUrl, BasePath, path);
+            var uri = Url.Combine(GetApiUrl(), BasePath, path);
 
             // build the api params request
             // Text describing the searched product, may consist of multiple words. Example: "led diode","cover", "1N4007". (optional)
@@ -178,7 +179,7 @@ namespace Binner.Common.Integrations
             var prefix = "Products";
             var action = "GetPricesAndStocks";
             var path = $"{prefix}/{action}.{format}";
-            var uri = Url.Combine(_configuration.ApiUrl, BasePath, path);
+            var uri = Url.Combine(GetApiUrl(), BasePath, path);
 
             // build the api params request
             // Text describing the searched product, may consist of multiple words. Example: "led diode","cover", "1N4007". (optional)
@@ -219,7 +220,7 @@ namespace Binner.Common.Integrations
             var prefix = "Products";
             var action = "GetCategories";
             var path = $"{prefix}/{action}.{format}";
-            var uri = Url.Combine(_configuration.ApiUrl, BasePath, path);
+            var uri = Url.Combine(GetApiUrl(), BasePath, path);
 
             // build the api params request
             var isTree = false;
@@ -387,6 +388,8 @@ namespace Binner.Common.Integrations
             }
             return new string(temp);
         }
+
+        private string GetApiUrl() => string.IsNullOrEmpty(_configuration.ApiUrl) ? DefaultApiUrl : _configuration.ApiUrl;
 
         private void ValidateConfiguration()
         {
