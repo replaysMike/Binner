@@ -14,7 +14,6 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using static Binner.Common.Integrations.ArrowApi;
 
 namespace Binner.Common.Integrations
 {
@@ -326,7 +325,7 @@ namespace Binner.Common.Integrations
         {
             apiResponse = apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(TmeApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                throw new ArrowUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
+                throw new TmeUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
             {
                 if (response.Headers.Contains("X-RateLimit-Limit"))
@@ -394,6 +393,14 @@ namespace Binner.Common.Integrations
             if (string.IsNullOrEmpty(_configuration.ApplicationSecret)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApplicationSecret!");
             if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiKey!");
             if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiUrl!");
+        }
+
+        public class TmeUnauthorizedException : Exception
+        {
+            public TmeUnauthorizedException(string message) : base(message)
+            {
+
+            }
         }
     }
 }
