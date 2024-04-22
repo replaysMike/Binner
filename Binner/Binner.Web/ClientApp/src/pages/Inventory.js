@@ -118,8 +118,8 @@ export function Inventory(props) {
   const [metadataParts, setMetadataParts] = useState([]);
   const [duplicateParts, setDuplicateParts] = useState([]);
   const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(false);
-  const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
-  const [confirmPartDeleteContent, setConfirmPartDeleteContent] = useState(null);
+  const [confirmDeletePartIsOpen, setConfirmDeletePartIsOpen] = useState(false);
+  const [confirmDeletePartContent, setConfirmDeletePartContent] = useState(null);
   const [partTypes, setPartTypes] = useState([]);
   const [allPartTypes, setAllPartTypes] = useState([]);
   const [loadingPart, setLoadingPart] = useState(false);
@@ -699,7 +699,9 @@ export function Inventory(props) {
         ...storedProductImages.map((pi) => ({
           name: pi.originalFileName,
           value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
-          id: pi.storedFileId
+          url: `/api/storedFile/local?fileName=${pi.fileName}&token=${getImagesToken()}`,
+          id: pi.storedFileId,
+          localfile: pi.fileName,
         }))
       );
     if (storedDatasheets && storedDatasheets.length > 0)
@@ -713,7 +715,8 @@ export function Inventory(props) {
             manufacturer: "",
             title: pi.originalFileName
           },
-          id: pi.storedFileId
+          id: pi.storedFileId,
+          localfile: pi.fileName,
         }))
       );
     if (storedPinouts && storedPinouts.length > 0)
@@ -721,7 +724,9 @@ export function Inventory(props) {
         ...storedPinouts.map((pi) => ({
           name: pi.originalFileName,
           value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
-          id: pi.storedFileId
+          url: `/api/storedFile/local?fileName=${pi.fileName}&token=${getImagesToken()}`,
+          id: pi.storedFileId,
+          localfile: pi.fileName,
         }))
       );
     if (storedReferenceDesigns && storedReferenceDesigns.length > 0)
@@ -729,7 +734,9 @@ export function Inventory(props) {
         ...storedReferenceDesigns.map((pi) => ({
           name: pi.originalFileName,
           value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
-          id: pi.storedFileId
+          url: `/api/storedFile/local?fileName=${pi.fileName}&token=${getImagesToken()}`,
+          id: pi.storedFileId,
+          localfile: pi.fileName,
         }))
       );
     return infoResponse;
@@ -1041,18 +1048,18 @@ export function Inventory(props) {
       body: JSON.stringify({ partId: selectedPart.partId })
     });
     const partsDeleted = _.without(parts, _.findWhere(parts, { partId: selectedPart.partId }));
-    setConfirmDeleteIsOpen(false);
+    setConfirmDeletePartIsOpen(false);
     setParts(partsDeleted);
     setSelectedPart(null);
     props.history(`/inventory`);
   };
 
-  const confirmDeleteOpen = (e, part) => {
+  const openDeletePart = (e, part) => {
     e.preventDefault();
     e.stopPropagation();
-    setConfirmDeleteIsOpen(true);
+    setConfirmDeletePartIsOpen(true);
     setSelectedPart(part);
-    setConfirmPartDeleteContent(
+    setConfirmDeletePartContent(
       <p>
         <Trans i18nKey="confirm.deletePart" name={inputPartNumber}>
           Are you sure you want to delete part <b>{{ name: inputPartNumber }}</b>?
@@ -1066,10 +1073,10 @@ export function Inventory(props) {
     );
   };
 
-  const confirmDeleteClose = (e) => {
+  const closeDeletePart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setConfirmDeleteIsOpen(false);
+    setConfirmDeletePartIsOpen(false);
     setSelectedPart(null);
   };
 
@@ -1301,7 +1308,7 @@ export function Inventory(props) {
                       />
                     </Button.Group>
                     {part && part.partId > 0 && (
-                      <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, part)} style={{ marginLeft: "10px" }}>
+                      <Button type="button" title="Delete" onClick={(e) => openDeletePart(e, part)} style={{ marginLeft: "10px" }}>
                         <Icon name="delete" />
                         {t('button.delete', "Delete")}
                       </Button>
@@ -1560,10 +1567,10 @@ export function Inventory(props) {
       <Confirm
         className="confirm"
         header={t('confirm.header.deletePart', "Delete Part")}
-        open={confirmDeleteIsOpen}
-        onCancel={confirmDeleteClose}
+        open={confirmDeletePartIsOpen}
+        onCancel={closeDeletePart}
         onConfirm={handleDeletePart}
-        content={confirmPartDeleteContent}
+        content={confirmDeletePartContent}
       />
       <Confirm
         className="confirm"

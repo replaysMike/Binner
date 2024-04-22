@@ -100,6 +100,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
                     productImages.unshift({
                       name: data[i].originalFileName,
                       value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
+                      url: `/api/storedFile/local?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                       id: data[i].storedFileId
                     });
                   }
@@ -115,7 +116,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
                         description: data[i].originalFileName,
                         imageUrl: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                         manufacturer: "",
-                        title: data[i].originalFileName
+                        title: data[i].originalFileName,
                       },
                       id: data[i].storedFileId
                     };
@@ -130,7 +131,8 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
                     pinoutImages.unshift({
                       name: data[i].originalFileName,
                       value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
-                      id: data[i].storedFileId
+                      url: `/api/storedFile/local?fileName=${data[i].fileName}&token=${getImagesToken()}`,
+                      id: data[i].storedFileId,
                     });
                   }
                   setMetadata({ ...metadata, pinoutImages });
@@ -141,7 +143,8 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
                     circuitImages.unshift({
                       name: data[i].originalFileName,
                       value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
-                      id: data[i].storedFileId
+                      url: `/api/storedFile/local?fileName=${data[i].fileName}&token=${getImagesToken()}`,
+                      id: data[i].storedFileId,
                     });
                   }
                   setMetadata({ ...metadata, circuitImages });
@@ -246,10 +249,37 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
     );
   };
 
-  const handleVisitLink = (e, url) => {
+  const handleVisitLink = async (e, data) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open(url, "_blank");
+
+    if (data && data.localfile) {
+      // check if the stored file exists first
+      await fetchApi(`api/storedfile/exists?fileName=${data.localfile}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        },
+      }).then(() => {
+        // OK, file exists
+        if (data.value.datasheetUrl)
+          window.open(data.value.datasheetUrl, "_blank");
+        else
+          window.open(data.url || data.value, "_blank");
+      }).catch(err => {
+        // file not found, or file read error
+        if (err.data.status === 404)
+          toast.error(`User file '${data.localfile}' does not exist on disk!`)
+        else
+          toast.error(`Failed to read local file '${data.localfile}'!`)
+      });
+    } else {
+      // open the external link
+      if (data.value.datasheetUrl)
+        window.open(data.value.datasheetUrl, "_blank");
+      else
+        window.open(data.url || data.value, "_blank");
+    }
   };
 
 	const confirmDeleteLocalFileClose = (e) => {
@@ -285,7 +315,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 								{metadata.productImages
 									?.filter((x) => x.value.length > 0)
 									?.map((productImage, imageKey) => (
-										<Carousel.Item key={imageKey}>
+                    <Carousel.Item key={imageKey} onClick={(e) => handleVisitLink(e, productImage)}>
 											<Image src={productImage.value} size="large" />
 											{productImage.id && (
 												<Popup
@@ -334,7 +364,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 							<div>
 								<Carousel variant="dark" interval={null} onSelect={onCurrentDatasheetChanged} className="datasheets">
 									{metadata.datasheets.map((datasheet, datasheetKey) => (
-										<Carousel.Item key={datasheetKey} onClick={(e) => handleVisitLink(e, datasheet.value.datasheetUrl)} {...getDatasheetAttributes(datasheet)}>
+										<Carousel.Item key={datasheetKey} onClick={(e) => handleVisitLink(e, datasheet)} {...getDatasheetAttributes(datasheet)}>
 											<Image src={datasheet.value.imageUrl} size="large" />
 											{datasheet.id && (
 												<Popup
@@ -392,7 +422,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 							<div>
 								<Carousel variant="dark" interval={null} className="pinout-images">
 									{metadata.pinoutImages.map((pinout, pinoutKey) => (
-										<Carousel.Item key={pinoutKey}>
+                    <Carousel.Item key={pinoutKey} onClick={(e) => handleVisitLink(e, pinout)}>
 											<Image src={pinout.value} size="large" />
 											{pinout.id && (
 												<Popup
@@ -441,7 +471,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 							<div>
 								<Carousel variant="dark" interval={null} className="circuit-images">
 									{metadata.circuitImages.map((circuit, circuitKey) => (
-										<Carousel.Item key={circuitKey}>
+                    <Carousel.Item key={circuitKey} onClick={(e) => handleVisitLink(e, circuit)}>
 											<Image src={circuit.value} size="large" />
 											{circuit.id && (
 												<Popup
@@ -482,7 +512,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 				</Dropzone>
 			</>
 		);
-	}, [metadata, datasheetTitle, datasheetPartName, datasheetDescription, datasheetManufacturer, thePart, loadingPartMetadata, uploading]);
+  }, [metadata, datasheetTitle, datasheetPartName, datasheetDescription, datasheetManufacturer, thePart, loadingPartMetadata, uploading, setConfirmDeleteLocalFileIsOpen, confirmDeleteLocalFileIsOpen, confirmLocalFileDeleteContent, handleDeleteLocalFile]);
 
 	return (
     <>
