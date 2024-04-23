@@ -38,6 +38,11 @@
         public int Crc32 { get; set; }
 
         /// <summary>
+        /// Optional user id to associate
+        /// </summary>
+        public int UserId { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
