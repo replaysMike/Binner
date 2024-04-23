@@ -68,7 +68,14 @@ namespace Binner.Common.IO
                 {
                     case "sqlite":
                     case "binner":
-                        await RestoreSqliteAsync(dbInfo);
+                        try
+                        {
+                            await RestoreSqliteAsync(dbInfo);
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            // expected, unavoidable
+                        }
                         await ProcessFileOperationsAsync(dbInfo);
                         return;
                     case "sqlserver":
@@ -261,7 +268,7 @@ namespace Binner.Common.IO
     {
         public BackupInfo? BackupInfo { get; set; }
         public MemoryStream? Database { get; set; }
-        public List<FileOperation> FileOperations { get; set; } = new ();
+        public List<FileOperation> FileOperations { get; set; } = new();
     }
 
     public class FileOperation
@@ -275,5 +282,7 @@ namespace Binner.Common.IO
             DestinationFilename = destinationFilename;
             Data = data;
         }
+
+        public override string ToString() => DestinationFilename;
     }
 }

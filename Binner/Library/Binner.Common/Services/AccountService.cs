@@ -41,7 +41,7 @@ namespace Binner.Common.Services
         public async Task<Account> GetAccountAsync()
         {
             var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetAccountQueryable(context)
                 .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId)
                 .AsSplitQuery()
@@ -60,7 +60,7 @@ namespace Binner.Common.Services
         public async Task<UpdateAccountResponse> UpdateAccountAsync(Account account)
         {
             var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetAccountQueryable(context)
                 .Where(x => x.UserId == userContext.UserId)
                 .AsSplitQuery()
@@ -114,7 +114,7 @@ namespace Binner.Common.Services
         public async Task UploadProfileImageAsync(MemoryStream stream, string originalFilename, string contentType, long length)
         {
             var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetAccountQueryable(context)
                 .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId)
                 .AsSplitQuery()
