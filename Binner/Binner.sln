@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binner.Global.Common", "Lib
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Barcoder.Renderer.Image", "External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj", "{0037D5E6-5FE2-4989-8668-266DB89DBAF2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binner.Testing", "Binner.Testing\Binner.Testing.csproj", "{958AE9B3-B6AD-4FA7-A463-0AD41D8B3665}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,10 @@ Global
 		{0037D5E6-5FE2-4989-8668-266DB89DBAF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0037D5E6-5FE2-4989-8668-266DB89DBAF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0037D5E6-5FE2-4989-8668-266DB89DBAF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{958AE9B3-B6AD-4FA7-A463-0AD41D8B3665}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{958AE9B3-B6AD-4FA7-A463-0AD41D8B3665}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{958AE9B3-B6AD-4FA7-A463-0AD41D8B3665}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{958AE9B3-B6AD-4FA7-A463-0AD41D8B3665}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -150,6 +156,7 @@ Global
 		{DEEF8BAC-16E2-4FD3-ACDF-8E464189A3B1} = {2D9C4743-1B04-41B1-A12F-4CCF6F5BAB3E}
 		{12E4F3B4-00DB-4FB8-B326-EE81A2FFE64B} = {2D9C4743-1B04-41B1-A12F-4CCF6F5BAB3E}
 		{0037D5E6-5FE2-4989-8668-266DB89DBAF2} = {5E8D1F9D-68C0-444A-B04F-5AAC822D684E}
+		{958AE9B3-B6AD-4FA7-A463-0AD41D8B3665} = {3FF195C3-1F60-48E5-9EAB-1C4AAC791ABA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {413F8D19-37B6-4A57-858F-DD8AFF2DAE96}
