@@ -66,7 +66,7 @@ namespace Binner.Common.IO
             };
 
             // drop the database if it exists
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             await using var conn = context.Database.GetDbConnection();
             await conn.OpenAsync();
             await using var cmdDrop = conn.CreateCommand();

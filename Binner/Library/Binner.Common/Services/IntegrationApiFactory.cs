@@ -100,7 +100,7 @@ namespace Binner.Common.Services
 #pragma warning restore CS1998
             {
                 // create a db context
-                //using var context = await _contextFactory.CreateDbContextAsync();
+                //await using var context = await _contextFactory.CreateDbContextAsync();
                 /*var userIntegrationConfiguration = await context.UserIntegrationConfigurations
                     .Where(x => x.UserId.Equals(userId))
                     .FirstOrDefaultAsync()
@@ -221,7 +221,7 @@ namespace Binner.Common.Services
 #pragma warning restore CS1998
             {
                 // create a db context
-                //using var context = await _contextFactory.CreateDbContextAsync();
+                //await using var context = await _contextFactory.CreateDbContextAsync();
                 /*var userIntegrationConfiguration = await context.UserIntegrationConfigurations
                     .Where(x => x.UserId.Equals(userId))
                     .FirstOrDefaultAsync()

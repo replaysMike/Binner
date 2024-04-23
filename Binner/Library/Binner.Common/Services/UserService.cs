@@ -60,7 +60,7 @@ namespace Binner.Common.Services
             if (userId == 1)
                 throw new SecurityException($"The root admin user cannot be deleted.");
             var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetUserQueryable(context, userContext)
                 .Where(x => x.UserId == userId)
                 .AsSplitQuery()
@@ -83,7 +83,7 @@ namespace Binner.Common.Services
 
         public async Task<IUserContext?> ValidateUserImageToken(string token)
         {
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var userToken = await context.UserTokens
                 .Include(x => x.User)
                 .FirstOrDefaultAsync(x =>
