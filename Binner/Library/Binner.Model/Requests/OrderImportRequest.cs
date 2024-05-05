@@ -15,11 +15,16 @@
         /// <summary>
         /// Username
         /// </summary>
-        public string? Username { get;set;}
+        public string? Username { get; set; }
 
         /// <summary>
         /// Password
         /// </summary>
-        public string? Password { get;set;}
+        public string? Password { get; set; }
+
+        /// <summary>
+        /// True to request additional product info
+        /// </summary>
+        public bool RequestProductInfo { get; set; }
     }
 }

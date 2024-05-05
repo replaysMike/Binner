@@ -25,6 +25,11 @@ namespace Binner.Model.Responses
         public ArrowUserConfiguration Arrow { get; set; } = new();
 
         /// <summary>
+        /// TME config
+        /// </summary>
+        public TmeUserConfiguration Tme { get; set; } = new();
+
+        /// <summary>
         /// Binner config
         /// </summary>
         public SwarmUserConfiguration Binner { get; set; } = new();

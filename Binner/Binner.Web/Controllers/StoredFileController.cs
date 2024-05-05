@@ -51,6 +51,29 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Check if an existing stored file exists on disk
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        [HttpGet("exists")]
+        public async Task<IActionResult> GetStoredFileExistsAsync([FromQuery] string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return NotFound();
+            var storedFile = await _storedFileService.GetStoredFileAsync(fileName);
+            if (storedFile == null) return NotFound();
+
+            // read the file contents
+            new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType);
+            if (string.IsNullOrEmpty(contentType))
+                return BadRequest($"Could not determine content type for file '{fileName}'");
+            var path = _storedFileService.GetStoredFilePath(storedFile.StoredFileType);
+            var pathToFile = Path.Combine(path, fileName);
+            if (System.IO.File.Exists(pathToFile))
+                return Ok();
+            return NotFound();
+        }
+
+        /// <summary>
         /// Get an existing user uploaded file
         /// </summary>
         /// <param name="fileName"></param>

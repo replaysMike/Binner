@@ -55,6 +55,11 @@ namespace Binner.Model
         public string? ArrowPartNumber { get; set; }
 
         /// <summary>
+        /// The TME part number
+        /// </summary>
+        public string? TmePartNumber { get; set; }
+
+        /// <summary>
         /// Description of part
         /// </summary>
         public string? Description { get; set; }

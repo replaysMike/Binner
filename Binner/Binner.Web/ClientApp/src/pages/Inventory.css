@@ -1,3 +1,30 @@
+@media print {
+  *:not(#printarea) {
+    visibility: hidden !important;
+		width: 0 !important;
+		height: 0 !important;
+		position: fixed !important;
+		top: 0 !important;
+		left: 0 !important;
+  }
+  #printarea {
+    visibility: visible !important;
+    position: fixed !important;
+		margin: 0 !important;
+		padding: 0 !important;
+    left: 30px !important;
+    top: 10px !important;
+		z-index: 99999 !important;
+		float: none !important;
+		display: block;
+		border-style: none;
+		/*width: auto !important;*/
+		/*height: auto !important;*/
+		zoom: 1;
+		scale: 1;
+  }
+}
+
 .inventory .render-disabled {
 	background-color: #f0f0f0 !important;
 	background-image: linear-gradient(#fff, #bbb);

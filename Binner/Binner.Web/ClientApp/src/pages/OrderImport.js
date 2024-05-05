@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Link } from "react-router-dom";
 import _ from "underscore";
-import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Popup, Icon } from "semantic-ui-react";
+import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Popup, Icon, Confirm } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
 import { FormError } from "../components/FormError";
 import { toast } from "react-toastify";
@@ -20,9 +20,15 @@ export function OrderImport(props) {
   const [orderImportSearchResult, setOrderImportSearchResult] = useState(null);
   const [importResult, setImportResult] = useState(null);
   const [error, setError] = useState(null);
+  const [apiMessages, setApiMessages] = useState([]);
   const [message, setMessage] = useState(null);
   const [isKeyboardListening, setIsKeyboardListening] = useState(true);
   const [enableArrowPrepareEmail, setEnableArrowPrepareEmail] = useState(false);
+  const [requestProductInfo, setRequestProductInfo] = useState(true);
+  const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
+  const [authorizationApiName, setAuthorizationApiName] = useState('');
+  const [authorizationUrl, setAuthorizationUrl] = useState(null);
+
   const [order, setOrder] = useState({
     orderId: "",
     supplier: "DigiKey",
@@ -122,7 +128,9 @@ export function OrderImport(props) {
       orderId: order.orderId,
       supplier: order.supplier,
       username: order.username,
-      password: order.password
+      password: order.password,
+      // select if we should fetch all product information for each line item in the order
+      requestProductInfo: requestProductInfo
     };
 
     try {
@@ -141,7 +149,11 @@ export function OrderImport(props) {
           const errorMessage = data.errors.join("\n");
           setError(errorMessage);
           setLoading(false);
-          window.open(data.redirectUrl, "_blank");
+
+          // redirect for authentication
+          setAuthorizationApiName(data.apiName);
+          setAuthorizationUrl(data.redirectUrl);
+          setConfirmAuthIsOpen(true);
           return;
         }
 
@@ -153,6 +165,7 @@ export function OrderImport(props) {
             setLoading(false);
             toast.error(errorMessage);
           } else {
+            setApiMessages(data.response.messages);
             data.response.parts.forEach((i) => {
               i.selected = true;
             });
@@ -185,7 +198,7 @@ export function OrderImport(props) {
   const handleArrowEmail = (e, order) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!order.username || !order.password || order.username.length === 0 || order.password.length === 0){
+    if (!order.username || !order.password || order.username.length === 0 || order.password.length === 0) {
       setError("Please fill out the username/password fields first. We will encode them correctly for the email.");
       return;
     }
@@ -202,13 +215,13 @@ export function OrderImport(props) {
         break;
       case "supplier":
         newOrder.supplier = control.value;
-        switch(newOrder.supplier) {
+        switch (newOrder.supplier) {
           case "Mouser":
             setOrderLabel(t('page.orderImport.webOrderNum', "Web Order #"));
             setMessage(
               <div>
                 <Trans i18nKey="page.orderImport.mouserNote">
-                <i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i>
+                  <i>Note:</i> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <i>not the Sales Order #</i>
                 </Trans>
               </div>
             );
@@ -223,13 +236,13 @@ export function OrderImport(props) {
             setMessage(
               <div>
                 <Trans i18nKey="page.orderImport.arrowNote">
-                <i>Note:</i> Arrow requires that you first request access to their Order API by sending them an email. See <a href="https://developers.arrow.com/api/index.php/site/page?view=orderApi" target="_blank" rel="noreferrer">Arrow Order Api</a>
+                  <i>Note:</i> Arrow requires that you first request access to their Order API by sending them an email. See <a href="https://developers.arrow.com/api/index.php/site/page?view=orderApi" target="_blank" rel="noreferrer">Arrow Order Api</a>
                 </Trans>
               </div>
             );
             break;
           default:
-          break;
+            break;
         }
         break;
       default:
@@ -259,7 +272,11 @@ export function OrderImport(props) {
 
   const handleChecked = (e, p) => {
     p.selected = !p.selected;
-    setOrderImportSearchResult({...orderImportSearchResult});
+    setOrderImportSearchResult({ ...orderImportSearchResult });
+  };
+
+  const handleToggleRequestProductInfo = () => {
+    setRequestProductInfo(!requestProductInfo);
   };
 
   const formatTrackingNumber = (trackingNumber) => {
@@ -270,6 +287,11 @@ export function OrderImport(props) {
         </a>
       );
     return trackingNumber || t('label.unspecified', "Unspecified");
+  };
+
+  const handleAuthRedirect = (e) => {
+    e.preventDefault();
+    window.location.href = authorizationUrl;
   };
 
   const renderAllMatchingParts = (order) => {
@@ -302,6 +324,16 @@ export function OrderImport(props) {
                 </Table>
               </Table.HeaderCell>
             </Table.Row>
+            {order.messages.length > 0 && <Table.Row>
+              <Table.Cell colSpan={10}>
+                <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
+                <ul style={{ marginBottom: '10px' }} className="errors">
+                  {order.messages.map((messageItem, key) => (
+                    <li key={key} className={`${messageItem.isError ? 'error' : ''}`}>{messageItem.isError ? t('label.error', 'Error') + ': ' : ''}{messageItem.description}</li>
+                  ))}
+                </ul>
+              </Table.Cell>
+            </Table.Row>}
             <Table.Row>
               <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
               <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
@@ -354,58 +386,71 @@ export function OrderImport(props) {
   const renderImportResult = (importResult) => {
     return (
       <div>
-          <Table compact celled selectable size="small" className="partstable">
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell></Table.HeaderCell>
-                <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
-                <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
-                <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
-                <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
-                <Table.HeaderCell>{t('label.supplierPart', "Supplier Part")}</Table.HeaderCell>
-                <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
-                <Table.HeaderCell>{t('label.quantityShort', "Qty")}</Table.HeaderCell>
-                <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {importResult.parts.map((p, index) => (
-                <React.Fragment key={index}>
-                  <Table.Row>
-                    <Table.Cell>
-                      <Icon name={p.isImported ? "check circle" : "times circle"} color={p.isImported ? "green" : "red"} />
-                    </Table.Cell>
-                    <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.description}>
-                      {p.description}
-                    </Table.Cell>
-                    <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
-                    <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.manufacturer}>
-                      {p.manufacturer}
-                    </Table.Cell>
-                    <Table.Cell>{p.partType}</Table.Cell>
-                    <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-                    <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
-                    <Table.Cell>{p.quantityAvailable}</Table.Cell>
-                    <Table.Cell><Image src={p.imageUrl} size="mini"></Image></Table.Cell>
-                  </Table.Row>
-                  <Table.Row style={{backgroundColor: '#fafafa'}}>
-                    <Table.Cell></Table.Cell>
-                    <Table.Cell colSpan={8} style={{fontSize: '0.8em'}}>
-                      {p.errorMessage && <div style={{color: '#c00', fontWeight: '500'}}>{t('label.error', "Error")}: {p.errorMessage}</div>}
-                      <div>{p.quantityAdded} {t('page.orderImport.addedToInventory', "added to inventory")}{p.quantityExisting > 0 && <span>, {p.quantityExisting} {t('page.orderImport.alreadyInInventory', "already in inventory")}</span>}</div>
-                    </Table.Cell>
-                  </Table.Row>
-                </React.Fragment>
-              ))}
-            </Table.Body>
-          </Table>
-          <Button primary onClick={handleClear}>{t('button.reset', "Reset")}</Button>
+        <Table compact celled selectable size="small" className="partstable">
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell></Table.HeaderCell>
+              <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.supplierPart', "Supplier Part")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.quantityShort', "Qty")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {importResult.parts.map((p, index) => (
+              <React.Fragment key={index}>
+                <Table.Row>
+                  <Table.Cell>
+                    <Icon name={p.isImported ? "check circle" : "times circle"} color={p.isImported ? "green" : "red"} />
+                  </Table.Cell>
+                  <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.description}>
+                    {p.description}
+                  </Table.Cell>
+                  <Table.Cell>{p.manufacturerPartNumber}</Table.Cell>
+                  <Table.Cell style={{ maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={p.manufacturer}>
+                    {p.manufacturer}
+                  </Table.Cell>
+                  <Table.Cell>{p.partType}</Table.Cell>
+                  <Table.Cell>{p.supplierPartNumber}</Table.Cell>
+                  <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
+                  <Table.Cell>{p.quantityAvailable}</Table.Cell>
+                  <Table.Cell><Image src={p.imageUrl} size="mini"></Image></Table.Cell>
+                </Table.Row>
+                <Table.Row style={{ backgroundColor: '#fafafa' }}>
+                  <Table.Cell></Table.Cell>
+                  <Table.Cell colSpan={8} style={{ fontSize: '0.8em' }}>
+                    {p.errorMessage && <div style={{ color: '#c00', fontWeight: '500' }}>{t('label.error', "Error")}: {p.errorMessage}</div>}
+                    <div>{p.quantityAdded} {t('page.orderImport.addedToInventory', "added to inventory")}{p.quantityExisting > 0 && <span>, {p.quantityExisting} {t('page.orderImport.alreadyInInventory', "already in inventory")}</span>}</div>
+                  </Table.Cell>
+                </Table.Row>
+              </React.Fragment>
+            ))}
+          </Table.Body>
+        </Table>
+        <Button primary onClick={handleClear}>{t('button.reset', "Reset")}</Button>
       </div>
     );
   };
 
   return (
     <div>
+      <Confirm
+        className="confirm"
+        header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
+        open={confirmAuthIsOpen}
+        onCancel={() => setConfirmAuthIsOpen(false)}
+        onConfirm={handleAuthRedirect}
+        content={<p>
+          <Trans i18nKey="page.settings.confirm.mustAuthenticate" name={authorizationApiName}>
+            External Api (<b>{{ name: authorizationApiName }}</b>) is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.
+          </Trans>
+        </p>
+        }
+      />
       <BarcodeScannerInput onReceived={handleBarcodeInput} listening={isKeyboardListening} minInputLength={4} />
       <h1>{t('page.orderImport.title', "Order Import")}</h1>
       <Form>
@@ -417,13 +462,13 @@ export function OrderImport(props) {
             content={
               <div>
                 {t('page.orderImport.enterOrderNumber', "Enter your order number for the supplier.")}
-                
+
                 <br />
                 <br />
                 <Trans i18nKey="page.orderImport.instructions">
-                For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br />
-                For <b>Mouser</b> orders, this is the <i>Web Order #</i>.<br />
-                For <b>Arrow</b> orders, this is the <i>Order Number</i>.
+                  For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br />
+                  For <b>Mouser</b> orders, this is the <i>Web Order #</i>.<br />
+                  For <b>Arrow</b> orders, this is the <i>Order Number</i>.
                 </Trans>
               </div>
             }
@@ -442,42 +487,54 @@ export function OrderImport(props) {
             }
           />
           {order.supplier === "Arrow" &&
-          <>
-            <Popup 
-              content={<p>Enter your {order.supplier} account username</p>}
-              trigger={<Form.Input
-                label="Username/login"
-                placeholder="johndoe@example.com"
-                icon="user"
-                value={order.username || ''}
-                onChange={handleChange}
-                onFocus={disableKeyboardListening}
-                onBlur={enableKeyboardListening}
-                name="username"
-              />}
-            />
-            <Popup 
-              content={<p>Enter your {order.supplier} account password</p>}
-              trigger={<Form.Input
-                type="password"
-                label="Password"
-                icon="key"
-                value={order.password || ''}
-                onChange={handleChange}
-                onFocus={disableKeyboardListening}
-                onBlur={enableKeyboardListening}
-                name="password"
-              />}
-            />
-          </>}
+            <>
+              <Popup
+                content={<p>Enter your {order.supplier} account username</p>}
+                trigger={<Form.Input
+                  label="Username/login"
+                  placeholder="johndoe@example.com"
+                  icon="user"
+                  value={order.username || ''}
+                  onChange={handleChange}
+                  onFocus={disableKeyboardListening}
+                  onBlur={enableKeyboardListening}
+                  name="username"
+                />}
+              />
+              <Popup
+                content={<p>Enter your {order.supplier} account password</p>}
+                trigger={<Form.Input
+                  type="password"
+                  label="Password"
+                  icon="key"
+                  value={order.password || ''}
+                  onChange={handleChange}
+                  onFocus={disableKeyboardListening}
+                  onBlur={enableKeyboardListening}
+                  name="password"
+                />}
+              />
+            </>}
         </Form.Group>
         <div style={{ height: "30px" }}>{message}</div>
+
+        <div style={{ marginTop: '20px', marginBottom: '10px' }}>
+          <Popup
+            wide
+            position="top left"
+            positionFixed
+            content={<p>Enable to fetch all product information available for each item in the order.</p>}
+            trigger={<Checkbox toggle checked={requestProductInfo} name="requestProductInfo" onChange={handleToggleRequestProductInfo} label={t('page.orderImport.requestAllProductInformation', 'Request all product information')} style={{ fontSize: '0.8em' }} />}
+          />
+
+        </div>
         <Button primary onClick={e => getPartsToImport(e, order)} disabled={loading || order.orderId.length === 0}>
           {t('button.search', "Search")}
         </Button>
         <Button onClick={handleClear} disabled={!(orderImportSearchResult?.parts?.length > 0 || importResult?.parts?.length > 0)}>
-        {t('button.clear', "Clear")}
+          {t('button.clear', "Clear")}
         </Button>
+
       </Form>
       <div style={{ marginTop: "20px" }}>
         <Segment style={{ minHeight: "100px" }} className="centered">
@@ -485,7 +542,7 @@ export function OrderImport(props) {
           <Dimmer active={loading} inverted>
             <Loader inverted />
           </Dimmer>
-          {!loading && importResult && importResult.parts 
+          {!loading && importResult && importResult.parts
             ? renderImportResult(importResult)
             : (!loading && orderImportSearchResult && orderImportSearchResult.parts && renderAllMatchingParts(orderImportSearchResult)) 
                 || <div style={{ lineHeight: "100px" }}>

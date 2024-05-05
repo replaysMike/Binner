@@ -44,7 +44,7 @@ namespace Binner.Common.Services
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
 
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             try
             {
@@ -154,7 +154,7 @@ namespace Binner.Common.Services
         public async Task<AuthenticationResponse> RefreshTokenAsync(string token)
         {
             if (string.IsNullOrEmpty(token)) throw new ArgumentNullException(nameof(token));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             // todo: seems to be causing deadlocks, need to investigate
             //using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
@@ -254,7 +254,7 @@ namespace Binner.Common.Services
         public async Task<UserContext?> GetUserAsync(int userId)
         {
             if (userId == 0) throw new ArgumentNullException(nameof(userId));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var userContext = await context.Users.FirstOrDefaultAsync(x => x.UserId == userId);
             return userContext != null ? Map(userContext) : null;
         }
@@ -351,7 +351,7 @@ namespace Binner.Common.Services
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var user = await context.Users
                 .FirstOrDefaultAsync(x => x.EmailAddress == request.EmailAddress);
             if (user == null)
@@ -395,7 +395,7 @@ namespace Binner.Common.Services
         public async Task<PasswordRecoveryResponse> ValidatePasswordResetTokenAsync(ConfirmPasswordRecoveryRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var user = await context.Users
                 .FirstOrDefaultAsync(x => x.EmailAddress == request.EmailAddress);
             if (user == null)
@@ -435,7 +435,7 @@ namespace Binner.Common.Services
         public async Task<AuthenticationResponse> ResetPasswordUsingTokenAsync(PasswordRecoverySetNewPasswordRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
-            using var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var user = await context.Users
                 .FirstOrDefaultAsync(x => x.EmailAddress == request.EmailAddress);
             if (user == null)

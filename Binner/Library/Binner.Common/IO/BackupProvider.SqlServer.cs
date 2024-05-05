@@ -17,7 +17,7 @@ namespace Binner.Common.IO
             };
             var dbName = builder["Database"];
 
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             await using var conn = context.Database.GetDbConnection();
             await using var cmd = conn.CreateCommand();
             cmd.CommandText = $"BACKUP DATABASE [{dbName}] TO DISK = '{filename}' WITH FORMAT";
@@ -54,7 +54,7 @@ namespace Binner.Common.IO
             };
             var dbName = builder["Database"];
 
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             await using var conn = context.Database.GetDbConnection();
             await using var cmd = conn.CreateCommand();
             cmd.CommandText = $@"USE [master]; 

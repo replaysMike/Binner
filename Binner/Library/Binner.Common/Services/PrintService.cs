@@ -104,7 +104,7 @@ namespace Binner.Common.Services
         public async Task<ICollection<LabelTemplate>> GetLabelTemplatesAsync()
         {
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.LabelTemplates
                 .Where(x => x.OrganizationId == user.OrganizationId)
                 .ToListAsync();

@@ -178,7 +178,10 @@ export function Search(props) {
   }, [filterBy, filterByValue, keyword]);
 
   const handlePartClick = (e, part) => {
-    props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
+    if (part.partId)
+      props.history(`/inventory/${encodeURIComponent(part.partNumber)}:${part.partId}`);
+    else
+      props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
   };
 
   const handleNextPage = async (e, page) => {

@@ -73,13 +73,30 @@ namespace Binner.Web.Controllers
 
                 var part = new Part
                 {
-                    PartNumber = "NCC-1701-G", Description = "This part is an placeholder for an actual part for print testing purposes.", ManufacturerPartNumber = "NCC-1701-G-TI4473", Manufacturer = "Texas Instruments",
-                    Location = "Vancouver", BinNumber = "Bin 11", BinNumber2 = "21",
-                    Cost = 0.99, MountingTypeId = 1, PartTypeId = 18, PackageType = "DIP8", Quantity = 500,
-                    Keywords = new List<string>{ "example product", "ic", "sensor"  },
+                    PartId = 1,
+                    PartNumber = "NCC-1701-G",
+                    Description = "This part is an placeholder for an actual part for print testing purposes.",
+                    ManufacturerPartNumber = "NCC-1701-G-TI4473",
+                    Manufacturer = "Texas Instruments",
+                    Location = "Home",
+                    BinNumber = "11",
+                    BinNumber2 = "21",
+                    Cost = 0.99,
+                    MountingTypeId = 1,
+                    PartTypeId = 18,
+                    PackageType = "DIP8",
+                    Quantity = 500,
+                    Keywords = new List<string> { "example product", "ic", "sensor" },
                     DigiKeyPartNumber = "701-7011-1-ND",
                     MouserPartNumber = "MS-7011",
-                    ArrowPartNumber = "AR-7011"
+                    ArrowPartNumber = "AR-7011",
+                    TmePartNumber = "TM-7011",
+                    FootprintName = "DIP-20",
+                    SymbolName = "IC1",
+                    ExtensionValue1 = "Custom Value 1",
+                    ExtensionValue2 = "Custom Value 2",
+                    ProjectId = 1,
+                    Currency = "USD",
                 };
                 var image = _labelGenerator.CreateLabelImage(request, part);
                 await image.SaveAsPngAsync(stream);

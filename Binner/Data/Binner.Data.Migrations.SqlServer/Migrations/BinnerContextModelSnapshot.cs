@@ -18,7 +18,7 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -369,6 +369,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("SymbolName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmePartNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UserId")
@@ -1101,6 +1104,22 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("time");
+
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");

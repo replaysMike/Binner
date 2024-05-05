@@ -20,8 +20,7 @@ namespace Binner.Common.IO.Printing
         public static Bitmap ToBitmap<TPixel>(this Image<TPixel> image) where TPixel : unmanaged, IPixel<TPixel>
         {
             using var memoryStream = new MemoryStream();
-            var imageConfiguration = image.GetConfiguration();
-            var imageEncoder = imageConfiguration.ImageFormatsManager.GetEncoder(PngFormat.Instance);
+            var imageEncoder = image.Configuration.ImageFormatsManager.GetEncoder(PngFormat.Instance);
             image.Save(memoryStream, imageEncoder);
             memoryStream.Seek(0, SeekOrigin.Begin);
             var bitmap = new Bitmap(memoryStream);

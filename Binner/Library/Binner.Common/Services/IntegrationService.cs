@@ -1,12 +1,13 @@
 ﻿using Binner.Common.Integrations;
 using Binner.Global.Common;
+using Binner.Model.Configuration.Integrations;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Binner.Model.Configuration.Integrations;
 
 namespace Binner.Common.Services
 {
@@ -34,7 +35,7 @@ namespace Binner.Common.Services
 #pragma warning restore CS1998
             {
                 // create a db context
-                //using var context = await _contextFactory.CreateDbContextAsync();
+                //await using var context = await _contextFactory.CreateDbContextAsync();
                 /*var userIntegrationConfiguration = await context.UserIntegrationConfigurations
                     .Where(x => x.UserId.Equals(userId))
                     .FirstOrDefaultAsync()
@@ -92,6 +93,16 @@ namespace Binner.Common.Services
                     { "ClientSecret", request.Configuration.Where(x => x.Key.Equals("ClientSecret", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
                 };
                 credentials.Add(new ApiCredential(user?.UserId ?? 0, octopartConfiguration, nameof(NexarApi)));
+
+                var tmeConfiguration = new Dictionary<string, object>
+                {
+                    { "Enabled", request.Configuration.Where(x => x.Key.Equals("Enabled", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
+                    { "Country", request.Configuration.Where(x => x.Key.Equals("Country", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApplicationSecret", request.Configuration.Where(x => x.Key.Equals("ApplicationSecret", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
+                    { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty },
+                };
+                credentials.Add(new ApiCredential(user?.UserId ?? 0, tmeConfiguration, nameof(TmeApi)));
 
                 return new ApiCredentialConfiguration(user?.UserId ?? 0, credentials);
             };
@@ -172,22 +183,22 @@ namespace Binner.Common.Services
                         }
                     }
                 case "arrow":
-                {
-                    var api = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0, getCredentialsMethod, false);
-                    if (!api.IsEnabled)
-                        return new TestApiResponse(nameof(Integrations.ArrowApi), "Api is not enabled.");
-                    try
                     {
-                        var result = await api.SearchAsync("LM555", 1);
-                        if (result.Errors.Any())
-                            return new TestApiResponse(nameof(Integrations.ArrowApi), string.Join(". ", result.Errors));
-                        return new TestApiResponse(nameof(Integrations.ArrowApi), true);
+                        var api = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0, getCredentialsMethod, false);
+                        if (!api.IsEnabled)
+                            return new TestApiResponse(nameof(Integrations.ArrowApi), "Api is not enabled.");
+                        try
+                        {
+                            var result = await api.SearchAsync("LM555", 1);
+                            if (result.Errors.Any())
+                                return new TestApiResponse(nameof(Integrations.ArrowApi), string.Join(". ", result.Errors));
+                            return new TestApiResponse(nameof(Integrations.ArrowApi), true);
+                        }
+                        catch (Exception ex)
+                        {
+                            return new TestApiResponse(nameof(Integrations.ArrowApi), ex.GetBaseException().Message);
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        return new TestApiResponse(nameof(Integrations.ArrowApi), ex.GetBaseException().Message);
-                    }
-                }
                 case "nexar":
                 case "octopart":
                     {
@@ -204,6 +215,26 @@ namespace Binner.Common.Services
                         catch (Exception ex)
                         {
                             return new TestApiResponse(nameof(Integrations.NexarApi), ex.GetBaseException().Message);
+                        }
+                    }
+                case "tme":
+                    {
+                        var api = await _integrationApiFactory.CreateAsync<Integrations.TmeApi>(user?.UserId ?? 0, getCredentialsMethod, false);
+                        if (!api.IsEnabled)
+                            return new TestApiResponse(nameof(Integrations.TmeApi), "Api is not enabled.");
+                        try
+                        {
+                            //var categories = await api.GetCategoriesAsync();
+                            //var files = await api.GetProductFilesAsync(new List<string> { "LM358AD-ST" });
+                            //var prices = await api.GetProductPricesAsync(new List<string> { "LM358AD-ST" });
+                            var result = await api.SearchAsync("LM555", 1);
+                            if (result.Errors.Any())
+                                return new TestApiResponse(nameof(Integrations.TmeApi), string.Join(". ", result.Errors));
+                            return new TestApiResponse(nameof(Integrations.TmeApi), true);
+                        }
+                        catch (Exception ex)
+                        {
+                            return new TestApiResponse(nameof(Integrations.TmeApi), ex.GetBaseException().Message);
                         }
                     }
             }

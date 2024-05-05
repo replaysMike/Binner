@@ -62,7 +62,7 @@ namespace Binner.Common.IO
 
         private string? GetValueFromHeader(string[] rowData, Header header, string name)
         {
-            var headerIndex = header.GetHeaderIndex("Description");
+            var headerIndex = header.GetHeaderIndex(name);
             if (headerIndex >= 0)
                 return rowData[headerIndex];
             return null;

@@ -40,7 +40,7 @@ namespace Binner.Common.Services
         {
             var model = new SystemInfoResponse();
             var userContext = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             Assembly? entryAssembly = null;
             try
             {

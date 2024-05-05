@@ -23,7 +23,7 @@
     },
     "search": {
       "title":"Inventory",
-      "search":"Seach",
+      "search":"Search",
       "searchNotFound": "No resuts found in inventory. Do you want to <1>Add</1> it?"
     },
     "inventory": {
@@ -243,7 +243,9 @@
       "mouserNote": "<0>Note:</0> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <2>not the Sales Order #</2>",
       "arrowNote": "<0>Note:</0> Arrow requires that you first request access to their Order API by sending them an email. See <2>Arrow Order Api</2>",
       "addedToInventory": "added to inventory",
-      "alreadyInInventory": "already in inventory"
+      "alreadyInInventory": "already in inventory",
+      "requestAllProductInformation": "Request all product information",
+      "apiMessages": "Api Messages"
     },
     "printLabels": {
       "title": "Print Labels",
@@ -504,6 +506,7 @@
       "footprintName": "Footprint Name",
       "extensionValue1": "Extension Value 1",
       "extensionValue2": "Extension Value 2",
+      "partId": "Part Id",
       "ok": "Ok",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
@@ -801,7 +804,8 @@
     "symbolName": "KiCad Symbol Name",
     "footprintName": "KiCad Footprint Name",
     "extensionValue1": "Extension Value 1",
-    "extensionValue2": "Extension Value 2"
+    "extensionValue2": "Extension Value 2",
+    "partId": "Part Id"
   },
   "message": {
     "noPartsAdded": "No parts added.",

@@ -20,6 +20,7 @@ namespace Binner.Common.Integrations
     public partial class ArrowApi : IIntegrationApi
     {
         private const string BasePath = "";
+        public string Name => "Arrow";
         private readonly ArrowConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
@@ -73,9 +74,9 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
-            if (string.IsNullOrEmpty(_configuration.Username)) throw new BinnerConfigurationException("ArrowConfiguration must specify a Username!");
-            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException("ArrowConfiguration must specify a ApiKey!");
-            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException("ArrowConfiguration must specify a ApiUrl!");
+            if (string.IsNullOrEmpty(_configuration.Username)) throw new BinnerConfigurationException($"{nameof(ArrowConfiguration)} must specify a Username!");
+            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException($"{nameof(ArrowConfiguration)} must specify a ApiKey!");
+            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException($"{nameof(ArrowConfiguration)} must specify a ApiUrl!");
             if (additionalOptions == null) throw new ArgumentNullException(nameof(additionalOptions));
             if (!additionalOptions.ContainsKey("password") || string.IsNullOrEmpty(additionalOptions["password"])) throw new ArgumentNullException(nameof(additionalOptions), "User password value is required!");
             var username = _configuration.Username;

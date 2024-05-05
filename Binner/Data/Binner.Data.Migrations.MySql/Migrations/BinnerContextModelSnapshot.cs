@@ -17,7 +17,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
@@ -356,6 +356,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("SymbolName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TmePartNumber")
                         .HasColumnType("longtext");
 
                     b.Property<int?>("UserId")
@@ -1064,6 +1067,22 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("time(6)");
+
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");

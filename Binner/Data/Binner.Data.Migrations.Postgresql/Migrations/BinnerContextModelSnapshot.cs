@@ -18,7 +18,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -369,6 +369,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("SymbolName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmePartNumber")
                         .HasColumnType("text");
 
                     b.Property<int?>("UserId")
@@ -1101,6 +1104,22 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<TimeSpan?>("SwarmTimeout")
                         .HasColumnType("interval");
+
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("boolean");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");

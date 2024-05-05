@@ -14,21 +14,21 @@ Binner is a free open-source parts inventory tracking system you can run locally
 
 ## Features
 * Standard inventory management input
-* Import your orders from Digikey, Mouser or ~AliExpress~
+* Import your orders from Digikey, Mouser, Arrow, or ~AliExpress~
 * Customizable nested category placement
 * Track parts by Project
 * Automated datasheet retrieval / Datasheet search
-* Automated part lookup on Digikey/Mouser
+* Automated part lookup on Digikey/Mouser/Arrow/Octopart/Nexar/TME
 * Flexible search engine
 * Export your data to CSV / Excel if you need
 * Proprietary file-based database (or use providers for other formats such as SQL Server)
 * No web server installation required, uses standalone Kestrel service API
-* Based on .Net Core - runs on Windows and Unix
+* Based on .Net - runs on Windows, Unix and embedded devices like Raspberry PI
 * Simple web-based UI
 * Barcoding support
 * Label printing
 
-## Planned Upcoming Features for 2023
+## Planned Upcoming Features for 2024
 - [x] Dedicated datasheet repository (Q1)
 - [x] Schematics repository for example circuits per part (Q1)
 - [x] Local upload of datasheets/images
@@ -36,6 +36,7 @@ Binner is a free open-source parts inventory tracking system you can run locally
 - [x] Multiple language support (Q1)
 - [x] Auto update (Q1)
 - [x] Full BOM / PCB management (Q1)
+- [x] TME parts api support
 - [ ] Electronic bins support (Q2)
 - [ ] Maybe a parts marketplace? with lasers?
 
@@ -209,7 +210,7 @@ Integrations enable features such as automatic part metadata lookup, datasheet r
 
 ### Configuring DigiKey API
 
-Visit [https://developer.digikey.com/](https://developer.digikey.com/) and sign up for a free developer account. You will be asked to create an App which will come with a `ClientId` and `ClientSecret` and needs to be set in the `appsettings.json` under the DigiKey configuration section.
+Visit [https://developer.digikey.com/](https://developer.digikey.com/) and sign up for a free developer account. You will be asked to create an App which will come with a `ClientId` and `ClientSecret` and needs to be set in the `appsettings.json` under the `DigiKey` configuration section.
 
 *Creating an App*
 * The API uses oAuth with postbacks so they will want you to provide an `OAuth Callback`. This can be safely set to `https://localhost:8090/Authorization/Authorize`. If you are not familiar with oAuth, Digikey will call this URL when you successfully authenticate with DigiKey. It is not called by their servers, but rather by the web UI so it does not need to resolve to an external IP. It does need to be set exactly the same in Binner's `oAuthPostbackUrl` in `appsettings.json` otherwise the API calls will not work, as this value must match on both ends.
@@ -221,15 +222,23 @@ If you wish to use the DigiKey sandbox rather than their production API, you can
 
 ### Configuring Mouser API
 
-Visit [https://www.mouser.com/api-hub/](https://www.mouser.com/api-hub/) and sign up for a free developer account. Mouser requires you to sign up for each API product you wish to use. Currently, Binner supports both the `Search API` and `Order API` so sign up for those two APIs separately. Once you have an API key for each, set those in the `appsettings.json` under the Mouser configuration section.
+Visit [https://www.mouser.com/api-hub/](https://www.mouser.com/api-hub/) and sign up for a free developer account. Mouser requires you to sign up for each API product you wish to use. Currently, Binner supports both the `Search API` and `Order API` so sign up for those two APIs separately. Once you have an API key for each, set those in the `appsettings.json` under the `Mouser` configuration section.
 
-### Configuring Octopart API
+### Configuring Octopart/Nexar API
 
-Visit [https://octopart.com/api/home](https://octopart.com/api/home) and sign up for a developer account. Please note that Octopart API _is not free_ to use so you may opt to skip this one. They don't advertise pricing until you start using the API (sneaky), but if you already have a key it can be used for additional datasheet support. If you do not wish to use it Digikey and Mouser will be used to access datasheets for parts, as well as the free Binner datasheet API.
+Visit [https://portal.nexar.com/sign-up](https://portal.nexar.com/sign-up) and sign up for an account. Plug in your ClientId & ClientSecret in the `appsettings.json` in the `Octopart` section. Please note that Octopart/Nexar API _is not free_ to use so you may opt to skip this one.
+
+### Configuring Arrow API
+
+Visit [https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey](https://developers.arrow.com/api/index.php/site/page?view=requestAPIKey) and request an API Key. If you wish to import Arrow orders you will need to know your Arrow account details as well. Once you have an API key, set those in the `appsettings.json` under the `Arrow` configuration section.
+
+### Configuring TME API
+
+Visit [https://developers.tme.eu/login](https://developers.tme.eu/login) and sign up for a free account. TME works with either an anonymous key, or a private key so it doesn't matter which you choose to go with unless you have special pricing available to you. Currently, Binner supports the `Products API` but will look at adding Order import support when TME offers this option. Once you have your anonymous and secret API keys, set those in the `appsettings.json` under the `Tme` configuration section.
 
 ## Label printing
 
-Binner currently has limited label printing support. It works best with a Dymo LabelWriter 450 series printer (Turbo dual label is supported too), model 30346 or 30277 labels. If desired additional label sizes and other printers can be easily added.
+Binner currently has label printing support. It works best with a Dymo LabelWriter 450 series printer (Turbo dual label is supported too), model 30346 or 30277 labels. If desired additional label sizes and other printers can be easily added. Label design can be customized with different types of barcodes and information.
 
 ### Label Example
 ![Binner](https://github.com/replaysMike/Binner/wiki/binner-label.png)

@@ -65,6 +65,9 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (entity == null)
                 return false;
             EnforceIntegrityCreate(entity, userContext);
+            await context.PartSuppliers.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
+            await context.ProjectPartAssignments.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
+            await context.StoredFiles.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
             context.Parts.Remove(entity);
             await context.SaveChangesAsync();
             _partTypesCache.InvalidateCache();
@@ -1099,6 +1102,7 @@ INNER JOIN (
                     || EF.Functions.Like(x.DigiKeyPartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.MouserPartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.ArrowPartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.TmePartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Location, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.BinNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.BinNumber2, '%' + request.Keyword + '%')
@@ -1231,6 +1235,7 @@ INNER JOIN (
                 new (x => x.MountingTypeId, x => x.MountingTypeId),
                 new (x => x.MouserPartNumber, x => x.MouserPartNumber),
                 new (x => x.ArrowPartNumber, x => x.ArrowPartNumber),
+                new (x => x.TmePartNumber, x => x.TmePartNumber),
                 new (x => x.PackageType, x => x.PackageType),
                 new (x => x.PartId, x => x.PartId),
                 new (x => x.PartNumber, x => x.PartNumber),

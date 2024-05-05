@@ -1,5 +1,6 @@
 ﻿using Binner.Model;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Requests;
 using Binner.Model.Responses;
 using System;
 using System.Collections.Generic;
@@ -47,16 +48,16 @@ namespace Binner.Common.Services
         /// <summary>
         /// Get a part by part number
         /// </summary>
-        /// <param name="partNumber"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        Task<Part?> GetPartAsync(string partNumber);
+        Task<Part?> GetPartAsync(GetPartRequest request);
 
         /// <summary>
         /// Get a part with its associated stored files
         /// </summary>
-        /// <param name="partNumber"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(string partNumber);
+        Task<(Part? Part, ICollection<StoredFile> StoredFiles)> GetPartWithStoredFilesAsync(GetPartRequest request);
 
         /// <summary>
         /// Get all parts
@@ -122,12 +123,9 @@ namespace Binner.Common.Services
         /// <summary>
         /// Get an external order
         /// </summary>
-        /// <param name="orderId"></param>
-        /// <param name="supplier"></param>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(string orderId, string supplier, string? username, string? password);
+        Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request);
 
         /// <summary>
         /// Get all part types

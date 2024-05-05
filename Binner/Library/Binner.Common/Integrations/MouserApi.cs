@@ -18,6 +18,7 @@ namespace Binner.Common.Integrations
     public class MouserApi : IIntegrationApi
     {
         private const string BasePath = "/api/v1";
+        public string Name => "Mouser";
         private readonly MouserConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
@@ -41,6 +42,25 @@ namespace Binner.Common.Integrations
         }
 
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
+        {
+            // use the newer order history api, slightly different data format
+            var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/orderhistory/webOrderNumber?webOrderNumber={orderId}&apiKey={_configuration.ApiKeys.OrderApiKey}");
+            var requestMessage = CreateRequest(HttpMethod.Get, uri);
+            var response = await _client.SendAsync(requestMessage);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                return ApiResponse.Create($"Mouser Api returned Unauthorized access - check that your OrderApiKey is correctly configured.", nameof(MouserApi));
+            if (response.IsSuccessStatusCode)
+            {
+                var resultString = response.Content.ReadAsStringAsync().Result;
+                var results = JsonConvert.DeserializeObject<OrderHistory>(resultString, _serializerSettings) ?? new();
+                /*if (results.Errors.Any())
+                    new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));*/
+                return new ApiResponse(results, nameof(MouserApi));
+            }
+            return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
+        }
+
+        public async Task<IApiResponse> GetOldOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/order/{orderId}?apiKey={_configuration.ApiKeys.OrderApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Get, uri);
@@ -174,7 +194,7 @@ namespace Binner.Common.Integrations
     public class MouserErrorsException : Exception
     {
         public ICollection<Error> Errors { get; set; }
-        public MouserErrorsException(ICollection<Error> errors)
+        public MouserErrorsException(ICollection<Error> errors) : base(errors.FirstOrDefault()?.Message)
         {
             Errors = errors;
         }

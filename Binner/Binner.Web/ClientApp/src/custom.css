@@ -323,6 +323,10 @@ section.formHeader {
     max-height: calc(100vh - 11em);
 }
 
+.contentwrapper {
+  background-color: #fff;
+}
+
 .ui.modal {
     margin-top: auto !important;
     margin-bottom: auto !important;
@@ -523,6 +527,8 @@ section.formHeader {
 .confirm p {
     text-align: center;
     padding: 40px 10px;
+    color: #000;
+    font-weight: normal;
 }
 
 .confirm b {
@@ -599,7 +605,7 @@ section.formHeader {
 }
 
 .page-banner {
-    height: 30px;
+    min-height: 30px;
 }
 
 .page-notice {
@@ -642,6 +648,7 @@ section.formHeader {
     cursor: pointer;
 	width: 100%;
 	max-height: 28px;
+  margin-bottom: 1px;
 }
 
 .page-error div {
@@ -748,7 +755,7 @@ section.formHeader {
 }
 
 .MuiPaper-root {
-    min-height: 600px;
+    min-height: 415px;
 }
 
 /* Icon hover colors */
@@ -889,4 +896,34 @@ h1.pro::after {
     letter-spacing: 0.2em;
     text-align: center;
     margin-left: 2px;
+}
+
+ul.errors {
+  list-style-type: none;
+  padding: 0;
+  margin-left: 5px;
+}
+
+ul.errors li {
+  color: #999;
+}
+
+ul.errors li:before {
+  content: "\f06a";
+  font-family: Icons;
+  font-style: normal;
+  font-weight: 400;
+  padding-right: 10px;
+}
+
+ul.errors li.error {
+  color: #c00;
+}
+
+ul.errors li.error:before {
+  content: "\f071";
+  font-family: Icons;
+  font-style: normal;
+  font-weight: 400;
+  padding-right: 10px;
 }

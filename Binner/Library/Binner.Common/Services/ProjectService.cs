@@ -317,7 +317,7 @@ namespace Binner.Common.Services
             var user = _requestContext.GetUserContext();
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var pageRecords = (request.Page - 1) * request.Results;
             var entities = await context.ProjectProduceHistory
                 .Include(x => x.ProjectPcbProduceHistory)
@@ -347,7 +347,7 @@ namespace Binner.Common.Services
             var user = _requestContext.GetUserContext();
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             
             var entity = await context.ProjectProduceHistory
                 .Include(x => x.ProjectPcbProduceHistory)
@@ -379,7 +379,7 @@ namespace Binner.Common.Services
             var user = _requestContext.GetUserContext();
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectProduceHistory
                 .Include(x => x.Project)
                     .ThenInclude(x => x.ProjectPartAssignments)
@@ -406,7 +406,7 @@ namespace Binner.Common.Services
             var user = _requestContext.GetUserContext();
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.ProjectPcbProduceHistory
                 .Include(x => x.Pcb)
                 .Include(x => x.ProjectProduceHistory)
@@ -478,7 +478,7 @@ namespace Binner.Common.Services
         {
             // get all the parts in the project
             var user = _requestContext.GetUserContext();
-            var context = await _contextFactory.CreateDbContextAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
             var numberOfPcbsProduced = request.Quantity;
 
             var project = await GetProjectAsync(request.ProjectId);

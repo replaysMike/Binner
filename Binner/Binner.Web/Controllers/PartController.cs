@@ -67,7 +67,7 @@ namespace Binner.Web.Controllers
         {
             if (string.IsNullOrEmpty(request.PartNumber))
                 return BadRequest($"No part number specified!");
-            var response = await _partService.GetPartWithStoredFilesAsync(request.PartNumber);
+            var response = await _partService.GetPartWithStoredFilesAsync(request);
             if (response.Part == null) return NotFound();
             var partResponse = Mapper.Map<Part, PartStoredFilesResponse>(response.Part);
             partResponse.StoredFiles = response.StoredFiles;
@@ -335,7 +335,7 @@ namespace Binner.Web.Controllers
             if (exactMatch)
             {
                 // search by exact part name match
-                var part = await _partService.GetPartAsync(keywords);
+                var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = keywords });
                 if (part == null) return NotFound();
 
                 var partTypes = await _partService.GetPartTypesAsync();
@@ -450,24 +450,31 @@ namespace Binner.Web.Controllers
         [HttpGet("info")]
         public async Task<IActionResult> GetPartInfoAsync([FromQuery] string partNumber, [FromQuery] string partTypeId = "", [FromQuery] string mountingTypeId = "", [FromQuery] string supplierPartNumbers = "")
         {
-            var partType = partTypeId;
-            var mountingType = mountingTypeId;
-            if (int.TryParse(partTypeId, out var parsedPartTypeId))
+            try
             {
-                var partTypeWithName = await _partTypeService.GetPartTypeAsync(parsedPartTypeId);
-                if (partTypeWithName != null) partType = partTypeWithName.Name;
-            }
-            if (int.TryParse(mountingTypeId, out var parsedMountingTypeId))
-            {
-                if (Enum.IsDefined(typeof(MountingType), parsedMountingTypeId))
+                var partType = partTypeId;
+                var mountingType = mountingTypeId;
+                if (int.TryParse(partTypeId, out var parsedPartTypeId))
                 {
-                    var mountingTypeEnum = (MountingType)parsedMountingTypeId;
-                    mountingType = mountingTypeEnum.ToString();
+                    var partTypeWithName = await _partTypeService.GetPartTypeAsync(parsedPartTypeId);
+                    if (partTypeWithName != null) partType = partTypeWithName.Name;
                 }
-            }
+                if (int.TryParse(mountingTypeId, out var parsedMountingTypeId))
+                {
+                    if (Enum.IsDefined(typeof(MountingType), parsedMountingTypeId))
+                    {
+                        var mountingTypeEnum = (MountingType)parsedMountingTypeId;
+                        mountingType = mountingTypeEnum.ToString();
+                    }
+                }
 
-            var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType, supplierPartNumbers);
-            return Ok(metadata);
+                var metadata = await _partService.GetPartInformationAsync(partNumber, partType ?? string.Empty, mountingType, supplierPartNumbers);
+                return Ok(metadata);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to fetch part information! ", ex));
+            }
         }
 
         /// <summary>
@@ -480,8 +487,15 @@ namespace Binner.Web.Controllers
         {
             if (string.IsNullOrEmpty(request.OrderId)) return BadRequest("No OrderId specified");
             if (string.IsNullOrEmpty(request.Supplier)) return BadRequest("No Supplier specified");
-            var metadata = await _partService.GetExternalOrderAsync(request.OrderId, request.Supplier, request.Username, request.Password);
-            return Ok(metadata);
+            try
+            {
+                var metadata = await _partService.GetExternalOrderAsync(request);
+                return Ok(metadata);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to import order! ", ex));
+            }
         }
 
         /// <summary>
@@ -585,7 +599,7 @@ namespace Binner.Web.Controllers
             try
             {
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
-                var part = await _partService.GetPartAsync(request.PartNumber);
+                var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = request.PartNumber, PartId = request.PartId });
                 if (part == null) return NotFound();
 
                 if (await _printService.HasPartLabelTemplateAsync())
@@ -637,7 +651,7 @@ namespace Binner.Web.Controllers
                 System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
 
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
-                var part = await _partService.GetPartAsync(request.PartNumber);
+                var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = request.PartNumber, PartId = request.PartId });
 
                 var stream = new MemoryStream();
                 if (await _printService.HasPartLabelTemplateAsync())
