@@ -72,7 +72,7 @@ export function Project(props) {
 
   const loadProject = async (projectName) => {
     setLoading(true);
-    const response = await fetchApi(`api/bom?name=${projectName}`)
+    const response = await fetchApi(`api/bom?name=${encodeURIComponent(projectName)}`)
 			.catch(c => {
 				if (c.status === 404){
 					toast.error(t('error.projectNotFound', "Could not find a project named {{projectName}}", { projectName }));
