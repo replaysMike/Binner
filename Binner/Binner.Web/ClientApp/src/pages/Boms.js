@@ -118,7 +118,7 @@ export function Boms (props) {
   const handleLoadBom = (e, p) => {
     e.preventDefault();
     e.stopPropagation();
-    props.history(`/bom/${p.name}`);
+    props.history(`/bom/${encodeURIComponent(p.name)}`);
   };
 
   const onCreateProject = async () => {
