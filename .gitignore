@@ -539,3 +539,9 @@ $RECYCLE.BIN/
 Binner/BinnerInstaller/BinnerSetup.exe
 Binner/Binner.Web/ClientApp/.vscode/settings.json
 *.bak
+
+# Slickedit
+*.vpj
+*.vtg
+*.vpw
+*.vpwhist

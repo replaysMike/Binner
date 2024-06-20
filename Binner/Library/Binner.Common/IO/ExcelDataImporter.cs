@@ -111,8 +111,8 @@ namespace Binner.Common.IO
                                     {
                                         // import BOM info
                                         var isPartNumberValid = TryGet<string?>(rowData, header, "MPN", out var partNumber);
-                                        var isQuantityValid = TryGet<int>(rowData, header, "Quantity per PCB", out var quantity);
-                                        var isReferenceValid = TryGet<string?>(rowData, header, "References", out var reference);
+                                        var isQuantityValid = TryGet<int>(rowData, header, "Qty", out var quantity);
+                                        var isReferenceValid = TryGet<string?>(rowData, header, "Reference", out var reference);
                                         var isNoteValid = TryGet<string?>(rowData, header, "Value", out var note);
 
                                         if (!isPartNumberValid || !isQuantityValid || !isReferenceValid)
