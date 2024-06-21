@@ -16,6 +16,13 @@ namespace Binner.Common.Services
         Task<Project> AddProjectAsync(Project project);
 
         /// <summary>
+        /// Import a project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        Task<Project> ImportProjectAsync(Project project);
+
+        /// <summary>
         /// Update an existing project
         /// </summary>
         /// <param name="project"></param>

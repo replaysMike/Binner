@@ -33,6 +33,12 @@ namespace Binner.Common.Services
             return await _storageProvider.AddProjectAsync(project, _requestContext.GetUserContext());
         }
 
+        public async Task<Project?> ImportProjectAsync(Project project)
+        {
+            return null;
+            //return await _storageProvider.AddProjectAsync(project, _requestContext.GetUserContext());
+        }
+
         public async Task<bool> DeleteProjectAsync(Project project)
         {
             var user = _requestContext.GetUserContext();

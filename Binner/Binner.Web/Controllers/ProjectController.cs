@@ -88,6 +88,20 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Import a new project
+        /// </summary>
+        /// <param name="import"></param>
+        /// <returns></returns>
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportProjectAsync(ImportProjectRequest request)
+        {
+            var mappedProject = Mapper.Map<ImportProjectRequest, Project>(request);
+            mappedProject.DateCreatedUtc = DateTime.UtcNow;
+            var project = await _projectService.ImportProjectAsync(mappedProject);
+            return Ok(project);
+        }
+
+        /// <summary>
         /// Update an existing project
         /// </summary>
         /// <param name="request"></param>
