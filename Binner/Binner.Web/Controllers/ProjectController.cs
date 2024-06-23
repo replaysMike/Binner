@@ -5,6 +5,7 @@ using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -93,7 +94,8 @@ namespace Binner.Web.Controllers
         /// <param name="import"></param>
         /// <returns></returns>
         [HttpPost("import")]
-        public async Task<IActionResult> ImportProjectAsync(ImportProjectRequest request)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ImportProjectAsync([FromForm] ImportProjectRequest request)
         {
             var mappedProject = Mapper.Map<ImportProjectRequest, Project>(request);
             mappedProject.DateCreatedUtc = DateTime.UtcNow;

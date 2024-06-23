@@ -9,6 +9,8 @@ import { fetchApi } from '../common/fetchApi';
 import { ProjectColors } from "../common/Types";
 import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
+import axios from "axios";
+import { getAuthToken } from "../common/authentication";
 
 export function Boms (props) {
   const { t } = useTranslation();
@@ -56,10 +58,10 @@ export function Boms (props) {
   ];
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    maxFiles: 3,
+    maxFiles: 1,
     onDrop: (acceptedFiles, rejectedFiles, e) => {
       // do accept manually
-      const acceptedMimeTypes = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/sql", "text/csv"];
+      const acceptedMimeTypes = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv"];
       let errorMsg = "";
       for (let i = 0; i < acceptedFiles.length; i++) {
         if (!acceptedMimeTypes.includes(acceptedFiles[i].type)) {
@@ -174,32 +176,31 @@ export function Boms (props) {
   };
 
   const onImportProject = async () => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
+    if (acceptedFile != null) {
       const formData = new FormData();
-      formData.append("name", project.name);
-      formData.append("description", project.description);
-      for (let i = 0; i < acceptedFiles.length; i++) {
-        formData.append("files", acceptedFiles[i], acceptedFiles[i].name);
-      }
+      formData.set("name", project.name);
+      formData.set("description", project.description);
+      formData.set("file", acceptedFile, acceptedFile.name);
 
-      const response = await fetchApi('api/project/import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.responseObject.status === 200) {
-        // reset form
-        setProject(defaultProject);
-        setAddVisible(false);
-        setImportVisible(false);
-        loadProjects(page, pageSize, true);
-      } else {
-        toast.error(t('importProjectFailed', 'Failed to import project!'));
+      fetchApi("api/authentication/identity").then((_) => {
+        axios
+          .request({
+            method: "post",
+            url: `api/project/import`,
+            data: formData,
+            headers: { Authorization: `Bearer ${getAuthToken()}` }
+          })
+          .then((response) => {
+            toast.dismiss();
+            if (response.status === 200) {
+              toast.success(t("importProjectSuccess", "BOM Imported!"));
+            } else {
+              toast.error(t("importProjectFailed", `Failed to import BOM!`), { autoClose: 10000 });
+            } 
+          });
+        });
       }
-    }
-  };
+    };
 
   const handleSort = (clickedColumn) => () => {
     if (column !== clickedColumn) {
@@ -368,7 +369,7 @@ export function Boms (props) {
                   >
                     <span style={{ fontSize: "0.6em" }}>{t('page.exportData.uploadNote', "Drag a document to upload, or click to select files")}</span>
                     <input {...getInputProps()} />
-                    <div style={{ fontSize: "0.6em" }}>{t('page.exportData.acceptedFileTypes', "Accepted file types: \"*.sql, *.xls, *.xlsx, *.csv\"")}</div>
+                    <div style={{ fontSize: "0.6em" }}>{t('page.exportData.acceptedFileTypes', "Accepted file types: \"*.xls, *.xlsx, *.csv\"")}</div>
                   </div>
                   {error && (
                     <div className="error small">

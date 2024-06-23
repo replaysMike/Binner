@@ -1,4 +1,6 @@
-﻿namespace Binner.Model.Requests
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Binner.Model.Requests
 {
     public class ImportProjectRequest
     {
@@ -13,8 +15,8 @@
         public string? Description { get; set; }
 
         /// <summary>
-        /// File to import from
+        /// File to import
         /// </summary>
-        public string? File { get; set; }
+        public IFormFile? File { get; set; }
     }
 }
