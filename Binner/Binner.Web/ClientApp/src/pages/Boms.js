@@ -194,6 +194,10 @@ export function Boms (props) {
             toast.dismiss();
             if (response.status === 200) {
               toast.success(t("importProjectSuccess", "BOM Imported!"));
+              setProject(defaultProject);
+              setAddVisible(false);
+              setImportVisible(false);
+              loadProjects(page, pageSize, true);
             } else {
               toast.error(t("importProjectFailed", `Failed to import BOM!`), { autoClose: 10000 });
             } 
