@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TypeSupport.Extensions;
 
 namespace Binner.Common.IO
 {
@@ -18,7 +17,7 @@ namespace Binner.Common.IO
     public class ExcelDataImporter : IDataImporter
     {
         // SupportedTables ordering matters when it comes to relational data!
-        private readonly string[] SupportedTables = new string[] { "Projects", "PartTypes", "Parts", "BOM" };
+        private readonly string[] SupportedTables = new string[] { "Projects", "PartTypes", "Parts" };
         private readonly IStorageProvider _storageProvider;
         private readonly TemporaryKeyTracker _temporaryKeyTracker = new TemporaryKeyTracker();
 
@@ -61,32 +60,6 @@ namespace Binner.Common.IO
             foreach (var table in SupportedTables)
                 result.RowsImportedByTable.Add(table, 0);
 
-            long bomProjectId = 0;
-            if (filename.Contains("_bom"))
-            {
-                string projectName = filename.Remove(filename.LastIndexOf("_bom"));
-                Project project = await _storageProvider.GetProjectAsync(projectName, userContext);
-                if (project == null)
-                {
-                    project = new Project();
-                    project.Name = projectName;
-                    try
-                    {
-                        project = await _storageProvider.AddProjectAsync(project, userContext);
-                        bomProjectId = project.ProjectId;
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Errors.Add($"[Sheet '{projectName}'] Project with name '{projectName}' could not be added. Error: {ex.Message}");
-                    }
-
-                }
-                else
-                {
-                    bomProjectId = project.ProjectId;
-                }
-
-            }
             // get the global part types, and the user's custom part types
             var partTypes = (await _storageProvider.GetPartTypesAsync(userContext)).ToList();
             try
@@ -107,61 +80,6 @@ namespace Binner.Common.IO
                                 continue;
                             switch (table.ToLower())
                             {
-                                case "bom":
-                                    {
-                                        // import BOM info
-                                        var isPartNumberValid = TryGet<string?>(rowData, header, "MPN", out var partNumber);
-                                        var isQuantityValid = TryGet<int>(rowData, header, "Qty", out var quantity);
-                                        var isReferenceValid = TryGet<string?>(rowData, header, "Reference", out var reference);
-                                        var isNoteValid = TryGet<string?>(rowData, header, "Value", out var note);
-
-                                        if (!isPartNumberValid || !isQuantityValid || !isReferenceValid)
-                                            continue;
-
-                                        ProjectPartAssignment assignment = new ProjectPartAssignment();
-                                        assignment.ProjectId = bomProjectId;
-                                        assignment.Quantity = quantity;
-                                        assignment.Notes = note;
-                                        assignment.SchematicReferenceId = reference;
-
-                                        var part = await _storageProvider.GetPartAsync(partNumber, userContext);
-                                        if (part != null)
-                                        {
-                                            assignment.PartName = part.PartNumber;
-                                            assignment.PartId   = part.PartId;
-                                        }
-                                        else
-                                        {
-                                            part = new Part();
-                                            part.PartNumber = partNumber;
-                                            part.Quantity = 0;
-                                            part.UserId = userContext?.UserId;
-                                            part.PartTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
-                                            try
-                                            {
-                                                part = await _storageProvider.AddPartAsync(part, userContext);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                // failed to add part
-                                                result.Errors.Add($"[Row {rowNumber}, Sheet '{table}'] Part with PartNumber '{partNumber}' could not be added. Error: {ex.Message}");
-                                            }
-
-                                            assignment.PartName = partNumber;
-                                            assignment.PartId   = part.PartId;
-                                        }
-
-                                        try
-                                        {
-                                            await _storageProvider.AddProjectPartAssignmentAsync(assignment, userContext);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            result.Errors.Add($"[Row {rowNumber}, Sheet '{table}'] BOM entry '{partNumber}' could not be added. Error: {ex.Message}");
-                                        }
-
-                                    }
-                                    break;
                                 case "projects":
                                     {
                                         // import project info

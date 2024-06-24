@@ -20,7 +20,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        Task<Project> ImportProjectAsync(Project project);
+        Task<Project> ImportProjectAsync(ImportProjectRequest request);
 
         /// <summary>
         /// Update an existing project

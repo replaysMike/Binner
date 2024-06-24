@@ -97,9 +97,7 @@ namespace Binner.Web.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> ImportProjectAsync([FromForm] ImportProjectRequest request)
         {
-            var mappedProject = Mapper.Map<ImportProjectRequest, Project>(request);
-            mappedProject.DateCreatedUtc = DateTime.UtcNow;
-            var project = await _projectService.ImportProjectAsync(mappedProject);
+            var project = await _projectService.ImportProjectAsync(request);
             return Ok(project);
         }
 

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Binner.Data;
+using Binner.Common.IO;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Requests;
@@ -7,6 +8,7 @@ using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Mapper = AnyMapper.Mapper;
@@ -33,10 +35,54 @@ namespace Binner.Common.Services
             return await _storageProvider.AddProjectAsync(project, _requestContext.GetUserContext());
         }
 
-        public async Task<Project?> ImportProjectAsync(Project project)
+        public async Task<Project?> ImportProjectAsync(ImportProjectRequest request)
         {
-            return null;
-            //return await _storageProvider.AddProjectAsync(project, _requestContext.GetUserContext());
+            var stream = new MemoryStream();
+            await request.File.CopyToAsync(stream);
+            stream.Position = 0;
+
+            var userContext = _requestContext.GetUserContext();
+            string projectName = request.Name;
+            Project project = await _storageProvider.GetProjectAsync(projectName, userContext);
+            if (project == null)
+            {
+                project = new Project();
+                project.Name = projectName;
+                project.Description = request.Description;
+                try
+                {
+                    project = await _storageProvider.AddProjectAsync(project, userContext);
+                }
+                catch (Exception ex)
+                {
+                }
+
+            }
+
+            ImportResult result = null;
+            if (project != null) {
+                var extension = Path.GetExtension(request.File.FileName);
+                switch (extension.ToLower())
+                {
+                    case ".csv":
+                        var csvImporter = new CsvBOMImporter(_storageProvider);
+                        result = await csvImporter.ImportAsync(project, stream, userContext);
+                        break;
+                    case ".xls":
+                    case ".xlsx":
+                    case ".xlsm":
+                    case ".xlsb":
+                        var excelImporter = new ExcelBOMImporter(_storageProvider);
+                        result = await excelImporter.ImportAsync(project, stream, userContext);
+                        break;
+                }
+
+                if (result != null && !result.Success) {
+                    project = null;
+                }
+            }
+
+            return project;
         }
 
         public async Task<bool> DeleteProjectAsync(Project project)
