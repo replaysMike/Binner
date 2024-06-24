@@ -1,6 +1,5 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -59,7 +58,6 @@ namespace Binner.Common.IO
             var result = new ImportResult();
             foreach (var table in SupportedTables)
                 result.RowsImportedByTable.Add(table, 0);
-
             // get the global part types, and the user's custom part types
             var partTypes = (await _storageProvider.GetPartTypesAsync(userContext)).ToList();
             try
