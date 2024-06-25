@@ -31,10 +31,6 @@ namespace Binner.Common.IO
         public async Task<ImportResult> ImportAsync(Project project, Stream stream, IUserContext? userContext)
         {
             var result = new ImportResult();
-/*            foreach (var table in SupportedTables)
-                result.RowsImportedByTable.Add(table, 0);
-            // get the global part types, and the user's custom part types
-            var partTypes = (await _storageProvider.GetPartTypesAsync(userContext)).ToList();
             try
             {
                 stream.Position = 0;
@@ -42,14 +38,6 @@ namespace Binner.Common.IO
                 var data = await reader.ReadToEndAsync();
                 // remove line breaks
                 data = data.Replace("\r", "");
-
-                var tableName = Path.GetFileNameWithoutExtension(filename);
-                if (!SupportedTables.Contains(tableName, StringComparer.InvariantCultureIgnoreCase))
-                {
-                    result.Errors.Add($"Filename '{tableName}' not a supported table name! Filename must be one of the following: {string.Join(",", SupportedTables)} and may optionally contain the schema prefix 'dbo'.");
-                    result.Success = false;
-                    return result;
-                }
 
                 var rows = SplitBoundaries(data, new char[] { '\n' });
                 if (!rows.Any())
@@ -62,7 +50,7 @@ namespace Binner.Common.IO
                 // read csv header
                 Header? header = null;
                 var headerRow = rows.First();
-                if (headerRow.StartsWith("#"))
+                if (headerRow.StartsWith("\"#\""))
                 {
                     header = new Header(headerRow);
                 }
@@ -87,171 +75,58 @@ namespace Binner.Common.IO
                         result.Warnings.Add($"[Row {rowNumber}] Row does not contain the same number of columns as the header, skipping...");
                         continue;
                     }
-                    switch (tableName.ToLower())
+
+                    // import BOM info
+                    var isPartNumberValid = TryGet<string?>(rowData, header, "MPN", out var partNumber);
+                    var isQuantityValid = TryGet<int>(rowData, header, "Qty", out var quantity);
+                    var isReferenceValid = TryGet<string?>(rowData, header, "Reference", out var reference);
+                    var isNoteValid = TryGet<string?>(rowData, header, "Value", out var note);
+
+                    if (!isPartNumberValid || !isQuantityValid || !isReferenceValid)
+                        continue;
+
+                    ProjectPartAssignment assignment = new ProjectPartAssignment();
+                    assignment.ProjectId = project.ProjectId;
+                    assignment.Quantity = quantity;
+                    assignment.Notes = note;
+                    assignment.SchematicReferenceId = reference;
+
+                    var part = await _storageProvider.GetPartAsync(partNumber, userContext);
+                    if (part != null)
                     {
-                        case "projects":
-                            {
-                                // import project info
-                                var isProjectIdValid = TryGet<long>(rowData, header, "ProjectId", out var projectId);
-                                var isColorValid = TryGet<int>(rowData, header, "Color", out var color);
-                                var isDateCreatedValid = TryGet<DateTime>(rowData, header, "DateCreatedUtc", out var dateCreatedUtc);
-                                var isDateModifiedValid = TryGet<DateTime>(rowData, header, "DateModifiedUtc", out var dateModifiedUtc);
-                                if (!isColorValid || !isDateCreatedValid || !isDateModifiedValid)
-                                    continue;
-                                var name = GetQuoted(GetValueFromHeader(rowData, header, "Name"))?.Trim();
-
-                                if (!string.IsNullOrEmpty(name) && await _storageProvider.GetProjectAsync(name, userContext) == null)
-                                {
-                                    var project = new Project
-                                    {
-                                        Name = name,
-                                        Description = GetQuoted(GetValueFromHeader(rowData, header, "Description")),
-                                        Location = GetQuoted(GetValueFromHeader(rowData, header, "Location")),
-                                        Color = color,
-                                        DateCreatedUtc = dateCreatedUtc
-                                    };
-                                    try
-                                    {
-                                        project = await _storageProvider.AddProjectAsync(project, userContext);
-                                        _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
-                                        result.TotalRowsImported++;
-                                        result.RowsImportedByTable["Projects"]++;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        result.Errors.Add($"[Row {rowNumber}, Project with name '{name}' could not be added. Error: {ex.Message}");
-                                    }
-                                }
-                                else
-                                {
-                                    result.Warnings.Add($"[Row {rowNumber}] Project with name '{name}' already exists.");
-                                }
-                            }
-                            break;
-                        case "parttypes":
-                            {
-                                // import partTypes info
-                                var isPartTypeIdValid = TryGet<long>(rowData, header, "PartTypeId", out var partTypeId);
-                                var isParentPartTypeIdValid = TryGet<long?>(rowData, header, "ParentPartTypeId", out var parentPartTypeId);
-                                var isDateCreatedValid = TryGet<DateTime>(rowData, header, "DateCreatedUtc", out var dateCreatedUtc);
-                                if (!isParentPartTypeIdValid || !isDateCreatedValid)
-                                    continue;
-
-                                var name = GetQuoted(GetValueFromHeader(rowData, header, "Name"))?.Trim();
-                                // part types need to have a unique name for the user and can not be part of global part types
-                                if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x.Name?.Equals(name, StringComparison.InvariantCultureIgnoreCase) == true))
-                                {
-                                    if (parentPartTypeId == 0)
-                                        parentPartTypeId = null;
-                                    var partType = new PartType
-                                    {
-                                        ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
-                                        Name = name,
-                                        DateCreatedUtc = dateCreatedUtc
-                                    };
-                                    partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
-                                    if (partType != null)
-                                    {
-                                        _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId", partTypeId,
-                                            partType.PartTypeId);
-                                        result.TotalRowsImported++;
-                                        result.RowsImportedByTable["PartTypes"]++;
-                                    }
-                                }
-                                else
-                                {
-                                    result.Warnings.Add($"[Row {rowNumber}] PartType with name '{name}' already exists.");
-                                }
-                            }
-                            break;
-                        case "parts":
-                            {
-                                // import parts info
-                                var isPartIdValid = TryGet<long>(rowData, header, "PartId", out var partId);
-                                var isPartTypeIdValid = TryGet<long>(rowData, header, "PartTypeId", out var partTypeId);
-                                var isBinNumberValid = TryGet<string?>(rowData, header, "BinNumber", out var binNumber);
-                                var isBinNumber2Valid = TryGet<string?>(rowData, header, "BinNumber2", out var binNumber2);
-                                var isCostValid = TryGet<double>(rowData, header, "Cost", out var cost);
-                                var isDatasheetUrlValid = TryGet<string?>(rowData, header, "DatasheetUrl", out var datasheetUrl);
-                                var isDescriptionValid = TryGet<string?>(rowData, header, "Description", out var description);
-                                var isDigiKeyPartNumberValid = TryGet<string?>(rowData, header, "DigiKeyPartNumber", out var digiKeyPartNumber);
-                                var isImageUrlValid = TryGet<string?>(rowData, header, "ImageUrl", out var imageUrl);
-                                var isKeywordsValid = TryGet<string?>(rowData, header, "Keywords", out var keywords);
-                                var isLocationValid = TryGet<string?>(rowData, header, "Location", out var location);
-                                var isLowestCostSupplierValid = TryGet<string?>(rowData, header, "LowestCostSupplier", out var lowestCostSupplier);
-                                var isLowestCostSupplierUrlValid = TryGet<string?>(rowData, header, "LowestCostSupplierUrl", out var lowestCostSupplierUrl);
-                                var isLowStockThresholdValid = TryGet<int>(rowData, header, "LowStockThreshold", out var lowStockThreshold);
-                                var isManufacturerValid = TryGet<string?>(rowData, header, "Manufacturer", out var manufacturer);
-                                var isManufacturerPartNumberValid = TryGet<string?>(rowData, header, "ManufacturerPartNumber", out var manufacturerPartNumber);
-                                var isMountingTypeIdValid = TryGet<int>(rowData, header, "MountingTypeId", out var mountingTypeId);
-                                var isMouserPartNumberValid = TryGet<string?>(rowData, header, "MouserPartNumber", out var mouserPartNumber);
-                                var isPackageTypeValid = TryGet<string?>(rowData, header, "PackageType", out var packageType);
-                                var isPartNumberValid = TryGet<string?>(rowData, header, "PartNumber", out var partNumber);
-                                var isProductUrlValid = TryGet<string?>(rowData, header, "ProductUrl", out var productUrl);
-                                var isProjectIdValid = TryGet<long?>(rowData, header, "ProjectId", out var projectId);
-                                var isQuantityValid = TryGet<long>(rowData, header, "Quantity", out var quantity);
-                                var isSwarmPartNumberManufacturerIdValid = TryGet<int?>(rowData, header, "SwarmPartNumberManufacturerId", out var swarmPartNumberManufacturerId);
-                                var isDateCreatedValid = TryGet<DateTime>(rowData, header, "DateCreatedUtc", out var dateCreatedUtc);
-
-                                if (!isPartTypeIdValid || !isBinNumberValid || !isBinNumber2Valid || !isCostValid || !isDatasheetUrlValid
-                                    || !isDescriptionValid || !isDigiKeyPartNumberValid || !isImageUrlValid || !isKeywordsValid || !isLocationValid || !isLowestCostSupplierValid
-                                    || !isLowestCostSupplierUrlValid || !isLowStockThresholdValid || !isManufacturerValid || !isManufacturerPartNumberValid || !isMountingTypeIdValid || !isMouserPartNumberValid
-                                    || !isPackageTypeValid || !isPartNumberValid || !isProductUrlValid || !isProjectIdValid || !isQuantityValid || !isSwarmPartNumberManufacturerIdValid)
-                                    continue;
-
-                                if (!string.IsNullOrEmpty(partNumber) && await _storageProvider.GetPartAsync(partNumber, userContext) == null)
-                                {
-                                    var part = new Part
-                                    {
-                                        PartTypeId = _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", partTypeId),
-                                        BinNumber = binNumber,
-                                        BinNumber2 = binNumber2,
-                                        Cost = cost,
-                                        DatasheetUrl = datasheetUrl,
-                                        Description = description,
-                                        DigiKeyPartNumber = digiKeyPartNumber,
-                                        ImageUrl = imageUrl,
-                                        Keywords = !string.IsNullOrEmpty(keywords) ? keywords.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries) : null,
-                                        Location = location,
-                                        LowestCostSupplier = lowestCostSupplier,
-                                        LowestCostSupplierUrl = lowestCostSupplierUrl,
-                                        LowStockThreshold = lowStockThreshold,
-                                        Manufacturer = manufacturer,
-                                        ManufacturerPartNumber = manufacturerPartNumber,
-                                        MountingTypeId = mountingTypeId,
-                                        MouserPartNumber = mouserPartNumber,
-                                        PackageType = packageType,
-                                        PartNumber = partNumber,
-                                        ProductUrl = productUrl,
-                                        ProjectId = projectId != null ? _temporaryKeyTracker.GetMappedId("Projects", "ProjectId", projectId.Value) : null,
-                                        Quantity = quantity,
-                                        //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
-                                        DateCreatedUtc = dateCreatedUtc
-                                    };
-                                    // some data validation required
-                                    if (part.ProjectId == 0) part.ProjectId = null;
-                                    if (part.UserId == 0) part.UserId = userContext?.UserId;
-                                    if (part.PartTypeId == 0) part.PartTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
-                                    try
-                                    {
-                                        part = await _storageProvider.AddPartAsync(part, userContext);
-                                        _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);
-                                        result.TotalRowsImported++;
-                                        result.RowsImportedByTable["Parts"]++;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        // failed to add part
-                                        result.Errors.Add($"[Row {rowNumber}, Part with PartNumber '{partNumber}' could not be added. Error: {ex.Message}");
-                                    }
-                                }
-                                else
-                                {
-                                    result.Warnings.Add($"[Row {rowNumber}] Part with PartNumber '{partNumber}' already exists.");
-                                }
-                            }
-                            break;
+                        assignment.PartName = part.PartNumber;
+                        assignment.PartId   = part.PartId;
                     }
+                    else
+                    {
+                        part = new Part();
+                        part.PartNumber = partNumber;
+                        part.Quantity = 0;
+                        part.UserId = userContext?.UserId;
+                        part.PartTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
+                        try
+                        {
+                            part = await _storageProvider.AddPartAsync(part, userContext);
+                        }
+                        catch (Exception ex)
+                        {
+                            // failed to add part
+                            result.Errors.Add($"[Row {rowNumber}'] Part with PartNumber '{partNumber}' could not be added. Error: {ex.Message}");
+                        }
+
+                        assignment.PartName = partNumber;
+                        assignment.PartId   = part.PartId;
+                    }
+
+                    try
+                    {
+                        await _storageProvider.AddProjectPartAssignmentAsync(assignment, userContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Errors.Add($"[Row {rowNumber}] BOM entry '{partNumber}' could not be added. Error: {ex.Message}");
+                    }
+
                     rowNumber++;
                 }
             }
@@ -259,7 +134,7 @@ namespace Binner.Common.IO
             {
                 result.Errors.Add(ex.Message);
             }
-*/
+
             result.Success = !result.Errors.Any();
             return result;
         }

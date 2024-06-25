@@ -373,7 +373,7 @@ export function Boms (props) {
                   >
                     <span style={{ fontSize: "0.6em" }}>{t('page.exportData.uploadNote', "Drag a document to upload, or click to select files")}</span>
                     <input {...getInputProps()} />
-                    <div style={{ fontSize: "0.6em" }}>{t('page.exportData.acceptedFileTypes', "Accepted file types: \"*.xls, *.xlsx, *.csv\"")}</div>
+                    <div style={{ fontSize: "0.6em" }}>{t('page.projects.acceptedFileTypes', "Accepted file types: \"*.xls, *.xlsx, *.csv\"")}</div>
                   </div>
                   {error && (
                     <div className="error small">
