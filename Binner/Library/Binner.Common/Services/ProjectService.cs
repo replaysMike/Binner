@@ -78,6 +78,7 @@ namespace Binner.Common.Services
                 }
 
                 if (result != null && !result.Success) {
+                    DeleteProjectAsync(project);
                     project = null;
                 }
             }
