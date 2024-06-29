@@ -38,7 +38,6 @@ export function Boms (props) {
   const [confirmPartDeleteContent, setConfirmProjectDeleteContent] = useState(null);
   const [confirmDeleteSelectedProject, setConfirmDeleteSelectedProject] = useState(null);
   const [acceptedFile, setAcceptedFile] = useState(null);
-  const [error, setError] = useState(null);
 
   const [colors] = useState(_.map(ProjectColors, function (c) {
     return {
@@ -193,13 +192,13 @@ export function Boms (props) {
           .then((response) => {
             toast.dismiss();
             if (response.status === 200) {
-              toast.success(t("importProjectSuccess", "BOM Imported!"));
+              toast.success(t("page.boms.import.success", "BOM Imported!"));
               setProject(defaultProject);
               setAddVisible(false);
               setImportVisible(false);
               loadProjects(page, pageSize, true);
             } else {
-              toast.error(t("importProjectFailed", `Failed to import BOM!`), { autoClose: 10000 });
+              toast.error(t("page.boms.import.failure", `Failed to import BOM!`), { autoClose: 10000 });
             } 
           });
         });
@@ -373,13 +372,8 @@ export function Boms (props) {
                   >
                     <span style={{ fontSize: "0.6em" }}>{t('page.exportData.uploadNote', "Drag a document to upload, or click to select files")}</span>
                     <input {...getInputProps()} />
-                    <div style={{ fontSize: "0.6em" }}>{t('page.projects.acceptedFileTypes', "Accepted file types: \"*.xls, *.xlsx, *.csv\"")}</div>
+                    <div style={{ fontSize: "0.6em" }}>{t('page.boms.acceptedFileTypes', "Accepted file types: \"*.xls, *.xlsx, *.csv\"")}</div>
                   </div>
-                  {error && (
-                    <div className="error small">
-                      <b>{t('label.error', "Error")}:</b> {error}
-                    </div>
-                  )}
                   <aside>
                     <ol>
                       {acceptedFile && 

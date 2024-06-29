@@ -98,6 +98,11 @@
 		"boms": {
 			"header": {
 				"description": "La Distinta Base, (DBA), consente di gestire le quantità dei componenti per progetto. Si può ridurre le quantità di ogni PCB da produrre, verificare quali componenti occorre acquistare ancora e analizzare i costi.<br/><br/>Scegliere o creare il progetto di cui gestire la DBA.<br/>" 
+            },
+            "acceptedFileTypes": "Accepted file types: \"*.xls, *.xlsx, *.csv\""
+            "import": {
+                "success": "BOM Imported!",
+                "failure": "Failed to import BOM!"
 			}
 		},
 		"partTypes": {
@@ -635,6 +640,7 @@
   	},
 	"button": {
 		"addBomProject": "Aggiungi un Progetto DBA",
+        "importBomProject": "Import BOM Project",
 		"addPart": "Aggiungi componente",
 		"save": "Salva",
 		"download": "Download",
