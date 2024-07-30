@@ -14,7 +14,8 @@ namespace Binner.Common
                 throw new FileNotFoundException($"The configuration file named '{filePath}' was not found.");
             var builder = new ConfigurationBuilder()
                 .SetBasePath(path)
-                .AddJsonFile(appSettingsJson, optional: false, reloadOnChange: true);
+                .AddJsonFile(appSettingsJson, optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables();
             return builder.Build();
         }
     }
