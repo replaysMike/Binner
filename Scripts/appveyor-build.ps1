@@ -5,8 +5,10 @@ $framework = "net8.0"
 Write-Host "Building $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
 
 Write-Host "Installing build dependencies..." -ForegroundColor green
+dotnet tool install --global dotnet-ef --version 8.0.4
+Update-NodeJsInstallation 20.10.0 x64
 choco install -y innosetup
-Install-Product node ''
+#Install-Product node ''
 
 Write-Host "Checking versions..." -ForegroundColor green
 Write-Host "Node" -ForegroundColor cyan
