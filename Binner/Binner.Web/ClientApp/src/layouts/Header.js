@@ -8,12 +8,13 @@ import '../i18n';
 
 const lngs = {
     en: { nativeName: 'English', flag: 'gb' },      // english
-    it: { nativeName: 'Italiano', flag: 'it' },      // italian
+    it: { nativeName: 'Italiano', flag: 'it' },     // italian
     de: { nativeName: 'Deutsch', flag: 'de' },      // german
-    // temporary: enable languages as the translations are finished.
-    //fr: { nativeName: 'Français ', flag: 'fr' },    // french
-    //es: { nativeName: 'Español', flag: 'mx' },      // spanish
+    fr: { nativeName: 'Français ', flag: 'fr' },    // french
+    tr: { nativeName: 'Türkçe ', flag: 'tr' },      // turkish
     zh: { nativeName: '中文', flag: 'cn' },         // chinese
+  // temporary: enable languages as the translations are finished.
+  //es: { nativeName: 'Español', flag: 'mx' },      // spanish
 };
 
 /**
