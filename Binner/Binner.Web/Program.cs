@@ -16,8 +16,9 @@ using Topshelf.Runtime;
 WebApplicationBuilder builder;
 WebHostServiceConfiguration? config;
 try
-{
+{    // Question : Can we use Config class to reduce the risk of error with BinnerWebHostService.InitializeWebHostAsync ?
     builder = WebApplication.CreateBuilder();
+    builder.Configuration.AddEnvironmentVariables();
     config = builder.Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
     if (config == null)
     {
