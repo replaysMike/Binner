@@ -29,7 +29,6 @@ export function OhmsLawCalculator (props) {
   }, []);
 
   const handleChangeValue = (e, control) => {
-    const { inputVoltage, inputCurrent, inputResistance, inputPower } = this.state;
     let newInputVoltage = inputVoltage;
     let newInputCurrent = inputCurrent;
     let newInputResistance = inputResistance;
