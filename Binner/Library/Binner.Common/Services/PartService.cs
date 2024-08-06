@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Binner.Common.Extensions;
 using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models;
 using Binner.Data;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -506,7 +508,7 @@ namespace Binner.Common.Services
                     OrderDate = mouserOrderResponse.OrderDate,
                     Currency = mouserOrderResponse.CurrencyCode,
                     CustomerId = mouserOrderResponse.BuyerName,
-                    Amount = double.Parse(mouserOrderResponse.SummaryDetail?.OrderTotal.Replace("$", "") ?? "0"),
+                    Amount = mouserOrderResponse.SummaryDetail?.OrderTotal.FromCurrency() ?? 0d,
                     TrackingNumber = mouserOrderResponse.DeliveryDetail?.ShippingMethodName,
                     Messages = messages,
                     Parts = commonParts

@@ -309,7 +309,7 @@ export function OrderImport(props) {
                         {order.customerId || "Unspecified"}
                       </Table.Cell>
                       <Table.Cell>
-                        <Label>{t('label.orderAmount', "Order Amount")}:</Label>${order.amount.toFixed(2)} {order.currency}
+                        <Label>{t('label.orderAmount', "Order Amount")}:</Label>{formatCurrency(order.amount, order.currency)} (<i>{order.currency}</i>)
                       </Table.Cell>
                       <Table.Cell>
                         <Label>{t('label.orderDate', "Order Date")}:</Label>
@@ -362,7 +362,7 @@ export function OrderImport(props) {
                 </Table.Cell>
                 <Table.Cell>{p.partType}</Table.Cell>
                 <Table.Cell>{p.supplierPartNumber}</Table.Cell>
-                <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
+                <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")} (<i>{p.currency || "USD"}</i>)</Table.Cell>
                 <Table.Cell>{p.quantityAvailable}</Table.Cell>
                 <Table.Cell>
                   <Image src={p.imageUrl} size="mini"></Image>
