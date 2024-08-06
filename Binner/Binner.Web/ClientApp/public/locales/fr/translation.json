@@ -89,6 +89,11 @@
     "boms": {
       "header": {
         "description": "La nomenclature, ou BOM, vous permet de gérer les quantités d'inventaire par projet. Vous pouvez réduire les quantités pour chaque PCB que vous produisez, vérifier quelles pièces vous devez acheter en plus et analyser les coûts.<br/><br/>Choisissez ou créez le projet pour lequel vous souhaitez gérer la nomenclature.<br/>"
+      },
+      "acceptedFileTypes": "Accepted file types: \"*.xls, *.xlsx, *.csv\""
+      "import": {
+          "success": "BOM Imported!",
+          "failure": "Failed to import BOM!"
       }
     },
     "partTypes": {

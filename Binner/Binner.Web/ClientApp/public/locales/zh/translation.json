@@ -90,6 +90,11 @@
     "boms": {
       "header": {
         "description": "你可以使用物料清单工具，按照项目来管理零部件。你可以直接按照PCB板的套数扣除对应零件数量，或者检查还需要购买哪些零件以及分析成本。<br/><br/>请选择或创建需要管理BOM的项目。<br/>" 
+      },
+      "acceptedFileTypes": "Accepted file types: \"*.xls, *.xlsx, *.csv\""
+      "import": {
+          "success": "BOM Imported!",
+          "failure": "Failed to import BOM!"
       }
     },
     "partTypes": {
@@ -468,6 +473,7 @@
   },
   "button": {
     "addBomProject": "创建BOM工程文件",
+    "importBomProject": "Import BOM Project",
     "addPart": "添加部件",
     "save": "保存",
     "download": "下载",

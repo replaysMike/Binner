@@ -99,6 +99,11 @@
     "boms": {
       "header": {
         "description": "Die Stückliste ermöglicht es Ihnen, den Lagerbestand pro Projekt zu verwalten. Sie können die Mengen für jede hergestellte Leiterplatte reduzieren, und überprüfen welche Teile Sie in höherer Stückzahl kaufen müssen um die Kosten zu analysieren.<br/><br/>Wählen Sie das Projekt aus, für das Sie die Stückliste (BOM) verwalten möchten, oder erstellen Sie ein neues Projekt.<br/>" 
+      },
+      "acceptedFileTypes": "Accepted file types: \"*.xls, *.xlsx, *.csv\""
+      "import": {
+          "success": "BOM Imported!",
+          "failure": "Failed to import BOM!"
       }
     },
     "partTypes": {
@@ -636,6 +641,7 @@
   },
   "button": {
     "addBomProject": "Stücklistenprojekt hinzufügen",
+    "importBomProject": "Import BOM Project",
     "addPart": "Bauteil hinzufügen",
     "save": "Speichern",
     "download": "Download",

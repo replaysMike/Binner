@@ -5,6 +5,7 @@ using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -84,6 +85,19 @@ namespace Binner.Web.Controllers
             var mappedProject = Mapper.Map<CreateProjectRequest, Project>(request);
             mappedProject.DateCreatedUtc = DateTime.UtcNow;
             var project = await _projectService.AddProjectAsync(mappedProject);
+            return Ok(project);
+        }
+
+        /// <summary>
+        /// Import a new project
+        /// </summary>
+        /// <param name="import"></param>
+        /// <returns></returns>
+        [HttpPost("import")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ImportProjectAsync([FromForm] ImportProjectRequest request)
+        {
+            var project = await _projectService.ImportProjectAsync(request);
             return Ok(project);
         }
 
