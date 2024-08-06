@@ -109,39 +109,11 @@ namespace Binner.Common.Extensions
             // found no matching value to the format
             if (!foundMatching)
             {
-                if (!double.TryParse(input, NumberStyles.Currency | NumberStyles.AllowDecimalPoint, System.Threading.Thread.CurrentThread.CurrentCulture, out result))
-                    double.TryParse(input, out result);
+                if (!double.TryParse(input.Where(c => char.IsDigit(c) || c == '.' || c == ',').ToArray(), NumberStyles.Currency | NumberStyles.AllowDecimalPoint, System.Threading.Thread.CurrentThread.CurrentCulture, out result))
+                    double.TryParse(input.Where(c => char.IsDigit(c) || c == '.' || c == ',').ToArray(), out result);
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Get a distinct set of results
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TKey"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="property"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> items, Func<T, TKey> property)
-        {
-            return items.GroupBy(property).Select(x => x.First());
-        }
-
-        /// <summary>
-        /// Get a distinct set of results
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TKey"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="property"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> DistinctBy<T, TKey>(this IOrderedEnumerable<T> items, Func<T, TKey> property)
-        {
-            return items
-                .GroupBy(property)
-                .Select(x => x.First());
         }
 
         /// <summary>
