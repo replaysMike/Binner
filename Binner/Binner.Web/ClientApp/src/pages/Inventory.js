@@ -629,7 +629,7 @@ export function Inventory(props) {
       default:
         break;
       case "cost":
-        part.cost = Number(part.cost).toFixed(2);
+        part.cost = Number(part.cost);
         if (isNaN(part.cost)) part.cost = Number(0).toFixed(2);
         break;
     }
