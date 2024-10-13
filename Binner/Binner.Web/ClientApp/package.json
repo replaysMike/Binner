@@ -93,7 +93,7 @@
     "@babel/preset-env": "^7.21.4",
     "ajv": "^8.12.0",
     "assert": "^2.0.0",
-    "browser-sync": "^2.29.1",
+    "browser-sync": "^3.0.3",
     "cross-env": "^7.0.3",
     "del": "^7.0.0",
     "emitty": "^1.4.1",
