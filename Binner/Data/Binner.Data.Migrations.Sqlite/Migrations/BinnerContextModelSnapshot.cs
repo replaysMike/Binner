@@ -17,7 +17,7 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.5");
+                .HasAnnotation("ProductVersion", "8.0.4");
 
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
                 {
@@ -131,9 +131,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
-                    b.Property<string>("Provider")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("OAuthCredentialId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("AccessToken")
                         .HasColumnType("TEXT");
@@ -159,13 +159,18 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Provider");
+                    b.HasKey("OAuthCredentialId");
 
                     b.HasIndex("UserId");
 

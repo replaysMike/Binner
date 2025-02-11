@@ -44,10 +44,18 @@ namespace Binner.Common.Services
         /// Get an existing (pending) oAuth request
         /// </summary>
         /// <param name="requestId">The request Id initiated the request</param>
+        /// /// <param name="requireUserContext">True to require a valid user context, false will skip this check.</param>
         /// <returns></returns>
-        public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId)
+        public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, bool requireUserContext)
         {
-            return await _storageProvider.GetOAuthRequestAsync(requestId, _requestContext.GetUserContext());
+            if (requireUserContext)
+            {
+                var userContext = _requestContext.GetUserContext();
+                if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+
+                return await _storageProvider.GetOAuthRequestAsync(requestId, userContext);
+            }
+            return await _storageProvider.GetOAuthRequestAsync(requestId, null);
         }
 
         /// <summary>

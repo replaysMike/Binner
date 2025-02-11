@@ -90,26 +90,19 @@ namespace Binner.Global.Common
         public IUserContext? GetUserContext()
         {
             var context = _httpContextAccessor.HttpContext;
-            if (context != null && context.User != null && context.User.Identity?.IsAuthenticated == true)
+            if (context != null && context.User != null && context.User.Identities.Any(x => x.IsAuthenticated) == true)
             {
+                var identity = context.User.Identities.FirstOrDefault(x => x.IsAuthenticated);
                 return new UserContext
                 {
                     UserId = int.Parse(context.User.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault() ?? "0"),
                     OrganizationId = int.Parse(context.User.Claims.Where(x => x.Type == "OrganizationId").Select(x => x.Value).FirstOrDefault() ?? "0"),
                     Name = context.User.Claims.Where(x => x.Type == "Name").Select(x => x.Value).FirstOrDefault(),
-                    EmailAddress = context.User.Identity.Name,
+                    EmailAddress = identity?.Name ?? string.Empty,
                     PhoneNumber = context.User.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault()
                 };
             }
-            // todo: migrate
-            return new UserContext
-            {
-                UserId = 1,
-                OrganizationId = 1,
-                Name = "Admin",
-                EmailAddress = "admin"
-            };
-            //return null;
+            return null;
         }
 
         /// <summary>

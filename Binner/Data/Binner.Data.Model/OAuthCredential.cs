@@ -12,9 +12,16 @@ namespace Binner.Data.Model
         IUserData
     {
         /// <summary>
+        /// Primary key
+        /// </summary>
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int OAuthCredentialId { get; set; }
+
+        /// <summary>
         /// The provider credential
         /// </summary>
-        [Key, MaxLength(128)]
+        [MaxLength(128)]
         public string Provider { get; set; } = string.Empty;
 
         /// <summary>

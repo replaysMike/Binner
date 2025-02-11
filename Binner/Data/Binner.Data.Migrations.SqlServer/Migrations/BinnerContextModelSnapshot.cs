@@ -18,7 +18,7 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -139,9 +139,11 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
-                    b.Property<string>("Provider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<int>("OAuthCredentialId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OAuthCredentialId"));
 
                     b.Property<string>("AccessToken")
                         .HasColumnType("nvarchar(max)");
@@ -167,13 +169,18 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("Provider");
+                    b.HasKey("OAuthCredentialId");
 
                     b.HasIndex("UserId");
 
