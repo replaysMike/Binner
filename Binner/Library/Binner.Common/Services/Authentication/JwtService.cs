@@ -35,7 +35,7 @@ namespace Binner.Common.Services.Authentication
                 new (JwtClaimTypes.OrganizationId, user.OrganizationId.ToString()),
                 new (JwtClaimTypes.FullName, user.Name),
                 new (ClaimTypes.Name, user.EmailAddress),
-                new (ClaimTypes.HomePhone, user.PhoneNumber),
+                new (ClaimTypes.HomePhone, string.IsNullOrEmpty(user.PhoneNumber) ? "" : user.PhoneNumber),
                 new (JwtClaimTypes.CanLogin, user.CanLogin.ToString()),
                 new (ClaimTypes.Expiration, DateTime.UtcNow.Add(_configuration.Authentication.JwtAccessTokenExpiryTime).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
             };

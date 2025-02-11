@@ -7,6 +7,9 @@ using System.Net.Mime;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Binner.Model;
+using System.Security.Claims;
+using Binner.Common.Services.Authentication;
+using Octokit;
 
 namespace Binner.Web.Controllers
 {
@@ -17,13 +20,17 @@ namespace Binner.Web.Controllers
     {
         private readonly ILogger<AuthorizationController> _logger;
         private readonly ICredentialService _credentialService;
+        private readonly JwtService _jwtService;
+        private readonly IUserService _userService;
         private readonly IIntegrationApiFactory _integrationApiFactory;
 
-        public AuthorizationController(ILogger<AuthorizationController> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory)
+        public AuthorizationController(ILogger<AuthorizationController> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory, IUserService userService, JwtService jwtService)
         {
             _logger = logger;
             _credentialService = credentialService;
+            _jwtService = jwtService;
             _integrationApiFactory = integrationApiFactory;
+            _userService = userService;
         }
 
         /// <summary>
@@ -47,13 +54,13 @@ namespace Binner.Web.Controllers
             if (!Guid.TryParse(state, out var requestId) && requestId != Guid.Empty)
                 throw new ArgumentException("State is an invalid format.", nameof(state));
 
-            var authRequest = await _credentialService.GetOAuthRequestAsync(requestId);
+            var authRequest = await _credentialService.GetOAuthRequestAsync(requestId, false);
             if (authRequest == null)
                 throw new AuthenticationException($"Error - no originating oAuth request found! You must restart the oAuth authentication process.");
 
             // local binner does not require a valid userId
-            //if (authRequest.UserId == null)
-            //    throw new AuthenticationException($"Error - no user is associated with this oAuth request!");
+            if (authRequest.UserId == null)
+                throw new AuthenticationException($"Error - no user is associated with this oAuth request!");
 
             switch (authRequest.Provider)
             {
@@ -74,11 +81,17 @@ namespace Binner.Web.Controllers
             var authResult = await digikeyApi.OAuth2Service.FinishAuthorization(code);
 
             // reconstruct the user's session based on their UserId, since we don't have a Jwt token here for the user
-            //var user = await _authenticationService.GetUserAsync(authRequest.UserId.Value);
-            //var claims = _jwtService.GetClaims(user);
-            //var claimsIdentity = new ClaimsIdentity(claims, "Password");
-            //System.Threading.Thread.CurrentPrincipal = new ClaimsPrincipal(claimsIdentity);
-            //User.AddIdentity(claimsIdentity);
+            var user = await _userService.GetUserAsync(new Model.User { UserId = authRequest.UserId.Value });
+            
+            var claims = _jwtService.GetClaims(new Global.Common.UserContext { 
+                EmailAddress = user.EmailAddress, 
+                UserId = authRequest.UserId.Value,
+                OrganizationId = user.OrganizationId,
+                Name = user.Name,
+            });
+            var claimsIdentity = new ClaimsIdentity(claims, "Password");
+            System.Threading.Thread.CurrentPrincipal = new ClaimsPrincipal(claimsIdentity);
+            User.AddIdentity(claimsIdentity);
 
             authRequest.AuthorizationReceived = true;
             authRequest.AuthorizationCode = code;

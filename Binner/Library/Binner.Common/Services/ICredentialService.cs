@@ -32,8 +32,9 @@ namespace Binner.Common.Services
         /// Get an existing (pending) oAuth request
         /// </summary>
         /// <param name="requestId">The request Id initiated the request</param>
+        /// <param name="requireUserContext">True to require a valid user context, false will skip this check.</param>
         /// <returns></returns>
-        Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId);
+        Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, bool requireUserContext);
 
         /// <summary>
         /// Save an oAuth Credential

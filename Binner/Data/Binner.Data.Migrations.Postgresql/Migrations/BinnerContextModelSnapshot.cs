@@ -18,7 +18,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -139,9 +139,11 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
-                    b.Property<string>("Provider")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                    b.Property<int>("OAuthCredentialId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OAuthCredentialId"));
 
                     b.Property<string>("AccessToken")
                         .HasColumnType("text");
@@ -167,13 +169,18 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
-                    b.HasKey("Provider");
+                    b.HasKey("OAuthCredentialId");
 
                     b.HasIndex("UserId");
 
@@ -282,7 +289,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("BinNumber2")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Cost")
+                    b.Property<double>("Cost")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Currency")
@@ -416,7 +423,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartSupplierId"));
 
-                    b.Property<decimal?>("Cost")
+                    b.Property<double?>("Cost")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<DateTime>("DateCreatedUtc")

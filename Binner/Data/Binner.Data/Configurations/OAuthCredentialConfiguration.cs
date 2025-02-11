@@ -18,9 +18,7 @@ namespace Binner.Data.Configurations
                 .HasDefaultValue(0);
 #endif
 
-            // todo: migrate
-            //builder.HasIndex(p => new { p.Provider, p.UserId })
-                //.IncludeProperties(p => new { p.AccessToken, p.RefreshToken });
+            builder.HasIndex(p => new { p.Provider, p.UserId, p.OrganizationId });
 
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");
