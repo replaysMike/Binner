@@ -74,6 +74,8 @@ namespace Binner.Common.IO
                         for (var rowNumber = 1; rowNumber <= worksheet.LastRowNum; rowNumber++)
                         {
                             var rowData = worksheet.GetRow(rowNumber);
+                            if (rowData == null)
+                                continue;
                             switch (table.ToLower())
                             {
                                 case "projects":

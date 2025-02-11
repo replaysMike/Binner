@@ -98,6 +98,11 @@
     "boms": {
       "header": {
         "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>Choose or create the project to manage BOM for.<br/>" 
+      },
+      "acceptedFileTypes": "Accepted file types: \"*.xls, *.xlsx, *.csv\""
+      "import": {
+          "success": "BOM Imported!",
+          "failure": "Failed to import BOM!"
       }
     },
     "partTypes": {
@@ -638,6 +643,7 @@
   },
   "button": {
     "addBomProject": "Add BOM Project",
+    "importBomProject": "Import BOM Project",
     "addPart": "Add Part",
     "save": "Save",
     "download": "Download",
