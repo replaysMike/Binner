@@ -7,6 +7,10 @@ import _ from 'underscore';
 import { toast } from "react-toastify";
 import { fetchApi } from '../common/fetchApi';
 import { ProjectColors } from "../common/Types";
+import { useDropzone } from "react-dropzone";
+import { humanFileSize } from "../common/files";
+import axios from "axios";
+import { getAuthToken } from "../common/authentication";
 
 export function Boms (props) {
   const { t } = useTranslation();
@@ -22,6 +26,7 @@ export function Boms (props) {
   const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomsRecordsPerPage")) || 5);
   const [loading, setLoading] = useState(true);
   const [addVisible, setAddVisible] = useState(false);
+  const [importVisible, setImportVisible] = useState(false);
   const [project, setProject] = useState(defaultProject);
   const [projects, setProjects] = useState([]);
   const [changeTracker, setChangeTracker] = useState([]);
@@ -32,6 +37,7 @@ export function Boms (props) {
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [confirmPartDeleteContent, setConfirmProjectDeleteContent] = useState(null);
   const [confirmDeleteSelectedProject, setConfirmDeleteSelectedProject] = useState(null);
+  const [acceptedFile, setAcceptedFile] = useState(null);
 
   const [colors] = useState(_.map(ProjectColors, function (c) {
     return {
@@ -49,6 +55,26 @@ export function Boms (props) {
     { key: 4, text: '50', value: 50 },
     { key: 5, text: '100', value: 100 },
   ];
+
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    maxFiles: 1,
+    onDrop: (acceptedFiles, rejectedFiles, e) => {
+      // do accept manually
+      const acceptedMimeTypes = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv"];
+      let errorMsg = "";
+      for (let i = 0; i < acceptedFiles.length; i++) {
+        if (!acceptedMimeTypes.includes(acceptedFiles[i].type)) {
+          errorMsg += `${t('page.exportData.fileNotSupported', "File '{{name}}' with mime type '{{type}}' is not an accepted image type!", { name: acceptedFiles[i].name, type: acceptedFiles[i].type })}\r\n`;
+        }
+      }
+      if (errorMsg.length > 0) {
+        setAcceptedFile(null);
+        toast.error(errorMsg);
+      } else {
+        setAcceptedFile(acceptedFiles[0]);
+      }
+    }
+  });
 
   const loadProjects = async (page, pageSize, reset = false) => {
     setLoading(true);
@@ -115,6 +141,10 @@ export function Boms (props) {
     setAddVisible(!addVisible);
   };
 
+  const handleShowImport = () => {
+    setImportVisible(!importVisible);
+  };
+
   const handleLoadBom = (e, p) => {
     e.preventDefault();
     e.stopPropagation();
@@ -139,7 +169,39 @@ export function Boms (props) {
       // reset form
       setProject(defaultProject);
       setAddVisible(false);
+      setImportVisible(false);
       loadProjects(page, pageSize, true);
+    }
+  };
+
+  const onImportProject = async () => {
+    if (acceptedFile != null) {
+      const formData = new FormData();
+      formData.set("name", project.name);
+      formData.set("description", project.description);
+      formData.set("file", acceptedFile, acceptedFile.name);
+
+      fetchApi("api/authentication/identity").then((_) => {
+        axios
+          .request({
+            method: "post",
+            url: `api/project/import`,
+            data: formData,
+            headers: { Authorization: `Bearer ${getAuthToken()}` }
+          })
+          .then((response) => {
+            toast.dismiss();
+            if (response.status === 200) {
+              toast.success(t("page.boms.import.success", "BOM Imported!"));
+              setProject(defaultProject);
+              setAddVisible(false);
+              setImportVisible(false);
+              loadProjects(page, pageSize, true);
+            } else {
+              toast.error(t("page.boms.import.failure", `Failed to import BOM!`), { autoClose: 10000 });
+            }
+          });
+      });
     }
   };
 
@@ -281,6 +343,7 @@ export function Boms (props) {
 
       <div style={{ minHeight: '35px' }}>
         <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="button.addBomProject">Add BOM Project</Trans></Button>
+        <Button primary onClick={handleShowImport} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="button.importBomProject">Import BOM Project</Trans></Button>
       </div>
       <div>
         {addVisible &&
@@ -293,6 +356,33 @@ export function Boms (props) {
                 <Form.Dropdown width={4} label={t('label.color', 'Color')} selection value={project.color} options={colors} onChange={handleChange} name='color' />
               </Form.Group>
               <Button primary type='submit' icon><Icon name='save' /> <Trans i18nKey="button.save">Save</Trans></Button>
+            </Form>
+          </Segment>
+        }
+      </div>
+      <div>
+        {importVisible &&
+          <Segment style={{ marginBottom: '10px' }}>
+            <Form onSubmit={onImportProject}>
+              <Form.Input width={6} label={t('label.name', 'Name')} required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
+              <Form.Field width={10} control={TextArea} label={t('label.description', 'Description')} value={project.description} onChange={handleChange} name='description' style={{ height: '60px' }} />
+              <div
+                style={{ border: "1px dashed #000", padding: "50px", marginBottom: "20px", backgroundColor: "#f5f5f5" }}
+                {...getRootProps({ className: "dropzone" })}
+              >
+                <span style={{ fontSize: "0.6em" }}>{t('page.exportData.uploadNote', "Drag a document to upload, or click to select files")}</span>
+                <input {...getInputProps()} />
+                <div style={{ fontSize: "0.6em" }}>{t('page.boms.acceptedFileTypes', "Accepted file types: \"*.xls, *.xlsx, *.csv\"")}</div>
+              </div>
+              <aside>
+                <ol>
+                  {acceptedFile &&
+                    <li key={acceptedFile.path}>
+                      {acceptedFile.path} - {humanFileSize(acceptedFile.size)}
+                    </li>}
+                </ol>
+              </aside>
+              <Button primary disabled={!acceptedFile}>{t('button.import', "Import")}</Button>
             </Form>
           </Segment>
         }
