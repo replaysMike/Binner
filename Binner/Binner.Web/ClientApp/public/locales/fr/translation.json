@@ -18,11 +18,13 @@
       "parts": "Pièces",
       "uniqueParts": "Pièces uniques",
       "value": "Valeur",
-      "projects": "Projets de nomenclature"
+      "projects": "Projets de nomenclature",
+      "admin": "Admin"
     },
     "search": {
       "title": "Inventaire",
-      "search": "Rechercher"
+      "search": "Rechercher",
+      "searchNotFound": "Aucun résultat trouvé dans l'inventaire. Souhaitez-vous <1>Ajouter</1> cet élément ?"
     },
     "inventory": {
       "addtitle": "Ajouter à l'inventaire",
@@ -42,6 +44,7 @@
       "addKeyword": "Ajouter un mot-clé",
       "chooseAlternatePart": "Choisir une pièce alternative ({{count}})",
       "suggestedPart": "Numéro de pièce suggéré",
+      "partExists": "Cette <1>pièce</1> <3>existe déjà</3> dans votre inventaire.",
       "placeholder": {
         "location": "Laboratoire personnel",
         "keywords": "ampli op",
@@ -62,7 +65,13 @@
         "alternateParts": "Choisissez une pièce différente pour extraire les informations de métadonnées. Par défaut, Binner vous donnera la pièce la plus pertinente et avec la plus grande quantité disponible.",
         "mustAddPart": "Vous devez enregistrer la pièce avant d'y ajouter des fournisseurs personnalisés.",
         "addSupplier": "Ajouter une entrée de fournisseur manuelle",
-        "deleteLocalFile": "Supprimer ce fichier local"
+        "deleteLocalFile": "Supprimer ce fichier local",
+        "technicalSpecs": "Voir les spécifications techniques",
+        "compliance": "Voir les informations de conformité",
+        "cadModels": "Voir les modèles CAO disponibles pour cette pièce",
+        "symbolName": "Associer un nom de symbole KiCad à cette pièce",
+        "footprintName": "Associer un nom d'empreinte KiCad à cette pièce",
+        "extensionValue": "Associer une valeur personnalisée à cette pièce"
       }
     },
     "lowInventory": {
@@ -93,7 +102,11 @@
     },
     "partTypes": {
       "title": "Types de pièces",
-      "description": "Les types de pièces vous permettent de séparer vos pièces par type. Les types <1>parents</1> permettent une hiérarchie illimitée des types de pièces.<3 />Par exemple : les amplis op peuvent être un sous-type des CI, donc le type parent des amplis op est CI."
+      "description": "Les types de pièces vous permettent de séparer vos pièces par type. Les types <1>parents</1> permettent une hiérarchie illimitée des types de pièces.<3 />Par exemple : les amplis op peuvent être un sous-type des CI, donc le type parent des amplis op est CI.",
+      "rename": "Renommer le type de pièce",
+      "edit": "Modifier le type de pièce",
+      "partCount": "Le nombre de pièces dans cette catégorie",
+      "viewParts": "Voir les pièces"
     },
     "exportData": {
       "title": "Importer/Exporter des données",
@@ -104,7 +117,15 @@
       "totalRowsImported": "Total des lignes importées",
       "totalProjectsImported": "Projets importés",
       "totalPartTypesImported": "Types de pièces importés",
-      "totalPartsImported": "Pièces importées"
+      "totalPartsImported": "Pièces importées",
+      "noFilesSelected": "Aucun fichier sélectionné pour le téléchargement !",
+      "importUploadFailed": "L'importation a échoué !",
+      "importFailed": "Échec de l'importation des données.",
+      "importSuccess": "Données importées avec succès !",
+      "exportFailed": "L'exportation des données a échoué !",
+      "exportSuccess": "Données exportées avec succès !",
+      "fileNotSupported": "Le fichier '{{name}}' avec le type mime '{{type}}' n'est pas un type d'image accepté !",
+      "chooseFormat": "Choisissez un format"
     },
     "tools": {
       "title": "Outils",
@@ -156,6 +177,13 @@
       "partLabelTemplateDescription": "Les étiquettes de pièces sont imprimées selon ce modèle.",
       "lineX": "Ligne {{number}}",
       "identifierX": "Identifiant {{number}}",
+      "barcodeConfiguration": "Configuration du code-barres",
+      "barcodeSupport": "Support du code-barres",
+      "barcodeProfile": "Profil du code-barres",
+      "isBarcodeDebug": "Mode débogage",
+      "bufferTime": "Temps de tampon (ms)",
+      "prefix2d": "Préfixe du code-barres 2D",
+      "maxKeystrokeThresholdMs": "Seuil maximal de frappe (ms)",
       "popup": {
         "forgetCredentials": "Oublier les identifiants en cache et forcer la réauthentification avec DigiKey",
         "swarmEnabled": "Choisissez si vous souhaitez activer le support de Binner Swarm.",
@@ -182,11 +210,28 @@
         "octopartClientSecret": "Votre Secret Client pour Octopart/Nexar.",
         "printerPrinterName": "Le nom de votre imprimante tel qu'il apparaît dans Windows ou CUPS (Unix).",
         "printerPartLabelSource": "La source de papier pour les étiquettes à utiliser.",
-        "partLabelName": "Le nom du modèle d'étiquette installé dans votre imprimante. Ceci sera spécifique à votre imprimante et doit être défini dans votre appsettings.json sous <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>"
+        "partLabelName": "Le nom du modèle d'étiquette installé dans votre imprimante. Ceci sera spécifique à votre imprimante et doit être défini dans votre appsettings.json sous <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>",
+        "barcodeSupportEnabled": "Choisissez si vous souhaitez activer le support du code-barres.",
+        "barcodeProfile": "Choisissez le profil du code-barres à utiliser pour votre scanner.",
+        "barcodePrefix": "Le préfixe utilisé pour les codes-barres 2D, généralement '[)>'.",
+        "barcodeBufferTime": "Le temps de tampon en millisecondes pendant lequel le code-barres scannera les données. Certains scanners nécessitent plus ou moins de temps. Par défaut : 80",
+        "barcodeIsDebug": "Activer le mode débogage du code-barres imprimera des informations de diagnostic dans la console du navigateur.",
+        "maxKeystrokeThresholdMs": "Le temps maximal en millisecondes à attendre entre les frappes.",
+        "prefix2d": "Le préfixe utilisé pour les codes-barres 2D, généralement '[)>'."
       }
     },
     "datasheet": {
-      "title": "Recherche de fiches techniques"
+      "title": "Recherche de fiches techniques",
+      "description": "Recherchez des fiches techniques par numéro de pièce.",
+      "partType": "Type de pièce",
+      "manufacturerPartNumber": "Pièce du fabricant",
+      "manufacturer": "Fabricant",
+      "website": "Site web",
+      "datasheet": "Fiche technique",
+      "packageType": "Type de boîtier",
+      "status": "Statut",
+      "datasheets": "Fiches techniques",
+      "actions": "Actions"
     },
     "orderImport": {
       "title": "Importation de commande",
@@ -196,12 +241,18 @@
       "orderNum": "Numéro de commande",
       "instructions": "Pour les commandes <1>DigiKey</1>, il s'agit du <3>N° de commande de vente</3>.<4 />Pour les commandes <6>Mouser</6>, il s'agit du <8>N° de commande Web</8>.<10 />Pour les commandes <12>Arrow</12>, il s'agit du <14>Numéro de commande</14>.",
       "mouserNote": "<0>Note :</0> Mouser ne prend en charge que le N° de commande Web, alors assurez-vous lors de l'importation que vous utilisez le N° de commande Web et <2>non le N° de commande de vente</2>",
-      "arrowNote": "<0>Note :</0> Arrow exige que vous demandiez d'abord l'accès à leur API de commande en leur envoyant un e-mail. Voir <2>API de commande Arrow</2>"
+      "arrowNote": "<0>Note :</0> Arrow exige que vous demandiez d'abord l'accès à leur API de commande en leur envoyant un e-mail. Voir <2>API de commande Arrow</2>",
+      "addedToInventory": "ajouté à l'inventaire",
+      "alreadyInInventory": "déjà dans l'inventaire",
+      "requestAllProductInformation": "Demander toutes les informations sur le produit",
+      "apiMessages": "Messages de l'API"
     },
     "printLabels": {
       "title": "Imprimer des étiquettes",
       "description": "Imprimez des étiquettes personnalisées multi-lignes pour vos bacs de stockage.<1 />L'historique d'impression est conservé pour que vous puissiez réutiliser les modèles de vos étiquettes.",
       "printHistory": "Historique d'impression",
+      "addLineToStart": "Ajoutez une ligne pour commencer.",
+      "barcodeFontsNotice": "Les polices de code-barres peuvent poser problème. Les valeurs doivent être entourées d'astérisques, par exemple : *valeur* ou de parenthèses, par exemple : (valeur) pour être encodées correctement. Pour une meilleure précision, utilisez une taille de police de [6, 12, 18, 24, 30, 36]. Alternativement, activez IsBarcode et un code-barres sera dessiné pour vous et aucun caractère spécial ne sera nécessaire.",
       "label": {
         "labelType": "Type d'étiquette",
         "paperSource": "Source de papier",
@@ -276,8 +327,12 @@
       "description": ""
     },
     "admin": {
+      "title": "Admin",
+      "description": "Administration du système pour gérer votre installation.",
+      "header": "Choisissez une tâche d'administration",
       "users": {
         "title": "Gestion des utilisateurs",
+        "baseDescription": "Gérez les utilisateurs de votre système.",
         "description": "Administration des utilisateurs.",
         "accountType": "Type de compte",
         "masterAccount": "Compte administrateur principal",
@@ -298,6 +353,89 @@
       "updateParts": {
         "title": "Mettre à jour les métadonnées des pièces",
         "description": "Rafraîchissez les informations des API externes et choisissez les champs que vous souhaitez mettre à jour."
+      },
+      "systemInfo": {
+        "title": "Informations système",
+        "baseDescription": "Obtenez des informations sur votre installation Binner.",
+        "description": "Informations sur votre installation Binner. Ces paramètres peuvent être trouvés dans le fichier de configuration du service 'appsettings.json'",
+        "version": "Version",
+        "lastestVersion": "Dernière version de Binner",
+        "license": "Licence",
+        "api": "Api",
+        "enabledIntegrations": "Intégrations activées",
+        "language": "Langue",
+        "currency": "Devise",
+        "server": "Serveur",
+        "data": "Données",
+        "storageProvider": "Fournisseur de stockage",
+        "storageProviderConfig": "Configuration du fournisseur de stockage",
+        "installationPath": "Chemin d'installation",
+        "userFilesUploadPath": "Chemin de téléchargement des fichiers utilisateur",
+        "logPath": "Chemin des journaux",
+        "ip": "IP",
+        "port": "Port",
+        "totalParts": "Total des pièces",
+        "totalUsers": "Total des utilisateurs",
+        "totalPartTypes": "Total des types de pièces",
+        "totalUserFiles": "Total des fichiers utilisateur",
+        "userFilesSize": "Taille des fichiers utilisateur"
+      },
+      "backupRestore": {
+        "title": "Sauvegarde/Restauration",
+        "baseDescription": "Sauvegardez ou restaurez votre installation Binner."
+      }
+    },
+    "backup": {
+      "title": "Sauvegarde / Restauration",
+      "baseDescription": "Sauvegardez ou restaurez votre installation Binner.",
+      "description": "Créez une sauvegarde ou restaurez à partir d'une sauvegarde.",
+      "acceptedFileTypes": "Types de fichiers acceptés : \"*.bak\"",
+      "backupDescription": "Créez un instantané de votre installation Binner."
+    },
+    "printing": {
+      "title": "Impression",
+      "description": "Impression d'étiquettes et de modèles d'étiquettes.",
+      "header": "Choisissez une tâche d'impression",
+      "labelTemplates": {
+        "title": "Modèles d'étiquettes",
+        "description": "Modifiez les modèles d'étiquettes de pièces et les modèles d'étiquettes personnalisées.",
+        "baseDescription": "Créez et modifiez des modèles d'étiquettes.",
+        "barcodeLabels": "Étiquettes de code-barres",
+        "custom": "Personnalisé",
+        "preview": "Aperçu",
+        "labelEditor": "Éditeur d'étiquettes",
+        "manage": "Gérer",
+        "zoomLevel": "Niveau de zoom",
+        "labelProperties": "Propriétés de l'étiquette",
+        "labelTemplate": "Modèle d'étiquette",
+        "width": "Largeur",
+        "height": "Hauteur",
+        "dpi": "Dpi",
+        "margin": "Marge",
+        "templateName": "Nom du modèle",
+        "itemProperties": "Propriétés de l'élément",
+        "align": "Aligner",
+        "font": "Police",
+        "rotate": "Rotation",
+        "fontSize": "Taille de la police",
+        "fontWeight": "Épaisseur de la police",
+        "color": "Couleur",
+        "length": "Longueur",
+        "textBarcodeValue": "Valeur texte/code-barres",
+        "partInformation": "Informations sur la pièce",
+        "button": {
+          "print": "Imprimer",
+          "load": "Charger..."
+        }
+      },
+      "printLabels": {
+        "title": "Imprimer des étiquettes personnalisées",
+        "baseDescription": "Imprimez des étiquettes personnalisées pour toute tâche."
+      },
+      "bulkprint": {
+        "title": "Impression en masse",
+        "description": "Imprimez des étiquettes pour plusieurs pièces à la fois.",
+        "baseDescription": "Imprimez en lot des étiquettes pour des pièces."
       }
     }
   },
@@ -317,7 +455,13 @@
     "updatePartMetadata": "Mettre à jour les métadonnées des pièces",
     "backupRestore": "Sauvegarde / Restauration",
     "accountSettings": "Paramètres du compte",
-    "activateLicense": "Activer la licence"
+    "activateLicense": "Activer la licence",
+    "systemInfo": "Informations système",
+    "barcodeScanner": "Scanner de code-barres",
+    "printing": "Impression",
+    "labelTemplates": "Modèles d'étiquettes",
+    "bulkPrint": "Impression en masse",
+    "inventory": "Inventaire"
   },
   "comp": {
     "navBar": {
@@ -350,6 +494,19 @@
       "arrowPart": "Pièce Arrow",
       "datasheet": "Fiche technique",
       "noResults": "Aucun résultat.",
+      "partType": "Type de pièce",
+      "actions": "Actions",
+      "lowStockThreshold": "Seuil de stock faible",
+      "digikeyPartNumber": "Numéro de pièce DigiKey",
+      "mouserPartNumber": "Numéro de pièce Mouser",
+      "arrowPartNumber": "Numéro de pièce Arrow",
+      "packageType": "Type de boîtier",
+      "mountingType": "Type de montage",
+      "symbolName": "Nom du symbole",
+      "footprintName": "Nom de l'empreinte",
+      "extensionValue1": "Valeur d'extension 1",
+      "extensionValue2": "Valeur d'extension 2",
+      "partId": "ID de la pièce",
       "ok": "Ok",
       "popup": {
         "lowStock": "Les quantités inférieures à cette valeur indiqueront que la pièce est en rupture de stock.",
@@ -453,6 +610,30 @@
     "pcbHistoryModal": {
       "header": "Historique de production de PCB",
       "title": "Gestion des nomenclatures"
+    },
+    "bulkScanModal": {
+      "autoIncrement": "Incrémentation automatique",
+      "rememberLocation": "Mémoriser l'emplacement",
+      "popup": {
+        "autoIncrement": "Incrémentation automatique du numéro de bac 2",
+        "rememberLocation": "Répétez l'emplacement de chaque pièce ajoutée"
+      }
+    },
+    "duplicatePartModal": {
+      "title": "Pièce en double",
+      "description": "Il existe une pièce en double possible déjà dans votre inventaire."
+    },
+    "labelSelectionModal": {
+      "title": "Éditeur d'étiquettes",
+      "header": "Sélectionnez une étiquette",
+      "description": "Sélectionnez une étiquette existante à modifier ou créez-en une nouvelle.",
+      "chooseLabel": "Choisissez l'étiquette que vous souhaitez modifier",
+      "createNewLabel": "Créer une nouvelle étiquette..."
+    },
+    "labelSetNameModal": {
+      "description": "Entrez un nom pour votre nouvelle étiquette.",
+      "labelName": "Nom de l'étiquette",
+      "makeDefault": "Définir comme étiquette de pièce par défaut ?"
     }
   },
   "button": {
@@ -492,7 +673,19 @@
     "saveAnyway": "Enregistrer quand même",
     "addUser": "Ajouter un utilisateur",
     "generate": "Générer",
-    "close": "Fermer"
+    "close": "Fermer",
+    "return": "Retour",
+    "restore": "Restaurer",
+    "createBackup": "Créer une sauvegarde",
+    "produceHistory": "Historique",
+    "rename": "Renommer",
+    "parts": "Pièces",
+    "specs": "Spécifications",
+    "compliance": "Conformité",
+    "cadModels": "Modèles CAO",
+    "addAnyway": "Ajouter quand même",
+    "move": "Déplacer",
+    "select": "Sélectionner"
   },
   "label": {
     "name": "Nom",
@@ -603,7 +796,16 @@
     "includeUnassociated": "Inclure les non associés",
     "date": "Date",
     "consumed": "Consommé",
-    "serial": "Série"
+    "serial": "Série",
+    "allowLogin": "Autoriser la connexion",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "rowsPerPage": "Lignes par page",
+    "symbolName": "Nom du symbole KiCad",
+    "footprintName": "Nom de l'empreinte KiCad",
+    "extensionValue1": "Valeur d'extension 1",
+    "extensionValue2": "Valeur d'extension 2",
+    "partId": "ID de la pièce"
   },
   "message": {
     "noPartsAdded": "Aucune pièce ajoutée.",
@@ -622,7 +824,10 @@
     "addXParts": "{{count}} nouvelles pièces ajoutées !",
     "savedPart": "Pièce {{partNumber}} sauvegardée !",
     "addedPart": "Pièce {{partNumber}} ajoutée !",
-    "failedSavePart": "Échec de la mise à jour, vérifiez le type de pièce et le type de montage"
+    "failedSavePart": "Échec de la mise à jour, vérifiez le type de pièce et le type de montage",
+    "noPartMetadata": "Aucune métadonnée de pièce trouvée !",
+    "scanPartExists": "La pièce existe dans l'inventaire. Vous pouvez modifier ses détails ou la supprimer de votre scan.",
+    "noOutOfStockParts": "Aucune pièce en rupture de stock."
   },
   "confirm": {
     "deleteProject": "Êtes-vous sûr de vouloir supprimer ce projet et toute votre nomenclature ?",
@@ -635,10 +840,12 @@
     "deleteRecord": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?",
     "deleteHistory": "Êtes-vous sûr de vouloir supprimer cet enregistrement historique ?",
     "partsWillBeBackInStock": "Toutes les pièces consommées seront <1>remises en stock</1>.",
+    "clearScan": "Êtes-vous sûr de vouloir effacer vos résultats scannés ?",
     "header": {
       "removeBomPart": "Retirer la pièce de la nomenclature",
       "deleteFile": "Supprimer le fichier",
-      "deletePart": "Supprimer la pièce"
+      "deletePart": "Supprimer la pièce",
+      "clearScan": "Effacer les pièces scannées"
     }
   },
   "error": {
@@ -660,7 +867,8 @@
     "testFailed": "Le test a échoué",
     "invalidOrder": "Hmm, cela ne ressemble pas à un numéro de commande valide !",
     "invalid2dBarcode": "Hmm, je ne reconnais pas ce code-barres 2D !",
-    "failedDeleteRecord": "Échec de la suppression de l'enregistrement !"
+    "failedDeleteRecord": "Échec de la suppression de l'enregistrement !",
+    "failedToSaveSettings": "Échec de l'enregistrement des paramètres !"
   },
   "success": {
     "producedPcbs": "{{quantity}} PCB ont été produits !",
@@ -697,8 +905,12 @@
       "editReferenceId": "Modifier votre <1 />identifiant de référence personnalisé que vous pouvez utiliser pour identifier cette pièce.",
       "editSchematicReferenceId": "Modifier votre <1 />identifiant de référence schématique personnalisé qui identifie la pièce sur la sérigraphie du PCB. <3 />Exemples : <5>D1</5>, <7>C2</7>, <9>Q1</9>",
       "customDescription": "Fournir une description personnalisée",
-      "customNote": "Fournir une note personnalisée"
-    }
+      "customNote": "Fournir une note personnalisée",
+      "produceHistory": "Voir l'historique de production",
+      "movePart": "Déplacer les pièces sélectionnées vers un autre onglet"
+    },
+    "makerSubscriptionRequired": "Nécessite un abonnement de niveau Maker. <1>Cliquez ici</1> pour plus de détails.",
+    "proSubscriptionRequired": "Nécessite un abonnement de niveau Professionnel. <1>Cliquez ici</1> pour plus de détails."
   },
   "footer": {
     "version": "Version",
@@ -726,5 +938,6 @@
     "white": "Blanc",
     "gold": "Or",
     "silver": "Argent"
-  }
+  },
+  "noop": "-do-not-translate-"
 }
