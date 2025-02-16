@@ -54,18 +54,18 @@ namespace Binner.Web.Controllers
             if (!Guid.TryParse(state, out var requestId) && requestId != Guid.Empty)
                 throw new ArgumentException("State is an invalid format.", nameof(state));
 
+            // get the original oauth request from the stored requestId
             var authRequest = await _credentialService.GetOAuthRequestAsync(requestId, false);
             if (authRequest == null)
                 throw new AuthenticationException($"Error - no originating oAuth request found! You must restart the oAuth authentication process.");
 
-            // local binner does not require a valid userId
             if (authRequest.UserId == null)
                 throw new AuthenticationException($"Error - no user is associated with this oAuth request!");
 
             switch (authRequest.Provider)
             {
                 case nameof(DigikeyApi):
-                    await HandleDigikeyApiAuthorizationAsync(authRequest, code);
+                    await FinishDigikeyApiAuthorizationAsync(authRequest, code);
                     break;
                 default:
                     throw new NotImplementedException($"Unhandled OAuth provider name '{authRequest.Provider}'");
@@ -74,38 +74,41 @@ namespace Binner.Web.Controllers
             return Redirect(authRequest.ReturnToUrl);
         }
 
-        private async Task HandleDigikeyApiAuthorizationAsync(OAuthAuthorization authRequest, string code)
+        private async Task FinishDigikeyApiAuthorizationAsync(OAuthAuthorization authRequest, string code)
         {
             // local binner does not require a valid userId
-            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(authRequest.UserId ?? 0);
+            var userId = authRequest.UserId ?? 0;
+            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(userId);
             var authResult = await digikeyApi.OAuth2Service.FinishAuthorization(code);
 
-            // reconstruct the user's session based on their UserId, since we don't have a Jwt token here for the user
-            var user = await _userService.GetUserAsync(new Model.User { UserId = authRequest.UserId.Value });
-            
-            var claims = _jwtService.GetClaims(new Global.Common.UserContext { 
-                EmailAddress = user.EmailAddress, 
-                UserId = authRequest.UserId.Value,
-                OrganizationId = user.OrganizationId,
-                Name = user.Name,
-            });
-            var claimsIdentity = new ClaimsIdentity(claims, "Password");
-            System.Threading.Thread.CurrentPrincipal = new ClaimsPrincipal(claimsIdentity);
-            User.AddIdentity(claimsIdentity);
-
-            authRequest.AuthorizationReceived = true;
-            authRequest.AuthorizationCode = code;
             if (authResult == null || authResult.IsError)
             {
                 authRequest.Error = authResult?.ErrorMessage ?? "No auth result received";
                 authRequest.ErrorDescription = authResult?.ErrorDetails ?? string.Empty;
+                throw new AuthenticationException($"Failed to authenticate. {authRequest.Error} {authRequest.ErrorDescription}");
             }
             else
             {
+                authRequest.AuthorizationReceived = true;
+                authRequest.AuthorizationCode = code;
+
+                // reconstruct the user's session based on their UserId, since we don't have a Jwt token here for the user
+                var user = await _userService.GetUserAsync(new Model.User { UserId = userId });
+                if (user == null) throw new AuthenticationException($"UserId '{userId}' not found!");
+
+                // create claims for the user's identity
+                var claims = _jwtService.GetClaims(new Global.Common.UserContext
+                {
+                    EmailAddress = user.EmailAddress,
+                    UserId = user.UserId,
+                    OrganizationId = user.OrganizationId,
+                    Name = user.Name,
+                });
+                var claimsIdentity = new ClaimsIdentity(claims, "Password");
+                System.Threading.Thread.CurrentPrincipal = new ClaimsPrincipal(claimsIdentity);
+                User.AddIdentity(claimsIdentity);
+
                 // store the authorization tokens
-                // result.AccessToken
-                // result.RefreshToken
-                // result.ExpiresIn
                 authRequest.AccessToken = authResult.AccessToken ?? string.Empty;
                 authRequest.RefreshToken = authResult.RefreshToken ?? string.Empty;
                 authRequest.CreatedUtc = DateTime.UtcNow;
@@ -120,10 +123,10 @@ namespace Binner.Web.Controllers
                     DateCreatedUtc = authRequest.CreatedUtc,
                     DateExpiresUtc = authRequest.ExpiresUtc,
                 });
-            }
 
-            // update oauth request as complete
-            await _credentialService.UpdateOAuthRequestAsync(authRequest);
+                // update oauth request as complete
+                await _credentialService.UpdateOAuthRequestAsync(authRequest);
+            }
         }
     }
 }
