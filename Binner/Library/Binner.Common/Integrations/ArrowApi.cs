@@ -43,15 +43,20 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
+        private void ValidateConfiguration()
+        {
+            if (string.IsNullOrEmpty(_configuration.Username)) throw new BinnerConfigurationException("ArrowConfiguration must specify a Username!");
+            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException("ArrowConfiguration must specify a ApiKey!");
+            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException("ArrowConfiguration must specify a ApiUrl!");
+        }
+
         public Task<IApiResponse> SearchAsync(string keyword, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(keyword, string.Empty, string.Empty, recordCount, additionalOptions);
 
         public Task<IApiResponse> SearchAsync(string keyword, string partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(keyword, partType, string.Empty, recordCount, additionalOptions);
 
         public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
-            if (string.IsNullOrEmpty(_configuration.Username)) throw new BinnerConfigurationException("ArrowConfiguration must specify a Username!");
-            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException("ArrowConfiguration must specify a ApiKey!");
-            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException("ArrowConfiguration must specify a ApiUrl!");
+            ValidateConfiguration();
 
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             
@@ -74,9 +79,8 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
-            if (string.IsNullOrEmpty(_configuration.Username)) throw new BinnerConfigurationException($"{nameof(ArrowConfiguration)} must specify a Username!");
-            if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException($"{nameof(ArrowConfiguration)} must specify a ApiKey!");
-            if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException($"{nameof(ArrowConfiguration)} must specify a ApiUrl!");
+            ValidateConfiguration();
+
             if (additionalOptions == null) throw new ArgumentNullException(nameof(additionalOptions));
             if (!additionalOptions.ContainsKey("password") || string.IsNullOrEmpty(additionalOptions["password"])) throw new ArgumentNullException(nameof(additionalOptions), "User password value is required!");
             var username = _configuration.Username;

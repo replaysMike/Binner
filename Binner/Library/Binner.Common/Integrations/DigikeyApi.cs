@@ -76,6 +76,17 @@ namespace Binner.Common.Integrations
             _requestContext = requestContext;
         }
 
+        private void ValidateConfiguration()
+        {
+            if (_configuration.Enabled)
+            {
+                if (string.IsNullOrWhiteSpace(_configuration.ClientId)) throw new BinnerConfigurationException("DigiKey API ClientId cannot be empty!");
+                if (string.IsNullOrWhiteSpace(_configuration.ClientSecret)) throw new BinnerConfigurationException("DigiKey API ClientSecret cannot be empty!");
+                if (string.IsNullOrWhiteSpace(_configuration.oAuthPostbackUrl)) throw new BinnerConfigurationException("DigiKey API oAuthPostbackUrl cannot be empty!");
+                if (string.IsNullOrWhiteSpace(_configuration.ApiUrl)) throw new BinnerConfigurationException("DigiKey API ApiUrl cannot be empty!");
+            }
+        }
+
         public enum MountingTypes
         {
             None = 0,
@@ -85,6 +96,8 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
+            ValidateConfiguration();
+
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
@@ -116,6 +129,8 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null)
         {
+            ValidateConfiguration();
+
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
@@ -153,6 +168,8 @@ namespace Binner.Common.Integrations
         /// <returns></returns>
         public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode, ScannedBarcodeType barcodeType)
         {
+            ValidateConfiguration();
+
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
@@ -222,6 +239,8 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> GetCategoriesAsync()
         {
+            ValidateConfiguration();
+
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
@@ -257,6 +276,8 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
+            ValidateConfiguration();
+
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)

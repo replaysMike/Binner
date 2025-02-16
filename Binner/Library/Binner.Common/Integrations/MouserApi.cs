@@ -41,8 +41,22 @@ namespace Binner.Common.Integrations
             _client = new HttpClient();
         }
 
+        private void ValidateOrderConfiguration()
+        {
+            if (string.IsNullOrWhiteSpace(_configuration.ApiKeys.OrderApiKey)) throw new BinnerConfigurationException("Mouser API OrderApiKey cannot be empty!");
+            if (string.IsNullOrWhiteSpace(_configuration.ApiUrl)) throw new BinnerConfigurationException("Mouser API ApiUrl cannot be empty!");
+        }
+
+        private void ValidateSearchConfiguration()
+        {
+            if (string.IsNullOrWhiteSpace(_configuration.ApiKeys.SearchApiKey)) throw new BinnerConfigurationException("Mouser API SearchApiKey cannot be empty!");
+            if (string.IsNullOrWhiteSpace(_configuration.ApiUrl)) throw new BinnerConfigurationException("Mouser API ApiUrl cannot be empty!");
+        }
+
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
+            ValidateOrderConfiguration();
+
             // use the newer order history api, slightly different data format
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/orderhistory/webOrderNumber?webOrderNumber={orderId}&apiKey={_configuration.ApiKeys.OrderApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Get, uri);
@@ -62,6 +76,8 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> GetOldOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
+            ValidateOrderConfiguration();
+
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/order/{orderId}?apiKey={_configuration.ApiKeys.OrderApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Get, uri);
             var response = await _client.SendAsync(requestMessage);
@@ -85,6 +101,8 @@ namespace Binner.Common.Integrations
         /// <returns></returns>
         public async Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null)
         {
+            ValidateSearchConfiguration();
+
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/partnumber?apiKey={_configuration.ApiKeys.SearchApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);
             var request = new
@@ -119,6 +137,7 @@ namespace Binner.Common.Integrations
 
         public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
+            ValidateSearchConfiguration();
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/search/keyword?apiKey={_configuration.ApiKeys.SearchApiKey}");
             var requestMessage = CreateRequest(HttpMethod.Post, uri);

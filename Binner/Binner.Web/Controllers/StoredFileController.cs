@@ -1,14 +1,18 @@
 ﻿using AnyMapper;
+using Binner.Common;
 using Binner.Common.IO;
+using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,13 +31,15 @@ namespace Binner.Web.Controllers
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
         private readonly IStoredFileService _storedFileService;
+        private readonly IUserService _userService;
 
-        public StoredFileController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, IStoredFileService storedFileService)
+        public StoredFileController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, IStoredFileService storedFileService, IUserService userService)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
             _storedFileService = storedFileService;
+            _userService = userService;
         }
 
         /// <summary>
@@ -104,17 +110,22 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("preview")]
-        public async Task<IActionResult> GetStoredFilePreviewAsync([FromQuery] string fileName)
+        public async Task<IActionResult> GetStoredFilePreviewAsync([FromQuery] StoredFilePreviewRequest request)
         {
-            if (string.IsNullOrEmpty(fileName)) return NotFound();
-            var storedFile = await _storedFileService.GetStoredFileAsync(fileName);
+            var userContext = await _userService.ValidateUserImageToken(request.Token ?? string.Empty);
+            if (userContext == null) return GetInvalidTokenImage();
+            System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
+
+            if (string.IsNullOrEmpty(request.Filename)) return NotFound();
+            var storedFile = await _storedFileService.GetStoredFileAsync(request.Filename);
             if (storedFile == null) return NotFound();
 
             // read the file contents
-            new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType);
+            new FileExtensionContentTypeProvider().TryGetContentType(request.Filename, out var contentType);
             if (string.IsNullOrEmpty(contentType))
-                return BadRequest($"Could not determine content type for file '{fileName}'");
+                return BadRequest($"Could not determine content type for file '{request.Filename}'");
             // return a default cover image for the following formats
             switch (contentType)
             {
@@ -134,7 +145,7 @@ namespace Binner.Web.Controllers
 
             // return the actual file if it's an image type
             var path = _storedFileService.GetStoredFilePath(storedFile.StoredFileType);
-            var pathToFile = Path.Combine(path, fileName);
+            var pathToFile = Path.Combine(path, request.Filename);
             if (System.IO.File.Exists(pathToFile))
             {
                 var bytes = System.IO.File.ReadAllBytes(pathToFile);
@@ -220,6 +231,15 @@ namespace Binner.Web.Controllers
                 StoredFileId = request.StoredFileId
             });
             return Ok(isDeleted);
+        }
+
+        private FileStreamResult GetInvalidTokenImage()
+        {
+            var image = new BlankImage(300, 100, Color.White, Color.Red, "Invalid Image Token!\nYou may need to re-login.");
+            var stream = new MemoryStream();
+            image.Image.SaveAsPng(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return new FileStreamResult(stream, "image/png");
         }
     }
 }
