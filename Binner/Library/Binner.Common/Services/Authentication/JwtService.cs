@@ -33,8 +33,8 @@ namespace Binner.Common.Services.Authentication
                 new (ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new (JwtClaimTypes.UserId, user.UserId.ToString()),
                 new (JwtClaimTypes.OrganizationId, user.OrganizationId.ToString()),
-                new (JwtClaimTypes.FullName, user.Name),
-                new (ClaimTypes.Name, user.EmailAddress),
+                new (JwtClaimTypes.FullName, user.Name ?? string.Empty),
+                new (ClaimTypes.Name, user.EmailAddress ?? string.Empty),
                 new (ClaimTypes.HomePhone, string.IsNullOrEmpty(user.PhoneNumber) ? "" : user.PhoneNumber),
                 new (JwtClaimTypes.CanLogin, user.CanLogin.ToString()),
                 new (ClaimTypes.Expiration, DateTime.UtcNow.Add(_configuration.Authentication.JwtAccessTokenExpiryTime).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
