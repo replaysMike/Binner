@@ -68,14 +68,13 @@ namespace Barcoder.Renderer.Image.Internal
 
         private static void RenderBlackText(Image<L8> image, string text, float x, float y, Font font)
         {
-            var options = new TextOptions(font)
-            {
+            var textOptions = new RichTextOptions(font) {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Origin = new PointF(x, y),
             };
 
-            image.Mutate(ctx => ctx.DrawText(options, text, Color.Black));
+            image.Mutate(ctx => ctx.DrawText(textOptions, text, Color.Black));
         }
     }
 }

@@ -1,6 +1,6 @@
 $project = ".\Binner\Binner.ReleaseBuild.sln"
 $releaseConfiguration = "Release"
-$framework = "net8.0"
+$framework = "net9.0"
 
 Write-Host "Building $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
 
