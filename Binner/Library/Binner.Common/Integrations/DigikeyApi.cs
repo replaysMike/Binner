@@ -7,12 +7,14 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Responses;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -31,7 +33,7 @@ namespace Binner.Common.Integrations
         public string Name => "DigiKey";
 
         #region Regex Matching
-        private readonly Regex PercentageRegex = new Regex("^\\d{0,4}(\\.\\d{0,4})? *%?$", RegexOptions.Compiled);
+        private readonly Regex PercentageRegex = new Regex("\\b(?<!\\.)(?!0+(?:\\.0+)?%)(?:\\d|[1-9]\\d|100)(?:(?<!100)\\.\\d+)?%", RegexOptions.Compiled);
         private readonly Regex PowerRegex = new Regex("^(\\d+[\\/\\d. ]*[Ww]$|\\d*[Ww]$)", RegexOptions.Compiled);
         private readonly Regex ResistanceRegex = new Regex("^(\\d+[\\d. ]*[KkMm]$|\\d*[KkMm]$|\\d*(?i)ohm(?-i)$)", RegexOptions.Compiled);
         private readonly Regex CapacitanceRegex = new Regex("^\\d+\\.?\\d*(uf|pf|mf|f)$", RegexOptions.Compiled);
@@ -101,6 +103,7 @@ namespace Binner.Common.Integrations
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 try
@@ -110,13 +113,15 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
+                    var result = await TryHandleResponseAsync(response, authenticationResponse);
+                    if (!result.IsSuccessful)
                     {
-                        return apiResponse;
+                        // return api error
+                        return result.Response;
                     }
 
                     // 200 OK
-                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var resultString = await response.Content.ReadAsStringAsync();
                     var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings) ?? new();
                     return new ApiResponse(results, nameof(DigikeyApi));
                 }
@@ -134,6 +139,7 @@ namespace Binner.Common.Integrations
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 try
@@ -143,13 +149,15 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
+                    var result = await TryHandleResponseAsync(response, authenticationResponse);
+                    if (!result.IsSuccessful)
                     {
-                        return apiResponse;
+                        // return api error
+                        return result.Response;
                     }
 
                     // 200 OK
-                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var resultString = await response.Content.ReadAsStringAsync();
                     var results = JsonConvert.DeserializeObject<Product>(resultString, _serializerSettings) ?? new();
                     return new ApiResponse(results, nameof(DigikeyApi));
                 }
@@ -173,6 +181,7 @@ namespace Binner.Common.Integrations
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 try
@@ -218,15 +227,17 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, string.Join("/", _configuration.ApiUrl, endpoint) + barcodeFormattedPath);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
+                    var result = await TryHandleResponseAsync(response, authenticationResponse);
+                    if (!result.IsSuccessful)
                     {
-                        var contentString = response.Content.ReadAsStringAsync().Result;
-                        apiResponse.Errors.Add(contentString);
-                        return apiResponse;
+                        // return api error
+                        var contentString = await response.Content.ReadAsStringAsync();
+                        result.Response.Errors.Add(contentString);
+                        return result.Response;
                     }
 
                     // 200 OK
-                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var resultString = await response.Content.ReadAsStringAsync();
                     var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(resultString, _serializerSettings) ?? new();
                     return new ApiResponse(results, nameof(DigikeyApi));
                 }
@@ -244,6 +255,7 @@ namespace Binner.Common.Integrations
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 try
@@ -253,13 +265,15 @@ namespace Binner.Common.Integrations
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
-                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
+                    var result = await TryHandleResponseAsync(response, authenticationResponse);
+                    if (!result.IsSuccessful)
                     {
-                        return apiResponse;
+                        // return api error
+                        return result.Response;
                     }
 
                     // 200 OK
-                    var resultString = response.Content.ReadAsStringAsync().Result;
+                    var resultString = await response.Content.ReadAsStringAsync();
                     var results = JsonConvert.DeserializeObject<CategoriesResponse>(resultString, _serializerSettings) ?? new();
                     return new ApiResponse(results, nameof(DigikeyApi));
                 }
@@ -285,7 +299,10 @@ namespace Binner.Common.Integrations
 
             var keywords = new List<string>();
             if (!string.IsNullOrEmpty(partNumber))
-                keywords = partNumber.ToLower().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                keywords = partNumber
+                    .ToLower()
+                    .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
             var packageTypeEnum = MountingTypes.None;
             if (!string.IsNullOrEmpty(mountingType))
             {
@@ -331,12 +348,14 @@ namespace Binner.Common.Integrations
                         { "Includes", $"Products({string.Join(",", includes)})" },
                     };
                     var uri = Url.Combine(_configuration.ApiUrl, "/Search/v3/Products", $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
-                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
                     var taxonomies = MapTaxonomies(partType, packageTypeEnum);
-                    var parametricFilters = MapParametricFilters(keywords, packageTypeEnum, taxonomies);
+                    
+                    // attempt to detect certain words and apply them as parametric filters
+                    var (parametricFilters, filteredKeywords) = MapParametricFilters(keywords, packageTypeEnum, taxonomies);
+
                     var request = new KeywordSearchRequest
                     {
-                        Keywords = string.Join(" ", keywords),
+                        Keywords = string.Join(" ", filteredKeywords),
                         RecordCount = recordCount,
                         Filters = new Filters
                         {
@@ -345,19 +364,29 @@ namespace Binner.Common.Integrations
                         },
                         SearchOptions = new List<SearchOptions> { }
                     };
-                    var json = JsonConvert.SerializeObject(request, _serializerSettings);
-                    requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                    // perform a keywords API search
-                    var response = await _client.SendAsync(requestMessage);
-                    if (TryHandleResponse(response, authenticationResponse, out var apiResponse))
+                    var result = await PerformApiSearchQueryAsync(authResponse, uri, request);
+                    if (result.ErrorResponse != null) return result.ErrorResponse;
+                    
+                    // if no results are returned, perform a secondary search on the original keyword search with no modifications via parametric filtering
+                    if (!result.SuccessResponse.Products.Any() && filteredKeywords.Count != keywords.Count)
                     {
-                        return apiResponse;
+                        request = new KeywordSearchRequest
+                        {
+                            Keywords = string.Join(" ", keywords),
+                            RecordCount = recordCount,
+                            Filters = new Filters
+                            {
+                                TaxonomyIds = taxonomies.Select(x => (int)x).ToList(),
+                                // don't include parametric filters
+                                ParametricFilters = new List<ParametricFilter>()
+                            },
+                            SearchOptions = new List<SearchOptions> { }
+                        };
+                        result = await PerformApiSearchQueryAsync(authResponse, uri, request);
+                        if (result.ErrorResponse != null) return result.ErrorResponse;
                     }
 
-                    // 200 OK
-                    var resultString = response.Content.ReadAsStringAsync().Result;
-                    var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new();
-                    return new ApiResponse(results, nameof(DigikeyApi));
+                    return new ApiResponse(result.SuccessResponse, nameof(DigikeyApi));
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -371,8 +400,37 @@ namespace Binner.Common.Integrations
             });
         }
 
-        private ICollection<ParametricFilter> MapParametricFilters(ICollection<string> keywords, MountingTypes packageType, ICollection<Taxonomies> taxonomies)
+        private async Task<(IApiResponse? ErrorResponse, KeywordSearchResponse SuccessResponse)> PerformApiSearchQueryAsync(OAuthAuthorization authenticationResponse, Uri uri, KeywordSearchRequest request)
         {
+            using var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
+            var json = JsonConvert.SerializeObject(request, _serializerSettings);
+            requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            // perform a keywords API search
+            using var response = await _client.SendAsync(requestMessage);
+            var result = await TryHandleResponseAsync(response, authenticationResponse);
+            if (!result.IsSuccessful)
+            {
+                // return api error
+                return (result.Response, new KeywordSearchResponse());
+            }
+
+            // 200 OK
+            var resultString = await response.Content.ReadAsStringAsync();
+            var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new();
+            return (null, results);
+        }
+
+        /// <summary>
+        /// Detect certain keywords/regex combinations to move those keywords into a parametric filter, to get a more defined result from DigiKey
+        /// </summary>
+        /// <param name="keywordCollection"></param>
+        /// <param name="packageType"></param>
+        /// <param name="taxonomies"></param>
+        /// <returns></returns>
+        private (ICollection<ParametricFilter> ParametricFilters, ICollection<string> FilteredKeywords) MapParametricFilters(ICollection<string> keywordCollection, MountingTypes packageType, ICollection<Taxonomies> taxonomies)
+        {
+            // create a copy that we will modify and return for parametric search behavior
+            var filteredKeywords = new List<string>(keywordCollection);
             var filters = new List<ParametricFilter>();
             var percent = "";
             var power = "";
@@ -381,7 +439,7 @@ namespace Binner.Common.Integrations
             var voltageRating = "";
             var currentRating = "";
             var inductance = "";
-            foreach (var keyword in keywords)
+            foreach (var keyword in filteredKeywords)
             {
                 if (PercentageRegex.IsMatch(keyword))
                     percent = keyword;
@@ -399,12 +457,12 @@ namespace Binner.Common.Integrations
                     inductance = keyword;
             }
             // add tolerance parameter
-            if (keywords.Contains("precision") || !string.IsNullOrEmpty(percent))
+            if (filteredKeywords.Contains("precision") || !string.IsNullOrEmpty(percent))
             {
-                if (keywords.Contains("precision"))
-                    keywords.Remove("precision");
-                if (keywords.Contains(percent))
-                    keywords.Remove(percent);
+                if (filteredKeywords.Contains("precision"))
+                    filteredKeywords.Remove("precision");
+                if (filteredKeywords.Contains(percent))
+                    filteredKeywords.Remove(percent);
                 else
                     percent = "1%";
                 var filter = new ParametricFilter
@@ -416,7 +474,7 @@ namespace Binner.Common.Integrations
             }
             if (!string.IsNullOrEmpty(power))
             {
-                keywords.Remove(power);
+                filteredKeywords.Remove(power);
                 var filter = new ParametricFilter
                 {
                     ParameterId = (int)Parametrics.Power,
@@ -426,7 +484,7 @@ namespace Binner.Common.Integrations
             }
             if (!string.IsNullOrEmpty(resistance))
             {
-                keywords.Remove(resistance);
+                filteredKeywords.Remove(resistance);
                 var filter = new ParametricFilter
                 {
                     ParameterId = (int)Parametrics.Resistance,
@@ -436,7 +494,7 @@ namespace Binner.Common.Integrations
             }
             if (!string.IsNullOrEmpty(capacitance))
             {
-                keywords.Remove(capacitance);
+                filteredKeywords.Remove(capacitance);
                 var filter = new ParametricFilter
                 {
                     ParameterId = (int)Parametrics.Capacitance,
@@ -446,7 +504,7 @@ namespace Binner.Common.Integrations
             }
             if (!string.IsNullOrEmpty(voltageRating))
             {
-                keywords.Remove(voltageRating);
+                filteredKeywords.Remove(voltageRating);
                 var filter = new ParametricFilter
                 {
                     ParameterId = (int)Parametrics.VoltageRating,
@@ -456,7 +514,7 @@ namespace Binner.Common.Integrations
             }
             if (!string.IsNullOrEmpty(currentRating))
             {
-                keywords.Remove(currentRating);
+                filteredKeywords.Remove(currentRating);
                 var filter = new ParametricFilter
                 {
                     ParameterId = (int)Parametrics.CurrentRating,
@@ -466,7 +524,7 @@ namespace Binner.Common.Integrations
             }
             if (!string.IsNullOrEmpty(inductance))
             {
-                keywords.Remove(inductance);
+                filteredKeywords.Remove(inductance);
                 var filter = new ParametricFilter
                 {
                     ParameterId = (int)Parametrics.Inductance,
@@ -484,7 +542,7 @@ namespace Binner.Common.Integrations
                         ValueId = ((int)packageType).ToString()
                     });
             }
-            return filters;
+            return (filters, filteredKeywords);
         }
 
         private ICollection<Taxonomies> MapTaxonomies(string partType, MountingTypes packageType)
@@ -540,9 +598,9 @@ namespace Binner.Common.Integrations
         /// <param name="apiResponse"></param>
         /// <returns></returns>
         /// <exception cref="DigikeyUnauthorizedException"></exception>
-        private bool TryHandleResponse(HttpResponseMessage response, OAuthAuthorization authenticationResponse, out IApiResponse apiResponse)
+        private async Task<(bool IsSuccessful, IApiResponse Response)> TryHandleResponseAsync(HttpResponseMessage response, OAuthAuthorization authenticationResponse)
         {
-            apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+            IApiResponse apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new DigikeyUnauthorizedException(authenticationResponse);
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
@@ -554,30 +612,30 @@ namespace Binner.Common.Integrations
                     if (response.Headers.Contains("X-RateLimit-Remaining"))
                         remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
                     apiResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}", nameof(DigikeyApi));
-                    return true;
+                    return (false, apiResponse);
                 }
 
                 // return generic error
-                return true;
+                return (false, apiResponse);
             }
             else if (response.IsSuccessStatusCode)
             {
                 // allow processing of response
-                return false;
+                return (true, apiResponse);
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
                 apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
-                var resultString = response.Content.ReadAsStringAsync().Result;
+                var resultString = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(resultString))
                     apiResponse.Errors.Add(resultString);
                 else
                     apiResponse.Errors.Add($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}");
-                return true;
+                return (false, apiResponse);
             }
 
             // return generic error
-            return true;
+            return (false, apiResponse);
         }
 
         /// <summary>
