@@ -94,6 +94,8 @@ export default defineConfig({
     }
   },
   build: {
+    outDir: './build',
+    emptyOutDir: true,
     assetsInlineLimit: Number.MAX_SAFE_INTEGER,
     rollupOptions: {
       output: {

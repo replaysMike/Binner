@@ -3,35 +3,40 @@ $releaseConfiguration = "Release"
 $framework = "net9.0"
 
 Write-Host "Building $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
+Measure-Command {
+  Write-Host "Installing build dependencies..." -ForegroundColor green
+  dotnet tool install --global dotnet-ef --version 9.0.2
+  Update-NodeJsInstallation 22.14.0 x64
+  choco install -y innosetup
+  #Install-Product node ''
 
-Write-Host "Installing build dependencies..." -ForegroundColor green
-dotnet tool install --global dotnet-ef --version 8.0.4
-Update-NodeJsInstallation 20.10.0 x64
-choco install -y innosetup
-#Install-Product node ''
+  Write-Host "Checking versions..." -ForegroundColor green
+  Write-Host "Node" -ForegroundColor cyan
+  node --version
+  Write-Host "Npm" -ForegroundColor cyan
+  npm --version
+  Write-Host "Dotnet" -ForegroundColor cyan
+  dotnet --version
+  Write-Host "Tar" -ForegroundColor cyan
+  tar --version
 
-Write-Host "Checking versions..." -ForegroundColor green
-Write-Host "Node" -ForegroundColor cyan
-node --version
-Write-Host "Npm" -ForegroundColor cyan
-npm --version
-Write-Host "Dotnet" -ForegroundColor cyan
-dotnet --version
-Write-Host "Tar" -ForegroundColor cyan
-tar --version
-
-Write-Host "Configuring environment..." -ForegroundColor green
-$env:NODE_OPTIONS="--max_old_space_size=16384"
-Write-Host "NODE_OPTIONS=$env:NODE_OPTIONS" -ForegroundColor cyan
+  Write-Host "Configuring environment..." -ForegroundColor green
+  $env:NODE_OPTIONS="--max_old_space_size=16384"
+  Write-Host "NODE_OPTIONS=$env:NODE_OPTIONS" -ForegroundColor cyan
+}
 
 Write-Host "Restoring packages..." -ForegroundColor green
-dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
-dotnet restore -s https://api.nuget.org/v3/index.json $project
-if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+Measure-Command {
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+  dotnet restore -s https://api.nuget.org/v3/index.json $project
+  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+}
 
 Write-Host "Building..." -ForegroundColor green
-dotnet build $project -c $releaseConfiguration
-if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+Measure-Command {
+  dotnet build $project -c $releaseConfiguration --property WarningLevel=0
+  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+}
 
 # publish specific profiles
 Write-Host "Publishing for each environment..." -ForegroundColor green
