@@ -63,7 +63,7 @@ export function Datasheets (props) {
     Datasheets.abortController = new AbortController();
     setLoading(true);
     try {
-      const response = await fetchApi(`api/part/info?partNumber=${encodeURIComponent(part.partNumber.trim())}&partType=${part.partType}&mountingType=${part.mountingType}`, {
+      const response = await fetchApi(`/api/part/info?partNumber=${encodeURIComponent(part.partNumber.trim())}&partType=${part.partType}&mountingType=${part.mountingType}`, {
         signal: Datasheets.abortController.signal
       });
       const responseData = response.data;
@@ -89,7 +89,7 @@ export function Datasheets (props) {
 
   const fetchPartTypes = async () => {
     setLoadingPartTypes(true);
-    const response = await fetchApi("api/partType/all");
+    const response = await fetchApi("/api/partType/all");
     const { data } = response;
     const partTypes = _.sortBy(
       data.map((item) => {

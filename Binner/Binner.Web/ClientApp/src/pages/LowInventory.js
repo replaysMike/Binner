@@ -35,7 +35,7 @@ export function LowInventory (props) {
 
   const loadParts = useCallback(async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection) => {
     const response = await fetchApi(
-      `api/part/low?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by?.join(',')}&value=${byValue?.join(',')}`
+      `/api/part/low?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&by=${by?.join(',')}&value=${byValue?.join(',')}`
     );
     const { data } = response;
     const pageOfData = data.items;

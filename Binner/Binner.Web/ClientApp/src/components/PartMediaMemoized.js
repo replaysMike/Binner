@@ -70,11 +70,11 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
       for (let i = 0; i < uploadFiles.length; i++) requestData.append("files", uploadFiles[i], uploadFiles[i].name);
 
       // first fetch some data using fetchApi, to leverage 401 token refresh
-      fetchApi("api/authentication/identity").then((_) => {
+      fetchApi("/api/authentication/identity").then((_) => {
         axios
           .request({
             method: "post",
-            url: `api/storedFile`,
+            url: `/api/storedFile`,
             data: requestData,
             headers: { Authorization: `Bearer ${getAuthToken()}` }
           })
@@ -174,7 +174,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 	const handleDeleteLocalFile = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`api/storedfile`, {
+    await fetchApi(`/api/storedfile`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -255,7 +255,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, part, loadingPartMe
 
     if (data && data.localfile) {
       // check if the stored file exists first
-      await fetchApi(`api/storedfile/exists?fileName=${data.localfile}`, {
+      await fetchApi(`/api/storedfile/exists?fileName=${data.localfile}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json"

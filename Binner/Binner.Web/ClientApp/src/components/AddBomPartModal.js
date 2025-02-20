@@ -46,7 +46,7 @@ export function AddBomPartModal(props) {
     setLoading(true);
 
     try {
-      const response = await fetchApi(`api/part/search?keywords=${encodeURIComponent(keyword.trim())}`, {
+      const response = await fetchApi(`/api/part/search?keywords=${encodeURIComponent(keyword.trim())}`, {
         signal: AddBomPartModal.abortController.signal
       }).catch(() => {
         setLoading(false);

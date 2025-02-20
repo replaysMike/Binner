@@ -1,10 +1,13 @@
 .version-banner {
-	position: fixed;
+  display: flex;
+  flex-direction: row;
+  position: fixed;
 	left: 25%;
 	top: -100px;
 	z-index: 999;
 	width: 50vw;
 	height: 40px;
+  min-width: 610px;
 	line-height: 2em;
 	background-color: #0D1117;
 	color: #e6edf3;
@@ -19,6 +22,16 @@
 	transition-delay: 0s;
 	transition-duration: 0.5s;
 	transition-timing-function: cubic-bezier(.47,1.64,.41,.8);
+}
+
+.version-banner div:first-child {
+  text-align: left;
+  text-wrap: nowrap;
+}
+
+.version-banner div {
+  text-align: right;
+  width: 100%;
 }
 
 .version-banner.open {

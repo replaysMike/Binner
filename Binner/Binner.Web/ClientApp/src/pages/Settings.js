@@ -518,7 +518,7 @@ export const Settings = (props) => {
 
   useEffect(() => {
     const loadFonts = async () => {
-      await fetchApi("api/print/fonts", {
+      await fetchApi("/api/print/fonts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -542,7 +542,7 @@ export const Settings = (props) => {
     };
 
     const loadSettings = async () => {
-      await fetchApi("api/system/settings", {
+      await fetchApi("/api/system/settings", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -572,7 +572,7 @@ export const Settings = (props) => {
    */
   const onSubmit = async (e) => {
     const newSettings = {...settings, barcode: {...settings.barcode, bufferTime: parseInt(settings.barcode.bufferTime), maxKeystrokeThresholdMs: parseInt(settings.barcode.maxKeystrokeThresholdMs) }};
-    await fetchApi("api/system/settings", {
+    await fetchApi("/api/system/settings", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -703,7 +703,7 @@ export const Settings = (props) => {
     const request = {
       name: apiName
     };
-    fetchApi("api/settings/forgetcredentials", {
+    fetchApi("/api/settings/forgetcredentials", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -781,7 +781,7 @@ export const Settings = (props) => {
       configuration
     };
     setTesting(true);
-    await fetchApi("api/settings/testapi", {
+    await fetchApi("/api/settings/testapi", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

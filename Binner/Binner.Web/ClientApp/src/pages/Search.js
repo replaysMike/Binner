@@ -55,7 +55,7 @@ export function Search(props) {
     }
     setKeyword(cleanPartNumber);
 
-    const response = await fetchApi(`api/part/barcode/info?barcode=${encodeURIComponent(cleanPartNumber.trim())}`, {
+    const response = await fetchApi(`/api/part/barcode/info?barcode=${encodeURIComponent(cleanPartNumber.trim())}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -92,7 +92,7 @@ export function Search(props) {
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection, keyword = null) => {
     const response = await fetchApi(
-      `api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&keyword=${keyword || ""}&by=${by?.join(',')}&value=${byValue?.join(',')}`
+      `/api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&keyword=${keyword || ""}&by=${by?.join(',')}&value=${byValue?.join(',')}`
     );
     const { data } = response;
     const pageOfData = data.items;
@@ -128,7 +128,7 @@ export function Search(props) {
     setShowPartNotFound(false);
 
     try {
-      await fetchApi(`api/part/search?keywords=${encodeURIComponent((keyword || "").trim())}`, {
+      await fetchApi(`/api/part/search?keywords=${encodeURIComponent((keyword || "").trim())}`, {
         signal: Search.abortController.signal,
       }).then((response) => {
         const { data } = response;

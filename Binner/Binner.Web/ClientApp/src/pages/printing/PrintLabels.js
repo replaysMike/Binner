@@ -105,7 +105,7 @@ export function PrintLabels(props) {
   useEffect(() => {
     const loadFonts = async () => {
       setLoading(true);
-      await fetchApi("api/print/fonts", {
+      await fetchApi("/api/print/fonts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -175,7 +175,7 @@ export function PrintLabels(props) {
     };
 
     for (var i = 0; i < quantity; i++) {
-      await fetchApi("api/print/custom", {
+      await fetchApi("/api/print/custom", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +215,7 @@ export function PrintLabels(props) {
       generateImageOnly: true
     };
 
-    await fetchApi("api/print/custom", {
+    await fetchApi("/api/print/custom", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

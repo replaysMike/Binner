@@ -54,18 +54,17 @@ export function VersionBanner(props) {
 
 	return (
 		<div className={`version-banner ${isOpen ? 'open' : ''}`}>
-			<span>
+			<div>
 				<Icon name="close" style={{marginRight: '20px', cursor: 'pointer'}} onClick={handleSkip} />
 				<Trans i18nKey="notification.versionBanner.newVersion" version={version}>
 					A new version of Binner <b>{{version: version}}</b> is available!
 				</Trans>
-			</span>
-			
-			<div style={{float: 'right'}}>
-				<Button primary onClick={handleViewReleaseNotesModalOpen} size="tiny">{t('notification.versionBanner.releaseNotes', "Release Notes")}</Button>
-				<Button primary onClick={handleView} size="tiny">{t('notification.versionBanner.view', "View")}</Button>
-				<Button onClick={handleSkip} size="tiny">{t('notification.versionBanner.skip', "Skip")}</Button>
 			</div>
+			<div>
+        <Button primary onClick={handleViewReleaseNotesModalOpen} size="tiny">{t('notification.versionBanner.releaseNotes', "Release Notes")}</Button>
+        <Button primary onClick={handleView} size="tiny">{t('notification.versionBanner.view', "View")}</Button>
+        <Button onClick={handleSkip} size="tiny">{t('notification.versionBanner.skip', "Skip")}</Button>
+      </div>
 			<Modal centered open={isReleaseNotesOpen || false} onClose={handleReleaseNotesModalClose} className="release-notes">
         <Modal.Header>{t('notification.versionBanner.releaseNotes', "Release Notes")}</Modal.Header>
 				<Modal.Description><p style={{padding: '0 10px', marginLeft: '10px'}}>{version}</p></Modal.Description>

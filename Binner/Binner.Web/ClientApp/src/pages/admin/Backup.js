@@ -68,11 +68,11 @@ export const Backup = () => {
     setDisableCreateBackupButton(true);
 
     // first fetch some data using fetchApi, to leverage 401 token refresh
-    await fetchApi("api/authentication/identity").then((_) => {
+    await fetchApi("/api/authentication/identity").then((_) => {
       axios
         .request({
           method: "post",
-          url: `api/system/backup`,
+          url: `/api/system/backup`,
           headers: { Authorization: `Bearer ${getAuthToken()}` },
           responseType: "blob"
         })
@@ -108,11 +108,11 @@ export const Backup = () => {
       formData.append("file", acceptedFiles[0], acceptedFiles[0].name);
 
       // first fetch some data using fetchApi, to leverage 401 token refresh
-      await fetchApi("api/authentication/identity").then((_) => {
+      await fetchApi("/api/authentication/identity").then((_) => {
         axios
           .request({
             method: "post",
-            url: "api/system/restore",
+            url: "/api/system/restore",
             data: formData,
             headers: { Authorization: `Bearer ${getAuthToken()}` }
           })

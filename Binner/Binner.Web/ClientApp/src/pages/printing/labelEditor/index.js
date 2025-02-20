@@ -146,7 +146,7 @@ export function LabelEditor(props) {
       generateImageOnly: generateImageOnly
     };
 
-    return await fetchApi("api/print/beta", {
+    return await fetchApi("/api/print/beta", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -251,7 +251,7 @@ export function LabelEditor(props) {
   useEffect(() => {
     const getLabelTemplates = async () => {
       setLabelTemplatesLoading(true);
-      await fetchApi("api/print/templates", {
+      await fetchApi("/api/print/templates", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -276,7 +276,7 @@ export function LabelEditor(props) {
 
     const loadFonts = async () => {
       setFontsLoading(true);
-      await fetchApi("api/print/fonts", {
+      await fetchApi("/api/print/fonts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -311,7 +311,7 @@ export function LabelEditor(props) {
       height: labelTemplate.height + ""
     };
 
-    await fetchApi("api/print/template", {
+    await fetchApi("/api/print/template", {
       method: request.labelTemplateId === -1 ? "POST" : "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -444,7 +444,7 @@ export function LabelEditor(props) {
       }))
     };
 
-    await fetchApi("api/print/label", {
+    await fetchApi("/api/print/label", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

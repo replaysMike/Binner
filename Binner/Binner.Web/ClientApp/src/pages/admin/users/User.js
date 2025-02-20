@@ -48,7 +48,7 @@ export function User(props) {
 
     function fetchUser() {
       setLoading(true);
-      fetchApi(`api/user?userId=${userId}`).then((response) => {
+      fetchApi(`/api/user?userId=${userId}`).then((response) => {
         const { data } = response;
         if (data) {
           const newUser = {...data, isLocked: data.dateLockedUtc != null};
@@ -72,7 +72,7 @@ export function User(props) {
       dateLockedUtc: user.dateLockedUtc
     };
 
-    fetchApi(`api/user`, {
+    fetchApi(`/api/user`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -95,7 +95,7 @@ export function User(props) {
     e.preventDefault();
     e.stopPropagation();
     setLoading(true);
-    fetchApi(`api/user`, {
+    fetchApi(`/api/user`, {
       method: "DELETE",
       body: user.userId
     }).then(() => {
