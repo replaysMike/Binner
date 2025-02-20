@@ -74,7 +74,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="certificates\localhost.pfx" />
+    <None Remove="certificates\localhost-unix.crt" />
+    <None Remove="certificates\localhost-unix.key" />
+    <None Remove="certificates\localhost-unix.pfx" />
+    <None Remove="certificates\localhost.conf" />
     <None Remove="Resources\datasheet.png" />
   </ItemGroup>
 
@@ -84,7 +87,19 @@
 
   <ItemGroup>
     <Content Include="binner128x128.ico" />
-    <Content Include="certificates\localhost.pfx">
+    <Content Include="certificates\localhost-unix.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost-unix.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost-unix.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost-windows.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

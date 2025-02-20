@@ -34,12 +34,12 @@
         /// <summary>
         /// Path to SSL certificate
         /// </summary>
-        public string SslCertificate { get; set; } = "./certificates/localhost.pfx";
+        public string SslCertificate { get; set; } = "./certificates/localhost-windows.pfx";
 
         /// <summary>
         /// Optional password for certificate
         /// </summary>
-        public string? SslCertificatePassword { get; set; }
+        public string? SslCertificatePassword { get; set; } = "password";
 
         /// <summary>
         /// Public resource web address (without https://) for serving public resources
