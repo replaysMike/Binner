@@ -3,6 +3,8 @@ $releaseConfiguration = "Release"
 $framework = "net9.0"
 
 Write-Host "Building $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
+Write-Host "Build Targets: $env:BUILDTARGETS" -ForegroundColor magenta
+
 $sw = [Diagnostics.Stopwatch]::StartNew()
   Write-Host "Installing build dependencies..." -ForegroundColor green
   dotnet tool install --global dotnet-ef --version 9.0.2
@@ -30,7 +32,7 @@ Write-Host "Restoring packages..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
   dotnet restore -s https://api.nuget.org/v3/index.json $project
-  dotnet workload update
+  #dotnet workload update
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
