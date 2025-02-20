@@ -167,7 +167,7 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   $sw = [Diagnostics.Stopwatch]::StartNew()
     Set-Location -Path .\Binner\BinnerInstaller
     (Get-Content .\BinnerInstaller.iss).replace('MyAppVersion "0.0"', 'MyAppVersion "' + (($env:APPVEYOR_BUILD_VERSION).split('-')[0]) + '"') | Set-Content .\BinnerInstaller.iss
-    (Get-Content .\BinnerInstaller.iss).replace('{@Framework@}', '$framework') | Set-Content .\BinnerInstaller.iss
+    (Get-Content .\BinnerInstaller.iss).replace('@NETFRAMEWORK@', "$framework") | Set-Content .\BinnerInstaller.iss
     Write-Host "Building installer using the following script:" -ForegroundColor cyan
     cat .\BinnerInstaller.iss
     .\build-installer.cmd

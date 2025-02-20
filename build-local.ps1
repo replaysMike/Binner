@@ -43,14 +43,16 @@ Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\
 
 Write-Host "Building Installers" -ForegroundColor green
 Set-Location -Path .\Binner\BinnerInstaller
-(Get-Content .\BinnerInstaller.iss).replace('{Framework}', '$framework') | Set-Content .\BinnerInstaller.iss
+#(Get-Content .\BinnerInstaller.iss).replace('MyAppVersion "0.0"', 'MyAppVersion "' + (($env:APPVEYOR_BUILD_VERSION).split('-')[0]) + '"') | Set-Content .\BinnerInstaller.iss
+(Get-Content .\BinnerInstaller.iss).replace('@NETFRAMEWORK@', "$framework") | Set-Content .\BinnerInstaller.iss
 Write-Host "Building installer using the following script:" -ForegroundColor cyan
 .\build-installer.cmd
-if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+Move-Item -Force -Path .\BinnerSetup-winx64-0.0.exe -Destination ..\..\
 Set-Location -Path ..\..\
+if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
 
 Write-Host "Creating artifact archives..." -ForegroundColor green
 
-tar -czf Binner_linux-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-x64\publish .
+tar -czf Binner_linux-x64.tar.gz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-x64\publish .
 # move files to dist folder
 #Move-Item -Force -Path 
