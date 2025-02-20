@@ -23,20 +23,20 @@ Measure-Command {
   Write-Host "Configuring environment..." -ForegroundColor green
   $env:NODE_OPTIONS="--max_old_space_size=16384"
   Write-Host "NODE_OPTIONS=$env:NODE_OPTIONS" -ForegroundColor cyan
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 Write-Host "Restoring packages..." -ForegroundColor green
 Measure-Command {
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
   dotnet restore -s https://api.nuget.org/v3/index.json $project
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
-}
+  #if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " "}}
 
 Write-Host "Building..." -ForegroundColor green
 Measure-Command {
   dotnet build $project -c $releaseConfiguration --property WarningLevel=0
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
-}
+  #if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 # publish specific profiles
 Write-Host "Publishing for each environment..." -ForegroundColor green
@@ -45,55 +45,55 @@ $buildEnv = "win-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 Measure-Command {
   dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
-}
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 Write-Host "Building the UI..." -ForegroundColor cyan
 Measure-Command {
   cd .\Binner\Binner.Web\ClientApp
   npm install
   Write-Host "npm exit code: $LASTEXITCODE"
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   npm run build
   Write-Host "npm exit code: $LASTEXITCODE"
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   cd ..\..\..\
 
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 
 $buildEnv = "linux-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 Measure-Command {
   dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 $buildEnv = "linux-arm"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 Measure-Command {
   dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 $buildEnv = "linux-arm64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 Measure-Command {
   dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 $buildEnv = "osx-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 Measure-Command {
   dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 # transform configurations per environment
 # windows does not need a transform
@@ -138,8 +138,8 @@ Measure-Command {
   Write-Host "Building installer using the following script:" -ForegroundColor cyan
   cat .\BinnerInstaller.iss
   .\build-installer.cmd
-  if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
-}
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 # package artifacts
 Write-Host "Creating artifact archives..." -ForegroundColor green
@@ -155,7 +155,7 @@ Measure-Command {
   tar -czf Binner_linux-arm64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm64\publish .
 
   tar -czf Binner_osx-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\osx-x64\publish .
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
 
 Measure-Command {
   Write-Host "Uploading Artifacts" -ForegroundColor green
@@ -163,4 +163,4 @@ Measure-Command {
 
   # rename these artifacts to include the build version number
   Get-ChildItem .\*.targz -recurse | % { Push-AppveyorArtifact $_.FullName -FileName "$($_.Basename)-$env:APPVEYOR_BUILD_VERSION.tar.gz" }
-}
+} | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "Minutes", $_.Seconds, "Sec", $_.Milliseconds, "ms" -join " " } }
