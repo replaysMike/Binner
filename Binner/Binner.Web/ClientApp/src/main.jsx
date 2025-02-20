@@ -1,6 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.css';
 import React from 'react';
-import ReactDOM from "react-dom/client";
+//import ReactDOM from "react-dom/client";
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
@@ -9,7 +10,7 @@ import { ToastContainer } from "react-toastify";
 // import i18n
 import './i18n';
 
-const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href');
+//const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href');
 const rootElement = document.getElementById('root');
 
 // Fixes wheel events so they don't bubble up
@@ -55,9 +56,9 @@ document.removeEventListener = (type, listener, options) => {
 };
 // end fix
 
-const root = ReactDOM.createRoot(rootElement);
+const root = createRoot(rootElement);
 root.render(
-  <BrowserRouter basename={baseUrl}>
+  <BrowserRouter>
     <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" containerId="maintoast" />
     <App />
   </BrowserRouter>,

@@ -34,14 +34,6 @@ namespace Binner.Web.Controllers
             _requestContextAccessor = requestContextAccessor;
         }
 
-        [AllowAnonymous]
-        [HttpGet("ping")]
-        public IActionResult Get()
-        {
-            return Ok("pong");
-        }
-
-
         /// <summary>
         /// Register a new account
         /// </summary>

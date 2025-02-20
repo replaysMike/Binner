@@ -110,10 +110,25 @@ namespace Binner.Web.ServiceHost
                 if (!IPAddress.TryParse(_config.IP, out ipAddress))
                     throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
 
-            // use embedded certificate
-            var certificateBytes = ResourceLoader.LoadResourceBytes(Assembly.GetExecutingAssembly(), @"Certificates.Binner.pfx");
-            var certificate = new X509Certificate2(certificateBytes, CertificatePassword);
+            X509Certificate2? certificate = null;
+            var certFilename = Path.GetFullPath(_config.SslCertificate);
+            try
+            {
+                var result = Binner.Common.Security.CertificateLoader.LoadCertificate(certFilename, _config.SslCertificatePassword);
+                certificate = result.Certificate;
+                if (certificate != null)
+                {
+                    _nlogLogger.Info($"{result.CertType} Certificate loaded from '{certFilename}'");
+                    _nlogLogger.Info($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
+                }
+            }
+            catch (Exception ex)
+            {
+                _nlogLogger.Error(ex, "Failed to load SSL certificate.");
+                throw;
+            }
 
+            // storage provider config
             var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ??
                                 throw new BinnerConfigurationException($"Configuration section '{nameof(StorageProviderConfiguration)}' does not exist!");
 
@@ -155,14 +170,7 @@ namespace Binner.Web.ServiceHost
                 .CreateDefaultBuilder()
                 .ConfigureKestrel(options =>
                 {
-                    options.ConfigureHttpsDefaults(opt =>
-                    {
-                        opt.ServerCertificate = certificate;
-                        opt.ClientCertificateMode = ClientCertificateMode.NoCertificate;
-                        opt.CheckCertificateRevocation = false;
-                        opt.AllowAnyClientCertificate();
-                    });
-                    options.Listen(ipAddress, _config.Port, c => { c.UseHttps(); });
+                    options.Listen(ipAddress, 7000, c => { c.UseHttps(certificate); });
                 })
                 .UseEnvironment(_config.Environment.ToString())
                 .UseStartup<Startup>()
@@ -171,7 +179,6 @@ namespace Binner.Web.ServiceHost
             _webHost = host.Build();
             ApplicationLogging.LoggerFactory = _webHost.Services.GetRequiredService<ILoggerFactory>();
             _logger = _webHost.Services.GetRequiredService<ILogger<BinnerWebHostService>>();
-            _logger.LogInformation($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
 
             await using (var context = migrationHost.Services.GetRequiredService<BinnerContext>())
             {

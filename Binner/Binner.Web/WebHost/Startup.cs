@@ -142,6 +142,7 @@ namespace Binner.Web.WebHost
                     return Task.CompletedTask;
                 });
             });
+            // todo:
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
@@ -158,20 +159,22 @@ namespace Binner.Web.WebHost
                     pattern: "{controller}/{action=Index}/{id?}");
             });
 
-            app.UseSpa(spa =>
+            //app.MapFallbackToFile("/index.html");
+
+            /*app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
 
                 if (config.Environment == Environments.Development)
                 {
                     Console.WriteLine("Starting react dev server...");
-                    spa.UseReactDevelopmentServer(npmScript: "start-vs");
+                    spa.UseReactDevelopmentServer(npmScript: "dev");
                 }
                 else
                 {
                     Console.WriteLine("Using pre-built react application");
                 }
-            });
+            });*/
 
             using (var scope = app.ApplicationServices.CreateScope())
             {

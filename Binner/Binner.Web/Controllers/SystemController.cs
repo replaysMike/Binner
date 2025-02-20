@@ -58,6 +58,13 @@ namespace Binner.Web.Controllers
             _adminService = adminService;
         }
 
+        [AllowAnonymous]
+        [HttpGet("/api/ping")]
+        public IActionResult Get()
+        {
+            return Ok("pong");
+        }
+
         /// <summary>
         /// Set the system settings
         /// </summary>
@@ -106,6 +113,7 @@ namespace Binner.Web.Controllers
         [HttpGet("settings")]
         public IActionResult GetSettings()
         {
+            _logger.LogInformation($"@@@@GET SETTINGS@@@@@");
             try
             {
                 var settingsResponse = _mapper.Map<SettingsResponse>(_config);
@@ -125,6 +133,7 @@ namespace Binner.Web.Controllers
         [HttpPut("/api/settings/testapi")]
         public async Task<IActionResult> TestApiAsync(TestApiRequest request)
         {
+            _logger.LogInformation($"@@@@TEST API@@@@@");
             try
             {
                 if (string.IsNullOrEmpty(request.Name)) return BadRequest();
@@ -148,6 +157,7 @@ namespace Binner.Web.Controllers
         [HttpPut("/api/settings/forgetcredentials")]
         public async Task<IActionResult> ForgetCredentialsAsync(ForgetCachedCredentialsRequest request)
         {
+            _logger.LogInformation($"@@@@FORGET CREDS@@@@@");
             try
             {
                 if (string.IsNullOrEmpty(request.Name)) return BadRequest();

@@ -5,10 +5,13 @@
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <Nullable>enable</Nullable>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>false</IsPackable>
     <SpaRoot>ClientApp\</SpaRoot>
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+    <SpaProxyServerUrl>https://localhost:8090</SpaProxyServerUrl>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <OutputType>Exe</OutputType>
     <!--<PublishTrimmed>true</PublishTrimmed>-->
@@ -20,7 +23,6 @@
     <FileVersion>2.6.0.0</FileVersion>
     <Version>2.6.0</Version>
     <ApplicationIcon>binner128x128.ico</ApplicationIcon>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
@@ -41,6 +43,9 @@
     <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.7.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+      <Version>9.*-*</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageReference Include="NLog" Version="4.7.13" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
@@ -50,6 +55,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Vite.AspNetCore" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,8 +72,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Certificates\Binner.crt" />
-    <None Remove="Certificates\Binner.pfx" />
+    <None Remove="certificates\localhost.pfx" />
     <None Remove="Resources\datasheet.png" />
   </ItemGroup>
 
@@ -77,15 +82,12 @@
 
   <ItemGroup>
     <Content Include="binner128x128.ico" />
-    <Content Include="Certificates\Binner.crt">
+    <Content Include="certificates\localhost.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Certificates\Binner.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <Content Include="Resources\datasheet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -29,7 +29,17 @@
         /// <summary>
         /// The port number to host
         /// </summary>
-        public int Port { get; set; } = 8090;
+        public int Port { get; set; } = 7000;
+
+        /// <summary>
+        /// Path to SSL certificate
+        /// </summary>
+        public string SslCertificate { get; set; } = "./certificates/localhost.pfx";
+
+        /// <summary>
+        /// Optional password for certificate
+        /// </summary>
+        public string? SslCertificatePassword { get; set; }
 
         /// <summary>
         /// Public resource web address (without https://) for serving public resources
