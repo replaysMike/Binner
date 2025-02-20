@@ -45,12 +45,14 @@ $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds,
 Write-Host "Publishing for each environment..." -ForegroundColor green
 
 $buildEnv = "win-x64"
-Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
-$sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-$sw.Stop()
-$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+    dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+  $sw.Stop()
+  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+}
 
 Write-Host "Building the UI..." -ForegroundColor cyan
 $sw = [Diagnostics.Stopwatch]::StartNew()
@@ -67,110 +69,136 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
-
 $buildEnv = "linux-x64"
-Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
-$sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-  robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-$sw.Stop()
-$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+    dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+  $sw.Stop()
+  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+}
 
 $buildEnv = "linux-arm"
-Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
-$sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-  robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-$sw.Stop()
-$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+    dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+  $sw.Stop()
+  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+}
 
 $buildEnv = "linux-arm64"
-Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
-$sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-  robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-$sw.Stop()
-$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+    dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+  $sw.Stop()
+  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+}
 
 $buildEnv = "osx-x64"
-Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
-$sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-  robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-$sw.Stop()
-$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+    dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+  $sw.Stop()
+  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+}
 
 # transform configurations per environment
 # windows does not need a transform
 
 $buildEnv = "win-x64"
-Copy-Item -Force -Path .\Binner\scripts\windows\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Copy-Item -Force -Path .\Binner\scripts\windows\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+}
 
 $buildEnv = "linux-x64"
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
-if (!$?) { exit -1  }
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
-if (!$?) { exit -1  }
-Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
+  if (!$?) { exit -1  }
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
+  if (!$?) { exit -1  }
+  Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+}
 
 $buildEnv = "linux-arm"
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
-if (!$?) { exit -1  }
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
-if (!$?) { exit -1  }
-Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
+  if (!$?) { exit -1  }
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
+  if (!$?) { exit -1  }
+  Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+}
 
 $buildEnv = "linux-arm64"
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
-if (!$?) { exit -1  }
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
-if (!$?) { exit -1  }
-Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
+  if (!$?) { exit -1  }
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
+  if (!$?) { exit -1  }
+  Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+}
 
 $buildEnv = "osx-x64"
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
-if (!$?) { exit -1  }
-Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
-if (!$?) { exit -1  }
-Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
-if (!$?) { exit -1  }
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
+  if (!$?) { exit -1  }
+  Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
+  if (!$?) { exit -1  }
+  Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+  if (!$?) { exit -1  }
+}
 
 # build installers
-Write-Host "Building Installers" -ForegroundColor green
-$sw = [Diagnostics.Stopwatch]::StartNew()
-  Set-Location -Path .\Binner\BinnerInstaller
-  (Get-Content .\BinnerInstaller.iss).replace('MyAppVersion "0.0"', 'MyAppVersion "' + (($env:APPVEYOR_BUILD_VERSION).split('-')[0]) + '"') | Set-Content .\BinnerInstaller.iss
-  Write-Host "Building installer using the following script:" -ForegroundColor cyan
-  cat .\BinnerInstaller.iss
-  .\build-installer.cmd
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-$sw.Stop()
-$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+$buildEnv = "win-x64"
+if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
+  Write-Host "Building Installers" -ForegroundColor green
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+    Set-Location -Path .\Binner\BinnerInstaller
+    (Get-Content .\BinnerInstaller.iss).replace('MyAppVersion "0.0"', 'MyAppVersion "' + (($env:APPVEYOR_BUILD_VERSION).split('-')[0]) + '"') | Set-Content .\BinnerInstaller.iss
+    Write-Host "Building installer using the following script:" -ForegroundColor cyan
+    cat .\BinnerInstaller.iss
+    .\build-installer.cmd
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+  $sw.Stop()
+  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+}
 
 # package artifacts
 Write-Host "Creating artifact archives..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
   Set-Location -Path ..\..\
 
-  # (note) windows doesn't need this, it has it's own installer that won't be archived
-
+# (note) windows doesn't need this, it has it's own installer that won't be archived
+if ($env:BUILDTARGETS.Contains("#linux-x64#")) {
   tar -czf Binner_linux-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-x64\publish .
-
+}
+if ($env:BUILDTARGETS.Contains("#linux-arm#")) {
   tar -czf Binner_linux-arm.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm\publish .
-
+}
+if ($env:BUILDTARGETS.Contains("#linux-arm64#")) {
   tar -czf Binner_linux-arm64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm64\publish .
-
+}
+if ($env:BUILDTARGETS.Contains("#osx-x64#")) {
   tar -czf Binner_osx-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\osx-x64\publish .
+}
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
   Write-Host "Uploading Artifacts" -ForegroundColor green
-  Get-ChildItem .\Binner\BinnerInstaller\*.exe | % { Push-AppveyorArtifact $_.FullName }
+  if ($env:BUILDTARGETS.Contains("#win-x64#")) {
+    Get-ChildItem .\Binner\BinnerInstaller\*.exe | % { Push-AppveyorArtifact $_.FullName }
+  }
 
   # rename these artifacts to include the build version number
   Get-ChildItem .\*.targz -recurse | % { Push-AppveyorArtifact $_.FullName -FileName "$($_.Basename)-$env:APPVEYOR_BUILD_VERSION.tar.gz" }
