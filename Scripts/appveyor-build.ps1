@@ -171,6 +171,7 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     cat .\BinnerInstaller.iss
     .\build-installer.cmd
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    Set-Location -Path ..\..\
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -178,21 +179,20 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
 # package artifacts
 Write-Host "Creating artifact archives..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  Set-Location -Path ..\..\
 
-# (note) windows doesn't need this, it has it's own installer that won't be archived
-if ($env:BUILDTARGETS.Contains("#linux-x64#")) {
-  tar -czf Binner_linux-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-x64\publish .
-}
-if ($env:BUILDTARGETS.Contains("#linux-arm#")) {
-  tar -czf Binner_linux-arm.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm\publish .
-}
-if ($env:BUILDTARGETS.Contains("#linux-arm64#")) {
-  tar -czf Binner_linux-arm64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm64\publish .
-}
-if ($env:BUILDTARGETS.Contains("#osx-x64#")) {
-  tar -czf Binner_osx-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\osx-x64\publish .
-}
+  # (note) windows doesn't need this, it has it's own installer that won't be archived
+  if ($env:BUILDTARGETS.Contains("#linux-x64#")) {
+    tar -czf Binner_linux-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-x64\publish .
+  }
+  if ($env:BUILDTARGETS.Contains("#linux-arm#")) {
+    tar -czf Binner_linux-arm.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm\publish .
+  }
+  if ($env:BUILDTARGETS.Contains("#linux-arm64#")) {
+    tar -czf Binner_linux-arm64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-arm64\publish .
+  }
+  if ($env:BUILDTARGETS.Contains("#osx-x64#")) {
+    tar -czf Binner_osx-x64.targz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\osx-x64\publish .
+  }
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
