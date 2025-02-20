@@ -23,6 +23,10 @@ cache:
 - C:\ProgramData\chocolatey\lib
 - C:\projects\binner\Binner\Binner.Web\ClientApp\node_modules
 - packages -> **\packages.config
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 build_script:
 - ps: >-
     .\Scripts\appveyor-build.ps1
