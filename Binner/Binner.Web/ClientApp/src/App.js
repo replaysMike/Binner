@@ -41,6 +41,7 @@ import { Tools } from "./pages/Tools";
 import { Settings } from "./pages/Settings";
 import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
 import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalculator";
+import { SmdResistorCodeCalculator } from "./pages/tools/SmdResistorCodeCalculator";
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
 import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { Help } from "./pages/help/Home";
@@ -184,6 +185,7 @@ export const App = (props) => {
           <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
           <Route path="/tools/ohmslaw" element={<PageWrapper><OhmsLawCalculator /></PageWrapper>} />
           <Route path="/tools/resistor" element={<PageWrapper><ResistorColorCodeCalculator /></PageWrapper>} />
+          <Route path="/tools/smdresistor" element={<PageWrapper><SmdResistorCodeCalculator /></PageWrapper>} />          
           <Route path="/tools/voltagedivider" element={<PageWrapper><VoltageDividerCalculator /></PageWrapper>} />
           <Route path="/tools/barcodescanner" element={<PageWrapper><BarcodeScanner /></PageWrapper>} />
           <Route exact path="/help" element={<PageWrapper><Help /></PageWrapper>} />
