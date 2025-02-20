@@ -161,7 +161,7 @@ namespace Binner.Web.WebHost
 
             //app.MapFallbackToFile("/index.html");
 
-            /*app.UseSpa(spa =>
+            app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
 
@@ -174,7 +174,7 @@ namespace Binner.Web.WebHost
                 {
                     Console.WriteLine("Using pre-built react application");
                 }
-            });*/
+            });
 
             using (var scope = app.ApplicationServices.CreateScope())
             {

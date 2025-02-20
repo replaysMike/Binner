@@ -41,6 +41,14 @@ Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\
 if (!$?) { exit -1 }
 Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
 
+Write-Host "Cleaning up..." -ForegroundColor Magenta
+if (Test-Path .\BinnerSetup-winx64-0.0.exe) {
+  Remove-Item .\BinnerSetup-winx64-0.0.exe -Force
+}
+if (Test-Path .\Binner_linux-x64.tar.gz) {
+  Remove-Item .\Binner_linux-x64.tar.gz -Force
+}
+
 Write-Host "Building Installers" -ForegroundColor green
 Set-Location -Path .\Binner\BinnerInstaller
 #(Get-Content .\BinnerInstaller.iss).replace('MyAppVersion "0.0"', 'MyAppVersion "' + (($env:APPVEYOR_BUILD_VERSION).split('-')[0]) + '"') | Set-Content .\BinnerInstaller.iss

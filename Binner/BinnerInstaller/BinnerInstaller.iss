@@ -23,8 +23,8 @@ SetupIconFile=.\binner128x128.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}
 WizardImageFile=.\WizardLarge.bmp
 WizardSmallImageFile=.\WizardSmall.bmp
@@ -47,7 +47,7 @@ Name: "keepconfiguration"; Description: "Keep existing configuration"
 Name: "installservice"; Description: "Install {#MyAppName} as a Windows service"
 
 [Files]
-Source: "..\Binner.Web\bin\Release\@NETFRAMEWORK@\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Binner.Web\bin\Release\net9.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -104,7 +104,7 @@ begin
       DestPath := ExpandConstant('{app}\appsettings.installerbackup.json');
       if FileExists(SourcePath) then
       begin
-        if not FileCopy(SourcePath, DestPath, False) then
+        if not CopyFile(SourcePath, DestPath, False) then
         begin
          Log(Format('Backed up %s to %s', [SourcePath, DestPath]));
         end
@@ -128,7 +128,7 @@ begin
       DestPath := ExpandConstant('{app}\appsettings.installerbackup.json');
       if FileExists(DestPath) then
       begin
-        if FileCopy(DestPath, SourcePath, False) then
+        if CopyFile(DestPath, SourcePath, False) then
         begin
           Log(Format('Restored %s from Backup %s', [SourcePath, DestPath]));
         end;

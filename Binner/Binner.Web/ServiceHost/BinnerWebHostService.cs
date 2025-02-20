@@ -170,7 +170,7 @@ namespace Binner.Web.ServiceHost
                 .CreateDefaultBuilder()
                 .ConfigureKestrel(options =>
                 {
-                    options.Listen(ipAddress, 7000, c => { c.UseHttps(certificate); });
+                    options.Listen(ipAddress, _config.Port, c => { c.UseHttps(certificate); });
                 })
                 .UseEnvironment(_config.Environment.ToString())
                 .UseStartup<Startup>()

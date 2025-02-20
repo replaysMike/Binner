@@ -29,7 +29,7 @@
         /// <summary>
         /// The port number to host
         /// </summary>
-        public int Port { get; set; } = 7000;
+        public int Port { get; set; } = 8090;
 
         /// <summary>
         /// Path to SSL certificate
