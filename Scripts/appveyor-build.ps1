@@ -8,7 +8,7 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
   dotnet tool install --global dotnet-ef --version 9.0.2
   Update-NodeJsInstallation 22.14.0 x64
   choco install -y innosetup
-  #Install-Product node ''
+  npm install -g npm@latest
 
   Write-Host "Checking versions..." -ForegroundColor green
   Write-Host "Node" -ForegroundColor cyan
@@ -30,14 +30,14 @@ Write-Host "Restoring packages..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
   dotnet restore -s https://api.nuget.org/v3/index.json $project
-  #if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  dotnet workload update
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
 Write-Host "Building..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
   dotnet build $project -c $releaseConfiguration --property WarningLevel=0
-  #if ($LastExitCode -ne 0) { exit $LASTEXITCODE }
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
@@ -47,7 +47,7 @@ Write-Host "Publishing for each environment..." -ForegroundColor green
 $buildEnv = "win-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
+  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
   if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
@@ -71,7 +71,7 @@ $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds,
 $buildEnv = "linux-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
+  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
   if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
 $sw.Stop()
@@ -80,7 +80,7 @@ $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds,
 $buildEnv = "linux-arm"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
+  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
   if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
 $sw.Stop()
@@ -89,7 +89,7 @@ $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds,
 $buildEnv = "linux-arm64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
+  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
   if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
 $sw.Stop()
@@ -98,7 +98,7 @@ $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds,
 $buildEnv = "osx-x64"
 Write-Host "Publishing for $buildEnv..." -ForegroundColor cyan
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained
+  dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
   if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
   robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
 $sw.Stop()
@@ -143,7 +143,7 @@ if (!$?) { exit -1  }
 Write-Host "Building Installers" -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
   Set-Location -Path .\Binner\BinnerInstaller
-  (Get-Content .\BinnerInstaller.iss).replace('MyAppVersion "0.0"', 'MyAppVersion "' + $env:APPVEYOR_BUILD_VERSION + '"') | Set-Content .\BinnerInstaller.iss
+  (Get-Content .\BinnerInstaller.iss).replace('MyAppVersion "0.0"', 'MyAppVersion "' + (($env:APPVEYOR_BUILD_VERSION).split('-')[0]) + '"') | Set-Content .\BinnerInstaller.iss
   Write-Host "Building installer using the following script:" -ForegroundColor cyan
   cat .\BinnerInstaller.iss
   .\build-installer.cmd
