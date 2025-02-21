@@ -2,6 +2,17 @@
 
 Binner ships with a self-signed certificate intended to be used for HTTPS/SSL.
 
+## Installing On
+
+### Unix environments
+
+Use the `install-certificate.sh` script provided in the root installation folder. 
+Requires the `certutil` tool which can be installed via `sudo apt-get install libnss3-tools`
+
+### Windows environments
+
+The certificate will be automatically installed when using the Windows installer.
+
 ## Specifying the certificate to load
 
 In `appsettings.json` set the following properties in the `WebHostServiceConfiguration` section at the top of the file:
@@ -15,11 +26,11 @@ In `appsettings.json` set the following properties in the `WebHostServiceConfigu
 }
 ```
 
-## Generating your own certificate
+# Generating your own certificate
 
 If you would like to specify your own certificate instead of using the default one provided, run the following script(s) appropriate to your platform.
 
-### Windows
+## Windows
 
 The following powershell script can be used to generate a new SSL certificate, or run `.\CreateCert.ps1` in an elevated (Adminstrator) shell:
 
@@ -33,7 +44,7 @@ $(Import-PfxCertificate -FilePath $certKeyPath -CertStoreLocation 'Cert:\LocalMa
 ```
 _[via microsoft](https://learn.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide)_
 
-### Unix
+## Unix
 
 Create a config file named `localhost-unix.conf` for your certificate:
 
