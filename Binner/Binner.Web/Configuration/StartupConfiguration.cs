@@ -19,7 +19,7 @@ namespace Binner.Web.Configuration
         {
             //var configPath = AppDomain.CurrentDomain.BaseDirectory;
             //var configPath = Environment.CurrentDirectory;
-            var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
+            var configPath = Environment.GetEnvironmentVariable("CONFIG_DIR") ?? Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
             var configFile = Path.Combine(configPath, ConfigFile);
             Console.WriteLine($".Net Core bundle path: {AppContext.BaseDirectory}");
             Console.WriteLine($"Config file location: {configFile}");
