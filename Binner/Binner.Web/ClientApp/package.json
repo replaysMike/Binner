@@ -131,6 +131,7 @@
     "start": ".\\node_modules\\.bin\\react-app-rewired start",
     "build-vs": "cd ../../../../../ClientApp && .\\node_modules\\.bin\\react-app-rewired build",
     "build": ".\\node_modules\\.bin\\react-app-rewired build",
+    "build-unix": "./node_modules/.bin/react-app-rewired build",
     "test": "cross-env CI=true cd ../../../../../ClientApp && .\\node_modules\\.bin\\react-app-rewired test --env=jsdom",
     "eject": "cd ../../../../../ClientApp && .\\node_modules\\.bin\\react-app-rewired eject",
     "lint": "cd ../../../../../ClientApp && .\\node_modules\\.bin\\eslint ../../src/"
