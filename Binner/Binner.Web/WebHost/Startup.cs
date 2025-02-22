@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -64,7 +63,7 @@ namespace Binner.Web.WebHost
                 options.MultipartBodyLengthLimit = 64 * 1024 * 1024;
             });
 
-            // In production, the React files will be served from this directory
+            // specify the path to our spa production build
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/build";
@@ -144,33 +143,22 @@ namespace Binner.Web.WebHost
             });
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-
             app.UseRouting();
 
             // enable authorization
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseSpa((config) =>
+            {
+                config.Options.SourcePath = "ClientApp";
+            });
+
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
-            });
-
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (config.Environment == Environments.Development)
-                {
-                    Console.WriteLine("Starting react dev server...");
-                    spa.UseReactDevelopmentServer(npmScript: "start-vs");
-                }
-                else
-                {
-                    Console.WriteLine("Using pre-built react application");
-                }
             });
 
             using (var scope = app.ApplicationServices.CreateScope())

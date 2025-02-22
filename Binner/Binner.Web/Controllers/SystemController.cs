@@ -58,6 +58,13 @@ namespace Binner.Web.Controllers
             _adminService = adminService;
         }
 
+        [AllowAnonymous]
+        [HttpGet("/api/ping")]
+        public IActionResult Get()
+        {
+            return Ok("pong");
+        }
+
         /// <summary>
         /// Set the system settings
         /// </summary>

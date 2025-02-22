@@ -122,6 +122,7 @@ namespace Binner.Web.Configuration
 
         private static void RegisterLicensedServices(IServiceContainer container)
         {
+            /* Register the licensed services, provided by PostSharp */
             var configLicenseKey = container.GetInstance<Binner.Model.Configuration.LicenseConfiguration>().LicenseKey;
             container.RegisterInstance<Binner.LicensedProvider.LicenseConfiguration>(new LicensedProvider.LicenseConfiguration { LicenseKey = configLicenseKey });
             container.Register<ILicensedService, LicensedService>(new PerScopeLifetime());

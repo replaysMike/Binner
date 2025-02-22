@@ -43,7 +43,7 @@ export function Users(props) {
     function fetchUsers(page = 1) {
       if (hasMoreData) {
         setLoading(true);
-        fetchApi(`api/user/list?page=${page}&results=${maxResults}`).then((response) => {
+        fetchApi(`/api/user/list?page=${page}&results=${maxResults}`).then((response) => {
           const { data } = response;
           if (data) {
             // update the page of data, as long as its not already in the data
@@ -63,7 +63,7 @@ export function Users(props) {
     e.preventDefault();
     e.stopPropagation();
     setLoading(true);
-    fetchApi(`api/user`, {
+    fetchApi(`/api/user`, {
       method: "DELETE",
       body: user.userId
     }).then(() => {
@@ -84,7 +84,7 @@ export function Users(props) {
       isAdmin: user.isAdmin === 1 ? true : false,
       isEmailConfirmed: user.isEmailConfirmed === 1 ? true : false
     };
-    fetchApi(`api/user`, {
+    fetchApi(`/api/user`, {
       method: "POST",
       body: JSON.stringify(request)
     }).then(() => {

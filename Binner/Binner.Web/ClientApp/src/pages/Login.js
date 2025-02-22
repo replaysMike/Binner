@@ -26,7 +26,7 @@ export function Login (props) {
     const request = {
       ...form
     };
-    fetchApi("api/authentication/login", { 
+    fetchApi("/api/authentication/login", { 
       method: "POST", 
       body: request
     })

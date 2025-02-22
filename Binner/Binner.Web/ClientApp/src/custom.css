@@ -64,7 +64,7 @@ footer {
     animation-delay: -5s;
 }
 footer.active {
-    background-image: url('../public/image/reveal/avatars.png');
+    background-image: url('../image/reveal/avatars.png');
     color: white;
 }
 @keyframes randomAvatar {
@@ -161,7 +161,7 @@ code {
     width: 200px;
     height: 54px;
     background-size: 200px 54px;
-    background-image: url('../public/image/logo-dark-200x54.png');
+    background-image: url('../image/logo-dark-200x54.png');
 }
 
 .header .navbar-dark .navbar-brand {
@@ -169,7 +169,7 @@ code {
     width: 200px;
     height: 54px;
     background-size: 200px 54px;
-    background-image: url('../public/image/logo-light-200x54.png');
+    background-image: url('../image/logo-light-200x54.png');
 }
 
 .header .language-selection {
@@ -714,7 +714,7 @@ section.formHeader {
     width: 64px;
     height: 46px;
     background-size: 64px 46px;
-    background-image: url('../public/image/icon_pcb.png');
+    background-image: url('../image/icon_pcb.png');
     margin-right: 4px;
 }
 
@@ -728,7 +728,7 @@ section.formHeader {
     width: 22px;
     height: 16px;
     background-size: 22px 16px;
-    background-image: url('../public/image/icon_pcb_tiny.png');
+    background-image: url('../image/icon_pcb_tiny.png');
     vertical-align: middle;
     padding: 0;
     margin-top: 0px;

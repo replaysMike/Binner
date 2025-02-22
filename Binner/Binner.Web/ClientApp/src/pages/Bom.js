@@ -87,7 +87,7 @@ export function Bom(props) {
 
   const loadProject = async (projectName) => {
     setLoading(true);
-    const response = await fetchApi(`api/bom?name=${encodeURIComponent(projectName)}`).catch((c) => {
+    const response = await fetchApi(`/api/bom?name=${encodeURIComponent(projectName)}`).catch((c) => {
       if (c.status === 404) {
         toast.error(t("error.projectNotFound", "Could not find project named {{projectName}}"), { projectName });
         setPageDisabled(true);
@@ -168,7 +168,7 @@ export function Bom(props) {
       projectId: project.projectId,
       ids: checkedValues
     };
-    const response = await fetchApi("api/bom/part", {
+    const response = await fetchApi("/api/bom/part", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -255,7 +255,7 @@ export function Bom(props) {
         }
       })
     };
-    const response = await fetchApi("api/bom/part", {
+    const response = await fetchApi("/api/bom/part", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -352,7 +352,7 @@ export function Bom(props) {
       schematicReferenceId: addPartSelectedPart.schematicReferenceId,
       customDescription: addPartSelectedPart.customDescription
     };
-    const response = await fetchApi("api/bom/part", {
+    const response = await fetchApi("/api/bom/part", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -390,11 +390,11 @@ export function Bom(props) {
     if (pcb.image !== null) requestData.append("image", pcb.image);
 
     // first fetch some data using fetchApi, to leverage 401 token refresh
-    fetchApi("api/authentication/identity").then((_) => {
+    fetchApi("/api/authentication/identity").then((_) => {
       axios
         .request({
           method: "post",
-          url: "api/bom/pcbWithImage",
+          url: "/api/bom/pcbWithImage",
           data: requestData,
           headers: { Authorization: `Bearer ${getAuthToken()}` }
         })
@@ -424,7 +424,7 @@ export function Bom(props) {
     setProducePcbModalOpen(false);
     setLoading(true);
     const request = { ...producePcbRequest, projectId: project.projectId };
-    const response = await fetchApi("api/bom/produce", {
+    const response = await fetchApi("/api/bom/produce", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -456,7 +456,7 @@ export function Bom(props) {
       pcbId: control.value
     };
     setLoading(true);
-    const response = await fetchApi("api/bom/move", {
+    const response = await fetchApi("/api/bom/move", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -513,9 +513,9 @@ export function Bom(props) {
       format
     };
     // first fetch some data using fetchApi, to leverage 401 token refresh
-    fetchApi("api/authentication/identity").then((_) => {
+    fetchApi("/api/authentication/identity").then((_) => {
       axios
-        .post(`api/bom/download`, 
+        .post(`/api/bom/download`, 
           request, 
           { 
             responseType: "blob", 

@@ -63,11 +63,11 @@ export const ExportData = (props) => {
 
   const onExportSubmit = async (e) => {
     setLoading(true);
-    fetchApi("api/authentication/identity").then((_) => {
+    fetchApi("/api/authentication/identity").then((_) => {
       axios
         .request({
           method: "get",
-          url: `api/data/export?exportFormat=${exportFormat}`,
+          url: `/api/data/export?exportFormat=${exportFormat}`,
           headers: { Authorization: `Bearer ${getAuthToken()}` },
           responseType: "blob"
         })
@@ -102,11 +102,11 @@ export const ExportData = (props) => {
         formData.append("files", acceptedFiles[i], acceptedFiles[i].name);
       }
 
-      fetchApi("api/authentication/identity").then((_) => {
+      fetchApi("/api/authentication/identity").then((_) => {
         axios
           .request({
             method: "post",
-            url: "api/data/import",
+            url: "/api/data/import",
             data: formData,
             headers: { Authorization: `Bearer ${getAuthToken()}` }
           })

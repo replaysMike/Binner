@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.40</LibraryVersion>
-    <TargetFramework>net8.0</TargetFramework>
+    <ModelLibraryVersion Condition="'$(ModelLibraryVersion)'==''">1.0.41</ModelLibraryVersion>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Binner.Model.Common" Version="$(LibraryVersion)" />
+    <PackageReference Include="Binner.Model.Common" Version="$(ModelLibraryVersion)" />
     <PackageReference Include="TypeSupport" Version="1.2.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AnySerializer" Version="1.2.5" />

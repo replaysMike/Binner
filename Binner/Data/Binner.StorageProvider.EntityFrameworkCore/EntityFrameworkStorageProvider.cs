@@ -6,6 +6,7 @@ using Binner.Model;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
@@ -22,8 +23,9 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         private readonly IMapper _mapper;
         private readonly IPartTypesCache _partTypesCache;
         private readonly ILicensedStorageProvider _licensedStorageProvider;
+        private readonly ILogger<EntityFrameworkStorageProvider> _logger;
 
-        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider)
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider, ILogger<EntityFrameworkStorageProvider> logger)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
@@ -31,6 +33,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             _config = config;
             _partTypesCache = partTypesCache;
             _licensedStorageProvider = licensedStorageProvider;
+            _logger = logger;
         }
 
         public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)
@@ -523,10 +526,12 @@ INNER JOIN (
         public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext? userContext)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
+            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)}() RequestId: {requestId} OrganizationId: {userContext?.OrganizationId} UserId: {userContext?.UserId}");
             var entity = await context.OAuthRequests
                 .Where(x => x.RequestId == requestId)
                 .WhereIf(userContext != null, x => x.OrganizationId == userContext!.OrganizationId && x.UserId == userContext.UserId)
                 .FirstOrDefaultAsync();
+            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)} result Id: {entity?.OAuthRequestId} AuthCode: {entity?.AuthorizationCode} AuthorizationReceived: {entity?.AuthorizationReceived}");
             return _mapper.Map<OAuthAuthorization>(entity);
         }
 

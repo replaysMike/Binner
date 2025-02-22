@@ -37,8 +37,9 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
   }
 
   // store the request we want to send, in case we need to reissue it when Jwt token expires
+  const rootUrl = !url.startsWith('/') ? '/' + url : url;
   const requestContext = {
-    url,
+    url: rootUrl,
     data: fetchData
   };
 

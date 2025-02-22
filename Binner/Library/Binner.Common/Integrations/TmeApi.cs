@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -104,18 +105,19 @@ namespace Binner.Common.Integrations
             // apiParams.Add("SearchOrder", "ACCURACY");
             // Parameter which determines direction of sorting (ASC or DESC) (optional)
             //apiParams.Add("SearchOrderType", "ASC");
-            var urlEncodedContent = BuildApiParams(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            if (TryHandleResponse(response, out var apiResponse))
+            var result = await TryHandleResponseAsync(response);
+            if (!result.IsSuccessful)
             {
-                return apiResponse;
+                return result.ApiResponse;
             }
 
-            var resultString = response.Content.ReadAsStringAsync().Result;
+            var resultString = await response.Content.ReadAsStringAsync();
             var results = JsonConvert.DeserializeObject<TmeResponse<ProductSearchResponse>>(resultString, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
@@ -149,18 +151,19 @@ namespace Binner.Common.Integrations
                 i++;
             }
 
-            var urlEncodedContent = BuildApiParams(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            if (TryHandleResponse(response, out var apiResponse))
+            var result = await TryHandleResponseAsync(response);
+            if (!result.IsSuccessful)
             {
-                return apiResponse;
+                return result.ApiResponse;
             }
 
-            var resultString = response.Content.ReadAsStringAsync().Result;
+            var resultString = await response.Content.ReadAsStringAsync();
             var results = JsonConvert.DeserializeObject<TmeResponse<ProductFilesResponse>>(resultString, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
@@ -196,18 +199,19 @@ namespace Binner.Common.Integrations
                 i++;
             }
 
-            var urlEncodedContent = BuildApiParams(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            if (TryHandleResponse(response, out var apiResponse))
+            var result = await TryHandleResponseAsync(response);
+            if (!result.IsSuccessful)
             {
-                return apiResponse;
+                return result.ApiResponse;
             }
 
-            var resultString = response.Content.ReadAsStringAsync().Result;
+            var resultString = await response.Content.ReadAsStringAsync();
             var results = JsonConvert.DeserializeObject<TmeResponse<PriceListResponse>>(resultString, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
@@ -230,18 +234,19 @@ namespace Binner.Common.Integrations
             //apiParams.Add("CategoryId", 1);
             // Determines form of response. If true then tree will be returned. Param is optional, default - true.
             //apiParams.Add("Tree", false);
-            var urlEncodedContent = BuildApiParams(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            if (TryHandleResponse(response, out var apiResponse))
+            var result = await TryHandleResponseAsync(response);
+            if (!result.IsSuccessful)
             {
-                return apiResponse;
+                return result.ApiResponse;
             }
 
-            var resultString = response.Content.ReadAsStringAsync().Result;
+            var resultString = await response.Content.ReadAsStringAsync();
             if (isTree)
             {
                 var results = JsonConvert.DeserializeObject<TmeResponse<CategoryTreeResponse>>(resultString, _serializerSettings) ?? new();
@@ -271,7 +276,7 @@ namespace Binner.Common.Integrations
             }
         }
 
-        private FormUrlEncodedContent BuildApiParams(Uri uri, string country, string language, Dictionary<string, object> parameters)
+        private async Task<FormUrlEncodedContent> BuildApiParamsAsync(Uri uri, string country, string language, Dictionary<string, object> parameters)
         {
             if (string.IsNullOrWhiteSpace(_configuration.ApiKey))
                 throw new ArgumentException("ApiKey is empty!");
@@ -300,7 +305,7 @@ namespace Binner.Common.Integrations
                 .OrderByNaturalSort(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.Value.ToString());
             var urlEncodedContent = new FormUrlEncodedContent(ordered);
-            var encodedParams = urlEncodedContent.ReadAsStringAsync().Result;
+            var encodedParams = await urlEncodedContent.ReadAsStringAsync();
 
             // Calculate signature basis according the documentation
             var url = uri.ToString();
@@ -322,9 +327,9 @@ namespace Binner.Common.Integrations
             return new FormUrlEncodedContent(ordered);
         }
 
-        private bool TryHandleResponse(HttpResponseMessage response, out IApiResponse apiResponse)
+        private async Task<(bool IsSuccessful, IApiResponse ApiResponse)> TryHandleResponseAsync(HttpResponseMessage response)
         {
-            apiResponse = apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(TmeApi));
+            IApiResponse apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(TmeApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new TmeUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
@@ -336,21 +341,21 @@ namespace Binner.Common.Integrations
                     if (response.Headers.Contains("X-RateLimit-Remaining"))
                         remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
                     apiResponse = ApiResponse.Create($"{nameof(TmeApi)} request throttled. Try again in {remainingTime}", nameof(TmeApi));
-                    return true;
+                    return (false, apiResponse);
                 }
 
                 // return generic error
-                return true;
+                return (false, apiResponse);
             }
             else if (response.IsSuccessStatusCode)
             {
                 // allow processing of response
-                return false;
+                return (true, apiResponse);
             }
 
-            var resultString = response.Content.ReadAsStringAsync().Result;
+            var resultString = await response.Content.ReadAsStringAsync();
             // return generic error
-            return true;
+            return (false, apiResponse);
         }
 
         private HttpRequestMessage CreateRequest(HttpMethod method, Uri uri, FormUrlEncodedContent content)

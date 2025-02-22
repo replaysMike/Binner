@@ -53,7 +53,7 @@ export function Account(props) {
 
     function fetchUser() {
       setLoading(true);
-      fetchApi(`api/account`).then((response) => {
+      fetchApi(`/api/account`).then((response) => {
         const { data } = response;
         if (data) {
           setAccount(data);
@@ -68,11 +68,11 @@ export function Account(props) {
       const formData = new FormData();
       formData.append("file", acceptedFiles[0], acceptedFiles[0].name);
       // first fetch some data using fetchApi, to leverage 401 token refresh
-      fetchApi("api/authentication/identity").then((_) => {
+      fetchApi("/api/authentication/identity").then((_) => {
         axios
           .request({
             method: "post",
-            url: "api/account/upload",
+            url: "/api/account/upload",
             data: formData,
             headers: { Authorization: `Bearer ${getAuthToken()}` }
           })
@@ -92,7 +92,7 @@ export function Account(props) {
     }
 
     setErrorPassword(false);
-    fetchApi(`api/account`, {
+    fetchApi(`/api/account`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"

@@ -51,7 +51,7 @@ namespace Binner.Common.Integrations
             var response = await _client.SendAsync(req);
             if (response.IsSuccessStatusCode)
             {
-                var resultString = response.Content.ReadAsStringAsync().Result;
+                var resultString = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<dynamic>(resultString);
                 // dynamic requires Microsoft.CSharp nuget package
                 if (result != null)

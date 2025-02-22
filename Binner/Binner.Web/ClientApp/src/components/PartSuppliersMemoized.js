@@ -48,7 +48,7 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
       productUrl: partSupplier.productUrl && partSupplier.productUrl.length > 4 ? `https://${partSupplier.productUrl.replace("https://", "").replace("http://", "")}` : null,
       imageUrl: partSupplier.imageUrl && partSupplier.imageUrl.length > 4 ? `https://${partSupplier.imageUrl.replace("https://", "").replace("http://", "")}` : null
     };
-    const response = await fetchApi("api/part/partSupplier", {
+    const response = await fetchApi("/api/part/partSupplier", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -105,7 +105,7 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
       productUrl: supplier.productUrl && supplier.productUrl.length > 4 ? `https://${supplier.productUrl.replace("https://", "").replace("http://", "")}` : null,
       imageUrl: supplier.imageUrl && supplier.imageUrl.length > 4 ? `https://${supplier.imageUrl.replace("https://", "").replace("http://", "")}` : null
     };
-    const response = await fetchApi("api/part/partSupplier", {
+    const response = await fetchApi("/api/part/partSupplier", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -126,7 +126,7 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
     const request = {
       partSupplierId: partSupplier.partSupplierId
     };
-    const response = await fetchApi("api/part/partSupplier", {
+    const response = await fetchApi("/api/part/partSupplier", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"

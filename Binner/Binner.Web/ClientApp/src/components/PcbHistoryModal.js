@@ -48,7 +48,7 @@ export function PcbHistoryModal(props) {
         pcbQuantity: parseInt(p.pcbQuantity)
       }))
     };
-    const response = await fetchApi('api/bom/produce/history', {
+    const response = await fetchApi('/api/bom/produce/history', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -66,7 +66,7 @@ export function PcbHistoryModal(props) {
 
   const handleDeletePcb = async (e) => {
     const request = {...confirmDeletePcbContext };
-    const response = await fetchApi('api/bom/produce/history/pcb', {
+    const response = await fetchApi('/api/bom/produce/history/pcb', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -150,9 +150,9 @@ export function PcbHistoryModal(props) {
   const getImage = () => {
     if (imageIndex) {
       if (history.pcbs && history.pcbs.length >= imageIndex && history.pcbs[imageIndex]?.pcb?.storedFile?.fileName)
-        return (<Image src={`api/storedFile/preview?fileName=${history.pcbs[imageIndex].pcb.storedFile.fileName}&token=${getImagesToken()}`} size="medium" />);
+        return (<Image src={`/api/storedFile/preview?fileName=${history.pcbs[imageIndex].pcb.storedFile.fileName}&token=${getImagesToken()}`} size="medium" />);
     } else if (history.pcbs && history.pcbs.length > 0 && history.pcbs[0]?.pcb?.storedFile?.fileName) {
-      return (<Image src={`api/storedFile/preview?fileName=${history.pcbs[0]?.pcb.storedFile.fileName}&token=${getImagesToken()}`} size="medium" />);
+      return (<Image src={`/api/storedFile/preview?fileName=${history.pcbs[0]?.pcb.storedFile.fileName}&token=${getImagesToken()}`} size="medium" />);
     }
     return (<Image size="medium" src="/image/pcb.png" wrapped />);
   };

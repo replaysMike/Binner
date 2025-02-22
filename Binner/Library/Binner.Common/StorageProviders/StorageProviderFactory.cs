@@ -5,6 +5,7 @@ using Binner.Model;
 using Binner.StorageProvider.EntityFrameworkCore;
 using LightInject;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
@@ -28,7 +29,8 @@ namespace Binner.Common.StorageProviders
             var mapper = container.GetInstance<IMapper>();
             var partTypesCache = container.GetInstance<IPartTypesCache>();
             var licensedStorageProvider = container.GetInstance<ILicensedStorageProvider>();
-            var instance = Activator.CreateInstance(provider, contextFactory, mapper, providerName, config, partTypesCache, licensedStorageProvider) as IStorageProvider ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");
+            var logger = container.GetInstance<ILogger<EntityFrameworkStorageProvider>>();
+            var instance = Activator.CreateInstance(provider, contextFactory, mapper, providerName, config, partTypesCache, licensedStorageProvider, logger) as IStorageProvider ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");
             return instance;
         }
     }

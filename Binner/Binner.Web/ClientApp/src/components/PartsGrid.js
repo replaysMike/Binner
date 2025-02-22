@@ -59,7 +59,7 @@ export default function PartsGrid(props) {
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     if (parentPartType === undefined || parentPartType === null) parentPartType = "";
-    fetchApi(`api/partType/all?parent=${parentPartType}`).then((response) => {
+    fetchApi(`/api/partType/all?parent=${parentPartType}`).then((response) => {
       const { data } = response;
 
       setPartTypes(data);
@@ -108,7 +108,7 @@ export default function PartsGrid(props) {
     part.cost = Number.parseFloat(part.cost) || 0.00;
     part.projectId = Number.parseInt(part.projectId) || null;
 
-    const response = await fetchApi('api/part', {
+    const response = await fetchApi('/api/part', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -174,13 +174,13 @@ export default function PartsGrid(props) {
   const handlePrintLabel = async (e, part) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}`, { method: 'POST' });
+    await fetchApi(`/api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}`, { method: 'POST' });
   };
 
   const handleDeletePart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await fetchApi(`api/part`, {
+    await fetchApi(`/api/part`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'

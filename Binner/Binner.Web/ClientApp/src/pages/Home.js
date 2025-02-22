@@ -21,7 +21,7 @@ export function Home(props) {
    * Fetch the latest Binner version from GitHub
    */
   const getLatestVersion = useCallback(async (installedVersion) => {
-    const response = await fetchApi("api/system/version");
+    const response = await fetchApi("/api/system/version");
     if (response.responseObject.ok) {
       const latestVersionData = response.data;
       setVersionData(latestVersionData);
@@ -57,7 +57,7 @@ export function Home(props) {
     }
     Home.abortController = new AbortController();
     setLoading(true);
-    fetchApi(`api/part/summary`, {
+    fetchApi(`/api/part/summary`, {
       signal: Home.abortController.signal,
     }).then((response) => {
       const { data } = response;

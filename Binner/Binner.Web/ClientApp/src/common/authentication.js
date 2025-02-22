@@ -76,7 +76,7 @@ export const deAuthenticateUserAccount = () => {
  */
  export const refreshTokenAuthorizationAsync = async (response, requestContext) => {
 	// ask for a new token
-	const fetchResponse = await fetch("api/authentication/refresh-token", {
+	const fetchResponse = await fetch("/api/authentication/refresh-token", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -118,7 +118,7 @@ export const deAuthenticateUserAccount = () => {
  * @returns {any} the request promise
  */
 export const logoutUserAccountAsync = async () => {
-  return await fetchApi("api/authentication/logout", {
+  return await fetchApi("/api/authentication/logout", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

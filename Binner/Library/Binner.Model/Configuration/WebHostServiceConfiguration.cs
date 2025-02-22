@@ -32,6 +32,16 @@
         public int Port { get; set; } = 8090;
 
         /// <summary>
+        /// Path to SSL certificate
+        /// </summary>
+        public string SslCertificate { get; set; } = "./certificates/localhost-windows.pfx";
+
+        /// <summary>
+        /// Optional password for certificate
+        /// </summary>
+        public string? SslCertificatePassword { get; set; } = "password";
+
+        /// <summary>
         /// Public resource web address (without https://) for serving public resources
         /// </summary>
         public string ResourceSource { get; set; } = "d6ng6g5o3ih7k.cloudfront.net";

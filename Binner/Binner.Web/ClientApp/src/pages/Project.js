@@ -72,7 +72,7 @@ export function Project(props) {
 
   const loadProject = async (projectName) => {
     setLoading(true);
-    const response = await fetchApi(`api/bom?name=${encodeURIComponent(projectName)}`)
+    const response = await fetchApi(`/api/bom?name=${encodeURIComponent(projectName)}`)
 			.catch(c => {
 				if (c.status === 404){
 					toast.error(t('error.projectNotFound', "Could not find a project named {{projectName}}", { projectName }));
@@ -100,7 +100,7 @@ export function Project(props) {
     const request = {
       projectId: project.projectId,
     };
-    const response = await fetchApi('api/project', {
+    const response = await fetchApi('/api/project', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -125,7 +125,7 @@ export function Project(props) {
       projectId: project.projectId,
 			pcbId: selectedPcb.pcbId
     };
-    const response = await fetchApi('api/bom/pcb', {
+    const response = await fetchApi('/api/bom/pcb', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -148,7 +148,7 @@ export function Project(props) {
   const handleDeleteProduceHistory = async (e) => {
     setLoading(true);
     const request = {...selectedProduceHistory};
-    const response = await fetchApi('api/bom/produce/history', {
+    const response = await fetchApi('/api/bom/produce/history', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -174,7 +174,7 @@ export function Project(props) {
 			...pcb,
       projectId: project.projectId,		
     };
-    const response = await fetchApi('api/bom/pcb', {
+    const response = await fetchApi('/api/bom/pcb', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -209,7 +209,7 @@ export function Project(props) {
     setLoading(true);
 		setBtnDeleteProjectDisabled(true);
     const request = {...project};
-    const response = await fetchApi("api/project", {
+    const response = await fetchApi("/api/project", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -436,7 +436,7 @@ export function Project(props) {
 							{project.pcbs.map((p, key) => (
 								<Table.Row key={key}>
                   <Table.Cell width={1}>{p.storedFile && p.storedFile.fileName 
-                    ? <Image src={`api/storedFile/preview?fileName=${p.storedFile.fileName}&token=${getImagesToken()}`} height={32} />
+                    ? <Image src={`/api/storedFile/preview?fileName=${p.storedFile.fileName}&token=${getImagesToken()}`} height={32} />
                     : <Image src="/image/pcb.png" height={32} />
                   }</Table.Cell>
 									<Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>

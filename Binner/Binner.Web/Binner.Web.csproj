@@ -1,14 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.8</LibraryVersion>
-    <TargetFramework>net8.0</TargetFramework>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.11</LibraryVersion>
+    <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+    <Nullable>enable</Nullable>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>false</IsPackable>
     <SpaRoot>ClientApp\</SpaRoot>
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+    <SpaProxyServerUrl>https://localhost:3000</SpaProxyServerUrl>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <OutputType>Exe</OutputType>
     <!--<PublishTrimmed>true</PublishTrimmed>-->
@@ -20,7 +25,6 @@
     <FileVersion>2.6.0.0</FileVersion>
     <Version>2.6.0</Version>
     <ApplicationIcon>binner128x128.ico</ApplicationIcon>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
@@ -40,7 +44,10 @@
     <PackageReference Include="LightInject" Version="6.6.4" />
     <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.7.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+      <Version>9.*-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="9.0.2" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageReference Include="NLog" Version="4.7.13" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
@@ -66,8 +73,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Certificates\Binner.crt" />
-    <None Remove="Certificates\Binner.pfx" />
+    <None Remove="certificates\localhost-unix.crt" />
+    <None Remove="certificates\localhost-unix.key" />
+    <None Remove="certificates\localhost-unix.pfx" />
+    <None Remove="certificates\localhost.conf" />
+    <None Remove="certificates\README.md" />
     <None Remove="Resources\datasheet.png" />
   </ItemGroup>
 
@@ -77,15 +87,27 @@
 
   <ItemGroup>
     <Content Include="binner128x128.ico" />
-    <Content Include="Certificates\Binner.crt">
+    <Content Include="certificates\localhost-unix.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost-unix.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost-unix.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost-windows.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\localhost.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="certificates\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Certificates\Binner.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <Content Include="Resources\datasheet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

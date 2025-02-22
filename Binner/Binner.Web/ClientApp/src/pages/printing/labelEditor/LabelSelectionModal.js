@@ -50,7 +50,7 @@ export function LabelSelectionModal({ isOpen, onSelect, onClose }) {
   };
 
 	const loadLabels = useCallback(async () => {
-		fetchApi("api/print/labels", {
+		fetchApi("/api/print/labels", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

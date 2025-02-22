@@ -353,15 +353,14 @@ export const Settings = (props) => {
       apiUrl: "",
       timeout: "00:00:05"
     },
-    digikey: getViewPreference("digikey") 
-      || {
-        enabled: false,
-        site: 0,
-        clientId: "",
-        clientSecret: "",
-        oAuthPostbackUrl: "",
-        apiUrl: "",
-      },
+    digikey: {
+      enabled: false,
+      site: 0,
+      clientId: "",
+      clientSecret: "",
+      oAuthPostbackUrl: "",
+      apiUrl: "",
+    },
     mouser: {
       enabled: false,
       searchApiKey: "",
@@ -518,7 +517,7 @@ export const Settings = (props) => {
 
   useEffect(() => {
     const loadFonts = async () => {
-      await fetchApi("api/print/fonts", {
+      await fetchApi("/api/print/fonts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -542,7 +541,7 @@ export const Settings = (props) => {
     };
 
     const loadSettings = async () => {
-      await fetchApi("api/system/settings", {
+      await fetchApi("/api/system/settings", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -552,12 +551,6 @@ export const Settings = (props) => {
         setLoading(false);
         setSettings({ ...data, barcode: {...data.barcode }});
         setSystemSettings(data);
-        
-        const digikeyTempSettings = getViewPreference("digikey");
-        if (digikeyTempSettings) {
-          setSettings({...data, digikey: digikeyTempSettings});
-          setIsDirty(true);
-        }
       });
     };
 
@@ -572,25 +565,28 @@ export const Settings = (props) => {
    */
   const onSubmit = async (e) => {
     const newSettings = {...settings, barcode: {...settings.barcode, bufferTime: parseInt(settings.barcode.bufferTime), maxKeystrokeThresholdMs: parseInt(settings.barcode.maxKeystrokeThresholdMs) }};
-    await fetchApi("api/system/settings", {
+    const response = await saveSettings(e);
+    if (response.responseObject.ok) {
+      setSystemSettings(newSettings);
+      const saveMessage = t('success.systemSettingsSaved', "System settings were saved.");
+      toast.success(saveMessage);
+      setSaveMessage(saveMessage);
+      navigate(-1);
+    } else {
+      const errorMessage = t('success.failedToSaveSettings', "Failed to save settings!");
+      toast.error(errorMessage);
+      setSaveMessage(saveMessage);
+    }
+  };
+
+  const saveSettings = async (e) => {
+    const newSettings = { ...settings, barcode: { ...settings.barcode, bufferTime: parseInt(settings.barcode.bufferTime), maxKeystrokeThresholdMs: parseInt(settings.barcode.maxKeystrokeThresholdMs) } };
+    return await fetchApi("/api/system/settings", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(newSettings),
-    }).then((response) => {
-      if (response.responseObject.ok) {
-        setSystemSettings(newSettings);
-        const saveMessage = t('success.systemSettingsSaved', "System settings were saved.");
-        toast.success(saveMessage);
-        setSaveMessage(saveMessage);
-        removeViewPreference('digikey', {});
-        navigate(-1);
-      } else {
-        const errorMessage = t('success.failedToSaveSettings', "Failed to save settings!");
-        toast.error(errorMessage);
-        setSaveMessage(saveMessage);
-      }
     });
   };
 
@@ -703,7 +699,7 @@ export const Settings = (props) => {
     const request = {
       name: apiName
     };
-    fetchApi("api/settings/forgetcredentials", {
+    fetchApi("/api/settings/forgetcredentials", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -724,31 +720,35 @@ export const Settings = (props) => {
   
   const handleTestApi = async (e, apiName) => {
     e.preventDefault();
+
     const configuration = [];
     switch(apiName){
       case "swarm":
+        if (!settings.binner.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
+        if (!settings.binner.apiKey) return toast.error(t('apiNoApiKey', "Api Key must be specified!"));
+        if (!settings.binner.apiUrl) return toast.error(t('apiNoApiUrl', "Api Url must be specified!"));
         configuration.push({ key: "enabled", value: settings.binner.enabled + "" });
         configuration.push({ key: "apiKey", value: settings.binner.apiKey });
         configuration.push({ key: "apiUrl", value: settings.binner.apiUrl });
         configuration.push({ key: "timeout", value: settings.binner.timeout });
         break;
       case "digikey":
+        if (!settings.digikey.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
+        if (!settings.digikey.clientId) return toast.error(t('apiNoClientId', "Client Id must be specified!"));
+        if (!settings.digikey.clientSecret) return toast.error(t('apiNoClientSecret', "Client Secret must be specified!"));
+        if (!settings.digikey.apiUrl) return toast.error(t('apiNoApiUrl', "Api Url must be specified!"));
+        if (!settings.digikey.oAuthPostbackUrl) return toast.error(t('apiNoPostbackUrl', "Postback Url must be specified!"));
         configuration.push({ key: "enabled", value: settings.digikey.enabled + "" });
         configuration.push({ key: "site", value: settings.digikey.site + "" });
         configuration.push({ key: "clientId", value: settings.digikey.clientId });
         configuration.push({ key: "clientSecret", value: settings.digikey.clientSecret });
         configuration.push({ key: "apiUrl", value: settings.digikey.apiUrl });
         configuration.push({ key: "oAuthPostbackUrl", value: settings.digikey.oAuthPostbackUrl });
-        setViewPreference('digikey', {
-          enabled: settings.digikey.enabled,
-          site: settings.digikey.site,
-          clientId: settings.digikey.clientId,
-          clientSecret: settings.digikey.clientSecret,
-          oAuthPostbackUrl: settings.digikey.oAuthPostbackUrl,
-          apiUrl: settings.digikey.apiUrl,
-        });
         break;
       case "mouser":
+        if (!settings.mouser.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
+        if (!settings.mouser.searchApiKey && !settings.mouser.orderApiKey && !settings.mouser.cartApiKey) return toast.error(t('apiNoKey', "At least one api key must be specified!"));
+        if (!settings.mouser.apiUrl) return toast.error(t('apiNoApiUrl', "Api Url must be specified!"));
         configuration.push({ key: "enabled", value: settings.mouser.enabled + "" });
         configuration.push({ key: "searchApiKey", value: settings.mouser.searchApiKey });
         configuration.push({ key: "orderApiKey", value: settings.mouser.orderApiKey });
@@ -756,17 +756,27 @@ export const Settings = (props) => {
         configuration.push({ key: "apiUrl", value: settings.mouser.apiUrl });
         break;
       case "arrow":
+        if (!settings.arrow.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
+        if (!settings.mouser.apiUrl) return toast.error(t('apiNoApiUrl', "Api Url must be specified!"));
         configuration.push({ key: "enabled", value: settings.arrow.enabled + "" });
         configuration.push({ key: "username", value: settings.arrow.username });
         configuration.push({ key: "apiKey", value: settings.arrow.apiKey });
         configuration.push({ key: "apiUrl", value: settings.arrow.apiUrl });
         break;
       case "octopart":
+        if (!settings.octopart.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
+        if (!settings.octopart.clientId) return toast.error(t('apiNoClientId', "Client Id must be specified!"));
+        if (!settings.octopart.clientSecret) return toast.error(t('apiNoClientSecret', "Client Secret must be specified!"));
         configuration.push({ key: "enabled", value: settings.octopart.enabled + "" });
         configuration.push({ key: "clientId", value: settings.octopart.clientId });
         configuration.push({ key: "clientSecret", value: settings.octopart.clientSecret });
         break;
       case "tme":
+        if (!settings.tme.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
+        if (!settings.tme.applicationSecret) return toast.error(t('apiNoAppSecret', "Application Secret must be specified!"));
+        if (!settings.tme.apiKey) return toast.error(t('apiNoApiKey', "Api Key must be specified!"));
+        if (!settings.tme.apiUrl) return toast.error(t('apiNoApiUrl', "Api Url must be specified!"));
+        if (!settings.tme.country) return toast.error(t('apiNoCountry', "Country must be specified!"));
         configuration.push({ key: "enabled", value: settings.tme.enabled + "" });
         configuration.push({ key: "applicationSecret", value: settings.tme.applicationSecret });
         configuration.push({ key: "country", value: settings.tme.country });
@@ -776,12 +786,16 @@ export const Settings = (props) => {
       default:
         break;
     }
+
+    // save settings first, as the backend must be aware of things like DigiKey's clientId/clientSecret
+    await saveSettings(e);
+
     const request = {
       name: apiName,
       configuration
     };
     setTesting(true);
-    await fetchApi("api/settings/testapi", {
+    await fetchApi("/api/settings/testapi", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

@@ -19,7 +19,7 @@ export const SystemInformation = () => {
     fetchSystemInfo();
     function fetchSystemInfo() {
       setLoading(true);
-      fetchApi("api/system/info").then((response) => {
+      fetchApi("/api/system/info").then((response) => {
         const { data } = response;
         if (data) {
           setInfo(data);
