@@ -104,7 +104,7 @@ begin
       DestPath := ExpandConstant('{app}\appsettings.installerbackup.json');
       if FileExists(SourcePath) then
       begin
-        if not CopyFile(SourcePath, DestPath, False) then
+        if not FileCopy(SourcePath, DestPath, False) then
         begin
          Log(Format('Backed up %s to %s', [SourcePath, DestPath]));
         end
@@ -128,7 +128,7 @@ begin
       DestPath := ExpandConstant('{app}\appsettings.installerbackup.json');
       if FileExists(DestPath) then
       begin
-        if CopyFile(DestPath, SourcePath, False) then
+        if FileCopy(DestPath, SourcePath, False) then
         begin
           Log(Format('Restored %s from Backup %s', [SourcePath, DestPath]));
         end;
