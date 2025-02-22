@@ -7,14 +7,12 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
-using Binner.Model.Responses;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -595,7 +593,6 @@ namespace Binner.Common.Integrations
         /// </summary>
         /// <param name="response"></param>
         /// <param name="authenticationResponse"></param>
-        /// <param name="apiResponse"></param>
         /// <returns></returns>
         /// <exception cref="DigikeyUnauthorizedException"></exception>
         private async Task<(bool IsSuccessful, IApiResponse Response)> TryHandleResponseAsync(HttpResponseMessage response, OAuthAuthorization authenticationResponse)

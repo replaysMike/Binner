@@ -2,6 +2,8 @@
 using Binner.Common.Services;
 using Binner.Common.Services.Authentication;
 using Binner.Model;
+using Binner.Model.Responses;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -64,7 +66,15 @@ namespace Binner.Web.Controllers
             switch (authRequest.Provider)
             {
                 case nameof(DigikeyApi):
-                    await FinishDigikeyApiAuthorizationAsync(authRequest, code);
+                    try
+                    {
+                        _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Completing auth for {authRequest.Provider} provider");
+                        await FinishDigikeyApiAuthorizationAsync(authRequest, code);
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to authenticate with DigiKey due to an error! ", ex));
+                    }
                     break;
                 default:
                     throw new NotImplementedException($"Unhandled OAuth provider name '{authRequest.Provider}'");
@@ -78,13 +88,14 @@ namespace Binner.Web.Controllers
             // local binner does not require a valid userId
             var userId = authRequest.UserId ?? 0;
             var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(userId);
+            _logger.LogInformation($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Completing OAuth DigiKey authorization for user {userId}");
             var authResult = await digikeyApi.OAuth2Service.FinishAuthorization(code);
 
             if (authResult == null || authResult.IsError)
             {
-                authRequest.Error = authResult?.ErrorMessage ?? "No auth result received";
-                authRequest.ErrorDescription = authResult?.ErrorDetails ?? string.Empty;
-                throw new AuthenticationException($"Failed to authenticate. {authRequest.Error} {authRequest.ErrorDescription}");
+                var error = authResult?.ErrorMessage ?? "No auth result received";
+                var errorDescription = authResult?.ErrorDetails ?? string.Empty;
+                throw new AuthenticationException($"Failed to authenticate with DigiKey api. {error} - {errorDescription}");
             }
             else
             {

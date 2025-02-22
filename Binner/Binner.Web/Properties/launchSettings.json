@@ -4,14 +4,14 @@
     "Binner.Web": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
+      "launchBrowser": true,
       "externalUrlConfiguration": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
         "WDS_SOCKET_PORT": "0"
       },
-      "applicationUrl": "https://localhost:7000"
+      "applicationUrl": "https://localhost:8090"
     }
   }
 }

@@ -13,8 +13,10 @@
 
 using ApiClient.Constants;
 using ApiClient.OAuth2.Models;
+using Binner.Common;
 using Binner.Common.Integrations;
 using Binner.Model.Configuration.Integrations;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -31,6 +33,7 @@ namespace ApiClient.OAuth2
     /// </summary>
     public class OAuth2Service
     {
+        private readonly ILogger<OAuth2Service> _logger;
         private readonly DigikeyConfiguration _configuration;
         private readonly AccessTokens _accessTokens;
 
@@ -72,9 +75,6 @@ namespace ApiClient.OAuth2
         /// <returns>Returns OAuth2AccessToken</returns>
         public async Task<OAuth2AccessToken?> FinishAuthorization(string code)
         {
-            ServicePointManager.ServerCertificateValidationCallback =
-                delegate { return true; };
-
             // Build up the body for the token request
             var body = new List<KeyValuePair<string, string?>>
             {
@@ -85,13 +85,18 @@ namespace ApiClient.OAuth2
                 new KeyValuePair<string, string?>(OAuth2Constants.GrantType, OAuth2Constants.GrantTypes.AuthorizationCode)
             };
 
+            if (string.IsNullOrWhiteSpace(_configuration.ClientId)) throw new BinnerConfigurationException("DigiKey API ClientId cannot be empty!");
+            if (string.IsNullOrWhiteSpace(_configuration.ClientSecret)) throw new BinnerConfigurationException("DigiKey API ClientSecret cannot be empty!");
+            if (string.IsNullOrWhiteSpace(_configuration.oAuthPostbackUrl)) throw new BinnerConfigurationException("DigiKey API oAuthPostbackUrl cannot be empty!");
+            if (string.IsNullOrWhiteSpace(_configuration.ApiUrl)) throw new BinnerConfigurationException("DigiKey API ApiUrl cannot be empty!");
+
             // Request the token
             var tokenEndpoint = new Uri(new Uri(_configuration.ApiUrl), DigiKeyUriConstants.TokenRelativeEndpoint);
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint);
 
             var httpClient = new HttpClient
             {
-                BaseAddress = new Uri(_configuration.ApiUrl)
+                BaseAddress = new Uri(_configuration.ApiUrl),
             };
 
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -128,7 +133,5 @@ namespace ApiClient.OAuth2
         {
             return await OAuth2Helpers.RefreshTokenAsync(_configuration, _accessTokens);
         }
-
-
     }
 }

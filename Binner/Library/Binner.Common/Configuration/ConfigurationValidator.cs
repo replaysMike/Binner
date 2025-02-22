@@ -20,8 +20,8 @@ namespace Binner.Common.Configuration
         {
             if (config.Port == 0)
             {
-                config.Port = 7000;
-                ConfigAssert("Port", config.Port, "Defaulting to 7000.");
+                config.Port = 8090;
+                ConfigAssert("Port", config.Port, "Defaulting to 8090.");
             }
             if (config.PublicUrl.SurroundedBy("@"))
                 ConfigAssert("PublicUrl", config.Integrations.Swarm.ApiKey);

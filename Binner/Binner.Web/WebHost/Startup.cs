@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -62,12 +61,6 @@ namespace Binner.Web.WebHost
             {
                 // limit files to 64MB
                 options.MultipartBodyLengthLimit = 64 * 1024 * 1024;
-            });
-
-            // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/build";
             });
 
             // add custom Jwt authentication support
@@ -142,10 +135,7 @@ namespace Binner.Web.WebHost
                     return Task.CompletedTask;
                 });
             });
-            // todo:
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
-
             app.UseRouting();
 
             // enable authorization
@@ -160,21 +150,6 @@ namespace Binner.Web.WebHost
             });
 
             //app.MapFallbackToFile("/index.html");
-
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (config.Environment == Environments.Development)
-                {
-                    Console.WriteLine("Starting react dev server...");
-                    spa.UseReactDevelopmentServer(npmScript: "dev");
-                }
-                else
-                {
-                    Console.WriteLine("Using pre-built react application");
-                }
-            });
 
             using (var scope = app.ApplicationServices.CreateScope())
             {

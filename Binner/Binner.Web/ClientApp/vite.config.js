@@ -33,8 +33,10 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
   }
 }
 
+const vitePort = 3000;
+const serverPort = 8090;
 const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-  env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7000';
+  env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `https://localhost:${serverPort}`;
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -86,7 +88,7 @@ export default defineConfig({
         secure: false
       }
     },
-    port: 8090,
+    port: vitePort,
     https: {
       key: fs.readFileSync(keyFilePath),
       cert: fs.readFileSync(certFilePath),
