@@ -63,6 +63,12 @@ namespace Binner.Web.WebHost
                 options.MultipartBodyLengthLimit = 64 * 1024 * 1024;
             });
 
+            // specify the path to our spa production build
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/build";
+            });
+
             // add custom Jwt authentication support
             services.AddJwtAuthentication(configuration);
 
@@ -136,11 +142,17 @@ namespace Binner.Web.WebHost
                 });
             });
             app.UseStaticFiles();
+            app.UseSpaStaticFiles();
             app.UseRouting();
 
             // enable authorization
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSpa((config) =>
+            {
+                config.Options.SourcePath = "ClientApp";
+            });
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
@@ -148,8 +160,6 @@ namespace Binner.Web.WebHost
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-
-            //app.MapFallbackToFile("/index.html");
 
             using (var scope = app.ApplicationServices.CreateScope())
             {
