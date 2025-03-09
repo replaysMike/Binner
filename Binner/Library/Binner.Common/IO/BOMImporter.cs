@@ -23,11 +23,11 @@ namespace Binner.Common.IO
         {
             // parse worksheet
             var header = new Header(worksheet.GetRow(0));
-            // TODO: sleach
-            // parse out indexes for each column
-            //   Add support for multiple valid names via a list
-            //   Have the header just contain the indices
-            //   If it fails to find the headers we can error out
+            if (!header.IsValid) {
+                result.Errors.Add($"Header doesn't have the requisite fields. Expecting Part Number, Quantity & Reference.");
+                return;
+            }
+
             for (var rowNumber = 1; rowNumber <= worksheet.LastRowNum; rowNumber++)
             {
                 var rowData = worksheet.GetRow(rowNumber);
@@ -35,10 +35,10 @@ namespace Binner.Common.IO
                     continue;
 
                 // import BOM info
-                var isPartNumberValid = TryGet<string?>(rowData, header, "MPN", out var partNumber);
-                var isQuantityValid = TryGet<int>(rowData, header, "Qty", out var quantity);
-                var isReferenceValid = TryGet<string?>(rowData, header, "Reference", out var reference);
-                var isNoteValid = TryGet<string?>(rowData, header, "Value", out var note);
+                var isPartNumberValid = TryGet<string?>(rowData, header.PartNumberIndex, out var partNumber);
+                var isQuantityValid = TryGet<int>(rowData, header.QuantityIndex, out var quantity);
+                var isReferenceValid = TryGet<string?>(rowData, header.ReferenceIndex, out var reference);
+                var isNoteValid = TryGet<string?>(rowData, header.NoteIndex, out var note);
 
                 if (!isPartNumberValid || !isQuantityValid || !isReferenceValid)
                     continue;
@@ -86,31 +86,23 @@ namespace Binner.Common.IO
                 }
             }
         }
-        /*private string? GetValueFromHeader(string[] rowData, Header header, string name)
-        {
-            var headerIndex = header.GetHeaderIndex(name);
-            if (headerIndex >= 0)
-                return rowData[headerIndex];
-            return null;
-        }*/
 
-        private bool TryGet<T>(IRow rowData, Header header, string name, out T? value)
+        private bool TryGet<T>(IRow rowData, int columnIndex, out T? value)
         {
-            // TODO: sleach
-            //   Switch name to index
             value = default;
             var type = typeof(T);
-            var columnIndex = header.GetHeaderIndex(name);
             var cellValue = columnIndex >= 0 ? rowData.GetCell(columnIndex) : null;
             if (Nullable.GetUnderlyingType(type) != null && cellValue?.ToString() == null)
-                return true;
+                return false;
             var unquotedValue = GetQuoted(cellValue?.ToString());
 
             if (type == typeof(string))
             {
-                if (!string.IsNullOrEmpty(unquotedValue))
+                if (!string.IsNullOrEmpty(unquotedValue)) {
                     value = (T)(object)unquotedValue;
-                return true;
+                    return true;
+                }
+                return false;
             }
             if (type == typeof(long) || type == typeof(long?))
             {
@@ -164,40 +156,56 @@ namespace Binner.Common.IO
 
         private class Header
         {
-            public List<HeaderIndex> Headers { get; set; } = new List<HeaderIndex>();
+            private bool _isValid = false;
+
+            private int _partNumberIndex = -1;
+            private int _quantityIndex = -1;
+            private int _referenceIndex = -1;
+            private int _noteIndex = -1;
+
+            private static readonly string[] PartNumberHeaders = { "MPN", "Manufacturer_Part_Number" };
+            private static readonly string[] QuantityHeaders = { "Qty", "Quantity", "" };
+            private static readonly string[] ReferenceHeaders = { "Reference" };
+            private static readonly string[] NoteHeaders = { "Value", "Note" };
+
+            public bool IsValid { get => _isValid; }
+
+            public int PartNumberIndex  { get => _partNumberIndex; }
+            public int QuantityIndex    { get => _quantityIndex; }
+            public int ReferenceIndex   { get => _referenceIndex; }
+            public int NoteIndex        { get => _noteIndex; }
 
             public Header(IRow headerRow)
             {
+                _isValid = false;
+
                 for (var i = 0; i < headerRow.LastCellNum; i++)
                 {
                     var headerName = headerRow.GetCell(i).StringCellValue;
-                    var name = headerName.Replace("'", "").Replace("\"", "");
-                    Headers.Add(new HeaderIndex(name, i));
+                    var name = headerName.Replace("'", "").Replace("\"", "").Replace("\n", "");
+
+                    if (_partNumberIndex == -1) {
+                        if (PartNumberHeaders.FirstOrDefault(value => value.Equals(name, StringComparison.InvariantCultureIgnoreCase)) != default)
+                            _partNumberIndex = i;
+                    }
+                    if (_quantityIndex == -1) {
+                        if (QuantityHeaders.FirstOrDefault(value => value.Equals(name, StringComparison.InvariantCultureIgnoreCase)) != default)
+                            _quantityIndex = i;
+                    }
+                    if (_referenceIndex == -1) {
+                        if (ReferenceHeaders.FirstOrDefault(value => value.Equals(name, StringComparison.InvariantCultureIgnoreCase)) != default)
+                            _referenceIndex = i;
+                    }
+                    if (_noteIndex == -1) {
+                        if (NoteHeaders.FirstOrDefault(value => value.Equals(name, StringComparison.InvariantCultureIgnoreCase)) != default)
+                            _noteIndex = i;
+                    }
+                }
+
+                if (_partNumberIndex != -1 && _quantityIndex != -1 && _referenceIndex != -1) {
+                    _isValid = true;
                 }
             }
-
-            public int GetHeaderIndex(string name)
-            {
-                var header = Headers.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
-                if (header == null)
-                    return -1;
-                return header.Index;
-            }
-        }
-
-        private class HeaderIndex
-        {
-            public string Name { get; set; }
-            public int Index { get; set; }
-
-            public HeaderIndex(string name, int index)
-            {
-                Name = name;
-                Index = index;
-            }
-
-            public override string ToString()
-                => Name;
         }
    }
 }
