@@ -20,12 +20,6 @@ namespace Binner.Common.IO
         {
         }
 
-        private void CreateCell(IRow CurrentRow, int CellIndex, string Value)
-        {
-            ICell Cell = CurrentRow.CreateCell(CellIndex);
-            Cell.SetCellValue(Value);
-        }
-
         public async Task<ImportResult> ImportAsync(Project project, Stream stream, IUserContext? userContext)
         {
             var result = new ImportResult();
@@ -33,11 +27,14 @@ namespace Binner.Common.IO
             {
                 stream.Position = 0;
                 var reader = new StreamReader(stream);
+                var header = await reader.ReadLineAsync();
+                var headerCells = header.Split(',');
                 var data = await reader.ReadToEndAsync();
                 // remove line breaks
                 data = data.Replace("\r", "");
 
-                // Parse out rows
+                // Parse out cells
+                var cells = data.Split(',');
                 var rows = SplitBoundaries(data, new char[] { '\n' });
                 if (!rows.Any())
                 {
@@ -49,17 +46,14 @@ namespace Binner.Common.IO
                 // Convert to an NPOI workbook
                 HSSFWorkbook workbook = new HSSFWorkbook();
                 ISheet worksheet = workbook.CreateSheet("BOM");
-                var rowNumber = 0;
+                IRow headerRow = worksheet.CreateRow(0);
+
+                var rowNumber = 1;
                 foreach (var row in rows)
                 {
                     var rowData = SplitBoundaries(row, new char[] { ',' }, true);
                     IRow sheetRow = worksheet.CreateRow(rowNumber);
-                    var columnNumber = 0;
-                    foreach (var column in rowData)
-                    {
-                        CreateCell(sheetRow, columnNumber, column);
-                        columnNumber++;
-                    }
+                    PopulateRow(sheetRow, rowData);
                     rowNumber++;
                 }
 
@@ -73,6 +67,23 @@ namespace Binner.Common.IO
             result.Success = !result.Errors.Any();
 
             return result;
+        }
+
+        private void CreateCell(IRow CurrentRow, int CellIndex, string Value)
+        {
+            ICell Cell = CurrentRow.CreateCell(CellIndex);
+            Cell.SetCellValue(Value);
+        }
+
+        private void PopulateRow(IRow row, string[] rowData)
+        {
+            var columnNumber = 0;
+            foreach (var column in rowData)
+            {
+                CreateCell(row, columnNumber, column);
+                columnNumber++;
+            }
+
         }
 
         private string[] SplitBoundaries(string data, char[] rowDelimiters, bool removeBoundary = false)
