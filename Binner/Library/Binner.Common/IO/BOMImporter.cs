@@ -164,7 +164,7 @@ namespace Binner.Common.IO
             private int _noteIndex = -1;
 
             private static readonly string[] PartNumberHeaders = { "MPN", "Manufacturer_Part_Number" };
-            private static readonly string[] QuantityHeaders = { "Qty", "Quantity", "" };
+            private static readonly string[] QuantityHeaders = { "Qty", "Quantity" };
             private static readonly string[] ReferenceHeaders = { "Reference" };
             private static readonly string[] NoteHeaders = { "Value", "Note" };
 
