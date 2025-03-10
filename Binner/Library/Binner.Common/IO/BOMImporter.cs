@@ -163,9 +163,9 @@ namespace Binner.Common.IO
             private int _referenceIndex = -1;
             private int _noteIndex = -1;
 
-            private static readonly string[] PartNumberHeaders = { "MPN", "Manufacturer_Part_Number", "PartNumber", "Mfr Part" };
-            private static readonly string[] QuantityHeaders = { "Qty", "Quantity", "Qty Required" };
-            private static readonly string[] ReferenceHeaders = { "Reference", "SchematicReferenceId" };
+            private static readonly string[] PartNumberHeaders = { "MPN", "Manufacturer_Part_Number", "PartNumber", "Mfr Part", "P/N", "Mouser P/N", "Digikey Part Number" };
+            private static readonly string[] QuantityHeaders = { "Qty", "Quantity", "Qty Required", "Quantity Per PCB" };
+            private static readonly string[] ReferenceHeaders = { "Reference", "SchematicReferenceId", "References", "Board ID", "Designator" };
             private static readonly string[] NoteHeaders = { "Value", "Note" };
 
             public bool IsValid { get => _isValid; }

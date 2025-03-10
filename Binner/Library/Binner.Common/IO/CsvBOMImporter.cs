@@ -27,14 +27,11 @@ namespace Binner.Common.IO
             {
                 stream.Position = 0;
                 var reader = new StreamReader(stream);
-                var header = await reader.ReadLineAsync();
-                var headerCells = header.Split(',');
                 var data = await reader.ReadToEndAsync();
                 // remove line breaks
                 data = data.Replace("\r", "");
 
-                // Parse out cells
-                var cells = data.Split(',');
+                // Parse out rows
                 var rows = SplitBoundaries(data, new char[] { '\n' });
                 if (!rows.Any())
                 {
@@ -48,7 +45,7 @@ namespace Binner.Common.IO
                 ISheet worksheet = workbook.CreateSheet("BOM");
                 IRow headerRow = worksheet.CreateRow(0);
 
-                var rowNumber = 1;
+                var rowNumber = 0;
                 foreach (var row in rows)
                 {
                     var rowData = SplitBoundaries(row, new char[] { ',' }, true);
@@ -111,7 +108,7 @@ namespace Binner.Common.IO
                 if ((rowDelimiters.Any(x => x.Equals(c)) && !insideQuotes) || i == data.Length - 1)
                 {
                     var row = data.Substring(startPos, i - startPos + 1 - (removeBoundary && !(i == data.Length - 1) ? 1 : 0));
-                    if (!string.IsNullOrEmpty(row) && row.Length > (removeBoundary ? 0 : 1))
+                    if (row != null)
                         rows.Add(row);
                     startPos = i + 1;
                 }
