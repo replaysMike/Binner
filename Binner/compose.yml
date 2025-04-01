@@ -1,0 +1,32 @@
+services:
+  binner:
+    container_name: Binner
+    image: binner:latest
+    build:
+      dockerfile: ./Dockerfile
+    expose:
+      - ${BINNER_PORT}
+    restart: always
+    ports:
+      - ${BINNER_PORT}:${BINNER_PORT}
+    environment:
+      - BINNER_PROVIDER=
+      - BINNER_DB_FILENAME=
+      - BINNER_DB_HOST=
+      - BINNER_DB_PORT=
+      - BINNER_DB_USERNAME=
+      - BINNER_DB_PASSWORD=
+    volumes:
+      - binner-config:/app/config
+      - binner-db:/app/db
+      - binner-certificates:/app/Certificates:ro
+      - binner-logs:/app/logs:ro
+volumes:
+  binner-config:
+    name: "Binner-Config"
+  binner-db:
+    name: "Binner-Database"
+  binner-logs:
+    name: "Binner-Logs"
+  binner-certificates:
+    name: "Binner-Certificates"

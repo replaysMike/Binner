@@ -73,11 +73,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="certificates\localhost-unix.crt" />
-    <None Remove="certificates\localhost-unix.key" />
-    <None Remove="certificates\localhost-unix.pfx" />
-    <None Remove="certificates\localhost.conf" />
-    <None Remove="certificates\README.md" />
+    <None Remove="Certificates\CreateCert.ps1" />
+    <None Remove="Certificates\localhost-unix.crt" />
+    <None Remove="Certificates\localhost-unix.key" />
+    <None Remove="Certificates\localhost-unix.pfx" />
+    <None Remove="Certificates\localhost.conf" />
+    <None Remove="Certificates\README.md" />
     <None Remove="Resources\datasheet.png" />
   </ItemGroup>
 
@@ -87,34 +88,46 @@
 
   <ItemGroup>
     <Content Include="binner128x128.ico" />
-    <Content Include="certificates\localhost-unix.crt">
+    <Content Include="Certificates\CreateCert.ps1">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="certificates\localhost-unix.key">
+    <Content Include="Certificates\localhost-unix.crt">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </Content>
+    <Content Include="Certificates\localhost-unix.key">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="certificates\localhost-unix.pfx">
+    <Content Include="Certificates\localhost-unix.pfx">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="certificates\localhost-windows.pfx">
+    <Content Include="Certificates\localhost-windows.pfx">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="certificates\localhost.conf">
+    <Content Include="Certificates\localhost.conf">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="certificates\README.md">
+    <Content Include="Certificates\README.md">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Resources\datasheet.png">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="ClientApp\package.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

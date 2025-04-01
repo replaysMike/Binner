@@ -32,6 +32,8 @@ var host = Host.CreateDefaultBuilder(args)
                 .Build();
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration))
                 .Get<StorageProviderConfiguration>() ?? throw new Exception($"Error: Could not load {nameof(StorageProviderConfiguration)}!");
+            // inject configuration from environment variables (if set)
+            EnvironmentVarConstants.SetConfigurationFromEnvironment(storageProviderConfiguration);
 
             services.AddDbContext<BinnerContext>(optionsBuilder =>
             {

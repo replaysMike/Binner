@@ -1,17 +1,17 @@
 {
-  "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "Binner.Web": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
-      "externalUrlConfiguration": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
         "WDS_SOCKET_PORT": "0"
       },
+      "dotnetRunMessages": true,
+      "externalUrlConfiguration": true,
       "applicationUrl": "https://localhost:8090"
     }
-  }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
 }

@@ -33,6 +33,10 @@ robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseCon
 
 $buildEnv = "win-x64"
 Copy-Item -Force -Path .\Binner\scripts\windows\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.key
+Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.crt
+Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.pfx
+
 
 $buildEnv = "linux-x64"
 Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
@@ -40,6 +44,7 @@ if (!$?) { exit -1 }
 Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
 if (!$?) { exit -1 }
 Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
 
 Write-Host "Cleaning up..." -ForegroundColor Magenta
 if (Test-Path .\BinnerSetup-winx64-0.0.exe) {
@@ -64,3 +69,4 @@ Write-Host "Creating artifact archives..." -ForegroundColor green
 tar -czf Binner_linux-x64.tar.gz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-x64\publish .
 # move files to dist folder
 #Move-Item -Force -Path 
+Write-Host "Done!" -ForegroundColor green

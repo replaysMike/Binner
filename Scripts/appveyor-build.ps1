@@ -52,6 +52,9 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   $sw = [Diagnostics.Stopwatch]::StartNew()
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.key
+    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.crt
+    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -78,6 +81,7 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -89,6 +93,7 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -100,6 +105,7 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -111,6 +117,7 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }

@@ -11,11 +11,11 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
+using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Web.ServiceHost;
 using LightInject;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Binner.StorageProvider.EntityFrameworkCore;
 
 namespace Binner.Web.Configuration
 {
@@ -47,6 +47,10 @@ namespace Binner.Web.Configuration
 
             // register storage provider
             var storageProviderConfig = container.GetInstance<StorageProviderConfiguration>();
+            
+            // inject configuration from environment variables (if set)
+            EnvironmentVarConstants.SetConfigurationFromEnvironment(storageProviderConfig);
+
             container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
             var providerFactory = container.GetInstance<IStorageProviderFactory>();
 

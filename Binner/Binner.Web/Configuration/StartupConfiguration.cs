@@ -31,6 +31,8 @@ namespace Binner.Web.Configuration
             var authenticationConfiguration = serviceConfiguration.Authentication;
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
             if (storageProviderConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
+            // inject configuration from environment variables (if set)
+            EnvironmentVarConstants.SetConfigurationFromEnvironment(storageProviderConfiguration);
             var binnerConfig = new BinnerFileStorageConfiguration(storageProviderConfiguration.ProviderConfiguration);
             var printerConfiguration = serviceConfiguration.PrinterConfiguration;
             var printerSettings = new PrinterSettings

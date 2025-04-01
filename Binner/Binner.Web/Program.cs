@@ -129,6 +129,8 @@ bool PrintDbInfo()
         PrintError($"Could not read the {nameof(StorageProviderConfiguration)} section of your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
         Environment.Exit(ExitCodes.InvalidConfig);
     }
+    // inject configuration from environment variables (if set)
+    EnvironmentVarConstants.SetConfigurationFromEnvironment(storageConfig);
 
     PrintLabel("Provider", ConsoleColor.White);
     PrintValue(storageConfig.Provider ?? "Unknown", ConsoleColor.Cyan);
