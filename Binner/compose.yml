@@ -1,7 +1,7 @@
 services:
   binner:
     container_name: Binner
-    image: binner:latest
+    image: binnerofficial/binner:latest
     build:
       dockerfile: ./Dockerfile
     expose:
