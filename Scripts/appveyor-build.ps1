@@ -63,20 +63,22 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
 
-Write-Host "Building the UI..." -ForegroundColor cyan
-$sw = [Diagnostics.Stopwatch]::StartNew()
-  cd .\Binner\Binner.Web\ClientApp
-  npm install
-  Write-Host "npm exit code: $LASTEXITCODE"
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-  npm run build
-  Write-Host "npm exit code: $LASTEXITCODE"
-  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-  cd ..\..\..\
+if ($env:BUILDTARGETS.Contains("#ui#")) {
+  Write-Host "Building the UI..." -ForegroundColor cyan
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+    cd .\Binner\Binner.Web\ClientApp
+    npm install
+    Write-Host "npm exit code: $LASTEXITCODE"
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    npm run build
+    Write-Host "npm exit code: $LASTEXITCODE"
+    if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+    cd ..\..\..\
 
-  robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-$sw.Stop()
-$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+    robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
+  $sw.Stop()
+  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+}
 
 $buildEnv = "linux-x64"
 if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
@@ -191,10 +193,12 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
 # build Dockerfile
 Write-Host "Building Docker image with tag '$versionTag'..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
+if ($env:BUILDTARGETS.Contains("#docker#")) {
   sed -i -e "s/0.0.0/$env:APPVEYOR_BUILD_VERSION/g" .\Binner\.env
   cat .\Binner\.env
-  docker login -u=$env:DOCKER_USERNAME -p=$env:DOCKER_PASSWORD
-  docker build --no-cache --progress=plain -t binnerofficial/binner:$versionTag .
+  docker login -u="$env:DOCKER_USERNAME" -p="$env:DOCKER_PASSWORD"
+  docker build --no-cache --progress=plain -t "binnerofficial/binner:$versionTag" .
+}
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
