@@ -7,8 +7,13 @@ WORKDIR /app
 RUN apt-get -y update; apt-get -y install sudo sed curl wget libicu-dev apt-transport-https ca-certificates
 
 # download the latest release
-RUN /bin/sh -c cd /app && curl -sS https://api.github.com/repos/replaysMike/Binner/releases/latest | grep "browser_download_url.*Binner_linux-x64" | cut -d : -f 2,3 | xargs wget -O Binner_linux-x64.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
+#RUN /bin/sh -c cd /app && curl -sS https://api.github.com/repos/replaysMike/Binner/releases/latest | grep "browser_download_url.*Binner_linux-x64" | cut -d : -f 2,3 | xargs wget -O Binner_linux-x64.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
+
+# download a local release
 #RUN cd /app && wget -nv -O Binner_linux-x64.tar.gz http://192.168.1.183:8080/Binner_linux-x64.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
+
+# download a specified release
+RUN cd /app && wget -nv -O Binner_linux-x64.tar.gz https://github.com/replaysMike/Binner/releases/download/v${BINNER_VERSION}/Binner_linux-x64-${BINNER_VERSION}.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
 
 # generate a new unique ssl cert for the container, with a password of 'password'
 RUN openssl req -x509 -newkey rsa:4096 -sha256 -keyout /app/Certificates/binner-docker.key -out /app/Certificates/binner-docker.crt -passout "pass:password" -subj "/O=Binner/CN=localhost" -addext "subjectAltName=DNS:localhost,DNS:binner.localhost,IP:127.0.0.1,IP:0.0.0.0" -days 3650

@@ -1,6 +1,10 @@
+# =============================
+# Binner Appveyor Build Script
+# =============================
 $project = ".\Binner\Binner.ReleaseBuild.sln"
 $releaseConfiguration = "Release"
 $framework = "net9.0"
+$versionTag = "v$env:APPVEYOR_BUILD_VERSION"
 
 Write-Host "Building $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
 Write-Host "Build Targets: $env:BUILDTARGETS" -ForegroundColor magenta
@@ -184,6 +188,16 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
 
+# build Dockerfile
+Write-Host "Building Docker image with tag '$versionTag'..." -ForegroundColor green
+$sw = [Diagnostics.Stopwatch]::StartNew()
+  sed -i -e "s/0.0.0/$env:APPVEYOR_BUILD_VERSION/g" .\Binner\.env
+  cat .\Binner\.env
+  docker login -u=$env:DOCKER_USERNAME -p=$env:DOCKER_PASSWORD
+  docker build --no-cache --progress=plain -t binnerofficial/binner:$versionTag .
+$sw.Stop()
+$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+
 # package artifacts
 Write-Host "Creating artifact archives..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
@@ -212,5 +226,5 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
 
   # rename these artifacts to include the build version number
   Get-ChildItem .\*.targz -recurse | % { Push-AppveyorArtifact $_.FullName -FileName "$($_.Basename)-$env:APPVEYOR_BUILD_VERSION.tar.gz" }
-  $sw.Stop()
-  $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+$sw.Stop()
+$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }

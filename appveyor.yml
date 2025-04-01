@@ -31,4 +31,7 @@ init:
 build_script:
 - ps: >-
     .\Scripts\appveyor-build.ps1
+deploy_script:
+- ps: >-
+     .\Scripts\appveyor-deploy.ps1 
 test: off

@@ -9,13 +9,6 @@ services:
     restart: always
     ports:
       - ${BINNER_PORT}:${BINNER_PORT}
-    environment:
-      - BINNER_PROVIDER=
-      - BINNER_DB_FILENAME=
-      - BINNER_DB_HOST=
-      - BINNER_DB_PORT=
-      - BINNER_DB_USERNAME=
-      - BINNER_DB_PASSWORD=
     volumes:
       - binner-config:/app/config
       - binner-db:/app/db
