@@ -25,6 +25,8 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
   dotnet --version
   Write-Host "Tar" -ForegroundColor cyan
   tar --version
+  Write-Host "Docker" -ForegroundColor cyan
+  docker --version
 
   Write-Host "Configuring environment..." -ForegroundColor green
   $env:NODE_OPTIONS="--max_old_space_size=16384"
@@ -197,7 +199,10 @@ if ($env:BUILDTARGETS.Contains("#docker#")) {
   sed -i -e "s/0.0.0/$env:APPVEYOR_BUILD_VERSION/g" .\Binner\.env
   cat .\Binner\.env
   docker login -u="$env:DOCKER_USERNAME" -p="$env:DOCKER_PASSWORD"
+  Set-Location -Path .\Binner
+  Write-Host "Building tag binnerofficial/binner:$versionTag"
   docker build --no-cache --progress=plain -t "binnerofficial/binner:$versionTag" .
+  Set-Location -Path ..\
 }
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
