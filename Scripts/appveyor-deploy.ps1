@@ -11,12 +11,13 @@ Write-Host "Deploying $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
 
 Set-Location -Path .\Binner
 
+Write-Host "Logging into docker using $env:DOCKER_USERNAME"
 docker login -u="$env:DOCKER_USERNAME" -p="$env:DOCKER_PASSWORD"
 
 # build Dockerfile
 Write-Host "Building Docker image with tag '$versionTag'..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  sed -i -e "s/0.0.0/$env:APPVEYOR_BUILD_VERSION/g" .\Binner\.env
+  sed -i -e "s/0.0.0/$env:APPVEYOR_BUILD_VERSION/g" .\.env
   cat .env
   Write-Host "Building tag binnerofficial/binner:$versionTag"
   docker build --no-cache --progress=plain -t "binnerofficial/binner:$versionTag" .
