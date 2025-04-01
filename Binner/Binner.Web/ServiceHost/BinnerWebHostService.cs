@@ -1,7 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.Configuration;
 using Binner.Common.Extensions;
-using Binner.Common.IO;
 using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.Model.Common;
@@ -9,22 +8,18 @@ using Binner.Model.Configuration;
 using Binner.Web.Configuration;
 using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
-using NPOI.OpenXmlFormats.Dml;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,6 +109,7 @@ namespace Binner.Web.ServiceHost
             var certFilename = Path.GetFullPath(_config.SslCertificate);
             try
             {
+                _nlogLogger.Info($"Loading Certificate from '{certFilename}'...");
                 var result = Binner.Common.Security.CertificateLoader.LoadCertificate(certFilename, _config.SslCertificatePassword);
                 certificate = result.Certificate;
                 if (certificate != null)
@@ -131,6 +127,8 @@ namespace Binner.Web.ServiceHost
             // storage provider config
             var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ??
                                 throw new BinnerConfigurationException($"Configuration section '{nameof(StorageProviderConfiguration)}' does not exist!");
+            // inject configuration from environment variables (if set)
+            EnvironmentVarConstants.SetConfigurationFromEnvironment(storageConfig);
 
             configValidator.ValidateConfiguration(storageConfig);
 

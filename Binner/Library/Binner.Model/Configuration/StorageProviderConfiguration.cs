@@ -2,10 +2,22 @@
 {
     public class StorageProviderConfiguration
     {
+        private string _provider = "Binner";
         /// <summary>
         /// The storage provider to use
         /// </summary>
-        public string Provider { get; set; } = "Binner";
+        public string Provider { 
+            get
+            {
+                if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderName)))
+                    return System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderName) ?? "Binner";
+                return _provider;
+            }
+            set
+            {
+                _provider = value;
+            }
+        }
 
         /// <summary>
         /// The storage provider
