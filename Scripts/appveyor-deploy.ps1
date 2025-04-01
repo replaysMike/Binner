@@ -3,6 +3,10 @@
 # =================================
 $versionTag = "v$env:APPVEYOR_BUILD_VERSION"
 
+Write-Host "Checking versions..." -ForegroundColor green
+Write-Host "Docker" -ForegroundColor cyan
+docker --version
+
 Write-Host "Deploying $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
 
 Set-Location -Path .\Binner
