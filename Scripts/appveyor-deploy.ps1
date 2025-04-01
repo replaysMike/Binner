@@ -7,6 +7,9 @@ Write-Host "Checking versions..." -ForegroundColor green
 Write-Host "Docker" -ForegroundColor cyan
 docker --version
 
+Write-Host "Switching to linux docker containers"
+Switch-DockerLinux
+
 Write-Host "Deploying $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta
 
 Set-Location -Path .\Binner
