@@ -1,10 +1,17 @@
 FROM ubuntu
 
+ARG BINNER_VERSION
+ENV BINNER_VERSION=$BINNER_VERSION
+
+RUN /bin/sh -c echo "Initializing Binner ${BINNER_VERSION}"
+
 EXPOSE ${BINNER_PORT}
 WORKDIR /app
 
 #install tools
 RUN apt-get -y update; apt-get -y install sudo sed curl wget libicu-dev apt-transport-https ca-certificates
+
+RUN /bin/sh -c echo "Downloading Binner ${BINNER_VERSION}"
 
 # download the latest release
 #RUN /bin/sh -c cd /app && curl -sS https://api.github.com/repos/replaysMike/Binner/releases/latest | grep "browser_download_url.*Binner_linux-x64" | cut -d : -f 2,3 | xargs wget -O Binner_linux-x64.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
@@ -50,5 +57,7 @@ RUN mkdir -p /app/logs \
 && ln -s /app/Binner.log /app/logs/Binner.log \
 && ln -s /app/Binner.Microsoft.log /app/logs/Binner.Microsoft.log \
 && ln -s /app/Binner.MissingLocaleKeys.log /app/logs/Binner.MissingLocaleKeys.log
+
+RUN /bin/sh -c echo "$(date "+%d.%m.%Y %T") Built from Binner ${BINNER_VERSION}" >> /build_date.info # buildkit
 
 ENTRYPOINT ["./Binner.Web"]

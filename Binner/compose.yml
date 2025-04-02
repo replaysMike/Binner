@@ -4,6 +4,14 @@ services:
     image: binnerofficial/binner:latest
     build:
       dockerfile: ./Dockerfile
+      args:
+        - BINNER_VERSION=$BINNER_VERSION
+        - BINNER_PROVIDER=$BINNER_PROVIDER
+        - BINNER_DB_FILENAME=$BINNER_DB_FILENAME
+        - BINNER_DB_HOST=$BINNER_DB_HOST
+        - BINNER_DB_PORT=$BINNER_DB_PORT
+        - BINNER_DB_USERNAME=$BINNER_DB_USERNAME
+        - BINNER_DB_PASSWORD=$BINNER_DB_PASSWORD
     expose:
       - ${BINNER_PORT}
     restart: always
