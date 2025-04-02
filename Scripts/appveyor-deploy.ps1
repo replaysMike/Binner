@@ -30,6 +30,6 @@ $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds,
 # publish Dockerfile
 Write-Host "Publishing Docker image with tag '$versionTag'..." -ForegroundColor green
 $sw = [Diagnostics.Stopwatch]::StartNew()
-  docker push "$env:DOCKER_USERNAME/binner:$versionTag"
+  docker push "$env:DOCKER_USERNAME/binner" --all-tags
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
