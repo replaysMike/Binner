@@ -37,6 +37,8 @@ RUN rm /app/Certificates/localhost-unix.crt && rm /app/Certificates/localhost-un
 RUN cp /app/Certificates/binner-docker.crt /usr/local/share/ca-certificates && cp /app/Certificates/binner-docker.crt /usr/local/share/certificates && ls -l /usr/local/share/ca-certificates && ls -l /app/Certificates && head -n 20 /app/appsettings.json
 RUN update-ca-certificates
 
+RUN /bin/sh -c echo "$(date "+%d.%m.%Y %T") Built from Binner ${BINNER_VERSION}" >> /build_date.info # buildkit
+
 RUN useradd app
 USER app
 
@@ -57,7 +59,5 @@ RUN mkdir -p /app/logs \
 && ln -s /app/Binner.log /app/logs/Binner.log \
 && ln -s /app/Binner.Microsoft.log /app/logs/Binner.Microsoft.log \
 && ln -s /app/Binner.MissingLocaleKeys.log /app/logs/Binner.MissingLocaleKeys.log
-
-RUN /bin/sh -c echo "$(date "+%d.%m.%Y %T") Built from Binner ${BINNER_VERSION}" >> /build_date.info # buildkit
 
 ENTRYPOINT ["./Binner.Web"]
