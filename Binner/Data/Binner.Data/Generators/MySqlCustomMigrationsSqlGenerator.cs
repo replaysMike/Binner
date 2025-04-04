@@ -24,7 +24,7 @@ namespace Binner.Data.Generators
         public MySqlCustomMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer batchPreparer, IMySqlOptions options)
             : base(dependencies, batchPreparer, options)
         {
-            Console.WriteLine($"  Using MigrationsSqlGenerator '{nameof(MySqlCustomMigrationsSqlGenerator)}'");
+            //Console.WriteLine($"  Using MigrationsSqlGenerator '{nameof(MySqlCustomMigrationsSqlGenerator)}'");
         }
 
         protected override void Generate(MigrationOperation operation, IModel? model, MigrationCommandListBuilder builder)
@@ -50,10 +50,10 @@ namespace Binner.Data.Generators
             if (!string.IsNullOrEmpty(columnOperation.DefaultValueSql)
                 && (columnOperation.DefaultValueSql.Equals("getutcdate()", _stringComparison) || columnOperation.DefaultValueSql.Equals("getdate()", _stringComparison)))
             {
-                Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Name}'");
-                Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
+                //Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Name}'");
+                //Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
                 columnOperation.DefaultValueSql = TransformDefaultDateColumn(columnOperation.DefaultValueSql);
-                Console.WriteLine($"  New Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
+                //Console.WriteLine($"  New Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
             }
         }
 
