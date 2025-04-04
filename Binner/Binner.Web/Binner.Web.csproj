@@ -5,7 +5,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
     <Nullable>enable</Nullable>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
@@ -16,7 +15,6 @@
     <SpaProxyServerUrl>https://localhost:3000</SpaProxyServerUrl>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <OutputType>Exe</OutputType>
-    <!--<PublishTrimmed>true</PublishTrimmed>-->
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
     <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
