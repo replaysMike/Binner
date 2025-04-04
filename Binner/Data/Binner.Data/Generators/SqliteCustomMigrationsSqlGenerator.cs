@@ -21,7 +21,7 @@ namespace Binner.Data.Generators
         public SqliteCustomMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider relationalAnnotationProvider)
             : base(dependencies, relationalAnnotationProvider)
         {
-            Console.WriteLine($"  Using MigrationsSqlGenerator '{nameof(SqliteCustomMigrationsSqlGenerator)}'");
+            //Console.WriteLine($"  Using MigrationsSqlGenerator '{nameof(SqliteCustomMigrationsSqlGenerator)}'");
         }
 
         protected override void Generate(MigrationOperation operation, IModel? model, MigrationCommandListBuilder builder)
@@ -53,10 +53,10 @@ namespace Binner.Data.Generators
             if (!string.IsNullOrEmpty(columnOperation.DefaultValueSql)
                 && (columnOperation.DefaultValueSql.Equals("getutcdate()", _stringComparison) || columnOperation.DefaultValueSql.Equals("getdate()", _stringComparison)))
             {
-                Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Table}.{columnOperation.Name}'");
-                Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql} ({columnOperation.ColumnType})");
+                //Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Table}.{columnOperation.Name}'");
+                //Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql} ({columnOperation.ColumnType})");
                 columnOperation.DefaultValueSql = TransformDefaultDateColumn(columnOperation.DefaultValueSql);
-                Console.WriteLine($"  New Value: {columnOperation.Table}.{columnOperation.Name}: {columnOperation.DefaultValueSql} ({columnOperation.ColumnType})");
+                //Console.WriteLine($"  New Value: {columnOperation.Table}.{columnOperation.Name}: {columnOperation.DefaultValueSql} ({columnOperation.ColumnType})");
             }
         }
 
@@ -66,8 +66,8 @@ namespace Binner.Data.Generators
             if (!string.IsNullOrEmpty(columnOperation.DefaultValueSql)
                 && (columnOperation.DefaultValueSql.Equals("getutcdate()", _stringComparison) || columnOperation.DefaultValueSql.Equals("getdate()", _stringComparison)))
             {
-                Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Table}.{columnOperation.Name}'");
-                Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql} ({columnOperation.ColumnType})");
+                //Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Table}.{columnOperation.Name}'");
+                //Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql} ({columnOperation.ColumnType})");
                 //columnOperation.DefaultValueSql = TransformDefaultDateColumn(columnOperation.DefaultValueSql);
                 // Sqlite has an annoying inability to add a default datetime if the table is not empty.
                 // "Cannot add a column with non-constant default"
@@ -76,10 +76,10 @@ namespace Binner.Data.Generators
                 columnOperation.DefaultValueSql = null;
                 columnOperation.DefaultValue = $"{DateTime.UtcNow:s}Z";
                 columnOperation.ColumnType = "datetime";
-                Console.WriteLine($"  New Value: {columnOperation.Table}.{columnOperation.Name}: {columnOperation.DefaultValue} ({columnOperation.ColumnType})");
+                //Console.WriteLine($"  New Value: {columnOperation.Table}.{columnOperation.Name}: {columnOperation.DefaultValue} ({columnOperation.ColumnType})");
             }else if (columnOperation.Name.Contains("Date") && columnOperation.ColumnType == "TEXT")
             {
-                Console.WriteLine($"  Changed Type of: {columnOperation.Table}.{columnOperation.Name}: ({columnOperation.ColumnType}) to datetime");
+                //Console.WriteLine($"  Changed Type of: {columnOperation.Table}.{columnOperation.Name}: ({columnOperation.ColumnType}) to datetime");
                 columnOperation.ColumnType = "datetime";
             }
         }

@@ -23,7 +23,7 @@ namespace Binner.Data.Generators
         public PostgresqlCustomMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, INpgsqlSingletonOptions options)
             : base(dependencies, options)
         {
-            Console.WriteLine($"  Using MigrationsSqlGenerator '{nameof(PostgresqlCustomMigrationsSqlGenerator)}'");
+            //Console.WriteLine($"  Using MigrationsSqlGenerator '{nameof(PostgresqlCustomMigrationsSqlGenerator)}'");
         }
 
         protected override void Generate(MigrationOperation operation, IModel? model, MigrationCommandListBuilder builder)
@@ -49,10 +49,10 @@ namespace Binner.Data.Generators
             if (!string.IsNullOrEmpty(columnOperation.DefaultValueSql)
                 && (columnOperation.DefaultValueSql.Equals("getutcdate()", _stringComparison) || columnOperation.DefaultValueSql.Equals("getdate()", _stringComparison)))
             {
-                Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Name}'");
-                Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
+                //Console.WriteLine($"   ===== Overriding default date format on '{columnOperation.Name}'");
+                //Console.WriteLine($"  Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
                 columnOperation.DefaultValueSql = TransformDefaultDateColumn(columnOperation.DefaultValueSql);
-                Console.WriteLine($"  New Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
+                //Console.WriteLine($"  New Value: {columnOperation.Name}: {columnOperation.DefaultValueSql}");
             }
         }
 

@@ -19,6 +19,9 @@
         public static string StorageProviderPort = "BINNER_DB_PORT";
         public static string StorageProviderUsername = "BINNER_DB_USERNAME";
         public static string StorageProviderPassword = "BINNER_DB_PASSWORD";
+        public static string StorageProviderSslMode = "BINNER_DB_SSLMODE";
+        public static string StorageProviderAdditionalParameters = "BINNER_DB_ADDITIONALPARAMETERS";
+        public static string StorageProviderConnectionString = "BINNER_DB_CONNECTIONSTRING";
 
         /// <summary>
         /// Inject configuration from environment variables, if exists
@@ -42,6 +45,15 @@
             var dbPassword = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderPassword);
             if (!string.IsNullOrEmpty(dbPassword))
                 storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderPassword] = dbPassword;
+            var dbSslMode = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderSslMode);
+            if (!string.IsNullOrEmpty(dbSslMode))
+                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderSslMode] = dbSslMode;
+            var dbAdditionalParameters = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderAdditionalParameters);
+            if (!string.IsNullOrEmpty(dbAdditionalParameters))
+                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderAdditionalParameters] = dbAdditionalParameters;
+            var dbConnectionString = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderConnectionString);
+            if (!string.IsNullOrEmpty(dbConnectionString))
+                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderConnectionString] = dbConnectionString;
         }
     }
 }

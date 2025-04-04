@@ -31,7 +31,7 @@ namespace Binner.Web.Middleware
         {
             context.Response.OnStarting(state =>
             {
-                context.Response.Headers.Add("X-Version", $"{_buildVersion.ToString(3)}");
+                context.Response.Headers.Append("X-Version", $"{_buildVersion.ToString(3)}");
                 return Task.CompletedTask;
             }, context);
 
