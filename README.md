@@ -42,7 +42,13 @@ Binner is a free open-source parts inventory tracking system you can run locally
 
 ## Installation
 
-Binner is a cross-platform distribution and runs on Windows, Raspberry Pi OS, Ubuntu and more!
+Binner is a cross-platform distribution and runs on Windows, Raspberry Pi OS, Ubuntu, Docker and more!
+
+### Installation on Docker
+
+Pull the latest Docker image and run an instance using `docker run --name Binner -d binnerofficial/binner:latest`.
+
+Docker is best configured using `docker compose`. Full Docker installation details available at [Docker Hub](https://hub.docker.com/r/binnerofficial/binner) or the [official wiki](https://github.com/replaysMike/Binner/wiki/Docker).
 
 ### Installation on Windows
 
