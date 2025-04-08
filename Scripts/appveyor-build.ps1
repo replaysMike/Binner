@@ -58,9 +58,6 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   $sw = [Diagnostics.Stopwatch]::StartNew()
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.key
-    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.crt
-    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -89,7 +86,6 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -101,7 +97,6 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -113,7 +108,6 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -125,7 +119,6 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
     dotnet publish $project -r $buildEnv -c $releaseConfiguration --self-contained --property WarningLevel=0
     if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
     robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\ClientApp\build /s
-    Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
   $sw.Stop()
   $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 }
@@ -145,6 +138,8 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
   if (!$?) { exit -1  }
   Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\db
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\logs
 }
 
 $buildEnv = "linux-arm"
@@ -154,6 +149,8 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
   if (!$?) { exit -1  }
   Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\db
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\logs
 }
 
 $buildEnv = "linux-arm64"
@@ -163,6 +160,8 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
   if (!$?) { exit -1  }
   Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\db
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\logs
 }
 
 $buildEnv = "osx-x64"
@@ -173,6 +172,8 @@ if ($env:BUILDTARGETS.Contains("#$buildEnv#")) {
   if (!$?) { exit -1  }
   Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
   if (!$?) { exit -1  }
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\db
+  New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\logs
 }
 
 # build installers

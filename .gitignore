@@ -539,3 +539,5 @@ $RECYCLE.BIN/
 Binner/BinnerInstaller/BinnerSetup.exe
 Binner/Binner.Web/ClientApp/.vscode/settings.json
 *.bak
+Binner_linux-x64.tar.gz
+BinnerSetup-winx64-0.0.exe

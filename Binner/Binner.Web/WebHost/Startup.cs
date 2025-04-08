@@ -17,6 +17,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Binner.Global.Common;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace Binner.Web.WebHost
 {
@@ -122,7 +124,11 @@ namespace Binner.Web.WebHost
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            if (config.UseHttps)
+            {
+                app.UseHttpsRedirection();
+            }
+
             app.UseExceptionHandler(appError =>
             {
                 appError.Run(context =>
@@ -141,7 +147,11 @@ namespace Binner.Web.WebHost
                     return Task.CompletedTask;
                 });
             });
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp")),
+                RequestPath = ""
+            });
             app.UseSpaStaticFiles();
             app.UseRouting();
 

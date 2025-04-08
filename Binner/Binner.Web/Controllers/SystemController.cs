@@ -3,6 +3,7 @@ using Binner.Common.IO;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Global.Common;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
@@ -26,7 +27,7 @@ namespace Binner.Web.Controllers
     [Consumes(MediaTypeNames.Application.Json)]
     public class SystemController : ControllerBase
     {
-        private const string AppSettingsFilename = "appsettings.json";
+        private static readonly string _appSettingsFilename = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
         private readonly ILogger<ProjectController> _logger;
         private readonly WebHostServiceConfiguration _config;
         private readonly ISettingsService _settingsService;
@@ -92,7 +93,7 @@ namespace Binner.Web.Controllers
                 _credentialProvider.Cache.Clear(new ApiCredentialKey { UserId = user?.UserId ?? 0 });
 
                 var newConfiguration = _mapper.Map<SettingsRequest, WebHostServiceConfiguration>(request, _config);
-                _settingsService.SaveSettingsAs(newConfiguration, nameof(WebHostServiceConfiguration), AppSettingsFilename, true);
+                _settingsService.SaveSettingsAs(newConfiguration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true);
 
                 // register new configuration
                 _container.RegisterInstance(newConfiguration);

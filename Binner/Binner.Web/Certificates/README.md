@@ -1,17 +1,8 @@
 # SSL Certificates
 
-Binner ships with a self-signed certificate intended to be used for HTTPS/SSL.
-
-## Installing On
-
-### Unix environments
-
-Use the `install-certificate.sh` script provided in the root installation folder. 
-Requires the `certutil` tool which can be installed via `sudo apt-get install libnss3-tools`
-
-### Windows environments
-
-The certificate will be automatically installed when using the Windows installer.
+This is the folder to store your own custom certificates for use with HTTPS/SSL. 
+If no certificate filename is specified in the configuration (`SslCertificate`), but `UseHttps` is set to `true`, a self-signed certificate will be generated for you.
+Setting `UseHttps` to `false` will disable HTTPS and the self-signed certificate generation and you will only be able to access the website using HTTP.
 
 ## Specifying the certificate to load
 
@@ -20,6 +11,7 @@ In `appsettings.json` set the following properties in the `WebHostServiceConfigu
 ```json
 {
   "WebHostServiceConfiguration": {
+    "UseHttps": true,
     "SslCertificate": "./certificates/localhost.pfx",
     "SslCertificatePassword": "password",
   }
@@ -32,12 +24,12 @@ If you would like to specify your own certificate instead of using the default o
 
 ## Windows
 
-The following powershell script can be used to generate a new SSL certificate, or run `.\CreateCert.ps1` in an elevated (Adminstrator) shell:
+The following powershell script can be used to generate a new SSL certificate in an elevated (Adminstrator) shell:
 
 ```ps
 $cert = New-SelfSignedCertificate -DnsName @("localhost") -Subject "localhost" -FriendlyName "Binner HTTPS Certificate" -NotBefore (Get-Date) -NotAfter (Get-Date).AddYears(10) -KeyAlgorithm RSA -KeyLength 4096 -HashAlgorithm SHA256 -CertStoreLocation "cert:\LocalMachine\My"
 
-$certKeyPath = "./localhost-windows.pfx"
+$certKeyPath = "./localhost.pfx"
 $password = ConvertTo-SecureString 'password' -AsPlainText -Force
 Export-PfxCertificate -Cert $cert -FilePath $certKeyPath -Password $password
 $(Import-PfxCertificate -FilePath $certKeyPath -CertStoreLocation 'Cert:\LocalMachine\Root' -Password $password)
@@ -46,12 +38,12 @@ _[via microsoft](https://learn.microsoft.com/en-us/dotnet/core/additional-tools/
 
 ## Unix
 
-Create a config file named `localhost-unix.conf` for your certificate:
+Create a config file named `localhost.conf` for your certificate:
 
 ```conf
 [req]
 default_bits       = 4096
-default_keyfile    = localhost-unix.key
+default_keyfile    = localhost.key
 distinguished_name = req_distinguished_name
 req_extensions     = req_ext
 x509_extensions    = v3_ca
@@ -84,22 +76,22 @@ DNS.2   = 127.0.0.1
 
 Run the following commands using openssl to create a self-signed certificate:
 ```sh
-sudo openssl req -x509 -nodes -newkey rsa:4096 -keyout localhost-unix.key -out localhost-unix.crt -sha256 -config localhost-unix.conf -passin "pass:password" -days 3650
+sudo openssl req -x509 -nodes -newkey rsa:4096 -keyout localhost.key -out localhost.crt -sha256 -config localhost.conf -passin "pass:password" -days 3650
 ```
 
 *Note:* _When running the export command above, be sure to enter your password when it prompts for an export password._
 ```sh
-sudo openssl pkcs12 -export -inkey localhost-unix.key -in localhost-unix.crt -out localhost-unix.pfx
+sudo openssl pkcs12 -export -inkey localhost.key -in localhost.crt -out localhost.pfx
 ```
 
 To test if the certificate password is correct, run the following and enter the password `password` when asked:
 ```sh
-sudo openssl rsa -noout -in localhost-unix.pfx
+sudo openssl rsa -noout -in localhost.pfx
 ```
 
 If successful, no error will be displayed. If it's unsuccessful you will see an error message such as:
 ```
-Could not read private key from localhost-unix.pfx
+Could not read private key from localhost.pfx
 40770C82157F0000:error:16000071:STORE routines:try_pkcs12:error verifying pkcs12 mac:../crypto/store/store_result.c:584:empty password
 ```
 
@@ -111,7 +103,7 @@ sudo apt-get install libnss3-tools
 
 Run the following command to add the certificate to your trusted CA root store:
 ```sh
-certutil -d sql:$HOME/.pki/nssdb -A -t "P,," -n "localhost" -i localhost-unix.crt
+certutil -d sql:$HOME/.pki/nssdb -A -t "P,," -n "localhost" -i localhost.crt
 ```
 
 Confirm the certificate was added as a trusted certificate:

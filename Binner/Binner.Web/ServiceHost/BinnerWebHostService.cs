@@ -1,9 +1,11 @@
 ﻿using Binner.Common;
 using Binner.Common.Configuration;
 using Binner.Common.Extensions;
+using Binner.Common.Security;
+using Binner.Common.Services;
 using Binner.Common.StorageProviders;
 using Binner.Data;
-using Binner.Model.Common;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Web.Configuration;
 using Binner.Web.WebHost;
@@ -34,10 +36,9 @@ namespace Binner.Web.ServiceHost
     [DisplayName("Binner")]
     public partial class BinnerWebHostService : IHostService, IDisposable
     {
-        const string ConfigFile = "appsettings.json";
-        private const string CertificatePassword = "password";
-        const string LogManagerConfigFile = "nlog.config"; // TODO: Inject from appsettings
-        private static readonly string _logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
+        private static readonly string _configFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
+        private static readonly string _logManagerConfigFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.NlogConfig, AppConstants.NLogConfig);
+        private static readonly string _logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _logManagerConfigFile);
         private static readonly Logger _nlogLogger = NLog.Web.NLogBuilder.ConfigureNLog(_logFile).GetCurrentClassLogger();
 
         private bool _isDisposed;
@@ -88,11 +89,11 @@ namespace Binner.Web.ServiceHost
         {
             // run without awaiting to avoid service startup delays, and allow the service to shutdown cleanly
             var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
-            var configFile = Path.Combine(configPath, ConfigFile);
+            var configFile = Path.Combine(configPath, _configFile);
             var configuration = Config.GetConfiguration(configFile);
             _nlogLogger.Info($"Loading configuration at {configFile}");
             _config = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>() ??
-                      throw new BinnerConfigurationException($"Configuration section '{nameof(WebHostServiceConfiguration)}' does not exist!");
+                      throw new BinnerConfigurationException($"Configuration section '{nameof(WebHostServiceConfiguration)}' does not exist in '{configFile}'!");
 
             var configValidator = new ConfigurationValidator(_nlogLogger);
 
@@ -106,22 +107,70 @@ namespace Binner.Web.ServiceHost
                     throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
 
             X509Certificate2? certificate = null;
-            var certFilename = Path.GetFullPath(_config.SslCertificate);
-            try
+            var certFilename = !string.IsNullOrEmpty(_config.SslCertificate) ? Path.GetFullPath(_config.SslCertificate) : string.Empty;
+            if (_config.UseHttps)
             {
-                _nlogLogger.Info($"Loading Certificate from '{certFilename}'...");
-                var result = Binner.Common.Security.CertificateLoader.LoadCertificate(certFilename, _config.SslCertificatePassword);
-                certificate = result.Certificate;
-                if (certificate != null)
+                // if the certificate file exists, try to load it
+                if (File.Exists(certFilename))
                 {
-                    _nlogLogger.Info($"{result.CertType} Certificate loaded from '{certFilename}'");
-                    _nlogLogger.Info($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
+                    try
+                    {
+                        _nlogLogger.Info($"Loading Certificate from '{certFilename}'...");
+                        var result = CertificateLoader.LoadCertificate(certFilename, _config.SslCertificatePassword);
+                        certificate = result.Certificate;
+                        if (certificate != null)
+                        {
+                            _nlogLogger.Info($"{result.CertType} Certificate loaded from '{certFilename}'");
+                            _nlogLogger.Info($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _nlogLogger.Error(ex, $"Failed to load SSL certificate at '{certFilename}'. Is the password correct?");
+                        throw;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _nlogLogger.Error(ex, "Failed to load SSL certificate.");
-                throw;
+                else
+                {
+                    // if forceHttps is enabled, but no certificate is found, generate a certificate
+                    _nlogLogger.Info("ForceHttps is enabled, no certificate specified so a self-signed certificate will be generated.");
+                    try
+                    {
+                        var selfSignedCertificate = CertificateGenerator.GenerateSelfSignedCertificate("localhost", _config.SslCertificatePassword);
+                        certificate = selfSignedCertificate.PfxCertificate;
+                        var certificateFilename = !string.IsNullOrEmpty(_config.SslCertificate) ? _config.SslCertificate : "./Certificates/localhost.pfx";
+                        var crtFilename = certificateFilename.Replace(".pfx", ".crt", StringComparison.InvariantCultureIgnoreCase);
+                        // save the crt
+                        File.AppendAllBytes(crtFilename, selfSignedCertificate.CrtByteArray);
+                        _nlogLogger.Info($"New self-signed certificate saved to '{crtFilename}'");
+                        // save the pfx
+                        File.AppendAllBytes(certificateFilename, selfSignedCertificate.PfxByteArray);
+                        _nlogLogger.Info($"New self-signed certificate saved to '{certificateFilename}'");
+
+                        // update the config with the new certificate path if it's not set
+                        if (string.IsNullOrEmpty(_config.SslCertificate))
+                        {
+                            _config.SslCertificate = certificateFilename;
+                            var settingsService = new SettingsService();
+                            settingsService.SaveSettingsAs(_config, nameof(WebHostServiceConfiguration), _configFile, true);
+                        }
+
+                        // attempt to register the certificate in the store for the given platform
+                        var storeResult = CertificateGenerator.AddCertificateToStore(_nlogLogger, certificateFilename, _config.SslCertificatePassword);
+                        if (storeResult.Result)
+                        {
+                            _nlogLogger.Info($"Registered certificate '{certificateFilename}' successfully!");
+                        }
+                        else
+                        {
+                            _nlogLogger.Error($"Failed to registered certificate '{certificateFilename}'. You will need to register the certificate manually on your platform. Error: {storeResult.Error}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _nlogLogger.Error(ex, "Failed to generate a self-signed certificate.");
+                    }
+                }
             }
 
             // storage provider config
@@ -163,12 +212,23 @@ namespace Binner.Web.ServiceHost
                 }
             }
 
-            _nlogLogger.Info($"Building the WebHost on {ipAddress}:{_config.Port} ...");
+            _nlogLogger.Info($"Building the WebHost on {(_config.UseHttps ? "https://" : "http://")}{ipAddress}:{_config.Port}...");
             var host = Microsoft.AspNetCore.WebHost
                 .CreateDefaultBuilder()
                 .ConfigureKestrel(options =>
                 {
-                    options.Listen(ipAddress, _config.Port, c => { c.UseHttps(certificate); });
+                    if (_config.UseHttps && certificate != null)
+                    {
+                        // use https
+                        Environment.SetEnvironmentVariable("ASPNETCORE_PROTOCOL", "https"); // used in the UI build to support https
+                        options.Listen(ipAddress, _config.Port, c => { c.UseHttps(certificate); });
+                    }
+                    else
+                    {
+                        // use http
+                        Environment.SetEnvironmentVariable("ASPNETCORE_PROTOCOL", "http"); // used in the UI build to support http
+                        options.Listen(ipAddress, _config.Port);
+                    }
                 })
                 .UseEnvironment(_config.Environment.ToString())
                 .UseStartup<Startup>()
@@ -203,7 +263,7 @@ namespace Binner.Web.ServiceHost
             // stop the service
             _logger.LogInformation($"WebHost stopped!");
             // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
-            _webHost.Services.GetRequiredService<IStorageProvider>()
+            _webHost.Services.GetRequiredService<Binner.Model.Common.IStorageProvider>()
                 ?.Dispose();
         }
 

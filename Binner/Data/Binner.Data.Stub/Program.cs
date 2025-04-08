@@ -27,11 +27,12 @@ var host = Host.CreateDefaultBuilder(args)
 
         webBuilder.ConfigureServices(services =>
         {
+            var configFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile(configFile)
                 .Build();
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration))
-                .Get<StorageProviderConfiguration>() ?? throw new Exception($"Error: Could not load {nameof(StorageProviderConfiguration)}!");
+                .Get<StorageProviderConfiguration>() ?? throw new Exception($"Error: Could not load {nameof(StorageProviderConfiguration)} in file '{configFile}'!");
             // inject configuration from environment variables (if set)
             EnvironmentVarConstants.SetConfigurationFromEnvironment(storageProviderConfiguration);
 

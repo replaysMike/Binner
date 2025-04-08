@@ -1,5 +1,4 @@
-﻿using Binner.Model.Integrations.Arrow;
-using System;
+﻿using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -26,7 +25,6 @@ namespace Binner.Common.Security
             {
                 var bytes = File.ReadAllBytes(certificatePath);
                 X509ContentType actualType = X509Certificate2.GetCertContentType(bytes);
-
 
                 // https://stackoverflow.com/questions/15285046/why-do-i-get-an-access-denied-error-when-creating-an-x509certificate2-object
                 return (X509CertificateLoader.LoadPkcs12(bytes, password, X509KeyStorageFlags.UserKeySet), actualType);

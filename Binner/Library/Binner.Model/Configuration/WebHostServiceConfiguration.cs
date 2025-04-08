@@ -84,7 +84,27 @@
             }
         }
 
-        private string? _sslCertificate = "./Certificates/localhost-windows.pfx";
+        private bool _useHttps = true;
+        /// <summary>
+        /// True to use https on the server
+        /// </summary>
+        public bool UseHttps
+        {
+            get
+            {
+                if (System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.UseHttps) != null)
+                {
+                    _ = bool.TryParse(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.UseHttps), out _useHttps);
+                }
+                return _useHttps;
+            }
+            set
+            {
+                _useHttps = value;
+            }
+        }
+
+        private string? _sslCertificate = "./Certificates/localhost.pfx";
         /// <summary>
         /// Path to SSL certificate
         /// </summary>

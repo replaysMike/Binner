@@ -26,7 +26,7 @@ namespace Binner.Common.Services
         public async Task<ICollection<StoredFile>> UploadFilesAsync(ICollection<UserUploadedFile> files)
         {
             if (string.IsNullOrEmpty(_configuration.UserUploadedFilesPath))
-                throw new BinnerConfigurationException($"No 'StorageProviderConfiguration.UserUploadedFilesPath' value is provided in the configuration. Please set the path you would like to store files in appsettings.json.");
+                throw new BinnerConfigurationException($"No 'StorageProviderConfiguration.UserUploadedFilesPath' value is provided in the configuration. Please set the path you would like to store files in application configuration file.");
             if (!files.Any()) return new List<StoredFile>();
 
             var userContext = _requestContext.GetUserContext();
