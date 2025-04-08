@@ -1,17 +1,13 @@
 services:
   binner:
     container_name: Binner
-    image: binnerofficial/binner:latest
+    image: binnerofficial/binner:test2
     restart: always
     environment:
+      BINNER_USEHTTPS: true
       BINNER_PORT: 8090
       BINNER_PROVIDER: Binner
-      BINNER_DB_FILENAME: ./binner.db
-      BINNER_DB_HOST:
-      BINNER_DB_PORT:
-      BINNER_DB_USERNAME:
-      BINNER_DB_PASSWORD:
-      BINNER_DB_CONNECTIONSTRING:
+      BINNER_DB_FILENAME: /data/binner.db
     build:
       dockerfile: ./Dockerfile
     expose:
@@ -19,13 +15,8 @@ services:
     ports:
       - 8090:8090
     volumes:
-      - binner-data:/data
-      - binner-certificates:/Certificates:ro
-      - binner-logs:/logs:ro
-volumes:
-  binner-data:
-    name: "Binner-Data"
-  binner-logs:
-    name: "Binner-Logs"
-  binner-certificates:
-    name: "Binner-Certificates"
+      - C:\tmp\binnertest\config:/config
+      - C:\tmp\binnertest\data:/data
+      - C:\tmp\binnertest\certificates:/certificates
+      - C:\tmp\binnertest\binner-logs:/logs
+      - C:\tmp\binnertest\userfiles:/userfiles

@@ -2,26 +2,42 @@
 {
     public static class EnvironmentVarConstants
     {
-        public static string Environment = "BINNER_ENVIRONMENT";
-        public static string Ip = "BINNER_IP";
-        public static string PublicUrl = "BINNER_PUBLICURL";
-        public static string Port = "BINNER_PORT";
-        public static string SslCertificate = "BINNER_SSLCERTIFICATE";
-        public static string SslCertificatePassword = "BINNER_SSLCERTIFICATEPASSWORD";
-        public static string ResourceSource = "BINNER_RESOURCESOURCE";
-        public static string Language = "BINNER_LANGUAGE";
-        public static string Currency = "BINNER_CURRENCY";
-        public static string LicenseKey = "BINNER_LICENSEKEY";
+        public const string Config = "BINNER_CONFIG";                                  // name of application config file, typically appsettings.json
+        public const string NlogConfig = "BINNER_NLOGCONFIG";                          // name of NLog config file, typically nlog.config
+        public const string Environment = "BINNER_ENVIRONMENT";                        // Environment variable for the application environment (Development, Production)
+        public const string Ip = "BINNER_IP";                                          // IP address to bind to, default "*"
+        public const string PublicUrl = "BINNER_PUBLICURL";                            // Public URL for the server, used for Digikey API features and serving content
+        public const string Port = "BINNER_PORT";                                      // Port to bind to, default 8090
+        public const string UseHttps = "BINNER_USEHTTPS";                              // Use HTTPS for the server, default true
+        public const string SslCertificate = "BINNER_SSLCERTIFICATE";                  //  Path to the SSL certificate file
+        public const string SslCertificatePassword = "BINNER_SSLCERTIFICATEPASSWORD";  // Password for the SSL certificate file
+        public const string ResourceSource = "BINNER_RESOURCESOURCE";                  // Hostname of the CDN used to serve static resources (datasheets, images)
+        public const string Language = "BINNER_LANGUAGE";                              // Language for the application, default "en-US"
+        public const string Currency = "BINNER_CURRENCY";                              // Currency for the application, default "USD"
+        public const string LicenseKey = "BINNER_LICENSEKEY";                          // License key for the application, used for licensing features
 
-        public static string StorageProviderName = "BINNER_DB_PROVIDER";
-        public static string StorageProviderFilename = "BINNER_DB_FILENAME";
-        public static string StorageProviderHost = "BINNER_DB_HOST";
-        public static string StorageProviderPort = "BINNER_DB_PORT";
-        public static string StorageProviderUsername = "BINNER_DB_USERNAME";
-        public static string StorageProviderPassword = "BINNER_DB_PASSWORD";
-        public static string StorageProviderSslMode = "BINNER_DB_SSLMODE";
-        public static string StorageProviderAdditionalParameters = "BINNER_DB_ADDITIONALPARAMETERS";
-        public static string StorageProviderConnectionString = "BINNER_DB_CONNECTIONSTRING";
+        public const string StorageProviderName = "BINNER_DB_PROVIDER";                // Name of the storage provider
+        public const string StorageProviderFilename = "BINNER_DB_FILENAME";            // Filename for the Sqlite storage provider
+        public const string StorageProviderHost = "BINNER_DB_HOST";                    // Hostname for the storage provider
+        public const string StorageProviderPort = "BINNER_DB_PORT";                    // Port for the storage provider
+        public const string StorageProviderUsername = "BINNER_DB_USERNAME";            // Username for the storage provider
+        public const string StorageProviderPassword = "BINNER_DB_PASSWORD";            // Password for the storage provider
+        public const string StorageProviderSslMode = "BINNER_DB_SSLMODE";              // SSL mode for the Postgresql storage provider
+        public const string StorageProviderAdditionalParameters = "BINNER_DB_ADDITIONALPARAMETERS"; // Additional parameters for the Postgresql storage provider
+        public const string StorageProviderConnectionString = "BINNER_DB_CONNECTIONSTRING";         // Connection string for the storage provider
+
+        /// <summary>
+        /// Get an environment variable. If it doesn't exist the specified default value will be returned
+        /// </summary>
+        /// <param name="envName">Name of environment variable</param>
+        /// <param name="defaultValue">Default value to return if environment variable does not exist</param>
+        /// <returns></returns>
+        public static string GetEnvOrDefault(string envName, string defaultValue)
+        {
+            if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable(envName)))
+                return System.Environment.GetEnvironmentVariable(envName) ?? defaultValue;
+            return defaultValue;
+        }
 
         /// <summary>
         /// Inject configuration from environment variables, if exists

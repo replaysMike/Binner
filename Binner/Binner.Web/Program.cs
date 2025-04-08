@@ -2,6 +2,7 @@
 using Binner.Common.Extensions;
 using Binner.Common.StorageProviders;
 using Binner.Legacy.StorageProviders;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Web.ServiceHost;
 using Microsoft.AspNetCore.Builder;
@@ -12,31 +13,52 @@ using System.Reflection;
 using System.Text;
 using Topshelf;
 using Topshelf.Runtime;
+using Topshelf.Runtime.DotNetCore;
 
 WebApplicationBuilder builder;
 WebHostServiceConfiguration? config;
+var configFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, Path.Combine(AppContext.BaseDirectory, AppConstants.AppSettings));
+if (!Directory.Exists(Path.GetDirectoryName(configFile)))
+{
+    PrintError($"Path to configuration file '{Path.GetDirectoryName(configFile)}' does not exist!");
+    Environment.Exit(ExitCodes.InvalidConfig);
+    return;
+}
+if (!File.Exists(configFile))
+{
+    PrintError($"Configuration file '{configFile}' does not exist!");
+    // if the environment is Docker and container environment is Development, wait for a minute before exiting to allow debugging of the container
+    if (File.Exists("//build_date.info") && EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Environment, "")?.Equals("Development", StringComparison.InvariantCultureIgnoreCase) == true)
+        System.Threading.Tasks.Task.Delay(60 * 1000).GetAwaiter().GetResult();
+    Environment.Exit(ExitCodes.InvalidConfig);
+    return;
+}
 try
-{    // Question : Can we use Config class to reduce the risk of error with BinnerWebHostService.InitializeWebHostAsync ?
+{
     builder = WebApplication.CreateBuilder();
-    builder.Configuration.AddEnvironmentVariables();
+    var configBasePath = Path.GetDirectoryName(Path.GetFullPath(configFile)) ?? AppContext.BaseDirectory;
+    builder.Configuration
+        .SetBasePath(configBasePath)
+        .AddJsonFile(configFile, optional: false, reloadOnChange: true)
+        .AddEnvironmentVariables();
     config = builder.Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
     if (config == null)
     {
-        PrintError($"Could not read the {nameof(WebHostServiceConfiguration)} section of your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
+        PrintError($"Could not read the {nameof(WebHostServiceConfiguration)} section of your configuration file '{configFile}'! Ensure it exists and doesn't contain formatting errors.");
         Environment.Exit(ExitCodes.InvalidConfig);
         return;
     }
 }
 catch (Exception ex)
 {
-    PrintError($"Could not read your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
+    PrintError($"Could not read your configuration file '{configFile}'! Ensure it exists and doesn't contain formatting errors.");
     PrintError($"{ex.GetType().Name}:\n    {ex.GetBaseException().Message}", "EXCEPTION:");
     Environment.Exit(ExitCodes.InvalidConfig);
     return;
 }
 PrintHeader();
 
-const string LogManagerConfigFile = "nlog.config"; // TODO: Inject from appsettings
+var LogManagerConfigFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.NlogConfig, AppConstants.NLogConfig);
 var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
 var logger = NLog.Web.NLogBuilder.ConfigureNLog(logFile).GetCurrentClassLogger();
 var displayName = typeof(BinnerWebHostService).GetDisplayName();
@@ -46,6 +68,11 @@ var serviceDescription = typeof(BinnerWebHostService).GetDescription();
 // create a service using TopShelf
 var rc = HostFactory.Run(x =>
 {
+    if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
+    {
+        x.UseEnvironmentBuilder(target => new DotNetCoreEnvironmentBuilder(target));
+    }
+
     x.AddCommandLineSwitch("dbinfo", v => PrintDbInfo());
     x.ApplyCommandLine();
 
@@ -89,7 +116,7 @@ void PrintHeader()
         Console.Write($"O/S: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
         Console.WriteLine($"  Runtime: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine($"Uri: {new Uri($"https://localhost:{config.Port}")}");
+        Console.WriteLine($"Uri: {new Uri($"{(config.UseHttps ? "https" : "http")}://localhost:{config.Port}")}");
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine();
     }
@@ -126,7 +153,7 @@ bool PrintDbInfo()
     var storageConfig = builder.Configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
     if (storageConfig == null)
     {
-        PrintError($"Could not read the {nameof(StorageProviderConfiguration)} section of your appsettings.json! Ensure it is valid json and doesn't contain formatting errors.");
+        PrintError($"Could not read the {nameof(StorageProviderConfiguration)} section of your application configuration! Ensure it is valid json and doesn't contain formatting errors.");
         Environment.Exit(ExitCodes.InvalidConfig);
     }
     // inject configuration from environment variables (if set)

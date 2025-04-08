@@ -1,5 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Legacy.StorageProviders;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using LightInject;
@@ -13,14 +14,14 @@ namespace Binner.Web.Configuration
 {
     public partial class StartupConfiguration
     {
-        const string ConfigFile = "appsettings.json";
+        private static readonly string _configFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
 
         public static IConfigurationRoot Configure(IServiceContainer container, IServiceCollection services)
         {
             //var configPath = AppDomain.CurrentDomain.BaseDirectory;
             //var configPath = Environment.CurrentDirectory;
             var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
-            var configFile = Path.Combine(configPath, ConfigFile);
+            var configFile = Path.Combine(configPath, _configFile);
             Console.WriteLine($".Net Core bundle path: {AppContext.BaseDirectory}");
             Console.WriteLine($"Config file location: {configFile}");
             var configuration = Config.GetConfiguration(configFile);

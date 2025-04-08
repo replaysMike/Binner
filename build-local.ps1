@@ -1,5 +1,6 @@
-# intended as a tool to perform local release builds instead of relying on the AppVeyor pipeline (faster)
-# notes: Only handling the Windows & Linux build targets
+# LOCAL BUILD script
+# intended as a developer tool to perform local release builds instead of relying on the AppVeyor pipeline (faster)
+# notes: Only handles the Windows & Linux build targets
 $project = ".\Binner\Binner.ReleaseBuild.sln"
 $releaseConfiguration = "Release"
 $framework = "net9.0"
@@ -33,10 +34,6 @@ robocopy .\Binner\Binner.Web\ClientApp\build .\Binner\Binner.Web\bin\$releaseCon
 
 $buildEnv = "win-x64"
 Copy-Item -Force -Path .\Binner\scripts\windows\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
-Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.key
-Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.crt
-Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-unix.pfx
-
 
 $buildEnv = "linux-x64"
 Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.Unix.Production.json -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\appsettings.json
@@ -44,7 +41,8 @@ if (!$?) { exit -1 }
 Move-Item -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.Unix.config -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\nlog.config
 if (!$?) { exit -1 }
 Copy-Item -Force -Path .\Binner\scripts\unix\* -Destination .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish
-Remove-Item .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\Certificates\localhost-windows.pfx
+New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\db
+New-Item -ItemType Directory -Force -Path .\Binner\Binner.Web\bin\$releaseConfiguration\$framework\$buildEnv\publish\logs
 
 Write-Host "Cleaning up..." -ForegroundColor Magenta
 if (Test-Path .\BinnerSetup-winx64-0.0.exe) {
@@ -63,10 +61,8 @@ Write-Host "Building installer using the following script:" -ForegroundColor cya
 Move-Item -Force -Path .\BinnerSetup-winx64-0.0.exe -Destination ..\..\
 Set-Location -Path ..\..\
 if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
-
-Write-Host "Creating artifact archives..." -ForegroundColor green
+Write-Host " - created ./BinnerSetup-winx64-0.0.exe"
 
 tar -czf Binner_linux-x64.tar.gz -C .\Binner\Binner.Web\bin\$($releaseConfiguration)\$framework\linux-x64\publish .
-# move files to dist folder
-#Move-Item -Force -Path 
+Write-Host " - created ./Binner_linux-x64.tar.gz"
 Write-Host "Done!" -ForegroundColor green

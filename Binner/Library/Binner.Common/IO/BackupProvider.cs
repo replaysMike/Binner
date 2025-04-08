@@ -1,4 +1,5 @@
 ﻿using Binner.Data;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -115,7 +116,7 @@ namespace Binner.Common.IO
                 }
 
                 // write the appsettings.json
-                var settingsFilename = "appsettings.json";
+                var settingsFilename = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
                 var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
                 var configFile = Path.Combine(configPath, settingsFilename);
                 var settingsBytes = await File.ReadAllBytesAsync(configFile);
@@ -174,11 +175,10 @@ namespace Binner.Common.IO
                 {
                     switch (file.Name)
                     {
-                        case "appsettings.json":
+                        case AppConstants.AppSettings:
                             {
-                                var settingsFilename = "appsettings.json";
                                 var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
-                                var configFile = Path.Combine(configPath, settingsFilename);
+                                var configFile = Path.Combine(configPath, AppConstants.AppSettings);
                                 await using var zipEntryStream = file.Open();
                                 using var ms = new MemoryStream();
                                 await zipEntryStream.CopyToAsync(ms);

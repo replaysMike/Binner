@@ -35,8 +35,12 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 
 const vitePort = 3000;
 const serverPort = 8090;
-const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-  env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `https://localhost:${serverPort}`;
+const protocol = env.ASPNETCORE_PROTOCOL ?? 'https'; // http or https
+const target = env.ASPNETCORE_HTTPS_PORT ? `${protocol}://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
+  env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `${protocol}://localhost:${serverPort}`;
+  
+// dump all environment variables to vite console
+//console.log('env', env);
 
 // https://vitejs.dev/config/
 export default defineConfig({
