@@ -39,24 +39,26 @@ RUN echo "$(date "+%d.%m.%Y %T") Built from Binner ${VERSION}" > /build_date.inf
 RUN useradd app
 
 RUN chown -R app /app && ls -al /app
-# create app configuration
-RUN mkdir /config && mv -vn /app/appsettings.json /config && mv -vn /app/nlog.config /config
+# create app configuration (also create a symlink at the end, because Microsoft's logger insists on it being there)
+RUN mkdir /config && mv -vn /app/appsettings.json /config && mv -vn /app/nlog.config /config && ln -s /config/appsettings.json /app/appsettings.json
 
 # create database location (Sqlite only)
-RUN mv /app/db /data
+RUN mkdir -p /data
 RUN sed -i -e 's/.\/db\/binner.db/\/data\/binner.db/g' /config/appsettings.json
 
 # create userfiles location
-RUN mv /app/UserFiles /userfiles
+RUN mkdir -p /userfiles
 RUN sed -i -e 's/.\/UserFiles/\/userfiles/g' /config/appsettings.json
 
 # create app certificates location
-RUN mv /app/Certificates /certificates
+RUN mv -vn /app/Certificates /certificates
 RUN sed -i -e 's/.\/Certificates\/localhost.pfx/\/certificates\/localhost.pfx/g' /config/appsettings.json
 
  # create a symlink for the logs
 RUN ln -s /app/logs /logs
 RUN sed -i -e 's/.\/logs\//\/logs\//g' /config/nlog.config
+
+RUN cat /config/appsettings.json
 
 RUN chown -R app /app /config /data /userfiles /certificates /logs
 

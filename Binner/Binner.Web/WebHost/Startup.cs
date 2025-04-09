@@ -1,4 +1,5 @@
 ﻿using Binner.Data;
+using Binner.Global.Common;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Binner.Web.Authorization;
@@ -13,12 +14,14 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog.Web;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Binner.Global.Common;
-using Microsoft.Extensions.FileProviders;
-using System.IO;
 
 namespace Binner.Web.WebHost
 {
@@ -95,6 +98,16 @@ namespace Binner.Web.WebHost
                 });
             });
 
+            services.AddLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConfiguration(configuration);
+                logging.AddEventSourceLogger();
+                //if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                    //logging.AddConsole();
+                logging.AddNLogWeb();
+            });
+
             StartupConfiguration.ConfigureIoC(Container, services);
             var provider = Container.CreateServiceProvider(services);
 
@@ -108,14 +121,12 @@ namespace Binner.Web.WebHost
         {
             var config = app.ApplicationServices.GetRequiredService<WebHostServiceConfiguration>();
             if (config == null) throw new InvalidOperationException("Could not retrieve WebHostServiceConfiguration, configuration file may be invalid!");
-            Console.WriteLine($"ENVIRONMENT NAME: {config.Environment}");
 
             app.UseForwardedHeaders();
-
             // add build version to the response headers
             app.UseVersionHeader();
 
-            if (config.Environment == Environments.Development)
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -134,7 +145,8 @@ namespace Binner.Web.WebHost
                 appError.Run(context =>
                 {
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
-                    if (contextFeature != null) { 
+                    if (contextFeature != null)
+                    {
                         Console.WriteLine($"Application Error: {contextFeature.Endpoint}");
                         Console.WriteLine($"  Exception: {contextFeature.Error.GetType().Name} {contextFeature.Error.Message}");
                         if (contextFeature.Error.InnerException != null)
@@ -164,7 +176,8 @@ namespace Binner.Web.WebHost
                 config.Options.SourcePath = "ClientApp";
             });
 
-            app.UseEndpoints(endpoints => {
+            app.UseEndpoints(endpoints =>
+            {
                 endpoints.MapControllers();
                 endpoints.MapControllerRoute(
                     name: "default",

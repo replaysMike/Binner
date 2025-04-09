@@ -7,6 +7,7 @@ using Binner.Model.Configuration;
 using Binner.Web.ServiceHost;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Reflection;
@@ -15,8 +16,8 @@ using Topshelf;
 using Topshelf.Runtime;
 using Topshelf.Runtime.DotNetCore;
 
-WebApplicationBuilder builder;
-WebHostServiceConfiguration? config;
+IConfigurationRoot configRoot;
+WebHostServiceConfiguration? webHostConfig;
 var configFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, Path.Combine(AppContext.BaseDirectory, AppConstants.AppSettings));
 if (!Directory.Exists(Path.GetDirectoryName(configFile)))
 {
@@ -35,14 +36,15 @@ if (!File.Exists(configFile))
 }
 try
 {
-    builder = WebApplication.CreateBuilder();
     var configBasePath = Path.GetDirectoryName(Path.GetFullPath(configFile)) ?? AppContext.BaseDirectory;
-    builder.Configuration
+    var configBuilder = new ConfigurationBuilder()
         .SetBasePath(configBasePath)
         .AddJsonFile(configFile, optional: false, reloadOnChange: true)
         .AddEnvironmentVariables();
-    config = builder.Configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
-    if (config == null)
+    configRoot = configBuilder.Build();
+    
+    webHostConfig = configRoot.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
+    if (webHostConfig == null)
     {
         PrintError($"Could not read the {nameof(WebHostServiceConfiguration)} section of your configuration file '{configFile}'! Ensure it exists and doesn't contain formatting errors.");
         Environment.Exit(ExitCodes.InvalidConfig);
@@ -58,9 +60,12 @@ catch (Exception ex)
 }
 PrintHeader();
 
+// setup nlog logging
 var LogManagerConfigFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.NlogConfig, AppConstants.NLogConfig);
 var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
 var logger = NLog.Web.NLogBuilder.ConfigureNLog(logFile).GetCurrentClassLogger();
+
+// setup service info
 var displayName = typeof(BinnerWebHostService).GetDisplayName();
 var serviceName = displayName.Replace(" ", "");
 var serviceDescription = typeof(BinnerWebHostService).GetDescription();
@@ -73,7 +78,7 @@ var rc = HostFactory.Run(x =>
         x.UseEnvironmentBuilder(target => new DotNetCoreEnvironmentBuilder(target));
     }
 
-    x.AddCommandLineSwitch("dbinfo", v => PrintDbInfo());
+    x.AddCommandLineSwitch("dbinfo", v => PrintDbInfo(configRoot));
     x.ApplyCommandLine();
 
     x.Service<BinnerWebHostService>(s =>
@@ -116,7 +121,7 @@ void PrintHeader()
         Console.Write($"O/S: {System.Runtime.InteropServices.RuntimeInformation.OSDescription} ({System.Runtime.InteropServices.RuntimeInformation.OSArchitecture})");
         Console.WriteLine($"  Runtime: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine($"Uri: {new Uri($"{(config.UseHttps ? "https" : "http")}://localhost:{config.Port}")}");
+        Console.WriteLine($"Uri: {new Uri($"{(webHostConfig.UseHttps ? "https" : "http")}://localhost:{webHostConfig.Port}")}");
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine();
     }
@@ -146,11 +151,11 @@ void PrintBox(string text, ConsoleColor color = ConsoleColor.Green, ConsoleColor
     Console.ForegroundColor = ConsoleColor.Gray;
 }
 
-bool PrintDbInfo()
+bool PrintDbInfo(IConfigurationRoot configRoot)
 {
     PrintBox("   Binner database information   ", ConsoleColor.Blue, ConsoleColor.Yellow);
     Console.ForegroundColor = ConsoleColor.Gray;
-    var storageConfig = builder.Configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
+    var storageConfig = configRoot.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
     if (storageConfig == null)
     {
         PrintError($"Could not read the {nameof(StorageProviderConfiguration)} section of your application configuration! Ensure it is valid json and doesn't contain formatting errors.");
@@ -229,14 +234,12 @@ bool PrintDbInfo()
 
     PrintLabel("Server", ConsoleColor.White);
     Console.WriteLine();
-    PrintLabel("   Environment");
-    PrintValue(config.Environment);
     PrintLabel("   IP");
-    PrintValue(config.IP);
+    PrintValue(webHostConfig.IP);
     PrintLabel("   Port");
-    PrintValue(config.Port);
+    PrintValue(webHostConfig.Port);
     PrintLabel("   Uri");
-    PrintValue(new Uri($"https://localhost:{config.Port}"));
+    PrintValue(new Uri($"https://localhost:{webHostConfig.Port}"));
 
     PrintLabel("Integrations", ConsoleColor.White);
     Console.WriteLine();
@@ -244,22 +247,22 @@ bool PrintDbInfo()
     PrintLabel("   Swarm");
     Console.WriteLine();
     PrintLabel("      Enabled");
-    PrintValue(config.Integrations.Swarm.Enabled);
+    PrintValue(webHostConfig.Integrations.Swarm.Enabled);
 
     PrintLabel("   DigiKey");
     Console.WriteLine();
     PrintLabel("      Enabled");
-    PrintValue(config.Integrations.Digikey.Enabled);
+    PrintValue(webHostConfig.Integrations.Digikey.Enabled);
 
     PrintLabel("   Mouser");
     Console.WriteLine();
     PrintLabel("      Enabled");
-    PrintValue(config.Integrations.Mouser.Enabled);
+    PrintValue(webHostConfig.Integrations.Mouser.Enabled);
 
     PrintLabel("   Octopart");
     Console.WriteLine();
     PrintLabel("      Enabled");
-    PrintValue(config.Integrations.Nexar.Enabled);
+    PrintValue(webHostConfig.Integrations.Nexar.Enabled);
 
     Console.ForegroundColor = ConsoleColor.Gray;
     Environment.Exit(ExitCodes.Success);

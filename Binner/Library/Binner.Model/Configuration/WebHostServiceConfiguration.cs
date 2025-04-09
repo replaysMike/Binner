@@ -6,24 +6,6 @@
     /// <remarks>Environment variables with the same name as the property will override appsettings.json values</remarks>
     public class WebHostServiceConfiguration
     {
-        private Environments _environment;
-        /// <summary>
-        /// The application environment (Development, Production)
-        /// </summary>
-        public Environments Environment
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.Environment)))
-                    return Enum.Parse<Environments>(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.Environment) ?? "Production");
-                return _environment;
-            }
-            set
-            {
-                _environment = value;
-            }
-        }
-
         /// <summary>
         /// The server name
         /// </summary>

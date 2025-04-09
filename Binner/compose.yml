@@ -1,7 +1,7 @@
 services:
   binner:
     container_name: Binner
-    image: binnerofficial/binner:test2
+    image: binnerofficial/binner:latest
     restart: always
     environment:
       BINNER_USEHTTPS: true
@@ -15,8 +15,19 @@ services:
     ports:
       - 8090:8090
     volumes:
-      - C:\tmp\binnertest\config:/config
-      - C:\tmp\binnertest\data:/data
-      - C:\tmp\binnertest\certificates:/certificates
-      - C:\tmp\binnertest\binner-logs:/logs
-      - C:\tmp\binnertest\userfiles:/userfiles
+      - binner-config:/config
+      - binner-data:/data
+      - binner-userfiles:/userfiles
+      - binner-certificates:/certificates
+      - binner-logs:/logs
+volumes:
+  binner-config:
+    name: "Binner-Config"
+  binner-data:
+    name: "Binner-Data"
+  binner-userfiles:
+    name: "Binner-UserFiles"
+  binner-certificates:
+    name: "Binner-Certificates"
+  binner-logs:
+    name: "Binner-Logs"

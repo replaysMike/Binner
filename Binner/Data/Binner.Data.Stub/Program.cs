@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 Console.WriteLine("Binner Data Stub!");
 /**
@@ -27,6 +28,10 @@ var host = Host.CreateDefaultBuilder(args)
 
         webBuilder.ConfigureServices(services =>
         {
+            services.AddLogging(config =>
+            {
+                config.ClearProviders();
+            });
             var configFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(configFile)

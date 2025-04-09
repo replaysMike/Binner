@@ -26,6 +26,8 @@
         public const string StorageProviderAdditionalParameters = "BINNER_DB_ADDITIONALPARAMETERS"; // Additional parameters for the Postgresql storage provider
         public const string StorageProviderConnectionString = "BINNER_DB_CONNECTIONSTRING";         // Connection string for the storage provider
 
+        public const string SpaProtocol = "ASPNETCORE_PROTOCOL";                 // Specify the http protocol to use (http, https) used by SPA
+
         /// <summary>
         /// Get an environment variable. If it doesn't exist the specified default value will be returned
         /// </summary>
