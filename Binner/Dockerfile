@@ -29,10 +29,10 @@ RUN echo "Downloading Binner ${VERSION}"
 #RUN cd /app && curl -sS https://api.github.com/repos/replaysMike/Binner/releases/latest | grep "browser_download_url.*Binner_linux-x64" | cut -d : -f 2,3 | xargs wget -O Binner_linux-x64.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
 
 # download a local release
-RUN cd /app && wget -nv -O Binner_linux-x64.tar.gz http://192.168.1.183:8080/Binner_linux-x64.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
+#RUN cd /app && wget -nv -O Binner_linux-x64.tar.gz http://192.168.1.183:8080/Binner_linux-x64.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
 
 # download a specified release
-#RUN cd /app && wget -nv -O Binner_linux-x64.tar.gz https://github.com/replaysMike/Binner/releases/download/v${VERSION}/Binner_linux-x64-${VERSION}.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
+RUN cd /app && wget -nv -O Binner_linux-x64.tar.gz https://github.com/replaysMike/Binner/releases/download/v${VERSION}/Binner_linux-x64-${VERSION}.tar.gz && tar zxfp ./Binner_linux-x64.tar.gz && chmod +x ./Binner.Web && chmod +x ./install-as-service.sh && chmod +x ./install-certificate.sh
 
 RUN echo "$(date "+%d.%m.%Y %T") Built from Binner ${VERSION}" > /build_date.info # buildkit
 
