@@ -44,9 +44,8 @@ const target = env.ASPNETCORE_HTTPS_PORT ? `${protocol}://localhost:${env.ASPNET
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '',
+  base: '/',
   plugins: [
-    //react(),
     plugin()
   ],
   resolve: {

@@ -19,6 +19,7 @@ import "./custom.css";
 import "./bootstrap.css"; /* needed for the carousel control */
 
 // pages
+import { NotFound } from "./pages/NotFound";
 import { AccessDenied } from "./pages/AccessDenied";
 import { Account } from "./pages/Account";
 import { Home } from "./pages/Home";
@@ -158,52 +159,55 @@ export const App = (props) => {
 
   return (
     <div>
-      <Layout>
         <Routes>
-          <Route exact path="/" element={<PageWrapper><Home /></PageWrapper>} />
-          <Route exact path="/accessdenied" element={<PageWrapper><AccessDenied /></PageWrapper>} />
-          <Route exact path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-          <Route exact path="/account" element={<PageWrapper><Account /></PageWrapper>} />
-          <Route exact path="/inventory/add/:partNumberToAdd" element={<PageWrapper><Inventory /></PageWrapper>} />
-          <Route exact path="/inventory/add" element={<PageWrapper><Inventory /></PageWrapper>} />
-          <Route exact path="/inventory/:partNumber" element={<PageWrapper><Inventory /></PageWrapper>} />
-          <Route exact path="/inventory" element={<PageWrapper><Search /></PageWrapper>} />
-          <Route exact path="/project/:project" element={<PageWrapper><Project /></PageWrapper>} />
-          <Route exact path="/bom/:project" element={<PageWrapper><Bom /></PageWrapper>} />
-          <Route exact path="/bom" element={<PageWrapper><Boms /></PageWrapper>} />
-          <Route path="/datasheets" element={<PageWrapper><Datasheets /></PageWrapper>} />
-          <Route path="/lowstock" element={<PageWrapper><LowInventory /></PageWrapper>} />
-          <Route path="/import" element={<PageWrapper><OrderImport /></PageWrapper>} />
-          <Route path="/partTypes" element={<PageWrapper><PartTypes /></PageWrapper>} />
-          <Route path="/projects" element={<PageWrapper><Bom /></PageWrapper>} />
-          <Route path="/exportData" element={<PageWrapper><ExportData /></PageWrapper>} />
-          <Route path="/printing" element={<PageWrapper><Printing /></PageWrapper>} />
-          <Route path="/printing/printLabels" element={<PageWrapper><PrintLabels /></PageWrapper>} />
-          <Route path="/printing/labelTemplates" element={<PageWrapper><PrintLabels2 /></PageWrapper>} />
-          <Route path="/printing/bulkPrint" element={<PageWrapper><BulkPrint /></PageWrapper>} />
-          <Route exact path="/tools" element={<PageWrapper><Tools /></PageWrapper>} />
-          <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
-          <Route path="/tools/ohmslaw" element={<PageWrapper><OhmsLawCalculator /></PageWrapper>} />
-          <Route path="/tools/resistor" element={<PageWrapper><ResistorColorCodeCalculator /></PageWrapper>} />
-          <Route path="/tools/smdresistor" element={<PageWrapper><SmdResistorCodeCalculator /></PageWrapper>} />          
-          <Route path="/tools/voltagedivider" element={<PageWrapper><VoltageDividerCalculator /></PageWrapper>} />
-          <Route path="/tools/barcodescanner" element={<PageWrapper><BarcodeScanner /></PageWrapper>} />
-          <Route exact path="/help" element={<PageWrapper><Help /></PageWrapper>} />
-          <Route path="/help/scanning" element={<PageWrapper><Scanning /></PageWrapper>} />
-          <Route path="/help/api-integrations" element={<PageWrapper><ApiIntegrations /></PageWrapper>} />
-          <Route path="/help/bom" element={<PageWrapper><BOM /></PageWrapper>} />
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="accessdenied" element={<AccessDenied />} />
+            <Route path="login" element={<Login />} />
+            <Route path="account" element={<Account />} />
+            <Route path="inventory/:partNumber" element={<Inventory />} />
+            <Route path="inventory/add/:partNumberToAdd?" element={<Inventory />} />
+            <Route path="inventory" element={<Search />} />
+            <Route path="project/:project" element={<Project />} />
+            <Route path="bom" element={<Boms />} />
+            <Route path="bom/:project" element={<Bom />} />
+            <Route path="datasheets" element={<Datasheets />} />
+            <Route path="lowstock" element={<LowInventory />} />
+            <Route path="import" element={<OrderImport />} />
+            <Route path="partTypes" element={<PartTypes />} />
+            <Route path="projects" element={<Bom />} />
+            <Route path="exportData" element={<ExportData />} />
+            <Route path="printing" element={<Printing />} />
+            <Route path="printing/printLabels" element={<PrintLabels />} />
+            <Route path="printing/labelTemplates" element={<PrintLabels2 />} />
+            <Route path="printing/bulkPrint" element={<BulkPrint />} />
 
-          {/* admin */}
+            <Route path="tools" element={<Tools />} />
+            <Route path="tools/ohmslaw" element={<OhmsLawCalculator />} />
+            <Route path="tools/resistor" element={<ResistorColorCodeCalculator />} />
+            <Route path="tools/smdresistor" element={<SmdResistorCodeCalculator />} />          
+            <Route path="tools/voltagedivider" element={<VoltageDividerCalculator />} />
+            <Route path="tools/barcodescanner" element={<BarcodeScanner />} />
 
-          <Route path="/admin" element={<AdminWrapper><Admin /></AdminWrapper>} />
-          <Route path="/admin/users" element={<AdminWrapper><Users /></AdminWrapper>} />
-          <Route exact path="/admin/users/:userId" element={<AdminWrapper><User /></AdminWrapper>} />
-          <Route path="/admin/backup" element={<AdminWrapper><Backup /></AdminWrapper>} />
-          <Route path="/admin/info" element={<AdminWrapper><SystemInformation /></AdminWrapper>} />
-          <Route path="/admin/updateParts" element={<AdminWrapper><UpdateParts /></AdminWrapper>} />
-          <Route path="/admin/activateLicense" element={<AdminWrapper><ActivateLicense /></AdminWrapper>} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="help" element={<Help />} />
+            <Route path="help/scanning" element={<Scanning />} />
+            <Route path="help/api-integrations" element={<ApiIntegrations />} />
+            <Route path="help/bom" element={<BOM />} />
+
+            {/* admin */}
+
+            <Route path="admin" element={<AdminWrapper><Admin /></AdminWrapper>} />
+            <Route path="admin/users" element={<AdminWrapper><Users /></AdminWrapper>} />
+            <Route path="admin/users/:userId" element={<AdminWrapper><User /></AdminWrapper>} />
+            <Route path="admin/backup" element={<AdminWrapper><Backup /></AdminWrapper>} />
+            <Route path="admin/info" element={<AdminWrapper><SystemInformation /></AdminWrapper>} />
+            <Route path="admin/updateParts" element={<AdminWrapper><UpdateParts /></AdminWrapper>} />
+            <Route path="admin/activateLicense" element={<AdminWrapper><ActivateLicense /></AdminWrapper>} />
+
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
-      </Layout>
       <ErrorModal context={error} />
       <LicenseErrorModal context={licenseError} />
     </div>

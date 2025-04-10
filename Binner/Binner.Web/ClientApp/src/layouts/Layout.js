@@ -5,6 +5,7 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import customEvents from '../common/customEvents';
 import 'react-toastify/dist/ReactToastify.css';
+import { Outlet } from "react-router-dom";
 
 export function Layout(props) {
   const { t } = useTranslation('en');
@@ -24,7 +25,7 @@ export function Layout(props) {
       <div id="banner" />
       <Container>
         <Header />
-        {props.children}
+        <Outlet />
         <Footer />
       </Container>
       <div className={`promo ${window.avatar ? 'masked' : ''}`}>
