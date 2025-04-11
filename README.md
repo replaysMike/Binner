@@ -1,6 +1,6 @@
 # Binner
 [![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg?logo=github)](https://GitHub.com/replaysMike/Binner/releases/)
-![Docker Image Version](https://img.shields.io/docker/v/binnerofficial/binner?logo=docker)
+[![Docker Image Version](https://img.shields.io/docker/v/binnerofficial/binner?logo=docker)](https://hub.docker.com/r/binnerofficial/binner)
 [![Github all releases](https://img.shields.io/github/downloads/replaysMike/Binner/total.svg)](https://GitHub.com/replaysMike/Binner/releases/)
 [![GitHub commits](https://img.shields.io/github/commits-since/replaysMike/Binner/v1.0.1.svg)](https://GitHub.com/replaysMike/Binner/commit/)
 [![GitHub contributors](https://img.shields.io/github/contributors/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/graphs/contributors/)
