@@ -1,5 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.Extensions;
+using Binner.Common.IO;
 using Binner.Common.StorageProviders;
 using Binner.Legacy.StorageProviders;
 using Binner.Model;
@@ -64,6 +65,14 @@ PrintHeader();
 var LogManagerConfigFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.NlogConfig, AppConstants.NLogConfig);
 var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
 var logger = NLog.Web.NLogBuilder.ConfigureNLog(logFile).GetCurrentClassLogger();
+
+// check if port is in use before proceeding
+if (Ports.IsPortInUse(webHostConfig.Port))
+{
+    PrintError($"The port '{webHostConfig.Port}' is currently in use.");
+    Environment.Exit(ExitCodes.PortInUse);
+    return;
+}
 
 // setup service info
 var displayName = typeof(BinnerWebHostService).GetDisplayName();
