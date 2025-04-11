@@ -92,7 +92,8 @@
       "notEnoughPartsToProduceBom": "You do not have enough parts to produce your entire BOM.",
       "noPartsAssigned": "Assign parts to get a count of how many times you can produce this PCB.",
       "pcbProduceCount": "You can produce this PCB <1>{{count}}</1> times with your current inventory.",
-      "bomProduceCount": "You can produce your entire BOM <1>{{count}}</1> times with your current inventory.",
+      "maxPcbProduceCount": "You can produce <1>{{count}}</1> PCB(s) with your current inventory.",
+      "maxBomPcbProduceCount": "You can produce your entire BOM <1>{{count}}</1> times with your current inventory.",
       "lowestPcb": "<0>{{name}}</0> is the lowest on inventory."
     },
     "boms": {
@@ -685,6 +686,7 @@
     "cadModels": "CAD Models",
     "addAnyway": "Add Anyway",
     "move": "Move",
+    "moveTo": "Move to",
     "select": "Select"
   },
   "label": {
@@ -704,6 +706,7 @@
     "outOfStock": "Out of Stock",
     "totalParts": "Total Parts",
     "producible": "Producible",
+    "pcbProducible": "PCB(s) Producible",
     "part": "Part", 
     "partNumber": "Part Number",
     "partNumberShort": "Part#",

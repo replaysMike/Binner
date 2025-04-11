@@ -92,7 +92,8 @@
       "notEnoughPartsToProduceBom": "BOM'unuzun tamamını üretmeye yetecek kadar parçanız yok.",
       "noPartsAssigned": "Bu PCB'yi kaç kez üretebileceğinizi öğrenmek için parçaları atayın.",
       "pcbProduceCount": "Mevcut envanterinizle bu PCB'yi <1>{{count}}</1> kez üretebilirsiniz.",
-      "bomProduceCount": "Mevcut envanterinizle ürün reçetenizin tamamını <1>{{count}></1> kez üretebilirsiniz.",
+      "maxPcbProduceCount": "Mevcut envanterinizle <1>{{count}}</1> PCB üretebilirsiniz.",
+      "maxBomPcbProduceCount": "Mevcut envanterinizle BOM'unuzun tamamını <1>{{count}}</1> kez üretebilirsiniz.",
       "lowestPcb": "<0>{{name}}</0>, envanterdeki en düşük değerdir."
     },
     "boms": {
@@ -684,7 +685,8 @@
     "compliance": "Uyumluluk",
     "cadModels": "CAD Modelleri",
     "addAnyway": "Yine de Ekle",
-    "move": "hareket",
+    "move": "Hareket",
+    "moveTo": "Şuraya taşı:",
     "select": "Seç"
   },
   "label": {
@@ -704,6 +706,7 @@
     "outOfStock": "Stokta Yok",
     "totalParts": "Toplam Parçalar",
     "producible": "Üretilebilir",
+    "pcbProducible": "PCB(s) Üretilebilir",
     "part": "Bölüm",
     "partNumber": "Parça Numarası",
     "partNumberShort": "Parça#",
