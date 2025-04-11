@@ -93,7 +93,8 @@
       "notEnoughPartsToProduceBom": "Sie haben nicht genügend Bauteile, um Ihre Stückliste zu komplettieren.",
       "noPartsAssigned": "Weisen Sie Bauteile zu, um zu ermitteln wie oft Sie diese Leiterplatte herstellen können.",
       "pcbProduceCount": "Sie können diese Leiterplatte <1>{{count}}</1> mal mit Ihrem aktuellen Lagerbestand herstellen.",
-      "bomProduceCount": "Sie können diese Stückliste <1>{{count}}</1> mal mit Ihrem aktuellen Lagerbestand herstellen.",
+      "maxPcbProduceCount": "You can produce <1>{{count}}</1> PCB(s) with your current inventory.",
+      "maxBomPcbProduceCount": "You can produce your entire BOM <1>{{count}}</1> times with your current inventory.",
       "lowestPcb": "Die <0>{{name}}</0> hat den niedrigsten Lagerbestand."
     },
     "boms": {
@@ -683,6 +684,7 @@
     "cadModels": "CAD Modell",
     "addAnyway": "Trotzdem hinzufügen",
     "move": "Bewegen",
+    "moveTo": "Move to",
     "select": "Wählen"
   },
   "label": {
@@ -702,6 +704,7 @@
     "outOfStock": "Nicht auf Lager",
     "totalParts": "Gesamtanzahl an Bauteilen",
     "producible": "Produzierbar",
+    "pcbProducible": "PCB(s) Producible",
     "part": "Bauteil", 
     "partNumber": "Teilenummer",
     "partNumberShort": "Teilenummer kürzel",

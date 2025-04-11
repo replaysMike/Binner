@@ -84,7 +84,8 @@
       "notEnoughPartsToProduceBom": "物料数量不足，无法生产全套BOM。",
       "noPartsAssigned": "请为PCB板设定所需物料明细，以便计算可生产套数。",
       "pcbProduceCount": "当前库存最多可生产<1>{{count}}</1>套。",
-      "bomProduceCount": "当前库存最多可生产<1>{{count}}</1>套完整BOM套件。",
+      "maxPcbProduceCount": "您可以使用当前库存生产<1>{{count}}</1>块 PCB。",
+      "maxBomPcbProduceCount": "您可以使用当前库存生产整个 BOM<1>{{count}}</1>次。",
       "lowestPcb": "受库存限制，<0>{{name}}</0>的预估能组装生产的件数最少。"
     },
     "boms": {

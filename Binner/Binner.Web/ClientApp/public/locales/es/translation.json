@@ -18,11 +18,13 @@
       "parts": "Parts",
       "uniqueParts": "Unique Parts",
       "value": "Value",
-      "projects": "BOM Projects"
+      "projects": "BOM Projects",
+      "admin": "Admin"
     },
     "search": {
       "title":"Inventory",
-      "search":"Search"
+      "search":"Search",
+      "searchNotFound": "No resuts found in inventory. Do you want to <1>Add</1> it?"
     },
     "inventory": {
       "addtitle": "Add Inventory",
@@ -42,6 +44,7 @@
       "addKeyword": "Add Keyword",
       "chooseAlternatePart": "Choose alternate part ({{count}})",
       "suggestedPart": "Suggested part number",
+      "partExists": "This <1>part</1> <3>already exists</3> in your inventory.",
       "placeholder": {
         "location": "Home lab",
         "keywords": "op amp",
@@ -62,7 +65,13 @@
         "alternateParts": "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.",
         "mustAddPart": "You must save the part before adding custom suppliers to it.",
         "addSupplier": "Add a manual supplier entry",
-        "deleteLocalFile": "Delete this local file"
+        "deleteLocalFile": "Delete this local file",
+        "technicalSpecs": "View technical specs",
+        "compliance": "View compliance information",
+        "cadModels": "View CAD Models available for this part",
+        "symbolName": "Associate a KiCad symbol name with this part",
+        "footprintName": "Associate a KiCad footprint name with this part",
+        "extensionValue": "Associate a custom value with this part"
       }
     },
     "lowInventory": {
@@ -83,7 +92,8 @@
       "notEnoughPartsToProduceBom": "You do not have enough parts to produce your entire BOM.",
       "noPartsAssigned": "Assign parts to get a count of how many times you can produce this PCB.",
       "pcbProduceCount": "You can produce this PCB <1>{{count}}</1> times with your current inventory.",
-      "bomProduceCount": "You can produce your entire BOM <1>{{count}}</1> times with your current inventory.",
+      "maxPcbProduceCount": "You can produce <1>{{count}}</1> PCB(s) with your current inventory.",
+      "maxBomPcbProduceCount": "You can produce your entire BOM <1>{{count}}</1> times with your current inventory.",
       "lowestPcb": "<0>{{name}}</0> is the lowest on inventory."
     },
     "boms": {
@@ -93,7 +103,11 @@
     },
     "partTypes": {
       "title": "Part Types",
-      "description": "Part Types allow you to separate your parts by type. <1>Parent</1> types allow for unlimited part type hierarchy.<3 />For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC."
+      "description": "Part Types allow you to separate your parts by type. <1>Parent</1> types allow for unlimited part type hierarchy.<3 />For example: OpAmps may be a sub-type of IC's, so OpAmp's parent type is IC.",
+      "rename": "Rename Part Type",
+      "edit": "Edit Part Type",
+      "partCount": "The number of parts in this category",
+      "viewParts": "View Parts"
     },
     "exportData": {
       "title": "Import/Export Data",
@@ -104,7 +118,15 @@
       "totalRowsImported": "Total Rows Imported",
       "totalProjectsImported": "Projects Imported",
       "totalPartTypesImported": "Part Types Imported",
-      "totalPartsImported": "Parts Imported"
+      "totalPartsImported": "Parts Imported",
+      "noFilesSelected": "No files selected for upload!",
+      "importUploadFailed": "Import upload failed!",
+      "importFailed": "Failed to import data.",
+      "importSuccess": "Data imported successfully!",
+      "exportFailed": "Export data failed!",
+      "exportSuccess": "Data exported successfully!",
+      "fileNotSupported": "File '{{name}}' with mime type '{{type}}' is not an accepted image type!",
+      "chooseFormat": "Choose a format"
     },
     "tools": {
       "title": "Tools",
@@ -156,6 +178,13 @@
       "partLabelTemplateDescription": "Part labels are printed according to this template.",
       "lineX": "Line {{number}}",
       "identifierX": "Identifier {{number}}",
+      "barcodeConfiguration": "Barcode Configuration",
+      "barcodeSupport": "Barcode Support",
+      "barcodeProfile": "Barcode Profile",
+      "isBarcodeDebug": "Debug Mode",
+      "bufferTime": "Buffer Time (ms)",
+      "prefix2d": "2D Barcode Prefix",
+      "maxKeystrokeThresholdMs": "Max Keystroke Threshold (ms)",
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
         "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
@@ -182,11 +211,28 @@
         "octopartClientSecret": "Your Client Secret for Octopart/Nexar.",
         "printerPrinterName": "Your printer name as it appears in Windows, or CUPS (Unix).",
         "printerPartLabelSource": "The label paper source to use.",
-        "partLabelName": "The name of the label model installed in your printer. This will be specific to your printer, and must be defined in your appsettings.json under <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>"
+        "partLabelName": "The name of the label model installed in your printer. This will be specific to your printer, and must be defined in your appsettings.json under <1>WebHostServiceConfiguration.PrinterConfiguration.LabelDefinitions</1>",
+        "barcodeSupportEnabled": "Choose if you would like to enable barcode support.",
+        "barcodeProfile": "Choose the barcode profile to use for your scanner.",
+        "barcodePrefix": "The prefix used for 2D barcodes, usually '[)>'.",
+        "barcodeBufferTime": "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80",
+        "barcodeIsDebug": "Enabling Barcode debug mode will print diagnostic information to the browser console.",
+        "maxKeystrokeThresholdMs": "The maximum amount of time in milliseconds to wait between keypresses.",
+        "prefix2d": "The prefix used for 2D barcodes, usually '[)>'."
       }
     },
     "datasheet": {
-      "title": "Datasheet Search"
+      "title": "Datasheet Search",
+      "description": "Search for datasheets by part number.",
+      "partType": "Part Type",
+      "manufacturerPartNumber": "Manufacturer Part",
+      "manufacturer": "Manufacturer",
+      "website": "Website",
+      "datasheet": "Datasheet",
+      "packageType": "Package Type",
+      "status": "Status",
+      "datasheets": "Datasheets",
+      "actions": "Actions"
     },
     "orderImport": {
       "title": "Order Import",
@@ -196,12 +242,18 @@
       "orderNum": "Order Number",
       "instructions": "For <1>DigiKey</1> orders, this is the <3>Sales Order #</3>.<4 />For <6>Mouser</6> orders, this is the <8>Web Order #</8>.<10 />For <12>Arrow</12> orders, this is the <14>Order Number</14>.",
       "mouserNote": "<0>Note:</0> Mouser only supports Web Order # so make sure when importing that you are using the Web Order # and <2>not the Sales Order #</2>",
-      "arrowNote": "<0>Note:</0> Arrow requires that you first request access to their Order API by sending them an email. See <2>Arrow Order Api</2>"
+      "arrowNote": "<0>Note:</0> Arrow requires that you first request access to their Order API by sending them an email. See <2>Arrow Order Api</2>",
+      "addedToInventory": "added to inventory",
+      "alreadyInInventory": "already in inventory",
+      "requestAllProductInformation": "Request all product information",
+      "apiMessages": "Api Messages"
     },
     "printLabels": {
       "title": "Print Labels",
       "description": "Print custom multi-line labels for your storage bins.<1 />Print history is kept so you can reuse templates for your labels.",
       "printHistory": "Print History",
+      "addLineToStart": "Add a line to get started.",
+      "barcodeFontsNotice": "Barcode fonts may be problematic. Values must be surrounded by asterix, ex: *value* or parenthesis, ex: (value) to encode correctly. For best accuracy use a font size of [6, 12, 18, 24, 30, 36]. Alternatively, toggle IsBarcode and a barcode will be drawn for you and no special characters needed.",
       "label": {
         "labelType": "Label Type",
         "paperSource": "Paper Source",
@@ -276,8 +328,12 @@
       "description": ""
     },
     "admin": {
+      "title": "Admin",
+      "description": "System administration for managing your installation.",
+      "header": "Choose an administration task",
       "users": {
         "title": "User Management",
+        "baseDescription": "Manage the users of your system.",
         "description": "Administration of users.",
         "accountType": "Account Type",
         "masterAccount": "Master Admin Account",
@@ -298,6 +354,89 @@
       "updateParts": {
         "title": "Update Part Metadata",
         "description": "Refresh information from external APIs and choose which fields you would like to update."
+      },
+      "systemInfo": {
+        "title": "System Information",
+        "baseDescription": "Get information on your Binner installation.",
+        "description": "Information about your Binner installation. These settings can be found in the service configuration file 'appsettings.json'",
+        "version": "Version",
+        "lastestVersion": "Latest Binner Version",
+        "license": "License",
+        "api": "Api",
+        "enabledIntegrations": "Enabled Integrations",
+        "language": "Language",
+        "currency": "Currency",
+        "server": "Server",
+        "data": "Data",
+        "storageProvider": "Storage Provider",
+        "storageProviderConfig": "Storage Provider Config",
+        "installationPath": "Installation Path",
+        "userFilesUploadPath": "User Files Upload Path",
+        "logPath": "Log Path",
+        "ip": "IP",
+        "port": "Port",
+        "totalParts": "Total Parts",
+        "totalUsers": "Total Users",
+        "totalPartTypes": "Total Part Types",
+        "totalUserFiles": "Total User Files",
+        "userFilesSize": "User Files Size"
+      },
+      "backupRestore": {
+        "title": "Backup/Restore",
+        "baseDescription": "Backup or restore your Binner installation."
+      }
+    },
+    "backup": {
+      "title": "Backup / Restore",
+      "baseDescription": "Backup or restore your Binner installation.",
+      "description": "Create a backup or restore from a backup.",
+      "acceptedFileTypes": "Accepted file types: \"*.bak\"",
+      "backupDescription": "Create a snapshot of your Binner installation."
+    },
+    "printing": {
+      "title": "Printing",
+      "description": "Printing of labels and label templates.",
+      "header": "Choose a printing task",
+      "labelTemplates": {
+        "title": "Label Templates",
+        "description": "Edit part label and custom label templates.",
+        "baseDescription": "Create and edit label templates.",
+        "barcodeLabels": "Barcode Labels",
+        "custom": "Custom",
+        "preview": "Preview",
+        "labelEditor": "Label Editor",
+        "manage": "Manage",
+        "zoomLevel": "Zoom level",
+        "labelProperties": "Label Properties",
+        "labelTemplate": "Label Template",
+        "width": "Width",
+        "height": "Height",
+        "dpi": "Dpi",
+        "margin": "Margin",
+        "templateName": "Template Name",
+        "itemProperties": "Item Properties",
+        "align": "Align",
+        "font": "Font",
+        "rotate": "Rotate",
+        "fontSize": "Font Size",
+        "fontWeight": "Font Weight",
+        "color": "Color",
+        "length": "Length",
+        "textBarcodeValue": "Text/Barcode Value",
+        "partInformation": "Part Information",
+        "button": {
+          "print": "Print",
+          "load": "Load..."
+        }
+      },
+      "printLabels": {
+        "title": "Print Custom Labels",
+        "baseDescription": "Print custom labels for any task."
+      },
+      "bulkprint": {
+        "title": "Bulk Print",
+        "description": "Print labels for multiple parts at once.",
+        "baseDescription": "Batch print labels for parts."
       }
     }
   },
@@ -317,7 +456,13 @@
     "updatePartMetadata": "Update Part Metadata",
     "backupRestore": "Backup / Restore",
     "accountSettings": "Account Settings",
-    "activateLicense": "Activate License"
+    "activateLicense": "Activate License",
+    "systemInfo": "System Info",
+    "barcodeScanner": "Barcode Scanner",
+    "printing": "Printing",
+    "labelTemplates": "Label Templates",
+    "bulkPrint": "Bulk Print",
+    "inventory": "Inventory"
   },
   "comp": {
     "navBar": {
@@ -336,10 +481,10 @@
     "partsGrid": {
       "recordsPerPage": "records per page",
       "parts": "Parts",
-      "part": "Part",
+      "partNumber": "Part",
       "quantity": "Quantity",
       "lowStock": "Low Stock",
-      "mfrPart": "Manufacturer Part",
+      "manufacturerPartNumber": "Manufacturer Part",
       "description": "Description",
       "location": "Location",
       "binNumber": "Bin Number",
@@ -350,6 +495,19 @@
       "arrowPart": "Arrow Part",
       "datasheet": "Datasheet",
       "noResults": "No results.",
+      "partType": "Part Type",
+      "actions": "Actions",
+      "lowStockThreshold": "Low Stock Threshold",
+      "digikeyPartNumber": "DigiKey Part Number",
+      "mouserPartNumber": "Mouser Part Number",
+      "arrowPartNumber": "Arrow Part Number",
+      "packageType": "Package Type",
+      "mountingType": "Mounting Type",
+      "symbolName": "Symbol Name",
+      "footprintName": "Footprint Name",
+      "extensionValue1": "Extension Value 1",
+      "extensionValue2": "Extension Value 2",
+      "partId": "Part Id",
       "ok": "Ok",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
@@ -425,7 +583,7 @@
       }
     },
     "chooseAlternatePartModal": {
-      "title": "Matching Parts"
+      "title": "Choose an alternate part"
     },
     "lineTemplate": {
       "label": {
@@ -453,6 +611,30 @@
     "pcbHistoryModal": {
       "header": "PCB Produce History",
       "title": "BOM Management"
+    },
+    "bulkScanModal": {
+      "autoIncrement": "Auto Increment",
+      "rememberLocation": "Remember Location",
+      "popup": {
+        "autoIncrement": "Auto increment of Bin Number 2",
+        "rememberLocation": "Repeat the location of each added part"
+      }
+    },
+    "duplicatePartModal": {
+      "title": "Duplicate Part",
+      "description": "There is a possible duplicate part already in your inventory."
+    },
+    "labelSelectionModal": {
+      "title": "Label Editor",
+      "header": "Select Label",
+      "description": "Select an existing label to edit or create a new one.",
+      "chooseLabel": "Choose the label you wish to edit",
+      "createNewLabel": "Create a new label..."
+    },
+    "labelSetNameModal": {
+      "description": "Enter a name for your new label.",
+      "labelName": "Label Name",
+      "makeDefault": "Make default part label?"
     }
   },
   "button": {
@@ -492,7 +674,20 @@
     "saveAnyway": "Save Anyway",
     "addUser": "Add User",
     "generate": "Generate",
-    "close": "Close"
+    "close": "Close",
+    "return": "Return",
+    "restore": "Restore",
+    "createBackup": "Create Backup",
+    "produceHistory": "History",
+    "rename": "Rename",
+    "parts": "Parts",
+    "specs": "Specs",
+    "compliance": "Compliance",
+    "cadModels": "CAD Models",
+    "addAnyway": "Add Anyway",
+    "move": "Move",
+    "moveTo": "Move to",
+    "select": "Select"
   },
   "label": {
     "name": "Name",
@@ -511,6 +706,7 @@
     "outOfStock": "Out of Stock",
     "totalParts": "Total Parts",
     "producible": "Producible",
+    "pcbProducible": "PCB(s) Producible",
     "part": "Part", 
     "partNumber": "Part Number",
     "partNumberShort": "Part#",
@@ -603,12 +799,21 @@
     "includeUnassociated": "Include Unassociated",
     "date": "Date",
     "consumed": "Consumed",
-    "serial": "Serial"
+    "serial": "Serial",
+    "allowLogin": "Allow Login",
+    "active": "Active",
+    "inactive": "Inactive",
+    "rowsPerPage": "Rows per page",
+    "symbolName": "KiCad Symbol Name",
+    "footprintName": "KiCad Footprint Name",
+    "extensionValue1": "Extension Value 1",
+    "extensionValue2": "Extension Value 2",
+    "partId": "Part Id"
   },
   "message": {
     "noPartsAdded": "No parts added.",
     "noChildPartTypes": "There are no child part types.",
-    "noResults": "No Results",
+    "noResults": "No results.",
     "loadingOrder": "Loading order# {{order}}",
     "noMatchingResults":"No matching results.",
     "notEnoughParts": "Not enough parts",
@@ -622,7 +827,10 @@
     "addXParts": "Added {{count}} new parts!",
     "savedPart": "Saved part {{partNumber}}!",
     "addedPart": "Added part {{partNumber}}!",
-    "failedSavePart": "Failed to update, check Part Type and Mounting Type"
+    "failedSavePart": "Failed to update, check Part Type and Mounting Type",
+    "noPartMetadata": "No part metadata found!",
+    "scanPartExists": "Part exists in inventory. You can edit it's details or remove it from your scan.",
+    "noOutOfStockParts": "No out of stock parts."
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
@@ -635,10 +843,12 @@
     "deleteRecord": "Are you sure you want to delete this record?",
     "deleteHistory": "Are you sure you want to delete this history record?",
     "partsWillBeBackInStock": "All consumed parts will be placed <1>back in stock</1>.",
+    "clearScan": "Are you sure you want to clear your scanned results?",
     "header": {
       "removeBomPart": "Remove Part from BOM",
       "deleteFile": "Delete File",
-      "deletePart": "Delete Part"
+      "deletePart": "Delete Part",
+      "clearScan": "Clear Scanned Parts"
     }    
   },
   "error": {
@@ -660,7 +870,8 @@
     "testFailed": "Test failed",
     "invalidOrder": "Hmmm, that doesn't look like a valid order number!",
     "invalid2dBarcode": "Hmmm, I don't recognize that 2D barcode!",
-    "failedDeleteRecord": "Failed to record!"
+    "failedDeleteRecord": "Failed to record!",
+    "failedToSaveSettings": "Failed to save settings!"
   },
   "success": {
     "producedPcbs": "{{quantity}} PCB's were produced!",
@@ -671,7 +882,7 @@
     "systemSettingsSaved": "System settings were saved.",
     "clearedCredentials": "Successfully cleared cached credentials for {{apiName}}",
     "testPassed": "Test passed",
-    "partsImported": "{{count}} parts were imported!",
+    "partsImported": "{{count}} of {{totalCount}} parts were imported!",
     "deletedProject": "Project was deleted!",
     "deletedPcb": "Pcb was deleted!",
     "deletedRecord": "Record was deleted!"
@@ -697,8 +908,12 @@
       "editReferenceId": "Edit your custom <1 />reference Id(s) you can use for identifying this part.",
       "editSchematicReferenceId": "Edit your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
       "customDescription": "Provide a custom description",
-      "customNote": "Provide a custom note"
-    }
+      "customNote": "Provide a custom note",
+      "produceHistory": "View production history",
+      "movePart": "Move selected parts to another tab"
+    },
+    "makerSubscriptionRequired": "Requires a Maker level subscription. <1>Click here</1> for details.",
+    "proSubscriptionRequired": "Requires a Professional level subscription. <1>Click here</1> for details."
   },
   "footer": {
     "version": "Version",
@@ -726,5 +941,6 @@
     "white": "White",
     "gold": "Gold",
     "silver": "Silver"
-  }
+  },
+  "noop": "-do-not-translate-"
 }

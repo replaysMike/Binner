@@ -93,6 +93,8 @@
       "noPartsAssigned": "Attribuez des pièces pour obtenir un décompte du nombre de fois que vous pouvez produire ce PCB.",
       "pcbProduceCount": "Vous pouvez produire ce PCB <1>{{count}}</1> fois avec votre inventaire actuel.",
       "bomProduceCount": "Vous pouvez produire l'ensemble de votre nomenclature <1>{{count}}</1> fois avec votre inventaire actuel.",
+      "maxPcbProduceCount": "Vous pouvez produire <1>{{count}}</1> PCB avec votre inventaire actuel.",
+      "maxBomPcbProduceCount": "Vous pouvez produire l'intégralité de votre nomenclature <1>{{count}}</1> fois avec votre inventaire actuel.",
       "lowestPcb": "<0>{{name}}</0> a le stock le plus bas."
     },
     "boms": {
@@ -685,6 +687,7 @@
     "cadModels": "Modèles CAO",
     "addAnyway": "Ajouter quand même",
     "move": "Déplacer",
+    "moveTo": "Déplacer à",
     "select": "Sélectionner"
   },
   "label": {
@@ -704,6 +707,7 @@
     "outOfStock": "En rupture de stock",
     "totalParts": "Total des composants",
     "producible": "Productible",
+    "pcbProducible": "PCB(s) Productible",
     "part": "Composant",
     "partNumber": "Numéro de composant",
     "partNumberShort": "N° composant",
