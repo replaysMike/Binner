@@ -161,7 +161,7 @@ namespace Binner.Web.WebHost
             });
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp")),
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp", "build")),
                 RequestPath = ""
             });
             app.UseSpaStaticFiles();
