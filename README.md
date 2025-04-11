@@ -1,7 +1,8 @@
 # Binner
-[![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/releases/)
-[![GitHub commits](https://img.shields.io/github/commits-since/replaysMike/Binner/v1.0.1.svg)](https://GitHub.com/replaysMike/Binner/commit/)
+[![GitHub release](https://img.shields.io/github/release/replaysMike/Binner.svg?logo=github)](https://GitHub.com/replaysMike/Binner/releases/)
+![Docker Image Version](https://img.shields.io/docker/v/binnerofficial/binner?logo=docker)
 [![Github all releases](https://img.shields.io/github/downloads/replaysMike/Binner/total.svg)](https://GitHub.com/replaysMike/Binner/releases/)
+[![GitHub commits](https://img.shields.io/github/commits-since/replaysMike/Binner/v1.0.1.svg)](https://GitHub.com/replaysMike/Binner/commit/)
 [![GitHub contributors](https://img.shields.io/github/contributors/replaysMike/Binner.svg)](https://GitHub.com/replaysMike/Binner/graphs/contributors/)
 [![GitHub license](https://img.shields.io/github/license/replaysMike/Binner.svg)](https://github.com/replaysMike/Binner/blob/master/LICENSE)
 [![Build status](https://ci.appveyor.com/api/projects/status/gqsaearpptgdn6g8/branch/master?svg=true)](https://ci.appveyor.com/project/MichaelBrown/binner)
