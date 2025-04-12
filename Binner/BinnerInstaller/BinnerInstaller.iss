@@ -138,7 +138,8 @@ begin
     // Install the certificate as trusted before launching apps
     WizardForm.StatusLabel.Caption := CustomMessage('InstallingCertificates');
     WizardForm.StatusLabel.Show();
-    Exec('powershell.exe', ExpandConstant('-ExecutionPolicy Bypass -Command Import-PfxCertificate -FilePath ""\""{app}\Certificates\Binner.pfx\"" -CertStoreLocation cert:\LocalMachine\Root -Password (ConvertTo-SecureString -String password -Force -AsPlainText)'), '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{app}\{#MyAppExeName}'), ExpandConstant('--generatecertificate'), '', SW_SHOW, ewNoWait, ResultCode);
+    Exec('powershell.exe', ExpandConstant('-ExecutionPolicy Bypass -Command Import-PfxCertificate -FilePath ""\""{app}\Certificates\localhost.pfx\"" -CertStoreLocation cert:\LocalMachine\Root -Password (ConvertTo-SecureString -String password -Force -AsPlainText)'), '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
 
     if WizardIsTaskSelected('installservice') then
     begin

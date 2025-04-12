@@ -49,7 +49,7 @@ namespace Binner.Common.Security
             return (exportablePfx, cert, actualType, pfxBytes, crtBytes);
         }
 
-        public static (bool Result, string Error) AddCertificateToStore(ILogger logger, string filename, string? password)
+        public static (bool Success, string Error) AddCertificateToStore(ILogger logger, string filename, string? password)
         {
             //Import-PfxCertificate -FilePath ".\Certificates\certificate.pfx" -CertStoreLocation cert:\LocalMachine\Root -Password (ConvertTo-SecureString -String password -Force -AsPlainText)
             if (OperatingSystem.IsWindows())
@@ -57,14 +57,16 @@ namespace Binner.Common.Security
                 try
                 {
                     logger.Info($"Attempting to register certificate in Windows store...");
+                    var process = "powershell.exe";
+                    var args = $"Import-PfxCertificate -FilePath \"{Path.GetFullPath(filename)}\" -CertStoreLocation cert:\\LocalMachine\\Root -Password (ConvertTo-SecureString -String \"{password}\" -Force -AsPlainText)";
                     var processInfo = new ProcessStartInfo
                     {
                         Verb = "runas",
-                        LoadUserProfile = true,
-                        FileName = "powershell.exe",
-                        Arguments = $"Import-PfxCertificate -FilePath \"{Path.GetFullPath(filename)}\" -CertStoreLocation cert:\\LocalMachine\\Root -Password (ConvertTo-SecureString -String \"{password}\" -Force -AsPlainText)",
+                        LoadUserProfile = false,
+                        FileName = process,
+                        Arguments = args,
                         RedirectStandardOutput = false,
-                        UseShellExecute = true,
+                        UseShellExecute = false,
                         CreateNoWindow = true
                     };
 
@@ -72,8 +74,11 @@ namespace Binner.Common.Security
                     p.WaitForExit();
                     if (p.ExitCode != 0)
                     {
-                        logger.Error($"Failed to register certificate! Exit code: ${p.ExitCode}");
-                        return (false, $"Exit code: ${p.ExitCode}");
+                        var message = $"Failed to register certificate! Exit code: {p.ExitCode}: {process} {args}";
+                        if (p.ExitCode == 1)
+                            message += $" - An elevated Administrator shell is required.";
+                        logger.Warn(message);
+                        return (false, message);
                     }
                 }
                 catch (Exception ex)
@@ -89,10 +94,12 @@ namespace Binner.Common.Security
                     logger.Info($"Attempting to register certificate in Unix store (ca-certificates)...");
                     // cp /certificates/binner-docker.crt /usr/local/share/ca-certificates && cp /certificates/binner-docker.crt /usr/local/share/certificates && ls -l /usr/local/share/ca-certificates && ls -l /certificates && head -n 20 /config/appsettings.json
                     // update-ca-certificates
+                    var process = "/bin/bash";
+                    var args = $"cp {filename.Replace(".pfx", ".crt")} /usr/local/share/ca-certificates && cp {filename.Replace(".pfx", ".crt")} /usr/local/share/certificates && update-ca-certificates";
                     var processInfo = new ProcessStartInfo
                     {
-                        FileName = "/bin/bash",
-                        Arguments = $"cp {filename.Replace(".pfx", ".crt")} /usr/local/share/ca-certificates && cp {filename.Replace(".pfx", ".crt")} /usr/local/share/certificates && update-ca-certificates",
+                        FileName = process,
+                        Arguments = args,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         UseShellExecute = false,
@@ -103,8 +110,9 @@ namespace Binner.Common.Security
                     p.WaitForExit();
                     if(p.ExitCode != 0)
                     {
-                        logger.Error($"Failed to register certificate! Exit code: ${p.ExitCode}");
-                        return (false, $"Exit code: ${p.ExitCode}");
+                        var message = $"Failed to register certificate! Exit code: ${p.ExitCode}: ${p.ExitCode}: {process} {args}";
+                        logger.Warn(message);
+                        return (false, message);
                     }
                 }
                 catch (Exception ex)
