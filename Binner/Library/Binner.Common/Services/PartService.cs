@@ -161,10 +161,7 @@ namespace Binner.Common.Services
 
         public Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync()
         {
-            var userContext = _requestContext.GetUserContext();
-            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var models = _partTypesCache.Cache
-                .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .OrderBy(x => x.ParentPartType != null ? x.ParentPartType.Name : "")
                 .ThenBy(x => x.Name)
                 .ToList();

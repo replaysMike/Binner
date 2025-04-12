@@ -107,72 +107,8 @@ namespace Binner.Web.ServiceHost
                 if (!IPAddress.TryParse(_webHostConfig.IP, out ipAddress))
                     throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
 
-            X509Certificate2? certificate = null;
-            var certFilename = !string.IsNullOrEmpty(_webHostConfig.SslCertificate) ? Path.GetFullPath(_webHostConfig.SslCertificate) : string.Empty;
-            if (_webHostConfig.UseHttps)
-            {
-                // if the certificate file exists, try to load it
-                if (File.Exists(certFilename))
-                {
-                    try
-                    {
-                        _nlogLogger.Info($"Loading Certificate from '{certFilename}'...");
-                        var result = CertificateLoader.LoadCertificate(certFilename, _webHostConfig.SslCertificatePassword);
-                        certificate = result.Certificate;
-                        if (certificate != null)
-                        {
-                            _nlogLogger.Info($"{result.CertType} Certificate loaded from '{certFilename}'");
-                            _nlogLogger.Info($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _nlogLogger.Error(ex, $"Failed to load SSL certificate at '{certFilename}'. Is the password correct?");
-                        throw;
-                    }
-                }
-                else
-                {
-                    // if forceHttps is enabled, but no certificate is found, generate a certificate
-                    _nlogLogger.Info("ForceHttps is enabled, no certificate specified so a self-signed certificate will be generated.");
-                    try
-                    {
-                        var selfSignedCertificate = CertificateGenerator.GenerateSelfSignedCertificate("localhost", _webHostConfig.SslCertificatePassword);
-                        certificate = selfSignedCertificate.PfxCertificate;
-                        var certificateFilename = !string.IsNullOrEmpty(_webHostConfig.SslCertificate) ? _webHostConfig.SslCertificate : "./Certificates/localhost.pfx";
-                        var crtFilename = certificateFilename.Replace(".pfx", ".crt", StringComparison.InvariantCultureIgnoreCase);
-                        // save the crt
-                        File.AppendAllBytes(crtFilename, selfSignedCertificate.CrtByteArray);
-                        _nlogLogger.Info($"New self-signed certificate saved to '{crtFilename}'");
-                        // save the pfx
-                        File.AppendAllBytes(certificateFilename, selfSignedCertificate.PfxByteArray);
-                        _nlogLogger.Info($"New self-signed certificate saved to '{certificateFilename}'");
-
-                        // update the config with the new certificate path if it's not set
-                        if (string.IsNullOrEmpty(_webHostConfig.SslCertificate))
-                        {
-                            _webHostConfig.SslCertificate = certificateFilename;
-                            var settingsService = new SettingsService();
-                            settingsService.SaveSettingsAs(_webHostConfig, nameof(WebHostServiceConfiguration), _configFile, true);
-                        }
-
-                        // attempt to register the certificate in the store for the given platform
-                        var storeResult = CertificateGenerator.AddCertificateToStore(_nlogLogger, certificateFilename, _webHostConfig.SslCertificatePassword);
-                        if (storeResult.Result)
-                        {
-                            _nlogLogger.Info($"Registered certificate '{certificateFilename}' successfully!");
-                        }
-                        else
-                        {
-                            _nlogLogger.Error($"Failed to registered certificate '{certificateFilename}'. You will need to register the certificate manually on your platform. Error: {storeResult.Error}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _nlogLogger.Error(ex, "Failed to generate a self-signed certificate.");
-                    }
-                }
-            }
+            // load the SSL certificate, or generate a new one if configured
+            var certificate = LoadOrGenerateSelfSignedCertificate(_webHostConfig);
 
             // storage provider config
             var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ??
@@ -262,7 +198,7 @@ namespace Binner.Web.ServiceHost
                     logging.AddConfiguration(configuration);
                     logging.AddEventSourceLogger();
                     //if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-                        //logging.AddConsole();
+                    //logging.AddConsole();
                     logging.AddNLogWeb();
                 })
                 .UseNLog();
@@ -297,6 +233,120 @@ namespace Binner.Web.ServiceHost
             // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
             _webHost.Services.GetRequiredService<Binner.Model.Common.IStorageProvider>()
                 ?.Dispose();
+        }
+
+        private static X509Certificate2? LoadOrGenerateSelfSignedCertificate(WebHostServiceConfiguration webHostConfig)
+        {
+            X509Certificate2? certificate = null;
+            var certFilename = !string.IsNullOrEmpty(webHostConfig.SslCertificate) ? Path.GetFullPath(webHostConfig.SslCertificate) : string.Empty;
+            if (webHostConfig.UseHttps)
+            {
+                // if the certificate file exists, try to load it
+                if (File.Exists(certFilename))
+                {
+                    try
+                    {
+                        _nlogLogger.Info($"Loading Certificate from '{certFilename}'...");
+                        var result = CertificateLoader.LoadCertificate(certFilename, webHostConfig.SslCertificatePassword);
+                        certificate = result.Certificate;
+                        if (certificate != null)
+                        {
+                            _nlogLogger.Info($"{result.CertType} Certificate loaded from '{certFilename}'");
+                            _nlogLogger.Info($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _nlogLogger.Error(ex, $"Failed to load SSL certificate at '{certFilename}'. Is the password correct?");
+                        throw;
+                    }
+                }
+                else
+                {
+                    // generate a new certificate
+                    var result = GenerateSelfSignedCertificate(webHostConfig);
+                    certificate = result.Certificate;
+                }
+            }
+            return certificate;
+        }
+
+        [Flags]
+        public enum CertificateState
+        {
+            None,
+            Created,
+            Registered,
+            Error
+        }
+
+        public static (X509Certificate2? Certificate, CertificateState Status, string Error) GenerateSelfSignedCertificate(WebHostServiceConfiguration webHostConfig, bool throwExceptions = false)
+        {
+            X509Certificate2? certificate = null;
+            var status = CertificateState.None;
+            // if forceHttps is enabled, but no certificate is found, generate a certificate
+            _nlogLogger.Info("ForceHttps is enabled, no certificate specified so a self-signed certificate will be generated.");
+            try
+            {
+                var selfSignedCertificate = CertificateGenerator.GenerateSelfSignedCertificate("localhost", webHostConfig.SslCertificatePassword);
+                certificate = selfSignedCertificate.PfxCertificate;
+                var certificateFilename = !string.IsNullOrEmpty(webHostConfig.SslCertificate) ? webHostConfig.SslCertificate : "./Certificates/localhost.pfx";
+                var crtFilename = certificateFilename.Replace(".pfx", ".crt", StringComparison.InvariantCultureIgnoreCase);
+
+                if (File.Exists(crtFilename))
+                {
+                    var message = $"Failed to generate certificate '{crtFilename}'. File already exists, refusing to overwrite.";
+                    _nlogLogger.Error(message);
+                    if (throwExceptions) throw new Exception(message);
+                    return (null, CertificateState.Error, message);
+                }
+
+                if (File.Exists(certificateFilename))
+                {
+                    var message = $"Failed to generate certificate '{certificateFilename}'. File already exists, refusing to overwrite.";
+                    _nlogLogger.Error(message);
+                    if (throwExceptions) throw new Exception(message);
+                    return (null, CertificateState.Error, message);
+                }
+
+                // save the crt
+                File.AppendAllBytes(crtFilename, selfSignedCertificate.CrtByteArray);
+                _nlogLogger.Info($"New self-signed certificate saved to '{crtFilename}'");
+                // save the pfx
+                File.AppendAllBytes(certificateFilename, selfSignedCertificate.PfxByteArray);
+                _nlogLogger.Info($"New self-signed certificate saved to '{certificateFilename}'");
+
+                status |= CertificateState.Created;
+
+                // update the config with the new certificate path if it's not set
+                if (string.IsNullOrEmpty(webHostConfig.SslCertificate))
+                {
+                    webHostConfig.SslCertificate = certificateFilename;
+                    var settingsService = new SettingsService();
+                    settingsService.SaveSettingsAs(webHostConfig, nameof(WebHostServiceConfiguration), _configFile, true);
+                }
+
+                // attempt to register the certificate in the store for the given platform
+                var storeResult = CertificateGenerator.AddCertificateToStore(_nlogLogger, certificateFilename, webHostConfig.SslCertificatePassword);
+                if (storeResult.Success)
+                {
+                    status |= CertificateState.Registered;
+                    _nlogLogger.Info($"Registered certificate '{certificateFilename}' successfully!");
+                }
+                else
+                {
+                    var message = $"Failed to registered certificate '{certificateFilename}'. You will need to register the certificate manually on your platform. Error: {storeResult.Error}";
+                    _nlogLogger.Warn(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                status |= CertificateState.Error;
+                var message = "Failed to generate a self-signed certificate.";
+                _nlogLogger.Error(ex, message);
+                if (throwExceptions) throw new Exception(message, ex);
+            }
+            return (certificate, status, string.Empty);
         }
 
         /// <summary>
