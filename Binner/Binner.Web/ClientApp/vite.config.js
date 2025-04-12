@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import fs from 'fs';
 import path from 'path';
 import child_process from 'child_process';
@@ -46,7 +47,12 @@ const target = env.ASPNETCORE_HTTPS_PORT ? `${protocol}://localhost:${env.ASPNET
 export default defineConfig({
   base: '/',
   plugins: [
-    plugin()
+    plugin(),
+    svgr({ 
+      svgrOptions: {
+        include: "**/*.svg?react",
+      },
+    }),
   ],
   resolve: {
     alias: {

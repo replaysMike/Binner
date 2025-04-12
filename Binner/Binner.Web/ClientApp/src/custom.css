@@ -156,6 +156,34 @@ code {
     position: relative;
 }
 
+.header .navbar-brand {
+    font-family: 'Roboto', sans-serif;
+    font-size: 52pt;
+    font-weight: 700;
+    text-wrap: nowrap;
+    color: #0366d6;
+    margin: 0;
+    padding: 0 0 0 0;
+    line-height: 65px;
+    letter-spacing: -4px;
+    transition-property: color, text-shadow, filter;
+    transition-duration: .15s;
+    transition-timing-function: ease-in;
+}
+  
+#layer1 .middle { 
+    transition: fill .15s ease-in; 
+}
+
+.header .navbar-light .navbar-brand:hover #layer1 .middle {
+    fill: #3790f6 !important;
+}
+
+
+.header .navbar-light a.navbar-brand.svg:hover {
+    color: #0c73e8;
+}
+
 .header .navbar-light .navbar-brand {
     display: block;
     width: 200px;
@@ -170,6 +198,42 @@ code {
     height: 54px;
     background-size: 200px 54px;
     background-image: url('/image/logo-light-200x54.png');
+}
+
+.header .navbar-light .navbar-brand.svg svg {
+    top: -7px;
+    position: relative;
+    width: 54px;
+    height: 54px;
+    filter: drop-shadow( 2px 2px 2px rgba(0, 0, 0, .05));
+}
+.header .navbar-light .navbar-brand.svg:hover svg {
+    filter: drop-shadow( 2px 2px 2px rgba(0, 0, 0, .15));
+}
+.header .navbar-light a.navbar-brand span {
+    text-shadow: 3px 3px 3px rgba(0,0,0,0.05);
+}
+.header .navbar-light a.navbar-brand:hover span {
+    text-shadow: 3px 3px 3px rgba(0,0,0,0.15);
+}
+
+.header .navbar-light .navbar-brand.svg {
+    display: block;
+    width: 260px;
+    height: 54px;
+    background-size: 54px 54px;
+    background-repeat: no-repeat;
+    background-image: none;
+    /*background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' viewBox='0 0 512 512' version='1.1' id='svg1' xml:space='preserve' xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Clink xmlns='http://www.w3.org/1999/xhtml' rel='stylesheet' href='/svg.css' type='text/css'/%3E%3C/defs%3E%3Csodipodi:namedview id='view1' pagecolor='%23e6e6e6' bordercolor='%23000000' borderopacity='0.25' showgrid='false' /%3E%3Cdefs id='defs1'%3E%3Cmask maskUnits='userSpaceOnUse' id='mask27'%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect27' width='512' height='512' x='1.5301447' y='2.2148144' rx='140' /%3E%3C/mask%3E%3C/defs%3E%3Cg id='layer1' style='fill:none'%3E%3Cg id='g5' transform='translate(-1.5301447,-2.2148145)' mask='url(%23mask27)'%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5' width='128' height='128' x='385.53015' y='386.21481' rx='8' /%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5-2' width='128' height='128' x='193.53014' y='386.21481' rx='8' /%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5-3' width='128' height='128' x='1.530138' y='386.21481' rx='8' /%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5-26' width='128' height='128' x='385.53015' y='194.21481' rx='8' /%3E%3Crect class='test' style='fill:%231770ff;fill-opacity:1' id='rect5-9' width='160' height='160' x='177.53015' y='178.21481' rx='16' /%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5-37' width='128' height='128' x='1.530138' y='194.21481' rx='8' /%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5-28' width='128' height='128' x='385.53015' y='2.2148159' rx='8' /%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5-6' width='128' height='128' x='193.53014' y='2.2148159' rx='8' /%3E%3Crect style='fill:%234e4e4e;fill-opacity:1' id='rect5-31' width='128' height='128' x='1.530138' y='2.2148159' rx='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");*/
+}
+
+.header .navbar-dark .navbar-brand.svg {
+    display: block;
+    width: 260px;
+    height: 54px;
+    background-size: 54px 54px;
+    background-repeat: no-repeat;
+    /*background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' viewBox='0 0 512 512' version='1.1' id='svg1' xml:space='preserve' xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'%3E%3Csodipodi:namedview id='view1' pagecolor='%23e6e6e6' bordercolor='%23000000' borderopacity='0.25' showgrid='false' /%3E%3Cdefs id='defs1'%3E%3Cmask maskUnits='userSpaceOnUse' id='mask27'%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect27' width='512' height='512' x='1.5301447' y='2.2148144' rx='140' /%3E%3C/mask%3E%3C/defs%3E%3Cg id='layer1' style='fill:none'%3E%3Cg id='g5' transform='translate(-1.5301447,-2.2148145)' mask='url(%23mask27)'%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5' width='128' height='128' x='385.53015' y='386.21481' rx='8' /%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5-2' width='128' height='128' x='193.53014' y='386.21481' rx='8' /%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5-3' width='128' height='128' x='1.530138' y='386.21481' rx='8' /%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5-26' width='128' height='128' x='385.53015' y='194.21481' rx='8' /%3E%3Crect style='fill:%231770ff;fill-opacity:1' id='rect5-9' width='160' height='160' x='177.53015' y='178.21481' rx='16' /%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5-37' width='128' height='128' x='1.530138' y='194.21481' rx='8' /%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5-28' width='128' height='128' x='385.53015' y='2.2148159' rx='8' /%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5-6' width='128' height='128' x='193.53014' y='2.2148159' rx='8' /%3E%3Crect style='fill:%23ffffff;fill-opacity:1' id='rect5-31' width='128' height='128' x='1.530138' y='2.2148159' rx='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E%0A");*/
 }
 
 .header .language-selection {

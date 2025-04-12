@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Form, Menu, Dropdown, Icon, Popup } from "semantic-ui-react";
 import { isAuthenticated, isAdmin, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
 import ProtectedInput from "../components/ProtectedInput";
 import "./NavMenu.css";
+import Logo from "./logo-light.svg?react";
 
 /**
  * Top Navigation menu
@@ -47,7 +48,7 @@ export function NavMenu(props) {
     <header>
       <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
         <Container className={"binner-container"}>
-          <NavbarBrand tag={Link} to="/" />
+          <NavbarBrand tag={Link} to="/" className="svg"><Logo width="54" height="54" /><span>Binner</span></NavbarBrand>
           <NavbarToggler onClick={toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>
             <Form onSubmit={onSubmit}>
