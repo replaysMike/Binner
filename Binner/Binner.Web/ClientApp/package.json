@@ -101,6 +101,7 @@
     "@babel/preset-env": "^7.26.9",
     "ajv": "^8.17.1",
     "assert": "^2.1.0",
+    "braces": "^3.0.3",
     "browser-sync": "^3.0.4",
     "cross-env": "^7.0.3",
     "del": "^7.0.0",
@@ -118,15 +119,38 @@
     "gulp-rename": "^2.0.0",
     "gulp-rollup": "^2.17.0",
     "gulp-sass": "^6.0.1",
-    "gulp-sourcemaps": "^3.0.0",
+    "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify": "^3.0.2",
     "https-browserify": "^1.0.0",
+    "micromatch": "^4.0.8",
     "os": "^0.1.2",
     "os-browserify": "^0.3.0",
+    "rollup": "^4.40.0",
     "sass": "^1.86.3",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
+    "timespan": "^2.3.0",
     "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "build": {
+      "uglify-js": "^3.19.3",
+      "js-yaml": "^4.1.0",
+      "emitty": "$emitty",
+      "micromatch": "$micromatch",
+      "braces": "$braces",
+      "rollup": "$rollup",
+      "timespan": "$timespan"
+    },
+    "gulp-rollup": {
+      "rollup": "$rollup"
+    },
+    "emitty": {
+      "micromatch": "$micromatch"
+    },
+    "micromatch": {
+      "braces": "$braces"
+    }
   },
   "eslintConfig": {
     "extends": "react-app"
