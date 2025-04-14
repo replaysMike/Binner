@@ -808,7 +808,8 @@
     "footprintName": "KiCad Footprint Name",
     "extensionValue1": "Extension Value 1",
     "extensionValue2": "Extension Value 2",
-    "partId": "Part Id"
+    "partId": "Part Id",
+    "tmePartNumber": "TME Part Number"
   },
   "message": {
     "noPartsAdded": "No parts added.",

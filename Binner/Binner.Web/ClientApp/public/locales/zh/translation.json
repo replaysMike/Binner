@@ -621,7 +621,16 @@
     "date": "日期",
     "consumed": "消耗器件数",
     "serial": "序列号",
-    "allowLogin": "允许登录"
+    "allowLogin": "允许登录",
+    "active": "Active",
+    "inactive": "Inactive",
+    "rowsPerPage": "Rows per page",
+    "symbolName": "KiCad Symbol Name",
+    "footprintName": "KiCad Footprint Name",
+    "extensionValue1": "Extension Value 1",
+    "extensionValue2": "Extension Value 2",
+    "partId": "Part Id",
+    "tmePartNumber": "TME Part Number"
   },
   "message": {
     "noPartsAdded": "尚未添加部件",

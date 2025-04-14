@@ -804,7 +804,9 @@
 		"symbolName": "Nome Simbolo KiCad",
 		"footprintName": "Nome Impronta KiCad",
 		"extensionValue1": "Valore Aggiuntivo 1",
-		"extensionValue2": "Valore Aggiuntivo 2"
+		"extensionValue2": "Valore Aggiuntivo 2",
+    "partId": "Part Id",
+    "tmePartNumber": "TME Part Number"
 	},
 	"message": {
 		"noPartsAdded": "Nessun componente aggiunto.",
