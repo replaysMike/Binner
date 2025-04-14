@@ -68,6 +68,7 @@
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.3.8",
     "react-ga": "^3.3.1",
+    "react-i18next": "^12.2.2",
     "react-icons": "^5.5.0",
     "react-image-crop": "^10.0.9",
     "react-loading-icons": "^1.1.0",
