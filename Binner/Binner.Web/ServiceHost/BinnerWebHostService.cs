@@ -2,7 +2,6 @@
 using Binner.Common.Configuration;
 using Binner.Common.Extensions;
 using Binner.Common.Security;
-using Binner.Common.Services;
 using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.Model;
@@ -16,14 +15,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
-using NLog.Targets;
 using NLog.Web;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Topshelf;
@@ -41,6 +39,7 @@ namespace Binner.Web.ServiceHost
         private static readonly string _logManagerConfigFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.NlogConfig, AppConstants.NLogConfig);
         private static readonly string _logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _logManagerConfigFile);
         private static readonly Logger _nlogLogger = NLog.Web.NLogBuilder.ConfigureNLog(_logFile).GetCurrentClassLogger();
+        private static readonly CertificateUtility _certificateUtility = new CertificateUtility(_nlogLogger, _configFile);
 
         private bool _isDisposed;
         private ILogger<BinnerWebHostService>? _logger;
@@ -88,6 +87,8 @@ namespace Binner.Web.ServiceHost
 
         private async Task InitializeWebHostAsync()
         {
+            var version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            _nlogLogger.Info($"Binner Service v{version} starting...");
             // run without awaiting to avoid service startup delays, and allow the service to shutdown cleanly
             var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
             var configFile = Path.Combine(configPath, _configFile);
@@ -108,7 +109,7 @@ namespace Binner.Web.ServiceHost
                     throw new BinnerConfigurationException($"Failed to parse IpAddress '{ipString}'");
 
             // load the SSL certificate, or generate a new one if configured
-            var certificate = LoadOrGenerateSelfSignedCertificate(_webHostConfig);
+            var certificate = _certificateUtility.LoadOrGenerateSelfSignedCertificate(_webHostConfig);
 
             // storage provider config
             var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ??
@@ -233,120 +234,6 @@ namespace Binner.Web.ServiceHost
             // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
             _webHost.Services.GetRequiredService<Binner.Model.Common.IStorageProvider>()
                 ?.Dispose();
-        }
-
-        private static X509Certificate2? LoadOrGenerateSelfSignedCertificate(WebHostServiceConfiguration webHostConfig)
-        {
-            X509Certificate2? certificate = null;
-            var certFilename = !string.IsNullOrEmpty(webHostConfig.SslCertificate) ? Path.GetFullPath(webHostConfig.SslCertificate) : string.Empty;
-            if (webHostConfig.UseHttps)
-            {
-                // if the certificate file exists, try to load it
-                if (File.Exists(certFilename))
-                {
-                    try
-                    {
-                        _nlogLogger.Info($"Loading Certificate from '{certFilename}'...");
-                        var result = CertificateLoader.LoadCertificate(certFilename, webHostConfig.SslCertificatePassword);
-                        certificate = result.Certificate;
-                        if (certificate != null)
-                        {
-                            _nlogLogger.Info($"{result.CertType} Certificate loaded from '{certFilename}'");
-                            _nlogLogger.Info($"Using SSL Certificate: '{certificate.Subject}' '{certificate.FriendlyName}'");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _nlogLogger.Error(ex, $"Failed to load SSL certificate at '{certFilename}'. Is the password correct?");
-                        throw;
-                    }
-                }
-                else
-                {
-                    // generate a new certificate
-                    var result = GenerateSelfSignedCertificate(webHostConfig);
-                    certificate = result.Certificate;
-                }
-            }
-            return certificate;
-        }
-
-        [Flags]
-        public enum CertificateState
-        {
-            None,
-            Created,
-            Registered,
-            Error
-        }
-
-        public static (X509Certificate2? Certificate, CertificateState Status, string Error) GenerateSelfSignedCertificate(WebHostServiceConfiguration webHostConfig, bool throwExceptions = false)
-        {
-            X509Certificate2? certificate = null;
-            var status = CertificateState.None;
-            // if forceHttps is enabled, but no certificate is found, generate a certificate
-            _nlogLogger.Info("ForceHttps is enabled, no certificate specified so a self-signed certificate will be generated.");
-            try
-            {
-                var selfSignedCertificate = CertificateGenerator.GenerateSelfSignedCertificate("localhost", webHostConfig.SslCertificatePassword);
-                certificate = selfSignedCertificate.PfxCertificate;
-                var certificateFilename = !string.IsNullOrEmpty(webHostConfig.SslCertificate) ? webHostConfig.SslCertificate : "./Certificates/localhost.pfx";
-                var crtFilename = certificateFilename.Replace(".pfx", ".crt", StringComparison.InvariantCultureIgnoreCase);
-
-                if (File.Exists(crtFilename))
-                {
-                    var message = $"Failed to generate certificate '{crtFilename}'. File already exists, refusing to overwrite.";
-                    _nlogLogger.Error(message);
-                    if (throwExceptions) throw new Exception(message);
-                    return (null, CertificateState.Error, message);
-                }
-
-                if (File.Exists(certificateFilename))
-                {
-                    var message = $"Failed to generate certificate '{certificateFilename}'. File already exists, refusing to overwrite.";
-                    _nlogLogger.Error(message);
-                    if (throwExceptions) throw new Exception(message);
-                    return (null, CertificateState.Error, message);
-                }
-
-                // save the crt
-                File.AppendAllBytes(crtFilename, selfSignedCertificate.CrtByteArray);
-                _nlogLogger.Info($"New self-signed certificate saved to '{crtFilename}'");
-                // save the pfx
-                File.AppendAllBytes(certificateFilename, selfSignedCertificate.PfxByteArray);
-                _nlogLogger.Info($"New self-signed certificate saved to '{certificateFilename}'");
-
-                status |= CertificateState.Created;
-
-                // update the config with the new certificate path if it's not set
-                if (string.IsNullOrEmpty(webHostConfig.SslCertificate))
-                {
-                    webHostConfig.SslCertificate = certificateFilename;
-                    var settingsService = new SettingsService();
-                    settingsService.SaveSettingsAs(webHostConfig, nameof(WebHostServiceConfiguration), _configFile, true);
-                }
-
-                // attempt to register the certificate in the store for the given platform
-                var storeResult = CertificateGenerator.AddCertificateToStore(_nlogLogger, certificateFilename, webHostConfig.SslCertificatePassword);
-                if (storeResult.Success)
-                {
-                    status |= CertificateState.Registered;
-                    _nlogLogger.Info($"Registered certificate '{certificateFilename}' successfully!");
-                }
-                else
-                {
-                    var message = $"Failed to registered certificate '{certificateFilename}'. You will need to register the certificate manually on your platform. Error: {storeResult.Error}";
-                    _nlogLogger.Warn(message);
-                }
-            }
-            catch (Exception ex)
-            {
-                status |= CertificateState.Error;
-                var message = "Failed to generate a self-signed certificate.";
-                _nlogLogger.Error(ex, message);
-                if (throwExceptions) throw new Exception(message, ex);
-            }
-            return (certificate, status, string.Empty);
         }
 
         /// <summary>

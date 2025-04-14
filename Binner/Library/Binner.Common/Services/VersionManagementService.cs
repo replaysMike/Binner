@@ -10,6 +10,7 @@ namespace Binner.Common.Services
     {
         private const string GitHubEndpoint = "https://github.com/replaysMike/Binner/releases";
         private static readonly Lazy<MemoryCache> _cache = new Lazy<MemoryCache>(() => new MemoryCache("VersionManagement"));
+        private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(5);
 
         /// <summary>
         /// Get the latest version of Binner
@@ -23,6 +24,10 @@ namespace Binner.Common.Services
                 if (cacheValue == null)
                 {
                     var client = new GitHubClient(new ProductHeaderValue("Binner"));
+
+                    // set a short timeout for this operation
+                    client.Connection.SetRequestTimeout(ConnectionTimeout);
+
                     var releases = await client.Repository.Release.GetAll("replaysMike", "Binner");
                     var latest = releases.FirstOrDefault(x => !x.Prerelease && !x.Draft);
                     if (latest != null)
