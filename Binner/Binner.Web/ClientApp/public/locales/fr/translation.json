@@ -809,7 +809,8 @@
     "footprintName": "Nom de l'empreinte KiCad",
     "extensionValue1": "Valeur d'extension 1",
     "extensionValue2": "Valeur d'extension 2",
-    "partId": "ID de la pièce"
+    "partId": "ID de la pièce",
+    "tmePartNumber": "TME Part Number"
   },
   "message": {
     "noPartsAdded": "Aucune pièce ajoutée.",

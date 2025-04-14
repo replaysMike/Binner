@@ -808,7 +808,8 @@
     "footprintName": "KiCad Ayak İzi Adı",
     "extensionValue1": "Uzantı Değeri 1",
     "extensionValue2": "Uzantı Değeri 2",
-    "partId": "Parça Kimliği"
+    "partId": "Parça Kimliği",
+    "tmePartNumber": "TME Part Number"
   },
   "message": {
     "noPartsAdded": "Hiçbir parça eklenmedi.",

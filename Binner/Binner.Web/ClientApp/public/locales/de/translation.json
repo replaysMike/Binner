@@ -805,7 +805,9 @@
     "symbolName": "KiCad Symbol Name",
     "footprintName": "KiCad Footprint Name",
     "extensionValue1": "Erweiterungswert 1",
-    "extensionValue2": "Erweiterungswert 2"
+    "extensionValue2": "Erweiterungswert 2",
+    "partId": "Part Id",
+    "tmePartNumber": "TME Part Number"
   },
   "message": {
     "noPartsAdded": "Keine Bauteile hinzugefügt",
