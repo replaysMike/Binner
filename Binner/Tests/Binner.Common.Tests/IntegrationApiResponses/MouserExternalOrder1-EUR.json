@@ -1,0 +1,74 @@
+﻿{
+  "StatusCode": 200,
+  "IsSuccessStatusCode": true,
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      "OrderLines": [
+        {
+          "Quantity": 5,
+          "UnitPrice": 1.34,
+          "ExtPrice": 1.34,
+          "FormattedUnitPrice": "€1,34",
+          "FormattedExtendedPrice": "€1,34",
+          "ProductInfo": {
+            "MouserPartNumber": "LM358",
+            "CustomerPartNumber": "LM358",
+            "ManufacturerName": "Texas Instruments",
+            "ManufacturerPartNumber": "LM358PE3",
+            "PartDescription": "IC OPAMP GP 2 CIRCUIT 8DIP"
+          },
+          "Activities": [
+            {
+              "InvoiceNumber": 1,
+              "Date": "2025-04-16T01:11:08.589Z"
+            }
+          ]
+        }
+      ],
+      "SalesOrderId": "123456789",
+      "WebOrderId": "123456789",
+      "OrderStatus": 1,
+      "OrderStatusName": "Shipped",
+      "OrderDate": "2025-04-16T01:11:08.589Z",
+      "BillingAddress": {
+        "CountryCode": "UK",
+        "AttentionLine": "",
+        "CompanyName": "",
+        "AddressOne": "123 Example St",
+        "AddressTwo": "",
+        "City": "Birmingham",
+        "StateOrProvince": "",
+        "PostalCode": "AB12CD"
+      },
+      "ShippingAddress": {
+        "CountryCode": "UK",
+        "AttentionLine": "",
+        "CompanyName": "",
+        "AddressOne": "123 Example St",
+        "AddressTwo": "",
+        "City": "Birmingham",
+        "StateOrProvince": "",
+        "PostalCode": "AB12CD"
+      },
+      "PaymentDetail": {
+        "PoNumber": "",
+        "PaymentMethodName": ""
+      },
+      "DeliveryDetail": {
+        "ShippingMethodName": "",
+        "BackOrderShippingMethodName": ""
+      },
+      "CurrencyCode": "EUR",
+      "IsScheduled": false,
+      "IsPendingOrder": false,
+      "BuyerName": "Test User",
+      "SummaryDetail": {
+        "MerchandiseTotal": "€6,70",
+        "OrderTotal": "€6,70"
+      }
+    }
+  }  
+}

@@ -53,6 +53,13 @@ namespace Binner.Common.Integrations
             }
         }
 
+        public IntegrationCredentialsCache() { }
+
+        public IntegrationCredentialsCache(Dictionary<ApiCredentialKey, List<ApiCredential>> credentials)
+        {
+            _credentials = credentials;
+        }
+
         /// <summary>
         /// Get credential without manipulating the cache
         /// </summary>

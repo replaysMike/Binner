@@ -2,7 +2,6 @@
 using Binner.Common.Integrations.Models;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.Mouser;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -10,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Integrations
@@ -20,9 +18,7 @@ namespace Binner.Common.Integrations
         private const string BasePath = "/api/v1";
         public string Name => "Mouser";
         private readonly MouserConfiguration _configuration;
-        private readonly HttpClient _client;
-        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IApiHttpClient _client;
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -34,11 +30,10 @@ namespace Binner.Common.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public MouserApi(MouserConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public MouserApi(MouserConfiguration configuration, IApiHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
-            _client = new HttpClient();
+            _client = httpClientFactory.Create();
         }
 
         private void ValidateOrderConfiguration()

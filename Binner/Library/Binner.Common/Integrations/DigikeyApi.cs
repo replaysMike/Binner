@@ -46,9 +46,8 @@ namespace Binner.Common.Integrations
         private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly RequestContextAccessor _requestContext;
-        private readonly HttpClient _client;
-        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
+        private readonly IRequestContextAccessor _requestContext;
+        private readonly IApiHttpClient _client;
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -65,14 +64,14 @@ namespace Binner.Common.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public DigikeyApi(DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext)
+        public DigikeyApi(DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, IApiHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _localeConfiguration = localeConfiguration;
             _oAuth2Service = new OAuth2Service(configuration);
             _credentialService = credentialService;
             _httpContextAccessor = httpContextAccessor;
-            _client = new HttpClient();
+            _client = httpClientFactory.Create();
             _requestContext = requestContext;
         }
 

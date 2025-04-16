@@ -135,7 +135,8 @@ namespace Binner.Web.Configuration
 
         private static void RegisterApiIntegrations(IServiceContainer container)
         {
-            // register integration apis    
+            // register integration apis
+            container.Register<IApiHttpClientFactory, ApiHttpClientFactory>(new PerScopeLifetime());
             container.Register<IIntegrationApiFactory, IntegrationApiFactory>(new PerScopeLifetime());
             container.Register<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>(new PerScopeLifetime());
         }

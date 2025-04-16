@@ -36,13 +36,13 @@ namespace Binner.Common.Services
         private readonly IStorageProvider _storageProvider;
         private readonly IMapper _mapper;
         private readonly IIntegrationApiFactory _integrationApiFactory;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
         private readonly ISwarmService _swarmService;
         private readonly ILogger<PartService> _logger;
         private readonly IPartTypesCache _partTypesCache;
         private readonly ILicensedService _licensedService;
 
-        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, RequestContextAccessor requestContextAccessor, IPartTypesCache partTypesCache, ILicensedService licensedService)
+        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, IRequestContextAccessor requestContextAccessor, IPartTypesCache partTypesCache, ILicensedService licensedService)
         {
             _contextFactory = contextFactory;
             _configuration = configuration;
