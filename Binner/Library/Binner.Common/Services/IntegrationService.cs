@@ -14,11 +14,11 @@ namespace Binner.Common.Services
     public class IntegrationService
     {
         private readonly IIntegrationApiFactory _integrationApiFactory;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
         private readonly ICredentialService _credentialService;
         private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
 
-        public IntegrationService(IIntegrationApiFactory integrationApiFactory, RequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider)
+        public IntegrationService(IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider)
         {
             _integrationApiFactory = integrationApiFactory;
             _requestContext = requestContextAccessor;

@@ -13,10 +13,10 @@ namespace Binner.Common.Services
     public class StoredFileService : IStoredFileService
     {
         private IStorageProvider _storageProvider;
-        private RequestContextAccessor _requestContext;
+        private IRequestContextAccessor _requestContext;
         private StorageProviderConfiguration _configuration;
 
-        public StoredFileService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor, StorageProviderConfiguration configuration)
+        public StoredFileService(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, StorageProviderConfiguration configuration)
         {
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;

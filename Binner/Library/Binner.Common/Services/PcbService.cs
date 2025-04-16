@@ -10,9 +10,9 @@ namespace Binner.Common.Services
     public class PcbService : IPcbService
     {
         private readonly IStorageProvider _storageProvider;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
 
-        public PcbService(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
+        public PcbService(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
         {
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;

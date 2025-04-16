@@ -24,9 +24,9 @@ namespace Binner.Web.Controllers
         private readonly ILogger<AuthorizationController> _logger;
         private readonly IAuthenticationService _authenticationService;
         private readonly AuthenticationConfiguration _configuration;
-        private readonly RequestContextAccessor _requestContextAccessor;
+        private readonly IRequestContextAccessor _requestContextAccessor;
 
-        public AuthenticationController(ILogger<AuthorizationController> logger, IAuthenticationService authenticationService, AuthenticationConfiguration configuration, RequestContextAccessor requestContextAccessor)
+        public AuthenticationController(ILogger<AuthorizationController> logger, IAuthenticationService authenticationService, AuthenticationConfiguration configuration, IRequestContextAccessor requestContextAccessor)
         {
             _logger = logger;
             _authenticationService = authenticationService;
