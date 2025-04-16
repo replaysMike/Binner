@@ -18,28 +18,21 @@ namespace Binner.Common.Integrations
     {
         public string Name => "Swarm";
         private readonly SwarmConfiguration _configuration;
-        private readonly ICredentialService _credentialService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly RequestContextAccessor _requestContext;
         private readonly SwarmApiClient _client;
-        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
 
         public bool IsEnabled => _configuration.Enabled;
 
         public IApiConfiguration Configuration => _configuration;
 
-        public SwarmApi(SwarmConfiguration configuration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext)
+        public SwarmApi(SwarmConfiguration configuration)
         {
             _configuration = configuration;
-            _credentialService = credentialService;
-            _httpContextAccessor = httpContextAccessor;
             var swarmApiConfiguration =
                 new SwarmApiConfiguration(_configuration.ApiKey ?? string.Empty, new Uri(_configuration.ApiUrl))
                 {
                     Timeout = _configuration.Timeout
                 };
             _client = new SwarmApiClient(swarmApiConfiguration);
-            _requestContext = requestContext;
         }
 
         public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);

@@ -13,12 +13,13 @@ namespace Binner.Common.Services
     {
         private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
         private readonly ICredentialService _credentialService;
+        private readonly IApiHttpClientFactory _httpClientFactory;
         private readonly IntegrationConfiguration _integrationConfiguration;
         private readonly WebHostServiceConfiguration _webHostServiceConfiguration;
 
-        public IntegrationApiFactory(IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, RequestContextAccessor requestContext, ICredentialService credentialService, IntegrationConfiguration integrationConfiguration, WebHostServiceConfiguration webHostServiceConfiguration)
+        public IntegrationApiFactory(IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, IntegrationConfiguration integrationConfiguration, WebHostServiceConfiguration webHostServiceConfiguration, IApiHttpClientFactory httpClientFactory)
         {
             _credentialProvider = credentialProvider;
             _httpContextAccessor = httpContextAccessor;
@@ -26,6 +27,7 @@ namespace Binner.Common.Services
             _credentialService = credentialService;
             _integrationConfiguration = integrationConfiguration;
             _webHostServiceConfiguration = webHostServiceConfiguration;
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
@@ -454,7 +456,7 @@ namespace Binner.Common.Services
                 ApiKey = _integrationConfiguration.Swarm.ApiKey,
                 ApiUrl = _integrationConfiguration.Swarm.ApiUrl,
             };
-            var api = new Integrations.SwarmApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new Integrations.SwarmApi(configuration);
             return api;
         }
 
@@ -472,7 +474,7 @@ namespace Binner.Common.Services
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
                 Timeout = TimeSpan.Parse(credentials.GetCredentialString("Timeout"))
             };
-            var api = new Integrations.SwarmApi(configuration, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new Integrations.SwarmApi(configuration);
             return api;
         }
 
@@ -488,7 +490,7 @@ namespace Binner.Common.Services
                 ApiUrl = _integrationConfiguration.Digikey.ApiUrl,
                 oAuthPostbackUrl = _integrationConfiguration.Digikey.oAuthPostbackUrl,
             };
-            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
             return api;
         }
 
@@ -508,7 +510,7 @@ namespace Binner.Common.Services
                 oAuthPostbackUrl = credentials.GetCredentialString("oAuthPostbackUrl"),
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
-            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext);
+            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
             return api;
         }
 
@@ -526,7 +528,7 @@ namespace Binner.Common.Services
                 },
                 ApiUrl = _integrationConfiguration.Mouser.ApiUrl,
             };
-            var api = new MouserApi(configuration, _httpContextAccessor);
+            var api = new MouserApi(configuration, _httpClientFactory);
             return api;
         }
 
@@ -548,7 +550,7 @@ namespace Binner.Common.Services
                 },
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
-            var api = new MouserApi(configuration, _httpContextAccessor);
+            var api = new MouserApi(configuration, _httpClientFactory);
             return api;
         }
 
@@ -561,7 +563,7 @@ namespace Binner.Common.Services
                 ClientId = _integrationConfiguration.Nexar.ClientId,
                 ClientSecret = _integrationConfiguration.Nexar.ClientSecret,
             };
-            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
+            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale);
             return api;
         }
 
@@ -578,7 +580,7 @@ namespace Binner.Common.Services
                 ClientId = credentials.GetCredentialString("ClientId"),
                 ClientSecret = credentials.GetCredentialString("ClientSecret"),
             };
-            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
+            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale);
             return api;
         }
 
@@ -625,7 +627,7 @@ namespace Binner.Common.Services
                 ApiKey = _integrationConfiguration.Tme.ApiKey,
                 ApiUrl = _integrationConfiguration.Tme.ApiUrl,
             };
-            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
+            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
             return api;
         }
 
@@ -644,7 +646,7 @@ namespace Binner.Common.Services
                 ApiKey = credentials.GetCredentialString("ApiKey"),
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
-            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpContextAccessor);
+            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
             return api;
         }
     }

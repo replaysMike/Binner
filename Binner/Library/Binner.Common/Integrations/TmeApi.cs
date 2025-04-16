@@ -25,8 +25,7 @@ namespace Binner.Common.Integrations
         public const string DefaultApiUrl = "https://api.tme.eu/";
         private readonly TmeConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
-        private readonly HttpClient _client;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IApiHttpClient _client;
 
         public bool IsEnabled => _configuration.Enabled;
 
@@ -45,15 +44,14 @@ namespace Binner.Common.Integrations
         /// </summary>
         /// <param name="configuration"></param>
         /// <param name="localeConfiguration"></param>
-        /// <param name="httpContextAccessor"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TmeApi(TmeConfiguration configuration, LocaleConfiguration localeConfiguration, IHttpContextAccessor httpContextAccessor)
+        public TmeApi(TmeConfiguration configuration, LocaleConfiguration localeConfiguration, IApiHttpClientFactory clientFactory)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _localeConfiguration = localeConfiguration ?? throw new ArgumentNullException(nameof(localeConfiguration));
-            _httpContextAccessor = httpContextAccessor;
-            _client = new HttpClient();
-            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            _client = clientFactory.Create();
+            _client.AddHeader(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            //_client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             // API service is available only via the TLSv1.2 protocol. This information can be found on https://developers.tme.eu/en/signin 
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }

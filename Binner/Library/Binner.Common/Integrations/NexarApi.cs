@@ -18,9 +18,9 @@ namespace Binner.Common.Integrations
     public class NexarApi : IIntegrationApi
     {
         public string Name => "Nexar";
+        public const string BaseAddress = "https://api.nexar.com/graphql";
         private readonly OctopartConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private static readonly TimeSpan TokenLifetime = TimeSpan.FromDays(1);
         private static DateTime _nexarTokenExpiresAt;
         private static string? _nexarToken;
@@ -29,11 +29,10 @@ namespace Binner.Common.Integrations
         
         public IApiConfiguration Configuration => _configuration;
 
-        public NexarApi(OctopartConfiguration configuration, LocaleConfiguration localeConfiguration, IHttpContextAccessor httpContextAccessor)
+        public NexarApi(OctopartConfiguration configuration, LocaleConfiguration localeConfiguration)
         {
             _configuration = configuration;
             _localeConfiguration = localeConfiguration;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         private static NexarClient CreateNexarClient()
@@ -43,7 +42,7 @@ namespace Binner.Common.Integrations
                 .AddNexarClient()
                 .ConfigureHttpClient(httpClient =>
                 {
-                    httpClient.BaseAddress = new Uri("https://api.nexar.com/graphql");
+                    httpClient.BaseAddress = new Uri(BaseAddress);
                     httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_nexarToken}");
                 });
             var services = serviceCollection.BuildServiceProvider();
