@@ -23,9 +23,9 @@ namespace Binner.Web.Controllers
     {
         private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
         private readonly IStorageProvider _storageProvider;
-        private RequestContextAccessor _requestContext;
+        private IRequestContextAccessor _requestContext;
 
-        public DataController(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
+        public DataController(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
         {
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;

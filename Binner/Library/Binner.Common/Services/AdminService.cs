@@ -21,12 +21,12 @@ namespace Binner.Common.Services
     {
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IMapper _mapper;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
         private readonly WebHostServiceConfiguration _configuration;
         private readonly StorageProviderConfiguration _storageProviderConfiguration;
         private readonly IVersionManagementService _versionManagementService;
 
-        public AdminService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, RequestContextAccessor requestContext, WebHostServiceConfiguration configuration, StorageProviderConfiguration storageProviderConfiguration, IVersionManagementService versionManagementService)
+        public AdminService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, WebHostServiceConfiguration configuration, StorageProviderConfiguration storageProviderConfiguration, IVersionManagementService versionManagementService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;

@@ -70,7 +70,7 @@ namespace Binner.Web.Configuration
             container.Register<HttpClientFactory>(new PerContainerLifetime());
 
             // request context
-            container.Register<RequestContextAccessor>(new PerContainerLifetime());
+            container.Register<IRequestContextAccessor, RequestContextAccessor>(new PerContainerLifetime());
 
             // the main server app
             container.Register<BinnerWebHostService>(new PerContainerLifetime());

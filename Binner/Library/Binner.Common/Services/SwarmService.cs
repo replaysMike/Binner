@@ -11,9 +11,9 @@ namespace Binner.Common.Services
     public class SwarmService : ISwarmService
     {
         private readonly IMapper _mapper;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
 
-        public SwarmService(IMapper mapper, RequestContextAccessor requestContext)
+        public SwarmService(IMapper mapper, IRequestContextAccessor requestContext)
         {
             _mapper = mapper;
             _requestContext = requestContext;

@@ -22,9 +22,9 @@ namespace Binner.Web.Controllers
     {
         private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
         private readonly IStorageProvider _storageProvider;
-        private RequestContextAccessor _requestContext;
+        private IRequestContextAccessor _requestContext;
 
-        public ExportController(IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor)
+        public ExportController(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
         {
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;

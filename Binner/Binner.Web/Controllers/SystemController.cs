@@ -37,12 +37,12 @@ namespace Binner.Web.Controllers
         private readonly AutoMapper.IMapper _mapper;
         private readonly IServiceContainer _container;
         private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
         private readonly IVersionManagementService _versionManagementService;
         private readonly IBackupProvider _backupProvider;
         private readonly IAdminService _adminService;
 
-        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, RequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider, IVersionManagementService versionManagementService, IBackupProvider backupProvider, IAdminService adminService)
+        public SystemController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<ProjectController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, ILabelPrinterHardware labelPrinter, FontManager fontManager, IRequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider, IVersionManagementService versionManagementService, IBackupProvider backupProvider, IAdminService adminService)
         {
             _mapper = mapper;
             _container = container;

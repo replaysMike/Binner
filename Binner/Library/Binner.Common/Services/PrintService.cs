@@ -16,9 +16,9 @@ namespace Binner.Common.Services
         private readonly IStorageProvider _storageProvider;
         private readonly IMapper _mapper;
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
 
-        public PrintService(IMapper mapper, IStorageProvider storageProvider, RequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory)
+        public PrintService(IMapper mapper, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory)
         {
             _mapper = mapper;
             _storageProvider = storageProvider;

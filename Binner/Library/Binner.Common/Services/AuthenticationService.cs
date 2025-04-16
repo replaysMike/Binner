@@ -22,14 +22,14 @@ namespace Binner.Common.Services
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IStorageProvider _storageProvider;
-        private readonly RequestContextAccessor _requestContext;
+        private readonly IRequestContextAccessor _requestContext;
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly WebHostServiceConfiguration _configuration;
         private readonly JwtService _jwt;
         private readonly HttpClientFactory _httpClientFactory;
         private readonly ILogger<AuthenticationService> _logger;
 
-        public AuthenticationService(ILogger<AuthenticationService> logger, IStorageProvider storageProvider, IDbContextFactory<BinnerContext> contextFactory, RequestContextAccessor requestContextAccessor, JwtService jwt, WebHostServiceConfiguration configuration, HttpClientFactory httpClientFactory)
+        public AuthenticationService(ILogger<AuthenticationService> logger, IStorageProvider storageProvider, IDbContextFactory<BinnerContext> contextFactory, IRequestContextAccessor requestContextAccessor, JwtService jwt, WebHostServiceConfiguration configuration, HttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _storageProvider = storageProvider;
