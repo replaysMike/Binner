@@ -23,7 +23,7 @@ import _ from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
-import { PcbHistoryModal } from "../components/PcbHistoryModal";
+import { PcbHistoryModal } from "../components/modals/PcbHistoryModal";
 import "./Bom.css";
 
 export function Project(props) {

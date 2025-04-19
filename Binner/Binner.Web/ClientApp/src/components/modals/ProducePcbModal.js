@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from 'react-i18next';
 import { Button, Form, Modal, Image, Header, Popup, Input, Table, Icon } from "semantic-ui-react";
 import PropTypes from "prop-types";
-import NumberPicker from "./NumberPicker";
+import NumberPicker from "../NumberPicker";
 import _ from "underscore";
 import { cloneDeep } from "lodash";
-import { getProduciblePcbCount, getProducibleBomCount, getProducibleUnassociatedCount, getOutOfStockParts, consumeFromPartList } from "../common/bomTools";
+import { getProduciblePcbCount, getProducibleBomCount, getProducibleUnassociatedCount, getOutOfStockParts, consumeFromPartList } from "../../common/bomTools";
 import { toast } from "react-toastify";
 
 export function ProducePcbModal(props) {

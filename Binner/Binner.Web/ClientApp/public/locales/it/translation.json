@@ -43,6 +43,7 @@
 			"suppliers": "Fornitori",
 			"addKeyword": "Aggiungi parola chiave",
 			"chooseAlternatePart": "Scegliere un componente alternativo ({{count}})",
+			"refresh": "Refresh",
 			"suggestedPart": "Codice suggerito",
 			"partExists": "Questo <1>componente</1> <3>esiste già</3> in inventario.",
 			"placeholder": {
@@ -71,7 +72,8 @@
 				"cadModels": "Visualizzare i modelli CAD disponibili per questo componente",
 				"symbolName": "Associare un nome di simbolo KiCad a questo componente",
 				"footprintName": "Associare un nome di impronta KiCad a questo componente",
-				"extensionValue": "Associare un valore personalizzato a questo componente"
+				"extensionValue": "Associare un valore personalizzato a questo componente",
+        "apiRefresh": "Aggiorna le informazioni sulle parti dalle API esterne. Tutti i campi API forniti verranno sovrascritti."
 			}
 		},
 		"lowInventory": {
@@ -842,6 +844,8 @@
 		"deleteHistory": "Sicuro di voler eliminare quest record di cronologia?",
 		"partsWillBeBackInStock": "Tutti i componenti utilizzati saranno resi <1>nuovamente disponibili</1>.",
 		"clearScan": "Sicuro di voler cancellare i risultati della scansione?",
+		"refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
+    "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
 		"header": {
 			"removeBomPart": "Elimina componenente dalla DBA",
 			"deleteFile": "Cancella File",

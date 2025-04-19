@@ -44,6 +44,7 @@
       "suppliers": "Lieferanten",
       "addKeyword": "Schlüsselwörter hinzufügen",
       "chooseAlternatePart": "Wählen Sie eine Bauteile- Alternative ({{count}})",
+      "refresh": "Refresh",
       "suggestedPart": "Empfohlenen Bauteile Nummer",
       "partExists": "Dieses <1>Bauteil</1> <3>existiert bereits</3> in Ihrem Bestand.",
       "placeholder": {
@@ -72,7 +73,8 @@
         "cadModels": "Zeige für das Bauteil verfügbare CAD Modelle",
         "symbolName": "Ordnen Sie diesem Bauteil ein KiCad-Symbol zu.",
         "footprintName": "Ordnen Sie diesem Bauteil einen KiCad footprint namen zu.",
-        "extensionValue": "Ordnen Sie diesem Bauteil einen eigenen Wert zu."
+        "extensionValue": "Ordnen Sie diesem Bauteil einen eigenen Wert zu.",
+        "apiRefresh": "Aktualisieren Sie die Teileinformationen über externe APIs. Alle von der API bereitgestellten Felder werden überschrieben."
       }
     },
     "lowInventory": {
@@ -843,6 +845,8 @@
     "deleteHistory": "Sind Sie sicher, dass Sie den Eintrag im Verlauf löschen wollen?",
     "partsWillBeBackInStock": "Alle verbrauchten Bauteile werden <1>wieder auf Lager gelegt</1>.",
     "clearScan": "Sind Sie sicher, dass Sie die Suchergebnisse entfernen wollen?",
+    "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
+    "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
     "header": {
       "removeBomPart": "Entferne Bauteil von der Stückliste.",
       "deleteFile": "Lösche Datei",

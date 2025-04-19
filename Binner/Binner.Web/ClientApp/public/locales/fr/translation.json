@@ -43,6 +43,7 @@
       "suppliers": "Fournisseurs",
       "addKeyword": "Ajouter un mot-clé",
       "chooseAlternatePart": "Choisir une pièce alternative ({{count}})",
+      "refresh": "Refresh",
       "suggestedPart": "Numéro de pièce suggéré",
       "partExists": "Cette <1>pièce</1> <3>existe déjà</3> dans votre inventaire.",
       "placeholder": {
@@ -71,7 +72,8 @@
         "cadModels": "Voir les modèles CAO disponibles pour cette pièce",
         "symbolName": "Associer un nom de symbole KiCad à cette pièce",
         "footprintName": "Associer un nom d'empreinte KiCad à cette pièce",
-        "extensionValue": "Associer une valeur personnalisée à cette pièce"
+        "extensionValue": "Associer une valeur personnalisée à cette pièce",
+        "apiRefresh": "Actualisez les informations des pièces à partir des API externes. Tous les champs fournis par l'API seront écrasés."
       }
     },
     "lowInventory": {
@@ -846,6 +848,8 @@
     "deleteHistory": "Êtes-vous sûr de vouloir supprimer cet enregistrement historique ?",
     "partsWillBeBackInStock": "Toutes les pièces consommées seront <1>remises en stock</1>.",
     "clearScan": "Êtes-vous sûr de vouloir effacer vos résultats scannés ?",
+    "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
+    "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
     "header": {
       "removeBomPart": "Retirer la pièce de la nomenclature",
       "deleteFile": "Supprimer le fichier",

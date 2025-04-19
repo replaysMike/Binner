@@ -14,7 +14,7 @@ import ClearableInput from "../components/ClearableInput";
 import NumberPicker from "../components/NumberPicker";
 import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
 import { FormHeader } from "../components/FormHeader";
-import { ChooseAlternatePartModal } from "../components/ChooseAlternatePartModal";
+import { ChooseAlternatePartModal } from "../components/modals/ChooseAlternatePartModal";
 import { PartMediaMemoized } from "../components/PartMediaMemoized";
 import { BulkScanModal } from "../components/BulkScanModal";
 import { BulkScanIconMemoized } from "../components/BulkScanIconMemoized";
@@ -24,6 +24,7 @@ import { MatchingPartsMemoized } from "../components/MatchingPartsMemoized";
 import { DuplicatePartModal } from "../components/DuplicatePartModal";
 import { fetchApi } from "../common/fetchApi";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
+import { addMinutes } from "../common/datetime";
 import { formatNumber } from "../common/Utils";
 import { getPartTypeId } from "../common/partTypes";
 import { getImagesToken } from "../common/authentication";
@@ -49,8 +50,8 @@ export function Inventory(props) {
     return getLocalData(preferenceName, { settingsName: 'inventory' })
   };
 
-  const setViewPreference = (preferenceName, value) => {
-    setLocalData(preferenceName, value, { settingsName: 'inventory' });
+  const setViewPreference = (preferenceName, value, options) => {
+    setLocalData(preferenceName, value, { settingsName: 'inventory', ...options });
   };
 
   const removeViewPreference = (preferenceName) => {
@@ -119,7 +120,9 @@ export function Inventory(props) {
   const [duplicateParts, setDuplicateParts] = useState([]);
   const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(false);
   const [confirmDeletePartIsOpen, setConfirmDeletePartIsOpen] = useState(false);
+  const [confirmRefreshPartIsOpen, setConfirmRefreshPartIsOpen] = useState(false);
   const [confirmDeletePartContent, setConfirmDeletePartContent] = useState(null);
+  const [confirmRefreshPartContent, setConfirmRefreshPartContent] = useState(null);
   const [partTypes, setPartTypes] = useState([]);
   const [allPartTypes, setAllPartTypes] = useState([]);
   const [loadingPart, setLoadingPart] = useState(false);
@@ -164,33 +167,55 @@ export function Inventory(props) {
     }
     const newIsEditing = partNumberStr?.length > 0;
     setIsEditing(newIsEditing);
-    // restore input data on load, then remove it
-    const digikeyTempSettings = getViewPreference('digikey');
-    if (digikeyTempSettings?.partNumber) {
-      partNumberStr = digikeyTempSettings.partNumber;
-      removeViewPreference('digikey');
-    }
+    
 
-    const fetchData = async () => {
+    const fetchData = async (initialRequest, targetPart) => {
+      let partToSearch = targetPart;
       setPartMetadataIsSubscribed(false);
       setPartMetadataErrors([]);
       await fetchPartTypes();
       await fetchRecentRows();
+      
       if (partNumberStr) {
-        var loadedPart = await fetchPart(partNumberStr, partId);
+        // editing an existing part
+        partToSearch = await fetchPart(partNumberStr, partId) || part;
         if (newIsEditing) setInputPartNumber(partNumberStr);
         setInputPartNumber(partNumberStr);
-        await fetchPartMetadataAndInventory(partNumberStr, loadedPart || part);
+        setLoadingPartMetadata(true);
+        await fetchPartMetadataAndInventory(partNumberStr, partToSearch);
+        setLoadingPartMetadata(false);
       } else if (props.params.partNumberToAdd) {
-        const { data } = await doFetchPartMetadata(props.params.partNumberToAdd, loadedPart || part, false);
-        processPartMetadataResponse(data, loadedPart || part);
+        // a part number to add is specified in the URL path
+        const { data } = await doFetchPartMetadata(props.params.partNumberToAdd, partToSearch, false);
+        processPartMetadataResponse(data, partToSearch, true, true);
+        setLoadingPartMetadata(false);
         setIsDirty(true);
       } else {
-        resetForm();
+        if (initialRequest) {
+          // adding a new part, reset the form
+          resetForm();
+        } else {
+          // fetch part metadata, don't allow overwriting of fields that have already been entered
+          setLoadingPartMetadata(true);
+          const { data } = await doFetchPartMetadata(targetPart.partNumber, partToSearch, false);
+          processPartMetadataResponse(data, partToSearch, true, false); // false, don't overwrite entered fields
+          setLoadingPartMetadata(false);
+          setIsDirty(true);
+        }
       }
     };
 
-    fetchData().catch(console.error);
+    // restore temporary input data on load, then remove it. Used for when a redirect to DigiKey is required.
+    let initialRequest = true;
+    const digikeyTempSettings = getViewPreference('digikey');
+    if (digikeyTempSettings?.partNumber) {
+      setPart(digikeyTempSettings);
+      setInputPartNumber(digikeyTempSettings.partNumber);
+      removeViewPreference('digikey');
+      initialRequest = false;
+    }
+
+    fetchData(initialRequest, digikeyTempSettings || part).catch(console.error);
     
     getSystemSettings().then((systemSettings) => {
       setSystemSettings(systemSettings);
@@ -199,12 +224,6 @@ export function Inventory(props) {
       searchDebounced.cancel();
     };
   }, [props.params.partNumber]);
-
-  /*useEffect(() => {
-    if (!props.params.partNumberToAdd) {
-      resetForm();
-    }
-  }, [props.params.partNumberToAdd]);*/
 
   const fetchPartMetadataAndInventory = async (input, localPart) => {
     if (partTypesRef.current.length === 0)
@@ -221,8 +240,10 @@ export function Inventory(props) {
       const { data, existsInInventory } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
       if (existsInInventory) setPartExistsInInventory(true);
 
-      processPartMetadataResponse(data, localPart);
+      processPartMetadataResponse(data, localPart, !pageHasParameters, false);
+      setLoadingPartMetadata(false);
     } catch (ex) {
+      setLoadingPartMetadata(false);
       console.error("Exception", ex);
       if (ex.name === "AbortError") {
         return; // Continuation logic has already been skipped, so return normally
@@ -231,7 +252,72 @@ export function Inventory(props) {
     }
   };
 
-  const setPartFromMetadata = useCallback((metadataParts, suggestedPart) => {
+  /**
+   * Map the supplier part numbers from the information in metadata info of all parts from all apis
+   * @param {object} entity 
+   * @param {array} metadataParts 
+   * @returns 
+   */
+  const mapSupplierPartNumbers = (entity, metadataParts, allowOverwrite) => {
+    // map digikey
+    let searchResult = _.find(metadataParts, (e) => {
+      return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === entity.manufacturerPartNumber;
+    });
+    if (searchResult) {
+      entity.digiKeyPartNumber = (allowOverwrite || !entity.digiKeyPartNumber) ? searchResult.supplierPartNumber : entity.digiKeyPartNumber;
+      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+    }
+    
+    // map mouser
+    searchResult = _.find(metadataParts, (e) => {
+      return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === entity.manufacturerPartNumber;
+    });
+    if (searchResult) {
+      entity.mouserPartNumber = (allowOverwrite || !entity.mouserPartNumber) ? searchResult.supplierPartNumber : entity.mouserPartNumber;
+      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+    }
+    // map arrow
+    searchResult = _.find(metadataParts, (e) => {
+      return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === entity.manufacturerPartNumber;
+    });
+    if (searchResult) {
+      entity.arrowPartNumber = (allowOverwrite || !entity.arrowPartNumber) ? searchResult.supplierPartNumber : entity.arrowPartNumber;
+      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+    }
+    // map tme
+    searchResult = _.find(metadataParts, (e) => {
+      return e !== undefined && e.supplier === "TME" && e.manufacturerPartNumber === entity.manufacturerPartNumber;
+    });
+    if (searchResult) {
+      entity.tmePartNumber = (allowOverwrite || !entity.tmePartNumber) ? searchResult.supplierPartNumber : entity.tmePartNumber;
+      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+    }
+  }
+
+  const mapIfValid = (property, existingValue, newValue, allowOverwrite, newProperty) => {
+    if (!newProperty) newProperty = property;
+    // map value if:
+    // - we are allowing to overwrite an existing value
+    // - the existing value is empty and the destination is not
+    // - the new value is not empty and the existing value is empty
+
+    if (allowOverwrite) {
+      if (newValue[newProperty]) return newValue[newProperty] || ""; // new value if not empty
+    }
+    if (!existingValue[property]) return newValue[newProperty] || "";
+    return existingValue[property] || "";
+  };
+
+  const setPartFromMetadata = useCallback((metadataParts, suggestedPart, allowOverwrite = true) => {
+    console.log('setPartFromMetadata', allowOverwrite);
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
 
@@ -256,155 +342,39 @@ export function Inventory(props) {
     };
 
     if (mappedPart.quantity > 0)
-      entity.quantity = mappedPart.quantity;
+      entity.quantity = mapIfValid("quantity", entity, mappedPart, allowOverwrite);
 
-    entity.partNumber = mappedPart.partNumber;
-    entity.supplier = mappedPart.supplier;
-    entity.supplierPartNumber = mappedPart.supplierPartNumber;
-    if (mappedPart.partTypeId) entity.partTypeId = mappedPart.partTypeId || "";
-    if (mappedPart.mountingTypeId) entity.mountingTypeId = mappedPart.mountingTypeId || "";
-    entity.packageType = mappedPart.packageType || "";
-    entity.cost = mappedPart.cost || 0.0;
-    entity.keywords = mappedPart.keywords || "";
-    entity.description = mappedPart.description || "";
-    entity.manufacturer = mappedPart.manufacturer || "";
-    entity.manufacturerPartNumber = mappedPart.manufacturerPartNumber || "";
-    entity.productUrl = mappedPart.productUrl || "";
-    entity.imageUrl = mappedPart.imageUrl || "";
-    if (mappedPart.datasheetUrls.length > 0) {
+    entity.partNumber = mapIfValid("partNumber", entity, mappedPart, allowOverwrite);
+    entity.supplier = mapIfValid("supplier", entity, mappedPart, allowOverwrite);
+    entity.supplierPartNumber = mapIfValid("supplierPartNumber", entity, mappedPart, allowOverwrite);
+    entity.partTypeId = mapIfValid("partTypeId", entity, mappedPart, allowOverwrite);
+    entity.mountingTypeId = mapIfValid("mountingTypeId", entity, mappedPart, allowOverwrite);
+    entity.packageType = mapIfValid("packageType", entity, mappedPart, allowOverwrite);
+    entity.cost = mapIfValid("cost", entity, mappedPart, allowOverwrite);
+    entity.keywords = mapIfValid("keywords", entity, mappedPart, allowOverwrite);
+    entity.description = mapIfValid("description", entity, mappedPart, allowOverwrite);
+    entity.manufacturer = mapIfValid("manufacturer", entity, mappedPart, allowOverwrite);
+    entity.manufacturerPartNumber = mapIfValid("manufacturerPartNumber", entity, mappedPart, allowOverwrite);
+    entity.productUrl = mapIfValid("productUrl", entity, mappedPart, allowOverwrite);
+    entity.imageUrl = mapIfValid("imageUrl", entity, mappedPart, allowOverwrite);
+    if ((allowOverwrite || !entity.datasheetUrl) && mappedPart.datasheetUrls.length > 0) {
       entity.datasheetUrl = _.first(mappedPart.datasheetUrls) || "";
     }
-    if (mappedPart.supplier === "DigiKey") {
-      entity.digiKeyPartNumber = mappedPart.supplierPartNumber || "";
-      // also map mouser
-      let searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.mouserPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map arrow
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.arrowPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map tme
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "TME" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.tmePartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-    }
-    if (mappedPart.supplier === "Mouser") {
-      entity.mouserPartNumber = mappedPart.supplierPartNumber || "";
-      // also map digikey
-      let searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map arrow
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.arrowPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map tme
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "TME" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.tmePartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-    }
-    if (mappedPart.supplier === "Arrow") {
-      entity.arrowPartNumber = mappedPart.supplierPartNumber || "";
-      // also map digikey
-      let searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map mouser
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.mouserPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map tme
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "TME" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.tmePartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-    }
-    if (mappedPart.supplier === "TME") {
-      entity.tmePartNumber = mappedPart.supplierPartNumber || "";
-      // also map digikey
-      let searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "DigiKey" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.digiKeyPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map mouser
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Mouser" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.mouserPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
-      // also map arrow
-      searchResult = _.find(metadataParts, (e) => {
-        return e !== undefined && e.supplier === "Arrow" && e.manufacturerPartNumber === mappedPart.manufacturerPartNumber;
-      });
-      if (searchResult) {
-        entity.arrowPartNumber = searchResult.supplierPartNumber;
-        if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-        if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-        if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
-      }
+    mapSupplierPartNumbers(entity, metadataParts, allowOverwrite);
+    
+    switch(mappedPart.supplier) {
+      case "DigiKey":
+        entity.digiKeyPartNumber = mapIfValid("digiKeyPartNumber", entity, mappedPart, allowOverwrite, "supplierPartNumber");  
+        break;
+      case "Mouser":
+        entity.mouserPartNumber = mapIfValid("mouserPartNumber", entity, mappedPart, allowOverwrite, "supplierPartNumber");
+        break;
+      case "Arrow":
+        entity.arrowPartNumber = mapIfValid("arrowPartNumber", entity, mappedPart, allowOverwrite, "supplierPartNumber");
+        break;
+      case "TME":
+        entity.tmePartNumber = mapIfValid("tmePartNumber", entity, mappedPart, allowOverwrite, "supplierPartNumber");
+        break;
     }
 
     const lowestCostPart = _.first(
@@ -421,9 +391,12 @@ export function Inventory(props) {
     setPart(entity);
   }, []);
 
-  const processPartMetadataResponse = useCallback((data, localPart) => {
+  const processPartMetadataResponse = useCallback((data, localPart, allowSetFromMetadata, allowOverwrite) => {
     // cancelled or auth required
-    if (!data) return;
+    if (!data) {
+      setLoadingPartMetadata(false);
+      return;
+    }
 
     if (data.errors && data.errors.length > 0) {
       setPartMetadataErrors(data.errors);
@@ -436,7 +409,7 @@ export function Inventory(props) {
 
       const suggestedPart = infoResponse.parts[0];
       // populate the form with data from the part metadata
-      if (!pageHasParameters) setPartFromMetadata(metadataParts, { ...suggestedPart, quantity: -1 });
+      if (allowSetFromMetadata) setPartFromMetadata(metadataParts, { ...suggestedPart, quantity: -1 }, allowOverwrite);
     } else {
       // no part metadata available
       setPartMetadataIsSubscribed(true);
@@ -448,7 +421,7 @@ export function Inventory(props) {
     setInfoResponse(infoResponse);
     setMetadataParts(metadataParts);
     setLoadingPartMetadata(false);
-  }, [pageHasParameters, setPartFromMetadata]);
+  }, [setPartFromMetadata]);
 
   /**
    * Do a part information search
@@ -471,9 +444,11 @@ export function Inventory(props) {
       if (data.requiresAuthentication) {
         // notify and redirect for authentication
         if (data.redirectUrl && data.redirectUrl.length > 0) {
+          // temporarily store page details and repopulate on return
           setViewPreference('digikey', {
-            partNumber: partNumber,
-          });
+            ...part,
+            partNumber: partNumber
+          }, { expireOn: addMinutes(new Date(), 5)});
 
           setAuthorizationApiName(data.apiName);
           setAuthorizationUrl(data.redirectUrl);
@@ -596,7 +571,7 @@ export function Inventory(props) {
         if (cleanPartNumber) {
           setPartMetadataIsSubscribed(false);
           setPartMetadataErrors([]);
-          if (!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable });
+          if (!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable }, true);
           if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: partInfo.quantityAvailable });
 
           // also run a search to get datasheets/images
@@ -983,7 +958,7 @@ export function Inventory(props) {
   };
 
   const handleChooseAlternatePart = (e, part) => {
-    setPartFromMetadata(metadataParts, part);
+    setPartFromMetadata(metadataParts, part, true);
   };
 
   const handleBulkBarcodeScan = (e) => {
@@ -1056,10 +1031,20 @@ export function Inventory(props) {
     props.history(`/inventory`);
   };
 
+  const handleRefreshPart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLoadingPartMetadata(true);
+    setConfirmRefreshPartIsOpen(false);
+    const { data } = await doFetchPartMetadata(part.partNumber, part, false);
+    processPartMetadataResponse(data, part, true, true);
+    setLoadingPartMetadata(false);
+    setIsDirty(true);
+  };
+
   const openDeletePart = (e, part) => {
     e.preventDefault();
     e.stopPropagation();
-    setConfirmDeletePartIsOpen(true);
     setSelectedPart(part);
     setConfirmDeletePartContent(
       <p>
@@ -1073,6 +1058,23 @@ export function Inventory(props) {
         </Trans>
       </p>
     );
+    setConfirmDeletePartIsOpen(true);
+  };
+
+  const openRefreshPart = (e, part) => {
+    setConfirmRefreshPartContent(
+      <p>
+        <Trans i18nKey="confirm.refreshPart" name={inputPartNumber}>
+          Are you sure you want to refresh part information for <b>{{ name: inputPartNumber }}</b>?
+        </Trans>
+        <br />
+        <br />
+        <Trans i18nKey="confirm.overwriteExistingContent">
+          Existing values for fields provided by external APIs will be overwritten.
+        </Trans>
+      </p>
+    );
+    setConfirmRefreshPartIsOpen(true);
   };
 
   const closeDeletePart = (e) => {
@@ -1080,6 +1082,12 @@ export function Inventory(props) {
     e.stopPropagation();
     setConfirmDeletePartIsOpen(false);
     setSelectedPart(null);
+  };
+
+  const closeRefreshPart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmRefreshPartIsOpen(false);
   };
 
   const handleSetSuggestedPartNumber = (e, value) => {
@@ -1091,6 +1099,11 @@ export function Inventory(props) {
   const handleAuthRedirect = (e) => {
     e.preventDefault();
     window.location.href = authorizationUrl;
+  };
+
+  const handleCancelAuthRedirect = (e) => {
+    setConfirmAuthIsOpen(false);
+    removeViewPreference('digikey');
   };
 
   /* RENDER */
@@ -1343,27 +1356,41 @@ export function Inventory(props) {
                       </h3>
                     </div>
                     <div style={{ position: 'relative' }}>
-                      {metadataParts && metadataParts.length > 1 && (
-                        <ChooseAlternatePartModal
+                      <div style={{position: 'absolute', right: '-10px', top: '-10px', width: '500px', textAlign: 'right'}}>
+                        <Popup
+                          hideOnScroll
+                          disabled={viewPreferences.helpDisabled}
+                          onOpen={disableHelp}
+                          content={t('page.inventory.popup.apiRefresh', "Refresh the part information from external APIs. All API provided fields will be overwritten.")}
                           trigger={
-                            <Popup
-                              hideOnScroll
-                              disabled={viewPreferences.helpDisabled}
-                              onOpen={disableHelp}
-                              content={t('page.inventory.popup.alternateParts', "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.")}
-                              trigger={
-                                <Button type="button" secondary style={{ fontSize: '0.9em', width: '265px', padding: '0.68em 1.5em', position: 'absolute', right: '-10px', top: '-10px' }}>
-                                  <Icon name="external alternate" color="blue" />
-                                  {t('page.inventory.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) })}
-                                </Button>
-                              }
-                            />
+                            <Button type="button" style={{ fontSize: '0.9em', width: '115px', padding: '0.68em 1.5em', position: 'relative' }} disabled={!part.partNumber} onClick={openRefreshPart}>
+                              <Icon name="refresh" color="blue" />
+                              {t('page.inventory.refresh', "Refresh")}
+                            </Button>
                           }
-                          part={part}
-                          metadataParts={metadataParts}
-                          onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)}
-                        />
-                      )}
+                        />                        
+                        {metadataParts && metadataParts.length > 1 && (
+                          <ChooseAlternatePartModal
+                            trigger={
+                              <Popup
+                                hideOnScroll
+                                disabled={viewPreferences.helpDisabled}
+                                onOpen={disableHelp}
+                                content={t('page.inventory.popup.alternateParts', "Choose a different part to extract metadata information from. By default, Binner will give you the most relevant part and with the highest quantity available.")}
+                                trigger={
+                                  <Button type="button" secondary style={{ fontSize: '0.9em', width: '265px', padding: '0.68em 1.5em', position: 'relative' }}>
+                                    <Icon name="external alternate" color="blue" />
+                                    {t('page.inventory.chooseAlternatePart', "Choose alternate part ({{count}})", { count: formatNumber(metadataParts.length) })}
+                                  </Button>
+                                }
+                              />
+                            }
+                            part={part}
+                            metadataParts={metadataParts}
+                            onPartChosen={(e, p) => handleChooseAlternatePart(e, p, partTypes)}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -1458,18 +1485,9 @@ export function Inventory(props) {
                       />
                     </Form.Field>
                   </Form.Group>
-                </Segment>}
-
-                {/* Part Preferences */}
-                {!disableRendering.current && <Segment loading={loadingPartMetadata} color="green">
-                  <Header dividing as="h3">
-                    {t('page.inventory.privatePartInfo', "Private Part Information")}
-                  </Header>
-                  <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via apis.")}</p>
-
                   <Form.Field>
                     <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
-                    <ClearableInput type="Input" action className='labeled' placeholder='www.ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
+                    <ClearableInput type="Input" action className='labeled' placeholder='ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>
                       <Label>https://</Label>
                       <input />
                       <Button onClick={e => handleVisitLink(e, part.datasheetUrl)} disabled={!part.datasheetUrl || part.datasheetUrl.length === 0}>{t('button.view', "View")}</Button>
@@ -1477,11 +1495,11 @@ export function Inventory(props) {
                   </Form.Field>
                   <Form.Field>
                     <label>{t('label.productUrl', "Product Url")}</label>
-                    <Input action className='labeled' placeholder='' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
+                    <ClearableInput type="Input" action className='labeled' placeholder='digikey.ca/en/products/detail/texas-instruments/LM2904DR/555718' value={(part.productUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='productUrl'>
                       <Label>https://</Label>
                       <input />
                       <Button onClick={e => handleVisitLink(e, part.productUrl)} disabled={!part.productUrl || part.productUrl.length === 0}>{t('button.visit', "Visit")}</Button>
-                    </Input>
+                    </ClearableInput>
                   </Form.Field>
                   <Form.Group>
                     <Form.Field width={4}>
@@ -1501,6 +1519,15 @@ export function Inventory(props) {
                       <ClearableInput placeholder='LM358PWR' value={part.tmePartNumber || ''} onChange={handleChange} name='tmePartNumber' />
                     </Form.Field>
                   </Form.Group>
+                </Segment>}
+
+                {/* Part Preferences */}
+                {!disableRendering.current && <Segment loading={loadingPartMetadata} color="green">
+                  <Header dividing as="h3">
+                    {t('page.inventory.privatePartInfo', "Private Part Information")}
+                  </Header>
+                  <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via apis.")}</p>
+
                   <Form.Group>
                     <Form.Field width={4}>
                       <label>{t('label.symbolName', "KiCad Symbol Name")}</label>
@@ -1576,9 +1603,17 @@ export function Inventory(props) {
       />
       <Confirm
         className="confirm"
+        header={t('confirm.header.refreshPart', "Refresh Part Information")}
+        open={confirmRefreshPartIsOpen}
+        onCancel={closeRefreshPart}
+        onConfirm={handleRefreshPart}
+        content={confirmRefreshPartContent}
+      />
+      <Confirm
+        className="confirm"
         header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
         open={confirmAuthIsOpen}
-        onCancel={() => setConfirmAuthIsOpen(false)}
+        onCancel={handleCancelAuthRedirect}
         onConfirm={handleAuthRedirect}
         content={<p>
           <Trans i18nKey="page.settings.confirm.mustAuthenticate" name={authorizationApiName}>

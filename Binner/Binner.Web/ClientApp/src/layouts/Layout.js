@@ -4,7 +4,6 @@ import { Container } from "reactstrap";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import customEvents from '../common/customEvents';
-import 'react-toastify/dist/ReactToastify.css';
 import { Outlet } from "react-router-dom";
 
 export function Layout(props) {

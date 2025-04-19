@@ -11,8 +11,8 @@ import AdminWrapper from "./routes/AdminWrapper";
 import { Layout } from "./layouts/Layout";
 
 // components
-import ErrorModal from "./components/ErrorModal";
-import LicenseErrorModal from "./components/LicenseErrorModal";
+import ErrorModal from "./components/modals/ErrorModal";
+import LicenseErrorModal from "./components/modals/LicenseErrorModal";
 
 // styles
 import "./custom.css";
