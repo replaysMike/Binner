@@ -57,11 +57,11 @@ document.removeEventListener = (type, listener, options) => {
 // end fix
 
 const root = createRoot(rootElement);
-root.render(
+root.render(<>
+  <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" />
   <BrowserRouter>
-    <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" containerId="maintoast" />
     <App />
-  </BrowserRouter>,
+  </BrowserRouter></>,
 );
 
 registerServiceWorker();

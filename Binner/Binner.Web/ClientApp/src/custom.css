@@ -877,18 +877,21 @@ svg.parttype-Crystal:hover,.icon-container svg.parttype-Crystal:hover {
 
 /* CUSTOM TOAST STYLING */
 :root {
-    --toastify-toast-width: 50%;
+    --toastify-toast-width: 100%;
+    --toastify-toast-max-height: 300px;
     --toastify-color-error: #e02a15;
     --toastify-color-warning: #f5ec76;
     --toastify-color-info: #1b59dd;
     --toastify-text-color-warning: #000;
 }
 
+.Toastify { width: 100%; }
+
 .Toastify .Toastify__toast-container:has(#wide) {
     --toastify-toast-width: 70% !important;
 }
 
-.Toastify__toast-container--top-center {
+.Toastify__toast-container.Toastify__toast-container--top-center {
     top: 0;
     left: 50%;
     transform: translateX(-50%);

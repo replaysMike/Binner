@@ -43,6 +43,7 @@
       "suppliers": "Tedarikçiler",
       "addKeyword": "Anahtar Kelime Ekle",
       "chooseAlternatePart": "Alternatif parça seç ({{count}})",
+      "refresh": "Refresh",
       "suggestedPart": "Önerilen parça numarası",
       "partExists": "Bu <1>parça</1> envanterinizde <3>zaten mevcut</3>.",
       "placeholder": {
@@ -71,7 +72,8 @@
         "cadModels": "Bu parça için mevcut CAD Modellerini görüntüleyin",
         "symbolName": "Bu bölümle bir KiCad sembol adını ilişkilendirin",
         "footprintName": "Bu bölümle bir KiCad ayak izi adını ilişkilendirin",
-        "extensionValue": "Bu bölümle özel bir değeri ilişkilendirin"
+        "extensionValue": "Bu bölümle özel bir değeri ilişkilendirin",
+        "apiRefresh": "Harici API'lerden parça bilgilerini yenileyin. API tarafından sağlanan tüm alanlar üzerine yazılacaktır."
       }
     },
     "lowInventory": {
@@ -845,6 +847,8 @@
     "deleteHistory": "Bu geçmiş kaydını silmek istediğinizden emin misiniz?",
     "partsWillBeBackInStock": "Tüketilen tüm parçalar <1>stoğa geri</1> yerleştirilecek.",
     "clearScan": "Taranan sonuçlarınızı temizlemek istediğinizden emin misiniz?",
+    "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
+    "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
     "header": {
       "removeBomPart": "BOM'dan Parçayı Kaldır",
       "deleteFile": "Dosyayı Sil",

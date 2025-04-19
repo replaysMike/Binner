@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, Popup, TextArea, Header, Confirm } from "semantic-ui-react";
 import PropTypes from "prop-types";
-import { fetchApi } from "../common/fetchApi";
-import PartsGrid2Memoized from "./PartsGrid2Memoized";
-import NumberPicker from "./NumberPicker";
+import { fetchApi } from "../../common/fetchApi";
+import PartsGrid2Memoized from "../PartsGrid2Memoized";
+import NumberPicker from "../NumberPicker";
 import debounce from "lodash.debounce";
 
 /**

@@ -42,6 +42,7 @@
       "suppliers": "供货商",
       "addKeyword": "添加关键词",
       "chooseAlternatePart": "改用其他可替代品牌，(共{{count}}种)",
+      "refresh": "Refresh",
       "suggestedPart": "推荐的元器件编号",
       "placeholder": {
         "location": "实验室",
@@ -63,7 +64,14 @@
         "alternateParts": "备选替代部件",
         "mustAddPart": "添加供应商条目之前，必须先保存当前元器件信息",
         "addSupplier": "添加供应商条目",
-        "deleteLocalFile": "删除此本地文件"
+        "deleteLocalFile": "删除此本地文件",
+        "technicalSpecs": "View technical specs",
+        "compliance": "View compliance information",
+        "cadModels": "View CAD Models available for this part",
+        "symbolName": "Associate a KiCad symbol name with this part",
+        "footprintName": "Associate a KiCad footprint name with this part",
+        "extensionValue": "Associate a custom value with this part",
+        "apiRefresh": "Refresh the part information from external APIs. All API provided fields will be overwritten."
       }
     },
     "lowInventory": {
@@ -662,6 +670,9 @@
     "deleteRecord": "确定删除这项记录吗?",
     "deleteHistory": "确定删除这条历史记录吗?",
     "partsWillBeBackInStock": "所有被使用的零件将会被 <1>重新增补会库存中</1>.",
+    "clearScan": "Are you sure you want to clear your scanned results?",
+    "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
+    "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
     "header": {
       "removeBomPart": "从BOM中删除零件",
       "deleteFile": "删除文件",

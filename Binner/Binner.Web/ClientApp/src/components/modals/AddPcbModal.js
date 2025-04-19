@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Button, Form, Modal, TextArea, Input, Image, Header, Popup } from "semantic-ui-react";
-import Dropzone from "./Dropzone";
+import Dropzone from "../Dropzone";
 import PropTypes from "prop-types";
 import { toast } from "react-toastify";
-import NumberPicker from "./NumberPicker";
+import NumberPicker from "../NumberPicker";
 
 /**
  * Add a PCB to a BOM project

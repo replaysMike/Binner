@@ -43,6 +43,7 @@
       "suppliers": "Suppliers",
       "addKeyword": "Add Keyword",
       "chooseAlternatePart": "Choose alternate part ({{count}})",
+      "refresh": "Refresh",
       "suggestedPart": "Suggested part number",
       "partExists": "This <1>part</1> <3>already exists</3> in your inventory.",
       "placeholder": {
@@ -71,7 +72,8 @@
         "cadModels": "View CAD Models available for this part",
         "symbolName": "Associate a KiCad symbol name with this part",
         "footprintName": "Associate a KiCad footprint name with this part",
-        "extensionValue": "Associate a custom value with this part"
+        "extensionValue": "Associate a custom value with this part",
+        "apiRefresh": "Actualice la información de la pieza desde las API externas. Se sobrescribirán todos los campos proporcionados por la API."
       }
     },
     "lowInventory": {
@@ -845,6 +847,8 @@
     "deleteHistory": "Are you sure you want to delete this history record?",
     "partsWillBeBackInStock": "All consumed parts will be placed <1>back in stock</1>.",
     "clearScan": "Are you sure you want to clear your scanned results?",
+    "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
+    "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
     "header": {
       "removeBomPart": "Remove Part from BOM",
       "deleteFile": "Delete File",

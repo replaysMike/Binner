@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import ReactDOM from "react-dom";
 import { Label, Button, Image, Table, Modal, Popup } from "semantic-ui-react";
 import _ from "underscore";
-import { MountingTypes, GetTypeName } from "../common/Types";
-import { formatCurrency, formatNumber } from "../common/Utils";
+import { MountingTypes, GetTypeName } from "../../common/Types";
+import { formatCurrency, formatNumber } from "../../common/Utils";
 
 export function ChooseAlternatePartModal(props) {
   const { t } = useTranslation();
@@ -128,7 +128,7 @@ export function ChooseAlternatePartModal(props) {
 		);
 	};
 
-	return (<div>
+	return (<div style={{display: 'inline-block'}}>
 	<Modal
 		centered
 		open={partModalOpen}
