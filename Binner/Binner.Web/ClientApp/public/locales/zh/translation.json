@@ -677,6 +677,7 @@
     "clearScan": "Are you sure you want to clear your scanned results?",
     "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
     "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
+    "doNotAskAgain": "Do not ask again",
     "header": {
       "removeBomPart": "从BOM中删除零件",
       "deleteFile": "删除文件",

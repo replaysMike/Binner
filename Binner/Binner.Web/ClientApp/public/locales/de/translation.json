@@ -848,6 +848,7 @@
     "clearScan": "Sind Sie sicher, dass Sie die Suchergebnisse entfernen wollen?",
     "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
     "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
+    "doNotAskAgain": "Do not ask again",
     "header": {
       "removeBomPart": "Entferne Bauteil von der Stückliste.",
       "deleteFile": "Lösche Datei",

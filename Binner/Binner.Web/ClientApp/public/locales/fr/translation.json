@@ -851,6 +851,7 @@
     "clearScan": "Êtes-vous sûr de vouloir effacer vos résultats scannés ?",
     "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
     "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
+    "doNotAskAgain": "Do not ask again",
     "header": {
       "removeBomPart": "Retirer la pièce de la nomenclature",
       "deleteFile": "Supprimer le fichier",
