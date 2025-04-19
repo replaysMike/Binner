@@ -834,7 +834,8 @@
     "failedSavePart": "Échec de la mise à jour, vérifiez le type de pièce et le type de montage",
     "noPartMetadata": "Aucune métadonnée de pièce trouvée !",
     "scanPartExists": "La pièce existe dans l'inventaire. Vous pouvez modifier ses détails ou la supprimer de votre scan.",
-    "noOutOfStockParts": "Aucune pièce en rupture de stock."
+    "noOutOfStockParts": "Aucune pièce en rupture de stock.",
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
   },
   "confirm": {
     "deleteProject": "Êtes-vous sûr de vouloir supprimer ce projet et toute votre nomenclature ?",

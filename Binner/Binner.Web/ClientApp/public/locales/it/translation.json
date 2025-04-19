@@ -830,7 +830,8 @@
 		"failedSavePart": "Errore nell'aggiornamento, controllare Categoria e Tipo di montaggio",
 		"noPartMetadata": "Non ci sono metadati per il componente!",
 		"scanPartExists": "Il componente esiste nell'inventario. E' possibile modificare i suoi dettagli o rimuoverlo dalla scansione.",
-		"noOutOfStockParts": "Non ci sono componenti sottoscorta."
+		"noOutOfStockParts": "Non ci sono componenti sottoscorta.",
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
 	},
 	"confirm": {
 		"deleteProject": "Sicuro di voler eliminare questo progetto e l'intera DBA?",

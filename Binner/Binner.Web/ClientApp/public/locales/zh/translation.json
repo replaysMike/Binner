@@ -657,7 +657,11 @@
     "addXParts": "已添加 {{count}} 个新零件!",
     "savedPart": "元器件{{partNumber}}已保存!",
     "addedPart": "元器件{{partNumber}}已添加!",
-    "failedSavePart": "更新失败, 请检查零件分类和安装方式"
+    "failedSavePart": "更新失败, 请检查零件分类和安装方式",
+    "noPartMetadata": "Hiçbir parça meta verisi bulunamadı!",
+    "scanPartExists": "Parça envanterde mevcut. Ayrıntılarını düzenleyebilir veya taramanızdan kaldırabilirsiniz.",
+    "noOutOfStockParts": "Stokta tükenen parça yok.",
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
   },
   "confirm": {
     "deleteProject": "确定删除此项目以及整个BOM吗?",
