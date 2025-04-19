@@ -318,7 +318,6 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const setPartFromMetadata = useCallback((metadataParts, suggestedPart, allowOverwrite = true) => {
-    console.log('setPartFromMetadata', allowOverwrite);
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
 
