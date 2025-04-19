@@ -151,6 +151,10 @@
     },
     "micromatch": {
       "braces": "$braces"
+    },
+    "@semantic-ui-react/component-visibility": {
+      "react": "$react",
+      "react-dom": "$react-dom"
     }
   },
   "eslintConfig": {
