@@ -833,7 +833,8 @@
     "failedSavePart": "Güncelleme başarısız oldu, Parça Tipini ve Montaj Tipini kontrol edin",
     "noPartMetadata": "Hiçbir parça meta verisi bulunamadı!",
     "scanPartExists": "Parça envanterde mevcut. Ayrıntılarını düzenleyebilir veya taramanızdan kaldırabilirsiniz.",
-    "noOutOfStockParts": "Stokta tükenen parça yok."
+    "noOutOfStockParts": "Stokta tükenen parça yok.",
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
   },
   "confirm": {
     "deleteProject": "Bu projeyi ve ürün reçetenizin tamamını silmek istediğinizden emin misiniz?",

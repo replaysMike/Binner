@@ -833,7 +833,8 @@
     "failedSavePart": "Failed to update, check Part Type and Mounting Type",
     "noPartMetadata": "No part metadata found!",
     "scanPartExists": "Part exists in inventory. You can edit it's details or remove it from your scan.",
-    "noOutOfStockParts": "No out of stock parts."
+    "noOutOfStockParts": "No out of stock parts.",
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",

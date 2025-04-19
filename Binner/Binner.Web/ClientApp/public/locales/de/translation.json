@@ -831,7 +831,8 @@
     "failedSavePart": "Aktualisierung fehlgeschlagen! Überprüfen Sie Bauteiletyp und Montagetyp",
     "noPartMetadata": "Keine Bauteile Metadaten gefunden!",
     "scanPartExists": "Das Bauteil befindet sich bereits im Lagerbestand. Sie können die Details bearbeiten oder es aus Ihrem Scan entfernen.",
-    "noOutOfStockParts": "Keine nicht lagernden Bauteile."
+    "noOutOfStockParts": "Keine nicht lagernden Bauteile.",
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
   },
   "confirm": {
     "deleteProject": "Sind Sie sicher, dass Sie das Projekt und die gesamte Stückliste löschen wollen??",

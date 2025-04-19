@@ -1133,6 +1133,14 @@ export function Inventory(props) {
               </div>
             ))
           )}
+          {systemSettings?.digikey?.apiUrl?.includes('sandbox') && (
+            <div className="page-notice" onClick={() => navigate('/settings')}>
+              <Icon name="warning" />
+              <Trans i18nKey="message.sandbox">
+                You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts.
+              </Trans>
+            </div>
+          )}
         </div>
 
         <Dimmer.Dimmable dimmed={loadingPart}>
