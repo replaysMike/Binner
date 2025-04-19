@@ -123,6 +123,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [confirmRefreshPartIsOpen, setConfirmRefreshPartIsOpen] = useState(false);
   const [confirmDeletePartContent, setConfirmDeletePartContent] = useState(null);
   const [confirmRefreshPartContent, setConfirmRefreshPartContent] = useState(null);
+  const [confirmRefreshPartDoNotAskAgain, setConfirmRefreshPartDoNotAskAgain] = useState(false);
   const [partTypes, setPartTypes] = useState([]);
   const [allPartTypes, setAllPartTypes] = useState([]);
   const [loadingPart, setLoadingPart] = useState(false);
@@ -265,9 +266,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     });
     if (searchResult) {
       entity.digiKeyPartNumber = (allowOverwrite || !entity.digiKeyPartNumber) ? searchResult.supplierPartNumber : entity.digiKeyPartNumber;
-      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      if (entity.packageType?.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl?.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl?.length === 0) entity.imageUrl = searchResult.imageUrl;
     }
     
     // map mouser
@@ -276,9 +277,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     });
     if (searchResult) {
       entity.mouserPartNumber = (allowOverwrite || !entity.mouserPartNumber) ? searchResult.supplierPartNumber : entity.mouserPartNumber;
-      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      if (entity.packageType?.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl?.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl?.length === 0) entity.imageUrl = searchResult.imageUrl;
     }
     // map arrow
     searchResult = _.find(metadataParts, (e) => {
@@ -286,9 +287,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     });
     if (searchResult) {
       entity.arrowPartNumber = (allowOverwrite || !entity.arrowPartNumber) ? searchResult.supplierPartNumber : entity.arrowPartNumber;
-      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      if (entity.packageType?.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl?.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl?.length === 0) entity.imageUrl = searchResult.imageUrl;
     }
     // map tme
     searchResult = _.find(metadataParts, (e) => {
@@ -296,9 +297,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     });
     if (searchResult) {
       entity.tmePartNumber = (allowOverwrite || !entity.tmePartNumber) ? searchResult.supplierPartNumber : entity.tmePartNumber;
-      if (entity.packageType.length === 0) entity.packageType = searchResult.packageType;
-      if (entity.datasheetUrl.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
-      if (entity.imageUrl.length === 0) entity.imageUrl = searchResult.imageUrl;
+      if (entity.packageType?.length === 0) entity.packageType = searchResult.packageType;
+      if (entity.datasheetUrl?.length === 0) entity.datasheetUrl = _.first(searchResult.datasheetUrls) || "";
+      if (entity.imageUrl?.length === 0) entity.imageUrl = searchResult.imageUrl;
     }
   }
 
@@ -1040,6 +1041,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     processPartMetadataResponse(data, part, true, true);
     setLoadingPartMetadata(false);
     setIsDirty(true);
+    if (confirmRefreshPartDoNotAskAgain) {
+      setViewPreference('confirmRefreshPartDoNotAskAgain', confirmRefreshPartDoNotAskAgain);
+    }
   };
 
   const openDeletePart = (e, part) => {
@@ -1061,8 +1065,13 @@ export function Inventory({ partNumber = "", ...rest }) {
     setConfirmDeletePartIsOpen(true);
   };
 
-  const openRefreshPart = (e, part) => {
+  const openRefreshPart = async (e) => {
+    if (getViewPreference('confirmRefreshPartDoNotAskAgain')) {
+      await handleRefreshPart(e);
+      return;
+    }
     setConfirmRefreshPartContent(
+      <>
       <p>
         <Trans i18nKey="confirm.refreshPart" name={inputPartNumber}>
           Are you sure you want to refresh part information for <b>{{ name: inputPartNumber }}</b>?
@@ -1073,6 +1082,7 @@ export function Inventory({ partNumber = "", ...rest }) {
           Existing values for fields provided by external APIs will be overwritten.
         </Trans>
       </p>
+      </>      
     );
     setConfirmRefreshPartIsOpen(true);
   };
@@ -1088,6 +1098,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     e.preventDefault();
     e.stopPropagation();
     setConfirmRefreshPartIsOpen(false);
+    if (confirmRefreshPartDoNotAskAgain) {
+      setViewPreference('confirmRefreshPartDoNotAskAgain', confirmRefreshPartDoNotAskAgain);
+    }
   };
 
   const handleSetSuggestedPartNumber = (e, value) => {
@@ -1568,14 +1581,6 @@ export function Inventory({ partNumber = "", ...rest }) {
                   </Form.Group>
                 </Segment>}
 
-                {/* Suppliers */}
-
-                {!disableRendering.current && <PartSuppliersMemoized
-                  loadingPartMetadata={loadingPartMetadata}
-                  part={part}
-                  metadataParts={metadataParts}
-                />}
-
               </Grid.Column>
 
               <Grid.Column width={4} className="right-column">
@@ -1587,6 +1592,14 @@ export function Inventory({ partNumber = "", ...rest }) {
               </Grid.Column>
             </Grid.Row>
           </Grid>
+
+          {/* Suppliers */}
+
+          {!disableRendering.current && <PartSuppliersMemoized
+            loadingPartMetadata={loadingPartMetadata}
+            part={part}
+            metadataParts={metadataParts}
+          />}
         </Dimmer.Dimmable>
 
       </>);
@@ -1616,6 +1629,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         onCancel={closeRefreshPart}
         onConfirm={handleRefreshPart}
         content={confirmRefreshPartContent}
+        cancelButton={<><Checkbox label={t('confirm.doNotAskAgain', "Do not ask again")} style={{paddingRight: '20px'}} checked={confirmRefreshPartDoNotAskAgain} onChange={() => setConfirmRefreshPartDoNotAskAgain(!confirmRefreshPartDoNotAskAgain)}/><Button content={t('button.cancel', "Cancel")} onClick={(e) => closeRefreshPart(e)} /></>}
       />
       <Confirm
         className="confirm"

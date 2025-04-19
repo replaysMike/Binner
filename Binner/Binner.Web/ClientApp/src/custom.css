@@ -550,8 +550,16 @@ section.formHeader {
     padding: 0 2px !important;
 }
 
+.ui.input.inline-editable.centered>input {
+    text-align: center;
+}
+
 .ui.input.labeled.inline-editable>input {
     padding: 0 0 0 1px !important;
+}
+
+.ui.input.labeled.inline-editable.centered>input {
+    text-align: center;
 }
 
 .ui.input.inline-editable>input:hover {

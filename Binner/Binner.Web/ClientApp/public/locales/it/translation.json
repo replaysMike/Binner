@@ -847,6 +847,7 @@
 		"clearScan": "Sicuro di voler cancellare i risultati della scansione?",
 		"refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
     "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
+		"doNotAskAgain": "Do not ask again",
 		"header": {
 			"removeBomPart": "Elimina componenente dalla DBA",
 			"deleteFile": "Cancella File",

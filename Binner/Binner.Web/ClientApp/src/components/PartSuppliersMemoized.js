@@ -93,7 +93,7 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
     setIsLoadingPartMetadata(false);
   };
 
-  const saveSupplier = async (supplier) => {
+  const saveSupplier = async (e, supplier) => {
     const request = {
       partId: thePart.partId,
       partSupplierId: supplier.partSupplierId,
@@ -193,7 +193,7 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
 
   const saveColumn = async (e, supplier) => {
     setIsEditing('');
-    await saveSupplier(supplier);
+    await saveSupplier(e, supplier);
   };
 
 	const renderSuppliers = useMemo(() => {
@@ -215,11 +215,11 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
 				theMetadataParts &&
 				_.filter(theMetadataParts, (p) => p.manufacturerPartNumber === part.manufacturerPartNumber).map((supplier, supplierKey) => (
 					<Table.Row key={supplierKey}>
-						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="supplier" value={supplier.supplier} /></Table.Cell>
-						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="supplierPartNumber" value={supplier.supplierPartNumber} /></Table.Cell>
-						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="cost" value={isEditing === 'cost' ? supplier.cost : formatCurrency(supplier.cost, supplier.currency)} style={{width: '40px'}} /></Table.Cell>
-						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="quantityAvailable" value={isEditing === 'quantityAvailable' ? supplier.quantityAvailable : formatNumber(supplier.quantityAvailable)} /></Table.Cell>
-						<Table.Cell textAlign="center"><Input type="text" transparent className="inline-editable" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="minimumOrderQuantity" value={!isEditing === 'minimumOrderQuantity' ? supplier.minimumOrderQuantity : formatNumber(supplier.minimumOrderQuantity)} /></Table.Cell>
+						<Table.Cell textAlign="center">{supplier.partSupplierId ? <Input type="text" transparent className="inline-editable centered" onBlur={(e) => saveColumn(e, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="supplier" value={supplier.supplier} /> : supplier.supplier}</Table.Cell>
+						<Table.Cell textAlign="center">{supplier.partSupplierId ? <Input type="text" transparent className="inline-editable centered" onBlur={(e) => saveColumn(e, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="supplierPartNumber" value={supplier.supplierPartNumber} /> : supplier.supplierPartNumber}</Table.Cell>
+						<Table.Cell textAlign="center">{supplier.partSupplierId ? <Input type="text" transparent className="inline-editable centered" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="cost" value={isEditing === 'cost' ? supplier.cost : formatCurrency(supplier.cost, supplier.currency)} style={{width: '40px'}} /> : formatCurrency(supplier.cost, supplier.currency)}</Table.Cell>
+						<Table.Cell textAlign="center">{supplier.partSupplierId ? <Input type="text" transparent className="inline-editable centered" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="quantityAvailable" value={isEditing === 'quantityAvailable' ? supplier.quantityAvailable : formatNumber(supplier.quantityAvailable)} /> : formatNumber(supplier.quantityAvailable)}</Table.Cell>
+						<Table.Cell textAlign="center">{supplier.partSupplierId ? <Input type="text" transparent className="inline-editable centered" onBlur={(e) => saveColumn(e, supplier)} onFocus={(e, control) => handleFocus(e, control, supplier)} onChange={(e, control) => handleInlineChange(e, control, supplier)} name="minimumOrderQuantity" value={!isEditing === 'minimumOrderQuantity' ? supplier.minimumOrderQuantity : formatNumber(supplier.minimumOrderQuantity)} /> : formatNumber(supplier.minimumOrderQuantity)}</Table.Cell>
 						<Table.Cell textAlign="center">
 							{supplier.imageUrl && supplier.imageUrl.length > 10 && supplier.imageUrl.startsWith("http") && (
 								<img src={supplier.imageUrl} alt={supplier.supplierPartNumber} className="product productshot" />
