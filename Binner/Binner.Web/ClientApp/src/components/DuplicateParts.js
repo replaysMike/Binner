@@ -5,7 +5,7 @@ import { MountingTypes, GetTypeName } from "../common/Types";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
-export function DuplicateParts({duplicateParts}) {
+export function DuplicateParts({ duplicateParts }) {
   const { t } = useTranslation();
 
 	const handleVisitLink = (e, url) => {
@@ -71,5 +71,3 @@ export function DuplicateParts({duplicateParts}) {
 DuplicateParts.propTypes = {
   duplicateParts: PropTypes.array,
 };
-
-DuplicateParts.defaultProps = {};

@@ -348,5 +348,3 @@ PartSuppliersMemoized.propTypes = {
   part: PropTypes.object,
   metadataParts: PropTypes.array
 };
-
-PartSuppliersMemoized.defaultProps = {};

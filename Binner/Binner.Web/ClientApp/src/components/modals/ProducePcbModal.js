@@ -8,11 +8,11 @@ import { cloneDeep } from "lodash";
 import { getProduciblePcbCount, getProducibleBomCount, getProducibleUnassociatedCount, getOutOfStockParts, consumeFromPartList } from "../../common/bomTools";
 import { toast } from "react-toastify";
 
-export function ProducePcbModal(props) {
+export function ProducePcbModal({ isOpen = false, ...rest }) {
   const { t } = useTranslation();
   ProducePcbModal.abortController = new AbortController();
   const defaultForm = { pcbs: [], quantity: 1 };
-  const [isOpen, setIsOpen] = useState(false);
+  const [_isOpen, setIsOpen] = useState(isOpen);
   const [form, setForm] = useState(defaultForm);
   const [project, setProject] = useState({ parts:[], pcbs: []});
   const [pcbOptions, setPcbOptions] = useState([]);
@@ -76,20 +76,20 @@ export function ProducePcbModal(props) {
   };
 
   useEffect(() => {
-    setIsOpen(props.isOpen);
+    setIsOpen(_isOpen);
     setForm(defaultForm);
-  }, [props.isOpen]);
+  }, [_isOpen]);
 
   useEffect(() => {
-    const newPcbs = props.project.pcbs.map(p => ( {...p, serialNumber: generateSerialNumber(p)}));
-    const newProject = {...props.project, pcbs: newPcbs};
+    const newPcbs = rest.project.pcbs.map(p => ( {...p, serialNumber: generateSerialNumber(p)}));
+    const newProject = {...rest.project, pcbs: newPcbs};
     setProject(newProject);
     setPcbOptions(createPcbOptions(newProject));
-  }, [props.project]);
+  }, [rest.project]);
 
   const handleModalClose = (e) => {
     setIsOpen(false);
-    if (props.onClose) props.onClose();
+    if (rest.onClose) rest.onClose();
   };
 
   const handleChange = (e, control) => {
@@ -136,7 +136,7 @@ export function ProducePcbModal(props) {
   };
 
   const handleSubmit = (e) => {
-    if (props.onSubmit) {
+    if (rest.onSubmit) {
       let pcbsToProcess = _.filter(project.pcbs, x => form.pcbs.includes(x.pcbId));
       if (form.pcbs.includes(-1))
         pcbsToProcess = project.pcbs;
@@ -154,7 +154,7 @@ export function ProducePcbModal(props) {
       if ((form.pcbs.includes(0) || form.pcbs.includes(-1)) && canProducePcb(project))
         processUnassociated = true;
 
-      props.onSubmit(e, { ...form,
+      rest.onSubmit(e, { ...form,
         unassociated: processUnassociated,
         pcbs: validPcbsToProcess 
       });
@@ -298,8 +298,4 @@ ProducePcbModal.propTypes = {
   onClose: PropTypes.func,
   /** Set this to true to open model */
   isOpen: PropTypes.bool
-};
-
-ProducePcbModal.defaultProps = {
-  isOpen: false
 };

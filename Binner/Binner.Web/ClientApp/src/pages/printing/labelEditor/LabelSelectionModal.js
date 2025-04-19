@@ -8,7 +8,7 @@ import { fetchApi } from "../../../common/fetchApi";
 /**
  * Select or create a label
  */
-export function LabelSelectionModal({ isOpen, onSelect, onClose }) {
+export function LabelSelectionModal({ isOpen = false, onSelect, onClose }) {
   const { t } = useTranslation();
   LabelSelectionModal.abortController = new AbortController();
   const defaultForm = { labelId: -1 };
@@ -106,8 +106,4 @@ LabelSelectionModal.propTypes = {
   onClose: PropTypes.func,
   /** Set this to true to open model */
   isOpen: PropTypes.bool
-};
-
-LabelSelectionModal.defaultProps = {
-  isOpen: false
 };

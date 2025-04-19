@@ -1,5 +1,6 @@
 import React from "react";
-import { Table, Visibility } from "semantic-ui-react";
+import { Table } from "semantic-ui-react";
+import Visibility from "@semantic-ui-react/component-visibility";
 
 export function InifiniteScrollTable(props) {
 	const {headerRow, children, nextPage, ...rest} = props;

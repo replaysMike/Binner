@@ -10,7 +10,7 @@ import debounce from "lodash.debounce";
 /**
  * Add a part to a BOM project
  */
-export function AddBomPartModal(props) {
+export function AddBomPartModal({ isOpen = false, ...rest }) {
   const { t } = useTranslation();
   AddBomPartModal.abortController = new AbortController();
 	const defaultForm = { 
@@ -22,7 +22,7 @@ export function AddBomPartModal(props) {
     schematicReferenceId: '',
     customDescription: ''
   };
-  const [isOpen, setIsOpen] = useState(false);
+  const [_isOpen, setIsOpen] = useState(false);
   const [addPartSearchResults, setAddPartSearchResults] = useState([]);
 	const [pcbs, setPcbs] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
@@ -72,18 +72,18 @@ export function AddBomPartModal(props) {
   const searchDebounced = useMemo(() => debounce(search, 400), []);
 
   useEffect(() => {
-    setIsOpen(props.isOpen);
+    setIsOpen(isOpen);
 		setForm(defaultForm);
 		setAddPartSearchResults([]);
-  }, [props.isOpen]);
+  }, [isOpen]);
 
 	useEffect(() => {
-    setPcbs(props.pcbs);
-  }, [props.pcbs]);
+    setPcbs(rest.pcbs);
+  }, [rest.pcbs]);
 
   const handleModalClose = (e) => {
     setIsOpen(false);
-    if (props.onClose) props.onClose();
+    if (rest.onClose) rest.onClose();
   };
 
   const handleAddPartsNextPage = (e) => {};
@@ -117,8 +117,8 @@ export function AddBomPartModal(props) {
 
   const handleAddPart = (e) => {
 		confirmAddPartClose();
-    if (props.onAdd) {
-      props.onAdd(e, { 
+    if (rest.onAdd) {
+      rest.onAdd(e, { 
         part: {...selectedPart}, 
 				pcbId: form.pcbId,
 				quantity: form.quantity,
@@ -164,7 +164,7 @@ export function AddBomPartModal(props) {
           </Trans>
           </p>}            
       />
-      <Modal centered open={isOpen || false} onClose={handleModalClose}>
+      <Modal centered open={_isOpen || false} onClose={handleModalClose}>
         <Modal.Header>{t('comp.addBomPartModal.title', "BOM Management")}</Modal.Header>
 				<Modal.Description style={{ width: "100%", padding: '5px 25px' }}>
 					<Header style={{marginBottom: '2px'}}>{t('comp.addBomPartModal.confirmHeader', "Add Part")}</Header>
@@ -288,8 +288,4 @@ AddBomPartModal.propTypes = {
   onClose: PropTypes.func,
   /** Set this to true to open model */
   isOpen: PropTypes.bool
-};
-
-AddBomPartModal.defaultProps = {
-  isOpen: false
 };

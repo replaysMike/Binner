@@ -6,22 +6,22 @@ import PropTypes from "prop-types";
 /**
  * Set the label name
  */
-export function LabelSetNameModal(props) {
+export function LabelSetNameModal({ isOpen = false, name = "", ...rest }) {
   const { t } = useTranslation();
   LabelSetNameModal.abortController = new AbortController();
-  const defaultForm = { name: props.name || "", isDefaultPartLabel: props.isDefaultPartLabel || false };
-  const [isOpen, setIsOpen] = useState(false);
+  const defaultForm = { name: name || "", isDefaultPartLabel: rest.isDefaultPartLabel || false };
+  const [_isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
-    setIsOpen(props.isOpen);
+    setIsOpen(_isOpen);
     setForm(defaultForm);
-  }, [props.isOpen]);
+  }, [_isOpen]);
 
   const handleModalClose = (e) => {
     setIsOpen(false);
-    if (props.onClose) props.onClose();
+    if (rest.onClose) rest.onClose();
   };
 
   const handleChange = (e, control) => {
@@ -52,17 +52,17 @@ export function LabelSetNameModal(props) {
           <Form style={{ marginBottom: "10px", marginLeft: '50px', width: '50%' }}>
             <Form.Field>
 							<label>{t('comp.labelSetNameModal.labelName', "Label Name")}</label>
-							<Form.Input name="name" placeholder="Parts Label" fluid required value={form.name || props.name} onChange={handleChange} />
+							<Form.Input name="name" placeholder="Parts Label" fluid required value={form.name || name} onChange={handleChange} />
 						</Form.Field>
             <Form.Field>
 							<label>{t('comp.labelSetNameModal.makeDefault', "Make default part label?")}</label>
-							<Form.Checkbox toggle name="isDefaultPartLabel" checked={form.isDefaultPartLabel || props.isDefaultPartLabel} onChange={handleChange} />
+							<Form.Checkbox toggle name="isDefaultPartLabel" checked={form.isDefaultPartLabel || rest.isDefaultPartLabel} onChange={handleChange} />
 						</Form.Field>
           </Form>
         </Modal.Content>
         <Modal.Actions>
           <Button onClick={handleModalClose}>{t('button.cancel', "Cancel")}</Button>
-          <Button primary onClick={e => props.onSave(e, form)} disabled={form.name.length === 0}>
+          <Button primary onClick={e => rest.onSave(e, form)} disabled={form.name.length === 0}>
             <Icon name="save" /> {t('button.save', "Save")}
           </Button>
         </Modal.Actions>
@@ -81,9 +81,4 @@ LabelSetNameModal.propTypes = {
   /** Value for name field */
   name: PropTypes.string,
   isDefaultPartLabel: PropTypes.bool,
-};
-
-LabelSetNameModal.defaultProps = {
-  isOpen: false,
-  name: ""
 };

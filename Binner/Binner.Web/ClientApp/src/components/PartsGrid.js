@@ -25,19 +25,32 @@ const AppMedia = createMedia({
 const mediaStyles = AppMedia.createMediaStyle();
 const { Media, MediaContextProvider } = AppMedia;
 
-export default function PartsGrid(props) {
+export default function PartsGrid({ 
+    parts, 
+    selectedPart, 
+    loading = true, 
+    columns = 'partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete', 
+    page = 1, 
+    totalPages = 1, 
+    loadPage, 
+    onPartClick, 
+    onPageSizeChange, 
+    editable = true, 
+    visitable = true, 
+    ...rest 
+  }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [parts, setParts] = useState(props.parts);
+  const [parts, setParts] = useState(parts);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(props.totalPages);
-  const [loading, setLoading] = useState(props.loading);
-  const [selectedPart, setSelectedPart] = useState(props.selectedPart);
-  const [editable, setEditable] = useState(props.editable);
-  const [visitable, setVisitable] = useState(props.visitable);
+  const [totalPages, setTotalPages] = useState(totalPages);
+  const [loading, setLoading] = useState(loading);
+  const [selectedPart, setSelectedPart] = useState(selectedPart);
+  const [editable, setEditable] = useState(editable);
+  const [visitable, setVisitable] = useState(visitable);
   const [column, setColumn] = useState(null);
-  const [columns, setColumns] = useState(props.columns);
+  const [columns, setColumns] = useState(columns);
   const [direction, setDirection] = useState(null);
   const [changeTracker, setChangeTracker] = useState([]);
   const [lastSavedPartId, setLastSavedPartId] = useState(0);
@@ -48,8 +61,8 @@ export default function PartsGrid(props) {
   const [modalContent, setModalContent] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [partTypes, setPartTypes] = useState();
-  const loadPage = props.loadPage;
-  const onPartClick = props.onPartClick;
+  const loadPage = loadPage;
+  const onPartClick = onPartClick;
   const itemsPerPageOptions = [
     { key: 1, text: '10', value: 10 },
     { key: 2, text: '25', value: 25 },
@@ -72,15 +85,15 @@ export default function PartsGrid(props) {
   }, [loadPartTypes]);
 
   useEffect(() => {
-    setParts(props.parts);
-    setLoading(props.loading);
-    setColumns(props.columns);
-    setPage(props.page);
-    setSelectedPart(props.selectedPart);
-    setEditable(props.editable);
-    setVisitable(props.visitable);
-    setTotalPages(Math.ceil(props.totalPages));
-  }, [props]);
+    setParts(parts);
+    setLoading(loading);
+    setColumns(columns);
+    setPage(page);
+    setSelectedPart(selectedPart);
+    setEditable(editable);
+    setVisitable(visitable);
+    setTotalPages(Math.ceil(totalPages));
+  }, [parts, loading, columns, page, selectedPart, editable, visitable, totalPages]);
 
   const handleSort = (clickedColumn) => () => {
     if (column !== clickedColumn) {
@@ -229,8 +242,8 @@ export default function PartsGrid(props) {
 
   const handlePageSizeChange = (e, control) => {
     setPageSize(control.value);
-    if (props.onPageSizeChange)
-      props.onPageSizeChange(e, control.value);
+    if (onPageSizeChange)
+      onPageSizeChange(e, control.value);
   };
 
   const getIconForPart = (p) => {
@@ -365,7 +378,7 @@ export default function PartsGrid(props) {
                   </Table.Cell>}
                 </Table.Row>
               )
-            : (<Table.Row><Table.Cell colSpan={13} textAlign="center">{props.children && props.children.length > 0 ? props.children : t('comp.partsGrid.noResults', "No results.")}</Table.Cell></Table.Row>)}
+            : (<Table.Row><Table.Cell colSpan={13} textAlign="center">{rest.children && rest.children.length > 0 ? rest.children : t('comp.partsGrid.noResults', "No results.")}</Table.Cell></Table.Row>)}
             </Table.Body>
           </Dimmer.Dimmable>
           <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
@@ -407,13 +420,4 @@ PartsGrid.propTypes = {
   editable: PropTypes.bool,
   /** True if links are exposed */
   visitable: PropTypes.bool
-};
-
-PartsGrid.defaultProps = {
-  loading: true,
-  columns: 'partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete',
-  page: 1,
-  totalPages: 1,
-  editable: true,
-  visitable: true
 };

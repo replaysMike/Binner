@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
 
-export default function Dropzone(props) {
+export default function Dropzone({ key = 'dropzone-container', type = 'Other', stopOnAnyError = true, ...rest }) {
   const [files, setFiles] = useState([]);
 	const [dragOverClass, setDragOverClass] = useState("");
 
@@ -24,19 +24,19 @@ export default function Dropzone(props) {
       }
       if (errors.length > 0) {
 				console.error(errors);
-				if (props.onError) props.onError(errors);
+				if (rest.onError) rest.onError(errors);
 
         setFiles([]);
 				setDragOverClass("droptarget-error");
-				if (props.stopOnAnyError)
+				if (stopOnAnyError)
 					return;
       } else {
         setFiles(filesToUpload);
-        if (props.onDrop) props.onDrop(filesToUpload);
+        if (rest.onDrop) rest.onDrop(filesToUpload);
       }
 
       if (filesToUpload.length > 0){
-        if (props.onUpload) props.onUpload(filesToUpload, props.type);
+        if (rest.onUpload) rest.onUpload(filesToUpload, type);
       }
 			return true;
     },
@@ -56,9 +56,9 @@ export default function Dropzone(props) {
   ));
 
 	return (
-		<div key={props.key} {...getRootProps({ className: `dropzone ${dragOverClass}` })}>
+		<div key={key} {...getRootProps({ className: `dropzone ${dragOverClass}` })}>
 			<input {...getInputProps()} />
-				{props.children}
+				{rest.children}
 		</div>
 	);
 };
@@ -76,10 +76,4 @@ Dropzone.propTypes = {
 	type: PropTypes.string,
   /** Custom onDrop handling can be specified */
   onDrop: PropTypes.func
-};
-
-Dropzone.defaultProps = {
-	key: 'dropzone-container',
-	type: 'Other',
-	stopOnAnyError: true
 };

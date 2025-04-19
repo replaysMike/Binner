@@ -9,11 +9,11 @@ import { toast } from "react-toastify";
 import _ from "underscore";
 import "./PcbHistoryModal.css";
 
-export function PcbHistoryModal(props) {
+export function PcbHistoryModal({ isOpen = false, ...rest }) {
   const { t } = useTranslation();
   PcbHistoryModal.abortController = new AbortController();
   const defaultForm = { pcbs: [], quantity: 1 };
-  const [isOpen, setIsOpen] = useState(false);
+  const [_isOpen, setIsOpen] = useState(isOpen);
   const [form, setForm] = useState(defaultForm);
   const [history, setHistory] = useState({ pcbs: [] });
   const [confirmDeletePcbIsOpen, setConfirmDeletePcbIsOpen] = useState(false);
@@ -22,16 +22,16 @@ export function PcbHistoryModal(props) {
   const [imageIndex, setImageIndex] = useState(null);
 
   useEffect(() => {
-    setIsOpen(props.isOpen);
-  }, [props.isOpen]);
+    setIsOpen(_isOpen);
+  }, [_isOpen]);
 
   useEffect(() => {
-    setHistory({...props.history, pcbs: props.history?.pcbs?.map(p => ({...p, pcbCost: p.pcbCost.toFixed(2) })) });
-  }, [props.history]);
+    setHistory({...rest.history, pcbs: rest.history?.pcbs?.map(p => ({...p, pcbCost: p.pcbCost.toFixed(2) })) });
+  }, [rest.history]);
 
   const handleModalClose = (e) => {
     setIsOpen(false);
-    if (props.onClose) props.onClose();
+    if (rest.onClose) rest.onClose();
   };
 
   const handleChange = (e, control) => {
@@ -168,7 +168,7 @@ export function PcbHistoryModal(props) {
         onConfirm={handleDeletePcb}
         content={confirmDeletePcbContent}
       />
-      <Modal centered open={isOpen || false} onClose={handleModalClose} className="pcbHistoryModal">
+      <Modal centered open={_isOpen || false} onClose={handleModalClose} className="pcbHistoryModal">
         <Modal.Header>{t('comp.pcbHistoryModal.title', "BOM Management")}</Modal.Header>
         <Modal.Content scrolling>
           <div className="image square">
@@ -231,8 +231,4 @@ PcbHistoryModal.propTypes = {
   onClose: PropTypes.func,
   /** Set this to true to open model */
   isOpen: PropTypes.bool
-};
-
-PcbHistoryModal.defaultProps = {
-  isOpen: false
 };

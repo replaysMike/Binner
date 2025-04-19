@@ -528,5 +528,3 @@ PartMediaMemoized.propTypes = {
   datasheet: PropTypes.object,
 	loadingPartMetadata: PropTypes.bool.isRequired
 };
-
-PartMediaMemoized.defaultProps = {};

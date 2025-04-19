@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import PropTypes from "prop-types";
 import "./BulkScanIcon.css";
 
-export function BulkScanIconMemoized ({onClick, width, height}) {
+export function BulkScanIconMemoized ({onClick, width = "132px", height = "30px"}) {
 	return useMemo(() => {
 		return (
 		<div style={{ width: width, height: height }} className="barcodescan" onClick={onClick}>
@@ -36,9 +36,4 @@ BulkScanIconMemoized.propTypes = {
   onClick: PropTypes.func.isRequired,
 	width: PropTypes.string,
 	height: PropTypes.string
-};
-
-BulkScanIconMemoized.defaultProps = {
-  width: "132px",
-  height: "30px",
 };
