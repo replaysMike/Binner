@@ -24,7 +24,7 @@ const MinKeystrokesToConsiderScanningEvent = 10;
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({ listening, minInputLength, onReceived, helpUrl, swallowKeyEvent, passThrough, enableSound, config, onSetConfig, id, onDisabled }) {
+export function BarcodeScannerInput({ listening = true, minInputLength = 4, onReceived, helpUrl = "/help/scanning", swallowKeyEvent = true, passThrough, enableSound = true, config, onSetConfig, id, onDisabled }) {
 	const [barcodeConfig, setBarcodeConfig] = useState(config || {
 		enabled: true,
 		isDebug: DefaultIsDebug,
@@ -628,14 +628,6 @@ BarcodeScannerInput.propTypes = {
 	onSetConfig: PropTypes.func,
 	/** Fired when barcode support is disabled */
 	onDisabled: PropTypes.func
-};
-
-BarcodeScannerInput.defaultProps = {
-  listening: true,
-  minInputLength: 4,
-  helpUrl: "/help/scanning",
-	swallowKeyEvent: true,
-	enableSound: true
 };
 
 // store the debounce interval statically, so it can be modified and used by a memoized debounce function

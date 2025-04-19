@@ -35,7 +35,7 @@ import { Currencies } from "../common/currency";
 import { getSystemSettings } from "../common/applicationSettings";
 import "./Inventory.css";
 
-export function Inventory(props) {
+export function Inventory({ partNumber = "", ...rest }) {
   const SearchDebounceTimeMs = 500;
   const IcPartType = 14;
   const DefaultLowStockThreshold = 10;
@@ -71,10 +71,10 @@ export function Inventory(props) {
     rememberLast: true
   };
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
-  const pageHasParameters = props.params?.partNumber?.length > 0;
+  const pageHasParameters = rest.params?.partNumber?.length > 0;
   const defaultPart = {
     partId: 0,
-    partNumber: props.params.partNumber || "",
+    partNumber: rest.params.partNumber || "",
     allowPotentialDuplicate: false,
     quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) || DefaultQuantity,
     lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) + "",
@@ -108,7 +108,7 @@ export function Inventory(props) {
     storedFiles: []
   };
 
-  const [inputPartNumber, setInputPartNumber] = useState(props.params.partNumberToAdd || "");
+  const [inputPartNumber, setInputPartNumber] = useState(rest.params.partNumberToAdd || "");
   const [infoResponse, setInfoResponse] = useState({});
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState(defaultPart);
@@ -155,7 +155,7 @@ export function Inventory(props) {
   partTypesRef.current = partTypes;
 
   useEffect(() => {
-    const partNumberRaw = props.params.partNumber;
+    const partNumberRaw = rest.params.partNumber;
     let partNumberStr = partNumberRaw?.trim();
     let partId = 0;
     if (partNumberRaw?.includes(':')) {
@@ -184,9 +184,9 @@ export function Inventory(props) {
         setLoadingPartMetadata(true);
         await fetchPartMetadataAndInventory(partNumberStr, partToSearch);
         setLoadingPartMetadata(false);
-      } else if (props.params.partNumberToAdd) {
+      } else if (rest.params.partNumberToAdd) {
         // a part number to add is specified in the URL path
-        const { data } = await doFetchPartMetadata(props.params.partNumberToAdd, partToSearch, false);
+        const { data } = await doFetchPartMetadata(rest.params.partNumberToAdd, partToSearch, false);
         processPartMetadataResponse(data, partToSearch, true, true);
         setLoadingPartMetadata(false);
         setIsDirty(true);
@@ -223,7 +223,7 @@ export function Inventory(props) {
     return () => {
       searchDebounced.cancel();
     };
-  }, [props.params.partNumber]);
+  }, [rest.params.partNumber]);
 
   const fetchPartMetadataAndInventory = async (input, localPart) => {
     if (partTypesRef.current.length === 0)
@@ -845,7 +845,7 @@ export function Inventory(props) {
       e.stopPropagation();
     }
 
-    if (props.params.partNumber) {
+    if (rest.params.partNumber) {
       navigate("/inventory/add");
       return;
     }
@@ -981,9 +981,9 @@ export function Inventory(props) {
   const handleRecentPartClick = async (e, part) => {
     setPart(part);
     if (part.partId)
-      props.history(`/inventory/${encodeURIComponent(part.partNumber)}:${part.partId}`);
+      rest.history(`/inventory/${encodeURIComponent(part.partNumber)}:${part.partId}`);
     else
-      props.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
+      rest.history(`/inventory/${encodeURIComponent(part.partNumber)}`);
     await fetchPart(part.partNumber, part.partId);
   };
 
@@ -1028,7 +1028,7 @@ export function Inventory(props) {
     setConfirmDeletePartIsOpen(false);
     setParts(partsDeleted);
     setSelectedPart(null);
-    props.history(`/inventory`);
+    rest.history(`/inventory`);
   };
 
   const handleRefreshPart = async (e) => {
@@ -1702,8 +1702,4 @@ export default (props) => <Inventory {...props} params={useParams()} history={us
 
 Inventory.propTypes = {
   partNumber: PropTypes.string
-};
-
-Inventory.defaultProps = {
-  partNumber: ""
 };

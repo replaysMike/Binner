@@ -521,7 +521,3 @@ BulkScanModal.propTypes = {
   isOpen: PropTypes.bool,
 	isBulkScanSaving: PropTypes.bool,
 };
-
-BulkScanModal.defaultProps = {
-  isOpen: false
-};

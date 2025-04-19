@@ -9,7 +9,7 @@ import { MountingTypes, GetTypeName } from "../common/Types";
  * Show all matching parts. todo: is this used for anything anymore? doesn't look like it!
  * [memoized]
  */
-export function MatchingPartsMemoized({part, metadataParts, setPartFromMetadata, partTypes}) {
+export function MatchingPartsMemoized({ part, metadataParts, setPartFromMetadata, partTypes }) {
   const { t } = useTranslation();
 
 	const handleVisitLink = (e, url) => {
@@ -105,5 +105,3 @@ MatchingPartsMemoized.propTypes = {
 	partTypes: PropTypes.array.isRequired,
 	setPartFromMetadata: PropTypes.func,
 };
-
-MatchingPartsMemoized.defaultProps = {};

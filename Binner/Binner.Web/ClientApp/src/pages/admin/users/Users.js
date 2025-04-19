@@ -213,7 +213,7 @@ export function Users(props) {
               content={t("page.admin.users.popup.name", "Specify the user's first and last name")}
               trigger={
                 <Form.Field width={10}>
-                  <ClearableInput action required label={t("label.name", "Name")} className="labeled" placeholder="John Doe" value={addUser.name} onChange={handleChange} name="name" />
+                  <ClearableInput required label={t("label.name", "Name")} className="labeled" placeholder="John Doe" value={addUser.name} onChange={handleChange} name="name" />
                 </Form.Field>
               }
             />
@@ -223,7 +223,6 @@ export function Users(props) {
               trigger={
                 <Form.Field width={10}>
                   <ClearableInput
-                    action
                     required
                     label={t("label.usernameEmail", "Username / Email")}
                     className="labeled"

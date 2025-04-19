@@ -9,22 +9,21 @@ import NumberPicker from "../NumberPicker";
 /**
  * Add a PCB to a BOM project
  */
-export function AddPcbModal(props) {
+export function AddPcbModal({ isOpen = false, onAdd, onClose, ...rest }) {
   const { t } = useTranslation();
   AddPcbModal.abortController = new AbortController();
   const defaultForm = { name: "", description: "", quantity: "1", cost: 0, serialNumberFormat: 'SN00000000', lastSerialNumber: null, image: null, imageBlob: null };
-  const [isOpen, setIsOpen] = useState(false);
+  const [_isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
-  const [image, setImage] = useState(null);
 
   useEffect(() => {
-    setIsOpen(props.isOpen);
+    setIsOpen(_isOpen);
     setForm(defaultForm);
-  }, [props.isOpen]);
+  }, [_isOpen]);
 
   const handleModalClose = (e) => {
     setIsOpen(false);
-    if (props.onClose) props.onClose();
+    if (onClose) onClose();
   };
 
   const handleChange = (e, control) => {
@@ -53,8 +52,8 @@ export function AddPcbModal(props) {
   };
 
   const handleAdd = (e) => {
-    if (props.onAdd) {
-      props.onAdd(e, form);
+    if (onAdd) {
+      onAdd(e, form);
     } else {
       console.error("No onAdd handler defined!");
     }
@@ -73,7 +72,7 @@ export function AddPcbModal(props) {
 
   return (
     <div>
-      <Modal centered open={isOpen || false} onClose={handleModalClose}>
+      <Modal centered open={_isOpen || false} onClose={handleModalClose}>
         <Modal.Header>{t('comp.addPcbModal.title', "BOM Management")}</Modal.Header>
         <Modal.Description style={{ width: "100%", padding: '5px 25px' }}>
         <Header style={{marginBottom: '2px'}}>{t('comp.addPcbModal.header', "Add PCB")}</Header>
@@ -198,8 +197,4 @@ AddPcbModal.propTypes = {
   onClose: PropTypes.func,
   /** Set this to true to open model */
   isOpen: PropTypes.bool
-};
-
-AddPcbModal.defaultProps = {
-  isOpen: false
 };

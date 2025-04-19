@@ -6,24 +6,23 @@ import "./ClearableInput.css";
 /**
  * A form text input that contains a clear button icon
  */
-export default function ClearableInput(props) {
-
+export default function ClearableInput({ type = "Form.Input", ...rest }) {
 	const handleClear = (e) => {
-		return props.onChange(e, { ...props, value: '' });
+		return rest.onChange(e, { ...rest, value: '' });
 	};
 
-	const getClearIconPosition = () => {
-		if (props.action) {
+	const getClearIconPosition = (element) => {
+		if (rest.action) {
 			return '90px'; // this is wrong but works for now, it would have to be calculated somehow
 		}
-		if (props.icon) {
+		if (rest.icon) {
 			return '35px';
 		}
 		return '10px';
 	};
 
 	// propsToExclude: exclude any props that only belong to our control
-	const{ type, ...propsToReturn } = props;
+	const{ ...propsToReturn } = rest;
 	
 	const propsForChild = {};
 	if (propsToReturn.icon && typeof propsToReturn.icon === "string") {
@@ -37,9 +36,9 @@ export default function ClearableInput(props) {
 		propsToReturn.icon = true;
 
 	// if the control has children, attach our refs and classes
-	if (props.children) {
+	if (rest.children) {
 		// custom children are provided, modify the text input
-		const children = props.children.map((child, key) => {
+		const children = rest.children.map((child, key) => {
 			if (React.isValidElement(child)) {
 				const childProps = {...child.props };
 				if (child.type === "input" && (childProps.type === undefined || childProps.type === "" || childProps.type === "text")) {
@@ -51,32 +50,32 @@ export default function ClearableInput(props) {
 				}
 			}
 		});
-		if (props.type === "Form.Input") {
+		if (type === "Form.Input") {
 			return (<Form.Input {...propsToReturn}>
 				{children}
 				{propsToReturn.iconPosition === "left"
-					? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
-					: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
+					? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
+					: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(this), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
 				}
 			</Form.Input>);
 		}
 		return (<Input {...propsToReturn}>
 			{children}
 			{propsToReturn.iconPosition === "left"
-				? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
-				: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
+				? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
+				: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(this), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
 			}
 		</Input>);		
 	}
 	
 	// no children, render directly
-	if (props.type === "Form.Input") {
+	if (type === "Form.Input") {
 			return (<Form.Input {...propsToReturn}>
 				<input />
 				{propsForChild.icon && <Icon name={propsForChild.icon} />}
 				{propsToReturn.iconPosition === "left"
-					? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
-					: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
+					? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
+					: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
 				}
 				</Form.Input>);
 	}
@@ -84,8 +83,8 @@ export default function ClearableInput(props) {
 		<input />
 		{propsForChild.icon && <Icon name={propsForChild.icon} />}
 		{propsToReturn.iconPosition === "left"
-			? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
-			: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: props.value?.length > 0 ? '0.5' : '0', visibility: props.value?.length > 0 ? 'visible' : 'hidden'}} />
+			? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
+			: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
 		}
 		</Input>);
 };
@@ -94,8 +93,4 @@ ClearableInput.propTypes = {
 	/** The type of element to render */
 	type: PropTypes.oneOf(['Form.Input', 'Input'])
 	/** !!! Note: All new props added must be excluded above. See propsToExclude */
-};
-
-ClearableInput.defaultProps = {
-	type: "Form.Input",  
 };

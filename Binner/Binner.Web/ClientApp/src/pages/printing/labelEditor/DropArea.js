@@ -13,7 +13,7 @@ const style = {
   position: 'relative',
 };
 
-export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, height = 300, margin,  onSelectedItemChanged, itemProperties, clearSelectedItem, boxes }) => {
+export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, height = 300, margin = "0 0 0 0",  onSelectedItemChanged, itemProperties, clearSelectedItem, boxes = [] }) => {
 	const [internalBoxes, setInternalBoxes] = useState(boxes);
 
 	const deselectAll = useCallback(() => {
@@ -380,9 +380,4 @@ DropArea.propTypes = {
 	margin: PropTypes.string,
 	width: PropTypes.number,
 	height: PropTypes.number,
-};
-
-DropArea.defaultProps = {
-	boxes: [],
-	margin: "0 0 0 0"
 };

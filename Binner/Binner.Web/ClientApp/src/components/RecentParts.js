@@ -61,5 +61,3 @@ RecentParts.propTypes = {
   handleRecentPartClick: PropTypes.func.isRequired,
   loadingRecent: PropTypes.bool
 };
-
-RecentParts.defaultProps = {};

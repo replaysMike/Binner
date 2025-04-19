@@ -8,28 +8,28 @@ import "./VersionBanner.css";
 /**
  * Displays a top banner when a new Binner version is available
  */
-export function VersionBanner(props) {
+export function VersionBanner({ isOpen = false, version }) {
 	const { t } = useTranslation();
-	const [isOpen, setIsOpen] = useState(false);
-	const [version, setVersion] = useState('');
+	const [_isOpen, setIsOpen] = useState(false);
+	const [_version, setVersion] = useState('');
 	const [description, setDescription] = useState('');
 	const [descriptionObject, setDescriptionObject] = useState(null);
 	const [url, setUrl] = useState('');
 	const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false);
 
 	useEffect(() => {
-		setIsOpen(props.isOpen);
-	}, [props.isOpen]);
+		setIsOpen(isOpen);
+	}, [isOpen]);
 
 	useEffect(() => {
-		setVersion(props.version?.version);
-		setDescription(props.version?.description);
-		setUrl(props.version?.url);
+		setVersion(version?.version);
+		setDescription(version?.description);
+		setUrl(version?.url);
 		var converter = new Converter({optionKey: 'value', completeHTMLDocument: false, ghMentions: true, ghCompatibleHeaderId: true, ghCodeBlocks: true, tasklists: true, tables: true, strikethrough: true, emoji: true, openLinksInNewWindow: true, simplifiedAutoLink: true });
-		let desc = props.version?.description;
+		let desc = version?.description;
 		var html = converter.makeHtml(desc);
 		setDescriptionObject(html);
-	}, [props.version]);
+	}, [version]);
 
 	const handleViewReleaseNotesModalOpen = (e) => {
 		setIsReleaseNotesOpen(true);
@@ -48,16 +48,16 @@ export function VersionBanner(props) {
 	const handleSkip = (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		localStorage.setItem("skipVersion", version);
+		localStorage.setItem("skipVersion", _version);
 		setIsOpen(false);
 	};
 
 	return (
-		<div className={`version-banner ${isOpen ? 'open' : ''}`}>
+		<div className={`version-banner ${_isOpen ? 'open' : ''}`}>
 			<div>
 				<Icon name="close" style={{marginRight: '20px', cursor: 'pointer'}} onClick={handleSkip} />
-				<Trans i18nKey="notification.versionBanner.newVersion" version={version}>
-					A new version of Binner <b>{{version: version}}</b> is available!
+				<Trans i18nKey="notification.versionBanner.newVersion" version={_version}>
+					A new version of Binner <b>{{version: _version}}</b> is available!
 				</Trans>
 			</div>
 			<div>
@@ -67,12 +67,12 @@ export function VersionBanner(props) {
       </div>
 			<Modal centered open={isReleaseNotesOpen || false} onClose={handleReleaseNotesModalClose} className="release-notes">
         <Modal.Header>{t('notification.versionBanner.releaseNotes', "Release Notes")}</Modal.Header>
-				<Modal.Description><p style={{padding: '0 10px', marginLeft: '10px'}}>{version}</p></Modal.Description>
+				<Modal.Description><p style={{padding: '0 10px', marginLeft: '10px'}}>{_version}</p></Modal.Description>
         <Modal.Content scrolling>
 					<div dangerouslySetInnerHTML={{__html: descriptionObject}} />
         </Modal.Content>
         <Modal.Actions>
-					<Button primary onClick={handleView}>{t('notification.versionBanner.view', "View")} {version}</Button>
+					<Button primary onClick={handleView}>{t('notification.versionBanner.view', "View")} {_version}</Button>
 					<Button onClick={handleReleaseNotesModalClose}>{t('notification.versionBanner.close', "Close")}</Button>
         </Modal.Actions>
       </Modal>
@@ -85,8 +85,4 @@ VersionBanner.propTypes = {
   version: PropTypes.object,
   /** Set this to true to open model */
   isOpen: PropTypes.bool
-};
-
-VersionBanner.defaultProps = {
-  isOpen: false
 };

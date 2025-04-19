@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 /**
  * Display modal that the user is adding a part already in inventory
  */
-export function DuplicatePartModal({part, duplicateParts, isOpen, onSetPart, onSubmit}) {
+export function DuplicatePartModal({ part, duplicateParts, isOpen, onSetPart, onSubmit }) {
   const { t } = useTranslation();
 	const [duplicatePartModalOpen, setDuplicatePartModalOpen] = useState(isOpen);
 
@@ -56,5 +56,3 @@ DuplicatePartModal.propTypes = {
 	onSetPart: PropTypes.func,
 	onSubmit: PropTypes.func
 };
-
-DuplicatePartModal.defaultProps = {};

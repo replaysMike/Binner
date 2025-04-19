@@ -8,8 +8,8 @@ const style = {
 	display: 'flex'
 };
 
-export const DraggableBox = memo(function DraggableBox(props) {
-  const { id, left, top, children, name, resize, acceptsValue, displaysValue } = props;
+export const DraggableBox = memo(function DraggableBox({ resize = 'horizontal', acceptsValue = false, displaysValue = false, ...rest }) {
+  const { id, left, top, children, name } = rest;
 
   const [{ isDragging }, drag] = useDrag(
     () => ({
@@ -47,14 +47,14 @@ export const DraggableBox = memo(function DraggableBox(props) {
 	const handleClick = (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		if (props.onClick) props.onClick(e);
+		if (rest.onClick) rest.onClick(e);
 	};
 
-	const styleToApply = {...containerStyle, ...(props.absolute && { position: 'absolute' }), width: props.style?.width, height: props.style?.height };
-	const boxStyleToApply = {...props.style};
+	const styleToApply = {...containerStyle, ...(rest.absolute && { position: 'absolute' }), width: rest.style?.width, height: rest.style?.height };
+	const boxStyleToApply = {...rest.style};
   return (
-    <div ref={drag} id={id} name={props.name} style={styleToApply} role="DraggableBox" onClick={handleClick} className={`draggableBox ${getResizeClass(props.resize)}`} onKeyDown={props.onKeyDown} tabIndex={-1}>
-      <Box style={boxStyleToApply} name={props.name} selected={props.selected} className="box">{props.children}</Box>
+    <div ref={drag} id={id} name={rest.name} style={styleToApply} role="DraggableBox" onClick={handleClick} className={`draggableBox ${getResizeClass(rest.resize)}`} onKeyDown={rest.onKeyDown} tabIndex={-1}>
+      <Box style={boxStyleToApply} name={rest.name} selected={rest.selected} className="box">{rest.children}</Box>
     </div>
   );
 });
@@ -75,10 +75,4 @@ DraggableBox.propTypes = {
 	onKeyDown: PropTypes.func,
 	/** The resize type to allow */
 	resize: PropTypes.string
-};
-
-DraggableBox.defaultProps = {
-	resize: 'horizontal',
-	acceptsValue: false,
-	displaysValue: false
 };

@@ -9,7 +9,7 @@ import "./Clipboard.css";
  * @param {props} props 
  * @returns 
  */
-export function Clipboard(props) {
+export function Clipboard({ text = '', color = 'grey', size, ...rest}) {
 	const handleCopy = (e, copyText) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -17,7 +17,19 @@ export function Clipboard(props) {
 		toast.info('Copied!');
 	};
 
-	return (<Popup content="Copy" offset={[-15, -5]} trigger={<Icon name="copy outline" {...props} className="clipboard" onClick={e => handleCopy(e, props.text)} />}/>);
+	return (<Popup 
+		content="Copy" 
+		offset={[-15, -5]} 
+		trigger={<Icon 
+			name="copy outline" 
+			text={text} 
+			color={color} 
+			size={size} 
+			{...rest} 
+			className="clipboard" 
+			onClick={e => handleCopy(e, text)} 
+		/>}
+	/>);
 };
 
 Clipboard.propTypes = {
@@ -27,9 +39,4 @@ Clipboard.propTypes = {
 	color: PropTypes.string,
 	/** Size of icon */
 	size: PropTypes.string
-};
-
-Clipboard.defaultProps = {
-  text: '',
-	color: 'grey',
 };
