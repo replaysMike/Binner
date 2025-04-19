@@ -11,7 +11,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
 		return rest.onChange(e, { ...rest, value: '' });
 	};
 
-	const getClearIconPosition = (element) => {
+	const getClearIconPosition = () => {
 		if (rest.action) {
 			return '90px'; // this is wrong but works for now, it would have to be calculated somehow
 		}
@@ -35,14 +35,14 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
 	if (!propsToReturn.icon)
 		propsToReturn.icon = true;
 
-	// if the control has children, attach our refs and classes
+	// if the control has children, attach our classes
 	if (rest.children) {
 		// custom children are provided, modify the text input
 		const children = rest.children.map((child, key) => {
 			if (React.isValidElement(child)) {
 				const childProps = {...child.props };
 				if (child.type === "input" && (childProps.type === undefined || childProps.type === "" || childProps.type === "text")) {
-					// it's a text input, attach our ref and classnames
+					// it's a text input, attach our classnames
 					return React.cloneElement(child, { ...childProps, key });
 				} else {
 					// other child type
@@ -55,7 +55,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
 				{children}
 				{propsToReturn.iconPosition === "left"
 					? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
-					: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(this), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
+					: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
 				}
 			</Form.Input>);
 		}
@@ -63,7 +63,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
 			{children}
 			{propsToReturn.iconPosition === "left"
 				? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
-				: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(this), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
+				: <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: getClearIconPosition(), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />
 			}
 		</Input>);		
 	}
