@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.12</LibraryVersion>
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
@@ -9,6 +10,16 @@
     <IsPackable>false</IsPackable>
     <UserSecretsId>1c0ae201-502e-4471-ada8-b7bf22dc8e49</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup Condition="Exists('..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
+    <!-- Use the local licensedprovider project -->
+    <ProjectReference Include="..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
+    <!-- Use the licensedprovider package -->
+    <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="IO\BinnerParts.xlsx" />
