@@ -12,7 +12,7 @@ Write-Host "Build Targets: $env:BUILDTARGETS" -ForegroundColor magenta
 $sw = [Diagnostics.Stopwatch]::StartNew()
   Write-Host "Installing build dependencies..." -ForegroundColor green
   dotnet tool install --global dotnet-ef --version 9.0.2
-  Update-NodeJsInstallation 22.14.0 x64
+  Update-NodeJsInstallation 23.2.0 x64
   choco install -y innosetup
   npm install -g npm@latest
 
