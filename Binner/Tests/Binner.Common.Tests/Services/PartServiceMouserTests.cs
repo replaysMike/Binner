@@ -1,20 +1,26 @@
-﻿using Binner.Common.Integrations;
-using Binner.Common.Services;
+﻿using Binner.Common.Services;
 using Binner.Testing;
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Tests.Services
 {
     [TestFixture]
-    public class PartServiceTests
+    public class PartServiceMouserTests
     {
         [Test]
         public async Task ShouldImportMouserOrderCAD()
         {
             var testContext = new TestContext();
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory("MouserExternalOrder1-CAD.json");
+            var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
+            testContext.ApplyApiCredentials(apiCredentials);
+
+            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            {
+                { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-CAD.json" }
+            });
 
             var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
                     testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
@@ -40,7 +46,13 @@ namespace Binner.Common.Tests.Services
         public async Task ShouldImportMouserOrderUSD()
         {
             var testContext = new TestContext();
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory("MouserExternalOrder1-USD.json");
+            var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
+            testContext.ApplyApiCredentials(apiCredentials);
+
+            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            {
+                { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-USD.json" }
+            });
 
             var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
                     testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
@@ -66,7 +78,13 @@ namespace Binner.Common.Tests.Services
         public async Task ShouldImportMouserOrderEUR()
         {
             var testContext = new TestContext();
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory("MouserExternalOrder1-EUR.json");
+            var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
+            testContext.ApplyApiCredentials(apiCredentials);
+
+            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            {
+                { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-EUR.json" }
+            });
 
             var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
                     testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);

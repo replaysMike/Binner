@@ -1,0 +1,1015 @@
+﻿{
+  "StatusCode": 200,
+  "IsSuccessStatusCode": true,
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      "Status": "OK",
+      "Data": {
+        "Currency": "USD",
+        "Language": "EN",
+        "PriceType": "GROSS",
+        "ProductList": [
+          {
+            "Symbol": "LM393GN-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.218,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.183,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.164,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.152,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.145,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 500,
+                "PriceValue": 0.131,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 1000,
+                "PriceValue": 0.122,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 2000,
+                "PriceValue": 0.113,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM393BIDR",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.167,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.115,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.101,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.085,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.078,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 500,
+                "PriceValue": 0.074,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 1000,
+                "PriceValue": 0.071,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM39300R-1.5-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 1.23,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3,
+                "PriceValue": 1.1,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.92,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.83,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.73,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.66,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 800,
+                "PriceValue": 0.64,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM39300R-5.0-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 1.23,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3,
+                "PriceValue": 1.1,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.92,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.83,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.73,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.66,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 800,
+                "PriceValue": 0.64,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM39301R-1.5-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 1.26,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3,
+                "PriceValue": 1.13,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.94,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.85,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.75,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.68,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 800,
+                "PriceValue": 0.66,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM39301R-3.3-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 1.26,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3,
+                "PriceValue": 1.13,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.94,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.85,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.75,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.68,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 800,
+                "PriceValue": 0.66,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM39301R-5.0-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 1.26,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3,
+                "PriceValue": 1.13,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.94,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.85,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.75,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.68,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 800,
+                "PriceValue": 0.66,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM39302R-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 1.26,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3,
+                "PriceValue": 1.13,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.94,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.85,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.75,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.68,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 800,
+                "PriceValue": 0.66,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM39300R-3.3-TT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 1.23,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3,
+                "PriceValue": 1.1,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.92,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.83,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.73,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.66,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 800,
+                "PriceValue": 0.64,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM393APWR",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.317,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.219,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.198,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.168,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.166,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM393PWR",
+            "PriceList": [
+              {
+                "Amount": 3,
+                "PriceValue": 0.202,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.18,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.161,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 500,
+                "PriceValue": 0.138,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 2000,
+                "PriceValue": 0.133,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 0
+          },
+          {
+            "Symbol": "LM393QT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.174,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.157,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.146,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.139,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 500,
+                "PriceValue": 0.125,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 1000,
+                "PriceValue": 0.116,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 3000,
+                "PriceValue": 0.108,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 1835
+          },
+          {
+            "Symbol": "LM393ADGKR",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.298,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.199,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.175,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.151,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.14,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 2500,
+                "PriceValue": 0.125,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 17500,
+                "PriceValue": 0.12,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 20000,
+                "PriceValue": 0.119,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 46
+          },
+          {
+            "Symbol": "LM393D-TI",
+            "PriceList": [
+              {
+                "Amount": 3,
+                "PriceValue": 0.616,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.6,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 50,
+                "PriceValue": 0.555,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 150,
+                "PriceValue": 0.492,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 450,
+                "PriceValue": 0.399,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 20
+          },
+          {
+            "Symbol": "LM393PT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.22,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.149,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.134,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.113,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 500,
+                "PriceValue": 0.101,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 1000,
+                "PriceValue": 0.094,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 2500,
+                "PriceValue": 0.088,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 4071
+          },
+          {
+            "Symbol": "LM393DR2G",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.44,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 5,
+                "PriceValue": 0.321,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.266,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 50,
+                "PriceValue": 0.167,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.139,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 2500,
+                "PriceValue": 0.138,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 31
+          },
+          {
+            "Symbol": "LM393ST",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.353,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.261,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.195,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.15,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 500,
+                "PriceValue": 0.099,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 1000,
+                "PriceValue": 0.096,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 4000,
+                "PriceValue": 0.093,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 3935
+          },
+          {
+            "Symbol": "LM393DGKR",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.477,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.326,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.269,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.205,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 500,
+                "PriceValue": 0.158,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 625,
+                "PriceValue": 0.154,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 1000,
+                "PriceValue": 0.15,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 6052
+          },
+          {
+            "Symbol": "LM393MX\/NOPB",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.714,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.512,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25,
+                "PriceValue": 0.456,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.394,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.366,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10000,
+                "PriceValue": 0.311,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 1001
+          },
+          {
+            "Symbol": "LM393ADT",
+            "PriceList": [
+              {
+                "Amount": 1,
+                "PriceValue": 0.38,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 10,
+                "PriceValue": 0.256,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 75,
+                "PriceValue": 0.208,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 100,
+                "PriceValue": 0.201,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 250,
+                "PriceValue": 0.18,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 1300,
+                "PriceValue": 0.142,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 2500,
+                "PriceValue": 0.127,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 5000,
+                "PriceValue": 0.112,
+                "PriceBase": 0,
+                "Special": false
+              },
+              {
+                "Amount": 25000,
+                "PriceValue": 0.106,
+                "PriceBase": 0,
+                "Special": false
+              }
+            ],
+            "Unit": "pcs",
+            "VatRate": 0,
+            "VatType": "VAT",
+            "Amount": 2195
+          }
+        ]
+      }
+    }
+  }
+}

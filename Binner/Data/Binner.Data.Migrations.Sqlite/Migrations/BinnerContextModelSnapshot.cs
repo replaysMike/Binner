@@ -174,6 +174,8 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("Provider", "UserId", "OrganizationId");
+
                     b.ToTable("OAuthCredentials", "dbo");
                 });
 

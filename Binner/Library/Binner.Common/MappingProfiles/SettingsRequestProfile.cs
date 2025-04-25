@@ -55,6 +55,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.TmeApplicationSecret, options => options.MapFrom(x => x.Tme.ApplicationSecret))
                 .ForMember(x => x.TmeApiKey, options => options.MapFrom(x => x.Tme.ApiKey))
                 .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
+                .ForMember(x => x.TmeResolveExternalLinks, options => options.MapFrom(x => x.Tme.ResolveExternalLinks))
 
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())

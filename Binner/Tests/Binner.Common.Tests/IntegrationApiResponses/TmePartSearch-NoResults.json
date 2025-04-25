@@ -1,0 +1,21 @@
+﻿{
+  "StatusCode": 200,
+  "IsSuccessStatusCode": true,
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      "Status": "OK",
+      "Data": {
+        "Status": "OK",
+        "Data": {
+          "ProductList": [],
+          "Amount": 0,
+          "PageNumber": 1,
+          "CategoryList": []
+        }
+      }
+    }
+  }
+}

@@ -384,7 +384,8 @@ export const Settings = (props) => {
       applicationSecret: "",
       apiKey: "",
       apiUrl: "",
-      country: "us"
+      country: "us",
+      resolveExternalLinks: true
     },
     printer: {
       printMode: 0,
@@ -665,8 +666,8 @@ export const Settings = (props) => {
   };
 
   const setControlValue = (setting, name, control) => {
-    if (control.name === `${name}Enabled` || control.name === `${name}IsDebug`) {
-      // for enabled dropdowns, they don't advertise type!
+    if (control.name === `${name}Enabled` || control.name === `${name}IsDebug` || control.name === `${name}ResolveExternalLinks`) {
+      // for bool dropdowns, they don't advertise type!
       setting[getControlInstanceName(control, name)] =
         control.value > 0 ? true : false;
       return;
@@ -782,6 +783,7 @@ export const Settings = (props) => {
         configuration.push({ key: "country", value: settings.tme.country });
         configuration.push({ key: "apiKey", value: settings.tme.apiKey });
         configuration.push({ key: "apiUrl", value: settings.tme.apiUrl });
+        configuration.push({ key: "resolveExternalLinks", value: settings.tme.resolveExternalLinks + "" });
         break;
       default:
         break;
@@ -1808,6 +1810,28 @@ export const Settings = (props) => {
                     <Label>https://</Label>
                     <input />
                   </ClearableInput>
+                }
+              />
+            </Form.Field>
+            <Form.Field width={10}>
+              <label>{t('page.settings.tmeResolveExternalLinks', "Resolve External Links")}</label>
+              <Popup
+                wide
+                position="top left"
+                offset={[130, 0]}
+                hoverable
+                content={
+                  <p>{t('page.settings.popup.tmeResolveExternalLinks', "Choose if you would like to resolve external document links (slower).")}</p>
+                }
+                trigger={
+                  <Dropdown
+                    name="tmeResolveExternalLinks"
+                    placeholder="Disabled"
+                    selection
+                    value={settings.tme.resolveExternalLinks ? 1 : 0}
+                    options={enabledSources}
+                    onChange={handleChange}
+                  />
                 }
               />
             </Form.Field>

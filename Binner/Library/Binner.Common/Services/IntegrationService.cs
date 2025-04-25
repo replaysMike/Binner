@@ -101,6 +101,7 @@ namespace Binner.Common.Services
                     { "ApplicationSecret", request.Configuration.Where(x => x.Key.Equals("ApplicationSecret", comparisonType) && x.Value != null).Select(x => x.Value).FirstOrDefault() ?? string.Empty },
                     { "ApiKey", request.Configuration.Where(x => x.Key.Equals("ApiKey", comparisonType) && x.Value != null).Select(x =>x.Value).FirstOrDefault() ?? string.Empty },
                     { "ApiUrl", request.Configuration.Where(x => x.Key.Equals("ApiUrl", comparisonType) && x.Value != null).Select(x => WrapUrl(x.Value)).FirstOrDefault() ?? string.Empty },
+                    { "ResolveExternalLinks", request.Configuration.Where(x => x.Key.Equals("ResolveExternalLinks", comparisonType) && x.Value != null).Select(x => bool.Parse(x.Value ?? "false")).FirstOrDefault() },
                 };
                 credentials.Add(new ApiCredential(user?.UserId ?? 0, tmeConfiguration, nameof(TmeApi)));
 

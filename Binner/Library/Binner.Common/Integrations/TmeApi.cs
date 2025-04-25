@@ -3,15 +3,15 @@ using Binner.Common.Integrations.Models;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.Tme;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.WebSockets;
+using System.Runtime.Caching;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,9 +23,12 @@ namespace Binner.Common.Integrations
         public string Name => "TME";
         public const string BasePath = "/";
         public const string DefaultApiUrl = "https://api.tme.eu/";
+        private static readonly TimeSpan CacheLifetime = TimeSpan.FromMinutes(30);
         private readonly TmeConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
         private readonly IApiHttpClient _client;
+        private readonly IApiHttpClientFactory _clientFactory;
+        private readonly MemoryCache _cache = new MemoryCache("TMEStaticCache");
 
         public bool IsEnabled => _configuration.Enabled;
 
@@ -49,11 +52,9 @@ namespace Binner.Common.Integrations
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _localeConfiguration = localeConfiguration ?? throw new ArgumentNullException(nameof(localeConfiguration));
+            _clientFactory = clientFactory;
             _client = clientFactory.Create();
             _client.AddHeader(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            //_client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            // API service is available only via the TLSv1.2 protocol. This information can be found on https://developers.tme.eu/en/signin 
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
 
         public Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
@@ -116,6 +117,9 @@ namespace Binner.Common.Integrations
             }
 
             var resultString = await response.Content.ReadAsStringAsync();
+            // workaround fix for TME's API producing invalid/mutating json, tracked issue #360 created on their end (4/25/2025)
+            resultString = resultString.Replace("\"CategoryList\":[]", "\"CategoryList\":{}");
+
             var results = JsonConvert.DeserializeObject<TmeResponse<ProductSearchResponse>>(resultString, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
@@ -272,6 +276,36 @@ namespace Binner.Common.Integrations
 
                 return new ApiResponse(results, nameof(TmeApi));
             }
+        }
+
+        public async Task<string> ResolveExternalLinkAsync(TmeDocument document)
+        {
+            if (_configuration.ResolveExternalLinks)
+            {
+                var cachekey = $"LNK-{document.DocumentUrl}";
+                if (document.DocumentType == DocumentTypes.LNK)
+                {
+                    var cachedValue = _cache.GetCacheItem(cachekey);
+                    if (cachedValue != null && cachedValue.Value is string) return (string)cachedValue.Value;
+
+                    var uri = new Uri($"https:{document.DocumentUrl}");
+                    var client = _clientFactory.Create();
+                    client.SetTimeout(TimeSpan.FromSeconds(5));
+                    client.ClearHeaders();
+                    Activity.Current = null; // remove traceparent header (thanks .net)
+                    client.AddHeader("Host", uri.Host);
+                    client.AddHeader("User-Agent", "Binner/1.0");
+                    var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri); // tme omits the protocol from the url
+                    var response = await client.SendAsync(requestMessage);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var value = await response.Content.ReadAsStringAsync();
+                        _cache.Add(cachekey, value, DateTimeOffset.UtcNow.Add(CacheLifetime));
+                        return value;
+                    }
+                }
+            }
+            return string.Empty;
         }
 
         private async Task<FormUrlEncodedContent> BuildApiParamsAsync(Uri uri, string country, string language, Dictionary<string, object> parameters)

@@ -1145,7 +1145,7 @@ export function Inventory({ partNumber = "", ...rest }) {
               </div>
             ))
           )}
-          {systemSettings?.digikey?.apiUrl?.includes('sandbox') && (
+          {systemSettings?.digikey?.enabled && systemSettings?.digikey?.apiUrl?.includes('sandbox') && (
             <div className="page-notice" onClick={() => navigate('/settings')}>
               <Icon name="warning" />
               <Trans i18nKey="message.sandbox">

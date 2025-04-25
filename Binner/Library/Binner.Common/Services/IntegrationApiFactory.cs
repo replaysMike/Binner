@@ -141,6 +141,7 @@ namespace Binner.Common.Services
                     TmeApplicationSecret = _webHostServiceConfiguration.Integrations.Tme.ApplicationSecret,
                     TmeApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
                     TmeApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
+                    TmeResolveExternalLinks = _webHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks,
                 };
 
                 // build the credentials list
@@ -201,6 +202,7 @@ namespace Binner.Common.Services
                     { "ApplicationSecret", userIntegrationConfiguration.TmeApplicationSecret ?? string.Empty },
                     { "ApiKey", userIntegrationConfiguration.TmeApiKey ?? string.Empty },
                     { "ApiUrl", userIntegrationConfiguration.TmeApiUrl },
+                    { "ResolveExternalLinks", userIntegrationConfiguration.TmeResolveExternalLinks },
                 };
                 credentials.Add(new ApiCredential(userId, tmeConfiguration, nameof(TmeApi)));
 
@@ -262,6 +264,7 @@ namespace Binner.Common.Services
                     TmeApplicationSecret = _webHostServiceConfiguration.Integrations.Tme.ApplicationSecret,
                     TmeApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
                     TmeApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
+                    TmeResolveExternalLinks = _webHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks,
                 };
 
                 // build the credentials list
@@ -322,6 +325,7 @@ namespace Binner.Common.Services
                     { "ApplicationSecret", userIntegrationConfiguration.TmeApplicationSecret ?? string.Empty },
                     { "ApiKey", userIntegrationConfiguration.TmeApiKey ?? string.Empty },
                     { "ApiUrl", userIntegrationConfiguration.TmeApiUrl },
+                    { "ResolveExternalLinks", userIntegrationConfiguration.TmeResolveExternalLinks },
                 };
                 credentials.Add(new ApiCredential(userId, tmeConfiguration, nameof(TmeApi)));
 
@@ -626,6 +630,7 @@ namespace Binner.Common.Services
                 ApplicationSecret = _integrationConfiguration.Tme.ApplicationSecret,
                 ApiKey = _integrationConfiguration.Tme.ApiKey,
                 ApiUrl = _integrationConfiguration.Tme.ApiUrl,
+                ResolveExternalLinks = _integrationConfiguration.Tme.ResolveExternalLinks,
             };
             var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
             return api;
@@ -645,6 +650,7 @@ namespace Binner.Common.Services
                 ApplicationSecret = credentials.GetCredentialString("ApplicationSecret"),
                 ApiKey = credentials.GetCredentialString("ApiKey"),
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
+                ResolveExternalLinks = credentials.GetCredentialBool("ResolveExternalLinks"),
             };
             var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
             return api;

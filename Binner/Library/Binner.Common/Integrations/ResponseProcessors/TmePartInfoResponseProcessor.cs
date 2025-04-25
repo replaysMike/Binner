@@ -3,13 +3,10 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Integrations.Tme;
 using Microsoft.Extensions.Logging;
-using NPOI.OpenXmlFormats.Dml.Diagram;
-using NPOI.SS.Formula.UDF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TypeSupport.Extensions;
 
 namespace Binner.Common.Integrations.ResponseProcessors
 {
@@ -83,7 +80,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
                         var currency = response.Currency ?? "USD";
                         if (productPriceList != null)
                         {
-                            foreach(var priceList in productPriceList)
+                            foreach (var priceList in productPriceList)
                             {
                                 var target = tmeResponse.Data.ProductList
                                     .Where(x => x.Symbol == priceList.Symbol)
@@ -125,6 +122,31 @@ namespace Binner.Common.Integrations.ResponseProcessors
                                 photos.AddRange(documentList.Files.ThumbnailList.Select(x => new TmePhotoFile(x, TmePhotoResolution.Thumbnail)));
                                 photos.AddRange(documentList.Files.HighResolutionPhotoList.Select(x => new TmePhotoFile(x, TmePhotoResolution.High)));
 
+                                // this could be a potential nightmare to follow these links. They are URLs to text files that return the URL of the actual document :|~
+                                // lets limit resolving these only if other values aren't available.
+                                if (datasheets.Count == 0)
+                                {
+                                    var externalDocuments = documentList.Files.DocumentList
+                                        .Where(x => x.DocumentType == DocumentTypes.LNK)
+                                        .ToList();
+                                    foreach (var doc in externalDocuments.Take(5))
+                                    {
+                                        var url = await ((TmeApi)api).ResolveExternalLinkAsync(doc);
+                                        // we don't really know what this is a link to, so best guess
+                                        if (url.Contains("pdf", ComparisonType))
+                                        {
+                                            datasheets.Add(new TmeDocument
+                                            {
+                                                DocumentType = DocumentTypes.DTE,
+                                                // remove extra stuff, we expect url to not contain a protocol
+                                                DocumentUrl = url.Replace("\n", "").Replace("\r", "").Replace("https:", "").Replace("http:", ""),
+                                                Language = "EN",
+                                                Filesize = 0
+                                            });
+                                        }
+                                    }
+                                }
+
                                 target.Datasheets = datasheets;
                                 target.Videos = videos;
                                 target.Photos = photos;
@@ -160,11 +182,12 @@ namespace Binner.Common.Integrations.ResponseProcessors
                         .Select(x => x.Value?.Replace(" ", ""))
                         .FirstOrDefault(), out mountingTypeId);*/
                     var packageType = string.Empty;
-                    var productUrl = "https:" + part.ProductInformationPage;
+                    var protocol = "https:"; // all tme links are missing the protocol
+                    var productUrl = protocol + part.ProductInformationPage;
 
                     if (!string.IsNullOrEmpty(part.Photo))
                     {
-                        var imageUrl = new NameValuePair<string>(manufacturerPartNumber, "https:" + part.Photo);
+                        var imageUrl = new NameValuePair<string>(manufacturerPartNumber, protocol + part.Photo);
                         if (!productImageUrls.Contains(imageUrl))
                             productImageUrls.Add(imageUrl);
                         if (!context.Results.ProductImages.Contains(imageUrl))
@@ -173,16 +196,16 @@ namespace Binner.Common.Integrations.ResponseProcessors
 
                     if (!string.IsNullOrEmpty(part.Thumbnail))
                     {
-                        var imageUrl = new NameValuePair<string>(manufacturerPartNumber, "https:" + part.Thumbnail);
+                        var imageUrl = new NameValuePair<string>(manufacturerPartNumber, protocol + part.Thumbnail);
                         if (!productImageUrls.Contains(imageUrl))
                             productImageUrls.Add(imageUrl);
                         if (!context.Results.ProductImages.Contains(imageUrl))
                             context.Results.ProductImages.Add(imageUrl);
                     }
 
-                    foreach(var imageUri in part.Photos)
+                    foreach (var imageUri in part.Photos)
                     {
-                        var imageUrl = new NameValuePair<string>(manufacturerPartNumber, "https:" + imageUri.Photo);
+                        var imageUrl = new NameValuePair<string>(manufacturerPartNumber, protocol + imageUri.Photo);
                         if (!productImageUrls.Contains(imageUrl))
                             productImageUrls.Add(imageUrl);
                         if (!context.Results.ProductImages.Contains(imageUrl))
@@ -195,7 +218,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
                         .ToList();
                     foreach (var datasheetUri in tmeDatasheets)
                     {
-                        var uri = "https:" + datasheetUri;
+                        var uri = protocol + datasheetUri;
                         var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{ProcessingContext.MissingDatasheetCoverName}", uri,
                             manufacturerPartNumber, "", part.Producer ?? string.Empty);
                         if (!datasheetUrls.Contains(datasheetSource.DatasheetUrl))
