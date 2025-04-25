@@ -1108,8 +1108,8 @@ export function Bom(props) {
           <Grid columns={2} style={{ marginBottom: "10px" }}>
             <Grid.Column className="projectinfo" width={7}>
               <span className="large">{project.name}</span>
-              <div style={{ float: "right" }}>
-                <Link to={`/project/${project.name}`}>{t("label.editProject", "Edit Project")}</Link>
+              <div className="link-icon">
+                <Link to={`/project/${encodeURIComponent(project.name)}`}><Icon name="edit" /></Link>
               </div>
               <div>
                 <label>
