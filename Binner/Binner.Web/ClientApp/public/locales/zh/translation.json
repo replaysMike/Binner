@@ -115,7 +115,16 @@
       "totalRowsImported": "总计导入行数",
       "totalProjectsImported": "本次总计导入工程数量",
       "totalPartTypesImported": "本次总计导入元器件类别数量",
-      "totalPartsImported": "本次总计导入元器件数量"
+      "totalPartsImported": "本次总计导入元器件数量",
+      "noFilesSelected": "No files selected for upload!",
+      "importUploadFailed": "Import upload failed!",
+      "importFailed": "Failed to import data.",
+      "importSuccess": "Data imported successfully!",
+      "importSuccessWithWarnings": "Data imported successfully (with warnings). Check the output below.",
+      "exportFailed": "Export data failed!",
+      "exportSuccess": "Data exported successfully!",
+      "fileNotSupported": "File '{{name}}' with mime type '{{type}}' is not an accepted type!",
+      "chooseFormat": "Choose a format"
     },
     "tools": {
       "title": "小工具",

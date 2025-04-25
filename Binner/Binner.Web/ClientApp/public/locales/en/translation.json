@@ -125,9 +125,10 @@
       "importUploadFailed": "Import upload failed!",
       "importFailed": "Failed to import data.",
       "importSuccess": "Data imported successfully!",
+      "importSuccessWithWarnings": "Data imported successfully (with warnings). Check the output below.",
       "exportFailed": "Export data failed!",
       "exportSuccess": "Data exported successfully!",
-      "fileNotSupported": "File '{{name}}' with mime type '{{type}}' is not an accepted image type!",
+      "fileNotSupported": "File '{{name}}' with mime type '{{type}}' is not an accepted type!",
       "chooseFormat": "Choose a format"
     },
     "tools": {

@@ -125,9 +125,10 @@
 			"importUploadFailed": "Importazione non riuscita!",
 			"importFailed": "Impossibile importare i dati.",
 			"importSuccess": "Dati importati con successo!",
+      "importSuccessWithWarnings": "Data imported successfully (with warnings). Check the output below.",
 			"exportFailed": "Esportazione dati non riuscita!",
 			"exportSuccess": "Dati esportati con successo!",
-			"fileNotSupported": "Il file '{{name}}' con tipo mime '{{type}}' non è un tipo di immagine accettato!",
+			"fileNotSupported": "Il file '{{name}}' con tipo mime '{{type}}' non è un tipo di accettato!",
 			"chooseFormat": "Scegliere un formato"
 		},
 		"tools": {
