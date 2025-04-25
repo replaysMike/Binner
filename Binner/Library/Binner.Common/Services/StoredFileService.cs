@@ -25,7 +25,7 @@ namespace Binner.Common.Services
 
         public async Task<ICollection<StoredFile>> UploadFilesAsync(ICollection<UserUploadedFile> files)
         {
-            if (string.IsNullOrEmpty(_configuration.UserUploadedFilesPath))
+            if (string.IsNullOrEmpty(SystemPaths.GetUserFilesPath(_configuration)))
                 throw new BinnerConfigurationException($"No 'StorageProviderConfiguration.UserUploadedFilesPath' value is provided in the configuration. Please set the path you would like to store files in application configuration file.");
             if (!files.Any()) return new List<StoredFile>();
 
@@ -84,9 +84,10 @@ namespace Binner.Common.Services
 
         public string GetStoredFilePath(StoredFileType storedFileType)
         {
-            if (string.IsNullOrEmpty(_configuration.UserUploadedFilesPath))
+            var userFilesPath = SystemPaths.GetUserFilesPath(_configuration);
+            if (string.IsNullOrEmpty(userFilesPath))
                 throw new Exception("No UserUploadedFilesPath set in the configuration");
-            return Path.Combine(_configuration.UserUploadedFilesPath, storedFileType.ToString());
+            return Path.Combine(userFilesPath, storedFileType.ToString());
         }
 
         private string GenerateFilename(string originalFilename, Part part, StoredFileType storedFileType)

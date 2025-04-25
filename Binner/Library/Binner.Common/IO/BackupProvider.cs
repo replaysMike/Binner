@@ -127,10 +127,11 @@ namespace Binner.Common.IO
                 }
 
                 // add all files in the UserFiles
-                if (Directory.Exists(_configuration.UserUploadedFilesPath))
+                var userFilesPath = SystemPaths.GetUserFilesPath(_configuration);
+                if (Directory.Exists(userFilesPath))
                 {
-                    var userFiles = Directory.GetFiles(_configuration.UserUploadedFilesPath, "*", SearchOption.AllDirectories);
-                    var fullPath = Path.GetFullPath(_configuration.UserUploadedFilesPath);
+                    var userFiles = Directory.GetFiles(userFilesPath, "*", SearchOption.AllDirectories);
+                    var fullPath = Path.GetFullPath(userFilesPath);
                     var rootUri = new Uri(fullPath);
                     foreach (var userFile in userFiles)
                     {

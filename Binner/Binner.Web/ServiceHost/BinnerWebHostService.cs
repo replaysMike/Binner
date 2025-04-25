@@ -127,8 +127,8 @@ namespace Binner.Web.ServiceHost
             {
                 _nlogLogger.Info($"  Database: Unavailable");
             }
-            _nlogLogger.Info($"  Userfiles: {Path.GetFullPath(storageConfig.UserUploadedFilesPath ?? string.Empty)}");
-            _nlogLogger.Info($"  Certificates: {Path.GetDirectoryName(Path.GetFullPath(_webHostConfig.SslCertificate ?? string.Empty))}");
+            _nlogLogger.Info($"  Userfiles: {Path.GetFullPath(SystemPaths.GetUserFilesPath(storageConfig))}");
+            _nlogLogger.Info($"  Certificates: {Path.GetDirectoryName(Path.GetFullPath(SystemPaths.GetCerficiatePath(_webHostConfig)))}");
             try
             {
                 var fileTarget = LogManager.Configuration?.FindTargetByName<NLog.Targets.FileTarget>("file");
@@ -161,15 +161,16 @@ namespace Binner.Web.ServiceHost
             }
 
             // ensure the creation of important paths
-            if (!Directory.Exists(storageConfig.UserUploadedFilesPath))
+            var userFilesPath = SystemPaths.GetUserFilesPath(storageConfig);
+            if (!Directory.Exists(userFilesPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(storageConfig.UserUploadedFilesPath);
+                    Directory.CreateDirectory(userFilesPath);
                 }
                 catch (Exception ex)
                 {
-                    _nlogLogger.Error($"Failed to create directory at ${storageConfig.UserUploadedFilesPath}. {ex.GetBaseException().Message}");
+                    _nlogLogger.Error($"Failed to create directory at ${userFilesPath}. {ex.GetBaseException().Message}");
                     return;
                 }
             }

@@ -76,9 +76,10 @@ namespace Binner.Common.Services
             model.TotalUsers = await context.Users.CountAsync();
             model.TotalParts = await context.Parts.CountAsync();
             model.TotalPartTypes = await context.PartTypes.CountAsync();
-            if (!string.IsNullOrEmpty(_storageProviderConfiguration.UserUploadedFilesPath) && Path.Exists(_storageProviderConfiguration.UserUploadedFilesPath))
+            var userFilesPath = SystemPaths.GetUserFilesPath(_storageProviderConfiguration);
+            if (!string.IsNullOrEmpty(userFilesPath) && Path.Exists(userFilesPath))
             {
-                var files = Directory.GetFiles(_storageProviderConfiguration.UserUploadedFilesPath, "*", SearchOption.AllDirectories);
+                var files = Directory.GetFiles(userFilesPath, "*", SearchOption.AllDirectories);
                 model.TotalUserFiles = files.Length;
                 var fileSize = 0L;
                 try
@@ -94,7 +95,7 @@ namespace Binner.Common.Services
 
 
             model.StorageProvider = _storageProviderConfiguration.Provider;
-            model.UserFilesLocation = _storageProviderConfiguration.UserUploadedFilesPath;
+            model.UserFilesLocation = SystemPaths.GetUserFilesPath(_storageProviderConfiguration);
             switch (model.StorageProvider.ToLower())
             {
                 case "binner":
