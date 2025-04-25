@@ -21,7 +21,7 @@ namespace Binner.Common.Security
         public X509Certificate2? LoadOrGenerateSelfSignedCertificate(WebHostServiceConfiguration webHostConfig)
         {
             X509Certificate2? certificate = null;
-            var certFilename = !string.IsNullOrEmpty(webHostConfig.SslCertificate) ? Path.GetFullPath(webHostConfig.SslCertificate) : string.Empty;
+            var certFilename = SystemPaths.GetCerficiatePath(webHostConfig);
             if (webHostConfig.UseHttps)
             {
                 // if the certificate file exists, try to load it
@@ -64,7 +64,7 @@ namespace Binner.Common.Security
             {
                 var selfSignedCertificate = CertificateGenerator.GenerateSelfSignedCertificate("localhost", webHostConfig.SslCertificatePassword);
                 certificate = selfSignedCertificate.PfxCertificate;
-                var certificateFilename = !string.IsNullOrEmpty(webHostConfig.SslCertificate) ? webHostConfig.SslCertificate : "./Certificates/localhost.pfx";
+                var certificateFilename = SystemPaths.GetCerficiatePath(webHostConfig);
                 var crtFilename = certificateFilename.Replace(".pfx", ".crt", StringComparison.InvariantCultureIgnoreCase);
 
                 if (File.Exists(crtFilename))
