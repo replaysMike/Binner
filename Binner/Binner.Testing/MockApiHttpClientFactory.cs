@@ -8,37 +8,52 @@ namespace Binner.Testing
 {
     public class MockApiHttpClientFactory : IApiHttpClientFactory
     {
-        public string Filename { get; set; } = string.Empty;
+        public Dictionary<string, string> UriFileMapping { get; set; }
 
         public MockApiHttpClientFactory() { }
 
-        public MockApiHttpClientFactory(string filename)
+        public MockApiHttpClientFactory(Dictionary<string, string> uriFileMapping)
         {
-            Filename = filename;
+            UriFileMapping = uriFileMapping;
         }
 
         public IApiHttpClient Create()
         {
-            if (string.IsNullOrEmpty(Filename)) throw new ArgumentNullException("Filename was not set!");
-            return new MockApiHttpClient(Filename);
+            if (!UriFileMapping.Any()) throw new ArgumentNullException("Filename was not set!");
+            return new MockApiHttpClient(UriFileMapping);
         }
     }
 
     public class MockApiHttpClient : IApiHttpClient
     {
-        private string _filename;
-        public MockApiHttpClient(string filename)
+        public Dictionary<string, string> UriFileMapping { get; set; }
+
+        public MockApiHttpClient(Dictionary<string, string> uriFileMapping)
         {
-            _filename = filename;
+            UriFileMapping = uriFileMapping;
         }
 
         public void AddHeader(string name, string value) { }
 
         public void AddHeader(MediaTypeWithQualityHeaderValue value) { }
 
+        public void ClearHeaders() { }
+
+        public void Dispose() { }
+
+        public void RemoveHeader(string name) { }
+
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
-            var json = LoadResponseJson(_filename);
+            var uriKey = request.RequestUri!.AbsoluteUri;
+            if (!UriFileMapping.ContainsKey(uriKey))
+                uriKey = request.RequestUri.PathAndQuery;
+            if (!UriFileMapping.ContainsKey(uriKey))
+                uriKey = request.RequestUri.AbsolutePath;
+            if (!UriFileMapping.ContainsKey(uriKey)) throw new KeyNotFoundException($"No mapping specified for uri using any of the following paths '{request.RequestUri!.AbsoluteUri}', '{request.RequestUri!.PathAndQuery}', '{request.RequestUri!.AbsolutePath}'");
+
+            var filename = UriFileMapping[uriKey];
+            var json = LoadResponseJson(filename);
             try
             {
                 var obj = JObject.Parse(json);
@@ -56,6 +71,8 @@ namespace Binner.Testing
                 throw new Exception("Failed to parse test response json!", ex);
             }
         }
+
+        public void SetTimeout(TimeSpan timeout) { }
 
         private string LoadResponseJson(string filename)
         {

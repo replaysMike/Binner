@@ -151,6 +151,11 @@
         public string TmeApiUrl { get; set; } = "https://api.tme.eu/";
 
         /// <summary>
+        /// True to resolve external (document) links. This can slow down responses
+        /// </summary>
+        public bool TmeResolveExternalLinks { get; set; } = true;
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

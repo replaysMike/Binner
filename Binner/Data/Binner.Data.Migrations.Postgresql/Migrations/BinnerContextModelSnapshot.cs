@@ -184,6 +184,8 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("Provider", "UserId", "OrganizationId");
+
                     b.ToTable("OAuthCredentials", "dbo");
                 });
 

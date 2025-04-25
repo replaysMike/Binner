@@ -188,6 +188,8 @@
       "bufferTime": "Buffer Time (ms)",
       "prefix2d": "2D Barcode Prefix",
       "maxKeystrokeThresholdMs": "Max Keystroke Threshold (ms)",
+      "tmeSupport": "TME Support",
+      "tmeResolveExternalLinks": "Resolve External Links",
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
         "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
@@ -221,7 +223,12 @@
         "barcodeBufferTime": "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80",
         "barcodeIsDebug": "Enabling Barcode debug mode will print diagnostic information to the browser console.",
         "maxKeystrokeThresholdMs": "The maximum amount of time in milliseconds to wait between keypresses.",
-        "prefix2d": "The prefix used for 2D barcodes, usually '[)>'."
+        "prefix2d": "The prefix used for 2D barcodes, usually '[)>'.",
+        "tmeEnabled": "Choose if you would like to enable TME support.",
+        "tmeApiKey": "Your api key for TME.",
+        "tmeApplicationSecret": "Your application secret for TME.",
+        "tmeApiUrl": "TME's API Url. This will be api.tme.eu",
+        "tmeResolveExternalLinks": "Choose if you would like to resolve external document links (slower)."
       }
     },
     "datasheet": {

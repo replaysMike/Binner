@@ -44,6 +44,10 @@ namespace Binner.Model.Integrations.Tme
         /// <summary>
         /// Software
         /// </summary>
-        SFT
+        SFT,
+        /// <summary>
+        /// Link to external content
+        /// </summary>
+        LNK
     }
 }

@@ -1,6 +1,4 @@
-﻿using static Binner.StorageProvider.EntityFrameworkCore.PartTypesCache;
-
-namespace Binner.StorageProvider.EntityFrameworkCore;
+﻿namespace Binner.StorageProvider.EntityFrameworkCore;
 
 public interface IPartTypesCache
 {

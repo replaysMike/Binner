@@ -1,0 +1,431 @@
+﻿{
+  "StatusCode": 200,
+  "IsSuccessStatusCode": true,
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      "Status": "OK",
+      "Data": {
+        "ProductList": [
+          {
+            "Symbol": "LM393GN-TT",
+            "Files": {
+              "PhotoList": [],
+              "ThumbnailList": [],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393BIDR",
+            "Files": {
+              "PhotoList": [],
+              "ThumbnailList": [],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/19a2af77b2a2b551002c88909203a590\/LM393BIDR-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 110,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM39300R-1.5-TT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/13\/77\/00\/00\/0\/30513_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=c5233bb5d2b4e95f1b5e13d2c06625c299df8589" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/13\/77\/00\/00\/0\/30513_1.jpg?width=100&height=75&q=75&ci_sign=08677d6cedf3f30084a6989df3e3da8653506f76" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/a7e2e3e6cb71d033fccb655615a80c3c\/LM3930x.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 444323,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM39300R-5.0-TT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/13\/77\/00\/00\/0\/30513_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=c5233bb5d2b4e95f1b5e13d2c06625c299df8589" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/13\/77\/00\/00\/0\/30513_1.jpg?width=100&height=75&q=75&ci_sign=08677d6cedf3f30084a6989df3e3da8653506f76" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/a7e2e3e6cb71d033fccb655615a80c3c\/LM3930x.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 444323,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM39301R-1.5-TT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=2b3ec5d264cf7edea12149032fa5270e148b58f5" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=100&height=75&q=75&ci_sign=7256d595b8c7b08ea5a517efd856313f700def65" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/a7e2e3e6cb71d033fccb655615a80c3c\/LM3930x.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 444323,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM39301R-3.3-TT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=2b3ec5d264cf7edea12149032fa5270e148b58f5" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=100&height=75&q=75&ci_sign=7256d595b8c7b08ea5a517efd856313f700def65" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/a7e2e3e6cb71d033fccb655615a80c3c\/LM3930x.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 444323,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM39301R-5.0-TT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=2b3ec5d264cf7edea12149032fa5270e148b58f5" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=100&height=75&q=75&ci_sign=7256d595b8c7b08ea5a517efd856313f700def65" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/a7e2e3e6cb71d033fccb655615a80c3c\/LM3930x.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 444323,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM39302R-TT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=2b3ec5d264cf7edea12149032fa5270e148b58f5" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/1C\/57\/00\/00\/0\/30145_1.jpg?width=100&height=75&q=75&ci_sign=7256d595b8c7b08ea5a517efd856313f700def65" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/a7e2e3e6cb71d033fccb655615a80c3c\/LM3930x.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 444323,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM39300R-3.3-TT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/13\/77\/00\/00\/0\/30513_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=c5233bb5d2b4e95f1b5e13d2c06625c299df8589" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/13\/77\/00\/00\/0\/30513_1.jpg?width=100&height=75&q=75&ci_sign=08677d6cedf3f30084a6989df3e3da8653506f76" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/a7e2e3e6cb71d033fccb655615a80c3c\/LM3930x.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 444323,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393APWR",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/56\/7D\/00\/00\/0\/55141_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=08e261dadc29af6817edd9832a1034db756cb47f" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/56\/7D\/00\/00\/0\/55141_1.jpg?width=100&height=75&q=75&ci_sign=48852b0d4eb778d2b24df77543dcd4838c336896" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/9c063a09424f1d5ccc19d85ce660dec6\/SMD.txt",
+                  "DocumentType": "YTB",
+                  "Filesize": 43,
+                  "Language": "EN"
+                },
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/2bfce031b85b1614f677edcd56939f97\/LM393ADGKR-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 110,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393PWR",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/56\/7D\/00\/00\/0\/55141_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=08e261dadc29af6817edd9832a1034db756cb47f" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/56\/7D\/00\/00\/0\/55141_1.jpg?width=100&height=75&q=75&ci_sign=48852b0d4eb778d2b24df77543dcd4838c336896" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/da1b2c730204911b2777358e03855a1b\/LM393DGKR-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 123,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393QT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/E3\/E5\/70\/00\/0\/482878_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=0f8495d5d83474745f8229d0595bb798ac2b591e" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/E3\/E5\/70\/00\/0\/482878_1.jpg?width=100&height=75&q=75&ci_sign=6999bc477295fe26dbc147352cb205d0dbbf7990" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/6b74eb70ac656d104b96b7c6056e1c86\/LMx93.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 925555,
+                  "Language": "EN"
+                },
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/9c063a09424f1d5ccc19d85ce660dec6\/SMD.txt",
+                  "DocumentType": "YTB",
+                  "Filesize": 43,
+                  "Language": "EN"
+                },
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/5f68aa477fd8a4fb5a434497b82cf94f\/LM193QT-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 176,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393ADGKR",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/38\/B5\/40\/00\/0\/285571_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=f2fe6ae08e699e04ee16daa20a6eaf0bacb0103b" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/38\/B5\/40\/00\/0\/285571_1.jpg?width=100&height=75&q=75&ci_sign=dbc5352ff658143d90adce6f850570db8f8ae414" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/2bfce031b85b1614f677edcd56939f97\/LM393ADGKR-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 110,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393D-TI",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=f0bee21ffea27f905e10bd7bef271cd4e2b785fe" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=100&height=75&q=75&ci_sign=e896150f0f1315963e6dc4666f8716eaf0e763fd" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/866cead6aa291c05f66148430e30c30e\/LM393D-TI-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 123,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393PT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/56\/7D\/00\/00\/0\/55141_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=08e261dadc29af6817edd9832a1034db756cb47f" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/56\/7D\/00\/00\/0\/55141_1.jpg?width=100&height=75&q=75&ci_sign=48852b0d4eb778d2b24df77543dcd4838c336896" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/6b74eb70ac656d104b96b7c6056e1c86\/LMx93.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 925555,
+                  "Language": "EN"
+                },
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/8377ed9b22e2492c3c6ade658e1a060f\/LM393DT.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 576828,
+                  "Language": "EN"
+                },
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/5f68aa477fd8a4fb5a434497b82cf94f\/LM193QT-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 176,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393DR2G",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=f0bee21ffea27f905e10bd7bef271cd4e2b785fe" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=100&height=75&q=75&ci_sign=e896150f0f1315963e6dc4666f8716eaf0e763fd" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/c303724e98ab82b58aad67c4e42c32a5\/LM393DR2G.PDF",
+                  "DocumentType": "DTE",
+                  "Filesize": 114039,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393ST",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=f0bee21ffea27f905e10bd7bef271cd4e2b785fe" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=100&height=75&q=75&ci_sign=e896150f0f1315963e6dc4666f8716eaf0e763fd" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/6b74eb70ac656d104b96b7c6056e1c86\/LMx93.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 925555,
+                  "Language": "EN"
+                },
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/5f68aa477fd8a4fb5a434497b82cf94f\/LM193QT-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 176,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393DGKR",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/38\/B5\/40\/00\/0\/285571_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=f2fe6ae08e699e04ee16daa20a6eaf0bacb0103b" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/38\/B5\/40\/00\/0\/285571_1.jpg?width=100&height=75&q=75&ci_sign=dbc5352ff658143d90adce6f850570db8f8ae414" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/da1b2c730204911b2777358e03855a1b\/LM393DGKR-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 123,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393MX\/NOPB",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=f0bee21ffea27f905e10bd7bef271cd4e2b785fe" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=100&height=75&q=75&ci_sign=e896150f0f1315963e6dc4666f8716eaf0e763fd" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/5e435b87247f34c0d58800194ed4436b\/LM393MNOPB-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 115,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          },
+          {
+            "Symbol": "LM393ADT",
+            "Files": {
+              "PhotoList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=f0bee21ffea27f905e10bd7bef271cd4e2b785fe" ],
+              "ThumbnailList": [ "\/\/ce8dc832c.cloudimg.io\/v7\/_cdn_\/A9\/A5\/40\/00\/0\/285338_1.jpg?width=100&height=75&q=75&ci_sign=e896150f0f1315963e6dc4666f8716eaf0e763fd" ],
+              "HighResolutionPhotoList": [],
+              "PresentationList": [],
+              "AdditionalPhotoList": [],
+              "DocumentList": [
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/6b74eb70ac656d104b96b7c6056e1c86\/LMx93.pdf",
+                  "DocumentType": "DTE",
+                  "Filesize": 925555,
+                  "Language": "EN"
+                },
+                {
+                  "DocumentUrl": "\/\/www.tme.eu\/Document\/5f68aa477fd8a4fb5a434497b82cf94f\/LM193QT-LNK.txt",
+                  "DocumentType": "LNK",
+                  "Filesize": 176,
+                  "Language": "EN"
+                }
+              ],
+              "ParametersImages": []
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -73,7 +73,8 @@ namespace Binner.Common.MappingProfiles
                     Country = x.TmeCountry,
                     ApplicationSecret = x.TmeApplicationSecret,
                     ApiUrl = x.TmeApiUrl,
-                    ApiKey = x.TmeApiKey
+                    ApiKey = x.TmeApiKey,
+                    ResolveExternalLinks = x.TmeResolveExternalLinks
                 }))
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
@@ -178,6 +179,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.ApplicationSecret, options => options.MapFrom(x => x.ApplicationSecret))
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.ApiKey))
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
+                .ForMember(x => x.ResolveExternalLinks, options => options.MapFrom(x => x.ResolveExternalLinks))
                 .ReverseMap();
             CreateMap<UserIntegrationConfiguration, SwarmUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.SwarmEnabled))
@@ -222,6 +224,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.ApplicationSecret, options => options.MapFrom(x => x.TmeApplicationSecret))
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.TmeApiKey))
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.TmeApiUrl))
+                .ForMember(x => x.ResolveExternalLinks, options => options.MapFrom(x => x.TmeResolveExternalLinks))
                 .ReverseMap();
         }
     }

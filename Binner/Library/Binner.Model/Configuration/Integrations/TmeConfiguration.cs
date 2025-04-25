@@ -24,6 +24,11 @@
         /// </summary>
         public string ApiUrl { get; set; } = "https://api.tme.eu";
 
+        /// <summary>
+        /// True to resolve external (document) links. This can slow down responses
+        /// </summary>
+        public bool ResolveExternalLinks { get; set; } = true;
+
         public bool IsConfigured => Enabled && !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl) && !string.IsNullOrEmpty(ApplicationSecret);
     }
 }

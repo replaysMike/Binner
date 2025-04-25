@@ -57,13 +57,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="IntegrationApiResponses\MouserExternalOrder1-USD.json">
+    <None Update="IntegrationApiResponses\Mouser-ExternalOrder-1-USD.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="IntegrationApiResponses\MouserExternalOrder1-EUR.json">
+    <None Update="IntegrationApiResponses\Mouser-ExternalOrder-1-EUR.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="IntegrationApiResponses\MouserExternalOrder1-CAD.json">
+    <None Update="IntegrationApiResponses\Mouser-ExternalOrder-1-CAD.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Tme-PartSearch-1-Files.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Tme-PartSearch-1-Prices.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\TmePartSearch-NoResults.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Tme-PartSearch-1-Search.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
