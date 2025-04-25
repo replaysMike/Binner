@@ -421,7 +421,7 @@ export function Boms (props) {
                   <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
                   <Table.Cell>{p.partCount}</Table.Cell>
                   <Table.Cell>{p.pcbCount}</Table.Cell>
-                  <Table.Cell textAlign='center'><Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${p.name}`); }} title="Edit project" /> <Button icon='delete' size='tiny' onClick={e => confirmDeleteOpen(e, p)} title="Delete project" /></Table.Cell>
+                  <Table.Cell textAlign='center'><Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${encodeURIComponent(p.name)}`); }} title="Edit project" /> <Button icon='delete' size='tiny' onClick={e => confirmDeleteOpen(e, p)} title="Delete project" /></Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>

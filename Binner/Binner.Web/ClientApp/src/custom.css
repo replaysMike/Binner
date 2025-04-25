@@ -883,6 +883,16 @@ svg.parttype-Crystal:hover,.icon-container svg.parttype-Crystal:hover {
     color: #0366d6;
 }
 
+.link-icon {
+  display: inline-block;
+  position: absolute;
+  margin-left: 15px;
+  top: 25px;
+}
+.link-icon a {
+  text-decoration: none;
+}
+
 /* CUSTOM TOAST STYLING */
 :root {
     --toastify-toast-width: 100%;
