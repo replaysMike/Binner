@@ -968,7 +968,7 @@ export function Bom(props) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={12} textAlign="center" style={{ padding: "30px" }}>
+                <Table.Cell colSpan={14} textAlign="center" style={{ padding: "30px" }}>
                   {filterInStock ? t("message.noOutOfStockParts", "No out of stock parts.") :
                     <>
                     {t("message.noPartsAdded", "No parts added.")}
