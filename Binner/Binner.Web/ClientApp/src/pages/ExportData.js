@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
-import { Button, Form, Divider, Grid, Segment, Breadcrumb } from "semantic-ui-react";
+import { Button, Form, Divider, Grid, Segment, Breadcrumb, Icon } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { fetchApi } from "../common/fetchApi";
@@ -41,11 +41,11 @@ export const ExportData = (props) => {
     maxFiles: 3,
     onDrop: (acceptedFiles, rejectedFiles, e) => {
       // do accept manually
-      const acceptedMimeTypes = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/sql", "text/csv"];
+      const acceptedMimeTypes = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/sql", "application/x-sql", "text/csv"];
       let errorMsg = "";
       for (let i = 0; i < acceptedFiles.length; i++) {
         if (!acceptedMimeTypes.includes(acceptedFiles[i].type)) {
-          errorMsg += `${t('page.exportData.fileNotSupported', "File '{{name}}' with mime type '{{type}}' is not an accepted image type!", { name: acceptedFiles[i].name, type: acceptedFiles[i].type})}\r\n`;
+          errorMsg += `${t('page.exportData.fileNotSupported', "File '{{name}}' with mime type '{{type}}' is not an accepted type!", { name: acceptedFiles[i].name, type: acceptedFiles[i].type})}\r\n`;
         }
       }
       if (errorMsg.length > 0) {
@@ -112,12 +112,15 @@ export const ExportData = (props) => {
           })
           .then((data) => {
             console.log("data", data);
-            if (data.success) {
-              toast.success(t('page.exportData.importSuccess', "Data imported successfully!"));
+            setImportResult(data.data);
+            if (data.data.success) {
+              if (data.data.warnings.length > 0)
+                toast.warning(t('page.exportData.importSuccessWithWarnings', "Data imported successfully (with warnings). Check the output below."));
+              else
+                toast.success(t('page.exportData.importSuccess', "Data imported successfully!"));
             } else {
               toast.error(t('page.exportData.importFailed', "Failed to import data."));
             }
-            setImportResult(data.data);
           })
           .catch((error) => {
             toast.dismiss();
@@ -199,21 +202,21 @@ export const ExportData = (props) => {
         <div style={{ border: "1px dashed #666", padding: "10px" }}>
           <h5>{t('page.exportData.importResult', "Import Result")}</h5>
           <div>
-            {t('label.status', "Status")}: <b>{importResult.success ? t('label.success', "Success") : t('label.failed', "Failed")}</b>
+            {t('label.status', "Status")}: <b>{importResult.success ? <><Icon name="check circle" color="green" />{t('label.success', "Success")}</> : <><Icon name="times circle" color="red" />{t('label.failed', "Failed")}</>}</b>
           </div>
-          <div>{t('page.exportData.totalRowsImported', "Total Rows Imported")}: {importResult.totalRowsImported}</div>
+          <div style={{fontSize: '1.2em'}}>{t('page.exportData.totalRowsImported', "Total Rows Imported")}: <b>{importResult.totalRowsImported}</b></div>
           <br />
-          <div>{t('page.exportData.totalProjectsImported', "Projects Imported")}: {importResult.rowsImportedByTable.Projects}</div>
-          <div>{t('page.exportData.totalPartTypesImported', "Part Types Imported")}: {importResult.rowsImportedByTable.PartTypes}</div>
-          <div>{t('page.exportData.totalPartsImported', "Parts Imported")}: {importResult.rowsImportedByTable.Parts}</div>
+          <div>{t('page.exportData.totalProjectsImported', "Projects Imported")}: <b>{importResult.rowsImportedByTable.Projects}</b></div>
+          <div>{t('page.exportData.totalPartTypesImported', "Part Types Imported")}: <b>{importResult.rowsImportedByTable.PartTypes}</b></div>
+          <div>{t('page.exportData.totalPartsImported', "Parts Imported")}: <b>{importResult.rowsImportedByTable.Parts}</b></div>
 
           {importResult.errors && importResult.errors.length > 0 && (
             <div style={{ marginTop: "20px" }}>
               <h6>{t('label.errors', "Errors")}:</h6>
               <ul>
-                {importResult.errors.map((msg, k) => {
-                  <li key={k}>{msg}</li>;
-                })}
+                {importResult.errors.map((msg, k) => (
+                  <li key={k}>{msg}</li>
+                ))}
               </ul>
             </div>
           )}

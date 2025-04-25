@@ -126,6 +126,7 @@
       "importUploadFailed": "Hochladen fehlgeschlagen!",
       "importFailed": "Datenimport fehlgeschlagen.",
       "importSuccess": "Datenimport erfolgreich!",
+      "importSuccessWithWarnings": "Data imported successfully (with warnings). Check the output below.",
       "exportFailed": "Datenexport fehlgeschlagen!",
       "exportSuccess": "Datenexport erfolgreich!",
       "fileNotSupported": "Díe Datei '{{name}}' mit Dateiformat '{{type}}'ist kein akzeptiertes Dateiformat!",

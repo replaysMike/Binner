@@ -4,24 +4,27 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Binner.Common.IO
 {
-    public class SqlDataImporter : IDataImporter
+    /// <summary>
+    /// Imports data from Sql Insert statements
+    /// </summary>
+    public class SqlDataImporter : BaseDataImporter
     {
         // SupportedTables ordering matters when it comes to relational data!
-        private readonly string[] SupportedTables = new string[] { "Projects", "PartTypes", "Parts" };
+        private readonly string[] SupportedTables = ["Projects", "PartTypes", "Parts"];
         private readonly IStorageProvider _storageProvider;
-        private readonly TemporaryKeyTracker _temporaryKeyTracker = new TemporaryKeyTracker();
 
-        public SqlDataImporter(IStorageProvider storageProvider)
+        public SqlDataImporter(IStorageProvider storageProvider) : base(storageProvider)
         {
             _storageProvider = storageProvider;
         }
 
-        public async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, IUserContext? userContext)
+        public override async Task<ImportResult> ImportAsync(IEnumerable<UploadFile> files, IUserContext? userContext)
         {
             var result = new ImportResult();
             foreach (var file in files)
@@ -41,7 +44,7 @@ namespace Binner.Common.IO
             return result;
         }
 
-        public async Task<ImportResult> ImportAsync(string filename, Stream stream, IUserContext? userContext)
+        public override async Task<ImportResult> ImportAsync(string filename, Stream stream, IUserContext? userContext)
         {
             const char delimiter = ',';
             var result = new ImportResult();
@@ -57,7 +60,7 @@ namespace Binner.Common.IO
                 // remove line breaks if present
                 data = data.Replace("\r", "");
 
-                var rows = SplitBoundaries(data, new char[] { '\n', ';' });
+                var rows = SplitBoundaries(data, ['\n', ';']);
                 // validate rows
                 var rowNumber = 0;
                 foreach (var row in rows)
@@ -135,20 +138,9 @@ namespace Binner.Common.IO
             return result;
         }
 
-        private string? GetValue(string[] rowData, Dictionary<string, int> columnMap, string name)
-        {
-            if (columnMap.ContainsKey(name))
-            {
-                var index = columnMap[name];
-                if (index < rowData.Length)
-                    return rowData[index];
-            }
-            return null;
-        }
-
         private async Task AddRowAsync(ImportResult result, int rowNumber, char delimiter, string row, string? tableName, Dictionary<string, int> columnMap, ICollection<PartType> partTypes, IUserContext? userContext)
         {
-            var rowData = SplitBoundaries(row, new char[] { delimiter }, true);
+            var rowData = SplitBoundaries(row, [delimiter], true);
             if (string.IsNullOrEmpty(tableName))
                 return;
 
@@ -157,181 +149,91 @@ namespace Binner.Common.IO
                 case "projects":
                     {
                         // import project info
-                        var isProjectIdValid = TryGet<int>(rowData, columnMap, "ProjectId", out var projectId);
-                        var isColorValid = TryGet<int>(rowData, columnMap, "Color", out var color);
-                        var isDateCreatedValid = TryGet<DateTime>(rowData, columnMap, "DateCreatedUtc", out var dateCreatedUtc);
-                        var isDateModifiedValid = TryGet<DateTime>(rowData, columnMap, "DateModifiedUtc", out var dateModifiedUtc);
-                        if (!isColorValid || !isDateCreatedValid || !isDateModifiedValid)
+                        var (values, errors) = MapObject<Project>(rowData, columnMap);
+                        foreach (var err in errors)
                         {
-                            result.Warnings.Add($"[Row {rowNumber}] Row contains invalid data, skipping: '{row}'");
+                            result.Errors.Add($"[Row {rowNumber}] {err}, skipping: '{row}'");
                             return;
                         }
-                        var name = GetQuoted(GetValue(rowData, columnMap, "Name"))?.Trim();
 
-                        if (!string.IsNullOrEmpty(name) && await _storageProvider.GetProjectAsync(name, userContext) == null)
-                        {
-                            var project = new Project
-                            {
-                                Name = name,
-                                Description = GetQuoted(GetValue(rowData, columnMap, "Description")),
-                                Location = GetQuoted(GetValue(rowData, columnMap, "Location")),
-                                Color = color,
-                                DateCreatedUtc = dateCreatedUtc,
-                                //DateModifiedUtc = dateModifiedUtc
-                            };
-                            try
-                            {
-                                project = await _storageProvider.AddProjectAsync(project, userContext);
-                                _temporaryKeyTracker.AddKeyMapping("Projects", "ProjectId", projectId, project.ProjectId);
-                                result.TotalRowsImported++;
-                                result.RowsImportedByTable["Projects"]++;
-                            }
-                            catch (Exception ex)
-                            {
-                                result.Errors.Add($"[Row {rowNumber}, Project with name '{name}' could not be added. Error: {ex.Message}");
-                            }
-                        }
-                        else
-                        {
-                            result.Warnings.Add($"[Row {rowNumber}] Project with name '{name}' already exists.");
-                        }
+                        await AddProjectAsync(rowNumber, values, result, userContext);
                     }
                     break;
                 case "parttypes":
                     {
                         // import partTypes info
-                        var isPartTypeIdValid = TryGet<long>(rowData, columnMap, "PartTypeId", out var partTypeId);
-                        var isParentPartTypeIdValid = TryGet<long?>(rowData, columnMap, "ParentPartTypeId", out var parentPartTypeId);
-                        var isDateCreatedValid = TryGet<DateTime>(rowData, columnMap, "DateCreatedUtc", out var dateCreatedUtc);
-                        if (!isParentPartTypeIdValid || !isDateCreatedValid)
+                        var (values, errors) = MapObject<PartType>(rowData, columnMap);
+                        foreach (var err in errors)
                         {
-                            result.Warnings.Add($"[Row {rowNumber}] Row contains invalid data, skipping: '{row}'");
+                            result.Errors.Add($"[Row {rowNumber}] {err}, skipping: '{row}'");
                             return;
                         }
 
-                        var name = GetQuoted(GetValue(rowData, columnMap, "Name"))?.Trim();
-                        // part types need to have a unique name for the user and can not be part of global part types
-                        if (!string.IsNullOrEmpty(name) && !partTypes.Any(x => x?.Name?.Equals(name, StringComparison.InvariantCultureIgnoreCase) == true))
-                        {
-                            if (parentPartTypeId == 0)
-                                parentPartTypeId = null;
-                            var partType = new PartType
-                            {
-                                ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
-                                Name = name,
-                                DateCreatedUtc = dateCreatedUtc
-                            };
-                            partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
-                            if (partType != null)
-                            {
-                                _temporaryKeyTracker.AddKeyMapping("PartTypes", "PartTypeId", partTypeId,
-                                    partType.PartTypeId);
-                                result.TotalRowsImported++;
-                                result.RowsImportedByTable["PartTypes"]++;
-                            }
-                        }
-                        else
-                        {
-                            result.Warnings.Add($"[Row {rowNumber}] PartType with name '{name}' already exists.");
-                        }
+                        await AddPartTypeAsync(rowNumber, values, partTypes, result, userContext);
                     }
                     break;
                 case "parts":
                     {
                         // import parts info
-                        var isPartIdValid = TryGet<long>(rowData, columnMap, "PartId", out var partId);
-                        var isPartTypeIdValid = TryGet<long>(rowData, columnMap, "PartTypeId", out var partTypeId);
-                        var isBinNumberValid = TryGet<string?>(rowData, columnMap, "BinNumber", out var binNumber);
-                        var isBinNumber2Valid = TryGet<string?>(rowData, columnMap, "BinNumber2", out var binNumber2);
-                        var isCostValid = TryGet<double>(rowData, columnMap, "Cost", out var cost);
-                        var isDatasheetUrlValid = TryGet<string?>(rowData, columnMap, "DatasheetUrl", out var datasheetUrl);
-                        var isDescriptionValid = TryGet<string?>(rowData, columnMap, "Description", out var description);
-                        var isDigiKeyPartNumberValid = TryGet<string?>(rowData, columnMap, "DigiKeyPartNumber", out var digiKeyPartNumber);
-                        var isImageUrlValid = TryGet<string?>(rowData, columnMap, "ImageUrl", out var imageUrl);
-                        var isKeywordsValid = TryGet<string?>(rowData, columnMap, "Keywords", out var keywords);
-                        var isLocationValid = TryGet<string?>(rowData, columnMap, "Location", out var location);
-                        var isLowestCostSupplierValid = TryGet<string?>(rowData, columnMap, "LowestCostSupplier", out var lowestCostSupplier);
-                        var isLowestCostSupplierUrlValid = TryGet<string?>(rowData, columnMap, "LowestCostSupplierUrl", out var lowestCostSupplierUrl);
-                        var isLowStockThresholdValid = TryGet<int>(rowData, columnMap, "LowStockThreshold", out var lowStockThreshold);
-                        var isManufacturerValid = TryGet<string?>(rowData, columnMap, "Manufacturer", out var manufacturer);
-                        var isManufacturerPartNumberValid = TryGet<string?>(rowData, columnMap, "ManufacturerPartNumber", out var manufacturerPartNumber);
-                        var isMountingTypeIdValid = TryGet<int>(rowData, columnMap, "MountingTypeId", out var mountingTypeId);
-                        var isMouserPartNumberValid = TryGet<string?>(rowData, columnMap, "MouserPartNumber", out var mouserPartNumber);
-                        var isPackageTypeValid = TryGet<string?>(rowData, columnMap, "PackageType", out var packageType);
-                        var isPartNumberValid = TryGet<string?>(rowData, columnMap, "PartNumber", out var partNumber);
-                        var isProductUrlValid = TryGet<string?>(rowData, columnMap, "ProductUrl", out var productUrl);
-                        var isProjectIdValid = TryGet<long?>(rowData, columnMap, "ProjectId", out var projectId);
-                        var isQuantityValid = TryGet<long>(rowData, columnMap, "Quantity", out var quantity);
-                        var isSwarmPartNumberManufacturerIdValid = TryGet<int?>(rowData, columnMap, "SwarmPartNumberManufacturerId", out var swarmPartNumberManufacturerId);
-                        var isDateCreatedValid = TryGet<DateTime>(rowData, columnMap, "DateCreatedUtc", out var dateCreatedUtc);
-
-                        if (!isPartTypeIdValid || !isBinNumberValid || !isBinNumber2Valid || !isCostValid || !isDatasheetUrlValid
-                            || !isDescriptionValid || !isDigiKeyPartNumberValid || !isImageUrlValid || !isKeywordsValid || !isLocationValid || !isLowestCostSupplierValid
-                            || !isLowestCostSupplierUrlValid || !isLowStockThresholdValid || !isManufacturerValid || !isManufacturerPartNumberValid || !isMountingTypeIdValid || !isMouserPartNumberValid
-                            || !isPackageTypeValid || !isPartNumberValid || !isProductUrlValid || !isProjectIdValid || !isQuantityValid || !isSwarmPartNumberManufacturerIdValid
-                            || !isDateCreatedValid)
+                        var (values, errors) = MapObject<Part>(rowData, columnMap);
+                        foreach (var err in errors)
                         {
-                            result.Warnings.Add($"[Row {rowNumber}] Row contains invalid data, skipping: '{row}'");
+                            result.Errors.Add($"[Row {rowNumber}] {err}, skipping: '{row}'");
                             return;
                         }
 
-                        if (!string.IsNullOrEmpty(partNumber) && await _storageProvider.GetPartAsync(partNumber, userContext) == null)
-                        {
-                            var part = new Part
-                            {
-                                PartTypeId = _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", partTypeId),
-                                BinNumber = binNumber,
-                                BinNumber2 = binNumber2,
-                                Cost = cost,
-                                DatasheetUrl = datasheetUrl,
-                                Description = description,
-                                DigiKeyPartNumber = digiKeyPartNumber,
-                                ImageUrl = imageUrl,
-                                Keywords = !string.IsNullOrEmpty(keywords) ? keywords.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries) : null,
-                                Location = location,
-                                LowestCostSupplier = lowestCostSupplier,
-                                LowestCostSupplierUrl = lowestCostSupplierUrl,
-                                LowStockThreshold = lowStockThreshold,
-                                Manufacturer = manufacturer,
-                                ManufacturerPartNumber = manufacturerPartNumber,
-                                MountingTypeId = mountingTypeId,
-                                MouserPartNumber = mouserPartNumber,
-                                PackageType = packageType,
-                                PartNumber = partNumber,
-                                ProductUrl = productUrl,
-                                ProjectId = projectId != null ? _temporaryKeyTracker.GetMappedId("Projects", "ProjectId", projectId.Value) : null,
-                                Quantity = quantity,
-                                //SwarmPartNumberManufacturerId = swarmPartNumberManufacturerId,
-                                DateCreatedUtc = dateCreatedUtc
-                            };
-                            // some data validation required
-                            if (part.ProjectId == 0) part.ProjectId = null;
-                            if (part.UserId == 0) part.UserId = userContext?.UserId;
-                            if (part.PartTypeId == 0) part.PartTypeId = (long)SystemDefaults.DefaultPartTypes.Other;
-
-                            try
-                            {
-                                part = await _storageProvider.AddPartAsync(part, userContext);
-                                _temporaryKeyTracker.AddKeyMapping("Parts", "PartId", partId, part.PartId);
-                                result.TotalRowsImported++;
-                                result.RowsImportedByTable["Parts"]++;
-                            }
-                            catch (Exception ex)
-                            {
-                                // failed to add part
-                                result.Errors.Add($"[Row {rowNumber}, Part with PartNumber '{partNumber}' could not be added. Error: {ex.Message}");
-                            }
-                        }
-                        else
-                        {
-                            result.Warnings.Add($"[Row {rowNumber}] Part with PartNumber '{partNumber}' already exists.");
-                        }
+                        await AddPartAsync(rowNumber, values, result, userContext);
                     }
                     break;
                 default:
-                    result.Warnings.Add($"[Row {rowNumber}] Invalid table name in insert statement, skipping: '{row}'");
+                    result.Warnings.Add($"[Row {rowNumber}] Invalid table name in insert statement, skipping row with value(s): '{row}'");
                     break;
             }
+        }
+
+        private (Dictionary<string, object?> Values, List<string> Errors) MapObject<T>(string[] rowData, Dictionary<string, int> columnMap)
+        {
+            var values = new Dictionary<string, object?>();
+            var errors = new List<string>();
+
+            var properties = typeof(T).GetProperties();
+            foreach (var property in properties)
+            {
+                var @switch = new Dictionary<Type, Action> {
+                    { typeof(long), () => Map<long>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(long?), () => Map<long?>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(string), () => Map<string>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(double), () => Map<double>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(bool), () => Map<bool>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(int), () => Map<int>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(DateTime), () => Map<DateTime>(property, rowData, columnMap, ref values, ref errors, DateTime.UtcNow) },
+                };
+
+                var propertyType = property.PropertyType;
+                if (@switch.ContainsKey(propertyType))
+                    @switch[propertyType]();
+            }
+            return (values, errors);
+        }
+
+        protected virtual bool TryGet<T>(string?[] rowData, Dictionary<string, int>? columnMap, string name, out T? value)
+        {
+            value = default;
+            if (columnMap == null)
+                return false;
+            if (!columnMap.ContainsKey(name))
+                return false;
+            var columnIndex = -1;
+            if (columnIndex < columnMap.Count)
+                columnIndex = columnMap[name];
+
+            return TryGetValue(rowData, columnIndex, name, out value);
+        }
+
+        private void Map<T>(PropertyInfo property, string[] rowData, Dictionary<string, int>? columnMap, ref Dictionary<string, object?> values, ref List<string> errors, object? defaultValue = null)
+        {
+            var isSuccess = TryGet<T>(rowData, columnMap, property.Name, out var value);
+            MapValue(isSuccess, value, property, ref values, ref errors, defaultValue);
         }
 
         private string? GetTableName(string statement)
@@ -344,86 +246,6 @@ namespace Binner.Common.IO
             if (unquotedVal?.Contains(".") == true)
                 unquotedVal = unquotedVal.Replace("dbo.", "");
             return unquotedVal;
-        }
-
-        private string? GetQuoted(string? val)
-        {
-            if (val == null)
-                return null;
-            var match = Regex.Match(val, @"'[^']*'|\""[^\""]*\""");
-            if (match.Success)
-            {
-                var value = match.Value.Substring(1, match.Value.Length - 2);
-                // decode line breaks
-                value = value.Replace("\\r", "\r").Replace("\\n", "\n").Replace("\\t", "\t");
-                return value;
-            }
-            // decode line breaks
-            val = val.Replace("\\r", "\r").Replace("\\n", "\n").Replace("\\t", "\t");
-            return val;
-        }
-
-        private bool TryGet<T>(string?[] rowData, Dictionary<string, int>? columnMap, string name, out T? value)
-        {
-            value = default;
-            if (columnMap == null)
-                return false;
-            var type = typeof(T);
-            if (!columnMap.ContainsKey(name))
-                return false;
-            var columnIndex = -1;
-            if (columnIndex < columnMap.Count)
-                columnIndex = columnMap[name];
-            if (columnIndex < 0 || columnIndex >= rowData.Length)
-            {
-                value = default;
-                return true;
-            }
-            if (Nullable.GetUnderlyingType(type) != null && (rowData[columnIndex] == null || rowData[columnIndex]?.Equals("null", StringComparison.InvariantCultureIgnoreCase) == true))
-                return true;
-            var unquotedValue = GetQuoted(rowData[columnIndex]);
-
-            if (type == typeof(string))
-            {
-                if (!string.IsNullOrEmpty(unquotedValue))
-                    value = (T)(object)unquotedValue;
-                return true;
-            }
-            if (type == typeof(long) || type == typeof(long?))
-            {
-                var isLongValid = long.TryParse(unquotedValue, out var longValue);
-                value = (T)(object)longValue;
-                return isLongValid;
-            }
-            if (type == typeof(int) || type == typeof(int?))
-            {
-                var isIntValid = int.TryParse(unquotedValue, out var intValue);
-                value = (T)(object)intValue;
-                return isIntValid;
-            }
-            if (type == typeof(bool) || type == typeof(bool?))
-            {
-                var isIntValid = int.TryParse(unquotedValue, out var boolValue);
-                value = (T)(object)boolValue;
-                return isIntValid;
-            }
-            if (type == typeof(DateTime) || type == typeof(DateTime?))
-            {
-                var isDateValid = false;
-                if (!string.IsNullOrEmpty(unquotedValue))
-                {
-                    isDateValid = DateTime.TryParse(unquotedValue, out var dateValue);
-                    value = (T)(object)dateValue;
-                }
-                return isDateValid;
-            }
-            if (type == typeof(double) || type == typeof(double?))
-            {
-                var isDoubleValid = double.TryParse(unquotedValue, out var doubleValue);
-                value = (T)(object)doubleValue;
-                return isDoubleValid;
-            }
-            return false;
         }
 
         private string[] ReOrderInserts(string[] rows)
@@ -446,40 +268,6 @@ namespace Binner.Common.IO
                     result.AddRange(orderedRows[supportedTable]);
             }
             return result.ToArray();
-        }
-
-        private string[] SplitBoundaries(string data, char[] rowDelimiters, bool removeBoundary = false)
-        {
-            var rows = new List<string>();
-            var quotes = new List<char> { '"', '\'' };
-            var startPos = 0;
-            var insideQuotes = false;
-            var insideQuotesChar = '\0';
-            for (var i = 0; i < data.Length; i++)
-            {
-                var c = data[i];
-                if (quotes.Contains(c))
-                {
-                    if (!insideQuotes)
-                    {
-                        insideQuotes = true;
-                        insideQuotesChar = c;
-                    }
-                    else if (c == insideQuotesChar)
-                    {
-                        insideQuotes = false;
-                    }
-                }
-                if ((rowDelimiters.Any(x => x.Equals(c)) && !insideQuotes) || i == data.Length - 1)
-                {
-                    var row = data.Substring(startPos, i - startPos + 1 - (removeBoundary && !(i == data.Length - 1) ? 1 : 0));
-                    if (!string.IsNullOrEmpty(row) && row.Length > (removeBoundary ? 0 : 1))
-                        rows.Add(row);
-                    startPos = i + 1;
-                }
-            }
-
-            return rows.ToArray();
         }
     }
 }

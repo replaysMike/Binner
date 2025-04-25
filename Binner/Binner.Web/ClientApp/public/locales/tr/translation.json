@@ -125,6 +125,7 @@
       "importUploadFailed": "İçe aktarma yüklemesi başarısız oldu!",
       "importFailed": "Veriler içe aktarılamadı.",
       "importSuccess": "Veriler başarıyla içe aktarıldı!",
+      "importSuccessWithWarnings": "Data imported successfully (with warnings). Check the output below.",
       "exportFailed": "Veriler dışarı aktarılamadı!",
       "exportSuccess": "Veriler başarıyla dışa aktarıldı!",
       "fileNotSupported": "'{{type}}' mime türüne sahip '{{name}}' dosyası kabul edilen bir resim türü değil!",
