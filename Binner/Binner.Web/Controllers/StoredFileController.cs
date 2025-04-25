@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
@@ -85,9 +86,14 @@ namespace Binner.Web.Controllers
         /// <param name="fileName"></param>
         /// <returns></returns>
         [HttpGet("local")]
-        public async Task<IActionResult> GetStoredFileContentAsync([FromQuery] string fileName)
+        public async Task<IActionResult> GetStoredFileContentAsync([FromQuery] string fileName, [FromQuery] string token)
         {
             if (string.IsNullOrEmpty(fileName)) return NotFound();
+            if (string.IsNullOrEmpty(token)) return ValidationProblem("Invalid token.");
+            var userContext = await _userService.ValidateUserImageToken(token);
+            if (userContext == null) return ValidationProblem("Invalid token.");
+            System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, token);
+
             var storedFile = await _storedFileService.GetStoredFileAsync(fileName);
             if (storedFile == null) return NotFound();
 
