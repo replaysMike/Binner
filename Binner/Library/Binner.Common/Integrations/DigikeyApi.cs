@@ -8,6 +8,7 @@ using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -18,7 +19,6 @@ using System.Net.Http;
 using System.Security.Authentication;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using TypeSupport.Extensions;
@@ -41,6 +41,7 @@ namespace Binner.Common.Integrations
         #endregion
 
         // the full url to the Api
+        private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
         private readonly OAuth2Service _oAuth2Service;
@@ -64,8 +65,9 @@ namespace Binner.Common.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public DigikeyApi(DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, IApiHttpClientFactory httpClientFactory)
+        public DigikeyApi(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, IApiHttpClientFactory httpClientFactory)
         {
+            _logger = logger;
             _configuration = configuration;
             _localeConfiguration = localeConfiguration;
             _oAuth2Service = new OAuth2Service(configuration);
@@ -103,6 +105,7 @@ namespace Binner.Common.Integrations
 
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
+                /* important reminder - don't reference authResponse in here! */
                 try
                 {
                     // set what fields we want from the API
@@ -135,17 +138,23 @@ namespace Binner.Common.Integrations
 
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
+            {
+                _logger.LogInformation($"[{nameof(GetProductDetailsAsync)}] User must authorize.");
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+            }
 
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
+                /* important reminder - don't reference authResponse in here! */
                 try
                 {
                     // set what fields we want from the API
                     var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Products/", HttpUtility.UrlEncode(partNumber));
+                    _logger.LogInformation($"[{nameof(GetProductDetailsAsync)}] Creating product search request for '{partNumber}'...");
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
+                    _logger.LogInformation($"[{nameof(GetProductDetailsAsync)}] Api responded with '{response.StatusCode}'");
                     var result = await TryHandleResponseAsync(response, authenticationResponse);
                     if (!result.IsSuccessful)
                     {
@@ -181,6 +190,7 @@ namespace Binner.Common.Integrations
 
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
+                /* important reminder - don't reference authResponse in here! */
                 try
                 {
                     // set what fields we want from the API
@@ -251,17 +261,23 @@ namespace Binner.Common.Integrations
 
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
+            {
+                _logger.LogInformation($"[{nameof(GetCategoriesAsync)}] User must authorize.");
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+            }
 
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
+                /* important reminder - don't reference authResponse in here! */
                 try
                 {
                     // set what fields we want from the API
                     var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Categories");
+                    _logger.LogInformation($"[{nameof(GetCategoriesAsync)}] Creating categories request...");
                     var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                     // perform a keywords API search
                     var response = await _client.SendAsync(requestMessage);
+                    _logger.LogInformation($"[{nameof(GetCategoriesAsync)}] Api responded with '{response.StatusCode}'");
                     var result = await TryHandleResponseAsync(response, authenticationResponse);
                     if (!result.IsSuccessful)
                     {
@@ -292,13 +308,16 @@ namespace Binner.Common.Integrations
             if (!(recordCount > 0)) throw new ArgumentOutOfRangeException(nameof(recordCount));
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
+            {
+                _logger.LogInformation($"[{nameof(SearchAsync)}] User must authorize - '{authResponse.AccessToken}' is invalid.");
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+            }
 
             var keywords = new List<string>();
             if (!string.IsNullOrEmpty(partNumber))
                 keywords = partNumber
                     .ToLower()
-                    .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)
+                    .Split([" "], StringSplitOptions.RemoveEmptyEntries)
                     .ToList();
             var packageTypeEnum = MountingTypes.None;
             if (!string.IsNullOrEmpty(mountingType))
@@ -316,6 +335,8 @@ namespace Binner.Common.Integrations
 
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
+                /* important reminder - don't reference authResponse in here! */
+                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Called using accesstoken='{authenticationResponse.AccessToken}'");
                 try
                 {
                     // set what fields we want from the API
@@ -346,7 +367,7 @@ namespace Binner.Common.Integrations
                     };
                     var uri = Url.Combine(_configuration.ApiUrl, "/Search/v3/Products", $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
                     var taxonomies = MapTaxonomies(partType, packageTypeEnum);
-                    
+
                     // attempt to detect certain words and apply them as parametric filters
                     var (parametricFilters, filteredKeywords) = MapParametricFilters(keywords, packageTypeEnum, taxonomies);
 
@@ -361,9 +382,9 @@ namespace Binner.Common.Integrations
                         },
                         SearchOptions = new List<SearchOptions> { }
                     };
-                    var result = await PerformApiSearchQueryAsync(authResponse, uri, request);
+                    var result = await PerformApiSearchQueryAsync(authenticationResponse, uri, request);
                     if (result.ErrorResponse != null) return result.ErrorResponse;
-                    
+
                     // if no results are returned, perform a secondary search on the original keyword search with no modifications via parametric filtering
                     if (!result.SuccessResponse.Products.Any() && filteredKeywords.Count != keywords.Count)
                     {
@@ -379,7 +400,7 @@ namespace Binner.Common.Integrations
                             },
                             SearchOptions = new List<SearchOptions> { }
                         };
-                        result = await PerformApiSearchQueryAsync(authResponse, uri, request);
+                        result = await PerformApiSearchQueryAsync(authenticationResponse, uri, request);
                         if (result.ErrorResponse != null) return result.ErrorResponse;
                     }
 
@@ -399,11 +420,13 @@ namespace Binner.Common.Integrations
 
         private async Task<(IApiResponse? ErrorResponse, KeywordSearchResponse SuccessResponse)> PerformApiSearchQueryAsync(OAuthAuthorization authenticationResponse, Uri uri, KeywordSearchRequest request)
         {
+            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Creating search request for '{request.Keywords}' using accesstoken='{authenticationResponse.AccessToken}'...");
             using var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
             var json = JsonConvert.SerializeObject(request, _serializerSettings);
             requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
             // perform a keywords API search
             using var response = await _client.SendAsync(requestMessage);
+            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Api responded with '{response.StatusCode}'. accesstoken='{authenticationResponse.AccessToken}'");
             var result = await TryHandleResponseAsync(response, authenticationResponse);
             if (!result.IsSuccessful)
             {
@@ -598,7 +621,24 @@ namespace Binner.Common.Integrations
         {
             IApiResponse apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                throw new DigikeyUnauthorizedException(authenticationResponse);
+            {
+                // process a possible error message
+                var resultString = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(resultString))
+                {
+                    var unauthorizedResponse = JsonConvert.DeserializeObject<UnauthorizedErrorResponse>(resultString);
+                    if (unauthorizedResponse?.ErrorDetails?.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
+                    {
+                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Version: {unauthorizedResponse.ErrorResponseVersion} Response: {unauthorizedResponse.ErrorDetails}");
+                        throw new DigikeyUnsubscribedException(authenticationResponse, unauthorizedResponse.ErrorResponseVersion, unauthorizedResponse.ErrorDetails);
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - user must authenticate. accesstoken='{authenticationResponse.AccessToken}'");
+                    throw new DigikeyUnauthorizedException(authenticationResponse);
+                }
+            }
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
             {
                 if (response.Headers.Contains("X-RateLimit-Limit"))
@@ -607,6 +647,7 @@ namespace Binner.Common.Integrations
                     var remainingTime = TimeSpan.Zero;
                     if (response.Headers.Contains("X-RateLimit-Remaining"))
                         remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
+                    _logger.LogWarning($"[{nameof(TryHandleResponseAsync)}] Request is rate limited. Try again in {remainingTime}");
                     apiResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}", nameof(DigikeyApi));
                     return (false, apiResponse);
                 }
@@ -621,6 +662,7 @@ namespace Binner.Common.Integrations
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
+                _logger.LogError($"[{nameof(TryHandleResponseAsync)}] Bad request. Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. accesstoken='{authenticationResponse.AccessToken}'");
                 apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
                 var resultString = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(resultString))
@@ -646,53 +688,70 @@ namespace Binner.Common.Integrations
             {
                 return await func(authResponse);
             }
+            catch (DigikeyUnsubscribedException ex)
+            {
+                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{ex.Authorization.AccessToken}' is unsubscribed for endpoint.");
+                return ApiResponse.Create($"{ex.Message} Api v{new Version(ex.ApiVersion).ToString(1)}", nameof(DigikeyApi));
+            }
             catch (DigikeyUnauthorizedException ex)
             {
                 // get refresh token, retry
+                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{ex.Authorization.AccessToken}' is unauthorized, trying to Refresh token using '{ex.Authorization.RefreshToken}'");
                 _oAuth2Service.AccessTokens.RefreshToken = ex.Authorization.RefreshToken;
-                var token = await _oAuth2Service.RefreshTokenAsync();
-                if (_httpContextAccessor.HttpContext == null)
-                    throw new Exception($"HttpContext cannot be null!");
-                var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
-                var refreshTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
+                var refreshedTokens = await _oAuth2Service.RefreshTokenAsync();
+                if (refreshedTokens.IsError)
                 {
-                    AccessToken = token.AccessToken ?? string.Empty,
-                    RefreshToken = token.RefreshToken ?? string.Empty,
-                    CreatedUtc = DateTime.UtcNow,
-                    ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(token.ExpiresIn)),
-                    AuthorizationReceived = true,
-                    UserId = _requestContext.GetUserContext()?.UserId,
-                };
-                if (refreshTokenResponse.IsAuthorized)
+                    _logger.LogError($"[{nameof(WrapApiRequestAsync)}] Refresh token failed.");
+                }
+                else
                 {
-                    // save the credential
-                    await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
+                    // refresh token successfully got a new token. Let's use it.
+                    if (_httpContextAccessor.HttpContext == null)
+                        throw new Exception($"HttpContext cannot be null!");
+                    var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+                    var refreshedTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
                     {
-                        Provider = nameof(DigikeyApi),
-                        AccessToken = refreshTokenResponse.AccessToken,
-                        RefreshToken = refreshTokenResponse.RefreshToken,
-                        DateCreatedUtc = refreshTokenResponse.CreatedUtc,
-                        DateExpiresUtc = refreshTokenResponse.ExpiresUtc,
-                    });
-                    try
+                        AccessToken = refreshedTokens.AccessToken ?? string.Empty,
+                        RefreshToken = refreshedTokens.RefreshToken ?? string.Empty,
+                        CreatedUtc = DateTime.UtcNow,
+                        ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(refreshedTokens.ExpiresIn)),
+                        AuthorizationReceived = true,
+                        UserId = _requestContext.GetUserContext()?.UserId,
+                    };
+                    if (refreshedTokenResponse.IsAuthorized) // IsAuthorized is a computed field based on the response
                     {
-                        // call the API again using the refresh token
-                        return await func(refreshTokenResponse);
-                    }
-                    catch (DigikeyUnauthorizedException)
-                    {
-                        // refresh token failed, restart access token retrieval process
-                        await ForgetAuthenticationTokens();
-                        var freshResponse = await AuthorizeAsync();
-                        if (freshResponse.MustAuthorize)
-                            return ApiResponse.Create(true, freshResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
-                        // call the API again
-                        return await func(freshResponse);
+                        _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token succeeded, new token '{refreshedTokenResponse.AccessToken}', old was '{authResponse.AccessToken}'");
+                        // save the credential
+                        await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
+                        {
+                            Provider = nameof(DigikeyApi),
+                            AccessToken = refreshedTokenResponse.AccessToken,
+                            RefreshToken = refreshedTokenResponse.RefreshToken,
+                            DateCreatedUtc = refreshedTokenResponse.CreatedUtc,
+                            DateExpiresUtc = refreshedTokenResponse.ExpiresUtc,
+                        });
+                        try
+                        {
+                            // call the API again using the refresh token
+                            _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Re-calling method with refreshed accesstoken='{refreshedTokenResponse.AccessToken}'");
+                            return await func(refreshedTokenResponse);
+                        }
+                        catch (DigikeyUnauthorizedException)
+                        {
+                            // refresh token failed, restart access token retrieval process
+                            await ForgetAuthenticationTokens();
+                            var freshResponse = await AuthorizeAsync();
+                            if (freshResponse.MustAuthorize)
+                                return ApiResponse.Create(true, freshResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+                            // call the API again
+                            return await func(freshResponse);
+                        }
                     }
                 }
                 // user must authorize
                 // request a token if we don't already have one
                 var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext()?.UserId);
+                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token failed, User must authorize");
                 return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             }
         }
@@ -707,7 +766,10 @@ namespace Binner.Common.Integrations
         {
             var user = _requestContext.GetUserContext();
             if (user != null && user.UserId <= 0)
+            {
+                _logger.LogError($"[{nameof(AuthorizeAsync)}] User is not authenticated!");
                 throw new AuthenticationException("User is not authenticated!");
+            }
 
             // check if we have saved an existing auth credential in the database
             var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
@@ -724,6 +786,7 @@ namespace Binner.Common.Integrations
                     AuthorizationReceived = true,
                     UserId = user?.UserId
                 };
+                _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Reusing a saved oAuth credential '{credential.AccessToken}'!");
 
                 return authRequest;
             }
@@ -751,7 +814,7 @@ namespace Binner.Common.Integrations
             // state will be send as the RequestId
             var state = authRequest.Id.ToString();
             var authUrl = _oAuth2Service.GenerateAuthUrl(scopes, state);
-
+            _logger.LogInformation($"[{nameof(CreateOAuthAuthorizationRequestAsync)}] Creating a new OAuthRequest '{state}'. No existing OAuthCredential was found.");
             return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
         }
 
@@ -917,14 +980,37 @@ namespace Binner.Common.Integrations
             return default(T);
         }
 
+        public void Dispose()
+        {
+            _client.Dispose();
+        }
     }
 
+    /// <summary>
+    /// Occurs when an oAuth token used is invalid or expired
+    /// </summary>
     public class DigikeyUnauthorizedException : Exception
     {
         public OAuthAuthorization Authorization { get; }
+
         public DigikeyUnauthorizedException(OAuthAuthorization authorization) : base("User must authorize")
         {
             Authorization = authorization;
+        }
+    }
+
+    /// <summary>
+    /// Occurs when the Digikey api key used is not subscribed for the endpoint
+    /// </summary>
+    public class DigikeyUnsubscribedException : Exception
+    {
+        public OAuthAuthorization Authorization { get; }
+        public string ApiVersion { get; }
+
+        public DigikeyUnsubscribedException(OAuthAuthorization authorization, string apiVersion, string message) : base(message)
+        {
+            Authorization = authorization;
+            ApiVersion = apiVersion;
         }
     }
 }

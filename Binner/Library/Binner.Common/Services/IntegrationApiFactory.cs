@@ -3,6 +3,7 @@ using Binner.Global.Common;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Binner.Common.Services
 {
     public class IntegrationApiFactory : IIntegrationApiFactory
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRequestContextAccessor _requestContext;
@@ -19,8 +21,9 @@ namespace Binner.Common.Services
         private readonly IntegrationConfiguration _integrationConfiguration;
         private readonly WebHostServiceConfiguration _webHostServiceConfiguration;
 
-        public IntegrationApiFactory(IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, IntegrationConfiguration integrationConfiguration, WebHostServiceConfiguration webHostServiceConfiguration, IApiHttpClientFactory httpClientFactory)
+        public IntegrationApiFactory(ILoggerFactory loggerFactory, IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, IntegrationConfiguration integrationConfiguration, WebHostServiceConfiguration webHostServiceConfiguration, IApiHttpClientFactory httpClientFactory)
         {
+            _loggerFactory = loggerFactory;
             _credentialProvider = credentialProvider;
             _httpContextAccessor = httpContextAccessor;
             _requestContext = requestContext;
@@ -460,7 +463,8 @@ namespace Binner.Common.Services
                 ApiKey = _integrationConfiguration.Swarm.ApiKey,
                 ApiUrl = _integrationConfiguration.Swarm.ApiUrl,
             };
-            var api = new Integrations.SwarmApi(configuration);
+            var logger = _loggerFactory.CreateLogger<Integrations.SwarmApi>();
+            var api = new Integrations.SwarmApi(logger, configuration);
             return api;
         }
 
@@ -478,7 +482,8 @@ namespace Binner.Common.Services
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
                 Timeout = TimeSpan.Parse(credentials.GetCredentialString("Timeout"))
             };
-            var api = new Integrations.SwarmApi(configuration);
+            var logger = _loggerFactory.CreateLogger<Integrations.SwarmApi>();
+            var api = new Integrations.SwarmApi(logger, configuration);
             return api;
         }
 
@@ -494,7 +499,8 @@ namespace Binner.Common.Services
                 ApiUrl = _integrationConfiguration.Digikey.ApiUrl,
                 oAuthPostbackUrl = _integrationConfiguration.Digikey.oAuthPostbackUrl,
             };
-            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
+            var logger = _loggerFactory.CreateLogger<DigikeyApi>();
+            var api = new DigikeyApi(logger, configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
             return api;
         }
 
@@ -514,7 +520,8 @@ namespace Binner.Common.Services
                 oAuthPostbackUrl = credentials.GetCredentialString("oAuthPostbackUrl"),
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
-            var api = new DigikeyApi(configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
+            var logger = _loggerFactory.CreateLogger<DigikeyApi>();
+            var api = new DigikeyApi(logger, configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
             return api;
         }
 
@@ -532,7 +539,8 @@ namespace Binner.Common.Services
                 },
                 ApiUrl = _integrationConfiguration.Mouser.ApiUrl,
             };
-            var api = new MouserApi(configuration, _httpClientFactory);
+            var logger = _loggerFactory.CreateLogger<MouserApi>();
+            var api = new MouserApi(logger, configuration, _httpClientFactory);
             return api;
         }
 
@@ -554,7 +562,8 @@ namespace Binner.Common.Services
                 },
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
-            var api = new MouserApi(configuration, _httpClientFactory);
+            var logger = _loggerFactory.CreateLogger<MouserApi>();
+            var api = new MouserApi(logger, configuration, _httpClientFactory);
             return api;
         }
 
@@ -567,7 +576,8 @@ namespace Binner.Common.Services
                 ClientId = _integrationConfiguration.Nexar.ClientId,
                 ClientSecret = _integrationConfiguration.Nexar.ClientSecret,
             };
-            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale);
+            var logger = _loggerFactory.CreateLogger<NexarApi>();
+            var api = new NexarApi(logger, configuration, _webHostServiceConfiguration.Locale);
             return api;
         }
 
@@ -584,7 +594,8 @@ namespace Binner.Common.Services
                 ClientId = credentials.GetCredentialString("ClientId"),
                 ClientSecret = credentials.GetCredentialString("ClientSecret"),
             };
-            var api = new NexarApi(configuration, _webHostServiceConfiguration.Locale);
+            var logger = _loggerFactory.CreateLogger<NexarApi>();
+            var api = new NexarApi(logger, configuration, _webHostServiceConfiguration.Locale);
             return api;
         }
 
@@ -598,7 +609,8 @@ namespace Binner.Common.Services
                 ApiKey = _integrationConfiguration.Arrow.ApiKey,
                 ApiUrl = _integrationConfiguration.Arrow.ApiUrl,
             };
-            var api = new ArrowApi(configuration, _httpContextAccessor);
+            var logger = _loggerFactory.CreateLogger<ArrowApi>();
+            var api = new ArrowApi(logger, configuration, _httpContextAccessor);
             return api;
         }
 
@@ -616,7 +628,8 @@ namespace Binner.Common.Services
                 ApiKey = credentials.GetCredentialString("ApiKey"),
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
             };
-            var api = new ArrowApi(configuration, _httpContextAccessor);
+            var logger = _loggerFactory.CreateLogger<ArrowApi>();
+            var api = new ArrowApi(logger, configuration, _httpContextAccessor);
             return api;
         }
 
@@ -632,7 +645,8 @@ namespace Binner.Common.Services
                 ApiUrl = _integrationConfiguration.Tme.ApiUrl,
                 ResolveExternalLinks = _integrationConfiguration.Tme.ResolveExternalLinks,
             };
-            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
+            var logger = _loggerFactory.CreateLogger<TmeApi>();
+            var api = new TmeApi(logger, configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
             return api;
         }
 
@@ -652,7 +666,8 @@ namespace Binner.Common.Services
                 ApiUrl = credentials.GetCredentialString("ApiUrl"),
                 ResolveExternalLinks = credentials.GetCredentialBool("ResolveExternalLinks"),
             };
-            var api = new TmeApi(configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
+            var logger = _loggerFactory.CreateLogger<TmeApi>();
+            var api = new TmeApi(logger, configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);
             return api;
         }
     }

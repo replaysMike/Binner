@@ -512,6 +512,7 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.Provider == authRequest.Provider 
                     && x.OrganizationId == userContext.OrganizationId 
                     && x.UserId == userContext.UserId
+                    && x.RequestId == authRequest.Id
                 );
             if (entity != null)
             {
@@ -526,12 +527,12 @@ INNER JOIN (
         public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext? userContext)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
-            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)}() RequestId: {requestId} OrganizationId: {userContext?.OrganizationId} UserId: {userContext?.UserId}");
+            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)}() RequestId: {requestId} OrganizationId: {(userContext?.OrganizationId.ToString() ?? "<unset>")} UserId: {(userContext?.UserId.ToString() ?? "<unset>")}");
             var entity = await context.OAuthRequests
                 .Where(x => x.RequestId == requestId)
                 .WhereIf(userContext != null, x => x.OrganizationId == userContext!.OrganizationId && x.UserId == userContext.UserId)
                 .FirstOrDefaultAsync();
-            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)} result Id: {entity?.OAuthRequestId} AuthCode: {entity?.AuthorizationCode} AuthorizationReceived: {entity?.AuthorizationReceived}");
+            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)} RequestId: {requestId} result Id: {entity?.OAuthRequestId} AuthCode: {entity?.AuthorizationCode} AuthorizationReceived: {entity?.AuthorizationReceived} OrganizationId: {entity?.OrganizationId} UserId: {entity?.UserId}");
             return _mapper.Map<OAuthAuthorization>(entity);
         }
 

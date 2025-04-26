@@ -3,13 +3,13 @@ using Binner.Common.Integrations.Models;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.Tme;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Security.Cryptography;
@@ -24,6 +24,7 @@ namespace Binner.Common.Integrations
         public const string BasePath = "/";
         public const string DefaultApiUrl = "https://api.tme.eu/";
         private static readonly TimeSpan CacheLifetime = TimeSpan.FromMinutes(30);
+        private readonly ILogger<TmeApi> _logger;
         private readonly TmeConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
         private readonly IApiHttpClient _client;
@@ -48,8 +49,9 @@ namespace Binner.Common.Integrations
         /// <param name="configuration"></param>
         /// <param name="localeConfiguration"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TmeApi(TmeConfiguration configuration, LocaleConfiguration localeConfiguration, IApiHttpClientFactory clientFactory)
+        public TmeApi(ILogger<TmeApi> logger, TmeConfiguration configuration, LocaleConfiguration localeConfiguration, IApiHttpClientFactory clientFactory)
         {
+            _logger = logger;
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _localeConfiguration = localeConfiguration ?? throw new ArgumentNullException(nameof(localeConfiguration));
             _clientFactory = clientFactory;
@@ -433,6 +435,11 @@ namespace Binner.Common.Integrations
             if (string.IsNullOrEmpty(_configuration.ApplicationSecret)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApplicationSecret!");
             if (string.IsNullOrEmpty(_configuration.ApiKey)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiKey!");
             if (string.IsNullOrEmpty(_configuration.ApiUrl)) throw new BinnerConfigurationException($"{nameof(TmeConfiguration)} must specify a ApiUrl!");
+        }
+
+        public void Dispose()
+        {
+            _client.Dispose();
         }
 
         public class TmeUnauthorizedException : Exception

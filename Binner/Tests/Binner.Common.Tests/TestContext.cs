@@ -32,7 +32,8 @@ namespace Binner.Common.Tests
         public Mock<IIntegrationCredentialsCacheProvider> IntegrationCredentialsCacheProvider { get; set; }
         public Mock<ICredentialService> CredentialService { get; set; }
         public Mock<ISwarmService> SwarmService { get; set; }
-        public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(IntegrationCredentialsCacheProvider.Object,
+        public Mock<ILoggerFactory> LoggerFactory { get; set; }
+        public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, IntegrationCredentialsCacheProvider.Object,
                 HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object,
                 WebHostServiceConfiguration.Integrations, WebHostServiceConfiguration, ApiHttpClientFactory);
         public IApiHttpClientFactory ApiHttpClientFactory { get; set; }
@@ -40,8 +41,8 @@ namespace Binner.Common.Tests
         public TestContext()
         {
             WebHostServiceConfiguration = new WebHostServiceConfiguration();
-            
 
+            LoggerFactory = new Mock<ILoggerFactory>();
             DbFactory = new Mock<IDbContextFactory<BinnerContext>>();
             DbFactory.Setup(f => f.CreateDbContext())
                 .Returns(new BinnerContext(new DbContextOptionsBuilder<BinnerContext>()

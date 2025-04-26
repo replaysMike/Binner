@@ -61,7 +61,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
             if (apiResponse.Errors.Any())
             {
                 _logger.LogError($"[{apiResponse.ApiName}]: {string.Join(". ", apiResponse.Errors)}");
-                // return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
+                throw new ApiErrorException(apiResponse, "Api returned a fatal error.");
             }
 
             var digikeyResponse = (KeywordSearchResponse?)apiResponse.Response;

@@ -2,8 +2,8 @@
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.Nexar;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nexar.Client;
 using Nexar.Client.Token;
 using StrawberryShake;
@@ -19,6 +19,7 @@ namespace Binner.Common.Integrations
     {
         public string Name => "Nexar";
         public const string BaseAddress = "https://api.nexar.com/graphql";
+        private readonly ILogger<NexarApi> _logger;
         private readonly OctopartConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
         private static readonly TimeSpan TokenLifetime = TimeSpan.FromDays(1);
@@ -29,8 +30,9 @@ namespace Binner.Common.Integrations
         
         public IApiConfiguration Configuration => _configuration;
 
-        public NexarApi(OctopartConfiguration configuration, LocaleConfiguration localeConfiguration)
+        public NexarApi(ILogger<NexarApi> logger, OctopartConfiguration configuration, LocaleConfiguration localeConfiguration)
         {
+            _logger = logger;
             _configuration = configuration;
             _localeConfiguration = localeConfiguration;
         }
@@ -191,6 +193,11 @@ namespace Binner.Common.Integrations
         public Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

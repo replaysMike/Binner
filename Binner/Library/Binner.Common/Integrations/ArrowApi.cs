@@ -3,6 +3,7 @@ using Binner.Common.Integrations.Models;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.Arrow;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -21,6 +22,7 @@ namespace Binner.Common.Integrations
     {
         private const string BasePath = "";
         public string Name => "Arrow";
+        private readonly ILogger<ArrowApi> _logger;
         private readonly ArrowConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
@@ -36,8 +38,9 @@ namespace Binner.Common.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public ArrowApi(ArrowConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public ArrowApi(ILogger<ArrowApi> logger, ArrowConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
+            _logger = logger;
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
@@ -161,6 +164,11 @@ namespace Binner.Common.Integrations
         {
             var message = new HttpRequestMessage(method, uri);
             return message;
+        }
+
+        public void Dispose()
+        {
+            _client.Dispose();
         }
 
         public class ArrowUnauthorizedException : Exception

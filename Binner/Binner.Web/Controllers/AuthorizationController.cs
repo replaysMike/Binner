@@ -48,35 +48,54 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> AuthorizeAsync([FromQuery] string? code, [FromQuery] string? scope, [FromQuery] string? state)
         {
-            if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code), "Code parameter must be specified");
-            if (string.IsNullOrEmpty(state)) throw new ArgumentNullException(nameof(state), "State parameter must be specified");
+            if (string.IsNullOrEmpty(code))
+            {
+                _logger.LogError($"[{nameof(AuthorizeAsync)}] Code parameter must be specified");
+                throw new ArgumentNullException(nameof(code), "Code parameter must be specified");
+            }
+            if (string.IsNullOrEmpty(state))
+            {
+                _logger.LogError($"[{nameof(AuthorizeAsync)}] State parameter must be specified");
+                throw new ArgumentNullException(nameof(state), "State parameter must be specified");
+            }
 
             // state is a Guid indicating the requestId
             if (!Guid.TryParse(state, out var requestId) && requestId != Guid.Empty)
+            {
+                _logger.LogError($"[{nameof(AuthorizeAsync)}] Error - State is an invalid format.");
                 throw new ArgumentException("State is an invalid format.", nameof(state));
+            }
 
             // get the original oauth request from the stored requestId
             var authRequest = await _credentialService.GetOAuthRequestAsync(requestId, false);
             if (authRequest == null)
+            {
+                _logger.LogError($"[{nameof(AuthorizeAsync)}] Error - no originating oAuth request found! You must restart the oAuth authentication process.");
                 throw new AuthenticationException($"Error - no originating oAuth request found! You must restart the oAuth authentication process.");
+            }
 
             if (authRequest.UserId == null)
+            {
+                _logger.LogError($"[{nameof(AuthorizeAsync)}] Error - no user is associated with this oAuth request!");
                 throw new AuthenticationException($"Error - no user is associated with this oAuth request!");
+            }
 
             switch (authRequest.Provider)
             {
                 case nameof(DigikeyApi):
                     try
                     {
-                        _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Completing auth for {authRequest.Provider} provider");
+                        _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Completing auth for '{authRequest.Provider}' provider");
                         await FinishDigikeyApiAuthorizationAsync(authRequest, code);
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, $"[{nameof(AuthorizeAsync)}] Failed to complete auth for '{authRequest.Provider}' provider");
                         return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to authenticate with DigiKey due to an error! ", ex));
                     }
                     break;
                 default:
+                    _logger.LogError($"[{nameof(AuthorizeAsync)}] Unhandled OAuth provider name '{authRequest.Provider}' provider");
                     throw new NotImplementedException($"Unhandled OAuth provider name '{authRequest.Provider}'");
             }
 
@@ -95,6 +114,7 @@ namespace Binner.Web.Controllers
             {
                 var error = authResult?.ErrorMessage ?? "No auth result received";
                 var errorDescription = authResult?.ErrorDetails ?? string.Empty;
+                _logger.LogError($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Failed to complete OAuth with DigiKey for user {userId}.\n{error}\n{errorDescription}");
                 throw new AuthenticationException($"Failed to authenticate with DigiKey api. {error} - {errorDescription}");
             }
             else
@@ -104,7 +124,11 @@ namespace Binner.Web.Controllers
 
                 // reconstruct the user's session based on their UserId, since we don't have a Jwt token here for the user
                 var user = await _userService.GetUserAsync(new Model.User { UserId = userId });
-                if (user == null) throw new AuthenticationException($"UserId '{userId}' not found!");
+                if (user == null)
+                {
+                    _logger.LogError($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] UserId '{userId}' not found!");
+                    throw new AuthenticationException($"UserId '{userId}' not found!");
+                }
 
                 // create claims for the user's identity
                 var claims = _jwtService.GetClaims(new Global.Common.UserContext
@@ -136,6 +160,7 @@ namespace Binner.Web.Controllers
 
                 // update oauth request as complete
                 await _credentialService.UpdateOAuthRequestAsync(authRequest);
+                _logger.LogInformation($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Successfully completed OAuth DigiKey authorization for user {userId} with access token '{authResult.AccessToken}'!");
             }
         }
     }

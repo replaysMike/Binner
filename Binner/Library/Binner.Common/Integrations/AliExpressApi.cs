@@ -56,5 +56,9 @@ namespace Binner.Common.Integrations
         {
             throw new NotImplementedException();
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

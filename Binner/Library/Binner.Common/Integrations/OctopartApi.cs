@@ -73,7 +73,11 @@ namespace Binner.Common.Integrations
             return new ApiResponse(datasheets, nameof(OctopartApi));
         }
 
-        
+        public void Dispose()
+        {
+            _client.Dispose();
+        }
+
         public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();
