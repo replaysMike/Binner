@@ -1,5 +1,6 @@
 ﻿using Binner.Common.Integrations.Models;
 using Binner.Model.Configuration.Integrations;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace Binner.Common.Integrations
     /// <summary>
     /// An integrated Api
     /// </summary>
-    public interface IIntegrationApi
+    public interface IIntegrationApi : IDisposable
     {
         /// <summary>
         /// True if api is enabled

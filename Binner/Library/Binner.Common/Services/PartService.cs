@@ -844,6 +844,11 @@ namespace Binner.Common.Services
                 if (partInfoResults.PartResults.Parts.Any())
                     response.Parts.AddRange(partInfoResults.PartResults.Parts);
             }
+            catch (ApiErrorException ex)
+            {
+                // fatal error with executing api request
+                return ServiceResult<PartResults>.Create(ex.ApiResponse.Errors, ex.ApiResponse.ApiName);
+            }
             catch (ApiRequiresAuthenticationException ex)
             {
                 // additional authentication is required from an API (oAuth)

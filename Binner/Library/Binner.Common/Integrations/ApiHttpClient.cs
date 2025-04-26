@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -22,8 +23,14 @@ namespace Binner.Common.Integrations
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
                 UseCookies = true,
                 CookieContainer = new System.Net.CookieContainer(),
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate),
+                // for SocketsHttpHandler
+                //PooledConnectionLifetime = configuration.PooledConnectionLifetime,
+                //ConnectTimeout = configuration.ConnectTimeout,
+                //ResponseDrainTimeout = configuration.ResponseDrainTimeout
             };
             _httpClient = new HttpClient(_handler);
+            //_httpClient = new HttpClient();
         }
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)

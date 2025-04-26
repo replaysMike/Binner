@@ -1,15 +1,12 @@
 ﻿using Binner.Common.Integrations.Models;
-using Binner.Common.Services;
-using Binner.Global.Common;
 using Binner.Model.Configuration.Integrations;
 using Binner.SwarmApi;
 using Binner.SwarmApi.Request;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Binner.Common.Integrations
@@ -17,6 +14,7 @@ namespace Binner.Common.Integrations
     public class SwarmApi : IIntegrationApi
     {
         public string Name => "Swarm";
+        private readonly ILogger<SwarmApi> _logger;
         private readonly SwarmConfiguration _configuration;
         private readonly SwarmApiClient _client;
 
@@ -24,8 +22,9 @@ namespace Binner.Common.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public SwarmApi(SwarmConfiguration configuration)
+        public SwarmApi(ILogger<SwarmApi> logger, SwarmConfiguration configuration)
         {
+            _logger = logger;
             _configuration = configuration;
             var swarmApiConfiguration =
                 new SwarmApiConfiguration(_configuration.ApiKey ?? string.Empty, new Uri(_configuration.ApiUrl))
@@ -105,6 +104,10 @@ namespace Binner.Common.Integrations
             {
                 return ApiResponse.Create($"Api request timed out: {ex.Message}", nameof(SwarmApi));
             }
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

@@ -2,6 +2,7 @@
 using Binner.Common.Integrations.Models;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.Mouser;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -17,6 +18,7 @@ namespace Binner.Common.Integrations
     {
         private const string BasePath = "/api/v1";
         public string Name => "Mouser";
+        private readonly ILogger<MouserApi> _logger;
         private readonly MouserConfiguration _configuration;
         private readonly IApiHttpClient _client;
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
@@ -30,8 +32,9 @@ namespace Binner.Common.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public MouserApi(MouserConfiguration configuration, IApiHttpClientFactory httpClientFactory)
+        public MouserApi(ILogger<MouserApi> logger, MouserConfiguration configuration, IApiHttpClientFactory httpClientFactory)
         {
+            _logger = logger;
             _configuration = configuration;
             _client = httpClientFactory.Create();
         }
@@ -202,6 +205,11 @@ namespace Binner.Common.Integrations
         {
             var message = new HttpRequestMessage(method, uri);
             return message;
+        }
+
+        public void Dispose()
+        {
+            _client.Dispose();
         }
     }
 
