@@ -335,7 +335,7 @@ namespace Binner.Common.Integrations
 
                 // 200 OK
                 var responseJson = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<CategoriesResponse>(responseJson, _serializerSettings) ?? new();
+                var results = JsonConvert.DeserializeObject<Model.Integrations.DigiKey.V3.CategoriesResponse>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
             catch (Exception)
