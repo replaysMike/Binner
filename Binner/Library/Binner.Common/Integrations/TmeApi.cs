@@ -118,11 +118,11 @@ namespace Binner.Common.Integrations
                 return result.ApiResponse;
             }
 
-            var resultString = await response.Content.ReadAsStringAsync();
+            var responseJson = await response.Content.ReadAsStringAsync();
             // workaround fix for TME's API producing invalid/mutating json, tracked issue #360 created on their end (4/25/2025)
-            resultString = resultString.Replace("\"CategoryList\":[]", "\"CategoryList\":{}");
+            responseJson = responseJson.Replace("\"CategoryList\":[]", "\"CategoryList\":{}");
 
-            var results = JsonConvert.DeserializeObject<TmeResponse<ProductSearchResponse>>(resultString, _serializerSettings) ?? new();
+            var results = JsonConvert.DeserializeObject<TmeResponse<ProductSearchResponse>>(responseJson, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
 
@@ -167,8 +167,8 @@ namespace Binner.Common.Integrations
                 return result.ApiResponse;
             }
 
-            var resultString = await response.Content.ReadAsStringAsync();
-            var results = JsonConvert.DeserializeObject<TmeResponse<ProductFilesResponse>>(resultString, _serializerSettings) ?? new();
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var results = JsonConvert.DeserializeObject<TmeResponse<ProductFilesResponse>>(responseJson, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
 
@@ -215,8 +215,8 @@ namespace Binner.Common.Integrations
                 return result.ApiResponse;
             }
 
-            var resultString = await response.Content.ReadAsStringAsync();
-            var results = JsonConvert.DeserializeObject<TmeResponse<PriceListResponse>>(resultString, _serializerSettings) ?? new();
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var results = JsonConvert.DeserializeObject<TmeResponse<PriceListResponse>>(responseJson, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
 
@@ -250,15 +250,15 @@ namespace Binner.Common.Integrations
                 return result.ApiResponse;
             }
 
-            var resultString = await response.Content.ReadAsStringAsync();
+            var responseJson = await response.Content.ReadAsStringAsync();
             if (isTree)
             {
-                var results = JsonConvert.DeserializeObject<TmeResponse<CategoryTreeResponse>>(resultString, _serializerSettings) ?? new();
+                var results = JsonConvert.DeserializeObject<TmeResponse<CategoryTreeResponse>>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(TmeApi));
             }
             else
             {
-                var results = JsonConvert.DeserializeObject<TmeResponse<CategoryResponse>>(resultString, _serializerSettings) ?? new();
+                var results = JsonConvert.DeserializeObject<TmeResponse<CategoryResponse>>(responseJson, _serializerSettings) ?? new();
 
 #pragma warning disable CS0162 // Unreachable code detected
                 // produce a hashtable of all categories, which will be statically compiled into the StaticCategories class.
@@ -301,9 +301,9 @@ namespace Binner.Common.Integrations
                     var response = await client.SendAsync(requestMessage);
                     if (response.IsSuccessStatusCode)
                     {
-                        var value = await response.Content.ReadAsStringAsync();
-                        _cache.Add(cachekey, value, DateTimeOffset.UtcNow.Add(CacheLifetime));
-                        return value;
+                        var responseJson = await response.Content.ReadAsStringAsync();
+                        _cache.Add(cachekey, responseJson, DateTimeOffset.UtcNow.Add(CacheLifetime));
+                        return responseJson;
                     }
                 }
             }

@@ -54,6 +54,11 @@ namespace Binner.Data.Model
         /// </summary>
         public DateTime DateExpiresUtc { get; set; }
 
+        /// <summary>
+        /// Storage for additional api settings related to a credential
+        /// </summary>
+        public string? ApiSettings { get; set; }
+
 #if INITIALCREATE
         /// <summary>
         /// Ip address who created the request

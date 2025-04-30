@@ -1,5 +1,4 @@
 ﻿using ApiClient.OAuth2;
-using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
 using Binner.Common.Services;
 using Binner.Global.Common;
@@ -13,34 +12,25 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Net.Http;
 using System.Security.Authentication;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
-using TypeSupport.Extensions;
 
 namespace Binner.Common.Integrations
 {
-    public class DigikeyApi : IIntegrationApi
+    /// <summary>
+    /// DigiKey api supports both V3 and V4 APIs
+    /// </summary>
+    public class DigikeyApi : BaseDigikeyApi, IIntegrationApi
     {
         public static readonly TimeSpan MaxAuthorizationWaitTime = TimeSpan.FromSeconds(30);
         public string Name => "DigiKey";
 
-        #region Regex Matching
-        private readonly Regex PercentageRegex = new Regex("\\b(?<!\\.)(?!0+(?:\\.0+)?%)(?:\\d|[1-9]\\d|100)(?:(?<!100)\\.\\d+)?%", RegexOptions.Compiled);
-        private readonly Regex PowerRegex = new Regex("^(\\d+[\\/\\d. ]*[Ww]$|\\d*[Ww]$)", RegexOptions.Compiled);
-        private readonly Regex ResistanceRegex = new Regex("^(\\d+[\\d. ]*[KkMm]$|\\d*[KkMm]$|\\d*(?i)ohm(?-i)$)", RegexOptions.Compiled);
-        private readonly Regex CapacitanceRegex = new Regex("^\\d+\\.?\\d*(uf|pf|mf|f)$", RegexOptions.Compiled);
-        private readonly Regex VoltageRegex = new Regex("^\\d+\\.?\\d*(v|mv)$", RegexOptions.Compiled);
-        private readonly Regex CurrentRegex = new Regex("^\\d+\\.?\\d*(a|ma)$", RegexOptions.Compiled);
-        private readonly Regex InductanceRegex = new Regex("^\\d+\\.?\\d*(nh|uh|h)$", RegexOptions.Compiled);
-        #endregion
-
         // the full url to the Api
+        private DigiKeyApiVersion _apiVersion = DigiKeyApiVersion.V3;
+        private IDigikeyApi _api;
+        private readonly DigikeyV3Api _v3Api;
+        private readonly DigikeyV4Api _v4Api;
         private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
@@ -48,8 +38,8 @@ namespace Binner.Common.Integrations
         private readonly ICredentialService _credentialService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRequestContextAccessor _requestContext;
-        private readonly IApiHttpClient _client;
-        private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
+
+        private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
             // ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() },
@@ -66,6 +56,7 @@ namespace Binner.Common.Integrations
         public IApiConfiguration Configuration => _configuration;
 
         public DigikeyApi(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, IApiHttpClientFactory httpClientFactory)
+            : base(logger, configuration, localeConfiguration, _serializerSettings, httpClientFactory)
         {
             _logger = logger;
             _configuration = configuration;
@@ -73,8 +64,27 @@ namespace Binner.Common.Integrations
             _oAuth2Service = new OAuth2Service(configuration);
             _credentialService = credentialService;
             _httpContextAccessor = httpContextAccessor;
-            _client = httpClientFactory.Create();
             _requestContext = requestContext;
+            _v3Api = new DigikeyV3Api(_logger, _configuration, _localeConfiguration, _serializerSettings, httpClientFactory);
+            _v4Api = new DigikeyV4Api(_logger, _configuration, _localeConfiguration, _serializerSettings, httpClientFactory);
+            UseApi(_apiVersion);
+        }
+
+        private void UseApi(DigiKeyApiVersion version)
+        {
+            switch (version)
+            {
+                case DigiKeyApiVersion.V3:
+                    _apiVersion = version;
+                    _api = _v3Api;
+                    break;
+                case DigiKeyApiVersion.V4:
+                    _apiVersion = version;
+                    _api = _v4Api;
+                    break;
+                default:
+                    throw new NotImplementedException($"API version {version} not implemented.");
+            }
         }
 
         private void ValidateConfiguration()
@@ -106,29 +116,7 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                try
-                {
-                    // set what fields we want from the API
-                    var uri = Url.Combine(_configuration.ApiUrl, "OrderDetails/v3/Status/", orderId);
-                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
-                    // perform a keywords API search
-                    var response = await _client.SendAsync(requestMessage);
-                    var result = await TryHandleResponseAsync(response, authenticationResponse);
-                    if (!result.IsSuccessful)
-                    {
-                        // return api error
-                        return result.Response;
-                    }
-
-                    // 200 OK
-                    var resultString = await response.Content.ReadAsStringAsync();
-                    var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings) ?? new();
-                    return new ApiResponse(results, nameof(DigikeyApi));
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                return await _api.GetOrderAsync(authenticationResponse, orderId);
             });
         }
 
@@ -146,31 +134,7 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                try
-                {
-                    // set what fields we want from the API
-                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Products/", HttpUtility.UrlEncode(partNumber));
-                    _logger.LogInformation($"[{nameof(GetProductDetailsAsync)}] Creating product search request for '{partNumber}'...");
-                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
-                    // perform a keywords API search
-                    var response = await _client.SendAsync(requestMessage);
-                    _logger.LogInformation($"[{nameof(GetProductDetailsAsync)}] Api responded with '{response.StatusCode}'");
-                    var result = await TryHandleResponseAsync(response, authenticationResponse);
-                    if (!result.IsSuccessful)
-                    {
-                        // return api error
-                        return result.Response;
-                    }
-
-                    // 200 OK
-                    var resultString = await response.Content.ReadAsStringAsync();
-                    var results = JsonConvert.DeserializeObject<Product>(resultString, _serializerSettings) ?? new();
-                    return new ApiResponse(results, nameof(DigikeyApi));
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                return await _api.GetProductDetailsAsync(authenticationResponse, partNumber);
             });
         }
 
@@ -191,67 +155,7 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                try
-                {
-                    // set what fields we want from the API
-                    // https://developer.digikey.com/products/barcode/barcoding/productbarcode
-
-                    var is2dBarcode = barcode.StartsWith("[)>");
-                    var endpoint = "Barcoding/v3/ProductBarcodes/";
-                    switch (barcodeType)
-                    {
-                        case ScannedBarcodeType.Product:
-                        default:
-                            endpoint = "Barcoding/v3/ProductBarcodes/";
-                            if (is2dBarcode)
-                                endpoint = "Barcoding/v3/Product2DBarcodes/";
-                            break;
-                        case ScannedBarcodeType.Packlist:
-                            endpoint = "Barcoding/v3/PackListBarcodes/";
-                            if (is2dBarcode)
-                                endpoint = "Barcoding/v3/PackList2DBarcodes/";
-                            break;
-                    }
-
-                    var barcodeFormatted = barcode.ToString();
-                    if (is2dBarcode)
-                    {
-                        // DigiKey requires the GS (Group separator) to be \u241D, and the RS (Record separator) to be \u241E
-                        // GS
-                        var gsReplacement = "\u241D";
-                        barcodeFormatted = barcodeFormatted.Replace("\u001d", gsReplacement);
-                        barcodeFormatted = barcodeFormatted.Replace("\u005d", gsReplacement);
-                        // RS
-                        var rsReplacement = "\u241E";
-                        barcodeFormatted = barcodeFormatted.Replace("\u001e", rsReplacement);
-                        barcodeFormatted = barcodeFormatted.Replace("\u005e", rsReplacement);
-
-                    }
-                    var barcodeFormattedPath = HttpUtility.UrlEncode(barcodeFormatted);
-
-                    //var uri = Url.Combine(_configuration.ApiUrl, endpoint, barcodeFormatted);
-                    //var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
-                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, string.Join("/", _configuration.ApiUrl, endpoint) + barcodeFormattedPath);
-                    // perform a keywords API search
-                    var response = await _client.SendAsync(requestMessage);
-                    var result = await TryHandleResponseAsync(response, authenticationResponse);
-                    if (!result.IsSuccessful)
-                    {
-                        // return api error
-                        var contentString = await response.Content.ReadAsStringAsync();
-                        result.Response.Errors.Add(contentString);
-                        return result.Response;
-                    }
-
-                    // 200 OK
-                    var resultString = await response.Content.ReadAsStringAsync();
-                    var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(resultString, _serializerSettings) ?? new();
-                    return new ApiResponse(results, nameof(DigikeyApi));
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                return await _api.GetBarcodeDetailsAsync(authenticationResponse, barcode, barcodeType);
             });
         }
 
@@ -269,31 +173,7 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                try
-                {
-                    // set what fields we want from the API
-                    var uri = Url.Combine(_configuration.ApiUrl, "Search/v3/Categories");
-                    _logger.LogInformation($"[{nameof(GetCategoriesAsync)}] Creating categories request...");
-                    var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
-                    // perform a keywords API search
-                    var response = await _client.SendAsync(requestMessage);
-                    _logger.LogInformation($"[{nameof(GetCategoriesAsync)}] Api responded with '{response.StatusCode}'");
-                    var result = await TryHandleResponseAsync(response, authenticationResponse);
-                    if (!result.IsSuccessful)
-                    {
-                        // return api error
-                        return result.Response;
-                    }
-
-                    // 200 OK
-                    var resultString = await response.Content.ReadAsStringAsync();
-                    var results = JsonConvert.DeserializeObject<CategoriesResponse>(resultString, _serializerSettings) ?? new();
-                    return new ApiResponse(results, nameof(DigikeyApi));
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                return await _api.GetCategoriesAsync(authenticationResponse);
             });
         }
 
@@ -313,367 +193,25 @@ namespace Binner.Common.Integrations
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             }
 
-            var keywords = new List<string>();
-            if (!string.IsNullOrEmpty(partNumber))
-                keywords = partNumber
-                    .ToLower()
-                    .Split([" "], StringSplitOptions.RemoveEmptyEntries)
-                    .ToList();
-            var packageTypeEnum = MountingTypes.None;
-            if (!string.IsNullOrEmpty(mountingType))
-            {
-                switch (mountingType.ToLower())
-                {
-                    case "surface mount":
-                        packageTypeEnum = MountingTypes.SurfaceMount;
-                        break;
-                    case "through hole":
-                        packageTypeEnum = MountingTypes.ThroughHole;
-                        break;
-                }
-            }
-
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Called using accesstoken='{authenticationResponse.AccessToken}'");
-                try
-                {
-                    // set what fields we want from the API
-                    var includes = new List<string> {
-                        "DigiKeyPartNumber",
-                        "QuantityAvailable",
-                        "Manufacturer",
-                        "ManufacturerPartNumber",
-                        "PrimaryDatasheet",
-                        "ProductDescription",
-                        "DetailedDescription",
-                        "MinimumOrderQuantity",
-                        "NonStock",
-                        "UnitPrice",
-                        "ProductStatus",
-                        "ProductUrl",
-                        "PrimaryPhoto",
-                        "PrimaryVideo",
-                        "Packaging",
-                        "AlternatePackaging",
-                        "Family",
-                        "Category",
-                        "Parameters"
-                        };
-                    var values = new Dictionary<string, string>
-                    {
-                        { "Includes", $"Products({string.Join(",", includes)})" },
-                    };
-                    var uri = Url.Combine(_configuration.ApiUrl, "/Search/v3/Products", $"/Keyword?" + string.Join("&", values.Select(x => $"{x.Key}={x.Value}")));
-                    var taxonomies = MapTaxonomies(partType, packageTypeEnum);
-
-                    // attempt to detect certain words and apply them as parametric filters
-                    var (parametricFilters, filteredKeywords) = MapParametricFilters(keywords, packageTypeEnum, taxonomies);
-
-                    var request = new KeywordSearchRequest
-                    {
-                        Keywords = string.Join(" ", filteredKeywords),
-                        RecordCount = recordCount,
-                        Filters = new Filters
-                        {
-                            TaxonomyIds = taxonomies.Select(x => (int)x).ToList(),
-                            ParametricFilters = parametricFilters
-                        },
-                        SearchOptions = new List<SearchOptions> { }
-                    };
-                    var result = await PerformApiSearchQueryAsync(authenticationResponse, uri, request);
-                    if (result.ErrorResponse != null) return result.ErrorResponse;
-
-                    // if no results are returned, perform a secondary search on the original keyword search with no modifications via parametric filtering
-                    if (!result.SuccessResponse.Products.Any() && filteredKeywords.Count != keywords.Count)
-                    {
-                        request = new KeywordSearchRequest
-                        {
-                            Keywords = string.Join(" ", keywords),
-                            RecordCount = recordCount,
-                            Filters = new Filters
-                            {
-                                TaxonomyIds = taxonomies.Select(x => (int)x).ToList(),
-                                // don't include parametric filters
-                                ParametricFilters = new List<ParametricFilter>()
-                            },
-                            SearchOptions = new List<SearchOptions> { }
-                        };
-                        result = await PerformApiSearchQueryAsync(authenticationResponse, uri, request);
-                        if (result.ErrorResponse != null) return result.ErrorResponse;
-                    }
-
-                    return new ApiResponse(result.SuccessResponse, nameof(DigikeyApi));
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    // refresh token likely expired, need to re-authenticate
-                    throw new DigikeyUnauthorizedException(authenticationResponse);
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                return await _api.SearchAsync(authenticationResponse, partNumber, partType, mountingType, recordCount, additionalOptions);
             });
         }
 
-        private async Task<(IApiResponse? ErrorResponse, KeywordSearchResponse SuccessResponse)> PerformApiSearchQueryAsync(OAuthAuthorization authenticationResponse, Uri uri, KeywordSearchRequest request)
+        private async Task SetOAuthCredentialApiSettingsAsync()
         {
-            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Creating search request for '{request.Keywords}' using accesstoken='{authenticationResponse.AccessToken}'...");
-            using var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
-            var json = JsonConvert.SerializeObject(request, _serializerSettings);
-            requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
-            // perform a keywords API search
-            using var response = await _client.SendAsync(requestMessage);
-            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Api responded with '{response.StatusCode}'. accesstoken='{authenticationResponse.AccessToken}'");
-            var result = await TryHandleResponseAsync(response, authenticationResponse);
-            if (!result.IsSuccessful)
+            var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
+            if (credential != null)
             {
-                // return api error
-                return (result.Response, new KeywordSearchResponse());
-            }
-
-            // 200 OK
-            var resultString = await response.Content.ReadAsStringAsync();
-            var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(resultString, _serializerSettings) ?? new();
-            return (null, results);
-        }
-
-        /// <summary>
-        /// Detect certain keywords/regex combinations to move those keywords into a parametric filter, to get a more defined result from DigiKey
-        /// </summary>
-        /// <param name="keywordCollection"></param>
-        /// <param name="packageType"></param>
-        /// <param name="taxonomies"></param>
-        /// <returns></returns>
-        private (ICollection<ParametricFilter> ParametricFilters, ICollection<string> FilteredKeywords) MapParametricFilters(ICollection<string> keywordCollection, MountingTypes packageType, ICollection<Taxonomies> taxonomies)
-        {
-            // create a copy that we will modify and return for parametric search behavior
-            var filteredKeywords = new List<string>(keywordCollection);
-            var filters = new List<ParametricFilter>();
-            var percent = "";
-            var power = "";
-            var resistance = "";
-            var capacitance = "";
-            var voltageRating = "";
-            var currentRating = "";
-            var inductance = "";
-            foreach (var keyword in filteredKeywords)
-            {
-                if (PercentageRegex.IsMatch(keyword))
-                    percent = keyword;
-                if (PowerRegex.IsMatch(keyword))
-                    power = keyword;
-                if (ResistanceRegex.IsMatch(keyword))
-                    resistance = keyword;
-                if (CapacitanceRegex.IsMatch(keyword))
-                    capacitance = keyword;
-                if (VoltageRegex.IsMatch(keyword))
-                    voltageRating = keyword;
-                if (CurrentRegex.IsMatch(keyword))
-                    currentRating = keyword;
-                if (InductanceRegex.IsMatch(keyword))
-                    inductance = keyword;
-            }
-            // add tolerance parameter
-            if (filteredKeywords.Contains("precision") || !string.IsNullOrEmpty(percent))
-            {
-                if (filteredKeywords.Contains("precision"))
-                    filteredKeywords.Remove("precision");
-                if (filteredKeywords.Contains(percent))
-                    filteredKeywords.Remove(percent);
-                else
-                    percent = "1%";
-                var filter = new ParametricFilter
+                var apiSettings = new DigiKeyCredentialApiSettings
                 {
-                    ParameterId = (int)Parametrics.Tolerance,
-                    ValueId = ((int)GetTolerance(percent)).ToString()
+                    ApiVersion = _apiVersion,
                 };
-                filters.Add(filter);
+                credential.ApiSettings = JsonConvert.SerializeObject(apiSettings, Formatting.None);
+                await _credentialService.SaveOAuthCredentialAsync(credential);
             }
-            if (!string.IsNullOrEmpty(power))
-            {
-                filteredKeywords.Remove(power);
-                var filter = new ParametricFilter
-                {
-                    ParameterId = (int)Parametrics.Power,
-                    ValueId = GetPower(power)
-                };
-                filters.Add(filter);
-            }
-            if (!string.IsNullOrEmpty(resistance))
-            {
-                filteredKeywords.Remove(resistance);
-                var filter = new ParametricFilter
-                {
-                    ParameterId = (int)Parametrics.Resistance,
-                    ValueId = GetResistance(resistance)
-                };
-                filters.Add(filter);
-            }
-            if (!string.IsNullOrEmpty(capacitance))
-            {
-                filteredKeywords.Remove(capacitance);
-                var filter = new ParametricFilter
-                {
-                    ParameterId = (int)Parametrics.Capacitance,
-                    ValueId = GetCapacitance(capacitance)
-                };
-                filters.Add(filter);
-            }
-            if (!string.IsNullOrEmpty(voltageRating))
-            {
-                filteredKeywords.Remove(voltageRating);
-                var filter = new ParametricFilter
-                {
-                    ParameterId = (int)Parametrics.VoltageRating,
-                    ValueId = GetVoltageRating(voltageRating)
-                };
-                filters.Add(filter);
-            }
-            if (!string.IsNullOrEmpty(currentRating))
-            {
-                filteredKeywords.Remove(currentRating);
-                var filter = new ParametricFilter
-                {
-                    ParameterId = (int)Parametrics.CurrentRating,
-                    ValueId = GetVoltageRating(currentRating)
-                };
-                filters.Add(filter);
-            }
-            if (!string.IsNullOrEmpty(inductance))
-            {
-                filteredKeywords.Remove(inductance);
-                var filter = new ParametricFilter
-                {
-                    ParameterId = (int)Parametrics.Inductance,
-                    ValueId = GetInductance(inductance)
-                };
-                filters.Add(filter);
-            }
-            // dont add mounting type to resistors, they dont seem to be mapped
-            if (!taxonomies.ContainsAny(new List<Taxonomies> { Taxonomies.Resistor, Taxonomies.SurfaceMountResistor, Taxonomies.ThroughHoleResistor }))
-            {
-                if (packageType != MountingTypes.None)
-                    filters.Add(new ParametricFilter
-                    {
-                        ParameterId = (int)Parametrics.MountingType,
-                        ValueId = ((int)packageType).ToString()
-                    });
-            }
-            return (filters, filteredKeywords);
-        }
-
-        private ICollection<Taxonomies> MapTaxonomies(string partType, MountingTypes packageType)
-        {
-            var taxonomies = new List<Taxonomies>();
-            var taxonomy = Taxonomies.None;
-            if (!string.IsNullOrEmpty(partType) && partType != "-1")
-            {
-                if (Enum.TryParse<Taxonomies>(partType, true, out taxonomy))
-                {
-                    var addBaseType = true;
-                    // also map all the alternates
-                    var memberInfos = typeof(Taxonomies).GetMember(taxonomy.ToString());
-                    var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == typeof(Taxonomies));
-                    if (enumValueMemberInfo != null)
-                    {
-                        var valueAttributes = enumValueMemberInfo.GetCustomAttributes(typeof(AlternatesAttribute), false);
-                        if (valueAttributes.Any())
-                        {
-                            var alternateIds = ((AlternatesAttribute)valueAttributes[0]).Ids;
-                            // taxonomies.AddRange(alternateIds);
-                        }
-                    }
-
-                    switch (taxonomy)
-                    {
-                        case Taxonomies.Resistor:
-                            if (packageType == MountingTypes.ThroughHole)
-                            {
-                                taxonomies.Add(Taxonomies.ThroughHoleResistor);
-                                addBaseType = false;
-                            }
-                            if (packageType == MountingTypes.SurfaceMount)
-                            {
-                                taxonomies.Add(Taxonomies.SurfaceMountResistor);
-                                addBaseType = false;
-                            }
-                            break;
-                    }
-                    if (addBaseType)
-                        taxonomies.Add(taxonomy);
-                }
-            }
-
-            return taxonomies;
-        }
-
-        /// <summary>
-        /// Handle known error conditions first, if response is OK false will be returned
-        /// </summary>
-        /// <param name="response"></param>
-        /// <param name="authenticationResponse"></param>
-        /// <returns></returns>
-        /// <exception cref="DigikeyUnauthorizedException"></exception>
-        private async Task<(bool IsSuccessful, IApiResponse Response)> TryHandleResponseAsync(HttpResponseMessage response, OAuthAuthorization authenticationResponse)
-        {
-            IApiResponse apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                // process a possible error message
-                var resultString = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(resultString))
-                {
-                    var unauthorizedResponse = JsonConvert.DeserializeObject<UnauthorizedErrorResponse>(resultString);
-                    if (unauthorizedResponse?.ErrorDetails?.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
-                    {
-                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Version: {unauthorizedResponse.ErrorResponseVersion} Response: {unauthorizedResponse.ErrorDetails}");
-                        throw new DigikeyUnsubscribedException(authenticationResponse, unauthorizedResponse.ErrorResponseVersion, unauthorizedResponse.ErrorDetails);
-                    }
-                }
-                else
-                {
-                    _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - user must authenticate. accesstoken='{authenticationResponse.AccessToken}'");
-                    throw new DigikeyUnauthorizedException(authenticationResponse);
-                }
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
-            {
-                if (response.Headers.Contains("X-RateLimit-Limit"))
-                {
-                    // throttled
-                    var remainingTime = TimeSpan.Zero;
-                    if (response.Headers.Contains("X-RateLimit-Remaining"))
-                        remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
-                    _logger.LogWarning($"[{nameof(TryHandleResponseAsync)}] Request is rate limited. Try again in {remainingTime}");
-                    apiResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}", nameof(DigikeyApi));
-                    return (false, apiResponse);
-                }
-
-                // return generic error
-                return (false, apiResponse);
-            }
-            else if (response.IsSuccessStatusCode)
-            {
-                // allow processing of response
-                return (true, apiResponse);
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-            {
-                _logger.LogError($"[{nameof(TryHandleResponseAsync)}] Bad request. Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. accesstoken='{authenticationResponse.AccessToken}'");
-                apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
-                var resultString = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(resultString))
-                    apiResponse.Errors.Add(resultString);
-                else
-                    apiResponse.Errors.Add($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}");
-                return (false, apiResponse);
-            }
-
-            // return generic error
-            return (false, apiResponse);
         }
 
         /// <summary>
@@ -690,70 +228,126 @@ namespace Binner.Common.Integrations
             }
             catch (DigikeyUnsubscribedException ex)
             {
+                // the api key used is not subscribed to the requested endpoint. Could be a version mismatch, try the other api version.
+                var attemptedApiVersion = new Version(ex.ApiVersion);
+                if (VersionEquals(attemptedApiVersion, DigiKeyApiVersion.V3))
+                {
+                    // try the V4 API
+                    UseApi(DigiKeyApiVersion.V4);
+                    try
+                    {
+                        var response = await func(authResponse);
+                        // success using this api, save it as the default
+                        await SetOAuthCredentialApiSettingsAsync();
+                        return response;
+                    }
+                    catch (DigikeyUnauthorizedException)
+                    {
+                        // get refresh token, retry
+                        return await RefreshTokenAsync(ex.Authorization, func);
+                    }
+                    catch (DigikeyUnsubscribedException)
+                    {
+                        // flow through to the error
+                    }
+                }
+                else if (VersionEquals(attemptedApiVersion, DigiKeyApiVersion.V4))
+                {
+                    // try the V3 API
+                    UseApi(DigiKeyApiVersion.V3);
+                    try
+                    {
+                        var response = await func(authResponse);
+                        // success using this api, save it as the default
+                        await SetOAuthCredentialApiSettingsAsync();
+                        return response;
+                    }
+                    catch (DigikeyUnauthorizedException)
+                    {
+                        // get refresh token, retry
+                        return await RefreshTokenAsync(ex.Authorization, func);
+                    }
+                    catch (DigikeyUnsubscribedException)
+                    {
+                        // flow through to the error
+                    }
+                }
+
+                // return unsubscribed error, user's api key is not subscribed to this endpoint
                 _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{ex.Authorization.AccessToken}' is unsubscribed for endpoint.");
-                return ApiResponse.Create($"{ex.Message} Api v{new Version(ex.ApiVersion).ToString(1)}", nameof(DigikeyApi));
+                return ApiResponse.Create($"{ex.Message} Api v{attemptedApiVersion.ToString(1)}", nameof(DigikeyApi));
             }
             catch (DigikeyUnauthorizedException ex)
             {
                 // get refresh token, retry
-                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{ex.Authorization.AccessToken}' is unauthorized, trying to Refresh token using '{ex.Authorization.RefreshToken}'");
-                _oAuth2Service.AccessTokens.RefreshToken = ex.Authorization.RefreshToken;
-                var refreshedTokens = await _oAuth2Service.RefreshTokenAsync();
-                if (refreshedTokens.IsError)
+                return await RefreshTokenAsync(ex.Authorization, func);
+            }
+        }
+
+        private async Task<IApiResponse> RefreshTokenAsync(OAuthAuthorization authorization, Func<OAuthAuthorization, Task<IApiResponse>> func)
+        {
+            _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{authorization.AccessToken}' is unauthorized, trying to Refresh token using '{authorization.RefreshToken}'");
+            _oAuth2Service.AccessTokens.RefreshToken = authorization.RefreshToken;
+            var refreshedTokens = await _oAuth2Service.RefreshTokenAsync();
+            if (refreshedTokens.IsError)
+            {
+                _logger.LogError($"[{nameof(WrapApiRequestAsync)}] Refresh token failed.");
+            }
+            else
+            {
+                // refresh token successfully got a new token. Let's use it.
+                if (_httpContextAccessor.HttpContext == null)
+                    throw new Exception($"HttpContext cannot be null!");
+                var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+                var refreshedTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
                 {
-                    _logger.LogError($"[{nameof(WrapApiRequestAsync)}] Refresh token failed.");
-                }
-                else
+                    AccessToken = refreshedTokens.AccessToken ?? string.Empty,
+                    RefreshToken = refreshedTokens.RefreshToken ?? string.Empty,
+                    CreatedUtc = DateTime.UtcNow,
+                    ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(refreshedTokens.ExpiresIn)),
+                    AuthorizationReceived = true,
+                    UserId = _requestContext.GetUserContext()?.UserId,
+                };
+                if (refreshedTokenResponse.IsAuthorized) // IsAuthorized is a computed field based on the response
                 {
-                    // refresh token successfully got a new token. Let's use it.
-                    if (_httpContextAccessor.HttpContext == null)
-                        throw new Exception($"HttpContext cannot be null!");
-                    var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
-                    var refreshedTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
+                    _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token succeeded, new token '{refreshedTokenResponse.AccessToken}', old was '{authorization.AccessToken}'");
+                    // save the credential
+                    var existingCredential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
+                    await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
                     {
-                        AccessToken = refreshedTokens.AccessToken ?? string.Empty,
-                        RefreshToken = refreshedTokens.RefreshToken ?? string.Empty,
-                        CreatedUtc = DateTime.UtcNow,
-                        ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(refreshedTokens.ExpiresIn)),
-                        AuthorizationReceived = true,
-                        UserId = _requestContext.GetUserContext()?.UserId,
-                    };
-                    if (refreshedTokenResponse.IsAuthorized) // IsAuthorized is a computed field based on the response
+                        Provider = nameof(DigikeyApi),
+                        AccessToken = refreshedTokenResponse.AccessToken,
+                        RefreshToken = refreshedTokenResponse.RefreshToken,
+                        DateCreatedUtc = refreshedTokenResponse.CreatedUtc,
+                        DateExpiresUtc = refreshedTokenResponse.ExpiresUtc,
+                        ApiSettings = existingCredential?.ApiSettings ?? JsonConvert.SerializeObject(new DigiKeyCredentialApiSettings(), Formatting.None)
+                    });
+                    try
                     {
-                        _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token succeeded, new token '{refreshedTokenResponse.AccessToken}', old was '{authResponse.AccessToken}'");
-                        // save the credential
-                        await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
-                        {
-                            Provider = nameof(DigikeyApi),
-                            AccessToken = refreshedTokenResponse.AccessToken,
-                            RefreshToken = refreshedTokenResponse.RefreshToken,
-                            DateCreatedUtc = refreshedTokenResponse.CreatedUtc,
-                            DateExpiresUtc = refreshedTokenResponse.ExpiresUtc,
-                        });
-                        try
-                        {
-                            // call the API again using the refresh token
-                            _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Re-calling method with refreshed accesstoken='{refreshedTokenResponse.AccessToken}'");
-                            return await func(refreshedTokenResponse);
-                        }
-                        catch (DigikeyUnauthorizedException)
-                        {
-                            // refresh token failed, restart access token retrieval process
-                            await ForgetAuthenticationTokens();
-                            var freshResponse = await AuthorizeAsync();
-                            if (freshResponse.MustAuthorize)
-                                return ApiResponse.Create(true, freshResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
-                            // call the API again
-                            return await func(freshResponse);
-                        }
+                        _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Re-calling method with refreshed accesstoken='{refreshedTokenResponse.AccessToken}'");
+
+                        // call the API again using the newly refreshed token
+                        return await func(refreshedTokenResponse);
+                    }
+                    catch (DigikeyUnauthorizedException)
+                    {
+                        // refresh token failed, restart access token retrieval process
+                        await ForgetAuthenticationTokens();
+                        var freshResponse = await AuthorizeAsync();
+                        if (freshResponse.MustAuthorize)
+                            return ApiResponse.Create(true, freshResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+
+                        // call the API again
+                        return await func(freshResponse);
                     }
                 }
-                // user must authorize
-                // request a token if we don't already have one
-                var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext()?.UserId);
-                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token failed, User must authorize");
-                return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             }
+
+            // user must authorize
+            // request a token if we don't already have one
+            var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext()?.UserId);
+            _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token failed, User must authorize");
+            return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
         }
 
         private async Task ForgetAuthenticationTokens()
@@ -775,6 +369,17 @@ namespace Binner.Common.Integrations
             var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
             if (credential != null)
             {
+                // set the appropriate api (if saved)
+                var apiSettings = JsonConvert.DeserializeObject<DigiKeyCredentialApiSettings?>(credential.ApiSettings ?? "");
+                if (apiSettings?.ApiVersion != null)
+                {
+                    if (apiSettings.ApiVersion != _apiVersion)
+                    {
+                        UseApi(apiSettings.ApiVersion);
+                        _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Using saved {nameof(DigikeyApi)} API version '{apiSettings.ApiVersion}'");
+                    }
+                }
+
                 // reuse a saved oAuth credential
                 var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
                 var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
@@ -818,199 +423,10 @@ namespace Binner.Common.Integrations
             return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
         }
 
-        private HttpRequestMessage CreateRequest(OAuthAuthorization authResponse, HttpMethod method, string url)
+        public override void Dispose()
         {
-            var message = new HttpRequestMessage(method, url);
-            message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
-            message.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
-            message.Headers.Add("X-DIGIKEY-Locale-Site", _configuration.Site.ToString());
-            message.Headers.Add("X-DIGIKEY-Locale-Language", _localeConfiguration.Language.ToString().ToLower());
-            message.Headers.Add("X-DIGIKEY-Locale-Currency", _localeConfiguration.Currency.ToString().ToUpper());
-            return message;
-        }
-
-        private HttpRequestMessage CreateRequest(OAuthAuthorization authResponse, HttpMethod method, Uri uri)
-        {
-            var message = new HttpRequestMessage(method, uri);
-            message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
-            message.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
-            message.Headers.Add("X-DIGIKEY-Locale-Site", _configuration.Site.ToString());
-            message.Headers.Add("X-DIGIKEY-Locale-Language", _localeConfiguration.Language.ToString().ToLower());
-            message.Headers.Add("X-DIGIKEY-Locale-Currency", _localeConfiguration.Currency.ToString().ToUpper());
-            return message;
-        }
-
-        private Tolerances GetTolerance(string perc)
-        {
-            return GetEnumByDescription<Tolerances>(perc);
-        }
-
-        private string GetPower(string power)
-        {
-            power = new Regex("[Ww]|").Replace(power, "");
-            // convert decimal percentages to fractions
-            if (power.Contains("."))
-            {
-                var fraction = MathExtensions.RealToFraction(double.Parse(power), 0.01);
-                return ((int)GetEnumByDescription<Power>($"{fraction.Numerator}/{fraction.Denominator}")).ToString();
-            }
-            return ((int)GetEnumByDescription<Power>(power)).ToString();
-        }
-
-        private string GetResistance(string resistance)
-        {
-            var val = new String(resistance.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
-            if (string.IsNullOrEmpty(val))
-                val = "0";
-            var unitsParsed = resistance.Replace(val, "").ToLower();
-            var units = "ohms";
-            switch (unitsParsed)
-            {
-                case "k":
-                case "kohms":
-                    units = "kOhms";
-                    break;
-                case "m":
-                case "mohms":
-                    units = "mOhms";
-                    break;
-            }
-            var result = $"u{val} {units}";
-            return result;
-        }
-
-        private string GetCapacitance(string capacitance)
-        {
-            var val = new String(capacitance.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
-            var unitsParsed = capacitance.Replace(val, "").ToLower();
-            var units = "µF";
-            switch (unitsParsed)
-            {
-                case "uf":
-                    units = "µF";
-                    break;
-                case "nf":
-                    // convert to uf, api doesn't seem to handle it?
-                    val = (decimal.Parse(val) * 0.001M).ToString();
-                    units = "µF";
-                    break;
-                case "pf":
-                    units = "pF";
-                    break;
-                case "f":
-                    units = "F";
-                    break;
-            }
-            var result = $"u{val}{units}";
-            return result;
-        }
-
-        private string GetVoltageRating(string voltage)
-        {
-            var val = new String(voltage.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
-            var unitsParsed = voltage.Replace(val, "").ToLower();
-            var units = "V";
-            switch (unitsParsed)
-            {
-                case "v":
-                    units = "V";
-                    break;
-            }
-            var result = $"u{val}{units}";
-            return result;
-        }
-
-        private string GetCurrentRating(string current)
-        {
-            var val = new String(current.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
-            var unitsParsed = current.Replace(val, "").ToLower();
-            var units = "A";
-            switch (unitsParsed)
-            {
-                case "a":
-                    units = "A";
-                    break;
-                case "ma":
-                    units = "mA";
-                    break;
-            }
-            var result = $"u{val}{units}";
-            return result;
-        }
-
-        private string GetInductance(string inductance)
-        {
-            var val = new String(inductance.Where(x => Char.IsDigit(x) || Char.IsPunctuation(x)).ToArray());
-            var unitsParsed = inductance.Replace(val, "").ToLower();
-            var units = "µH";
-            switch (unitsParsed)
-            {
-                case "uh":
-                    units = "µH";
-                    break;
-                case "nh":
-                    units = "nH";
-                    break;
-                case "mh":
-                    units = "mH";
-                    break;
-                case "h":
-                    units = "H";
-                    break;
-            }
-            var result = $"u{val}{units}";
-            return result;
-        }
-
-        private T? GetEnumByDescription<T>(string description)
-        {
-            var type = typeof(T).GetExtendedType();
-            foreach (var val in type.EnumValues)
-            {
-                var memberInfos = type.Type.GetMember(val.Value);
-                var enumValueMemberInfo = memberInfos.FirstOrDefault(m => m.DeclaringType == type.Type);
-                var valueAttributes = enumValueMemberInfo?.GetCustomAttributes(typeof(DescriptionAttribute), false);
-                if (valueAttributes != null)
-                {
-                    var descriptionVal = ((DescriptionAttribute)valueAttributes[0]).Description;
-                    if (descriptionVal.Equals(description))
-                        return (T)val.Key;
-                }
-            }
-            return default(T);
-        }
-
-        public void Dispose()
-        {
+            base.Dispose();
             _client.Dispose();
-        }
-    }
-
-    /// <summary>
-    /// Occurs when an oAuth token used is invalid or expired
-    /// </summary>
-    public class DigikeyUnauthorizedException : Exception
-    {
-        public OAuthAuthorization Authorization { get; }
-
-        public DigikeyUnauthorizedException(OAuthAuthorization authorization) : base("User must authorize")
-        {
-            Authorization = authorization;
-        }
-    }
-
-    /// <summary>
-    /// Occurs when the Digikey api key used is not subscribed for the endpoint
-    /// </summary>
-    public class DigikeyUnsubscribedException : Exception
-    {
-        public OAuthAuthorization Authorization { get; }
-        public string ApiVersion { get; }
-
-        public DigikeyUnsubscribedException(OAuthAuthorization authorization, string apiVersion, string message) : base(message)
-        {
-            Authorization = authorization;
-            ApiVersion = apiVersion;
         }
     }
 }

@@ -148,6 +148,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("AccessToken")
                         .HasColumnType("text");
 
+                    b.Property<string>("ApiSettings")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")

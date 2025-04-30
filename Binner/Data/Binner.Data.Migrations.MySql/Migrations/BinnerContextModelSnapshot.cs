@@ -148,6 +148,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("AccessToken")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("ApiSettings")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")

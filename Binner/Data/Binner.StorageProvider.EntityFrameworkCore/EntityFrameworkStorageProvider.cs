@@ -1416,6 +1416,7 @@ INNER JOIN (
                 entity.RefreshToken = credential.RefreshToken;
                 entity.DateCreatedUtc = credential.DateCreatedUtc;
                 entity.DateExpiresUtc = credential.DateExpiresUtc;
+                entity.ApiSettings = credential.ApiSettings;
                 EnforceIntegrityModify(entity, userContext);
             }
             else
@@ -1546,8 +1547,6 @@ INNER JOIN (
             await context.SaveChangesAsync();
             return true;
         }
-
-
 
         public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)
             where T : DataModel.IEntity, DataModel.IUserData

@@ -60,6 +60,11 @@
             ApiName = apiName;
         }
 
+        public static ApiResponse Create(string apiName)
+        {
+            return new ApiResponse(apiName);
+        }
+
         public static ApiResponse Create(object response, string apiName)
         {
             return new ApiResponse(response, apiName);

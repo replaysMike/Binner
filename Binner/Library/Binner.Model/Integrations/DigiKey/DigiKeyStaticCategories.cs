@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Binner.Model.Integrations.DigiKey.V3;
+using Newtonsoft.Json;
 
 namespace Binner.Model.Integrations.DigiKey
 {

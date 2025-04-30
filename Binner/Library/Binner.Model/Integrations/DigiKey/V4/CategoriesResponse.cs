@@ -1,9 +1,10 @@
-﻿namespace Binner.Model.Integrations.DigiKey
+﻿namespace Binner.Model.Integrations.DigiKey.V4
 {
     public class CategoriesResponse
     {
         public int ProductCount { get; set; }
         public ICollection<FullCategory> Categories { get; set; } = new List<FullCategory>();
+        public IsoSearchLocale SearchLocaleUsed { get; set; } = new IsoSearchLocale();
     }
 
     public class FullCategory
