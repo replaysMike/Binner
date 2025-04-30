@@ -64,12 +64,6 @@ export function Home(props) {
       setSummary(data || {});
       setLoading(false);
     });
-    fetchApi(`/api/part/categories`, {
-      signal: Home.abortController.signal,
-    }).then((response) => {
-      const { data } = response;
-      console.log('categories', data);
-    });
 
     return () => {
       Home.abortController.abort();

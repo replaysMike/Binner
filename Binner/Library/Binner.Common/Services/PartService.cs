@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security;
 using System.Threading.Tasks;
 using Part = Binner.Model.Part;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
@@ -190,26 +191,33 @@ namespace Binner.Common.Services
             return await _storageProvider.DeletePartSupplierAsync(partSupplier, _requestContext.GetUserContext());
         }
 
-        public async Task<IServiceResult<V3.CategoriesResponse?>> GetCategoriesAsync()
+        public async Task<IServiceResult<CategoriesResponse?>> GetCategoriesAsync()
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
             if (!digikeyApi.IsEnabled)
-                return ServiceResult<V3.CategoriesResponse?>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
+                return ServiceResult<CategoriesResponse?>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             var apiResponse = await digikeyApi.GetCategoriesAsync();
             if (apiResponse.RequiresAuthentication)
-                return ServiceResult<V3.CategoriesResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                return ServiceResult<CategoriesResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
             else if (apiResponse.Errors?.Any() == true)
-                return ServiceResult<V3.CategoriesResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
+                return ServiceResult<CategoriesResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
 
             if (apiResponse.Response != null)
             {
-                var digikeyResponse = (V3.CategoriesResponse)apiResponse.Response;
-                return ServiceResult<V3.CategoriesResponse?>.Create(digikeyResponse);
+                if (apiResponse.Response is V3.CategoriesResponse)
+                {
+                    var digikeyResponse = (V3.CategoriesResponse)apiResponse.Response;
+                    return ServiceResult<CategoriesResponse?>.Create(_mapper.Map<CategoriesResponse>(digikeyResponse));
+                } else if (apiResponse.Response is V4.CategoriesResponse)
+                {
+                    var digikeyResponse = (V4.CategoriesResponse)apiResponse.Response;
+                    return ServiceResult<CategoriesResponse?>.Create(_mapper.Map<CategoriesResponse>(digikeyResponse));
+                }
             }
 
-            return ServiceResult<V3.CategoriesResponse?>.Create("Invalid response received", apiResponse.ApiName);
+            return ServiceResult<CategoriesResponse?>.Create("Invalid response received", apiResponse.ApiName);
         }
 
         /// <summary>

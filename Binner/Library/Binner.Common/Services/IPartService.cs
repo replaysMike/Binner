@@ -1,5 +1,5 @@
 ﻿using Binner.Model;
-using Binner.Model.Integrations.DigiKey.V3;
+using Binner.Model.Integrations.DigiKey;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using System;

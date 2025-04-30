@@ -1,16 +1,15 @@
-﻿using Binner.Model.Integrations.DigiKey.V3;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Binner.Model.Integrations.DigiKey
 {
     public class DigiKeyStaticCategories : IStaticCategories
     {
-        public static readonly Lazy<List<FullCategory>> _allCategories = new Lazy<List<FullCategory>>(() => DeserializeCategories());
+        public static readonly Lazy<List<V3.FullCategory>> _allCategories = new Lazy<List<V3.FullCategory>>(() => DeserializeCategories());
 
         /// <summary>
         /// Get the DigiKey categories
         /// </summary>
-        public List<FullCategory> Categories => _allCategories.Value;
+        public List<V3.FullCategory> Categories => _allCategories.Value;
 
         private static Lazy<Dictionary<int, int>> _partTypeMappings = new Lazy<Dictionary<int, int>>(() => new Dictionary<int, int>
         {
@@ -275,9 +274,9 @@ namespace Binner.Model.Integrations.DigiKey
             { 584, 177 }, // Grommet
         });
 
-        private static List<FullCategory> DeserializeCategories()
+        private static List<V3.FullCategory> DeserializeCategories()
         {
-            var response = JsonConvert.DeserializeObject<CategoriesResponse>(_categoriesJson);
+            var response = JsonConvert.DeserializeObject<V3.CategoriesResponse>(_categoriesJson);
             return response?.Categories.ToList() ?? new();
         }
 
@@ -294,7 +293,7 @@ namespace Binner.Model.Integrations.DigiKey
         /// </summary>
         /// <param name="category"></param>
         /// <returns></returns>
-        public int? MatchToPartTypeId(Category category)
+        public int? MatchToPartTypeId(V3.Category category)
         {
             // try match by id
             int.TryParse(category.ValueId, out var id);
@@ -337,7 +336,7 @@ namespace Binner.Model.Integrations.DigiKey
             return null;
         }
 
-        private FullCategory? RecursiveWhere(IEnumerable<FullCategory> categories, string name)
+        private V3.FullCategory? RecursiveWhere(IEnumerable<V3.FullCategory> categories, string name)
         {
             if (!categories.Any())
                 return null;
