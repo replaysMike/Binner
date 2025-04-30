@@ -2,10 +2,12 @@
 using Binner.Common.Services;
 using Binner.Common.Services.Authentication;
 using Binner.Model;
+using Binner.Model.Integrations.DigiKey;
 using Binner.Model.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Net.Mime;
 using System.Security.Authentication;
@@ -149,6 +151,7 @@ namespace Binner.Web.Controllers
                 authRequest.ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(authResult.ExpiresIn));
 
                 // save the credential
+                var existingCredential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
                 var credential = await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
                 {
                     Provider = nameof(DigikeyApi),
@@ -156,6 +159,7 @@ namespace Binner.Web.Controllers
                     RefreshToken = authRequest.RefreshToken,
                     DateCreatedUtc = authRequest.CreatedUtc,
                     DateExpiresUtc = authRequest.ExpiresUtc,
+                    ApiSettings = existingCredential?.ApiSettings ?? JsonConvert.SerializeObject(new DigiKeyCredentialApiSettings(), Formatting.None),
                 });
 
                 // update oauth request as complete

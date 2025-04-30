@@ -41,6 +41,11 @@ namespace Binner.Model
         public DateTime DateExpiresUtc { get; set; }
 
         /// <summary>
+        /// Storage for additional api settings related to a credential
+        /// </summary>
+        public string? ApiSettings { get; set; }
+
+        /// <summary>
         /// Optional user id to associate
         /// </summary>
         public int? UserId { get; set; }

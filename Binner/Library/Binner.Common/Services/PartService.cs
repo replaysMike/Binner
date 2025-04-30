@@ -10,6 +10,7 @@ using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.Arrow;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Integrations.DigiKey.V3;
 using Binner.Model.Integrations.Mouser;
 using Binner.Model.Requests;
 using Binner.Model.Responses;

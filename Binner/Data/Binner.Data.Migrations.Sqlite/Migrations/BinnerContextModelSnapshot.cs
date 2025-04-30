@@ -138,6 +138,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("AccessToken")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ApiSettings")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("DateCreatedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")

@@ -63,8 +63,8 @@ namespace Binner.Common.Integrations
                 return ApiResponse.Create($"Mouser Api returned Unauthorized access - check that your OrderApiKey is correctly configured.", nameof(MouserApi));
             if (response.IsSuccessStatusCode)
             {
-                var resultString = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<OrderHistory>(resultString, _serializerSettings) ?? new();
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var results = JsonConvert.DeserializeObject<OrderHistory>(responseJson, _serializerSettings) ?? new();
                 /*if (results.Errors.Any())
                     new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));*/
                 return new ApiResponse(results, nameof(MouserApi));
@@ -83,8 +83,8 @@ namespace Binner.Common.Integrations
                 return ApiResponse.Create($"Mouser Api returned Unauthorized access - check that your OrderApiKey is correctly configured.", nameof(MouserApi));
             if (response.IsSuccessStatusCode)
             {
-                var resultString = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<Order>(resultString, _serializerSettings) ?? new();
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var results = JsonConvert.DeserializeObject<Order>(responseJson, _serializerSettings) ?? new();
                 if (results.Errors.Any())
                     new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));
                 return new ApiResponse(results, nameof(MouserApi));
@@ -111,16 +111,16 @@ namespace Binner.Common.Integrations
                     PartSearchOptions = PartSearchOptions.BeginsWith
                 }
             };
-            var json = JsonConvert.SerializeObject(request, _serializerSettings);
-            requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            var requestJson = JsonConvert.SerializeObject(request, _serializerSettings);
+            requestMessage.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
             var response = await _client.SendAsync(requestMessage);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new MouserUnauthorizedException(response.ReasonPhrase ?? string.Empty);
 
             if (response.IsSuccessStatusCode)
             {
-                var resultString = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings) ?? new();
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var results = JsonConvert.DeserializeObject<SearchResultsResponse>(responseJson, _serializerSettings) ?? new();
                 if (results.Errors?.Any() == true)
                     throw new MouserErrorsException(results.Errors);
                 return new ApiResponse(results.SearchResults?.Parts ?? new List<MouserPart>(), nameof(MouserApi));
@@ -148,8 +148,8 @@ namespace Binner.Common.Integrations
                     SearchOptions = SearchOptions.InStock
                 }
             };
-            var json = JsonConvert.SerializeObject(request, _serializerSettings);
-            requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            var requestJson = JsonConvert.SerializeObject(request, _serializerSettings);
+            requestMessage.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
             var response = await _client.SendAsync(requestMessage);
             if (TryHandleResponse(response, out var apiResponse))
             {
@@ -157,8 +157,8 @@ namespace Binner.Common.Integrations
             }
 
             // 200 OK
-            var resultString = await response.Content.ReadAsStringAsync();
-            var results = JsonConvert.DeserializeObject<SearchResultsResponse>(resultString, _serializerSettings) ?? new();
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var results = JsonConvert.DeserializeObject<SearchResultsResponse>(responseJson, _serializerSettings) ?? new();
             if (results.Errors?.Any() == true)
                 throw new MouserErrorsException(results.Errors);
             return new ApiResponse(results, nameof(MouserApi));

@@ -631,6 +631,7 @@ UPDATE Users SET OrganizationId = 1;
                         DateCreatedUtc = e.DateCreatedUtc,
                         DateExpiresUtc = e.DateExpiresUtc,
                         DateModifiedUtc = e.DateCreatedUtc,
+                        ApiSettings = "{}",
                         Ip = 0,
                         Provider = e.Provider ?? string.Empty,
                         RefreshToken = e.RefreshToken,

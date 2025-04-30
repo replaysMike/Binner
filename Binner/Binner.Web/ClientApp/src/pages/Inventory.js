@@ -436,7 +436,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     try {
-      const response = await fetchApi(`/api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
+      const response = await fetchApi(`/api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
         signal: Inventory.infoAbortController.signal
       });
 
