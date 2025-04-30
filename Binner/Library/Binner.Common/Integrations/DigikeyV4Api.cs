@@ -65,7 +65,7 @@ namespace Binner.Common.Integrations
             try
             {
                 // set what fields we want from the API
-                var uri = Url.Combine(_configuration.ApiUrl, "OrderDetails/v3/Status/", orderId);
+                var uri = Url.Combine(_configuration.ApiUrl, $"orderstatus/v4/salesorder/{orderId}");
                 var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
@@ -78,7 +78,7 @@ namespace Binner.Common.Integrations
 
                 // 200 OK
                 var resultString = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<OrderSearchResponse>(resultString, _serializerSettings) ?? new();
+                var results = JsonConvert.DeserializeObject<SalesOrder>(resultString, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
             catch (Exception)
@@ -130,20 +130,24 @@ namespace Binner.Common.Integrations
                 // attempt to detect certain words and apply them as parametric filters
                 var (parametricFilters, filteredKeywords) = MapParametricFilters(keywords, packageTypeEnum, taxonomies);
 
-                var parameterFilterRequest = new ParameterFilterRequest();
+                // todo: we will need a lot more data in order to do filtering pre-emptively.
+                // DigiKey v4 requires an initial search to be done, and the ability to filter category & child category at the same time.
+                // so, it's very complicated and requires some data mapping.
+                /*var parameterFilterRequest = new ParameterFilterRequest();
                 parameterFilterRequest.ParameterFilters = new List<ParametricCategory>();
+                parameterFilterRequest.CategoryFilter = new FilterId { Id = "797" };
                 foreach (var parametricFilter in parametricFilters)
                 {
                     var filter = new ParametricCategory
                     {
-                        ParameterId = 1,
-                        FilterValues = new List<FilterId> { new FilterId { Id = "1k" } },
+                        ParameterId = 1742,
+                        FilterValues = new List<FilterId> { new FilterId { Id = "351775" } },
                         //ParameterId = parametricFilter.ParameterId,
                         // valueId is resistance
                         //FilterValues = new List<FilterId> { new FilterId { Id = parametricFilter?.ValueId ?? string.Empty } },
                     };
                     parameterFilterRequest.ParameterFilters.Add(filter);
-                }
+                }*/
 
                 var request = new KeywordSearchRequest
                 {
@@ -234,7 +238,7 @@ namespace Binner.Common.Integrations
 
                 // 200 OK
                 var responseJson = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<Product>(responseJson, _serializerSettings) ?? new();
+                var results = JsonConvert.DeserializeObject<ProductDetails>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
             catch (Exception)

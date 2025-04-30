@@ -1,9 +1,9 @@
 ﻿namespace Binner.Model.Integrations.DigiKey
 {
     /// <summary>
-    /// An error response message on Unauthorized (401) responses
+    /// A DigiKey error response message
     /// </summary>
-    public class UnauthorizedErrorResponse
+    public class ErrorResponse
     {
         public string? ErrorResponseVersion { get; set; }
         public int StatusCode { get; set; }

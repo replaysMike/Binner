@@ -14,5 +14,7 @@
         public string Name { get; set; } = null!;
         public long ProductCount { get; set; }
         public ICollection<FullCategory> Children { get; set; } = new List<FullCategory>();
+        public override string ToString()
+            => $"{Name}";
     }
 }

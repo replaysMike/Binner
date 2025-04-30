@@ -1,6 +1,7 @@
 ﻿{
   "StatusCode": 200,
   "IsSuccessStatusCode": true,
+  "Description": "external order 123456789",
   "Content": {
     "Headers": {
       "Content-Type": "application/json"
@@ -70,5 +71,5 @@
         "OrderTotal": "€6,70"
       }
     }
-  }  
+  }
 }

@@ -442,6 +442,9 @@ namespace Binner.Common.Integrations
             _client.Dispose();
         }
 
+        public override string ToString()
+            => $"{nameof(TmeApi)}";
+
         public class TmeUnauthorizedException : Exception
         {
             public TmeUnauthorizedException(string message) : base(message)

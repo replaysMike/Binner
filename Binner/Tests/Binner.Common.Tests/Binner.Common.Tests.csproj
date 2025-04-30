@@ -57,6 +57,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="IntegrationApiResponses\DigiKey-v4-PartSearch-1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v3-PartSearch-1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="IntegrationApiResponses\DigiKey-v3-ExternalOrder-1-CAD.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

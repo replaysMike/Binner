@@ -762,6 +762,19 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Get list of categories (DigiKey only)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("categories")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetGetCategories()
+        {
+            var categories = await _partService.GetCategoriesAsync();
+            return Ok(categories);
+        }
+
+        /// <summary>
         /// Check for duplicate part
         /// </summary>
         /// <param name="request"></param>

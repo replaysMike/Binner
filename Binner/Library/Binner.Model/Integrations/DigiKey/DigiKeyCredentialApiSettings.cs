@@ -5,6 +5,14 @@
     /// </summary>
     public class DigiKeyCredentialApiSettings
     {
-        public DigiKeyApiVersion ApiVersion { get; set; } = DigiKeyApiVersion.V3;
+        public DigiKeyApiVersion ApiVersion { get; set; } = DigiKeyApiVersion.V4;
+        public DigiKeyCredentialApiSettings() { }
+        public DigiKeyCredentialApiSettings(DigiKeyApiVersion apiVersion)
+        {
+            ApiVersion = apiVersion;
+        }
+
+        public override string ToString()
+            => $"DigikeyApi {ApiVersion}";
     }
 }

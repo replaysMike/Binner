@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Integrations.DigiKey
+﻿namespace Binner.Model.Integrations.DigiKey.V3
 {
     public class OrderSearchResponse
     {

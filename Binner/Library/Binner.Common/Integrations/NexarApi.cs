@@ -199,5 +199,9 @@ namespace Binner.Common.Integrations
         {
             
         }
+
+        public override string ToString()
+            => $"{nameof(NexarApi)}";
+
     }
 }

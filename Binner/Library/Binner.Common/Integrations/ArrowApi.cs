@@ -171,6 +171,10 @@ namespace Binner.Common.Integrations
             _client.Dispose();
         }
 
+        public override string ToString()
+            => $"{nameof(ArrowApi)}";
+
+
         public class ArrowUnauthorizedException : Exception
         {
             public ArrowUnauthorizedException(string message) : base(message)
