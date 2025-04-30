@@ -211,6 +211,10 @@ namespace Binner.Common.Integrations
         {
             _client.Dispose();
         }
+
+        public override string ToString()
+            => $"{nameof(MouserApi)}";
+
     }
 
     public class MouserErrorsException : Exception

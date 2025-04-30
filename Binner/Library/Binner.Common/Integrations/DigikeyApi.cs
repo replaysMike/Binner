@@ -27,8 +27,8 @@ namespace Binner.Common.Integrations
         public string Name => "DigiKey";
 
         // the full url to the Api
-        private DigiKeyApiVersion _apiVersion = DigiKeyApiVersion.V3;
-        private IDigikeyApi _api;
+        private DigiKeyApiVersion _apiVersion = DigiKeyApiVersion.V4; // default api returned
+        private IDigikeyApi? _api;
         private readonly DigikeyV3Api _v3Api;
         private readonly DigikeyV4Api _v4Api;
         private readonly ILogger<DigikeyApi> _logger;
@@ -67,10 +67,9 @@ namespace Binner.Common.Integrations
             _requestContext = requestContext;
             _v3Api = new DigikeyV3Api(_logger, _configuration, _localeConfiguration, _serializerSettings, httpClientFactory);
             _v4Api = new DigikeyV4Api(_logger, _configuration, _localeConfiguration, _serializerSettings, httpClientFactory);
-            UseApi(_apiVersion);
         }
 
-        private void UseApi(DigiKeyApiVersion version)
+        private IDigikeyApi UseApi(DigiKeyApiVersion version)
         {
             switch (version)
             {
@@ -85,6 +84,18 @@ namespace Binner.Common.Integrations
                 default:
                     throw new NotImplementedException($"API version {version} not implemented.");
             }
+            return _api;
+        }
+
+        /// <summary>
+        /// Get the cached api to use, or get it from the stored OAuthCredential ApiSetting value (last used)
+        /// </summary>
+        /// <returns></returns>
+        private async Task<IDigikeyApi> GetApiAsync()
+        {
+            if (_api != null) return _api;
+            var (existingCredential, apiSettings) = await GetOAuthCredentialAsync();
+            return UseApi(apiSettings.ApiVersion);
         }
 
         private void ValidateConfiguration()
@@ -98,13 +109,13 @@ namespace Binner.Common.Integrations
             }
         }
 
-        public enum MountingTypes
-        {
-            None = 0,
-            SurfaceMount = 3,
-            ThroughHole = 80
-        }
-
+        /// <summary>
+        /// Get a DigiKey order
+        /// V3 & V4 supported
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="additionalOptions"></param>
+        /// <returns></returns>
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             ValidateConfiguration();
@@ -116,10 +127,17 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                return await _api.GetOrderAsync(authenticationResponse, orderId);
+                return await (await GetApiAsync()).GetOrderAsync(authenticationResponse, orderId);
             });
         }
 
+        /// <summary>
+        /// Get details about a single part
+        /// V3 & V4 supported
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <param name="additionalOptions"></param>
+        /// <returns></returns>
         public async Task<IApiResponse> GetProductDetailsAsync(string partNumber, Dictionary<string, string>? additionalOptions = null)
         {
             ValidateConfiguration();
@@ -134,12 +152,13 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                return await _api.GetProductDetailsAsync(authenticationResponse, partNumber);
+                return await (await GetApiAsync()).GetProductDetailsAsync(authenticationResponse, partNumber);
             });
         }
 
         /// <summary>
-        /// Get information about a DigiKey product via a barcode value
+        /// Get information about a DigiKey product via a barcode value.
+        /// V3 only - there is no V4 Barcode api
         /// </summary>
         /// <param name="barcode"></param>
         /// <param name="barcodeType"></param>
@@ -155,10 +174,15 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                return await _api.GetBarcodeDetailsAsync(authenticationResponse, barcode, barcodeType);
+                return await (await GetApiAsync()).GetBarcodeDetailsAsync(authenticationResponse, barcode, barcodeType);
             });
         }
 
+        /// <summary>
+        /// Get DigiKey categories.
+        /// V3 & V4 supported
+        /// </summary>
+        /// <returns></returns>
         public async Task<IApiResponse> GetCategoriesAsync()
         {
             ValidateConfiguration();
@@ -173,7 +197,7 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                return await _api.GetCategoriesAsync(authenticationResponse);
+                return await (await GetApiAsync()).GetCategoriesAsync(authenticationResponse);
             });
         }
 
@@ -181,6 +205,17 @@ namespace Binner.Common.Integrations
 
         public Task<IApiResponse> SearchAsync(string partNumber, string? partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
 
+        /// <summary>
+        /// Search for a part by part number
+        /// V3 & V4 supported
+        /// </summary>
+        /// <param name="partNumber"></param>
+        /// <param name="partType"></param>
+        /// <param name="mountingType"></param>
+        /// <param name="recordCount"></param>
+        /// <param name="additionalOptions"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public async Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
             ValidateConfiguration();
@@ -196,22 +231,47 @@ namespace Binner.Common.Integrations
             return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
             {
                 /* important reminder - don't reference authResponse in here! */
-                return await _api.SearchAsync(authenticationResponse, partNumber, partType, mountingType, recordCount, additionalOptions);
+                return await (await GetApiAsync()).SearchAsync(authenticationResponse, partNumber, partType, mountingType, recordCount, additionalOptions);
             });
         }
 
-        private async Task SetOAuthCredentialApiSettingsAsync()
+        private async Task SetOAuthCredentialApiSettingsAsync(DigiKeyApiVersion? apiVersion = null)
         {
+            var (credential, apiSettings) = await GetOAuthCredentialAsync();
+            if (credential != null)
+            {
+                // set the stored oauth credential to the specified api version
+                if (apiVersion != null)
+                    credential.ApiSettings = CreateApiSettingsJson(apiVersion.Value);
+                await _credentialService.SaveOAuthCredentialAsync(credential);
+            }
+        }
+
+        private async Task<(OAuthCredential? oAuthCredential, DigiKeyCredentialApiSettings apiSettings)> GetOAuthCredentialAsync()
+        {
+            var apiSettings = new DigiKeyCredentialApiSettings
+            {
+                ApiVersion = _apiVersion,
+            };
             var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
             if (credential != null)
             {
-                var apiSettings = new DigiKeyCredentialApiSettings
+                if (!string.IsNullOrEmpty(credential.ApiSettings))
                 {
-                    ApiVersion = _apiVersion,
-                };
-                credential.ApiSettings = JsonConvert.SerializeObject(apiSettings, Formatting.None);
-                await _credentialService.SaveOAuthCredentialAsync(credential);
+                    try
+                    {
+                        var serializedValue = JsonConvert.DeserializeObject<DigiKeyCredentialApiSettings?>(credential.ApiSettings);
+                        if (serializedValue != null)
+                            apiSettings = serializedValue;
+                    }
+                    catch (Exception)
+                    {
+                        _logger.LogWarning($"[{nameof(GetOAuthCredentialAsync)}] Failed to deserialize DigiKey OAuthCredentials.ApiSettings value. '{credential.ApiSettings}'");
+                    }
+                }
+                return (credential, apiSettings);
             }
+            return (null, apiSettings);
         }
 
         /// <summary>
@@ -238,7 +298,7 @@ namespace Binner.Common.Integrations
                     {
                         var response = await func(authResponse);
                         // success using this api, save it as the default
-                        await SetOAuthCredentialApiSettingsAsync();
+                        await SetOAuthCredentialApiSettingsAsync(_apiVersion);
                         return response;
                     }
                     catch (DigikeyUnauthorizedException)
@@ -259,7 +319,7 @@ namespace Binner.Common.Integrations
                     {
                         var response = await func(authResponse);
                         // success using this api, save it as the default
-                        await SetOAuthCredentialApiSettingsAsync();
+                        await SetOAuthCredentialApiSettingsAsync(_apiVersion);
                         return response;
                     }
                     catch (DigikeyUnauthorizedException)
@@ -298,7 +358,7 @@ namespace Binner.Common.Integrations
                 // refresh token successfully got a new token. Let's use it.
                 if (_httpContextAccessor.HttpContext == null)
                     throw new Exception($"HttpContext cannot be null!");
-                var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+                var referer = GetReferer();
                 var refreshedTokenResponse = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
                 {
                     AccessToken = refreshedTokens.AccessToken ?? string.Empty,
@@ -312,7 +372,7 @@ namespace Binner.Common.Integrations
                 {
                     _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token succeeded, new token '{refreshedTokenResponse.AccessToken}', old was '{authorization.AccessToken}'");
                     // save the credential
-                    var existingCredential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
+                    var (existingCredential, apiSettings) = await GetOAuthCredentialAsync();
                     await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
                     {
                         Provider = nameof(DigikeyApi),
@@ -320,7 +380,8 @@ namespace Binner.Common.Integrations
                         RefreshToken = refreshedTokenResponse.RefreshToken,
                         DateCreatedUtc = refreshedTokenResponse.CreatedUtc,
                         DateExpiresUtc = refreshedTokenResponse.ExpiresUtc,
-                        ApiSettings = existingCredential?.ApiSettings ?? JsonConvert.SerializeObject(new DigiKeyCredentialApiSettings(), Formatting.None)
+                        // update api settings to use the last successful api version
+                        ApiSettings = CreateApiSettingsJson(_apiVersion)
                     });
                     try
                     {
@@ -350,6 +411,16 @@ namespace Binner.Common.Integrations
             return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
         }
 
+        private DigiKeyCredentialApiSettings CreateApiSettings(DigiKeyApiVersion version)
+        {
+            return new DigiKeyCredentialApiSettings(version);
+        }
+
+        private string CreateApiSettingsJson(DigiKeyApiVersion version)
+        {
+            return JsonConvert.SerializeObject(CreateApiSettings(version));
+        }
+
         private async Task ForgetAuthenticationTokens()
         {
             var user = _requestContext.GetUserContext();
@@ -366,22 +437,18 @@ namespace Binner.Common.Integrations
             }
 
             // check if we have saved an existing auth credential in the database
-            var credential = await _credentialService.GetOAuthCredentialAsync(nameof(DigikeyApi));
+            var (credential, apiSettings) = await GetOAuthCredentialAsync();
             if (credential != null)
             {
                 // set the appropriate api (if saved)
-                var apiSettings = JsonConvert.DeserializeObject<DigiKeyCredentialApiSettings?>(credential.ApiSettings ?? "");
-                if (apiSettings?.ApiVersion != null)
+                if (apiSettings.ApiVersion != _apiVersion)
                 {
-                    if (apiSettings.ApiVersion != _apiVersion)
-                    {
-                        UseApi(apiSettings.ApiVersion);
-                        _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Using saved {nameof(DigikeyApi)} API version '{apiSettings.ApiVersion}'");
-                    }
+                    UseApi(apiSettings.ApiVersion);
+                    _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Using saved {nameof(DigikeyApi)} API version '{apiSettings.ApiVersion}'");
                 }
 
                 // reuse a saved oAuth credential
-                var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+                var referer = GetReferer();
                 var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, referer)
                 {
                     AccessToken = credential.AccessToken ?? string.Empty,
@@ -403,7 +470,7 @@ namespace Binner.Common.Integrations
 
         private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(int? userId)
         {
-            var referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+            var referer = GetReferer();
             var uriBuilder = new UriBuilder(referer);
             var query = HttpUtility.ParseQueryString(uriBuilder.Query);
             query["api-authenticate"] = "true";
@@ -422,6 +489,18 @@ namespace Binner.Common.Integrations
             _logger.LogInformation($"[{nameof(CreateOAuthAuthorizationRequestAsync)}] Creating a new OAuthRequest '{state}'. No existing OAuthCredential was found.");
             return new OAuthAuthorization(nameof(DigikeyApi), true, authUrl);
         }
+
+        private string GetReferer()
+        {
+            var uri = new Uri(_configuration.oAuthPostbackUrl);
+            var referer = $"{uri.Scheme}://{uri.Host}{(uri.Port > 0 ? ":" + uri.Port : "")}";
+            if (_httpContextAccessor.HttpContext.Request.Headers?.ContainsKey("Referer") == true)
+                referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
+            return referer;
+        }
+
+        public override string ToString()
+            => $"{nameof(DigikeyApi)} {_apiVersion}";
 
         public override void Dispose()
         {

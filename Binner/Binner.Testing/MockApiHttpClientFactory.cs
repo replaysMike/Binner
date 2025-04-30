@@ -8,7 +8,7 @@ namespace Binner.Testing
 {
     public class MockApiHttpClientFactory : IApiHttpClientFactory
     {
-        public Dictionary<string, string> UriFileMapping { get; set; }
+        public Dictionary<string, string> UriFileMapping { get; set; } = new();
 
         public MockApiHttpClientFactory() { }
 
@@ -58,10 +58,11 @@ namespace Binner.Testing
             {
                 var obj = JObject.Parse(json);
                 var response = new HttpResponseMessage((HttpStatusCode)(obj?["StatusCode"]?.Value<int>() ?? 500));
-                var content = obj?["Content"];
-                var headers = content?["Headers"];
+                var content = obj?["Content"];          // data specific to the request (request headers & message body)
+                var description = obj?["Descripton"];   // test description, user provided
+                var headers = content?["Headers"];      // request headers to send
+                var body = content?["Body"];            // response body
                 var contentType = new MediaTypeHeaderValue(headers?["Content-Type"]?.Value<string?>() ?? "application/json");
-                var body = content?["Body"];
                 var bodyJson = JsonConvert.SerializeObject(body);
                 response.Content = new StringContent(bodyJson, contentType);
                 return Task.FromResult(response);

@@ -1,8 +1,11 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
+using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Integrations.DigiKey.V4;
 using Binner.Model.Responses;
 using Binner.Model.Swarm;
 using System.Linq.Expressions;
+using static Binner.Common.Integrations.DigikeyApi;
 
 namespace Binner.Testing
 {
@@ -23,13 +26,51 @@ namespace Binner.Testing
         {
             if (!createEmpty)
             {
-                _parts.Add(1, new Part { PartNumber = "LM358", PartId = 1 });
+                _parts.Add(1, new Part { 
+                    PartNumber = "LM358", 
+                    PartId = 1,
+                    PartTypeId = 1,
+                    Quantity = 5,
+                    LowStockThreshold = 10,
+                    ProductUrl = "https://example.com/LM358",
+                    DatasheetUrl = "https://example.com/LM358/datasheet.pdf",
+                    ImageUrl = "https://example.com/LM358/image.png",
+                    DigiKeyPartNumber = "LM358-ND",
+                    ArrowPartNumber = "AR-LM358",
+                    MouserPartNumber = "MO-LM358",
+                    Location = "Vancouver",
+                    BinNumber = "1",
+                    BinNumber2 = "1",
+                    Cost = 1.39,
+                    Currency = "CAD",
+                    Description = "OP AMP",
+                    Keywords = new List<string> { "ic", "op amp" },
+                    Manufacturer = "Texas Instruments",
+                    ManufacturerPartNumber = "LM358-TI",
+                    MountingTypeId = (int)MountingTypes.SurfaceMount,
+                    PackageType = "DIP8",
+                    UserId = 1,
+                });
                 _projects.Add(1, new Project { Name = "Test Project", ProjectId = 1 });
             }
             _partTypes.Add(1, new PartType { Name = "IC", PartTypeId = 1 });
             _partTypes.Add(2, new PartType { Name = "Resistor", PartTypeId = 2 });
             _partTypes.Add(3, new PartType { Name = "Capacitor", PartTypeId = 3 });
             _partTypes.Add(4, new PartType { Name = "Inductor", PartTypeId = 4 });
+
+            _partSuppliers.Add(1, new PartSupplier {
+                PartSupplierId = 1,
+                Name = "DigiKey",
+                PartId = 1,
+                Part = _parts.First().Value, 
+                Cost = 1.39, 
+                QuantityAvailable = 1000, 
+                ProductUrl = "https://example.com/LM358",
+                ImageUrl = "https://example.com/LM358/image.png",
+                SupplierPartNumber = "LM358-ND", 
+                MinimumOrderQuantity = 1,
+                UserId = 1,
+            });
         }
 
         public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)
@@ -222,9 +263,9 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId, IUserContext? userContext)
+        public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return _partSuppliers.Where(x => x.Key == partId).Select(x => x.Value).ToList();
         }
 
         public Task<decimal> GetPartsValueAsync(IUserContext? userContext)

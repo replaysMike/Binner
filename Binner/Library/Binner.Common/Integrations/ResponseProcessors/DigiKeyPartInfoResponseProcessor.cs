@@ -122,9 +122,12 @@ namespace Binner.Common.Integrations.ResponseProcessors
                                 partResponse = await api.GetProductDetailsAsync(supplierPartNumber);
                                 if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                                 {
-                                    var part = (V3.Product?)partResponse.Response;
-                                    if (part != null)
-                                        digikeyResponse.Products.Add(part);
+                                    if (partResponse.Response is V3.Product)
+                                    {
+                                        var part = (V3.Product?)partResponse.Response;
+                                        if (part != null)
+                                            digikeyResponse.Products.Add(part);
+                                    }
                                 }
                             }
                             catch (Exception ex)
@@ -179,7 +182,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
                     {
                         barcodeResult = await GetBarcodeInfoProductAsync(api, barcode, ScannedBarcodeType.Product);
                         digikeyResponse = new V4.KeywordSearchResponse();
-                        
+
                         // todo: map this to V4 product?
                         //if (barcodeResult?.Response != null)
                         //    digikeyResponse.Products.Add(barcodeResult.Response);
@@ -213,9 +216,13 @@ namespace Binner.Common.Integrations.ResponseProcessors
                                 partResponse = await api.GetProductDetailsAsync(supplierPartNumber);
                                 if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                                 {
-                                    var part = (V4.Product?)partResponse.Response;
-                                    if (part != null)
-                                        digikeyResponse.Products.Add(part);
+                                    var details = (V4.ProductDetails?)partResponse.Response;
+                                    if (details != null)
+                                    {
+                                        var part = details.Product;
+                                        if (part != null)
+                                            digikeyResponse.Products.Add(part);
+                                    }
                                 }
                             }
                             catch (Exception ex)
@@ -378,7 +385,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
                     }
 
                     if (string.IsNullOrEmpty(basePart))
-                      basePart = part.ManufacturerProductNumber;
+                        basePart = part.ManufacturerProductNumber;
                     var mountingTypeId = MountingType.None;
                     var mountingTypeParameter = part.Parameters
                         .Where(x => x.ParameterText.Equals("Mounting Type", ComparisonType))

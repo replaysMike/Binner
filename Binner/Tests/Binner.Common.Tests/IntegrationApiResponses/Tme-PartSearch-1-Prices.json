@@ -1,6 +1,7 @@
 ﻿{
   "StatusCode": 200,
   "IsSuccessStatusCode": true,
+  "Description": "search part LM393",
   "Content": {
     "Headers": {
       "Content-Type": "application/json"

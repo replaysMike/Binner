@@ -7,13 +7,14 @@ using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations.DigiKey;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Octokit;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,16 +34,45 @@ namespace Binner.Common.Tests
         public Mock<ICredentialService> CredentialService { get; set; }
         public Mock<ISwarmService> SwarmService { get; set; }
         public Mock<ILoggerFactory> LoggerFactory { get; set; }
+        public Mock<ILogger> Logger { get; set; }
         public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, IntegrationCredentialsCacheProvider.Object,
                 HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object,
                 WebHostServiceConfiguration.Integrations, WebHostServiceConfiguration, ApiHttpClientFactory);
         public IApiHttpClientFactory ApiHttpClientFactory { get; set; }
+
+        private readonly OAuthCredential _digiKeyV3Credential = new OAuthCredential
+        {
+            AccessToken = "text-access",
+            RefreshToken = "text-refresh",
+            DateCreatedUtc = DateTime.UtcNow,
+            DateExpiresUtc = DateTime.UtcNow.AddMinutes(30),
+            DateModifiedUtc = DateTime.UtcNow,
+            OAuthCredentialId = 1,
+            Provider = nameof(DigikeyApi),
+            ApiSettings = $@"{{""ApiVersion"": {(int)DigiKeyApiVersion.V3}}}",
+            UserId = TestConstants.UserId,
+        };
+        private readonly OAuthCredential _digiKeyV4Credential = new OAuthCredential
+        {
+            AccessToken = "text-access",
+            RefreshToken = "text-refresh",
+            DateCreatedUtc = DateTime.UtcNow,
+            DateExpiresUtc = DateTime.UtcNow.AddMinutes(30),
+            DateModifiedUtc = DateTime.UtcNow,
+            OAuthCredentialId = 1,
+            Provider = nameof(DigikeyApi),
+            ApiSettings = $@"{{""ApiVersion"": {(int)DigiKeyApiVersion.V4}}}",
+            UserId = TestConstants.UserId,
+        };
 
         public TestContext()
         {
             WebHostServiceConfiguration = new WebHostServiceConfiguration();
 
             LoggerFactory = new Mock<ILoggerFactory>();
+            Logger = new Mock<ILogger>();
+            LoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(MockLogger<It.IsAnyType>());
+            
             DbFactory = new Mock<IDbContextFactory<BinnerContext>>();
             DbFactory.Setup(f => f.CreateDbContext())
                 .Returns(new BinnerContext(new DbContextOptionsBuilder<BinnerContext>()
@@ -76,6 +106,17 @@ namespace Binner.Common.Tests
             ApplyApiCredentials(apiCredentials);
 
             CredentialService = new Mock<ICredentialService>();
+            CredentialService.Setup(x => x.CreateOAuthRequestAsync(It.IsAny<OAuthAuthorization>()))
+                .ReturnsAsync((OAuthAuthorization d) =>
+                {
+                    d.AuthorizationUrl = "https://localhost:8090/Authorization/Authorize?code=test&state=test";
+                    d.AuthorizationReceived = true;
+                    d.AccessToken = "test-access";
+                    d.RefreshToken = "test-refresh";
+                    return d;
+                });
+            SetDigiKeyApiVersion(DigiKeyApiVersion.V3);
+
             SwarmService = new Mock<ISwarmService>();
 
             ApiHttpClientFactory = new MockApiHttpClientFactory();
@@ -104,7 +145,7 @@ namespace Binner.Common.Tests
             WebHostServiceConfiguration.Integrations.Swarm.Enabled = swarmCreds.GetCredentialBool("Enabled");
             WebHostServiceConfiguration.Integrations.Swarm.ApiKey = swarmCreds.GetCredentialString("ApiKey");
             WebHostServiceConfiguration.Integrations.Swarm.ApiUrl = swarmCreds.GetCredentialString("ApiUrl");
-            
+
             WebHostServiceConfiguration.Integrations.Digikey.Enabled = digikeyCreds.GetCredentialBool("Enabled");
             WebHostServiceConfiguration.Integrations.Digikey.ClientId = digikeyCreds.GetCredentialString("ClientId");
             WebHostServiceConfiguration.Integrations.Digikey.ClientSecret = digikeyCreds.GetCredentialString("ClientSecret");
@@ -191,6 +232,29 @@ namespace Binner.Common.Tests
                 }, nameof(TmeApi))
             };
             return apiCredentials;
+        }
+
+        public void SetDigiKeyApiVersion(DigiKeyApiVersion testVersion)
+        {
+            switch(testVersion)
+            {
+                case DigiKeyApiVersion.V3:
+                    CredentialService.Setup(x => x.GetOAuthCredentialAsync(It.IsAny<string>()))
+                        .ReturnsAsync((string providerName) =>
+                        {
+                            return _digiKeyV3Credential;
+                        });
+                    break;
+                case DigiKeyApiVersion.V4:
+                    CredentialService.Setup(x => x.GetOAuthCredentialAsync(It.IsAny<string>()))
+                        .ReturnsAsync((string providerName) =>
+                        {
+                            return _digiKeyV4Credential;
+                        });
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }

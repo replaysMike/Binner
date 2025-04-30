@@ -1,0 +1,13 @@
+/* JSON response template. API response is wrapped by this template to mock status codes and headers returned by a mock client. */
+{
+  "StatusCode": 200,
+  "IsSuccessStatusCode": true,
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      /* place json response here */
+    }
+  }
+}

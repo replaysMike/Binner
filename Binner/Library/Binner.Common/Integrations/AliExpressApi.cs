@@ -60,5 +60,9 @@ namespace Binner.Common.Integrations
         public void Dispose()
         {
         }
+
+        public override string ToString()
+            => $"{nameof(AliExpressApi)}";
+
     }
 }

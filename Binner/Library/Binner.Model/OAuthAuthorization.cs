@@ -1,4 +1,6 @@
-﻿namespace Binner.Model
+﻿using System.Net.Sockets;
+
+namespace Binner.Model
 {
     public class OAuthAuthorization
     {
@@ -89,7 +91,6 @@
 
         public OAuthAuthorization()
         {
-
         }
 
         public OAuthAuthorization(string provider, Guid id)

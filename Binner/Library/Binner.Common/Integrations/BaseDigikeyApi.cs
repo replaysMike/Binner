@@ -60,17 +60,23 @@ namespace Binner.Common.Integrations
             {
                 // process a possible error message
                 var resultString = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(resultString))
+                ErrorResponse? errorResponse = null;
+                try
                 {
-                    var unauthorizedResponse = JsonConvert.DeserializeObject<UnauthorizedErrorResponse>(resultString.Trim());
-                    if (unauthorizedResponse?.ErrorDetails?.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
+                    errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(resultString.Trim());
+                }
+                catch (Exception) { }
+
+                if (errorResponse != null)
+                {
+                    if (errorResponse.ErrorDetails?.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // access denied to endpoint. Either wrong api version or not subscribed to the endpoint
-                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Version: {unauthorizedResponse.ErrorResponseVersion} Response: {unauthorizedResponse.ErrorDetails}");
-                        throw new DigikeyUnsubscribedException(authenticationResponse, unauthorizedResponse.ErrorResponseVersion, unauthorizedResponse.ErrorDetails);
+                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Version: {errorResponse.ErrorResponseVersion} Response: {errorResponse.ErrorDetails}");
+                        throw new DigikeyUnsubscribedException(authenticationResponse, errorResponse.ErrorResponseVersion, errorResponse.ErrorDetails);
                     }
                     // auth token invalid or expired
-                    var tokenErrorResponse = JsonConvert.DeserializeObject<UnauthorizedTokenResponse>(resultString.Trim());
+                    var tokenErrorResponse = JsonConvert.DeserializeObject<ServerErrorResponse>(resultString.Trim());
                     if (tokenErrorResponse?.Detail?.Contains("bearer token is expired", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // token expired, refresh or reauthenticate
@@ -85,19 +91,26 @@ namespace Binner.Common.Integrations
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
             {
+                var resultString = await response.Content.ReadAsStringAsync();
+                ErrorResponse? errorResponse = null;
+                try
+                {
+                    errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(resultString.Trim());
+                }
+                catch (Exception) { }
                 if (response.Headers.Contains("X-RateLimit-Limit"))
                 {
                     // throttled
                     var remainingTime = TimeSpan.Zero;
                     if (response.Headers.Contains("X-RateLimit-Remaining"))
                         remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
-                    _logger.LogWarning($"[{nameof(TryHandleResponseAsync)}] Request is rate limited. Try again in {remainingTime}");
-                    var throttledResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}", nameof(DigikeyApi));
+                    _logger.LogWarning($"[{nameof(TryHandleResponseAsync)}] Request is rate limited. Try again in {remainingTime}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage}");
+                    var throttledResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage}", nameof(DigikeyApi));
                     return (false, throttledResponse);
                 }
 
                 // return generic error
-                return (false, ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi)));
+                return (false, ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage}", nameof(DigikeyApi)));
             }
             else if (response.IsSuccessStatusCode)
             {
