@@ -210,7 +210,6 @@ export function Bom(props) {
   const handleOpenAddPcb = (e, control) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('opening');
     setAddPcbModalOpen(true);
   };
 
