@@ -9,8 +9,9 @@ namespace Binner.Testing
         public const string UserName = "testuser";
         public const string Password = "password";
 
-        public const string OrderId = "1-TEST-ND";
+        public const string OrderId = "123456789";
         public const string MouserSupplier = "mouser";
+        public const string DigiKeySupplier = "digikey";
 
         public static readonly UserContext UserContext = new UserContext()
         {

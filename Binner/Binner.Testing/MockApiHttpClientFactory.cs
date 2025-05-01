@@ -1,4 +1,5 @@
-﻿using Binner.Common.Integrations;
+﻿using Binner.Common.Extensions;
+using Binner.Common.Integrations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
@@ -24,6 +25,25 @@ namespace Binner.Testing
         }
     }
 
+    internal static class UrlFileMappingExtensions
+    {
+        internal static bool ContainsUrlKey(this Dictionary<string, string> collection, string uriKey, out string key)
+        {
+            var tryKey = uriKey.Split("/", StringSplitOptions.RemoveEmptyEntries);
+
+            key = string.Join("/", tryKey);
+            if (collection.ContainsKey(key)) return true;
+            key = string.Join("/", tryKey) + "/";
+            if (collection.ContainsKey(key)) return true;
+            key = "/" + string.Join("/", tryKey);
+            if (collection.ContainsKey(key)) return true;
+            key = "/" + string.Join("/", tryKey) + "/";
+            if (collection.ContainsKey(key)) return true;
+
+            return false;
+        }
+    }
+
     public class MockApiHttpClient : IApiHttpClient
     {
         public Dictionary<string, string> UriFileMapping { get; set; }
@@ -43,16 +63,29 @@ namespace Binner.Testing
 
         public void RemoveHeader(string name) { }
 
+        
+
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
             var uriKey = request.RequestUri!.AbsoluteUri;
-            if (!UriFileMapping.ContainsKey(uriKey))
-                uriKey = request.RequestUri.PathAndQuery;
-            if (!UriFileMapping.ContainsKey(uriKey))
-                uriKey = request.RequestUri.AbsolutePath;
-            if (!UriFileMapping.ContainsKey(uriKey)) throw new KeyNotFoundException($"No mapping specified for uri using any of the following paths '{request.RequestUri!.AbsoluteUri}', '{request.RequestUri!.PathAndQuery}', '{request.RequestUri!.AbsolutePath}'");
+            var key = uriKey;
+            if (!UriFileMapping.ContainsUrlKey(key, out key))
+                key = request.RequestUri.PathAndQuery;
+            if (!UriFileMapping.ContainsUrlKey(key, out key))
+                key = request.RequestUri.AbsolutePath;
+            if (!UriFileMapping.ContainsUrlKey(key, out key))
+            {
+                // iteratively try to find a match with one less path parameter. as some url's pass a search param using the path
+                var parts = request.RequestUri.AbsolutePath.Split("/", StringSplitOptions.RemoveEmptyEntries);
+                for(var i = parts.Length - 1; i > 1; i--)
+                {
+                    key = string.Join("/", parts.Take(i).ToList());
+                    if (UriFileMapping.ContainsUrlKey(key, out key)) break;
+                }
+            }
+            if (!UriFileMapping.ContainsUrlKey(key, out key)) throw new KeyNotFoundException($"No mapping specified for uri using any of the following paths '{request.RequestUri!.AbsoluteUri}', '{request.RequestUri!.PathAndQuery}', '{request.RequestUri!.AbsolutePath}'");
 
-            var filename = UriFileMapping[uriKey];
+            var filename = UriFileMapping[key];
             var json = LoadResponseJson(filename);
             try
             {

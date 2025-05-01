@@ -7,69 +7,127 @@
       "Content-Type": "application/json"
     },
     "Body": {
-      "OrderLines": [
+      "SalesorderId": 123456789,
+      "CustomerId": 1,
+      "BillingAccount": 1,
+      "Email": "TEST@EXAMPLE.COM",
+      "PurchaseOrder": null,
+      "PaymentMethod": null,
+      "ShippingMethod": null,
+      "BackorderShippingMethod": null,
+      "ShipperAccountNumber": null,
+      "BackorderShipperAccountNumber": null,
+      "ShipmentType": null,
+      "Currency": "EUR",
+      "ShippingAddress": {
+        "FirstName": null,
+        "LastName": null,
+        "Country": "CA",
+        "Company": "",
+        "AddressLineOne": "123 Example St",
+        "AddressLineTwo": "",
+        "AddressLineThree": "",
+        "City": "Vancouver",
+        "Province": "BC",
+        "PostalCode": "X0X0X0"
+      },
+      "BillingAddress": {
+        "FirstName": null,
+        "LastName": null,
+        "Country": "CA",
+        "Company": "",
+        "AddressLineOne": "123 Example St",
+        "AddressLineTwo": "",
+        "AddressLineThree": "",
+        "City": "Vancouver",
+        "Province": "BC",
+        "PostalCode": "X0X0X0"
+      },
+      "ShippingDetails": [
         {
-          "Quantity": 5,
-          "UnitPrice": 1.34,
-          "ExtPrice": 1.34,
-          "FormattedUnitPrice": "€1,34",
-          "FormattedExtendedPrice": "€1,34",
-          "ProductInfo": {
-            "MouserPartNumber": "LM358",
-            "CustomerPartNumber": "LM358",
-            "ManufacturerName": "Texas Instruments",
-            "ManufacturerPartNumber": "LM358PE3",
-            "PartDescription": "IC OPAMP GP 2 CIRCUIT 8DIP"
-          },
-          "Activities": [
-            {
-              "InvoiceNumber": 1,
-              "Date": "2025-04-16T01:11:08.589Z"
-            }
-          ]
+          "Carrier": "FedEx",
+          "CarrierPackageId": "",
+          "DateTransaction": "2025-04-16T01:11:08.589Z",
+          "ShippingMethod": "International Priority",
+          "TrackingUrl": "",
+          "InvoiceId": 1,
+          "CanceledOrVoided": false
         }
       ],
-      "SalesOrderId": "123456789",
-      "WebOrderId": "123456789",
-      "OrderStatus": 1,
-      "OrderStatusName": "Shipped",
-      "OrderDate": "2025-04-16T01:11:08.589Z",
-      "BillingAddress": {
-        "CountryCode": "UK",
-        "AttentionLine": "",
-        "CompanyName": "",
-        "AddressOne": "123 Example St",
-        "AddressTwo": "",
-        "City": "Birmingham",
-        "StateOrProvince": "",
-        "PostalCode": "AB12CD"
-      },
-      "ShippingAddress": {
-        "CountryCode": "UK",
-        "AttentionLine": "",
-        "CompanyName": "",
-        "AddressOne": "123 Example St",
-        "AddressTwo": "",
-        "City": "Birmingham",
-        "StateOrProvince": "",
-        "PostalCode": "AB12CD"
-      },
-      "PaymentDetail": {
-        "PoNumber": "",
-        "PaymentMethodName": ""
-      },
-      "DeliveryDetail": {
-        "ShippingMethodName": "",
-        "BackOrderShippingMethodName": ""
-      },
-      "CurrencyCode": "EUR",
-      "IsScheduled": false,
-      "IsPendingOrder": false,
-      "BuyerName": "Test User",
-      "SummaryDetail": {
-        "MerchandiseTotal": "€6,70",
-        "OrderTotal": "€6,70"
-      }
+      "LineItems": [
+        {
+          "SalesOrderId": 123456789,
+          "TotalPrice": 13.2,
+          "CustomerReference": "TESTPROJECT 24V CAB C10",
+          "DigiKeyPartNumber": "1276-6455-1-ND",
+          "ProductDescription": "CAP CER 10UF 16V X5R 0805",
+          "Quantity": 500,
+          "QuantityBackorder": 0,
+          "QuantityShipped": 0,
+          "InvoiceId": 1,
+          "UnitPrice": 0.0264
+        },
+        {
+          "SalesOrderId": 123456789,
+          "TotalPrice": 2.89,
+          "CustomerReference": "TESTPROJECT 24V CAB C11",
+          "DigiKeyPartNumber": "4713-GMC21X7R103J50NTCT-ND",
+          "ProductDescription": "CAP0805 X7R .01UF 5% 50V",
+          "Quantity": 100,
+          "QuantityBackorder": 0,
+          "QuantityShipped": 0,
+          "InvoiceId": 1,
+          "UnitPrice": 0.0289
+        },
+        {
+          "SalesOrderId": 123456789,
+          "TotalPrice": 42.79,
+          "CustomerReference": "TESTPROJECT 24V CAB C14-C17",
+          "DigiKeyPartNumber": "1276-6780-1-ND",
+          "ProductDescription": "CAP CER 22UF 16V X5R 0805",
+          "Quantity": 500,
+          "QuantityBackorder": 0,
+          "QuantityShipped": 0,
+          "InvoiceId": 1,
+          "UnitPrice": 0.08558
+        },
+        {
+          "SalesOrderId": 123456789,
+          "TotalPrice": 13.6,
+          "CustomerReference": "TESTPROJECT 24V CAB D1 - TSP10H45 ALT",
+          "DigiKeyPartNumber": "1801-TSUP10M45SHCT-ND",
+          "ProductDescription": "DIODE SCHOTTKY 45V 10A SMPC4.6U",
+          "Quantity": 20,
+          "QuantityBackorder": 0,
+          "QuantityShipped": 0,
+          "InvoiceId": 1,
+          "UnitPrice": 0.68
+        },
+        {
+          "SalesOrderId": 123456789,
+          "TotalPrice": 15.8,
+          "CustomerReference": "TESTPROJECT 24V CAB D2",
+          "DigiKeyPartNumber": "18-SMF4L24CACT-ND",
+          "ProductDescription": "TVS DIODE 24VWM 38.9VC SOD123F",
+          "Quantity": 100,
+          "QuantityBackorder": 0,
+          "QuantityShipped": 0,
+          "InvoiceId": 1,
+          "UnitPrice": 0.158
+        },
+        {
+          "SalesOrderId": 123456789,
+          "TotalPrice": 23.15,
+          "CustomerReference": "TESTPROJECT 24V CAB L1",
+          "DigiKeyPartNumber": "SRP6540-1R0MCT-ND",
+          "ProductDescription": "FIXED IND 1UH 12A 7.2 MOHM SMD",
+          "Quantity": 25,
+          "QuantityBackorder": 0,
+          "QuantityShipped": 0,
+          "InvoiceId": 1,
+          "UnitPrice": 0.926
+        }
+      ]
     }
   }
 }
