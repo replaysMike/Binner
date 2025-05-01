@@ -89,6 +89,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const handleClear = (e) => {
+    if (rest.onClear) rest.onClear(e);
 		return rest.onChange(e, { ...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: '' });
 	};
 
@@ -160,6 +161,8 @@ ProtectedInput.propTypes = {
   hideIcon: PropTypes.bool,
 	/** True to hide clear icon */
 	hideClearIcon: PropTypes.bool,
+  /** Event triggered when the clear button is clicked */
+  onClear: PropTypes.func,
 	/** Event triggered when barcode reading has started */
 	onBarcodeReadStarted: PropTypes.func,
 	/** Event triggered when barcode reading has been cancelled */
