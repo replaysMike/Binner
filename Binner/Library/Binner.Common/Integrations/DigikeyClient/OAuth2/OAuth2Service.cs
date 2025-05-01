@@ -16,6 +16,7 @@ using ApiClient.OAuth2.Models;
 using Binner.Common;
 using Binner.Common.Integrations;
 using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations.DigiKey;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -33,16 +34,17 @@ namespace ApiClient.OAuth2
     /// </summary>
     public class OAuth2Service
     {
-        private readonly ILogger<OAuth2Service> _logger;
+        private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
         private readonly AccessTokens _accessTokens;
 
         public AccessTokens AccessTokens => _accessTokens;
 
-        public OAuth2Service(DigikeyConfiguration configuration)
+        public OAuth2Service(DigikeyConfiguration configuration, ILogger<DigikeyApi> logger)
         {
             _configuration = configuration;
             _accessTokens = new AccessTokens();
+            _logger = logger;
         }
 
         /// <summary>
@@ -116,7 +118,29 @@ namespace ApiClient.OAuth2
                 }
 
                 // Throw error
-                tokenResponse.EnsureSuccessStatusCode();
+                //tokenResponse.EnsureSuccessStatusCode();
+                if (!tokenResponse.IsSuccessStatusCode)
+                {
+                    ErrorResponse? errorResponse = null;
+                    ServerErrorResponse? tokenErrorResponse = null;
+                    try
+                    {
+                        errorResponse = JsonConvert.DeserializeObject<ErrorResponse?>(text.Trim());
+                    }
+                    catch (System.Exception) { }
+                    try
+                    {
+                        tokenErrorResponse = JsonConvert.DeserializeObject<ServerErrorResponse?>(text.Trim());
+                    }
+                    catch (System.Exception) { }
+                    string? serverErrorResponseMessage = null;
+                    if (errorResponse != null && (!string.IsNullOrEmpty(errorResponse.ErrorMessage) || !string.IsNullOrEmpty(errorResponse.ErrorDetails)))
+                        serverErrorResponseMessage = errorResponse.ErrorMessage + ". " + errorResponse.ErrorDetails;
+                    var errorMessage = serverErrorResponseMessage ?? tokenErrorResponse?.Detail ?? "(no message)";
+
+                    _logger.LogError($"[{nameof(FinishAuthorization)}] {errorMessage}");
+                    throw new DigikeyInvalidCredentialsException(new Binner.Model.OAuthAuthorization(), Binner.Model.Integrations.DigiKey.DigiKeyApiVersion.V4, errorResponse?.ErrorResponseVersion, $"{errorMessage}", (int)tokenResponse.StatusCode);
+                }
             }
 
             // Deserializes the token response if successful

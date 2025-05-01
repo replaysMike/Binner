@@ -55,6 +55,30 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidCredentials-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidCredentials-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidClientId-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidClientId-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-ExpiredBearerToken-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-ExpiredBearerToken-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-NotSubscribed-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-NotSubscribed-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="IntegrationApiResponses\DigiKey-v4-ExternalOrder-1-USD.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

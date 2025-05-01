@@ -90,10 +90,15 @@ namespace Binner.Web.Controllers
                         _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Completing auth for '{authRequest.Provider}' provider");
                         await FinishDigikeyApiAuthorizationAsync(authRequest, code);
                     }
+                    catch(DigikeyInvalidCredentialsException ex)
+                    {
+                        _logger.LogError(ex, $"[{nameof(AuthorizeAsync)}] Failed to complete auth for '{authRequest.Provider}' provider. {ex.Message}");
+                        return StatusCode(ex.StatusCode, new ApiErrorResponse("The DigiKey credentials you provided are not correct.", ex.Message, ex.StatusCode));
+                    }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, $"[{nameof(AuthorizeAsync)}] Failed to complete auth for '{authRequest.Provider}' provider");
-                        return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to authenticate with DigiKey due to an error! ", ex));
+                        return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to authenticate with DigiKey due to an error!", ex));
                     }
                     break;
                 default:

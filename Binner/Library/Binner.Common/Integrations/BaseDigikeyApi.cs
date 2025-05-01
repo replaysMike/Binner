@@ -72,26 +72,30 @@ namespace Binner.Common.Integrations
                     tokenErrorResponse = JsonConvert.DeserializeObject<ServerErrorResponse?>(resultString.Trim());
                 }
                 catch (Exception) { }
-                var errorMessage = errorResponse?.ErrorDetails ?? tokenErrorResponse?.Detail ?? "(no message)";
+                string? serverErrorResponseMessage = null;
+                if (errorResponse != null && (!string.IsNullOrEmpty(errorResponse.ErrorMessage) || !string.IsNullOrEmpty(errorResponse.ErrorDetails)))
+                    serverErrorResponseMessage = errorResponse.ErrorMessage + ". " + errorResponse.ErrorDetails;
+                var errorMessage = serverErrorResponseMessage ?? tokenErrorResponse?.Detail ?? "(no message)";
                 if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    if (errorMessage.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
+                    if (errorMessage.Replace(" ", "").Contains("notsubscribed", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // access denied to endpoint. Either wrong api version or not subscribed to the endpoint
                         _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Attempted Version: {(int)apiVersion} Response Version: {errorResponse?.ErrorResponseVersion} Api Response: {errorResponse}");
                         throw new DigikeyUnsubscribedException(authenticationResponse, apiVersion, errorResponse?.ErrorResponseVersion, errorMessage);
                     }
-                    if (errorMessage.Contains("bearer token is expired", StringComparison.InvariantCultureIgnoreCase) == true)
+                    if (errorMessage.Replace(" ", "").Contains("bearertokenisexpired", StringComparison.InvariantCultureIgnoreCase) == true
+                        || errorMessage.Replace(" ", "").Contains("bearertokenexpired", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // auth token expired, refresh or reauthenticate
                         _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Bearer token is expired. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Api Version: {(int)apiVersion} Api Response: {errorMessage}");
                         throw new DigikeyUnauthorizedException(authenticationResponse, apiVersion, errorMessage);
                     }
-                    if (errorMessage.Contains("invalid client", StringComparison.InvariantCultureIgnoreCase) == true)
+                    if (errorMessage.Replace(" ", "").Contains("invalidclient", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // invalid client-id credentials
                         _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - ClientId used is invalid. Please ensure you have added it correctly. Api Version: {(int)apiVersion} Response Version: {errorResponse?.ErrorResponseVersion} Api Response: {errorResponse}");
-                        throw new DigikeyInvalidCredentialsException(authenticationResponse, apiVersion, errorResponse?.ErrorResponseVersion, errorMessage);
+                        throw new DigikeyInvalidCredentialsException(authenticationResponse, apiVersion, errorResponse?.ErrorResponseVersion, errorMessage, (int)response.StatusCode);
                     }
                 }
 
