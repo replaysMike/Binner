@@ -116,7 +116,7 @@ export const App = (props) => {
 
     // provide a UI toast when we have authenticated with DigiKey
     if (props.searchParams) {
-      const [searchParams] = props.searchParams;
+      const [searchParams, setSearchParams] = props.searchParams;
       const apiAuthSuccess = searchParams.get("api-authenticate") || "";
       if (apiAuthSuccess !== "") {
         let apiName = searchParams.get("api") || "External Api";
@@ -135,6 +135,11 @@ export const App = (props) => {
         toast.dismiss();
         if (apiAuthSuccess) toast.success(`Successfully authenticated with ${apiName}!`);
         else toast.error(`Failed to authenticate with ${apiName}!`);
+
+        // remove search params
+        searchParams.delete('api-authenticate');
+        searchParams.delete('api');
+        setSearchParams(searchParams);
       }
     }
     return () => {
