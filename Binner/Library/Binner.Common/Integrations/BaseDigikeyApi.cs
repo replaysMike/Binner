@@ -73,25 +73,30 @@ namespace Binner.Common.Integrations
                 }
                 catch (Exception) { }
                 var errorMessage = errorResponse?.ErrorDetails ?? tokenErrorResponse?.Detail ?? "(no message)";
-                if (errorResponse != null || tokenErrorResponse != null)
+                if (!string.IsNullOrEmpty(errorMessage))
                 {
                     if (errorMessage.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // access denied to endpoint. Either wrong api version or not subscribed to the endpoint
-                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Attempted Version: {(int)apiVersion} Response Version: {errorResponse?.ErrorResponseVersion} Response: {errorResponse?.ErrorDetails}");
+                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Attempted Version: {(int)apiVersion} Response Version: {errorResponse?.ErrorResponseVersion} Api Response: {errorResponse}");
                         throw new DigikeyUnsubscribedException(authenticationResponse, apiVersion, errorResponse?.ErrorResponseVersion, errorMessage);
                     }
-                    // auth token invalid or expired
                     if (errorMessage.Contains("bearer token is expired", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
-                        // token expired, refresh or reauthenticate
-                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Bearer token is expired. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Attempted Version: {(int)apiVersion} Response: {tokenErrorResponse?.Detail ?? errorResponse?.ErrorDetails ?? "(no message)"}");
+                        // auth token expired, refresh or reauthenticate
+                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Bearer token is expired. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Api Version: {(int)apiVersion} Api Response: {errorMessage}");
                         throw new DigikeyUnauthorizedException(authenticationResponse, apiVersion, errorMessage);
+                    }
+                    if (errorMessage.Contains("invalid client", StringComparison.InvariantCultureIgnoreCase) == true)
+                    {
+                        // invalid client-id credentials
+                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - ClientId used is invalid. Please ensure you have added it correctly. Api Version: {(int)apiVersion} Response Version: {errorResponse?.ErrorResponseVersion} Api Response: {errorResponse}");
+                        throw new DigikeyInvalidCredentialsException(authenticationResponse, apiVersion, errorResponse?.ErrorResponseVersion, errorMessage);
                     }
                 }
 
                 // unauthorized token
-                _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - user must authenticate. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Attempted Version: {(int)apiVersion}");
+                _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - user must authenticate. Api Response='{errorMessage}' accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Api Version: {(int)apiVersion}");
                 throw new DigikeyUnauthorizedException(authenticationResponse, apiVersion, errorMessage);
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
@@ -109,13 +114,13 @@ namespace Binner.Common.Integrations
                     var remainingTime = TimeSpan.Zero;
                     if (response.Headers.Contains("X-RateLimit-Remaining"))
                         remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
-                    _logger.LogWarning($"[{nameof(TryHandleResponseAsync)}] Request is rate limited. Try again in {remainingTime}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage}");
-                    var throttledResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage}", nameof(DigikeyApi));
+                    _logger.LogWarning($"[{nameof(TryHandleResponseAsync)}] Request is rate limited. Try again in {remainingTime}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage} Api Version: {(int)apiVersion}");
+                    var throttledResponse = ApiResponse.Create($"{nameof(DigikeyApi)} request throttled. Try again in {remainingTime}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage} Api Version: {(int)apiVersion}", nameof(DigikeyApi));
                     return (false, throttledResponse);
                 }
 
                 // return generic error
-                return (false, ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage}", nameof(DigikeyApi)));
+                return (false, ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. Status Code: {(int)response.StatusCode} Message: {errorResponse?.ErrorMessage} Api Version: {(int)apiVersion}", nameof(DigikeyApi)));
             }
             else if (response.IsSuccessStatusCode)
             {
@@ -124,8 +129,8 @@ namespace Binner.Common.Integrations
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
-                _logger.LogError($"[{nameof(TryHandleResponseAsync)}] Bad request. Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. accesstoken='{authenticationResponse.AccessToken.Sanitize()}'");
-                var badRequestResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+                _logger.LogError($"[{nameof(TryHandleResponseAsync)}] Bad request. Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Api Version: {(int)apiVersion}");
+                var badRequestResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase} Api Version: {(int)apiVersion}", nameof(DigikeyApi));
                 var resultString = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(resultString) && resultString != "{}")
                     badRequestResponse.Errors.Add(resultString);
@@ -133,7 +138,7 @@ namespace Binner.Common.Integrations
             }
 
             // return generic error
-            var errResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
+            var errResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase} Api Version: {(int)apiVersion}", nameof(DigikeyApi));
             return (false, errResponse);
         }
 
