@@ -9,7 +9,7 @@
     "Body": {
       "ErrorResponseVersion": "3.0.0.0",
       "StatusCode": 401,
-      "ErrorMessage": "You are not subscribed to this API. Please subscribe and try again.",
+      "ErrorMessage": "Invalid Client-Id",
       "ErrorDetails": "You are not subscribed to this API. Please subscribe and try again.",
       "RequestId": "a278d71d-67ad-4d50-c0b4-f795e10719bf",
       "ValidationErrors": [
