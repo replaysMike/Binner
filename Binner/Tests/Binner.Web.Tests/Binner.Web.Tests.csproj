@@ -3,9 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

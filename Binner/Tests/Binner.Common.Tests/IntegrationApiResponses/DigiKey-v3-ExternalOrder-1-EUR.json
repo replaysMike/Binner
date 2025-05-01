@@ -10,122 +10,932 @@
       "SalesorderId": 123456789,
       "CustomerId": 1,
       "BillingAccount": 1,
-      "Email": "TEST@EXAMPLE.COM",
-      "PurchaseOrder": null,
-      "PaymentMethod": null,
-      "ShippingMethod": null,
-      "BackorderShippingMethod": null,
-      "ShipperAccountNumber": null,
-      "BackorderShipperAccountNumber": null,
-      "ShipmentType": null,
+      "Email": "USER@EXAMPLE.COM",
+      "PurchaseOrder": "",
+      "PaymentMethod": "VISA",
+      "Supplier": "Digi-Key",
+      "ShippingMethod": "FedEx International Priority",
+      "BackorderShippingMethod": "FedEx International Priority",
+      "ShipperAccountNumber": "",
+      "BackorderShipperAccountNumber": "",
+      "ShipmentType": "Immediate",
       "Currency": "EUR",
       "ShippingAddress": {
-        "FirstName": null,
-        "LastName": null,
-        "Country": "CA",
         "Company": "",
-        "AddressLineOne": "123 Example St",
-        "AddressLineTwo": "",
+        "FirstName": "TEST",
+        "LastName": "USER",
+        "AddressLineOne": "",
+        "AddressLineTwo": "123 EXAMPLE ST",
         "AddressLineThree": "",
-        "City": "Vancouver",
+        "City": "VANCOUVER",
         "Province": "BC",
-        "PostalCode": "X0X0X0"
+        "PostalCode": "V0N2E0",
+        "Country": "CA"
       },
       "BillingAddress": {
-        "FirstName": null,
-        "LastName": null,
-        "Country": "CA",
         "Company": "",
-        "AddressLineOne": "123 Example St",
-        "AddressLineTwo": "",
+        "FirstName": "TEST",
+        "LastName": "USER",
+        "AddressLineOne": "",
+        "AddressLineTwo": "123 EXAMPLE ST",
         "AddressLineThree": "",
-        "City": "Vancouver",
+        "City": "VANCOUVER",
         "Province": "BC",
-        "PostalCode": "X0X0X0"
+        "PostalCode": "V0N2E0",
+        "Country": "CA"
       },
       "ShippingDetails": [
         {
           "Carrier": "FedEx",
-          "CarrierPackageId": "",
-          "DateTransaction": "2025-04-16T01:11:08.589Z",
-          "ShippingMethod": "International Priority",
-          "TrackingUrl": "",
+          "CarrierPackageId": "12345678912345",
+          "DateTransaction": "2025-02-03T13:16:07.5384730Z",
+          "ShippingMethod": "FedEx International Priority",
+          "TrackingUrl": "https://www.fedex.com/fedextrack/?trknbr=123456789",
           "InvoiceId": 1,
-          "CanceledOrVoided": false
+          "CanceledOrVoided": false,
+          "DeliveryDate": "2025-02-04T17:30:00.0000000"
         }
       ],
       "LineItems": [
         {
-          "SalesOrderId": 123456789,
-          "TotalPrice": 13.2,
-          "CustomerReference": "TESTPROJECT 24V CAB C10",
+          "PoLineItemNumber": "",
           "DigiKeyPartNumber": "1276-6455-1-ND",
+          "ManufacturerPartNumber": "CL21A106KOQNNNG",
           "ProductDescription": "CAP CER 10UF 16V X5R 0805",
+          "Manufacturer": "SAMSUNG ELECTRO-MECHANICS AMERICA, INC (VA)",
+          "CountryOfOrigin": "PH",
           "Quantity": 500,
+          "CustomerReference": "TESTPROJECT 24V CAB C10",
+          "UnitPrice": 0.0264,
+          "TotalPrice": 13.2,
           "QuantityBackorder": 0,
-          "QuantityShipped": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
           "InvoiceId": 1,
-          "UnitPrice": 0.0264
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
         },
         {
-          "SalesOrderId": 123456789,
-          "TotalPrice": 2.89,
-          "CustomerReference": "TESTPROJECT 24V CAB C11",
+          "PoLineItemNumber": "",
           "DigiKeyPartNumber": "4713-GMC21X7R103J50NTCT-ND",
+          "ManufacturerPartNumber": "GMC21X7R103J50NT",
           "ProductDescription": "CAP0805 X7R .01UF 5% 50V",
+          "Manufacturer": "CAL-CHIP ELECTRONICS, INC. (VA)",
+          "CountryOfOrigin": "KR",
           "Quantity": 100,
+          "CustomerReference": "TESTPROJECT 24V CAB C11",
+          "UnitPrice": 0.0289,
+          "TotalPrice": 2.89,
           "QuantityBackorder": 0,
-          "QuantityShipped": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
           "InvoiceId": 1,
-          "UnitPrice": 0.0289
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
         },
         {
-          "SalesOrderId": 123456789,
-          "TotalPrice": 42.79,
-          "CustomerReference": "TESTPROJECT 24V CAB C14-C17",
+          "PoLineItemNumber": "",
           "DigiKeyPartNumber": "1276-6780-1-ND",
+          "ManufacturerPartNumber": "CL21A226MOCLRNC",
           "ProductDescription": "CAP CER 22UF 16V X5R 0805",
+          "Manufacturer": "SAMSUNG ELECTRO-MECHANICS AMERICA, INC (VA)",
+          "CountryOfOrigin": "CN",
           "Quantity": 500,
+          "CustomerReference": "TESTPROJECT 24V CAB C14-C17",
+          "UnitPrice": 0.08558,
+          "TotalPrice": 42.79,
           "QuantityBackorder": 0,
-          "QuantityShipped": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
           "InvoiceId": 1,
-          "UnitPrice": 0.08558
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
         },
         {
-          "SalesOrderId": 123456789,
-          "TotalPrice": 13.6,
-          "CustomerReference": "TESTPROJECT 24V CAB D1 - TSP10H45 ALT",
+          "PoLineItemNumber": "",
           "DigiKeyPartNumber": "1801-TSUP10M45SHCT-ND",
+          "ManufacturerPartNumber": "TSUP10M45SH",
           "ProductDescription": "DIODE SCHOTTKY 45V 10A SMPC4.6U",
+          "Manufacturer": "TAIWAN SEMICONDUCTOR CORPORATION (VA)",
+          "CountryOfOrigin": "TW",
           "Quantity": 20,
+          "CustomerReference": "TESTPROJECT 24V CAB D1 - TSP10H45 ALT",
+          "UnitPrice": 0.68,
+          "TotalPrice": 13.6,
           "QuantityBackorder": 0,
-          "QuantityShipped": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 20,
           "InvoiceId": 1,
-          "UnitPrice": 0.68
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
         },
         {
-          "SalesOrderId": 123456789,
-          "TotalPrice": 15.8,
-          "CustomerReference": "TESTPROJECT 24V CAB D2",
+          "PoLineItemNumber": "",
           "DigiKeyPartNumber": "18-SMF4L24CACT-ND",
+          "ManufacturerPartNumber": "SMF4L24CA",
           "ProductDescription": "TVS DIODE 24VWM 38.9VC SOD123F",
+          "Manufacturer": "LITTELFUSE INC (VA)",
+          "CountryOfOrigin": "CN",
           "Quantity": 100,
+          "CustomerReference": "TESTPROJECT 24V CAB D2",
+          "UnitPrice": 0.158,
+          "TotalPrice": 15.8,
           "QuantityBackorder": 0,
-          "QuantityShipped": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
           "InvoiceId": 1,
-          "UnitPrice": 0.158
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
         },
         {
-          "SalesOrderId": 123456789,
-          "TotalPrice": 23.15,
-          "CustomerReference": "TESTPROJECT 24V CAB L1",
+          "PoLineItemNumber": "",
           "DigiKeyPartNumber": "SRP6540-1R0MCT-ND",
+          "ManufacturerPartNumber": "SRP6540-1R0M",
           "ProductDescription": "FIXED IND 1UH 12A 7.2 MOHM SMD",
+          "Manufacturer": "BOURNS INC (VA)",
+          "CountryOfOrigin": "TW",
           "Quantity": 25,
+          "CustomerReference": "TESTPROJECT 24V CAB L1",
+          "UnitPrice": 0.926,
+          "TotalPrice": 23.15,
           "QuantityBackorder": 0,
-          "QuantityShipped": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 25,
           "InvoiceId": 1,
-          "UnitPrice": 0.926
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "31-AP7375-50W5-7CT-ND",
+          "ManufacturerPartNumber": "AP7375-50W5-7",
+          "ProductDescription": "IC REG LINEAR 5V 300MA SOT-25",
+          "Manufacturer": "DIODES INCORPORATED (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 25,
+          "CustomerReference": "TESTPROJECT 24V CAB U2",
+          "UnitPrice": 0.33,
+          "TotalPrice": 8.25,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 25,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "785-AOZ2261BQI-28CT-ND",
+          "ManufacturerPartNumber": "AOZ2261BQI-28",
+          "ProductDescription": "IC REG BUCK ADJ 8A 23QFNB",
+          "Manufacturer": "ALPHA & OMEGA SEMICONDUCTOR INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT 24V CAB U7",
+          "UnitPrice": 0.5809,
+          "TotalPrice": 58.09,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "AP2120N-3.3TRG1DICT-ND",
+          "ManufacturerPartNumber": "AP2120N-3.3TRG1",
+          "ProductDescription": "IC REG LINEAR 3.3V 150MA SOT23-3",
+          "Manufacturer": "DIODES INCORPORATED (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 250,
+          "CustomerReference": "TESTPROJECT CABINET U1",
+          "UnitPrice": 0.1138,
+          "TotalPrice": 28.45,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 250,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "296-21931-1-ND",
+          "ManufacturerPartNumber": "TXS0102DCUR",
+          "ProductDescription": "IC TRANSLTR BIDIRECTIONAL 8VSSOP",
+          "Manufacturer": "TEXAS INSTRUMENTS (VA)",
+          "CountryOfOrigin": "TH",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT 24V CAB U7",
+          "UnitPrice": 0.3031,
+          "TotalPrice": 30.31,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "ATTINY402-SSNRCT-ND",
+          "ManufacturerPartNumber": "ATTINY402-SSNR",
+          "ProductDescription": "IC MCU 8BIT 4KB FLASH 8SOIC",
+          "Manufacturer": "MICROCHIP TECHNOLOGY (VA)",
+          "CountryOfOrigin": "TH",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 0.43,
+          "TotalPrice": 43.0,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "732-5316-ND",
+          "ManufacturerPartNumber": "61300311121",
+          "ProductDescription": "CONN HEADER VERT 3POS 2.54MM",
+          "Manufacturer": "WURTH ELECTRONICS INC",
+          "CountryOfOrigin": "TW",
+          "Quantity": 50,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 0.0712,
+          "TotalPrice": 3.56,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 50,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "490-14467-1-ND",
+          "ManufacturerPartNumber": "GRM21BR71E225KE11L",
+          "ProductDescription": "CAP CER 2.2UF 25V X7R 0805",
+          "Manufacturer": "MURATA ELECTRONICS (VA)",
+          "CountryOfOrigin": "JP",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 0.0504,
+          "TotalPrice": 5.04,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "311-2.20KCRCT-ND",
+          "ManufacturerPartNumber": "RC0805FR-072K2L",
+          "ProductDescription": "RES 2.2K OHM 1% 1/8W 0805",
+          "Manufacturer": "YAGEO (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 0.0107,
+          "TotalPrice": 1.07,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "RMCF0805JT2K20CT-ND",
+          "ManufacturerPartNumber": "RMCF0805JT2K20",
+          "ProductDescription": "RES 2.2K OHM 5% 1/8W 0805",
+          "Manufacturer": "STACKPOLE ELECTRONICS INC (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 500,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 0.0056,
+          "TotalPrice": 2.8,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "568-1835-1-ND",
+          "ManufacturerPartNumber": "PCA9536D,118",
+          "ProductDescription": "IC XPNDR 400KHZ I2C SMBUS 8SO",
+          "Manufacturer": "NXP USA INC (VA)",
+          "CountryOfOrigin": "TH",
+          "Quantity": 2,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 1.31,
+          "TotalPrice": 2.62,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 2,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "296-13105-1-ND",
+          "ManufacturerPartNumber": "PCF8574ADWR",
+          "ProductDescription": "IC XPNDR 100KHZ I2C 16SOIC",
+          "Manufacturer": "TEXAS INSTRUMENTS (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 2,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 1.17,
+          "TotalPrice": 2.34,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 2,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "MCP23017-E/SS-ND",
+          "ManufacturerPartNumber": "MCP23017-E/SS",
+          "ProductDescription": "IC XPNDR 1.7MHZ I2C 28SSOP",
+          "Manufacturer": "MICROCHIP TECHNOLOGY",
+          "CountryOfOrigin": "TH",
+          "Quantity": 2,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 1.69,
+          "TotalPrice": 3.38,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 2,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "1276-1029-1-ND",
+          "ManufacturerPartNumber": "CL21B105KBFNNNE",
+          "ProductDescription": "CAP CER 1UF 50V X7R 0805",
+          "Manufacturer": "SAMSUNG ELECTRO-MECHANICS AMERICA, INC (VA)",
+          "CountryOfOrigin": "PH",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT 24V CAB C4,C8",
+          "UnitPrice": 0.0321,
+          "TotalPrice": 3.21,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "RMCF0805ZT0R00CT-ND",
+          "ManufacturerPartNumber": "RMCF0805ZT0R00",
+          "ProductDescription": "RES 0 OHM JUMPER 1/8W 0805",
+          "Manufacturer": "STACKPOLE ELECTRONICS INC (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 1000,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 0.00473,
+          "TotalPrice": 4.73,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 1000,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "455-SM05B-SRSS-TBCT-ND",
+          "ManufacturerPartNumber": "SM05B-SRSS-TB",
+          "ProductDescription": "CONN HEADER SMD R/A 5POS 1MM",
+          "Manufacturer": "JST SALES AMERICA INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT 24V CAB DISPLAY J8",
+          "UnitPrice": 0.4239,
+          "TotalPrice": 42.39,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "455-BM05B-SRSS-TBCT-ND",
+          "ManufacturerPartNumber": "BM05B-SRSS-TB",
+          "ProductDescription": "CONN HEADER SMD 5POS 1MM",
+          "Manufacturer": "JST SALES AMERICA INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT 24V CAB DISPLAY J1",
+          "UnitPrice": 0.4118,
+          "TotalPrice": 41.18,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "455-S3B-XH-A-ND",
+          "ManufacturerPartNumber": "S3B-XH-A",
+          "ProductDescription": "CONN HEADER R/A 3POS 2.5MM",
+          "Manufacturer": "JST SALES AMERICA INC",
+          "CountryOfOrigin": "CN",
+          "Quantity": 200,
+          "CustomerReference": "TESTPROJECT 24V CAB J6,J7",
+          "UnitPrice": 0.0924,
+          "TotalPrice": 18.48,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 200,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "RMCF0805FT10R0CT-ND",
+          "ManufacturerPartNumber": "RMCF0805FT10R0",
+          "ProductDescription": "RES 10 OHM 1% 1/8W 0805",
+          "Manufacturer": "STACKPOLE ELECTRONICS INC (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 1000,
+          "CustomerReference": "TESTPROJECT CONTROLLER",
+          "UnitPrice": 0.00602,
+          "TotalPrice": 6.02,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 1000,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "RMCF0805FT51K0CT-ND",
+          "ManufacturerPartNumber": "RMCF0805FT51K0",
+          "ProductDescription": "RES 51K OHM 1% 1/8W 0805",
+          "Manufacturer": "STACKPOLE ELECTRONICS INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 500,
+          "CustomerReference": "",
+          "UnitPrice": 0.00696,
+          "TotalPrice": 3.48,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "399-13672-1-ND",
+          "ManufacturerPartNumber": "A765EB107M1CLAE025",
+          "ProductDescription": "CAP ALUM POLY 100UF 20% 16V SMD",
+          "Manufacturer": "KEMET (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 50,
+          "CustomerReference": "TESTPROJECT 24V CONTROLLER C3",
+          "UnitPrice": 0.3692,
+          "TotalPrice": 18.46,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 50,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "118-CR0805-FX-7502ELFCT-ND",
+          "ManufacturerPartNumber": "CR0805-FX-7502ELF",
+          "ProductDescription": "RES SMD 75K OHM 1% 1/8W 0805",
+          "Manufacturer": "BOURNS INC (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 500,
+          "CustomerReference": "TESTPROJECT CAB R21",
+          "UnitPrice": 0.00728,
+          "TotalPrice": 3.64,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "RMCF0805FT390KCT-ND",
+          "ManufacturerPartNumber": "RMCF0805FT390K",
+          "ProductDescription": "RES 390K OHM 1% 1/8W 0805",
+          "Manufacturer": "STACKPOLE ELECTRONICS INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 500,
+          "CustomerReference": "TESTPROJECT CAB R20",
+          "UnitPrice": 0.00696,
+          "TotalPrice": 3.48,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "1N4148W-FDICT-ND",
+          "ManufacturerPartNumber": "1N4148W-7-F",
+          "ProductDescription": "DIODE GEN PURP 100V 300MA SOD123",
+          "Manufacturer": "DIODES INCORPORATED (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 200,
+          "CustomerReference": "TESTPROJECT D7",
+          "UnitPrice": 0.0395,
+          "TotalPrice": 7.9,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 200,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "CKN12319-1-ND",
+          "ManufacturerPartNumber": "PTS636SM50JSMTR LFS",
+          "ProductDescription": "SWITCH TACTILE SPST-NO 0.05A 12V",
+          "Manufacturer": "C&K (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT DISPLAY",
+          "UnitPrice": 0.1635,
+          "TotalPrice": 16.35,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "497-1201-1-ND",
+          "ManufacturerPartNumber": "L78M05ABDT-TR",
+          "ProductDescription": "IC REG LINEAR 5V 500MA DPAK",
+          "Manufacturer": "STMICROELECTRONICS (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 10,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 0.275,
+          "TotalPrice": 2.75,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 10,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "296-17616-1-ND",
+          "ManufacturerPartNumber": "UA78M05IDCYR",
+          "ProductDescription": "IC REG LINEAR 5V 500MA SOT-223-4",
+          "Manufacturer": "TEXAS INSTRUMENTS (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT CAB U2 NEW",
+          "UnitPrice": 0.2967,
+          "TotalPrice": 29.67,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "1276-2959-1-ND",
+          "ManufacturerPartNumber": "CL21B334KBFNFNE",
+          "ProductDescription": "CAP CER 0.33UF 50V X7R 0805",
+          "Manufacturer": "SAMSUNG ELECTRO-MECHANICS AMERICA, INC (VA)",
+          "CountryOfOrigin": "PH",
+          "Quantity": 100,
+          "CustomerReference": "FOR UA78M05",
+          "UnitPrice": 0.0356,
+          "TotalPrice": 3.56,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "150-ATTINY3226-MURCT-ND",
+          "ManufacturerPartNumber": "ATTINY3226-MUR",
+          "ProductDescription": "IC MCU 8BIT 32KB FLASH 20VQFN",
+          "Manufacturer": "MICROCHIP TECHNOLOGY (VA)",
+          "CountryOfOrigin": "TH",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT CAB U1",
+          "UnitPrice": 0.88,
+          "TotalPrice": 88.0,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "150-ATTINY3226-SFRCT-ND",
+          "ManufacturerPartNumber": "ATTINY3226-SFR",
+          "ProductDescription": "IC MCU 8BIT 32KB FLASH 20SOIC",
+          "Manufacturer": "MICROCHIP TECHNOLOGY (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 5,
+          "CustomerReference": "TESTPROJECT STOCK",
+          "UnitPrice": 1.45,
+          "TotalPrice": 7.25,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 5,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "RMCF0805FT1K50CT-ND",
+          "ManufacturerPartNumber": "RMCF0805FT1K50",
+          "ProductDescription": "RES 1.5K OHM 1% 1/8W 0805",
+          "Manufacturer": "STACKPOLE ELECTRONICS INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 500,
+          "CustomerReference": "",
+          "UnitPrice": 0.00696,
+          "TotalPrice": 3.48,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "RMCF0805FT1K10CT-ND",
+          "ManufacturerPartNumber": "RMCF0805FT1K10",
+          "ProductDescription": "RES 1.1K OHM 1% 1/8W 0805",
+          "Manufacturer": "STACKPOLE ELECTRONICS INC (VA)",
+          "CountryOfOrigin": "TW",
+          "Quantity": 500,
+          "CustomerReference": "",
+          "UnitPrice": 0.00696,
+          "TotalPrice": 3.48,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 500,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "1276-1244-1-ND",
+          "ManufacturerPartNumber": "CL21A475KAQNNNE",
+          "ProductDescription": "CAP CER 4.7UF 25V X5R 0805",
+          "Manufacturer": "SAMSUNG ELECTRO-MECHANICS AMERICA, INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 300,
+          "CustomerReference": "TESTPROJECT C10",
+          "UnitPrice": 0.03,
+          "TotalPrice": 9.0,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 300,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "AZ1117CH-3.3TRG1DICT-ND",
+          "ManufacturerPartNumber": "AZ1117CH-3.3TRG1",
+          "ProductDescription": "IC REG LINEAR 3.3V 1A SOT-223-3",
+          "Manufacturer": "DIODES INCORPORATED (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 250,
+          "CustomerReference": "",
+          "UnitPrice": 0.13012,
+          "TotalPrice": 32.53,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 250,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "NCV7805BDTRKGOSCT-ND",
+          "ManufacturerPartNumber": "NCV7805BDTRKG",
+          "ProductDescription": "IC REG LINEAR 5V 1A DPAK",
+          "Manufacturer": "ONSEMI (VA)",
+          "CountryOfOrigin": "MY",
+          "Quantity": 25,
+          "CustomerReference": "TESTPROJECT 24V CONTROLLER U1",
+          "UnitPrice": 0.5864,
+          "TotalPrice": 14.66,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 25,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "296-22863-1-ND",
+          "ManufacturerPartNumber": "TXS0101DBVR",
+          "ProductDescription": "IC TRANSLATOR BIDIR SOT23-6",
+          "Manufacturer": "TEXAS INSTRUMENTS (VA)",
+          "CountryOfOrigin": "DE",
+          "Quantity": 100,
+          "CustomerReference": "",
+          "UnitPrice": 0.2495,
+          "TotalPrice": 24.95,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "DS2484R+TCT-ND",
+          "ManufacturerPartNumber": "DS2484R+T",
+          "ProductDescription": "IC MASTER I2C-1WIRE 1CH SOT-6",
+          "Manufacturer": "MAXIM INTEGRATED (VA)",
+          "CountryOfOrigin": "TH",
+          "Quantity": 10,
+          "CustomerReference": "TESTPROJECT U6",
+          "UnitPrice": 2.227,
+          "TotalPrice": 22.27,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 10,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "296-23770-1-ND",
+          "ManufacturerPartNumber": "INA219AIDCNR",
+          "ProductDescription": "IC CURRENT MONITOR 1% SOT23-8",
+          "Manufacturer": "TEXAS INSTRUMENTS (VA)",
+          "CountryOfOrigin": "JP",
+          "Quantity": 10,
+          "CustomerReference": "TESTPROJECT 24V CONTROLLER",
+          "UnitPrice": 1.669,
+          "TotalPrice": 16.69,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 10,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
+        },
+        {
+          "PoLineItemNumber": "",
+          "DigiKeyPartNumber": "455-SM03B-SRSS-TBCT-ND",
+          "ManufacturerPartNumber": "SM03B-SRSS-TB",
+          "ProductDescription": "CONN HEADER SMD R/A 3POS 1MM",
+          "Manufacturer": "JST SALES AMERICA INC (VA)",
+          "CountryOfOrigin": "CN",
+          "Quantity": 100,
+          "CustomerReference": "TESTPROJECT CABINET ESD J10-J13",
+          "UnitPrice": 0.3061,
+          "TotalPrice": 30.61,
+          "QuantityBackorder": 0,
+          "BackOrderDetails": null,
+          "QuantityShipped": 100,
+          "InvoiceId": 1,
+          "DefaultShipping": null,
+          "Schedule": [
+
+          ]
         }
       ]
     }

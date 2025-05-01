@@ -58,19 +58,23 @@ namespace Binner.Testing
             _partTypes.Add(3, new PartType { Name = "Capacitor", PartTypeId = 3 });
             _partTypes.Add(4, new PartType { Name = "Inductor", PartTypeId = 4 });
 
-            _partSuppliers.Add(1, new PartSupplier {
-                PartSupplierId = 1,
-                Name = "DigiKey",
-                PartId = 1,
-                Part = _parts.First().Value, 
-                Cost = 1.39, 
-                QuantityAvailable = 1000, 
-                ProductUrl = "https://example.com/LM358",
-                ImageUrl = "https://example.com/LM358/image.png",
-                SupplierPartNumber = "LM358-ND", 
-                MinimumOrderQuantity = 1,
-                UserId = 1,
-            });
+            if (_parts.Any())
+            {
+                _partSuppliers.Add(1, new PartSupplier
+                {
+                    PartSupplierId = 1,
+                    Name = "DigiKey",
+                    PartId = 1,
+                    Part = _parts.First().Value,
+                    Cost = 1.39,
+                    QuantityAvailable = 1000,
+                    ProductUrl = "https://example.com/LM358",
+                    ImageUrl = "https://example.com/LM358/image.png",
+                    SupplierPartNumber = "LM358-ND",
+                    MinimumOrderQuantity = 1,
+                    UserId = 1,
+                });
+            }
         }
 
         public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)

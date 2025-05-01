@@ -49,6 +49,14 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
 
+Write-Host "Running tests..." -ForegroundColor green
+$sw = [Diagnostics.Stopwatch]::StartNew()
+  dotnet test $project -c $releaseConfiguration --property WarningLevel=0 --no-build
+  if ($LastExitCode -ne 0) { Write-Host "Exiting - error code '$LastExitCode'"; exit $LastExitCode }
+$sw.Stop()
+$sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
+
+
 # publish specific profiles
 Write-Host "Publishing for each environment..." -ForegroundColor green
 
