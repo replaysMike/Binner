@@ -12,7 +12,7 @@ namespace Binner.Common.Integrations
         public OAuthAuthorization Authorization { get; }
         public DigiKeyApiVersion ApiVersion { get; }
 
-        public DigikeyUnauthorizedException(OAuthAuthorization authorization, DigiKeyApiVersion apiVersion) : base("User must authorize")
+        public DigikeyUnauthorizedException(OAuthAuthorization authorization, DigiKeyApiVersion apiVersion, string errorMessage) : base($"User must authorize. {errorMessage}")
         {
             Authorization = authorization;
             ApiVersion = apiVersion;

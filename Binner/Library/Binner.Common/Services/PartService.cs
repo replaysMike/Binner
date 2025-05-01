@@ -295,7 +295,7 @@ namespace Binner.Common.Services
 
                 if (!request.RequestProductInfo || lineItemCount > digikeyApiMaxOrderLineItems || errorsEncountered > 0)
                 {
-                    commonParts.Add(DigiKeyLineItemToCommonPart(lineItem));
+                    commonParts.Add(DigiKeyV4LineItemToCommonPart(lineItem));
                     continue;
                 }
 
@@ -380,7 +380,7 @@ namespace Binner.Common.Services
                 {
                     messages.Add(Model.Responses.Message.FromInfo($"No additional product details available on part '{lineItem.DigiKeyProductNumber}'."));
                     // use the more minimal information provided by the order import call
-                    commonParts.Add(DigiKeyLineItemToCommonPart(lineItem));
+                    commonParts.Add(DigiKeyV4LineItemToCommonPart(lineItem));
                 }
             }
             foreach (var part in commonParts)
@@ -536,7 +536,7 @@ namespace Binner.Common.Services
             MountingTypeId = mountingTypeId,
             PackageType = packageType,
             Cost = lineItem.UnitPrice,
-            QuantityAvailable = part.QuantityAvailable,
+            QuantityAvailable = lineItem.QuantityOrdered,
             Reference = lineItem.CustomerReference,
         };
 
@@ -561,7 +561,7 @@ namespace Binner.Common.Services
             Reference = lineItem.CustomerReference,
         };
 
-        private CommonPart DigiKeyLineItemToCommonPart(V4.LineItem lineItem) => new CommonPart
+        private CommonPart DigiKeyV4LineItemToCommonPart(V4.LineItem lineItem) => new CommonPart
         {
             SupplierPartNumber = lineItem.DigiKeyProductNumber,
             Supplier = "DigiKey",

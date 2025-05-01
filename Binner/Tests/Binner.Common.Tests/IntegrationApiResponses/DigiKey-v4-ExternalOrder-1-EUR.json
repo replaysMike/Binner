@@ -1,7 +1,7 @@
 ﻿{
   "StatusCode": 200,
   "IsSuccessStatusCode": true,
-  "Description": "V3 external order 123456789",
+  "Description": "V4 external order 123456789",
   "Content": {
     "Headers": {
       "Content-Type": "application/json"
