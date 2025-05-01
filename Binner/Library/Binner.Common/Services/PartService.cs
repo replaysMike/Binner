@@ -567,7 +567,7 @@ namespace Binner.Common.Services
             Supplier = "DigiKey",
             ManufacturerPartNumber = lineItem.ManufacturerProductNumber,
             Manufacturer = string.Empty,
-            Description = string.Empty,
+            Description = lineItem.Description,
             Cost = lineItem.UnitPrice,
             QuantityAvailable = lineItem.QuantityOrdered,
             Reference = lineItem.CustomerReference,

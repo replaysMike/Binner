@@ -32,16 +32,20 @@ namespace Binner.Common.Tests.Services
                 OrderId = TestConstants.OrderId,
                 Username = TestConstants.UserName,
                 Password = TestConstants.Password,
-                Supplier = TestConstants.MouserSupplier,
+                Supplier = TestConstants.DigiKeySupplier,
                 RequestProductInfo = false
             };
             var response = await partService.GetExternalOrderAsync(request);
 
             Assert.NotNull(response?.Response);
-            Assert.That(response.Response.Amount, Is.EqualTo(6.70));
             Assert.That(response.Response.Currency, Is.EqualTo("CAD"));
-            Assert.That(response.Response.Parts.Count, Is.EqualTo(1));
-            Assert.That(response.Response.Parts.First().QuantityAvailable, Is.EqualTo(5));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(6));
+            var part = response.Response.Parts.First();
+            Assert.That(part.QuantityAvailable, Is.EqualTo(500));
+            Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
+            Assert.That(part.SupplierPartNumber, Is.EqualTo("1276-6455-1-ND"));
+            Assert.That(part.Description, Is.EqualTo("CAP CER 10UF 16V X5R 0805"));
+            Assert.That(part.Cost, Is.EqualTo(0.0264));
         }
 
         [Test]
@@ -65,16 +69,20 @@ namespace Binner.Common.Tests.Services
                 OrderId = TestConstants.OrderId,
                 Username = TestConstants.UserName,
                 Password = TestConstants.Password,
-                Supplier = TestConstants.MouserSupplier,
+                Supplier = TestConstants.DigiKeySupplier,
                 RequestProductInfo = false
             };
             var response = await partService.GetExternalOrderAsync(request);
 
             Assert.NotNull(response?.Response);
-            Assert.That(response.Response.Amount, Is.EqualTo(6.70));
             Assert.That(response.Response.Currency, Is.EqualTo("USD"));
-            Assert.That(response.Response.Parts.Count, Is.EqualTo(1));
-            Assert.That(response.Response.Parts.First().QuantityAvailable, Is.EqualTo(5));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(6));
+            var part = response.Response.Parts.First();
+            Assert.That(part.QuantityAvailable, Is.EqualTo(500));
+            Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
+            Assert.That(part.SupplierPartNumber, Is.EqualTo("1276-6455-1-ND"));
+            Assert.That(part.Description, Is.EqualTo("CAP CER 10UF 16V X5R 0805"));
+            Assert.That(part.Cost, Is.EqualTo(0.0264));
         }
 
         [Test]
@@ -98,16 +106,140 @@ namespace Binner.Common.Tests.Services
                 OrderId = TestConstants.OrderId,
                 Username = TestConstants.UserName,
                 Password = TestConstants.Password,
-                Supplier = TestConstants.MouserSupplier,
+                Supplier = TestConstants.DigiKeySupplier,
                 RequestProductInfo = false
             };
             var response = await partService.GetExternalOrderAsync(request);
 
             Assert.NotNull(response?.Response);
-            Assert.That(response.Response.Amount, Is.EqualTo(6.70));
             Assert.That(response.Response.Currency, Is.EqualTo("EUR"));
-            Assert.That(response.Response.Parts.Count, Is.EqualTo(1));
-            Assert.That(response.Response.Parts.First().QuantityAvailable, Is.EqualTo(5));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(6));
+            var part = response.Response.Parts.First();
+            Assert.That(part.QuantityAvailable, Is.EqualTo(500));
+            Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
+            Assert.That(part.SupplierPartNumber, Is.EqualTo("1276-6455-1-ND"));
+            Assert.That(part.Description, Is.EqualTo("CAP CER 10UF 16V X5R 0805"));
+            Assert.That(part.Cost, Is.EqualTo(0.0264));
+        }
+
+        [Test]
+        public async Task ShouldImportDigiKeyV4OrderCAD()
+        {
+            var testContext = new TestContext();
+            var apiCredentials = testContext.CreateApiCredentials(enableDigiKey: true); // enable digikey only
+            testContext.ApplyApiCredentials(apiCredentials);
+            testContext.SetDigiKeyApiVersion(DigiKeyApiVersion.V4);
+
+            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            {
+                { $"orderstatus/v4/salesorder/", "DigiKey-v4-ExternalOrder-1-CAD.json" }
+            });
+
+            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+
+            var request = new Model.Requests.OrderImportRequest
+            {
+                OrderId = TestConstants.OrderId,
+                Username = TestConstants.UserName,
+                Password = TestConstants.Password,
+                Supplier = TestConstants.DigiKeySupplier,
+                RequestProductInfo = false
+            };
+            var response = await partService.GetExternalOrderAsync(request);
+
+            Assert.NotNull(response?.Response);
+            Assert.That(response.Response.Amount, Is.EqualTo(758.56000000000006d));
+            Assert.That(response.Response.Currency, Is.EqualTo("CAD"));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(44));
+            var part = response.Response.Parts.First();
+            Assert.That(part.QuantityAvailable, Is.EqualTo(500));
+            Assert.That(part.Cost, Is.EqualTo(0.0264));
+            Assert.That(part.Description, Is.EqualTo("CAP CER 10UF 16V X5R 0805"));
+            Assert.That(part.ManufacturerPartNumber, Is.EqualTo("CL21A106KOQNNNG"));
+            Assert.That(part.Reference, Is.EqualTo("TESTPROJECT 24V CAB C10"));
+            Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
+            Assert.That(part.SupplierPartNumber, Is.EqualTo("1276-6455-1-ND"));
+        }
+
+        [Test]
+        public async Task ShouldImportDigiKeyV4OrderUSD()
+        {
+            var testContext = new TestContext();
+            var apiCredentials = testContext.CreateApiCredentials(enableDigiKey: true); // enable digikey only
+            testContext.ApplyApiCredentials(apiCredentials);
+            testContext.SetDigiKeyApiVersion(DigiKeyApiVersion.V4);
+
+            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            {
+                { $"orderstatus/v4/salesorder/", "DigiKey-v4-ExternalOrder-1-USD.json" }
+            });
+
+            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+
+            var request = new Model.Requests.OrderImportRequest
+            {
+                OrderId = TestConstants.OrderId,
+                Username = TestConstants.UserName,
+                Password = TestConstants.Password,
+                Supplier = TestConstants.DigiKeySupplier,
+                RequestProductInfo = false
+            };
+            var response = await partService.GetExternalOrderAsync(request);
+
+            Assert.NotNull(response?.Response);
+            Assert.That(response.Response.Amount, Is.EqualTo(758.56000000000006d));
+            Assert.That(response.Response.Currency, Is.EqualTo("USD"));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(44));
+            var part = response.Response.Parts.First();
+            Assert.That(part.QuantityAvailable, Is.EqualTo(500));
+            Assert.That(part.Cost, Is.EqualTo(0.0264));
+            Assert.That(part.Description, Is.EqualTo("CAP CER 10UF 16V X5R 0805"));
+            Assert.That(part.ManufacturerPartNumber, Is.EqualTo("CL21A106KOQNNNG"));
+            Assert.That(part.Reference, Is.EqualTo("TESTPROJECT 24V CAB C10"));
+            Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
+            Assert.That(part.SupplierPartNumber, Is.EqualTo("1276-6455-1-ND"));
+        }
+
+        [Test]
+        public async Task ShouldImportDigiKeyV4OrderEUR()
+        {
+            var testContext = new TestContext();
+            var apiCredentials = testContext.CreateApiCredentials(enableDigiKey: true); // enable digikey only
+            testContext.ApplyApiCredentials(apiCredentials);
+            testContext.SetDigiKeyApiVersion(DigiKeyApiVersion.V4);
+
+            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            {
+                { $"orderstatus/v4/salesorder/", "DigiKey-v4-ExternalOrder-1-EUR.json" }
+            });
+
+            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+
+            var request = new Model.Requests.OrderImportRequest
+            {
+                OrderId = TestConstants.OrderId,
+                Username = TestConstants.UserName,
+                Password = TestConstants.Password,
+                Supplier = TestConstants.DigiKeySupplier,
+                RequestProductInfo = false
+            };
+            var response = await partService.GetExternalOrderAsync(request);
+
+            Assert.NotNull(response?.Response);
+            Assert.That(response.Response.Amount, Is.EqualTo(758.56000000000006d));
+            Assert.That(response.Response.Currency, Is.EqualTo("EUR"));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(44));
+            var part = response.Response.Parts.First();
+            Assert.That(part.QuantityAvailable, Is.EqualTo(500));
+            Assert.That(part.Cost, Is.EqualTo(0.0264));
+            Assert.That(part.Description, Is.EqualTo("CAP CER 10UF 16V X5R 0805"));
+            Assert.That(part.ManufacturerPartNumber, Is.EqualTo("CL21A106KOQNNNG"));
+            Assert.That(part.Reference, Is.EqualTo("TESTPROJECT 24V CAB C10"));
+            Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
+            Assert.That(part.SupplierPartNumber, Is.EqualTo("1276-6455-1-ND"));
         }
 
         [Test]
