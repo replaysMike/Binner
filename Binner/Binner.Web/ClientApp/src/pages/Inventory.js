@@ -844,7 +844,8 @@ export function Inventory({ partNumber = "", ...rest }) {
       e.preventDefault();
       e.stopPropagation();
     }
-
+    removeViewPreference('digikey');
+    
     if (rest.params.partNumber) {
       navigate("/inventory/add");
       return;
