@@ -1,0 +1,20 @@
+﻿{
+  "StatusCode": 401,
+  "IsSuccessStatusCode": true,
+  "Description": "DigiKey invalid ClientId authentication error response",
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      "ErrorResponseVersion": "3.0.0.0",
+      "StatusCode": 401,
+      "ErrorMessage": "Invalid clientId",
+      "ErrorDetails": "client_id query parameter has incorrect value. Send valid client_id",
+      "RequestId": "a278d71d-67ad-4d50-c0b4-f795e10719bf",
+      "ValidationErrors": [
+
+      ]
+    }
+  }  
+}

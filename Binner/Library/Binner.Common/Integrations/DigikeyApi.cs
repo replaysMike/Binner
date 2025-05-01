@@ -61,7 +61,7 @@ namespace Binner.Common.Integrations
             _logger = logger;
             _configuration = configuration;
             _localeConfiguration = localeConfiguration;
-            _oAuth2Service = new OAuth2Service(configuration);
+            _oAuth2Service = new OAuth2Service(configuration, logger);
             _credentialService = credentialService;
             _httpContextAccessor = httpContextAccessor;
             _requestContext = requestContext;

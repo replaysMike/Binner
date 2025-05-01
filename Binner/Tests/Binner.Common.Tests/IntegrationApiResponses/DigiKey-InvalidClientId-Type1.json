@@ -1,0 +1,19 @@
+﻿{
+  "StatusCode": 401,
+  "IsSuccessStatusCode": true,
+  "Description": "DigiKey invalid ClientId authentication error response",
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      "type": "https://tools.ietf.org/html/rfc7235#section-3.1",
+      "title": "Unauthorized",
+      "status": 401,
+      "detail": "Invalid clientId. client_id query parameter has incorrect value. Send valid client_id",
+      "instance": "",
+      "correlationId": "84948aa4-49d5-4219-9b7a-9ef473905b43",
+      "errors": {}
+    }
+  }
+}

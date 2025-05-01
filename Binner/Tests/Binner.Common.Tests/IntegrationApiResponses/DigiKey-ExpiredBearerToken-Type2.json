@@ -1,0 +1,20 @@
+﻿{
+  "StatusCode": 401,
+  "IsSuccessStatusCode": true,
+  "Description": "DigiKey token expired error response",
+  "Content": {
+    "Headers": {
+      "Content-Type": "application/json"
+    },
+    "Body": {
+      "ErrorResponseVersion": "3.0.0.0",
+      "StatusCode": 401,
+      "ErrorMessage": "Bearer token  expired",
+      "ErrorDetails": "Please use your refresh token to obtain a new Bearer token, or acquire a new set of tokens from the OAuth endpoint.",
+      "RequestId": "62dfd40e-0690-4505-d3c9-a247ea0c09bd",
+      "ValidationErrors": [
+
+      ]
+    }
+  }  
+}
