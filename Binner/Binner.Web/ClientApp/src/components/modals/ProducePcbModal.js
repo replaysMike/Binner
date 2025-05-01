@@ -22,12 +22,11 @@ export function ProducePcbModal({ isOpen = false, ...rest }) {
     if (pcb && pcb.pcbId > 0) {
       const pcbParts = _.filter(parts, p => p.pcbId === pcb.pcbId);
       const pcbCount = getProduciblePcbCount(pcbParts, pcb);
-      console.log('canProducePcb', pcbCount.count >= formQuantity);
+
       return pcbCount.count >= formQuantity;
     }
     // unassociated
     const pcbCount = getProducibleUnassociatedCount(parts);
-    console.log('canProducePcb2', pcbCount >= formQuantity);
     return pcbCount >= formQuantity;
   };
 
