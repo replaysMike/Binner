@@ -1118,6 +1118,10 @@ export function Inventory({ partNumber = "", ...rest }) {
     removeViewPreference('digikey');
   };
 
+  const handleInputPartNumberClear = (e) => {
+    removeViewPreference('digikey');
+  };
+
   /* RENDER */
   const title = isEditing
     ? t('page.inventory.edittitle', "Edit Inventory")
@@ -1178,6 +1182,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                           id="inputPartNumber"
                           hideIcon
                           clearOnScan={false}
+                          onClear={handleInputPartNumberClear}
                           onBarcodeReadStarted={(e) => { window.requestAnimationFrame(() => { disableRendering.current = true; }); searchDebounced.cancel(); }}
                           onBarcodeReadCancelled={(e) => { window.requestAnimationFrame(() => { disableRendering.current = false; }); searchDebounced.cancel(); }}
                           onBarcodeReadReceived={(e) => { window.requestAnimationFrame(() => { disableRendering.current = false; }); searchDebounced.cancel(); }}
