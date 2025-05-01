@@ -17,9 +17,9 @@ export function AddPcbModal({ isOpen = false, onAdd, onClose, ...rest }) {
   const [form, setForm] = useState(defaultForm);
 
   useEffect(() => {
-    setIsOpen(_isOpen);
+    setIsOpen(isOpen);
     setForm(defaultForm);
-  }, [_isOpen]);
+  }, [isOpen]);
 
   const handleModalClose = (e) => {
     setIsOpen(false);
