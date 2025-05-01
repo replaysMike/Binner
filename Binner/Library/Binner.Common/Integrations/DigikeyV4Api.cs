@@ -20,6 +20,7 @@ namespace Binner.Common.Integrations
 {
     public sealed class DigikeyV4Api : BaseDigikeyApi, IDigikeyApi
     {
+        private const DigiKeyApiVersion ApiVersion = DigiKeyApiVersion.V4;
         private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
         private readonly JsonSerializerSettings _serializerSettings;
@@ -69,7 +70,7 @@ namespace Binner.Common.Integrations
                 var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
-                var result = await TryHandleResponseAsync(response, authenticationResponse);
+                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -90,7 +91,7 @@ namespace Binner.Common.Integrations
         public async Task<IApiResponse> SearchAsync(OAuthAuthorization authenticationResponse, string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
         {
             /* important reminder - don't reference authResponse in here! */
-            _logger.LogInformation($"[{nameof(SearchAsync)}] Called using accesstoken='{authenticationResponse.AccessToken}'");
+            _logger.LogInformation($"[{nameof(SearchAsync)}] Called using accesstoken='{authenticationResponse.AccessToken.Sanitize()}'");
 
             var keywords = new List<string>();
             if (!string.IsNullOrEmpty(partNumber))
@@ -229,7 +230,7 @@ namespace Binner.Common.Integrations
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
                 _logger.LogInformation($"[{nameof(GetProductDetailsAsync)}] Api responded with '{response.StatusCode}'");
-                var result = await TryHandleResponseAsync(response, authenticationResponse);
+                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -249,14 +250,14 @@ namespace Binner.Common.Integrations
 
         private async Task<(IApiResponse? ErrorResponse, KeywordSearchResponse SuccessResponse, string JsonRequest, string JsonResponse)> PerformApiSearchQueryAsync(OAuthAuthorization authenticationResponse, Uri uri, KeywordSearchRequest request)
         {
-            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Creating search request for '{request.Keywords}' using accesstoken='{authenticationResponse.AccessToken}'...");
+            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Creating search request for '{request.Keywords}' using accesstoken='{authenticationResponse.AccessToken.Sanitize()}'...");
             using var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Post, uri);
             var requestJson = JsonConvert.SerializeObject(request, _serializerSettings);
             requestMessage.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
             // perform a keywords API search
             using var response = await _client.SendAsync(requestMessage);
-            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Api responded with '{response.StatusCode}'. accesstoken='{authenticationResponse.AccessToken}'");
-            var result = await TryHandleResponseAsync(response, authenticationResponse);
+            _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Api responded with '{response.StatusCode}'. accesstoken='{authenticationResponse.AccessToken.Sanitize()}'");
+            var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
             if (!result.IsSuccessful)
             {
                 // return api error
@@ -281,7 +282,7 @@ namespace Binner.Common.Integrations
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
                 _logger.LogInformation($"[{nameof(ProductSearchAsync)}] Api responded with '{response.StatusCode}'");
-                var result = await TryHandleResponseAsync(response, authenticationResponse);
+                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -344,7 +345,7 @@ namespace Binner.Common.Integrations
                 var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
-                var result = await TryHandleResponseAsync(response, authenticationResponse);
+                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -376,7 +377,7 @@ namespace Binner.Common.Integrations
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
                 _logger.LogInformation($"[{nameof(GetCategoriesAsync)}] Api responded with '{response.StatusCode}'");
-                var result = await TryHandleResponseAsync(response, authenticationResponse);
+                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error

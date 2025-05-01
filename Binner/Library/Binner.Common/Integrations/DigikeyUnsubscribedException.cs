@@ -1,4 +1,5 @@
 ﻿using Binner.Model;
+using Binner.Model.Integrations.DigiKey;
 using System;
 
 namespace Binner.Common.Integrations
@@ -9,12 +10,14 @@ namespace Binner.Common.Integrations
     public class DigikeyUnsubscribedException : Exception
     {
         public OAuthAuthorization Authorization { get; }
-        public string ApiVersion { get; }
+        public DigiKeyApiVersion ApiVersion { get; }
+        public string? ErrorResponseVersion { get; }
 
-        public DigikeyUnsubscribedException(OAuthAuthorization authorization, string apiVersion, string message) : base(message)
+        public DigikeyUnsubscribedException(OAuthAuthorization authorization, DigiKeyApiVersion apiVersion, string? errorResponseVersion, string message) : base(message)
         {
             Authorization = authorization;
             ApiVersion = apiVersion;
+            ErrorResponseVersion = errorResponseVersion;
         }
     }
 }

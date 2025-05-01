@@ -1,4 +1,5 @@
 ﻿using Binner.Model;
+using Binner.Model.Integrations.DigiKey;
 using System;
 
 namespace Binner.Common.Integrations
@@ -9,10 +10,12 @@ namespace Binner.Common.Integrations
     public class DigikeyUnauthorizedException : Exception
     {
         public OAuthAuthorization Authorization { get; }
+        public DigiKeyApiVersion ApiVersion { get; }
 
-        public DigikeyUnauthorizedException(OAuthAuthorization authorization) : base("User must authorize")
+        public DigikeyUnauthorizedException(OAuthAuthorization authorization, DigiKeyApiVersion apiVersion) : base("User must authorize")
         {
             Authorization = authorization;
+            ApiVersion = apiVersion;
         }
     }
 }

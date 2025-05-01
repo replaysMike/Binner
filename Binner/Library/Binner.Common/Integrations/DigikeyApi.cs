@@ -1,4 +1,5 @@
 ﻿using ApiClient.OAuth2;
+using Binner.Common.Extensions;
 using Binner.Common.Integrations.Models;
 using Binner.Common.Services;
 using Binner.Global.Common;
@@ -26,11 +27,6 @@ namespace Binner.Common.Integrations
         public static readonly TimeSpan MaxAuthorizationWaitTime = TimeSpan.FromSeconds(30);
         public string Name => "DigiKey";
 
-        // the full url to the Api
-        private DigiKeyApiVersion _apiVersion = DigiKeyApiVersion.V4; // default api returned
-        private IDigikeyApi? _api;
-        private readonly DigikeyV3Api _v3Api;
-        private readonly DigikeyV4Api _v4Api;
         private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
         private readonly LocaleConfiguration _localeConfiguration;
@@ -38,6 +34,10 @@ namespace Binner.Common.Integrations
         private readonly ICredentialService _credentialService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRequestContextAccessor _requestContext;
+        protected DigiKeyApiVersion _apiVersion = DigiKeyApiVersion.V4; // default api returned
+        protected IDigikeyApi? _api;
+        protected readonly DigikeyV3Api _v3Api;
+        protected readonly DigikeyV4Api _v4Api;
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
@@ -224,7 +224,7 @@ namespace Binner.Common.Integrations
             var authResponse = await AuthorizeAsync();
             if (!authResponse.IsAuthorized)
             {
-                _logger.LogInformation($"[{nameof(SearchAsync)}] User must authorize - '{authResponse.AccessToken}' is invalid.");
+                _logger.LogInformation($"[{nameof(SearchAsync)}] User must authorize - '{authResponse.AccessToken.Sanitize()}' is invalid.");
                 return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
             }
 
@@ -289,8 +289,10 @@ namespace Binner.Common.Integrations
             catch (DigikeyUnsubscribedException ex)
             {
                 // the api key used is not subscribed to the requested endpoint. Could be a version mismatch, try the other api version.
-                var attemptedApiVersion = new Version(ex.ApiVersion);
-                if (VersionEquals(attemptedApiVersion, DigiKeyApiVersion.V3))
+                //var attemptedErrorApiVersion = new Version(ex.ErrorResponseVersion);
+
+                //if (VersionEquals(attemptedApiVersion, DigiKeyApiVersion.V3))
+                if (ex.ApiVersion == DigiKeyApiVersion.V3)
                 {
                     // try the V4 API
                     UseApi(DigiKeyApiVersion.V4);
@@ -311,7 +313,8 @@ namespace Binner.Common.Integrations
                         // flow through to the error
                     }
                 }
-                else if (VersionEquals(attemptedApiVersion, DigiKeyApiVersion.V4))
+                //else if (VersionEquals(attemptedApiVersion, DigiKeyApiVersion.V4))
+                else if (ex.ApiVersion == DigiKeyApiVersion.V4)
                 {
                     // try the V3 API
                     UseApi(DigiKeyApiVersion.V3);
@@ -334,8 +337,8 @@ namespace Binner.Common.Integrations
                 }
 
                 // return unsubscribed error, user's api key is not subscribed to this endpoint
-                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{ex.Authorization.AccessToken}' is unsubscribed for endpoint.");
-                return ApiResponse.Create($"{ex.Message} Api v{attemptedApiVersion.ToString(1)}", nameof(DigikeyApi));
+                _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{ex.Authorization.AccessToken.Sanitize()}' is unsubscribed for endpoint.");
+                return ApiResponse.Create($"{ex.Message} Api v{(int)ex.ApiVersion}", nameof(DigikeyApi));
             }
             catch (DigikeyUnauthorizedException ex)
             {
@@ -346,7 +349,7 @@ namespace Binner.Common.Integrations
 
         private async Task<IApiResponse> RefreshTokenAsync(OAuthAuthorization authorization, Func<OAuthAuthorization, Task<IApiResponse>> func)
         {
-            _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{authorization.AccessToken}' is unauthorized, trying to Refresh token using '{authorization.RefreshToken}'");
+            _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Request using token '{authorization.AccessToken.Sanitize()}' is unauthorized, trying to Refresh token using '{authorization.RefreshToken.Sanitize()}'");
             _oAuth2Service.AccessTokens.RefreshToken = authorization.RefreshToken;
             var refreshedTokens = await _oAuth2Service.RefreshTokenAsync();
             if (refreshedTokens.IsError)
@@ -370,7 +373,7 @@ namespace Binner.Common.Integrations
                 };
                 if (refreshedTokenResponse.IsAuthorized) // IsAuthorized is a computed field based on the response
                 {
-                    _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token succeeded, new token '{refreshedTokenResponse.AccessToken}', old was '{authorization.AccessToken}'");
+                    _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token succeeded, new token '{refreshedTokenResponse.AccessToken.Sanitize()}', old was '{authorization.AccessToken.Sanitize()}'");
                     // save the credential
                     var (existingCredential, apiSettings) = await GetOAuthCredentialAsync();
                     await _credentialService.SaveOAuthCredentialAsync(new OAuthCredential
@@ -385,7 +388,7 @@ namespace Binner.Common.Integrations
                     });
                     try
                     {
-                        _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Re-calling method with refreshed accesstoken='{refreshedTokenResponse.AccessToken}'");
+                        _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Re-calling method with refreshed accesstoken='{refreshedTokenResponse.AccessToken.Sanitize()}'");
 
                         // call the API again using the newly refreshed token
                         return await func(refreshedTokenResponse);
@@ -458,7 +461,7 @@ namespace Binner.Common.Integrations
                     AuthorizationReceived = true,
                     UserId = user?.UserId
                 };
-                _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Reusing a saved oAuth credential '{credential.AccessToken}'!");
+                _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Reusing a saved oAuth credential '{credential.AccessToken.Sanitize()}'!");
 
                 return authRequest;
             }

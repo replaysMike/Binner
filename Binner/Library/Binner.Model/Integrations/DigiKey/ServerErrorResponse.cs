@@ -14,6 +14,6 @@
         public ErrorObject Errors { get; set; } = new();
     }
 
-    // this object isn't document, and never seems to have a value
+    // this object isn't documented, and never seems to have a value
     public class ErrorObject { }
 }

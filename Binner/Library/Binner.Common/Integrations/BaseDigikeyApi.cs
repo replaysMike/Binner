@@ -15,7 +15,6 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TypeSupport.Extensions;
-using static Binner.Common.Integrations.DigikeyApi;
 
 namespace Binner.Common.Integrations
 {
@@ -53,41 +52,49 @@ namespace Binner.Common.Integrations
         /// <param name="authenticationResponse"></param>
         /// <returns></returns>
         /// <exception cref="DigikeyUnauthorizedException"></exception>
-        protected async Task<(bool IsSuccessful, IApiResponse Response)> TryHandleResponseAsync(HttpResponseMessage response, OAuthAuthorization authenticationResponse)
+        protected async Task<(bool IsSuccessful, IApiResponse Response)> TryHandleResponseAsync(HttpResponseMessage response, OAuthAuthorization authenticationResponse, DigiKeyApiVersion apiVersion)
         {
             // check for error status codes before we return a response
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 // process a possible error message
                 var resultString = await response.Content.ReadAsStringAsync();
+                // DigiKey returns several differrent error objects for the same status depending on the situation. May be a CDN/caching thing
                 ErrorResponse? errorResponse = null;
+                ServerErrorResponse? tokenErrorResponse = null;
                 try
                 {
-                    errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(resultString.Trim());
+                    errorResponse = JsonConvert.DeserializeObject<ErrorResponse?>(resultString.Trim());
+                }
+                catch (Exception) { }
+                try
+                {
+                    tokenErrorResponse = JsonConvert.DeserializeObject<ServerErrorResponse?>(resultString.Trim());
                 }
                 catch (Exception) { }
 
-                if (errorResponse != null)
+                if (errorResponse != null || tokenErrorResponse != null)
                 {
-                    if (errorResponse.ErrorDetails?.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
+                    if (errorResponse?.ErrorDetails?.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true
+                        || tokenErrorResponse?.Detail?.Contains("not subscribed", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // access denied to endpoint. Either wrong api version or not subscribed to the endpoint
-                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Version: {errorResponse.ErrorResponseVersion} Response: {errorResponse.ErrorDetails}");
-                        throw new DigikeyUnsubscribedException(authenticationResponse, errorResponse.ErrorResponseVersion, errorResponse.ErrorDetails);
+                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Api Key used is not valid for this endpoint. Attempted Version: {(int)apiVersion} Response Version: {errorResponse?.ErrorResponseVersion} Response: {errorResponse?.ErrorDetails}");
+                        throw new DigikeyUnsubscribedException(authenticationResponse, apiVersion, errorResponse?.ErrorResponseVersion, errorResponse?.ErrorDetails ?? tokenErrorResponse?.Detail ?? "(no message)");
                     }
                     // auth token invalid or expired
-                    var tokenErrorResponse = JsonConvert.DeserializeObject<ServerErrorResponse>(resultString.Trim());
-                    if (tokenErrorResponse?.Detail?.Contains("bearer token is expired", StringComparison.InvariantCultureIgnoreCase) == true)
+                    if (errorResponse?.ErrorDetails?.Contains("bearer token is expired", StringComparison.InvariantCultureIgnoreCase) == true
+                        || tokenErrorResponse?.Detail?.Contains("bearer token is expired", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         // token expired, refresh or reauthenticate
-                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Bearer token is expired. accesstoken='{authenticationResponse.AccessToken}' Response: {tokenErrorResponse.Detail}");
-                        throw new DigikeyUnauthorizedException(authenticationResponse);
+                        _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - Bearer token is expired. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Attempted Version: {(int)apiVersion} Response: {tokenErrorResponse?.Detail ?? errorResponse?.ErrorDetails ?? "(no message)"}");
+                        throw new DigikeyUnauthorizedException(authenticationResponse, apiVersion);
                     }
                 }
 
                 // unauthorized token
-                _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - user must authenticate. accesstoken='{authenticationResponse.AccessToken}'");
-                throw new DigikeyUnauthorizedException(authenticationResponse);
+                _logger.LogInformation($"[{nameof(TryHandleResponseAsync)}] Received 401 Unauthorized - user must authenticate. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Attempted Version: {(int)apiVersion}");
+                throw new DigikeyUnauthorizedException(authenticationResponse, apiVersion);
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
             {
@@ -119,7 +126,7 @@ namespace Binner.Common.Integrations
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
-                _logger.LogError($"[{nameof(TryHandleResponseAsync)}] Bad request. Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. accesstoken='{authenticationResponse.AccessToken}'");
+                _logger.LogError($"[{nameof(TryHandleResponseAsync)}] Bad request. Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. accesstoken='{authenticationResponse.AccessToken.Sanitize()}'");
                 var badRequestResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(DigikeyApi));
                 var resultString = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(resultString) && resultString != "{}")
