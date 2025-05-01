@@ -4,9 +4,7 @@
     <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.12</LibraryVersion>
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <IsPackable>false</IsPackable>
     <UserSecretsId>1c0ae201-502e-4471-ada8-b7bf22dc8e49</UserSecretsId>
   </PropertyGroup>

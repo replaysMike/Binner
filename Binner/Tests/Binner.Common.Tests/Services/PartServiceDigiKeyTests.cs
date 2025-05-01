@@ -39,7 +39,7 @@ namespace Binner.Common.Tests.Services
 
             Assert.NotNull(response?.Response);
             Assert.That(response.Response.Currency, Is.EqualTo("CAD"));
-            Assert.That(response.Response.Parts.Count, Is.EqualTo(6));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(44));
             var part = response.Response.Parts.First();
             Assert.That(part.QuantityAvailable, Is.EqualTo(500));
             Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
@@ -76,7 +76,7 @@ namespace Binner.Common.Tests.Services
 
             Assert.NotNull(response?.Response);
             Assert.That(response.Response.Currency, Is.EqualTo("USD"));
-            Assert.That(response.Response.Parts.Count, Is.EqualTo(6));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(44));
             var part = response.Response.Parts.First();
             Assert.That(part.QuantityAvailable, Is.EqualTo(500));
             Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
@@ -113,7 +113,7 @@ namespace Binner.Common.Tests.Services
 
             Assert.NotNull(response?.Response);
             Assert.That(response.Response.Currency, Is.EqualTo("EUR"));
-            Assert.That(response.Response.Parts.Count, Is.EqualTo(6));
+            Assert.That(response.Response.Parts.Count, Is.EqualTo(44));
             var part = response.Response.Parts.First();
             Assert.That(part.QuantityAvailable, Is.EqualTo(500));
             Assert.That(part.Supplier, Is.EqualTo("DigiKey"));
