@@ -697,7 +697,9 @@
     "addAnyway": "Add Anyway",
     "move": "Move",
     "moveTo": "Move to",
-    "select": "Select"
+    "select": "Select",
+    "copy": "Copy",
+    "copyRaw": "Copy Raw"
   },
   "label": {
     "name": "Name",

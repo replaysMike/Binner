@@ -16,6 +16,7 @@ using Binner.Model.Responses;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.Cmp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -900,55 +901,17 @@ namespace Binner.Common.Services
                     var partResponse = await digikeyApi.GetProductDetailsAsync(digikeyResponse.DigiKeyPartNumber);
                     if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                     {
-                        var part = (V3.Product?)partResponse.Response;
-                        if (part != null)
+                        if (partResponse.Response is V3.Product)
                         {
-                            var additionalPartNumbers = new List<string>();
-                            var basePart = part.Parameters
-                                .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
-                                .Select(x => x.Value)
-                                .FirstOrDefault();
-                            if (!string.IsNullOrEmpty(basePart))
-                                additionalPartNumbers.Add(basePart);
-                            Enum.TryParse<MountingType>(part.Parameters
-                                .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
-                                .Select(x => x.Value?.Replace(" ", ""))
-                                .FirstOrDefault(), out var mountingTypeId);
-                            var currency = string.Empty;
-                            if (string.IsNullOrEmpty(currency))
-                                currency = _configuration.Locale.Currency.ToString().ToUpper();
-                            var packageType = part.Parameters
-                                ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
-                                .Select(x => x.Value)
-                                .FirstOrDefault();
-                            if (string.IsNullOrEmpty(packageType))
-                                packageType = part.Parameters
-                                    ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
-                                    .Select(x => x.Value)
-                                    .FirstOrDefault();
-                            response.Parts.Add(new CommonPart
-                            {
-                                Supplier = "DigiKey",
-                                SupplierPartNumber = part.DigiKeyPartNumber,
-                                BasePartNumber = basePart ?? part.ManufacturerPartNumber,
-                                AdditionalPartNumbers = additionalPartNumbers,
-                                Manufacturer = part.Manufacturer?.Value ?? string.Empty,
-                                ManufacturerPartNumber = part.ManufacturerPartNumber,
-                                Cost = part.UnitPrice,
-                                Currency = currency,
-                                DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
-                                Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
-                                ImageUrl = part.PrimaryPhoto,
-                                PackageType = part.Parameters
-                                    ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
-                                    .Select(x => x.Value)
-                                    .FirstOrDefault(),
-                                MountingTypeId = (int)mountingTypeId,
-                                PartType = "",
-                                ProductUrl = part.ProductUrl,
-                                Status = part.ProductStatus,
-                                QuantityAvailable = digikeyResponse.Quantity
-                            });
+                            var part = (V3.Product?)partResponse.Response;
+                            if (part != null)
+                                response.Parts.Add(DigikeyV3ProductToCommonPart(part, digikeyResponse));
+                        }
+                        if (partResponse.Response is V4.ProductDetails)
+                        {
+                            var part = (V4.ProductDetails?)partResponse.Response;
+                            if (part != null)
+                                response.Parts.Add(DigikeyV4ProductDetailsToCommonPart(part, digikeyResponse));
                         }
                     }
                     else
@@ -958,14 +921,117 @@ namespace Binner.Common.Services
                 }
             }
 
-            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
-            foreach (var part in response.Parts)
+            if (response.Parts.Any())
             {
-                part.PartType = DeterminePartType(part, partTypes);
-                part.Keywords = DetermineKeywordsFromPart(part, partTypes);
+                var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+                foreach (var part in response.Parts)
+                {
+                    part.PartType = DeterminePartType(part, partTypes);
+                    part.Keywords = DetermineKeywordsFromPart(part, partTypes);
+                }
             }
 
             return ServiceResult<PartResults>.Create(response);
+        }
+
+        private CommonPart DigikeyV3ProductToCommonPart(V3.Product part, ProductBarcodeResponse barcodeResponse)
+        {
+            // todo: unify this
+            var additionalPartNumbers = new List<string>();
+            var basePart = part.Parameters
+                .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
+                .Select(x => x.Value)
+                .FirstOrDefault();
+            if (!string.IsNullOrEmpty(basePart))
+                additionalPartNumbers.Add(basePart);
+            Enum.TryParse<MountingType>(part.Parameters
+                .Where(x => x.Parameter.Equals("Mounting Type", ComparisonType))
+                .Select(x => x.Value?.Replace(" ", ""))
+                .FirstOrDefault(), out var mountingTypeId);
+            var currency = string.Empty;
+            if (string.IsNullOrEmpty(currency))
+                currency = _configuration.Locale.Currency.ToString().ToUpper();
+            var packageType = part.Parameters
+                ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
+                .Select(x => x.Value)
+                .FirstOrDefault();
+            if (string.IsNullOrEmpty(packageType))
+                packageType = part.Parameters
+                    ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                    .Select(x => x.Value)
+                    .FirstOrDefault();
+            return new CommonPart
+            {
+                Supplier = "DigiKey",
+                SupplierPartNumber = part.DigiKeyPartNumber,
+                BasePartNumber = basePart ?? part.ManufacturerPartNumber,
+                AdditionalPartNumbers = additionalPartNumbers,
+                Manufacturer = part.Manufacturer?.Value ?? string.Empty,
+                ManufacturerPartNumber = part.ManufacturerPartNumber,
+                Cost = part.UnitPrice,
+                Currency = currency,
+                DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
+                Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
+                ImageUrl = part.PrimaryPhoto,
+                PackageType = part.Parameters
+                    ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                    .Select(x => x.Value)
+                    .FirstOrDefault(),
+                MountingTypeId = (int)mountingTypeId,
+                PartType = "",
+                ProductUrl = part.ProductUrl,
+                Status = part.ProductStatus,
+                QuantityAvailable = barcodeResponse.Quantity
+            };
+        }
+        
+        private CommonPart DigikeyV4ProductDetailsToCommonPart(V4.ProductDetails details, ProductBarcodeResponse barcodeResponse)
+        {
+            // todo: unify this
+            var part = details.Product;
+            var additionalPartNumbers = new List<string>();
+                var basePart = part.Parameters
+                    .Where(x => x.ParameterText.Equals("Base Part Number", ComparisonType))
+                    .Select(x => x.ValueText)
+                    .FirstOrDefault();
+                if (!string.IsNullOrEmpty(basePart))
+                    additionalPartNumbers.Add(basePart);
+                Enum.TryParse<MountingType>(part.Parameters
+                    .Where(x => x.ParameterText.Equals("Mounting Type", ComparisonType))
+                    .Select(x => x.ValueText?.Replace(" ", ""))
+                    .FirstOrDefault(), out var mountingTypeId);
+                var currency = string.Empty;
+                if (string.IsNullOrEmpty(currency))
+                    currency = _configuration.Locale.Currency.ToString().ToUpper();
+                var packageType = part.Parameters
+                    ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
+                    .Select(x => x.ValueText)
+                    .FirstOrDefault();
+                if (string.IsNullOrEmpty(packageType))
+                    packageType = part.Parameters
+                        ?.Where(x => x.ParameterText.Equals("Package / Case", ComparisonType))
+                        .Select(x => x.ValueText)
+                        .FirstOrDefault();
+                return new CommonPart
+                {
+                    Supplier = "DigiKey",
+                    SupplierPartNumber = part.ProductVariations.FirstOrDefault()?.DigiKeyProductNumber ?? string.Empty,
+                    BasePartNumber = basePart ?? part.ManufacturerProductNumber,
+                    AdditionalPartNumbers = additionalPartNumbers,
+                    Manufacturer = part.Manufacturer?.Name ?? string.Empty,
+                    ManufacturerPartNumber = part.ManufacturerProductNumber,
+                    Cost = part.UnitPrice,
+                    Currency = currency,
+                    DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
+                    Description = part.Description.ProductDescription + "\r\n" + part.Description.DetailedDescription,
+                    ImageUrl = part.PhotoUrl,
+                    PackageType = packageType,
+                    MountingTypeId = (int)mountingTypeId,
+                    PartType = "",
+                    ProductUrl = part.ProductUrl,
+                    Status = part.ProductStatus.Status,
+                    QuantityAvailable = barcodeResponse.Quantity
+                };
         }
 
         private bool IsBarcodeScan(string partNumber) => !string.IsNullOrEmpty(partNumber) && partNumber.StartsWith("[)>");

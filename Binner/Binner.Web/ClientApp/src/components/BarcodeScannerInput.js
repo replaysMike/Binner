@@ -213,7 +213,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 		const etxCharCodes = ["\u0003"]; // CTRL-C, \u0003 END OF TEXT
     const header = barcodeConfig.prefix2D;
     const expectedFormatNumber = 6; /** 22z22 barcode */
-    const controlChars = ["P", "1P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z"];
+    const controlChars = ["P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z"];
 
 		let gsCodePresent = false;
 		let rsCodePresent = false;
@@ -237,6 +237,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 		gsCodePresent = gsCharCodes.some(v => correctedValue.includes(v));
 		rsCodePresent = rsCharCodes.some(v => correctedValue.includes(v));
 		eotCodePresent = eotCharCodes.some(v => correctedValue.includes(v));
+    //console.log('codePresent', gsCodePresent, rsCodePresent, eotCodePresent);
 
 		// read in the format number first. For Digikey 2d barcodes, this should be 6 (expectedFormatNumber)
     for (i = 0; i < correctedValue.length; i++) {
@@ -294,20 +295,29 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 			let readValue = "";
 			let readControlChars = true;
 			for (var c = 0; c < line.length; c++) {
+        // skip CR and LF characters completely
+        if (lfCharCodes.includes(line[c]) || crCharCodes.includes(line[c])) continue;
+
 				if (readControlChars) readCommandType += line[c];
 				else readValue += line[c];
 
-				if (readControlChars === header || readControlChars === formatNumber) readValue = "";
+        if (readControlChars === header || readControlChars === formatNumber) readValue = "";
 				if (controlChars.includes(readCommandType)) {
 					// start reading value
 					readControlChars = false;
 				}
 			}
+
+      /** NOTE: supported commands below must be present in the controlChars array */
 			switch (readCommandType) {
 				case "P":
 					// could be DigiKey part number, or customer reference value
 					parsedValue["description"] = readValue;
 					break;
+        case "30P":
+          // DigiKey part number
+          parsedValue["supplierPartNumber"] = readValue;
+          break;
 				case "1P":
 					// manufacturer part number
 					parsedValue["mfgPartNumber"] = readValue;
@@ -322,12 +332,20 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 					break;
 				case "11K":
 					// don't know
-					parsedValue["unknown1"] = readValue;
+					parsedValue["unknown"] = readValue;
 					break;
 				case "4L":
 					// country of origin
 					parsedValue["countryOfOrigin"] = readValue;
 					break;
+        case "9D":
+          // date code
+          parsedValue["dateCode"] = readValue;
+          break;
+        case "1T":
+          // lot code
+          parsedValue["lotCode"] = readValue;
+          break;
 				case "Q":
 					// quantity
 					const parsedIntValue = parseInt(readValue);
@@ -341,13 +359,17 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 					parsedValue["pick"] = readValue;
 					break;
 				case "12Z":
-					// internal part id
-					parsedValue["partId"] = readValue;
+					// internal id of some kind
+					parsedValue["mid"] = readValue;
 					break;
 				case "13Z":
 					// shipment load id
 					parsedValue["loadId"] = readValue;
 					break;
+        case "20Z":
+          // reserved
+          parsedValue["reserved"] = readValue;
+          break;
 				default:
 					break;
 			}

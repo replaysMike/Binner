@@ -2,6 +2,7 @@
 import { format, parse } from "date-fns";
 export const Format24HourTime = 'kk:mm:ss';
 export const Format12HourTime = 'h:mm aaa';
+export const Format12HourTimeSeconds = 'h:mm:ss aaa';
 export const FormatFullDateTime = 'E, MMM dd h:mm:ss aaa';
 export const FormatShortDate = 'E, MMM dd';
 export const FormatDateOnly = 'MMM dd, yyyy';
