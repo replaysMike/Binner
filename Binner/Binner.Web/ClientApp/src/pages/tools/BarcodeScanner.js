@@ -1,11 +1,15 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
-import { Form, Popup, Input, Icon, Button, Breadcrumb } from "semantic-ui-react";
+import { Form, Popup, Input, Icon, Button, Breadcrumb, Table } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
+import { Clipboard } from "../../components/Clipboard";
 import { GetTypeName, BarcodeProfiles } from "../../common/Types";
 import ProtectedInput from "../../components/ProtectedInput";
+import { Format12HourTimeSeconds } from "../../common/datetime";
+import { format } from "date-fns";
+
 import reactStringReplace from "react-string-replace";
 import "./BarcodeScanner.css";
 
@@ -15,10 +19,12 @@ export function BarcodeScanner(props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [barcodeInput, setBarcodeInput] = useState(null);
   const [barcodeValue, setBarcodeValue] = useState(t('page.barcodeScanner.waitingForInput', "Waiting for input..."));
   const [rsDetected, setRsDetected] = useState(false);
   const [gsDetected, setGsDetected] = useState(false);
   const [eotDetected, setEotDetected] = useState(false);
+  const [scanHistory, setScanHistory] = useState([]);
   const [config, setConfig] = useState({});
   const [invalidBarcodeDetected, setInvalidBarcodeDetected] = useState(false);
   const [customBufferTime, setCustomBufferTime] = useState(0);
@@ -68,6 +74,18 @@ export function BarcodeScanner(props) {
 
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
+    viewItem(input);
+    const item = {
+      ...input,
+      success: !input.invalidBarcodeDetected,
+      logDate: new Date(),
+    };
+    scanHistory.unshift(item);
+    setScanHistory(scanHistory);
+    toast.info(t('success.barcodeTypeReceived', "Barcode type {{type}} received", { type: input.type }));
+  };
+
+  const viewItem = (input) => {
     // ignore single keypresses
     setRsDetected(false);
     setGsDetected(false);
@@ -78,24 +96,26 @@ export function BarcodeScanner(props) {
       const rawValueFormatted = input.rawValue
         .replaceAll("^\u0044", "\u241e\u2404") // ^EOT
         .replaceAll("\u0004", "\u2404") // EOT
-        .replaceAll("\u001e","\u241e") // RS (30)
-        .replaceAll("\u005e","\u241e") // RS (94) ^
+        .replaceAll("\u001e", "\u241e") // RS (30)
+        .replaceAll("\u005e", "\u241e") // RS (94) ^
         .replaceAll("\u001d", "\u241d") // GS (29)
         .replaceAll("\u005d", "\u241d") // GS (93) ]
         .replaceAll("\r", "\u240d") // CR
         .replaceAll("\n", "\u240a") // LF
         .replaceAll("\u001c", "\u241c") // FS
         ;
-      const json = {...input, rawValueFormatted: rawValueFormatted};
+      const json = { ...input, rawValueFormatted: rawValueFormatted };
+      setBarcodeInput(input);
       setBarcodeValue(JSON.stringify(json, null, 2));
       setRsDetected(input.rsDetected);
       setGsDetected(input.gsDetected);
       setEotDetected(input.eotDetected);
       setInvalidBarcodeDetected(input.invalidBarcodeDetected);
-    } else{
+
+    } else {
+      setBarcodeInput(input);
       setBarcodeValue(JSON.stringify(input, null, 2));
     }
-    toast.info(t('success.barcodeTypeReceived', "Barcode type {{type}} received", { type: input.type }));
   };
 
   const handleReset = (e) => {
@@ -108,6 +128,12 @@ export function BarcodeScanner(props) {
     setInvalidBarcodeDetected(false);
     setDummy(null);
     setUnprotectedDummy(null);
+  };
+
+  const loadHistory = (e, item) => {
+    e.preventDefault();
+    e.stopPropagation();
+    viewItem(item);
   };
 
   const getRandomKey = () => Math.floor(Math.random() * 999999);
@@ -147,8 +173,16 @@ export function BarcodeScanner(props) {
             focus
             />
           <Form.Input name="unprotectedDummy" placeholder="A regular unprotected input text box" value={unprotectedDummy || ''} onChange={handleChange} />
-          <code><pre>{barcodeObject}</pre></code>
-          <h5>Barcode Config</h5>
+          {barcodeObject.length > 1 && (<div style={{ display: 'flex', marginBottom: '5px', float: 'right' }}>
+            <div style={{ padding: '0 10px' }}>
+              <Clipboard text={barcodeValue} /> <span>{t('button.copy', "Copy")}</span>
+            </div>
+            <div style={{ padding: '0 10px' }}>
+              <Clipboard text={barcodeInput?.rawValue} /><span>{t('button.copyRaw', "Copy Raw")}</span>
+            </div>
+          </div>)}
+          <code style={{marginBottom: '0'}}><pre>{barcodeObject}</pre></code>
+          <h5 style={{marginTop: '10px'}}>Barcode Config</h5>
           <Form.Group>
             <Form.Field width={1}>
               <label>Enabled:</label> {config.enabled ? 'true' : 'false'} 
@@ -165,6 +199,16 @@ export function BarcodeScanner(props) {
             </Form.Field>
             <Form.Field width={1}>
               <label>BarcodePrefix2D:</label> {config.barcodePrefix2D}
+            </Form.Field>
+            <Form.Field>
+              <div className="tips">
+                <label>Tips</label>
+                <ul>
+                  <li>Try increasing the BufferTime if the label is missing information.</li>
+                  <li>Try scanning the same part many times. If the length changes then your scanner is not performing well.</li>
+                  <li>Make sure the window is in focus by clicking on it, as barcode scanners emulate keyboard strokes.</li>
+                </ul>
+              </div>
             </Form.Field>
           </Form.Group>
             
@@ -185,7 +229,8 @@ export function BarcodeScanner(props) {
               trigger={<div className={`block ${eotDetected ? 'active' : ''}`}>EOT</div>}
             />
             <Popup 
-              content={<p>Some older DigiKey barcodes are encoded incorrectly. If an older part label that was encoded incorrectly is detected it will be indicated here, and Binner has corrected for it.</p>}
+              wide
+              content={<p>Some barcode scanners (cheaper models) incorrectly decode some barcodes. This is detected as any barcode with empty GS/RS separators. It is also known that some older DigiKey barcodes contain them at the end, and will be ignored.</p>}
               trigger={<div className={`block ${invalidBarcodeDetected ? 'active red' : ''}`}>Invalid</div>}
             />
 
@@ -193,6 +238,38 @@ export function BarcodeScanner(props) {
               content={<p>Reset the form output.</p>}
               trigger={<Button type='button' onClick={handleReset}>Reset</Button>}
             />
+          </div>
+
+          <div>
+            <h5>{t('page.barcodeScanner.history', "History")}</h5>
+            <Table className="history">
+              <Table.Header>
+                <Table.Row>
+                  <Table.Cell></Table.Cell>
+                  <Table.Cell>Successful</Table.Cell>
+                  <Table.Cell>Description</Table.Cell>
+                  <Table.Cell>Type</Table.Cell>
+                  <Table.Cell>Length</Table.Cell>
+                  <Table.Cell>Codes</Table.Cell>
+                  <Table.Cell>Date</Table.Cell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {scanHistory.length > 0 
+                  ? scanHistory.map((item, key) => 
+                  <Table.Row key={key}>
+                    <Table.Cell><Link onClick={e => loadHistory(e, item)}>View</Link></Table.Cell>
+                    <Table.Cell>{item.success ? <Icon name="check circle" color="green" /> : <Icon name="times circle" color="red" />}</Table.Cell>
+                      <Table.Cell>{item.value.supplierPartNumber || item.value.description || item.value.mfgPartNumber || item.value.salesOrder || "unknown"}</Table.Cell>
+                    <Table.Cell>{item.type}</Table.Cell>
+                      <Table.Cell>{item.rawValue.length}</Table.Cell>
+                    <Table.Cell>{item.rsDetected && "RS"} {item.gsDetected && "GS"} {item.eotDetected && "EOT"}</Table.Cell>
+                    <Table.Cell>{format(item.logDate, Format12HourTimeSeconds)}</Table.Cell>
+                  </Table.Row>
+                )
+                : <Table.Row><Table.Cell colSpan="7" textAlign="center"> No history available.</Table.Cell></Table.Row>}
+              </Table.Body>
+            </Table>
           </div>
         </div>
       </Form>

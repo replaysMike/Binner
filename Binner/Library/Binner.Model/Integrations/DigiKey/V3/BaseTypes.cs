@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Binner.Model.Integrations.DigiKey.V3
+﻿namespace Binner.Model.Integrations.DigiKey.V3
 {
     public class Product
     {
