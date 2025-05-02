@@ -185,31 +185,44 @@ namespace Binner.Web.Controllers
         [HttpPost("bulk")]
         public async Task<IActionResult> CreateBulkPartsAsync(CreateBulkPartRequest request)
         {
+            var addedParts = new List<Part>();
             var updatedParts = new List<Part>();
-            var partsRequested = request.Parts ?? new List<PartBase>();
-            var mappedParts = Mapper.Map<ICollection<PartBase>, ICollection<Part>>(partsRequested);
+            var partsRequested = request.Parts ?? new List<BulkPart>();
+            var mappedParts = Mapper.Map<ICollection<BulkPart>, ICollection<Part>>(partsRequested);
             var partTypes = await _partTypeService.GetPartTypesAsync();
             var defaultPartType = partTypes
                 .FirstOrDefault(x => x.Name?.Equals("Other", StringComparison.InvariantCultureIgnoreCase) == true) ?? partTypes.First();
-            foreach (var mappedPart in mappedParts)
+            foreach (var bulkPart in partsRequested)
             {
                 // does it already exist?
-                if (string.IsNullOrEmpty(mappedPart.PartNumber))
+                if (string.IsNullOrEmpty(bulkPart.PartNumber))
                     continue;
-                var existingSearch = await _partService.FindPartsAsync(mappedPart.PartNumber);
+                var mappedPart = Mapper.Map<BulkPart, Part>(bulkPart);
+                var existingSearch = await _partService.FindPartsAsync(bulkPart.PartNumber);
                 if (existingSearch.Any())
                 {
                     // update it's basic data only
                     var existingPart = existingSearch.First().Result;
-                    existingPart.Quantity = mappedPart.Quantity;
-                    existingPart.Description = mappedPart.Description;
-                    existingPart.Location = mappedPart.Location;
-                    existingPart.BinNumber = mappedPart.BinNumber;
-                    existingPart.BinNumber2 = mappedPart.BinNumber2;
+                    existingPart.Quantity = bulkPart.Quantity;
+                    existingPart.Description = bulkPart.Description;
+                    existingPart.Location = bulkPart.Location;
+                    existingPart.BinNumber = bulkPart.BinNumber;
+                    existingPart.BinNumber2 = bulkPart.BinNumber2;
+                    if (!string.IsNullOrEmpty(bulkPart.SupplierPartNumber) && string.IsNullOrEmpty(existingPart.DigiKeyPartNumber))
+                        existingPart.DigiKeyPartNumber = bulkPart.SupplierPartNumber;
+                    if (string.IsNullOrEmpty(existingPart.DigiKeyPartNumber))
+                        existingPart.DigiKeyPartNumber = bulkPart.DigiKeyPartNumber;
+                    if (string.IsNullOrEmpty(existingPart.MouserPartNumber))
+                        existingPart.MouserPartNumber = bulkPart.MouserPartNumber;
+                    if (string.IsNullOrEmpty(existingPart.ArrowPartNumber))
+                        existingPart.ArrowPartNumber = mappedPart.ArrowPartNumber;
+                    if (string.IsNullOrEmpty(existingPart.TmePartNumber))
+                        existingPart.TmePartNumber = mappedPart.TmePartNumber;
                     updatedParts.Add(await _partService.UpdatePartAsync(existingPart));
                 }
                 else
                 {
+                    // it's a new part
                     var isMapped = false;
                     var barcode = string.Empty;
                     var partRequested = partsRequested?.Where(x => x.PartNumber == mappedPart.PartNumber).FirstOrDefault();
@@ -239,7 +252,10 @@ namespace Binner.Web.Controllers
                             mappedPart.ManufacturerPartNumber = entry.ManufacturerPartNumber;
                             mappedPart.Manufacturer = entry.Manufacturer;
                             mappedPart.Description = entry.Description;
-                            mappedPart.DigiKeyPartNumber = entry.SupplierPartNumber;
+                            if (!string.IsNullOrEmpty(bulkPart.SupplierPartNumber))
+                                mappedPart.DigiKeyPartNumber = bulkPart.SupplierPartNumber;
+                            if (!string.IsNullOrEmpty(entry.SupplierPartNumber))
+                                mappedPart.DigiKeyPartNumber = entry.SupplierPartNumber;
                             mappedPart.Keywords = entry.Keywords ?? new List<string>();
                             mappedPart.ImageUrl = entry.ImageUrl;
                             mappedPart.LowStockThreshold = 10;
@@ -300,12 +316,15 @@ namespace Binner.Web.Controllers
                             }
                         }
                     }
-                    updatedParts.Add(await _partService.AddPartAsync(mappedPart));
+                    addedParts.Add(await _partService.AddPartAsync(mappedPart));
                 }
             }
 
-            var partResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(updatedParts);
-            return Ok(partResponse);
+            return Ok(new BulkPartResponse
+            {
+                Added = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(addedParts),
+                Updated = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(updatedParts)
+            });
         }
 
         /// <summary>

@@ -111,7 +111,7 @@ export const ExportData = (props) => {
             headers: { Authorization: `Bearer ${getAuthToken()}` }
           })
           .then((data) => {
-            console.log("data", data);
+            console.debug("data", data);
             setImportResult(data.data);
             if (data.data.success) {
               if (data.data.warnings.length > 0)

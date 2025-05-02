@@ -182,7 +182,7 @@ export const getProducibleBomCount = (parts, pcbs) => {
 	let limitingPcb = -1;
 	// virtualPcb is the max number of pcbs we will calculate that are available
 	for(let virtualPcb = 0; virtualPcb < maxIteration; virtualPcb++){
-		//console.log('checking vpcb', virtualPcb, maxIteration, partsConsumed);
+		//console.debug('checking vpcb', virtualPcb, maxIteration, partsConsumed);
 		for(let pcbNum = 0; pcbNum < pcbs.length; pcbNum++) {
 			// iterate each pcb in the BOM
 			let pcb = pcbs[pcbNum];

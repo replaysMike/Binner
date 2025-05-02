@@ -90,8 +90,8 @@ export const App = (props) => {
     // used for activating avatar images on largely vertical pages
     setWindowSize([window.innerWidth, window.innerHeight]);
     setDocumentSize([document.documentElement.scrollWidth, document.documentElement.scrollHeight]);
-    //console.log('window size', window.innerWidth, window.innerHeight);
-    //console.log('document size', document.documentElement.scrollWidth, document.documentElement.scrollHeight);
+    //console.debug('window size', window.innerWidth, window.innerHeight);
+    //console.debug('document size', document.documentElement.scrollWidth, document.documentElement.scrollHeight);
     if (document.documentElement.scrollHeight > window.innerHeight) {
       // enable avatar
       window.avatar = true;

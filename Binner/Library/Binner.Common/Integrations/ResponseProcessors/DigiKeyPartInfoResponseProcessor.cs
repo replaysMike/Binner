@@ -245,9 +245,13 @@ namespace Binner.Common.Integrations.ResponseProcessors
                     var partResponse = await api.GetProductDetailsAsync(supplierPartNumber);
                     if (!partResponse.RequiresAuthentication && partResponse?.Errors.Any() == false)
                     {
-                        var part = (V4.Product?)partResponse.Response;
-                        if (part != null)
-                            digikeyResponse.Products.Add(part);
+                        var productDetails = (V4.ProductDetails?)partResponse.Response;
+                        if (productDetails != null)
+                        {
+                            var part = productDetails.Product;
+                            if (part != null)
+                                digikeyResponse.Products.Add(part);
+                        }
                     }
                 }
                 catch (Exception ex)

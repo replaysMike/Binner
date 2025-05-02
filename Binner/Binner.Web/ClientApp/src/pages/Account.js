@@ -78,9 +78,9 @@ export function Account(props) {
           })
           .then((data) => {
             if (data.status === 200) {
-              console.log("upload success", data);
+              console.debug("upload success", data);
             } else {
-              console.log("upload failed", data);
+              console.debug("upload failed", data);
             }
           })
           .catch((error) => {
@@ -101,7 +101,7 @@ export function Account(props) {
     }).then((response) => {
       if (response.responseObject.ok) {
         const { data } = response;
-        console.log("account response", data);
+        console.debug("account response", data);
         if (data.isSuccessful) {
           setIsDirty(false);
           toast.success("Account updated!");

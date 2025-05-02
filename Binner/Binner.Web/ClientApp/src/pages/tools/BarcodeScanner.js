@@ -57,14 +57,14 @@ export function BarcodeScanner(props) {
         // measure how long a barcode scan event takes
         if (dummy === null || dummy.length === 0) setDummyStartTime(new Date().getTime());
         clearTimeout(dummyTimerRef.current);
-        dummyTimerRef.current = setTimeout(() => { console.log('Dummy took', new Date().getTime() - dummyStartTime - 500); }, 500);
+        dummyTimerRef.current = setTimeout(() => { console.debug('Dummy took', new Date().getTime() - dummyStartTime - 500); }, 500);
         setDummy(control.value);
         break;
       case 'unprotectedDummy':
         if (unprotectedDummy === null || unprotectedDummy.length === 0) setUnprotectedDummyStartTime(new Date().getTime());
-        console.log('unprotectedDummy onChange', control.value);
+        console.debug('unprotectedDummy onChange', control.value);
         clearTimeout(unprotectedDummyTimerRef.current);
-        unprotectedDummyTimerRef.current = setTimeout(() => { console.log('Unprotected Dummy took', new Date().getTime() - unprotectedDummyStartTime - 500); }, 500);
+        unprotectedDummyTimerRef.current = setTimeout(() => { console.debug('Unprotected Dummy took', new Date().getTime() - unprotectedDummyStartTime - 500); }, 500);
         setUnprotectedDummy(control.value);
         break;
       default:
