@@ -22,27 +22,27 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 
 	const barcodeReadStarted = (e) => {
 		window.requestAnimationFrame(() => { inputReceiving.current = true; });
-		if (IsDebug) console.log(`PI: sending read started id: ${id} dest: ${e.detail.destination.id}`);
+		if (IsDebug) console.debug(`PI: sending read started id: ${id} dest: ${e.detail.destination.id}`);
 		if (e.detail.destination.id !== id) return;
-		if (IsDebug) console.log('PI: barcodeReadStarted', e, e.detail.destination.id, id);
+		if (IsDebug) console.debug('PI: barcodeReadStarted', e, e.detail.destination.id, id);
 		inputRef.current.classList.add(DefaultIsScanningClassName);
 		if (rest.onBarcodeReadStarted) rest.onBarcodeReadStarted(e);
 	};
 
 	const barcodeReadCancelled = (e) => {
 		window.requestAnimationFrame(() => { inputReceiving.current = false; });
-		if (IsDebug) console.log(`PI: sending read cancelled id: ${id} dest: ${e.detail.destination.id}`);
+		if (IsDebug) console.debug(`PI: sending read cancelled id: ${id} dest: ${e.detail.destination.id}`);
 		if (e.detail.destination.id !== id) return;
-		if (IsDebug) console.log('PI: barcodeReadCancelled', e, e.detail.destination.id, id);
+		if (IsDebug) console.debug('PI: barcodeReadCancelled', e, e.detail.destination.id, id);
 		inputRef.current.classList.remove(DefaultIsScanningClassName);
 		if (rest.onBarcodeReadCancelled) rest.onBarcodeReadCancelled(e);
 	};
 
 	const barcodeReadReceived = (e) => {
 		window.requestAnimationFrame(() => { inputReceiving.current = false; });
-		if (IsDebug) console.log(`PI: sending read complete id: ${id} dest: ${e.detail.destination?.id}`);
+		if (IsDebug) console.debug(`PI: sending read complete id: ${id} dest: ${e.detail.destination?.id}`);
 		if (e.detail.destination && e.detail.destination.id !== id) return;
-		if (IsDebug) console.log('PI: barcodeReadReceived', e, e.detail.destination?.id, id, clearOnScan);
+		if (IsDebug) console.debug('PI: barcodeReadReceived', e, e.detail.destination?.id, id, clearOnScan);
 		// replace the text input control to the original before the barcode scan took place
 		bufferedValue.current = bufferedValue.current?.replaceAll(e.detail.text, "");
 		inputRef.current.classList.remove(DefaultIsScanningClassName);

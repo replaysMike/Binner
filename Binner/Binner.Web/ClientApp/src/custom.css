@@ -344,6 +344,13 @@ section.formHeader {
     background-color: #fff;
 }
 
+.quantityAdded {
+  text-align: right;
+  margin-right: 50px;
+  color: #d62303;
+  font-weight: 700;
+}
+
 .ui.grid {
     margin-left: 0px !important;
     margin-right: 0px !important;
@@ -913,16 +920,27 @@ svg.parttype-Crystal:hover,.icon-container svg.parttype-Crystal:hover {
     top: 0;
     left: 50%;
     transform: translateX(-50%);
+
 }
 
 .Toastify__toast {
     /* gives more room to the top header controls */
     margin-bottom: 0.5em;
+    /* add spacing for close icon */
+    padding-right: 40px;
 }
 
 div:has(.popup),div:has(.Toastify>*) {
     -webkit-filter: none !important;
     filter: none !important;
+}
+
+.ui.loader.inline.static {
+  position: relative;
+}
+
+.ui.loader.inline.static:after {
+  border-color: #767676 transparent transparent !important;
 }
 
 .error {

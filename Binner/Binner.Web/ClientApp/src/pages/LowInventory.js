@@ -57,7 +57,7 @@ export function LowInventory (props) {
   }, [filterBy, filterByValue, pageSize, sortBy, sortDirection]);
 
   /*useEffect(() => {
-    console.log('useEffect 1', byParam, valueParam, initComplete);
+    console.debug('useEffect 1', byParam, valueParam, initComplete);
     if (pageSize === -1) return;
     if (by && by.length > 0) {
       // likewise, clear keyword if we're in a bin search

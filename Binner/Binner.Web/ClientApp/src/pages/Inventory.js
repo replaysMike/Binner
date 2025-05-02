@@ -112,6 +112,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [infoResponse, setInfoResponse] = useState({});
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState(defaultPart);
+  const [quantityAdded, setQuantityAdded] = useState(0);
   const [isEditing, setIsEditing] = useState((part && part.partId > 0) || pageHasParameters);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedPart, setSelectedPart] = useState(null);
@@ -168,7 +169,6 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
     const newIsEditing = partNumberStr?.length > 0;
     setIsEditing(newIsEditing);
-    
 
     const fetchData = async (initialRequest, targetPart) => {
       let partToSearch = targetPart;
@@ -180,7 +180,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       if (partNumberStr) {
         // editing an existing part
         partToSearch = await fetchPart(partNumberStr, partId) || part;
-        if (newIsEditing) setInputPartNumber(partNumberStr);
+
         setInputPartNumber(partNumberStr);
         setLoadingPartMetadata(true);
         await fetchPartMetadataAndInventory(partNumberStr, partToSearch);
@@ -230,7 +230,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
     if (input.trim().length < MinSearchKeywordLength)
-      return;
+      return { part: null, exists: false };
     Inventory.infoAbortController.abort();
     Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
@@ -243,11 +243,12 @@ export function Inventory({ partNumber = "", ...rest }) {
 
       processPartMetadataResponse(data, localPart, !pageHasParameters, false);
       setLoadingPartMetadata(false);
+      return { part: localPart, exists: existsInInventory };
     } catch (ex) {
       setLoadingPartMetadata(false);
       console.error("Exception", ex);
       if (ex.name === "AbortError") {
-        return; // Continuation logic has already been skipped, so return normally
+        return { part: null, exists: false }; // Continuation logic has already been skipped, so return normally
       }
       throw ex;
     }
@@ -421,6 +422,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     setInfoResponse(infoResponse);
     setMetadataParts(metadataParts);
     setLoadingPartMetadata(false);
+    return metadataParts;
   }, [setPartFromMetadata]);
 
   /**
@@ -503,6 +505,7 @@ export function Inventory({ partNumber = "", ...rest }) {
    * @returns barcode metadata object
    */
   const doBarcodeLookup = async (scannedPart, onSuccess, onFailure) => {
+    toast.dismiss();
     const response = await fetchApi(`/api/part/barcode/info?barcode=${encodeURIComponent(scannedPart.barcode.trim())}`, {
       method: "GET",
       headers: {
@@ -541,63 +544,124 @@ export function Inventory({ partNumber = "", ...rest }) {
   const searchDebounced = useMemo(() => debounce(fetchPartMetadataAndInventory, SearchDebounceTimeMs), [pageHasParameters]);
 
   // for processing barcode scanner input
-  const handleBarcodeInput = (e, input) => {
-    if (!input.value) return;
+  const handleBarcodeInput = async (e, input) => {
+    if (!input?.value) return;
+    toast.dismiss();
 
+    console.debug('barcode input received', input);
     let cleanPartNumber = "";
     if (input.type === "datamatrix") {
+      // datamatrix codes contain additional information we can use directly
+      // use the manufacturer's part number
       if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
+      // use the supplier's part number
+      else if (input.value.supplierPartNumber && input.value.supplierPartNumber.length > 0) cleanPartNumber = input.value.supplierPartNumber;
+      // use the description fallback, which works on older labels
       else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
     } else if (input.type === "code128") {
+      // code128 are 1-dimensional codes that only contain a single alphanumeric string, usually a part number
       cleanPartNumber = input.value;
     }
 
-    if (!cleanPartNumber) return;
-
+    // if we didn't rerceive a code we can understand, ignore it
+    if (!cleanPartNumber || cleanPartNumber.length === 0) {
+      console.debug('no clean part number found', cleanPartNumber, input?.value?.quantity);
+      return;
+    }
+    
     // add part
+    console.debug('clean part number found through barcode', cleanPartNumber, input.value?.quantity);
     if (bulkScanIsOpenRef.current) {
       // bulk scan add part
       setScannedPartsBarcodeInput({ cleanPartNumber, input });
     } else {
       // scan single part
-      // fetch metadata on the barcode, don't await, do a background update
+      resetForm();
       const scannedPart = {
         partNumber: cleanPartNumber,
         barcode: input.correctedValue
       };
       setInputPartNumber(cleanPartNumber);
-      doBarcodeLookup(scannedPart, (partInfo) => {
-        // barcode found
-        if (cleanPartNumber) {
-          setPartMetadataIsSubscribed(false);
-          setPartMetadataErrors([]);
-          if (!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable }, true);
-          if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: partInfo.quantityAvailable });
+      if ((input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0)
+        || (input.value.supplierPartNumber && input.value.supplierPartNumber.length > 0)) {
+        setPartMetadataIsSubscribed(false);
+        setPartMetadataErrors([]);
+        // we already have a usable part number, look up its data
+        const existingPart = await fetchPart(cleanPartNumber);
+        console.debug('fetchPart', existingPart);
 
-          // also run a search to get datasheets/images
-          fetchPartMetadataAndInventory(cleanPartNumber, part);
+        const labelQuantity = parseInt(input.value?.quantity || "1");
+        if(existingPart) {
+          setInputPartNumber(existingPart.partNumber);
+          // add quantity to part
+          const originalQuantity = existingPart.quantity;
+          existingPart.quantity += labelQuantity;
+          setQuantityAdded(labelQuantity);
+          console.debug('adding quantity to part', originalQuantity, labelQuantity);
+
+          // part exists in inventory, switch to edit mode
+          setLoadingPartMetadata(true);
+          await fetchPartMetadataAndInventory(existingPart.partNumber, existingPart);
+          setLoadingPartMetadata(false);
+          setIsEditing(true);
           setIsDirty(true);
-        }
-      }, (scannedPart) => {
-        // no barcode info found, try searching the part number
-        if (cleanPartNumber) {
-          setPartMetadataIsSubscribed(false);
-          setPartMetadataErrors([]);
-          let newQuantity = parseInt(input.value?.quantity) || DefaultQuantity;
-          if (isNaN(newQuantity)) newQuantity = 1;
-          const newPart = {
-            ...part,
-            partNumber: cleanPartNumber,
-            quantity: newQuantity,
-            partTypeId: -1,
-            mountingTypeId: -1,
-          };
-          setPart(newPart);
-          if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: newPart.quantity });
-          searchDebounced(cleanPartNumber, newPart);
+
+          if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: existingPart.quantity });
+          toast.success(`Quantity updated from ${originalQuantity} to ${part.quantity} on part "${cleanPartNumber}"`, { autoClose: false });
+        } else {
+          console.debug('no existing part, add as new');
+          // part is not in inventory, add it as new
+          setLoadingPartMetadata(true);
+          const { data } = await doFetchPartMetadata(cleanPartNumber, part, false);
+          processPartMetadataResponse(data, part, true, true);
+          setLoadingPartMetadata(false);
           setIsDirty(true);
+          setIsEditing(false);
+          console.debug('new part, setting quantity', labelQuantity, part);
+          // new part being added
+          part.quantity = labelQuantity;
+          setPart(part);
+          toast.success(`Ready to add new part "${cleanPartNumber}", qty=${labelQuantity}`, { autoClose: false });
         }
-      });
+      } else {
+        // fetch metadata on the barcode if available
+        await doBarcodeLookup(scannedPart, async (partInfo) => {
+          console.debug("doBarcodeLookup success, getting metadata", cleanPartNumber);
+          // barcode found
+          if (cleanPartNumber) {
+            setPartMetadataIsSubscribed(false);
+            setPartMetadataErrors([]);
+            if (!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable }, true);
+            if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: partInfo.quantityAvailable });
+
+            // also run a search to get datasheets/images
+            await fetchPartMetadataAndInventory(cleanPartNumber, part);
+            setIsDirty(true);
+          }
+        }, async (scannedPart) => {
+          console.debug("doBarcodeLookup failed, searching for part", cleanPartNumber);
+          // no barcode info found, try searching the part number
+          if (cleanPartNumber) {
+            setPartMetadataIsSubscribed(false);
+            setPartMetadataErrors([]);
+            let newQuantity = parseInt(input.value?.quantity) || DefaultQuantity;
+            if (isNaN(newQuantity)) newQuantity = 1;
+            const newPart = {
+              ...part,
+              partNumber: cleanPartNumber,
+              quantity: newQuantity,
+              partTypeId: -1,
+              mountingTypeId: -1,
+            };
+            if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: newPart.quantity });
+            setPart(newPart);
+            // search for it
+            await fetchPartMetadataAndInventory(cleanPartNumber, newPart);
+            setIsDirty(true);
+          }
+        });
+      }
+      console.debug('barcode processing complete');
     }
   };
 
@@ -617,26 +681,35 @@ export function Inventory({ partNumber = "", ...rest }) {
     Inventory.partAbortController.abort();
     Inventory.partAbortController = new AbortController();
     setLoadingPart(true);
-    try {
-      let query = `partNumber=${encodeURIComponent(partNumber.trim())}`;
-      const validPartId = typeof partId === "number" ? partId : partId && parseInt(partId.trim());
-      if (validPartId > 0)
-        query += `&partId=${partId}`;
-      const response = await fetchApi(`/api/part?${query}`, {
-        signal: Inventory.partAbortController.signal
-      });
-      const { data } = response;
-      setPart(data);
+
+    let query = `partNumber=${encodeURIComponent(partNumber.trim())}`;
+    const validPartId = typeof partId === "number" ? partId : partId && parseInt(partId.trim());
+    if (validPartId > 0)
+      query += `&partId=${partId}`;
+
+    // this endpoint can return an expected 404
+    return await fetchApi(`/api/part?${query}`, {
+      signal: Inventory.partAbortController.signal
+    }).then((response) => {
       setLoadingPart(false);
-      return data;
-    } catch (ex) {
-      console.error("Exception", ex);
-      setLoadingPart(false);
-      if (ex.name === "AbortError") {
-        return; // Continuation logic has already been skipped, so return normally
+      if (response.responseObject.ok) {
+        const { data } = response;
+        setPart(data);
+        setLoadingPart(false);
+        return data;
       }
-      throw ex;
-    }
+      return null;
+    }).catch((err) => {
+      const { data } = err;
+      if (data.status === 404)
+        console.info('part not found');
+      else {
+        console.error('http error', err);
+        toast.error(`Server returned ${data.status} error.`);
+      }
+      setLoadingPart(false);
+      return null;
+    });
   };
 
   const fetchRecentRows = async () => {
@@ -740,6 +813,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     request.projectId = parseInt(part.projectId) || null;
     request.currency = part.currency || systemSettings.currency || 'USD';
 
+    toast.dismiss();
+
     if (request.partNumber.length === 0) {
       toast.error("Part Number is empty!");
       return;
@@ -774,6 +849,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         resetForm(saveMessage);
         toast.success(saveMessage);
       }
+      setQuantityAdded(0);
       setIsDirty(false);
       // refresh recent parts list
       await fetchRecentRows();
@@ -786,6 +862,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const resetForm = (saveMessage = "", clearAll = false) => {
+    toast.dismiss();
     removeViewPreference('digikey');
     setIsDirty(false);
     setIsEditing(false);
@@ -795,6 +872,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     setDuplicateParts([]);
     setPartMetadataIsSubscribed(false);
     setInputPartNumber("");
+    setQuantityAdded(0);
     const clearedPart = {
       partId: 0,
       partNumber: "",
@@ -845,7 +923,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       e.stopPropagation();
     }
     removeViewPreference('digikey');
-    
+
     if (rest.params.partNumber) {
       navigate("/inventory/add");
       return;
@@ -993,6 +1071,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     e.stopPropagation();
     if (scannedParts.length === 0)
       return true;
+    toast.dismiss();
     setBulkScanSaving(true);
     const request = {
       parts: scannedParts
@@ -1006,7 +1085,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
-      toast.success(t('message.addXParts', "Added {{count}} new parts!", { count: data.length }));
+      toast.success(t('message.addXParts', "Added {{added}} parts, updated {{updated}} parts.", { added: data.added.length, updated: data.updated.length }));
       setBulkScanIsOpen(false);
       setBulkScanSaving(false);
       return true;
@@ -1228,24 +1307,27 @@ export function Inventory({ partNumber = "", ...rest }) {
 
                     {!disableRendering.current && <>
                       <Form.Group>
-                        <Popup
-                          hideOnScroll
-                          disabled={viewPreferences.helpDisabled}
-                          onOpen={disableHelp}
-                          content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
-                          trigger={
-                            <Form.Field
-                              control={NumberPicker}
-                              label={t('label.quantity', "Quantity")}
-                              placeholder="10"
-                              min={0}
-                              value={part.quantity || 0}
-                              onChange={updateNumberPicker}
-                              name="quantity"
-                              autoComplete="off"
-                            />
-                          }
-                        />
+                        <div>
+                          <Popup
+                            hideOnScroll
+                            disabled={viewPreferences.helpDisabled}
+                            onOpen={disableHelp}
+                            content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
+                            trigger={
+                              <Form.Field
+                                control={NumberPicker}
+                                label={t('label.quantity', "Quantity")}
+                                placeholder="10"
+                                min={0}
+                                value={part.quantity || 0}
+                                onChange={updateNumberPicker}
+                                name="quantity"
+                                autoComplete="off"
+                              />
+                            }
+                          />
+                          <div className="quantityAdded">{quantityAdded > 0 ? <div className="suggested-part"><Icon name="circle plus" /> {quantityAdded} <span>added</span></div> : (<></>)}</div>
+                        </div>
                         <Popup
                           hideOnScroll
                           disabled={viewPreferences.helpDisabled}

@@ -1,9 +1,14 @@
-﻿using System.Collections.Generic;
-
-namespace Binner.Model.Requests
+﻿namespace Binner.Model.Requests
 {
     public class CreateBulkPartRequest
     {
-        public ICollection<PartBase>? Parts { get; set; }
+        public ICollection<BulkPart>? Parts { get; set; }
+    }
+
+    public class BulkPart : PartBase
+    {
+        public int OriginalQuantity { get; set; }
+        public int ScannedQuantity { get; set; }
+        public string? SupplierPartNumber { get; set; }
     }
 }

@@ -22,7 +22,7 @@ const lngs = {
  */
 export function Header() {
   const { i18n } = useTranslation();
-  // console.log('resolved langauge', i18n.resolvedLanguage);
+  // console.debug('resolved langauge', i18n.resolvedLanguage);
   const [language, setLanguage] = useState(i18n.resolvedLanguage || 'en');
 
   useEffect(() => {

@@ -50,21 +50,21 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
   const onReceivedBarcodeInput = (e, buffer) => {
     if (buffer.length < MinBufferLengthToAccept && processKeyBuffer(buffer, barcodeConfig.prefix2D.length) !== barcodeConfig.prefix2D) {
 			keyBufferRef.current.length = 0;
-			if(barcodeConfig.isDebug) console.log('BSI: timeout: barcode dropped input', buffer);
+      if (barcodeConfig.isDebug) console.debug('BSI: timeout: barcode dropped input', buffer);
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
 			const sum = getSumFast(keyTimes.current, 1);
-			if(barcodeConfig.isDebug) console.log(`BSI: keytimes maxtime1 '${maxTime}' sum: ${sum}`, keyTimes.current);
+      if (barcodeConfig.isDebug) console.debug(`BSI: keytimes maxtime1 '${maxTime}' sum: ${sum}`, keyTimes.current);
 			keyTimes.current = [];
     	return; // drop and ignore input
 		} else {
 			// if keytimes has any times over a max threshold, drop input
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
 			if (maxTime > barcodeConfig.maxKeystrokeThresholdMs) {
-				if(barcodeConfig.isDebug) console.log(`BSI: dropped buffer due to maxtime '${maxTime}'`, keyTimes.current);
+        if (barcodeConfig.isDebug) console.debug(`BSI: dropped buffer due to maxtime '${maxTime}'`, keyTimes.current);
 				keyTimes.current = [];
 				return; // drop and ignore input
 			}
-			if(barcodeConfig.isDebug) console.log('BSI: ccepted buffer', buffer.length);
+      if (barcodeConfig.isDebug) console.debug('BSI: ccepted buffer', buffer.length);
 		}
 
     const result = processKeyBuffer(buffer);
@@ -75,9 +75,9 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 		const maxTime = getMaxValueFast(keyTimes.current, 1);
 		const sum = getSumFast(keyTimes.current, 1);
 		if(barcodeConfig.isDebug) 
-			console.log(`BSI: keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
+      console.debug(`BSI: keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
 		else
-			console.log(`BSI: Barcode event processed in ${sum}ms`);
+      console.debug(`BSI: Barcode event processed in ${sum}ms`);
 		keyTimes.current = [];
   };
 
@@ -237,7 +237,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 		gsCodePresent = gsCharCodes.some(v => correctedValue.includes(v));
 		rsCodePresent = rsCharCodes.some(v => correctedValue.includes(v));
 		eotCodePresent = eotCharCodes.some(v => correctedValue.includes(v));
-    //console.log('codePresent', gsCodePresent, rsCodePresent, eotCodePresent);
+    //console.debug('codePresent', gsCodePresent, rsCodePresent, eotCodePresent);
 
 		// read in the format number first. For Digikey 2d barcodes, this should be 6 (expectedFormatNumber)
     for (i = 0; i < correctedValue.length; i++) {
@@ -440,14 +440,14 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 	const scannerDebounced = useMemo(() => dynamicDebouncer(onReceivedBarcodeInput, () => BarcodeScannerInput.debounceIntervalMs), []);
 
 	const disableBarcodeInput = (e) => {
-		if(barcodeConfig.isDebug) console.log('BSI: disabled barcode input on request');
+    if (barcodeConfig.isDebug) console.debug('BSI: disabled barcode input on request');
 		setPreviousIsKeyboardListeningState(isKeyboardListening);
 		setIsKeyboardListening(false);
 		removeKeyboardHandler();
 	};
 
 	const restoreBarcodeInput = (e) => {
-		if(barcodeConfig.isDebug) console.log('BSI: enabled barcode input on request');
+    if (barcodeConfig.isDebug) console.debug('BSI: enabled barcode input on request');
 		setIsKeyboardListening(previousIsKeyboardListeningState);
 		addKeyboardHandler();
 	};
@@ -576,7 +576,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       scannerDebounced(e, keyBufferRef.current);
     } else {
 			// dropped key, not listening
-			if(barcodeConfig.isDebug) console.log('BSI: input ignored, not listening');
+      if (barcodeConfig.isDebug) console.debug('BSI: input ignored, not listening');
 		}
 		return e;
   };
@@ -609,7 +609,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 		return (<></>);
 
 	//renderCount.current = renderCount.current + 1;
-	//if (IsDebug) console.log('render', renderCount.current);
+	//if (IsDebug) console.debug('render', renderCount.current);
 
   return (
     <div style={{ float: "right" }}>

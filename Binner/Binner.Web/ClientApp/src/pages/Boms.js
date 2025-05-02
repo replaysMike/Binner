@@ -248,7 +248,7 @@ export function Boms (props) {
       const { data } = response;
     }
     else {
-      console.log('failed to save project');
+      console.debug('failed to save project');
     }
     p.loading = false;
     setLastSavedProjectId(lastSavedProjectId);

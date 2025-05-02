@@ -87,7 +87,7 @@ export const deAuthenticateUserAccount = () => {
 			const newResponseData = await newResponse.clone().json();
 			// we have a new token
 			if (newResponseData.isAuthenticated) {
-				console.log('received new jwt-token');
+        console.debug('received new jwt-token');
 				// use the new token
 				let userAccount = getUserAccount();
 				userAccount.accessToken = newResponseData.jwtToken;
@@ -95,17 +95,17 @@ export const deAuthenticateUserAccount = () => {
 				setUserAccount(userAccount);
 
 				// re-issue the original request and return it
-				console.log('reissuing original request', requestContext);
+        console.debug('reissuing original request', requestContext);
 				// todo: this part is a little wonky and could be refactored. because fetchApi returns json() body and not the response,
 				// we need to get it from our predefined response structure.
 				const finalResult = await fetchApi(requestContext.url, requestContext.data, true);
 				return finalResult.responseObject;
 			} else {
-				console.log('failed to refresh token', newResponseData.message);
+        console.debug('failed to refresh token', newResponseData.message);
 			}
 		}else if (newResponse.status === 401 || newResponse.status === 403) {
 			// failed to refresh token
-			console.log('failed to refresh token 401', newResponse);
+      console.debug('failed to refresh token 401', newResponse);
 		}
 
 		return newResponse;

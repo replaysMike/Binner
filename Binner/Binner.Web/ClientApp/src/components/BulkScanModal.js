@@ -71,16 +71,21 @@ export function BulkScanModal(props) {
 	
 			// bulk scan add part
 			const lastPart = _.last(scannedParts);
+      console.debug('input', input.value);
 			const scannedPart = {
 				id: scannedParts.length + 1,
 				partNumber: cleanPartNumber,
+        originalQuantity: 0,
 				quantity: parseInt(input.value.quantity || "1"),
 				scannedQuantity: parseInt(input.value.quantity || "1"),
 				location: (rememberLocation && lastPart && lastPart.location) || "",
 				binNumber: (rememberLocation && lastPart && lastPart.binNumber) || "",
 				binNumber2: (rememberLocation && lastPart && lastPart.binNumber2) || "",
 				origin: (input.value.countryOfOrigin && input.value.countryOfOrigin.toLowerCase()) || "",
+        supplierPartNumber: input.value.supplierPartNumber || "",
+        manufacturerPartNumber: input.value.mfgPartNumber || "",
 				description: input.value.description || "",
+        salesOrder: input.value.salesOrder || "",
 				barcode: input.correctedValue,
 				isMetadataFound: false,
 				isEditable: false,
@@ -130,8 +135,18 @@ export function BulkScanModal(props) {
 							scannedPart.location = localInventoryResponse.data[0].location;
 							scannedPart.binNumber = localInventoryResponse.data[0].binNumber;
 							scannedPart.binNumber2 = localInventoryResponse.data[0].binNumber2;
-							scannedPart.quantity = localInventoryResponse.data[0].quantity;
+              if (localInventoryResponse.data[0].manufacturer)
+                scannedPart.manufacturer = localInventoryResponse.data[0].manufacturer;
+              if (localInventoryResponse.data[0].manufacturerPartNumber)
+                scannedPart.manufacturerPartNumber = localInventoryResponse.data[0].manufacturerPartNumber;
+              const anySupplierNumber = localInventoryResponse.data[0].supplierPartNumber || localInventoryResponse.data[0].digiKeyPartNumber || localInventoryResponse.data[0].mouserPartNumber || localInventoryResponse.data[0].tmePartNumber || localInventoryResponse.data[0].arrowPartNumber;
+              if (anySupplierNumber)
+                scannedPart.supplierPartNumber = localInventoryResponse.data[0].supplierPartNumber || localInventoryResponse.data[0].digiKeyPartNumber || localInventoryResponse.data[0].mouserPartNumber;
+              scannedPart.originalQuantity = localInventoryResponse.data[0].quantity;
+							scannedPart.quantity = localInventoryResponse.data[0].quantity + scannedPart.scannedQuantity;
 						} else {
+              // new part
+              scannedPart.originalQuantity = 0;
 							scannedPart.description = partInfo.description;
 							if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
 								scannedPart.partNumber = partInfo.basePartNumber;
@@ -149,7 +164,7 @@ export function BulkScanModal(props) {
 					onGetPartMetadata(scannedPart.partNumber, scannedPart, includeInventorySearch).then((data) => {
 						if (data.response.parts.length > 0) {
 							const firstPart = data.response.parts[0];
-							// console.log('adding part', firstPart);
+							// console.debug('adding part', firstPart);
 							const newScannedParts = [...scannedPartsRef.current];
 							const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === firstPart.manufacturerPartNumber || i.barcode === scannedPart.barcode);
 							if (scannedPartIndex >= 0) {
@@ -221,8 +236,13 @@ export function BulkScanModal(props) {
 			id: scannedParts.length + 1,
       basePartNumber: '',
       partNumber: '',
+      originalQuantity: 0,
+      scannedQuantity: 0,
       quantity: 1,
       description: '',
+      supplierPartNumber: '',
+      manufacturerPartNumber: '',
+      salesOrder: '',
       origin: '',
       location: '',
       binNumber: '',
@@ -261,7 +281,15 @@ export function BulkScanModal(props) {
 
 	const handleOnSave = async (e) => {
 		if (props.onSave) {
-			const isSuccess = await props.onSave(e, scannedParts);
+      const mappedParts = scannedParts.map((p) => ({
+        ...p,
+        // ensure these are numeric
+        quantity: Number.isInteger(p.quantity) ? p.quantity : parseInt(p.quantity),
+        // ensure these aren't numeric
+        binNumber: p.binNumber?.toString() || '',
+        binNumber2: p.binNumber2?.toString() || '',
+      }))
+      const isSuccess = await props.onSave(e, mappedParts);
 			if (isSuccess) {
 				handleBulkScanClear();
 			}
@@ -318,10 +346,11 @@ export function BulkScanModal(props) {
 				<Table.Header>
 					<Table.Row>
 						<Table.HeaderCell></Table.HeaderCell>
-						<Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
-						<Table.HeaderCell>{t('label.quantity', "Quantity")}</Table.HeaderCell>
+            <Table.HeaderCell><Popup content={<p>{t('page.inventory.popup.partAddedUpdated', "The part number being added/updated.")}</p>} trigger={<span>{t('label.part', "Part")}</span>} /></Table.HeaderCell>
+            <Table.HeaderCell><Popup content={<p>{t('page.inventory.popup.currentQuantity', "The quantity currently in your inventory.")}</p>} trigger={<span>{t('label.stock', "Stock")}</span>} /></Table.HeaderCell>
+            <Table.HeaderCell><Popup content={<p>{t('page.inventory.popup.newQuantity', "The quantity your inventory will be set to.")}</p>} trigger={<span>{t('label.newQuantityShort', "New Qty")}</span>} /></Table.HeaderCell>
 						<Table.HeaderCell>{t('label.description', "Description")}</Table.HeaderCell>
-						<Table.HeaderCell>{t('label.origin', "Origin")}</Table.HeaderCell>
+            <Table.HeaderCell><Popup content={<p>{t('page.inventory.popup.partOrigin', "The country of origin of the manufactured part.")}</p>} trigger={<span>{t('label.origin', "Origin")}</span>} /></Table.HeaderCell>
 						<Table.HeaderCell>{t('label.location', "Location")}</Table.HeaderCell>
 						<Table.HeaderCell>{t('label.binNumber', "Bin Number")}</Table.HeaderCell>
 						<Table.HeaderCell>{t('label.binNumber2', "Bin Number 2")}</Table.HeaderCell>
@@ -337,23 +366,43 @@ export function BulkScanModal(props) {
 						>
 							<Table.Cell textAlign="center" style={{verticalAlign: 'middle', width: '50px'}}>
 								{!p.isEditable 
-									? <Loader active inline />
+                  ? <div className="ui loader inline static small" />
 									: p.existsInInventory 
-										? <Popup content={<p>{t('message.scanPartExists', "Part exists in inventory. You can edit it's details or remove it from your scan.")}</p>} trigger={<Icon name="warning circle" color="red" size="big" />} />
+										? <Popup content={<p>{t('message.scanPartExists', "Part exists in inventory, quantity specified by the label will be added to your inventory.")}</p>} trigger={<Icon name="check circle" color="blue" size="big" />} />
 										: p.isMetadataFound 
-											? <Icon name="check circle" color="green" size="big" /> 
+                      ? <Popup content={<p>{t('message.scanPartNew', "New part will be added to your inventory.")}</p>} trigger={<Icon name="check circle" color="green" size="big" />} />
 											: <Popup content={<p>{t('message.noPartMetadata', "No part metadata found!")}</p>} trigger={<Icon name="warning sign" color="yellow" size="big" />} />
-								}									
+								}
 							</Table.Cell>
 							<Table.Cell collapsing>
-								<ProtectedInput 
-									name="partNumber" 
-									value={p.partNumber || ''} 
-									onChange={(e, c) => handleScannedPartChange(e, c, p.id)} 
-									disabled={!p.isEditable}
-								/>
+                <Popup
+                  wide='very'
+                  hoverable
+                  content={<div>
+                    <div style={{display: 'flex', flexDirection: 'row', alignItems: 'stretch', width: '100%'}}>
+                      <div style={{ flex: '1' }}><b>Added Qty:</b> <span style={{color: 'red'}}>+{p.scannedQuantity}</span></div>
+                      <div style={{ flex: '1' }}><b>In Stock Qty:</b> {p.originalQuantity}</div>
+                      <div style={{ flex: '1' }}><b>New Qty:</b> {p.quantity}</div>
+                    </div>
+                    <b>Manufacturer Part Number:</b> {p.manufacturerPartNumber}<br/>
+                    <b>Manufacturer:</b> {p.manufacturer}<br/>
+                    <b>Supplier Part Number:</b> {p.supplierPartNumber}<br/>
+                    <b>Description:</b> {p.description}<br />
+                    <b>Sales Order:</b> {p.salesOrder}<br />
+                  </div>}
+                  trigger={<div><ProtectedInput
+                    name="partNumber"
+                    value={p.partNumber || ''}
+                    onChange={(e, c) => handleScannedPartChange(e, c, p.id)}
+                    disabled={!p.isEditable}
+                  /></div>
+                  }
+                />
 							</Table.Cell>
-							<Table.Cell collapsing>
+              <Table.Cell collapsing textAlign="center" style={{lineHeight: '2.5em', fontWeight: '500', color: '#666'}}>
+                {p.originalQuantity || '-'}
+              </Table.Cell>
+              <Table.Cell collapsing textAlign="center">
 								<ProtectedInput
 									hideIcon
 									value={p.quantity || '1'}
@@ -364,19 +413,19 @@ export function BulkScanModal(props) {
 									onBlur={e => ensureNumeric(e, "quantity", p)}
 								/>
 							</Table.Cell>
-							<Table.Cell collapsing>
+              <Table.Cell collapsing>
 								<Popup 
 									wide='very'
 									hoverable
 									content={p.description || ''}
-									trigger={<ProtectedInput 
+									trigger={<div><ProtectedInput 
 										name="description" 
 										value={p.description || ''} 
 										onChange={(e, c) => handleScannedPartChange(e, c, p.id)}
 										disabled={!p.isEditable}
-										/>
+                  /></div>
 									}
-								/>									
+								/>
 							</Table.Cell>
 							<Table.Cell collapsing textAlign="center" verticalAlign="middle">
 								<Flag name={p.origin || ""} />
