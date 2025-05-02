@@ -41,6 +41,7 @@ export default function PartsGrid2Memoized({
     keyword = '',
     by = [],
     byValue = [],
+    parts = [],
     ...rest
   }) {
   const { t } = useTranslation();
@@ -66,7 +67,7 @@ export default function PartsGrid2Memoized({
     return result;
   };
 
-  const [parts, setParts] = useState(rest.parts);
+  const [_parts, setParts] = useState(parts);
   const [_page, setPage] = useState(page);
   const [pageSize, setPageSize] = useState(getViewPreference('pageSize') || 25);
   const [_totalPages, setTotalPages] = useState(totalPages);
@@ -87,10 +88,12 @@ export default function PartsGrid2Memoized({
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
   const [sorting, setSorting] = useState([]);
   const itemsPerPageOptions = [
-    { key: 1, text: "25", value: 25 },
-    { key: 2, text: "50", value: 50 },
-    { key: 3, text: "100", value: 100 },
-    { key: 4, text: "200", value: 200 }
+    { key: 1, text: "10", value: 10 },
+    { key: 2, text: "25", value: 25 },
+    { key: 3, text: "50", value: 50 },
+    { key: 4, text: "100", value: 100 },
+    { key: 5, text: "200", value: 200 },
+    { key: 6, text: "500", value: 500 },
   ];
 
   const loadPartTypes = useCallback((parentPartType = "") => {
@@ -110,7 +113,7 @@ export default function PartsGrid2Memoized({
   }, [loadPartTypes]);
 
   useEffect(() => {
-    setParts(rest.parts);
+    setParts(parts);
     setIsLoading(loading);
     setColumns(columns);
     setColumnsArray(columns.split(','));
@@ -119,12 +122,12 @@ export default function PartsGrid2Memoized({
     setSelectedPart(selectedPart);
     setEditable(editable);
     setVisitable(visitable);
-    setTotalPages(Math.ceil(totalPages));
-  }, [rest, loading, columns, defaultVisibleColumns, page, selectedPart, editable, visitable, totalPages]);
+    setTotalPages(totalPages);
+  }, [parts, loading, columns, defaultVisibleColumns, page, selectedPart, editable, visitable, totalPages]);
 
   const handlePageChange = (e, control) => {
     setPage(control.activePage);
-    loadPage(e, control.activePage);
+    if (rest.loadPage) rest.loadPage(e, control.activePage);
   };
 
   const handleVisitLink = (e, url) => {
@@ -142,6 +145,7 @@ export default function PartsGrid2Memoized({
   const handleDeletePart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    
     await fetchApi(`/api/part`, {
       method: "DELETE",
       headers: {
@@ -149,7 +153,7 @@ export default function PartsGrid2Memoized({
       },
       body: JSON.stringify({ partId: _selectedPart.partId })
     });
-    const partsDeleted = _.without(parts, _.findWhere(parts, { partId: _selectedPart.partId }));
+    const partsDeleted = _.without(_parts, _.findWhere(_parts, { partId: _selectedPart.partId }));
     setConfirmDeleteIsOpen(false);
     setParts(partsDeleted);
     setSelectedPart(null);
@@ -187,6 +191,7 @@ export default function PartsGrid2Memoized({
 
   const handlePageSizeChange = (e, control) => {
     setPageSize(control.value);
+    setPage(1);
     setViewPreference('pageSize', control.value);
     if (rest.onPageSizeChange) rest.onPageSizeChange(e, control.value);
   };
@@ -251,6 +256,7 @@ export default function PartsGrid2Memoized({
   };
 
   const tableColumns = useMemo(() => {
+    console.log('render tableColumns');
     const handleSelfLink = (e, part, propertyName) => {
       e.preventDefault();
       e.stopPropagation();
@@ -347,7 +353,7 @@ export default function PartsGrid2Memoized({
       setColumnOrder(columnsArray)
     
     return headers;
-  }, [partTypes, columnsArray, columnsVisibleArray, columnOrder, navigate, t, rest.onPartClick]);
+  }, [_parts, partTypes, columnsArray, columnsVisibleArray, columnOrder, navigate, t, rest.onPartClick]);
 
   const handleColumnVisibilityChange = (item) => {
     let newColumnVisibility = {...columnVisibility};
@@ -391,6 +397,7 @@ export default function PartsGrid2Memoized({
     if (rest.onPartClick) rest.onPartClick(row, row.original);
   };
 
+  console.log('totalPages', _totalPages);
   return (
     <div id="partsGrid">
       <style>{mediaStyles}</style>
@@ -411,7 +418,7 @@ export default function PartsGrid2Memoized({
         <div style={{marginTop: '5px'}}>
           <MaterialReactTable
             columns={tableColumns}
-            data={parts}
+            data={_parts}
             //enableRowSelection /** disabled until I can figure out how to pin it */
             enableGlobalFilter={false}
             enableFilters={false}

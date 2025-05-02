@@ -1171,12 +1171,12 @@ INNER JOIN (
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToListAsync();
-                return new PaginatedResponse<Part>(totalParts, pageRecords, request.Page, _mapper.Map<ICollection<Part>>(entities));
+                return new PaginatedResponse<Part>(totalParts, request.Results, request.Page, _mapper.Map<ICollection<Part>>(entities));
             }
             catch (InvalidOperationException)
             {
                 // return empty result set, unknown sort by column
-                return new PaginatedResponse<Part>(totalParts, pageRecords, request.Page, new List<Part>());
+                return new PaginatedResponse<Part>(totalParts, request.Results, request.Page, new List<Part>());
             }
         }
 

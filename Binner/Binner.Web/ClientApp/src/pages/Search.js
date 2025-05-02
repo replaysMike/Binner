@@ -96,7 +96,6 @@ export function Search(props) {
     );
     const { data } = response;
     const pageOfData = data.items;
-    const totalPages = Math.ceil(data.totalItems / results);
     let newData = [];
     if (pageOfData) {
       if (reset) 
@@ -110,7 +109,7 @@ export function Search(props) {
       setShowPartNotFound(true);
     setParts(newData);
     setPage(page);
-    setTotalPages(totalPages);
+    setTotalPages(data.totalPages);
     setTotalRecords(data.totalItems);
     setLoading(false);
     setRenderIsDirty(!renderIsDirty);
@@ -225,7 +224,8 @@ export function Search(props) {
 
   const handlePageSizeChange = async (e, pageSize) => {
     setPageSize(pageSize);
-    await loadParts(page, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, keyword || "");
+    setPage(1);
+    await loadParts(1, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, keyword || "");
   };
 
   const handleSortChange = async (sortBy, sortDirection) => {
@@ -267,7 +267,7 @@ export function Search(props) {
       <FormHeader name={t('page.search.title', "Inventory")} to="/" />
       <Form>
         <Form.Field width={5} style={{margin: 0}}>
-          <ProtectedInput            
+          <ProtectedInput
             focus
             placeholder={t('page.search.search', "Search")}
             icon="search"
@@ -295,7 +295,7 @@ export function Search(props) {
             <Button key={index} primary size="mini" onClick={e => removeFilter(e, filterName, filterByValue[index])}>
               <Icon name="delete" />
               {filterName}: {filterByValue[index]}
-            </Button>       
+            </Button>
           ))
         }
       </div>
