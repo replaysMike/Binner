@@ -136,6 +136,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [saveMessage, setSaveMessage] = useState("");
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
+  const [lastBarcodeScan, setLastBarcodeScan] = useState(null);
   const [isBulkScanSaving, setBulkScanSaving] = useState(false);
   const [scannedPartsBarcodeInput, setScannedPartsBarcodeInput] = useState(null);
   const [datasheetMeta, setDatasheetMeta] = useState(null);
@@ -553,11 +554,56 @@ export function Inventory({ partNumber = "", ...rest }) {
 
   const searchDebounced = useMemo(() => debounce(fetchPartMetadataAndInventory, SearchDebounceTimeMs), [pageHasParameters]);
 
+  const validateExistingBarcodeScan = async (input) => {
+    Inventory.validateExistingBarcodeScanController?.abort();
+    Inventory.validateExistingBarcodeScanController = new AbortController();
+
+    const request = {
+      rawScan: input.correctedValue || input.rawValue,
+      searchCrc: true
+    }
+    // check if we have imported this label before
+    return await fetchApi(`/api/partScanHistory/search`, {
+      signal: Inventory.validateExistingBarcodeScanController.signal,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request),
+    }).then((response) => {
+      if (response.responseObject.status === 404) {
+        // no history record, proceed
+        return true;
+      } else if (response.responseObject.ok) {
+        // record exists, we have scanned this label before
+        return response.data;
+      }
+      // error
+      return false;
+    }).catch((ex) => {
+      if (ex?.name === "AbortError") {
+        // Continuation logic has already been skipped, so return normally
+      } else {
+        // other error
+        const { data } = ex;
+        if (data.status === 404) {
+          // no history record, proceed
+          return true;
+        } else {
+          console.error('http error', ex);
+          toast.error(`Server returned ${data.status} error.`);
+        }
+      }
+      return false;
+    });
+  };
+
   // for processing barcode scanner input
   const handleBarcodeInput = async (e, input) => {
     if (!input?.value) return;
     toast.dismiss();
 
+    setLastBarcodeScan(input);
     console.debug('barcode input received', input);
     let cleanPartNumber = "";
     if (input.type === "datamatrix") {
@@ -576,6 +622,21 @@ export function Inventory({ partNumber = "", ...rest }) {
     // if we didn't rerceive a code we can understand, ignore it
     if (!cleanPartNumber || cleanPartNumber.length === 0) {
       console.debug('no clean part number found', cleanPartNumber, input?.value?.quantity);
+      return;
+    }
+
+    // validate if we have already scanned this label before
+    const validateResult = await validateExistingBarcodeScan(input);
+    if (validateResult === true) {
+      // no scan history, proceed
+    } else if (validateResult === false) {
+      // error occurred
+      toast.error(`An error occurred while validating the barcode.`);
+      return;
+    } else {
+      // label has already been scanned
+      toast.error(`This label has already been imported.`);
+      // todo: confirm do you want to import it again?
       return;
     }
     
@@ -709,17 +770,17 @@ export function Inventory({ partNumber = "", ...rest }) {
         return data;
       }
       return null;
-    }).catch((err) => {
+    }).catch((ex) => {
       setLoadingPart(false);
       if (ex?.name === "AbortError") {
         // Continuation logic has already been skipped, so return normally
       } else {
         // other error
-        const { data } = err;
+        const { data } = ex;
         if (data.status === 404)
           console.info('part not found');
         else {
-          console.error('http error', err);
+          console.error('http error', ex);
           toast.error(`Server returned ${data.status} error.`);
         }
       }
@@ -819,15 +880,18 @@ export function Inventory({ partNumber = "", ...rest }) {
     e.stopPropagation();
     const isExisting = part.partId > 0;
 
-    const request = { ...part };
-    request.partNumber = inputPartNumber.trim();
-    request.partTypeId = (parseInt(part.partTypeId) || 0) + "";
-    request.mountingTypeId = (parseInt(part.mountingTypeId) || 0) + "";
-    request.quantity = parseInt(part.quantity) || 0;
-    request.lowStockThreshold = parseInt(part.lowStockThreshold) || 0;
-    request.cost = parseFloat(part.cost) || 0.0;
-    request.projectId = parseInt(part.projectId) || null;
-    request.currency = part.currency || systemSettings.currency || 'USD';
+    const request = { 
+      ...part,
+      partNumber: inputPartNumber.trim(),
+      partTypeId: (parseInt(part.partTypeId) || 0) + "",
+      mountingTypeId: (parseInt(part.mountingTypeId) || 0) + "",
+      quantity: parseInt(part.quantity) || 0,
+      lowStockThreshold: parseInt(part.lowStockThreshold) || 0,
+      cost: parseFloat(part.cost) || 0.0,
+      projectId: parseInt(part.projectId) || null,
+      currency: part.currency || systemSettings.currency || 'USD',
+      barcodeObject: lastBarcodeScan
+    };
 
     toast.dismiss();
 
@@ -855,12 +919,15 @@ export function Inventory({ partNumber = "", ...rest }) {
       setDuplicateParts(data.parts);
       setDuplicatePartModalOpen(true);
     } else if (response.responseObject.status === 200) {
-      // reset form if it was a new part
+      // reset the last barcode scan
+      setLastBarcodeScan(null);
+      // save success
       if (isExisting) {
         saveMessage = t('message.savedPart', "Saved part {{partNumber}}!", { partNumber: request.partNumber });
         setSaveMessage(saveMessage);
         toast.info(saveMessage);
       } else {
+        // reset form if it was a new part
         saveMessage = t('message.addedPart', "Added part {{partNumber}}!", { partNumber: request.partNumber });
         resetForm(saveMessage);
         toast.success(saveMessage);

@@ -90,7 +90,8 @@ export function BulkScanModal(props) {
 				isMetadataFound: false,
 				isEditable: false,
 				existsInInventory: false,
-				dateAdded: new Date().getTime()
+				dateAdded: new Date().getTime(),
+        barcodeObject: input
 			};
 			// stupid hack
 			const els = document.getElementsByClassName('noMoreAnimation');

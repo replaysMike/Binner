@@ -263,7 +263,7 @@ const invokeErrorHandler = async (response) => {
     status: response.status,
     ...responseObject
   };
-  window.showErrorWindow(errorObject);
+  if (window.showErrorWindow) window.showErrorWindow(errorObject);
   // return the original response along with the responseObject that was read
   return Promise.reject(wrapReturn(responseObject, response));
 };

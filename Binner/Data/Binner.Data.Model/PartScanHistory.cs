@@ -1,5 +1,6 @@
 ﻿using AnyBarcode;
 using Binner.Common;
+using Binner.Model.Barcode;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -30,7 +31,7 @@ namespace Binner.Data.Model
         /// </summary>
         public int Crc { get; set; }
 
-        public BarcodeType BarcodeType { get; set; }
+        public BarcodeTypes BarcodeType { get; set; }
 
         public ScannedLabelType ScannedLabelType { get; set; }
 

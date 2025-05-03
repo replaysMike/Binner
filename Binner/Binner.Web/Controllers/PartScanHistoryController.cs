@@ -1,4 +1,5 @@
 ﻿using AnyMapper;
+using Binner.Common.IO;
 using Binner.Common.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
@@ -38,6 +39,17 @@ namespace Binner.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromQuery]GetPartScanHistoryRequest request)
         {
+            return await SearchAsync(request);
+        }
+
+        /// <summary>
+        /// Get an existing part scan history
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("search")]
+        public async Task<IActionResult> SearchAsync(GetPartScanHistoryRequest request)
+        {
             PartScanHistory? partScanHistory = null;
             if (request.PartScanHistoryId > 0)
             {
@@ -45,15 +57,21 @@ namespace Binner.Web.Controllers
             }
             if (!string.IsNullOrEmpty(request.RawScan))
             {
-                partScanHistory = await _partScanHistoryService.GetPartScanHistoryAsync(request.RawScan);
+                if (request.SearchCrc)
+                    // search using the raw scan string
+                    partScanHistory = await _partScanHistoryService.GetPartScanHistoryAsync(request.RawScan);
+                else
+                    // search using the crc of the raw scan string
+                    partScanHistory = await _partScanHistoryService.GetPartScanHistoryAsync(Checksum.Compute(request.RawScan));
             }
             else if (request.Crc > 0)
             {
+                // search using provided crc
                 partScanHistory = await _partScanHistoryService.GetPartScanHistoryAsync(request.Crc);
             }
-            
+
             if (partScanHistory == null) return NotFound();
-            
+
             return Ok(Mapper.Map<PartScanHistory, PartScanHistoryResponse>(partScanHistory));
         }
 
