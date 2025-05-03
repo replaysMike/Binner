@@ -21,6 +21,10 @@
         /// <summary>
         /// MySql / MariaDb
         /// </summary>
-        MySql
+        MySql,
+        /// <summary>
+        /// In-memory database, not persistant used for testing only
+        /// </summary>
+        InMemory
     }
 }

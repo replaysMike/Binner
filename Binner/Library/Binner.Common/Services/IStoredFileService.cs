@@ -69,5 +69,14 @@ namespace Binner.Common.Services
         /// </summary>
         /// <returns></returns>
         Task<ICollection<StoredFile>> GetStoredFilesAsync(PaginatedRequest request);
+
+        /// <summary>
+        /// Generate a new filename for stored file
+        /// </summary>
+        /// <param name="originalFilename"></param>
+        /// <param name="part"></param>
+        /// <param name="storedFileType"></param>
+        /// <returns></returns>
+        string GenerateFilename(string originalFilename, Part part, StoredFileType storedFileType);
     }
 }

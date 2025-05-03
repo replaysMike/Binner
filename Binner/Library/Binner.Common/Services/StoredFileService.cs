@@ -2,6 +2,7 @@
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
+using NPOI.HPSF;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -90,22 +91,29 @@ namespace Binner.Common.Services
             return Path.Combine(userFilesPath, storedFileType.ToString());
         }
 
-        private string GenerateFilename(string originalFilename, Part part, StoredFileType storedFileType)
+        public string GenerateFilename(string originalFilename, Part part, StoredFileType storedFileType)
         {
             if (string.IsNullOrEmpty(part.PartNumber))
                 throw new Exception("No part number specified");
             var extension = Path.GetExtension(originalFilename);
-            var filename = $"{part.PartNumber.Replace("/", "_")}-{storedFileType}{extension}";
+            var filename = MakeSafeFilename($"{part.PartNumber.Replace("/", "_")}-{storedFileType}{extension}");
             var path = GetStoredFilePath(storedFileType);
             var pathToFile = Path.Combine(path, filename);
             var i = 1;
             while (File.Exists(pathToFile) && i < 10000)
             {
-                filename = $"{part.PartNumber.Replace("/", "_")}-{storedFileType}-{i}{extension}";
+                filename = MakeSafeFilename($"{part.PartNumber.Replace("/", "_")}-{storedFileType}-{i}{extension}");
                 pathToFile = Path.Combine(path, filename);
                 i++;
             }
             return pathToFile;
+        }
+
+        internal string MakeSafeFilename(string filename)
+        {
+            // strip invalid characters from filenames
+            var invalidFileNameChars = Path.GetInvalidFileNameChars();
+            return new string(filename.Where(ch => !invalidFileNameChars.Contains(ch)).ToArray());
         }
 
         public async Task<StoredFile> AddStoredFileAsync(StoredFile storedFile)
