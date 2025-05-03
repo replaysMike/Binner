@@ -119,7 +119,7 @@ namespace Binner.Web.Controllers
                 return BadRequest($"No part type specified!");
 
             var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
-            mappedPart.Keywords = request.Keywords?.Split(new string[] { " ", "," }, StringSplitOptions.RemoveEmptyEntries);
+            mappedPart.Keywords = request.Keywords?.Split([" ", ","], StringSplitOptions.RemoveEmptyEntries);
 
             var partType = await GetPartTypeAsync(request.PartTypeId);
             if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
@@ -135,36 +135,40 @@ namespace Binner.Web.Controllers
 
             var part = await _partService.AddPartAsync(mappedPart);
 
-            // add the scanned barcode to history
             if (request.BarcodeObject != null)
             {
-                var b = request.BarcodeObject;
-                var partScanHistory = new PartScanHistory
-                {
-                    PartId = part.PartId,
-                    RawScan = b.CorrectedValue ?? b.RawValue,
-                    BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
-                    CountryOfOrigin = b.Value.GetValue("countryOfOrigin").As<string?>(),
-                    Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
-                    Description = b.Value.GetValue("description").As<string?>(),
-                    Invoice = b.Value.GetValue("invoice").As<string?>(),
-                    LotCode = b.Value.GetValue("lotCode").As<string?>(),
-                    ManufacturerPartNumber = b.Value.GetValue("mfgPartNumber").As<string?>(),
-                    Mid = b.Value.GetValue("mid").As<string?>(),
-                    Packlist = b.Value.GetValue("unknown").As<string?>(),
-                    Quantity = b.Value.GetValue("quantity").As<int>(),
-                    SalesOrder = b.Value.GetValue("salesOrder").As<string?>(),
-                    ScannedLabelType = b.ScannedLabelType,
-                    Supplier = b.Supplier,
-                    SupplierPartNumber = b.Value.GetValue("supplierPartNumber").As<string?>(),
-                };
-                await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
+                // add the scanned barcode to history
+                await AddScanHistoryAsync(part, request.BarcodeObject);
             }
 
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
             partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
             return Ok(partResponse);
+        }
+
+        private async Task AddScanHistoryAsync(Part part, BarcodeScan b)
+        {
+            var partScanHistory = new PartScanHistory
+            {
+                PartId = part.PartId,
+                RawScan = b.CorrectedValue ?? b.RawValue,
+                BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
+                CountryOfOrigin = b.Value.GetValue("countryOfOrigin").As<string?>(),
+                Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
+                Description = b.Value.GetValue("description").As<string?>(),
+                Invoice = b.Value.GetValue("invoice").As<string?>(),
+                LotCode = b.Value.GetValue("lotCode").As<string?>(),
+                ManufacturerPartNumber = b.Value.GetValue("mfgPartNumber").As<string?>(),
+                Mid = b.Value.GetValue("mid").As<string?>(),
+                Packlist = b.Value.GetValue("unknown").As<string?>(),
+                Quantity = b.Value.GetValue("quantity").As<int>(),
+                SalesOrder = b.Value.GetValue("salesOrder").As<string?>(),
+                ScannedLabelType = b.ScannedLabelType,
+                Supplier = b.Supplier,
+                SupplierPartNumber = b.Value.GetValue("supplierPartNumber").As<string?>(),
+            };
+            await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
         }
 
         /// <summary>
@@ -188,8 +192,15 @@ namespace Binner.Web.Controllers
             if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
 
             mappedPart.PartId = request.PartId;
-            mappedPart.Keywords = request.Keywords?.Split(new string[] { " ", "," }, StringSplitOptions.RemoveEmptyEntries);
+            mappedPart.Keywords = request.Keywords?.Split([" ", ","], StringSplitOptions.RemoveEmptyEntries);
             var part = await _partService.UpdatePartAsync(mappedPart);
+
+            if (request.BarcodeObject != null)
+            {
+                // add the scanned barcode to history
+                await AddScanHistoryAsync(part, request.BarcodeObject);
+            }
+
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
             partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
@@ -352,32 +363,12 @@ namespace Binner.Web.Controllers
                     var newPart = await _partService.AddPartAsync(mappedPart);
                     addedParts.Add(newPart);
 
-
-                    // add the scanned barcode to history
                     if (bulkPart.BarcodeObject != null)
                     {
-                        var b = bulkPart.BarcodeObject;
-                        var partScanHistory = new PartScanHistory
-                        {
-                            PartId = newPart.PartId,
-                            RawScan = b.CorrectedValue ?? b.RawValue,
-                            BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
-                            CountryOfOrigin = b.Value.GetValue("countryOfOrigin").As<string?>(),
-                            Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
-                            Description = b.Value.GetValue("description").As<string?>(),
-                            Invoice = b.Value.GetValue("invoice").As<string?>(),
-                            LotCode = b.Value.GetValue("lotCode").As<string?>(),
-                            ManufacturerPartNumber = b.Value.GetValue("mfgPartNumber").As<string?>(),
-                            Mid = b.Value.GetValue("mid").As<string?>(),
-                            Packlist = b.Value.GetValue("unknown").As<string?>(),
-                            Quantity = b.Value.GetValue("quantity").As<int>(),
-                            SalesOrder = b.Value.GetValue("salesOrder").As<string?>(),
-                            ScannedLabelType = b.ScannedLabelType,
-                            Supplier = b.Supplier,
-                            SupplierPartNumber = b.Value.GetValue("supplierPartNumber").As<string?>(),
-                        };
-                        await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
+                        // add the scanned barcode to history
+                        await AddScanHistoryAsync(newPart, bulkPart.BarcodeObject);
                     }
+
                 }
             }
 

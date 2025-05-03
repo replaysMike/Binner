@@ -9,7 +9,7 @@ import "./ProtectedInput.css";
  * A form text input that is protected against barcode input.
  * When barcode input is received, the control is masked out and content is replaced and cleared after a successful barcode scan.
  */
-export default function ProtectedInput({ clearOnScan = true, allowEnter = false, hideIcon = false, hideClearIcon = false, ...rest }) {
+export default function ProtectedInput({ clearOnScan = true, allowEnter = false, hideIcon = false, hideClearIcon = false, onClear, onBarcodeReadStarted, onBarcodeReadCancelled, onBarcodeReadReceived, ...rest }) {
 	const IsDebug = false;
 	const ScanSuccessClassRemovalMs = 2100;
 	const DefaultProtectedClassName = "protectedInput";
@@ -26,7 +26,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 		if (e.detail.destination.id !== id) return;
 		if (IsDebug) console.debug('PI: barcodeReadStarted', e, e.detail.destination.id, id);
 		inputRef.current.classList.add(DefaultIsScanningClassName);
-		if (rest.onBarcodeReadStarted) rest.onBarcodeReadStarted(e);
+		if (onBarcodeReadStarted) onBarcodeReadStarted(e);
 	};
 
 	const barcodeReadCancelled = (e) => {
@@ -35,7 +35,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 		if (e.detail.destination.id !== id) return;
 		if (IsDebug) console.debug('PI: barcodeReadCancelled', e, e.detail.destination.id, id);
 		inputRef.current.classList.remove(DefaultIsScanningClassName);
-		if (rest.onBarcodeReadCancelled) rest.onBarcodeReadCancelled(e);
+		if (onBarcodeReadCancelled) onBarcodeReadCancelled(e);
 	};
 
 	const barcodeReadReceived = (e) => {
@@ -53,7 +53,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 			// clear/restore the text input
 			rest.onChange(e, {...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: bufferedValue.current });
 		}
-		if (rest.onBarcodeReadReceived) rest.onBarcodeReadReceived(e);
+		if (onBarcodeReadReceived) onBarcodeReadReceived(e);
 	};
 
 	useEffect(() => {
@@ -89,12 +89,12 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const handleClear = (e) => {
-    if (rest.onClear) rest.onClear(e);
+    if (onClear) onClear(e);
 		return rest.onChange(e, { ...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: '' });
 	};
 
 	// propsToExclude: exclude any props that only belong to our control
-	const{ onBarcodeReadStarted, onBarcodeReadCancelled, onBarcodeReadReceived, ...propsToReturn } = privateProps;
+	const{ ...propsToReturn } = privateProps;
 	
 	const getClearIconPosition = () => {
 		if (rest.icon) {
