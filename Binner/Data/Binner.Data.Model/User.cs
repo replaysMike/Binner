@@ -145,6 +145,8 @@ namespace Binner.Data.Model
 
         public ICollection<OAuthRequest>? OAuthRequests { get; set; }
 
+        public ICollection<PartScanHistory>? PartScanHistories { get; set; }
+
         public ICollection<PartSupplier>? PartSuppliers { get; set; }
 
         public ICollection<ProjectProduceHistory>? ProjectProduceHistory { get; set; }

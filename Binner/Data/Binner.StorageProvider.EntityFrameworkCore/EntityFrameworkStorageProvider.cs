@@ -967,6 +967,83 @@ INNER JOIN (
             return true;
         }
 
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PartScanHistories
+                .FirstOrDefaultAsync(x => x.PartScanHistoryId == partScanHistory.PartScanHistoryId && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<PartScanHistory?>(entity);
+        }
+
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(string rawScan, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PartScanHistories
+                .FirstOrDefaultAsync(x => x.RawScan == rawScan && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<PartScanHistory?>(entity);
+        }
+
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(int rawScanCrc, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PartScanHistories
+                .FirstOrDefaultAsync(x => x.Crc == rawScanCrc && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<PartScanHistory?>(entity);
+        }
+
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(long partScanHistoryId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PartScanHistories
+                .FirstOrDefaultAsync(x => x.PartScanHistoryId == partScanHistoryId && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<PartScanHistory?>(entity);
+        }
+
+        public async Task<PartScanHistory> AddPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.PartScanHistory>(partScanHistory);
+            EnforceIntegrityCreate(entity, userContext);
+            context.PartScanHistories.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<PartScanHistory>(entity);
+        }
+
+        public async Task<PartScanHistory?> UpdatePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.PartScanHistories
+                .FirstOrDefaultAsync(x => x.PartScanHistoryId == partScanHistory.PartScanHistoryId && x.OrganizationId == userContext.OrganizationId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(partScanHistory, entity);
+                EnforceIntegrityModify(entity, userContext);
+                await context.SaveChangesAsync();
+                return _mapper.Map<PartScanHistory>(entity);
+            }
+            return null;
+        }
+
+        public async Task<bool> DeletePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = context.PartScanHistories
+                .FirstOrDefault(x => x.PartScanHistoryId == partScanHistory.PartScanHistoryId && x.OrganizationId == userContext.OrganizationId);
+            if (entity == null)
+                return false;
+
+            context.PartScanHistories.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<OAuthCredential?> GetOAuthCredentialAsync(string providerName, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));

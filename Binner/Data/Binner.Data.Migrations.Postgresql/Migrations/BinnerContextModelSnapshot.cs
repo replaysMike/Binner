@@ -420,6 +420,88 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.ToTable("Parts", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
+                {
+                    b.Property<long>("PartScanHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartScanHistoryId"));
+
+                    b.Property<int>("BarcodeType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CountryOfOrigin")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Crc")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Invoice")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LotCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ManufacturerPartNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mid")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Packlist")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("PartId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RawScan")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SalesOrder")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ScannedLabelType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Supplier")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SupplierPartNumber")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PartScanHistoryId");
+
+                    b.HasIndex("PartId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PartScanHistories", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
                 {
                     b.Property<long>("PartSupplierId")
@@ -1432,6 +1514,23 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Part", "Part")
+                        .WithMany("PartScanHistories")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PartScanHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.PartSupplier", b =>
                 {
                     b.HasOne("Binner.Data.Model.Part", "Part")
@@ -1688,6 +1787,8 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
+                    b.Navigation("PartScanHistories");
+
                     b.Navigation("PartSuppliers");
 
                     b.Navigation("ProjectPartAssignments");
@@ -1735,6 +1836,8 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("OAuthCredentials");
 
                     b.Navigation("OAuthRequests");
+
+                    b.Navigation("PartScanHistories");
 
                     b.Navigation("PartSuppliers");
 

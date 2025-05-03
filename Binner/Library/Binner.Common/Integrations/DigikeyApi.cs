@@ -163,7 +163,7 @@ namespace Binner.Common.Integrations
         /// <param name="barcode"></param>
         /// <param name="barcodeType"></param>
         /// <returns></returns>
-        public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode, ScannedBarcodeType barcodeType)
+        public async Task<IApiResponse> GetBarcodeDetailsAsync(string barcode, ScannedLabelType barcodeType)
         {
             ValidateConfiguration();
 

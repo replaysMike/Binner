@@ -475,5 +475,40 @@ namespace Binner.Testing
             _partSuppliers.Clear();
             _users.Clear();
         }
+
+        public Task<PartScanHistory?> GetPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PartScanHistory?> GetPartScanHistoryAsync(string rawScan, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PartScanHistory?> GetPartScanHistoryAsync(int rawScanCrc, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PartScanHistory?> GetPartScanHistoryAsync(long partScanHistoryId, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PartScanHistory> AddPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PartScanHistory?> UpdatePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> DeletePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

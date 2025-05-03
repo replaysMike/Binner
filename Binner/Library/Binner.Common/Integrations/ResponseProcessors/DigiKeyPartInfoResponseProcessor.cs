@@ -88,7 +88,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
                     IServiceResult<V3.Product?>? barcodeResult = null;
                     try
                     {
-                        barcodeResult = await GetBarcodeInfoProductAsync(api, barcode, ScannedBarcodeType.Product);
+                        barcodeResult = await GetBarcodeInfoProductAsync(api, barcode, ScannedLabelType.Product);
                         digikeyResponse = new V3.KeywordSearchResponse();
                         if (barcodeResult?.Response != null)
                             digikeyResponse.Products.Add(barcodeResult.Response);
@@ -180,7 +180,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
                     IServiceResult<V3.Product?>? barcodeResult = null;
                     try
                     {
-                        barcodeResult = await GetBarcodeInfoProductAsync(api, barcode, ScannedBarcodeType.Product);
+                        barcodeResult = await GetBarcodeInfoProductAsync(api, barcode, ScannedLabelType.Product);
                         digikeyResponse = new V4.KeywordSearchResponse();
 
                         // todo: map this to V4 product?
@@ -470,7 +470,7 @@ namespace Binner.Common.Integrations.ResponseProcessors
             return Task.CompletedTask;
         }
 
-        private async Task<IServiceResult<V3.Product?>> GetBarcodeInfoProductAsync(IIntegrationApi api, string barcode, ScannedBarcodeType barcodeType)
+        private async Task<IServiceResult<V3.Product?>> GetBarcodeInfoProductAsync(IIntegrationApi api, string barcode, ScannedLabelType barcodeType)
         {
             if (!api.IsEnabled)
                 return ServiceResult<V3.Product?>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));

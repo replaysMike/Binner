@@ -504,6 +504,62 @@ namespace Binner.Model
         Task<bool> RemoveProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext);
 
         /// <summary>
+        /// Get a part scan history record
+        /// </summary>
+        /// <param name="partScanHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartScanHistory?> GetPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext);
+
+        /// <summary>
+        /// Get a part scan history record by it's rawscan field
+        /// </summary>
+        /// <param name="rawScan"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartScanHistory?> GetPartScanHistoryAsync(string rawScan, IUserContext? userContext);
+
+        /// <summary>
+        /// Get a part scan history record by its CRC of the RawScan field
+        /// </summary>
+        /// <param name="rawScanCrc"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartScanHistory?> GetPartScanHistoryAsync(int rawScanCrc, IUserContext? userContext);
+
+        /// <summary>
+        /// Get a part scan history record
+        /// </summary>
+        /// <param name="partScanHistoryId"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartScanHistory?> GetPartScanHistoryAsync(long partScanHistoryId, IUserContext? userContext);
+
+        /// <summary>
+        /// Add a new part scan history record
+        /// </summary>
+        /// <param name="partScanHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartScanHistory> AddPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext);
+
+        /// <summary>
+        /// Update an existing part scan history record
+        /// </summary>
+        /// <param name="partScanHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartScanHistory?> UpdatePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext);
+
+        /// <summary>
+        /// Delete an existing part scan history record
+        /// </summary>
+        /// <param name="partScanHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<bool> DeletePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext);
+
+        /// <summary>
         /// Create a new part supplier
         /// </summary>
         /// <param name="partSupplier"></param>
