@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Binner.Common.Extensions
 {
@@ -21,7 +23,32 @@ namespace Binner.Common.Extensions
         /// <param name="key"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public static TV GetValue<TK, TV>(this IDictionary<TK, TV> dict, TK key, TV defaultValue = default) 
-            => dict.TryGetValue(key, out var value) ? value : defaultValue;
+        public static TV? GetValue<TK, TV>(this IDictionary<TK, TV> dict, TK key, TV? defaultValue = default)
+        {
+            if (dict.TryGetValue(key, out var value))
+            {
+                if (value is JsonElement val)
+                {
+                    switch(val.ValueKind)
+                    {
+                        case JsonValueKind.Null:
+                            return defaultValue;
+                        case JsonValueKind.String:
+                            return val.GetString()!.As<TV>();
+                        case JsonValueKind.Number:
+                            return val.GetInt32().As<TV>();
+                        case JsonValueKind.True:
+                            return val.GetBoolean().As<TV>();
+                        case JsonValueKind.False:
+                            return val.GetInt32().As<TV>();
+                        default:
+                            break;
+                    }
+                    return defaultValue;
+                }
+                return value;
+            }
+            return defaultValue;
+        }
     }
 }

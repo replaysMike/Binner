@@ -16,5 +16,10 @@
         /// 32bit crc of the RawScan value
         /// </summary>
         public int Crc { get; set; }
+
+        /// <summary>
+        /// True to generate a crc based on Rawscan and search the crc
+        /// </summary>
+        public bool SearchCrc { get; set; }
     }
 }

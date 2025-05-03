@@ -1,8 +1,11 @@
 ﻿using AnyMapper;
 using Binner.Common;
+using Binner.Common.Extensions;
+using Binner.Common.IO;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
 using Binner.Model;
+using Binner.Model.Barcode;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
@@ -21,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -37,19 +41,21 @@ namespace Binner.Web.Controllers
         private readonly IPartService _partService;
         private readonly IPartTypeService _partTypeService;
         private readonly IProjectService _projectService;
+        private readonly IPartScanHistoryService _partScanHistoryService;
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly IUserService _userService;
         private readonly IPrintService _printService;
         private readonly ILabelGenerator _labelGenerator;
 
-        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService, IPrintService printService, ILabelGenerator labelGenerator)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService, IPrintService printService, ILabelGenerator labelGenerator)
         {
             _logger = logger;
             _config = config;
             _partService = partService;
             _partTypeService = partTypeService;
             _projectService = projectService;
+            _partScanHistoryService = partScanHistoryService;
             _labelPrinter = labelPrinter;
             _barcodeGenerator = barcodeGenerator;
             _userService = userService;
@@ -128,6 +134,33 @@ namespace Binner.Web.Controllers
                 return duplicatePartResponse;
 
             var part = await _partService.AddPartAsync(mappedPart);
+
+            // add the scanned barcode to history
+            if (request.BarcodeObject != null)
+            {
+                var b = request.BarcodeObject;
+                var partScanHistory = new PartScanHistory
+                {
+                    PartId = part.PartId,
+                    RawScan = b.CorrectedValue ?? b.RawValue,
+                    BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
+                    CountryOfOrigin = b.Value.GetValue("countryOfOrigin").As<string?>(),
+                    Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
+                    Description = b.Value.GetValue("description").As<string?>(),
+                    Invoice = b.Value.GetValue("invoice").As<string?>(),
+                    LotCode = b.Value.GetValue("lotCode").As<string?>(),
+                    ManufacturerPartNumber = b.Value.GetValue("mfgPartNumber").As<string?>(),
+                    Mid = b.Value.GetValue("mid").As<string?>(),
+                    Packlist = b.Value.GetValue("unknown").As<string?>(),
+                    Quantity = b.Value.GetValue("quantity").As<int>(),
+                    SalesOrder = b.Value.GetValue("salesOrder").As<string?>(),
+                    ScannedLabelType = b.ScannedLabelType,
+                    Supplier = b.Supplier,
+                    SupplierPartNumber = b.Value.GetValue("supplierPartNumber").As<string?>(),
+                };
+                await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
+            }
+
             var partResponse = Mapper.Map<Part, PartResponse>(part);
             partResponse.PartType = partType.Name;
             partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
@@ -224,21 +257,21 @@ namespace Binner.Web.Controllers
                 {
                     // it's a new part
                     var isMapped = false;
-                    var barcode = string.Empty;
+                    var searchBarcode = string.Empty;
                     var partRequested = partsRequested?.Where(x => x.PartNumber == mappedPart.PartNumber).FirstOrDefault();
-                    if (partRequested != null && !string.IsNullOrEmpty(partRequested.Barcode))
-                        barcode = partRequested.Barcode;
+                    var barcode = partRequested?.Barcode;
+                    if (partRequested != null && !string.IsNullOrEmpty(barcode))
+                        searchBarcode = barcode;
                     else
                     {
                         // if it's numeric only, try getting barcode information
                         var isNumber = Regex.Match(@"^\d+$", mappedPart.PartNumber).Success;
-                        if (isNumber) barcode = mappedPart.PartNumber;
-
+                        if (isNumber) searchBarcode = mappedPart.PartNumber;
                     }
 
-                    if (!string.IsNullOrEmpty(barcode))
+                    if (!string.IsNullOrEmpty(searchBarcode))
                     {
-                        var barcodeResult = await _partService.GetBarcodeInfoAsync(barcode, ScannedLabelType.Product);
+                        var barcodeResult = await _partService.GetBarcodeInfoAsync(searchBarcode, ScannedLabelType.Product);
                         if (barcodeResult.Response?.Parts.Any() == true)
                         {
                             // convert this entry to a part
@@ -316,7 +349,35 @@ namespace Binner.Web.Controllers
                             }
                         }
                     }
-                    addedParts.Add(await _partService.AddPartAsync(mappedPart));
+                    var newPart = await _partService.AddPartAsync(mappedPart);
+                    addedParts.Add(newPart);
+
+
+                    // add the scanned barcode to history
+                    if (bulkPart.BarcodeObject != null)
+                    {
+                        var b = bulkPart.BarcodeObject;
+                        var partScanHistory = new PartScanHistory
+                        {
+                            PartId = newPart.PartId,
+                            RawScan = b.CorrectedValue ?? b.RawValue,
+                            BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
+                            CountryOfOrigin = b.Value.GetValue("countryOfOrigin").As<string?>(),
+                            Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
+                            Description = b.Value.GetValue("description").As<string?>(),
+                            Invoice = b.Value.GetValue("invoice").As<string?>(),
+                            LotCode = b.Value.GetValue("lotCode").As<string?>(),
+                            ManufacturerPartNumber = b.Value.GetValue("mfgPartNumber").As<string?>(),
+                            Mid = b.Value.GetValue("mid").As<string?>(),
+                            Packlist = b.Value.GetValue("unknown").As<string?>(),
+                            Quantity = b.Value.GetValue("quantity").As<int>(),
+                            SalesOrder = b.Value.GetValue("salesOrder").As<string?>(),
+                            ScannedLabelType = b.ScannedLabelType,
+                            Supplier = b.Supplier,
+                            SupplierPartNumber = b.Value.GetValue("supplierPartNumber").As<string?>(),
+                        };
+                        await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
+                    }
                 }
             }
 
