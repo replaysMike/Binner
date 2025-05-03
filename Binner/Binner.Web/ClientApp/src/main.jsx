@@ -2,10 +2,13 @@ import 'bootstrap/dist/css/bootstrap.css';
 import React from 'react';
 //import ReactDOM from "react-dom/client";
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
+import AppRoutes from './AppRoutes';
 import registerServiceWorker from './registerServiceWorker';
 import { ToastContainer } from "react-toastify";
+// layouts
+import { Layout } from "./layouts/Layout";
 
 // import i18n
 import './i18n';
@@ -57,12 +60,36 @@ document.removeEventListener = (type, listener, options) => {
 // end fix
 
 const root = createRoot(rootElement);
-root.render(<>
+const routes = AppRoutes.map((route, index) => ({
+  path: route.path || "/",
+  requireAuth: route.requireAuth || false,
+  element: (route.requireAuth || false)
+    ? <AuthorizeRoute {...route} />
+    : route.element
+
+}));
+const router = createBrowserRouter([
+  {
+    // apply a root layout
+    element: <Layout />,
+    // it's children are the routes
+    children: routes
+  }
+]);
+
+root.render(
+<>
+  <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" />
+  <RouterProvider router={router}>
+    <App />
+  </RouterProvider>
+</>);
+/*root.render(<>
   <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" />
   <BrowserRouter>
     <App />
   </BrowserRouter></>,
-);
+);*/
 
 registerServiceWorker();
 

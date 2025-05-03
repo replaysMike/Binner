@@ -3,13 +3,6 @@ import { Route, Routes } from "react-router";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-// routing
-import PageWrapper from "./routes/PageWrapper";
-import AdminWrapper from "./routes/AdminWrapper";
-
-// layouts
-import { Layout } from "./layouts/Layout";
-
 // components
 import ErrorModal from "./components/modals/ErrorModal";
 import LicenseErrorModal from "./components/modals/LicenseErrorModal";
@@ -18,46 +11,7 @@ import LicenseErrorModal from "./components/modals/LicenseErrorModal";
 import "./custom.css";
 import "./bootstrap.css"; /* needed for the carousel control */
 
-// pages
-import { NotFound } from "./pages/NotFound";
-import { AccessDenied } from "./pages/AccessDenied";
-import { Account } from "./pages/Account";
-import { Home } from "./pages/Home";
-import { Login } from "./pages/Login";
-import Inventory from "./pages/Inventory";
-import Search from "./pages/Search";
-import Boms from "./pages/Boms";
-import Bom from "./pages/Bom";
-import Project from "./pages/Project";
-import { Datasheets } from "./pages/Datasheets";
-import LowInventory from "./pages/LowInventory";
-import { OrderImport } from "./pages/OrderImport";
-import { PartTypes } from "./pages/PartTypes";
-import { ExportData } from "./pages/ExportData";
-import { Printing } from "./pages/printing/Home";
-import { PrintLabels } from "./pages/printing/PrintLabels";
-import { PrintLabels2 } from "./pages/printing/PrintLabels2";
-import { BulkPrint } from "./pages/printing/BulkPrint";
-import { Tools } from "./pages/Tools";
-import { Settings } from "./pages/Settings";
-import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
-import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalculator";
-import { SmdResistorCodeCalculator } from "./pages/tools/SmdResistorCodeCalculator";
-import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
-import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
-import { Help } from "./pages/help/Home";
-import { Scanning } from "./pages/help/Scanning";
-import { ApiIntegrations } from "./pages/help/ApiIntegrations";
-import { BOM } from "./pages/help/BOM";
-
-// admin
-import { Users } from "./pages/admin/users/Users";
-import { User } from "./pages/admin/users/User";
-import { Admin } from "./pages/admin/Home";
-import { Backup } from "./pages/admin/Backup";
-import { UpdateParts } from "./pages/admin/UpdateParts";
-import { ActivateLicense } from "./pages/admin/ActivateLicense";
-import { SystemInformation } from "./pages/admin/SystemInformation";
+import AppRoutes from './AppRoutes';
 
 function withSearchParams(Component) {
   return (props) => <Component {...props} searchParams={useSearchParams()} />;
@@ -164,55 +118,12 @@ export const App = (props) => {
 
   return (
     <div>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="accessdenied" element={<AccessDenied />} />
-            <Route path="login" element={<Login />} />
-            <Route path="account" element={<Account />} />
-            <Route path="inventory/:partNumber" element={<Inventory />} />
-            <Route path="inventory/add/:partNumberToAdd?" element={<Inventory />} />
-            <Route path="inventory" element={<Search />} />
-            <Route path="project/:project" element={<Project />} />
-            <Route path="bom" element={<Boms />} />
-            <Route path="bom/:project" element={<Bom />} />
-            <Route path="datasheets" element={<Datasheets />} />
-            <Route path="lowstock" element={<LowInventory />} />
-            <Route path="import" element={<OrderImport />} />
-            <Route path="partTypes" element={<PartTypes />} />
-            <Route path="projects" element={<Bom />} />
-            <Route path="exportData" element={<ExportData />} />
-            <Route path="printing" element={<Printing />} />
-            <Route path="printing/printLabels" element={<PrintLabels />} />
-            <Route path="printing/labelTemplates" element={<PrintLabels2 />} />
-            <Route path="printing/bulkPrint" element={<BulkPrint />} />
-
-            <Route path="tools" element={<Tools />} />
-            <Route path="tools/ohmslaw" element={<OhmsLawCalculator />} />
-            <Route path="tools/resistor" element={<ResistorColorCodeCalculator />} />
-            <Route path="tools/smdresistor" element={<SmdResistorCodeCalculator />} />          
-            <Route path="tools/voltagedivider" element={<VoltageDividerCalculator />} />
-            <Route path="tools/barcodescanner" element={<BarcodeScanner />} />
-
-            <Route path="settings" element={<Settings />} />
-            <Route path="help" element={<Help />} />
-            <Route path="help/scanning" element={<Scanning />} />
-            <Route path="help/api-integrations" element={<ApiIntegrations />} />
-            <Route path="help/bom" element={<BOM />} />
-
-            {/* admin */}
-
-            <Route path="admin" element={<AdminWrapper><Admin /></AdminWrapper>} />
-            <Route path="admin/users" element={<AdminWrapper><Users /></AdminWrapper>} />
-            <Route path="admin/users/:userId" element={<AdminWrapper><User /></AdminWrapper>} />
-            <Route path="admin/backup" element={<AdminWrapper><Backup /></AdminWrapper>} />
-            <Route path="admin/info" element={<AdminWrapper><SystemInformation /></AdminWrapper>} />
-            <Route path="admin/updateParts" element={<AdminWrapper><UpdateParts /></AdminWrapper>} />
-            <Route path="admin/activateLicense" element={<AdminWrapper><ActivateLicense /></AdminWrapper>} />
-
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
+      <Routes>
+        {AppRoutes.map((route, index) => {
+          const { element, requireAuth, ...rest } = route;
+          return <Route key={index} {...rest} element={requireAuth ? <AuthorizeRoute {...rest} element={element} /> : element} />;
+        })}
+      </Routes>
       <ErrorModal context={error} />
       <LicenseErrorModal context={licenseError} />
     </div>

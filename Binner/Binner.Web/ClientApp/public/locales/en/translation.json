@@ -861,6 +861,9 @@
     "refreshPart": "Are you sure you want to refresh part <1>{{name}}</1>?",
     "overwriteExistingContent": "Existing values for fields provided by external APIs will be overwritten.",
     "doNotAskAgain": "Do not ask again",
+    "discardChanges": "Discard Changes",
+    "unsaved": "You have unsaved changes.",
+    "confirmDiscard": "Are you sure you want to discard these changes?",
     "header": {
       "removeBomPart": "Remove Part from BOM",
       "deleteFile": "Delete File",

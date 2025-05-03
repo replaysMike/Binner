@@ -150,7 +150,7 @@ export function BarcodeScanner(props) {
   barcodeObject = reactStringReplace(barcodeObject, "\u240d", (match, i) => (<span key={getRandomKey()} className="control cr">{match}</span>));
   barcodeObject = reactStringReplace(barcodeObject, "\u240a", (match, i) => (<span key={getRandomKey()} className="control lf">{match}</span>));
   barcodeObject = reactStringReplace(barcodeObject, "\u241c", (match, i) => (<span key={getRandomKey()} className="control fs">{match}</span>));
-  console.log('config', config);
+
   return (
     <div>
       <BarcodeScannerInput 

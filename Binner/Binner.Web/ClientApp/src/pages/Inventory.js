@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useBlocker } from "react-router-dom";
 import { useTranslation, Trans } from 'react-i18next';
 import PropTypes from "prop-types";
 import _ from "underscore";
@@ -147,6 +147,14 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
   const [authorizationApiName, setAuthorizationApiName] = useState('');
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
+  const [confirmDiscardChanges, setConfirmDiscardChanges] = useState(false);
+  const [confirmDiscardAction, setConfirmDiscardAction] = useState(null);
+
+
+  let blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
 
   // todo: find a better alternative, we shouldn't need to do this!
   const partRef = useRef();
@@ -607,7 +615,7 @@ export function Inventory({ partNumber = "", ...rest }) {
           setIsDirty(true);
 
           if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: existingPart.quantity });
-          toast.success(`Quantity updated from ${originalQuantity} to ${part.quantity} on part "${cleanPartNumber}"`, { autoClose: false });
+          toast.info(`Quantity updated from ${originalQuantity} to ${part.quantity} on part "${cleanPartNumber}"`, { autoClose: false });
         } else {
           console.debug('no existing part, add as new');
           // part is not in inventory, add it as new
@@ -621,7 +629,7 @@ export function Inventory({ partNumber = "", ...rest }) {
           // new part being added
           part.quantity = labelQuantity;
           setPart(part);
-          toast.success(`Ready to add new part "${cleanPartNumber}", qty=${labelQuantity}`, { autoClose: false });
+          toast.info(`Ready to add new part "${cleanPartNumber}", qty=${labelQuantity}`, { autoClose: false });
         }
       } else {
         // fetch metadata on the barcode if available
@@ -922,14 +930,18 @@ export function Inventory({ partNumber = "", ...rest }) {
       e.preventDefault();
       e.stopPropagation();
     }
-    removeViewPreference('digikey');
+    if (isDirty) {
+      setConfirmDiscardAction(() => () => { resetForm("", true); });
+      setConfirmDiscardChanges(true);
+      return;
+    }
+
+    resetForm("", true);
 
     if (rest.params.partNumber) {
       navigate("/inventory/add");
       return;
     }
-
-    resetForm("", true);
   };
 
   const updateNumberPicker = (e) => {
@@ -1326,7 +1338,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                               />
                             }
                           />
-                          <div className="quantityAdded">{quantityAdded > 0 ? <div className="suggested-part"><Icon name="circle plus" /> {quantityAdded} <span>added</span></div> : (<></>)}</div>
+                          <div className="quantityAdded">{quantityAdded > 0 ? <div className="suggested-part"><Icon name="plus" />{quantityAdded} <span>qty added</span></div> : (<></>)}</div>
                         </div>
                         <Popup
                           hideOnScroll
@@ -1692,6 +1704,19 @@ export function Inventory({ partNumber = "", ...rest }) {
       </>);
   }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPart, loadingPartMetadata, partMetadataErrors, isEditing, allPartTypes, isDirty, handlePartTypeChange]);
 
+  const handleCancelDiscard = (e) => {
+    setConfirmDiscardAction(null);
+    setConfirmDiscardChanges(false);
+    if (blocker.reset) blocker.reset(); 
+  }
+
+  const handleConfirmDiscard = (e) => {
+    if (confirmDiscardAction) confirmDiscardAction();
+    setConfirmDiscardAction(null);
+    setConfirmDiscardChanges(false);
+    if (blocker.proceed) blocker.proceed();
+  };
+
   return (
     <div className="inventory mask">
       <DuplicatePartModal
@@ -1730,6 +1755,22 @@ export function Inventory({ partNumber = "", ...rest }) {
           </Trans>
         </p>
         }
+      />
+      <Confirm
+        header={<div className="header"><Icon name="undo" color="grey" /> {t('confirm.discardChanges', "You have unsaved changes.")}</div>}
+        open={blocker.state === "blocked" || confirmDiscardChanges}
+        confirmButton="Discard"
+        cancelButton="No, take me back!"
+        content={
+          <p style={{ padding: "20px", fontSize: '1.2em', textAlign: "center" }}>
+            <span style={{ color: '#666' }}>{t('confirm.unsaved', "You have unsaved changes.")}</span>
+            <br />
+            <br />
+            {t('confirm.confirmDiscard', "Are you sure you want to discard these changes?")}
+          </p>
+        }
+        onCancel={handleCancelDiscard}
+        onConfirm={handleConfirmDiscard}
       />
       <BulkScanModal
         isOpen={bulkScanIsOpen}

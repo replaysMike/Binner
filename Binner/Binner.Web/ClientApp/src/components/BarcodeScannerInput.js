@@ -44,8 +44,22 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 	const keyBufferRef = useRef([]);
 	const keyTimes = useRef([]);
 	const lastKeyTime = useRef(0);
+  const debugBuffer = [];
 
   const onReceivedBarcodeInput = (e, buffer) => {
+    if (barcodeConfig.isDebug) {
+      const mapped = debugBuffer.map((val) => ({
+        key: val.key,
+        keyCode: val.keyCode,
+        code: val.code,
+        altKey: val.altKey,
+        shiftKey: val.shiftKey,
+        type: val.type
+      }));
+      const keypressHistoryText = JSON.stringify(mapped);
+      navigator.clipboard.writeText(keypressHistoryText);
+      console.log('onReceivedBarcodeInput keypress history copied to clipboard'/*, debugBuffer*/);
+    }
     if (buffer.length < MinBufferLengthToAccept && processKeyBuffer(buffer, barcodeConfig.prefix2D.length) !== barcodeConfig.prefix2D) {
 			keyBufferRef.current.length = 0;
       if (barcodeConfig.isDebug) console.debug('BSI: timeout: barcode dropped input', buffer);
@@ -62,7 +76,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 				keyTimes.current = [];
 				return; // drop and ignore input
 			}
-      if (barcodeConfig.isDebug) console.debug('BSI: ccepted buffer', buffer.length);
+      if (barcodeConfig.isDebug) console.debug('BSI: accepted buffer', buffer.length);
 		}
 
     const result = processKeyBuffer(buffer);
@@ -529,6 +543,8 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 
   // listens for document keydown events, used for barcode scanner input
   const onKeydown = (e) => {
+    //console.log(e);
+    if (barcodeConfig.isDebug) debugBuffer.push(e);
     if (listeningRef.current === true) {
 			if (swallowKeyEvent 
 					// dont swallow function keys
@@ -546,6 +562,23 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 				e.stopPropagation();
 				return;
 			}
+      // when a barcode has started, prevent propagation of certain keys that cause the browser to do things
+      if (isStartedReading.current === true && (
+            e.keyCode === 32 // space
+            || (e.keyCode >= 33 && e.keyCode <= 40) // pgup/pgdwn, home/end and arrows
+            || e.keyCode == 45 // insert
+            || e.keyCode == 46 // delete
+            || e.keyCode == 46 // delete
+            || e.keyCode == 187 // -
+            || e.keyCode == 189 // +
+            || e.keyCode == 107 // num -
+            || e.keyCode == 109 // num +
+          )
+        ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
 			keyBufferRef.current.push(e);
 
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
