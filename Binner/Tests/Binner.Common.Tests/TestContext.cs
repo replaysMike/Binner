@@ -23,6 +23,7 @@ namespace Binner.Common.Tests
     public class TestContext
     {
         public WebHostServiceConfiguration WebHostServiceConfiguration { get; set; }
+        public StorageProviderConfiguration StorageProviderConfiguration { get; set; }
         public Mock<IDbContextFactory<BinnerContext>> DbFactory { get; set; }
         public IStorageProvider StorageProvider { get; set; }
         public Mock<IMapper> Mapper { get; set; }
@@ -68,6 +69,12 @@ namespace Binner.Common.Tests
         public TestContext()
         {
             WebHostServiceConfiguration = new WebHostServiceConfiguration();
+            StorageProviderConfiguration = new StorageProviderConfiguration()
+            {
+                Provider = nameof(InMemoryStorageProvider),
+                UserUploadedFilesPath = "/userfiles",
+                ProviderConfiguration = new Dictionary<string, string> { }
+            };
 
             LoggerFactory = new Mock<ILoggerFactory>();
             Logger = new Mock<ILogger>();
