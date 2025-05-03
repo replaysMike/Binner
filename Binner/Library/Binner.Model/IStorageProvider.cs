@@ -60,7 +60,7 @@ namespace Binner.Model
         /// <param name="credential"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext? userContext);
+        Task<OAuthCredential?> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext? userContext);
 
         /// <summary>
         /// Remove an oAuth Credential
@@ -84,7 +84,7 @@ namespace Binner.Model
         /// <param name="part"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<Part> UpdatePartAsync(Part part, IUserContext? userContext);
+        Task<Part?> UpdatePartAsync(Part part, IUserContext? userContext);
 
         /// <summary>
         /// Get a part by its internal id
@@ -157,7 +157,7 @@ namespace Binner.Model
         /// <param name="partType"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext? userContext);
+        Task<PartType?> UpdatePartTypeAsync(PartType partType, IUserContext? userContext);
 
         /// <summary>
         /// Delete an existing partType
@@ -180,7 +180,7 @@ namespace Binner.Model
         /// <param name="project"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<Project> AddProjectAsync(Project project, IUserContext? userContext);
+        Task<Project?> AddProjectAsync(Project project, IUserContext? userContext);
 
         /// <summary>
         /// Get an existing user defined project
@@ -212,7 +212,7 @@ namespace Binner.Model
         /// <param name="project"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<Project> UpdateProjectAsync(Project project, IUserContext? userContext);
+        Task<Project?> UpdateProjectAsync(Project project, IUserContext? userContext);
 
         /// <summary>
         /// Update an existing user defined project
@@ -453,7 +453,7 @@ namespace Binner.Model
         /// <param name="assignment"></param>
         /// <param name="userContext"></param>
         /// <returns></returns>
-        Task<ProjectPartAssignment> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext);
+        Task<ProjectPartAssignment?> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext);
 
         /// <summary>
         /// Remove a part from a Project BOM
@@ -493,7 +493,7 @@ namespace Binner.Model
         /// <param name="assignment"></param>
         /// <param name="userContext"></param>
         /// <returns></returns>
-        Task<ProjectPcbAssignment> UpdateProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext);
+        Task<ProjectPcbAssignment?> UpdateProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext);
 
         /// <summary>
         /// Remove a pcb from a Project BOM
@@ -589,7 +589,7 @@ namespace Binner.Model
         /// <param name="partSupplier"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext);
+        Task<PartSupplier?> UpdatePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext);
 
         /// <summary>
         /// Delete existing part supplier
