@@ -50,8 +50,9 @@ export function BarcodeScanner(props) {
   const handleChange = (e, control) => {
     switch(control.name){
       case 'customBufferTime':
+        const val = control.value?.replace('ms', '').replace(' ', '');
         setCustomBufferTime(control.value);
-        setConfigOverride({...control, bufferTime: parseInt(control.value)})
+        setConfigOverride({...control, bufferTime: parseInt(val)})
         break;
       case 'dummy':
         // measure how long a barcode scan event takes
@@ -130,6 +131,12 @@ export function BarcodeScanner(props) {
     setUnprotectedDummy(null);
   };
 
+  const handleClear = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setScanHistory([]);
+  };
+
   const loadHistory = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
@@ -143,7 +150,7 @@ export function BarcodeScanner(props) {
   barcodeObject = reactStringReplace(barcodeObject, "\u240d", (match, i) => (<span key={getRandomKey()} className="control cr">{match}</span>));
   barcodeObject = reactStringReplace(barcodeObject, "\u240a", (match, i) => (<span key={getRandomKey()} className="control lf">{match}</span>));
   barcodeObject = reactStringReplace(barcodeObject, "\u241c", (match, i) => (<span key={getRandomKey()} className="control fs">{match}</span>));
-
+  console.log('config', config);
   return (
     <div>
       <BarcodeScannerInput 
@@ -192,19 +199,29 @@ export function BarcodeScanner(props) {
             </Form.Field>
             <Form.Field width={2}>
               <label>BufferTime (ms):</label> 
-              <Input transparent value={customBufferTime} name="customBufferTime" onChange={handleChange}> 
-                <Icon name="clock" />
-                <input />
-              </Input>
+              <Popup
+                wide='very'
+                hoverable
+                content={<p><Icon name="arrow down" /> A lower value may miss keypress events from the barcode scanner.<br/>
+                  <Icon name="arrow up" /> A higher value is more likely to catch all keypresses but will take longer to process.<br/>
+                  <Icon name="setting" /> This can be configured permanently in <Link to='/settings'>Settings</Link>.<br/>
+                  <i>Default: 80</i></p>}
+                trigger={<Input transparent value={customBufferTime} name="customBufferTime" onChange={handleChange}>
+                  <Icon name="clock" />
+                  <input />
+                </Input>}
+              />
+              
             </Form.Field>
             <Form.Field width={1}>
-              <label>BarcodePrefix2D:</label> {config.barcodePrefix2D}
+              <label>Prefix2D:</label> <pre>{config.prefix2D}</pre>
             </Form.Field>
             <Form.Field>
               <div className="tips">
                 <label>Tips</label>
                 <ul>
-                  <li>Try increasing the BufferTime if the label is missing information.</li>
+                  <li>Try increasing the BufferTime if the label is missing information or showing up as multiple scans.</li>
+                  <li>Try decreasing the BufferTime if the scan is very slow.</li>
                   <li>Try scanning the same part many times. If the length changes then your scanner is not performing well.</li>
                   <li>Make sure the window is in focus by clicking on it, as barcode scanners emulate keyboard strokes.</li>
                 </ul>
@@ -235,8 +252,13 @@ export function BarcodeScanner(props) {
             />
 
             <Popup 
-              content={<p>Reset the form output.</p>}
+              content={<p>Reset the scan information.</p>}
               trigger={<Button type='button' onClick={handleReset}>Reset</Button>}
+            />
+
+            <Popup
+              content={<p>Clear the history.</p>}
+              trigger={<Button type='button' onClick={handleClear} style={{width: '150px'}}>Clear History</Button>}
             />
           </div>
 

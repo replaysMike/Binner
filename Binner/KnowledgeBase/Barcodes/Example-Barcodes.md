@@ -3,12 +3,12 @@ The following is a collection of raw barcode scan data used for testing the outp
 
 ## Tested Scanners
 
-| Model | Type | Url |
-| ----- | :----: | :---: |
-| Tera D5100 | 2D | [Url](https://tera-digital.com/products/d5100-2d-wireless-barcode-scanner-wholesale)|
-| Tera HW0009-US | 2D | [Url](https://tera-digital.com/products/hw0009-2d-wireless-barcode-scanner-with-display-screen-wholesale)|
-| Netum NT-1228BL | 2D | [Url](https://www.netum.net/products/nt-1228bl-bluetooth-2d-barcode-scanner-read-1d-qr-code?srsltid=AfmBOorC0t0gDld-uEfTg-MDjJgUZbNfK0f2A1jwF_Tc8bArT4NpNfF0)|
-| Trohestar NS-8103 | 1D | [Url](https://trohestar.com/product/trohestar-wireless-barcode-scanner-1d/)|
+| Model | Type | Url | Notes |
+| ----- | :----: | :---: | ----- |
+| Tera D5100 | 2D | [Url](https://tera-digital.com/products/d5100-2d-wireless-barcode-scanner-wholesale)||
+| Tera HW0009-US | 2D | [Url](https://tera-digital.com/products/hw0009-2d-wireless-barcode-scanner-with-display-screen-wholesale)||
+| Netum NT-1228BL | 2D | [Url](https://www.netum.net/products/nt-1228bl-bluetooth-2d-barcode-scanner-read-1d-qr-code?srsltid=AfmBOorC0t0gDld-uEfTg-MDjJgUZbNfK0f2A1jwF_Tc8bArT4NpNfF0)|This scanner really sucks. Different results every scan.|
+| Trohestar NS-8103 | 1D | [Url](https://trohestar.com/product/trohestar-wireless-barcode-scanner-1d/)||
 
 ## Test Data
 
