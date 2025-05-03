@@ -33,6 +33,9 @@ import { MountingTypes, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
 import { getSystemSettings } from "../common/applicationSettings";
+// overrides BarcodeScannerInput audio support
+const soundSuccess = new Audio('/audio/scan-success.mp3');
+const soundFailure = new Audio('/audio/scan-failure.mp3');
 import "./Inventory.css";
 
 export function Inventory({ partNumber = "", ...rest }) {
@@ -234,6 +237,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     return () => {
       searchDebounced.cancel();
       Inventory.doFetchPartMetadataController?.abort();
+      toast.dismiss();
     };
   }, [rest.params.partNumber]);
 
@@ -601,7 +605,6 @@ export function Inventory({ partNumber = "", ...rest }) {
 
   // for processing barcode scanner input
   const handleBarcodeInput = async (e, input, allowReImport = false) => {
-    console.log('handleBarcodeInput', input, allowReImport);
     if (!input?.value) return;
     toast.dismiss();
 
@@ -625,6 +628,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     // if we didn't rerceive a code we can understand, ignore it
     if (!cleanPartNumber || cleanPartNumber.length === 0) {
       console.debug('no clean part number found', cleanPartNumber, input?.value?.quantity);
+      soundFailure.play();
       return;
     }
 
@@ -637,6 +641,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     } else if (validateResult === false) {
       // error occurred
       toast.error(`An error occurred while validating the barcode.`);
+      soundFailure.play();
       return;
     } else {
       // ================================
@@ -645,8 +650,9 @@ export function Inventory({ partNumber = "", ...rest }) {
       if (isEditing && !allowReImport) {
         // edit inventory mode.
         // confirm do you want to import it again?
-        setConfirmReImportAction(() => async (confirmEvent) => { console.log('re-running import'); await handleBarcodeInput(e, input, true); console.log('complete'); });
+        setConfirmReImportAction(() => async (confirmEvent) => await handleBarcodeInput(e, input, true));
         setConfirmReImport(true);
+        soundFailure.play();
         return;
       } else if(!isEditing) {
         // add inventory mode. we've already scanned this label so only allow loading of the part. Don't update it.
@@ -656,6 +662,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         allowQuantityUpdate = false;
       }
     }
+    soundSuccess.play();
     
     // add part
     console.debug('clean part number found through barcode', cleanPartNumber, input.value?.quantity);
@@ -1911,7 +1918,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       {/* FORM START */}
 
       <Form onSubmit={e => onSubmit(e, part)} className="inventory">
-        <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} />
+        <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} enableSound={false} />
         {part && part.partId > 0 && (
           <Button
             type="button"
