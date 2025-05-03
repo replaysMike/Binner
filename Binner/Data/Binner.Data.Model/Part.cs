@@ -204,7 +204,7 @@ namespace Binner.Data.Model
 
         [ForeignKey(nameof(PartTypeId))]
         public PartType? PartType { get; set; }
-
+        public ICollection<PartScanHistory>? PartScanHistories { get; set; }
         public ICollection<ProjectPartAssignment>? ProjectPartAssignments { get; set; }
         public ICollection<StoredFile>? StoredFiles { get; set; }
         public ICollection<PartSupplier>? PartSuppliers { get; set; }

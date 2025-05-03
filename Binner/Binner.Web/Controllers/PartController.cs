@@ -166,14 +166,14 @@ namespace Binner.Web.Controllers
         [HttpGet("barcode/info")]
         public async Task<IActionResult> GetBarcodeInfoAsync([FromQuery] string barcode)
         {
-            var partDetails = await _partService.GetBarcodeInfoAsync(barcode, ScannedBarcodeType.Product);
+            var partDetails = await _partService.GetBarcodeInfoAsync(barcode, ScannedLabelType.Product);
             return Ok(partDetails);
         }
 
         [HttpGet("barcode/packlist/info")]
         public async Task<IActionResult> GetPacklistBarcodeInfoAsync([FromQuery] string barcode)
         {
-            var partDetails = await _partService.GetBarcodeInfoAsync(barcode, ScannedBarcodeType.Packlist);
+            var partDetails = await _partService.GetBarcodeInfoAsync(barcode, ScannedLabelType.Packlist);
             return Ok(partDetails);
         }
 
@@ -238,7 +238,7 @@ namespace Binner.Web.Controllers
 
                     if (!string.IsNullOrEmpty(barcode))
                     {
-                        var barcodeResult = await _partService.GetBarcodeInfoAsync(barcode, ScannedBarcodeType.Product);
+                        var barcodeResult = await _partService.GetBarcodeInfoAsync(barcode, ScannedLabelType.Product);
                         if (barcodeResult.Response?.Parts.Any() == true)
                         {
                             // convert this entry to a part

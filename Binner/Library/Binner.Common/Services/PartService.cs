@@ -820,7 +820,7 @@ namespace Binner.Common.Services
             return ServiceResult<ExternalOrderResponse?>.Create("Error", nameof(ArrowApi));
         }
 
-        public async Task<IServiceResult<V3.Product?>> GetBarcodeInfoProductAsync(string barcode, ScannedBarcodeType barcodeType)
+        public async Task<IServiceResult<V3.Product?>> GetBarcodeInfoProductAsync(string barcode, ScannedLabelType barcodeType)
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
@@ -863,7 +863,7 @@ namespace Binner.Common.Services
             return ServiceResult<V3.Product?>.Create(null);
         }
 
-        public async Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode, ScannedBarcodeType barcodeType)
+        public async Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode, ScannedLabelType barcodeType)
         {
             var user = _requestContext.GetUserContext();
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
@@ -1170,7 +1170,7 @@ namespace Binner.Common.Services
                 if (digikeyApi.Configuration.IsConfigured)
                 {
                     // 2d barcode scan requires decode first to get the partNumber being searched
-                    var barcodeInfo = await GetBarcodeInfoAsync(partNumber, ScannedBarcodeType.Product);
+                    var barcodeInfo = await GetBarcodeInfoAsync(partNumber, ScannedLabelType.Product);
                     if (barcodeInfo.Response?.Parts.Any() == true)
                     {
                         var firstPartMatch = barcodeInfo.Response.Parts.First();

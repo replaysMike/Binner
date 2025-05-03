@@ -32,6 +32,11 @@ namespace Binner.Data
         public DbSet<Part> Parts { get; set; } = null!;
 
         /// <summary>
+        /// History of barcode scanned labels
+        /// </summary>
+        public DbSet<PartScanHistory> PartScanHistories { get; set; } = null!;
+
+        /// <summary>
         /// Part suppliers (manually created suppliers by user)
         /// </summary>
         public DbSet<PartSupplier> PartSuppliers { get; set; } = null!;

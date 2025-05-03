@@ -251,7 +251,7 @@ namespace Binner.Common.Integrations
             }
         }
 
-        public async Task<IApiResponse> GetBarcodeDetailsAsync(OAuthAuthorization authenticationResponse, string barcode, ScannedBarcodeType barcodeType)
+        public async Task<IApiResponse> GetBarcodeDetailsAsync(OAuthAuthorization authenticationResponse, string barcode, ScannedLabelType barcodeType)
         {
             /* important reminder - don't reference authResponse in here! */
             try
@@ -263,13 +263,13 @@ namespace Binner.Common.Integrations
                 var endpoint = "Barcoding/v3/ProductBarcodes/";
                 switch (barcodeType)
                 {
-                    case ScannedBarcodeType.Product:
+                    case ScannedLabelType.Product:
                     default:
                         endpoint = "Barcoding/v3/ProductBarcodes/";
                         if (is2dBarcode)
                             endpoint = "Barcoding/v3/Product2DBarcodes/";
                         break;
-                    case ScannedBarcodeType.Packlist:
+                    case ScannedLabelType.Packlist:
                         endpoint = "Barcoding/v3/PackListBarcodes/";
                         if (is2dBarcode)
                             endpoint = "Barcoding/v3/PackList2DBarcodes/";
