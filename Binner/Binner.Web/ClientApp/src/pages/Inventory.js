@@ -150,7 +150,8 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
   const [confirmDiscardChanges, setConfirmDiscardChanges] = useState(false);
   const [confirmDiscardAction, setConfirmDiscardAction] = useState(null);
-
+  const [confirmReImport, setConfirmReImport] = useState(false);
+  const [confirmReImportAction, setConfirmReImportAction] = useState(null);
 
   let blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -599,10 +600,12 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   // for processing barcode scanner input
-  const handleBarcodeInput = async (e, input) => {
+  const handleBarcodeInput = async (e, input, allowReImport = false) => {
+    console.log('handleBarcodeInput', input, allowReImport);
     if (!input?.value) return;
     toast.dismiss();
 
+    let allowQuantityUpdate = true;
     setLastBarcodeScan(input);
     console.debug('barcode input received', input);
     let cleanPartNumber = "";
@@ -628,16 +631,30 @@ export function Inventory({ partNumber = "", ...rest }) {
     // validate if we have already scanned this label before
     const validateResult = await validateExistingBarcodeScan(input);
     if (validateResult === true) {
-      // no scan history, proceed
+      // ================================
+      // no label scan history, proceed
+      // ================================
     } else if (validateResult === false) {
       // error occurred
       toast.error(`An error occurred while validating the barcode.`);
       return;
     } else {
-      // label has already been scanned
-      toast.error(`This label has already been imported.`);
-      // todo: confirm do you want to import it again?
-      return;
+      // ================================
+      // label has _already_ been scanned
+      // ================================
+      if (isEditing && !allowReImport) {
+        // edit inventory mode.
+        // confirm do you want to import it again?
+        setConfirmReImportAction(() => async (confirmEvent) => { console.log('re-running import'); await handleBarcodeInput(e, input, true); console.log('complete'); });
+        setConfirmReImport(true);
+        return;
+      } else if(!isEditing) {
+        // add inventory mode. we've already scanned this label so only allow loading of the part. Don't update it.
+        // todo: verify if this is the behavior we want. What if we used this to search AND add inventory at the same time?
+        toast.info(`Part loaded.`);
+        setLastBarcodeScan(null);
+        allowQuantityUpdate = false;
+      }
     }
     
     // add part
@@ -647,7 +664,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       setScannedPartsBarcodeInput({ cleanPartNumber, input });
     } else {
       // scan single part
-      resetForm();
+      resetForm("", false, false);
       const scannedPart = {
         partNumber: cleanPartNumber,
         barcode: input.correctedValue
@@ -664,11 +681,15 @@ export function Inventory({ partNumber = "", ...rest }) {
         const labelQuantity = parseInt(input.value?.quantity || "1");
         if(existingPart) {
           setInputPartNumber(existingPart.partNumber);
-          // add quantity to part
+          
           const originalQuantity = existingPart.quantity;
-          existingPart.quantity += labelQuantity;
-          setQuantityAdded(labelQuantity);
-          console.debug('adding quantity to part', originalQuantity, labelQuantity);
+          // add quantity to part
+          if (allowQuantityUpdate) {
+            existingPart.quantity += labelQuantity;
+            setQuantityAdded(labelQuantity);
+            console.debug('adding quantity to part', originalQuantity, labelQuantity);
+            toast.info(`Added +${labelQuantity} to part "${cleanPartNumber}"`, { autoClose: false });
+          }
 
           // part exists in inventory, switch to edit mode
           setLoadingPartMetadata(true);
@@ -678,7 +699,6 @@ export function Inventory({ partNumber = "", ...rest }) {
           setIsDirty(true);
 
           if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: existingPart.quantity });
-          toast.info(`Quantity updated from ${originalQuantity} to ${part.quantity} on part "${cleanPartNumber}"`, { autoClose: false });
         } else {
           console.debug('no existing part, add as new');
           // part is not in inventory, add it as new
@@ -944,8 +964,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
   };
 
-  const resetForm = (saveMessage = "", clearAll = false) => {
-    toast.dismiss();
+  const resetForm = (saveMessage = "", clearAll = false, dismiss = true) => {
+    if (dismiss) toast.dismiss();
+
     removeViewPreference('digikey');
     setIsDirty(false);
     setIsEditing(false);
@@ -1781,15 +1802,28 @@ export function Inventory({ partNumber = "", ...rest }) {
 
   const handleCancelDiscard = (e) => {
     setConfirmDiscardAction(null);
-    setConfirmDiscardChanges(false);
+    setConfirmDiscardChanges(false);  // close confirm
     if (blocker.reset) blocker.reset(); 
   }
 
-  const handleConfirmDiscard = (e) => {
-    if (confirmDiscardAction) confirmDiscardAction();
+  const handleConfirmDiscard = async (e) => {
+    // re-run command by executing the action set
+    if (confirmDiscardAction) await confirmDiscardAction(e);
     setConfirmDiscardAction(null);
-    setConfirmDiscardChanges(false);
+    setConfirmDiscardChanges(false);  // close confirm
     if (blocker.proceed) blocker.proceed();
+  };
+
+  const handleCancelReImport = (e) => {
+    setConfirmReImportAction(null);
+    setConfirmReImport(false); // close confirm
+  }
+
+  const handleConfirmReImport = async (e) => {
+    // re-run command by executing the action set
+    setConfirmReImport(false);  // close confirm
+    if (confirmReImportAction) await confirmReImportAction(e);
+    setConfirmReImportAction(null);
   };
 
   return (
@@ -1834,8 +1868,8 @@ export function Inventory({ partNumber = "", ...rest }) {
       <Confirm
         header={<div className="header"><Icon name="undo" color="grey" /> {t('confirm.discardChanges', "You have unsaved changes.")}</div>}
         open={blocker.state === "blocked" || confirmDiscardChanges}
-        confirmButton="Discard"
-        cancelButton="No, take me back!"
+        confirmButton={t('button.discard', "Discard")}
+        cancelButton={t('button.noTakeMeBack', "No, take me back!")}
         content={
           <p style={{ padding: "20px", fontSize: '1.2em', textAlign: "center" }}>
             <span style={{ color: '#666' }}>{t('confirm.unsaved', "You have unsaved changes.")}</span>
@@ -1846,6 +1880,22 @@ export function Inventory({ partNumber = "", ...rest }) {
         }
         onCancel={handleCancelDiscard}
         onConfirm={handleConfirmDiscard}
+      />
+      <Confirm
+        header={<div className="header"><Icon name="undo" color="grey" /> {t('confirm.importLabel', "Import Label")}</div>}
+        open={confirmReImport}
+        confirmButton={t('button.import', "Import")}
+        cancelButton={t('button.cancel', "Cancel")}
+        content={
+          <p style={{ padding: "20px", fontSize: '1.2em', textAlign: "center" }}>
+            <span style={{ color: '#666' }}>{t('confirm.alreadyImportedLabel', "You have already imported this label.")}</span>
+            <br />
+            <br />
+            {t('confirm.confirmReImport', "Do you want to import this label again?")}
+          </p>
+        }
+        onCancel={handleCancelReImport}
+        onConfirm={handleConfirmReImport}
       />
       <BulkScanModal
         isOpen={bulkScanIsOpen}
@@ -1861,7 +1911,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       {/* FORM START */}
 
       <Form onSubmit={e => onSubmit(e, part)} className="inventory">
-        {!isEditing && <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} />}
+        <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} />
         {part && part.partId > 0 && (
           <Button
             type="button"

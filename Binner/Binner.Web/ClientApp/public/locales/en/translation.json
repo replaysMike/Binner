@@ -699,7 +699,9 @@
     "moveTo": "Move to",
     "select": "Select",
     "copy": "Copy",
-    "copyRaw": "Copy Raw"
+    "copyRaw": "Copy Raw",
+    "discard": "Discard",
+    "noTakeMeBack": "No, take me back!"
   },
   "label": {
     "name": "Name",
@@ -864,6 +866,9 @@
     "discardChanges": "Discard Changes",
     "unsaved": "You have unsaved changes.",
     "confirmDiscard": "Are you sure you want to discard these changes?",
+    "importLabel": "Import Label",
+    "alreadyImportedLabel": "You have already imported this label.",
+    "confirmReImport": "Do you want to import this label again?",
     "header": {
       "removeBomPart": "Remove Part from BOM",
       "deleteFile": "Delete File",

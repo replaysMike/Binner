@@ -84,12 +84,6 @@ root.render(
     <App />
   </RouterProvider>
 </>);
-/*root.render(<>
-  <ToastContainer newestOnTop={true} autoClose={5000} hideProgressBar={true} theme="colored" position="top-center" />
-  <BrowserRouter>
-    <App />
-  </BrowserRouter></>,
-);*/
 
 registerServiceWorker();
 
