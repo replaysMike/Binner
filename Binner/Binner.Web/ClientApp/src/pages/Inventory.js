@@ -36,7 +36,7 @@ import { getSystemSettings } from "../common/applicationSettings";
 import "./Inventory.css";
 
 export function Inventory({ partNumber = "", ...rest }) {
-  const SearchDebounceTimeMs = 500;
+  const SearchDebounceTimeMs = 750;
   const IcPartType = 14;
   const DefaultLowStockThreshold = 10;
   const DefaultQuantity = 1;
@@ -231,6 +231,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     });
     return () => {
       searchDebounced.cancel();
+      Inventory.doFetchPartMetadataController?.abort();
     };
   }, [rest.params.partNumber]);
 
@@ -239,8 +240,6 @@ export function Inventory({ partNumber = "", ...rest }) {
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
     if (input.trim().length < MinSearchKeywordLength)
       return { part: null, exists: false };
-    Inventory.infoAbortController.abort();
-    Inventory.infoAbortController = new AbortController();
     setLoadingPartMetadata(true);
     setPartMetadataIsSubscribed(false);
     setPartMetadataErrors([]);
@@ -255,7 +254,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     } catch (ex) {
       setLoadingPartMetadata(false);
       console.error("Exception", ex);
-      if (ex.name === "AbortError") {
+      if (ex?.name === "AbortError") {
         return { part: null, exists: false }; // Continuation logic has already been skipped, so return normally
       }
       throw ex;
@@ -443,11 +442,11 @@ export function Inventory({ partNumber = "", ...rest }) {
   const doFetchPartMetadata = async (partNumber, part, includeInventorySearch = true) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
-    Inventory.infoAbortController.abort();
-    Inventory.infoAbortController = new AbortController();
+    Inventory.doFetchPartMetadataController?.abort();
+    Inventory.doFetchPartMetadataController = new AbortController();
     try {
       const response = await fetchApi(`/api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
-        signal: Inventory.infoAbortController.signal
+        signal: Inventory.doFetchPartMetadataController.signal
       });
 
       const data = response.data;
@@ -478,10 +477,11 @@ export function Inventory({ partNumber = "", ...rest }) {
       return { data, existsInInventory };
 
     } catch (ex) {
-      console.error("Exception", ex);
-      if (ex.name === "AbortError") {
+      if (ex?.name === "AbortError") {
         // Continuation logic has already been skipped, so return normally
         return { data: null, existsInInventory: false };
+      } else {
+        console.error("Exception", ex);
       }
       throw ex;
     }
@@ -493,10 +493,12 @@ export function Inventory({ partNumber = "", ...rest }) {
    * @returns exists: true if part exists inventory, plus response
    */
   const doInventoryPartSearch = async (partNumber) => {
+    Inventory.doInventoryPartSearchController?.abort();
+    Inventory.doInventoryPartSearchController = new AbortController();
     if (partNumber.length < MinSearchKeywordLength)
       return { exists: false, data: null, error: `Ignoring search as keywords are less than the minimum required (${MinSearchKeywordLength}).` };
     const existsResponse = await fetchApi(`/api/part/search?keywords=${encodeURIComponent(partNumber.trim())}&exactMatch=true`, {
-      signal: Inventory.infoAbortController.signal,
+      signal: Inventory.doInventoryPartSearchController.signal,
       catchErrors: true
     });
     if (existsResponse.responseObject && existsResponse.responseObject.ok && existsResponse.data !== null) {
@@ -686,8 +688,8 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const fetchPart = async (partNumber, partId) => {
-    Inventory.partAbortController.abort();
-    Inventory.partAbortController = new AbortController();
+    Inventory.fetchPartController?.abort();
+    Inventory.fetchPartController = new AbortController();
     setLoadingPart(true);
 
     let query = `partNumber=${encodeURIComponent(partNumber.trim())}`;
@@ -697,7 +699,7 @@ export function Inventory({ partNumber = "", ...rest }) {
 
     // this endpoint can return an expected 404
     return await fetchApi(`/api/part?${query}`, {
-      signal: Inventory.partAbortController.signal
+      signal: Inventory.fetchPartController.signal
     }).then((response) => {
       setLoadingPart(false);
       if (response.responseObject.ok) {
@@ -708,14 +710,20 @@ export function Inventory({ partNumber = "", ...rest }) {
       }
       return null;
     }).catch((err) => {
-      const { data } = err;
-      if (data.status === 404)
-        console.info('part not found');
-      else {
-        console.error('http error', err);
-        toast.error(`Server returned ${data.status} error.`);
-      }
       setLoadingPart(false);
+      if (ex?.name === "AbortError") {
+        // Continuation logic has already been skipped, so return normally
+      } else {
+        // other error
+        const { data } = err;
+        if (data.status === 404)
+          console.info('part not found');
+        else {
+          console.error('http error', err);
+          toast.error(`Server returned ${data.status} error.`);
+        }
+      }
+
       return null;
     });
   };
