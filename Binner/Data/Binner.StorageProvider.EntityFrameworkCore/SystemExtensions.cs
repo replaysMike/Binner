@@ -7,9 +7,9 @@
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        internal static string UcFirst(this string str)
+        internal static string UcFirst(this string? str)
         {
-            return str.First().ToString().ToUpper() + str.Substring(1);
+            return str?.First().ToString().ToUpper() + str?.Substring(1);
         }
     }
 }

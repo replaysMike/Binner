@@ -1,16 +1,14 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Integrations.DigiKey;
-using Binner.Model.Integrations.DigiKey.V4;
 using Binner.Model.Responses;
-using Binner.Model.Swarm;
 using System.Linq.Expressions;
-using static Binner.Common.Integrations.DigikeyApi;
 
 namespace Binner.Testing
 {
     public class InMemoryStorageProvider : IStorageProvider
     {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private readonly Dictionary<long, Part> _parts = new();
         private readonly Dictionary<long, Project> _projects = new();
         private readonly Dictionary<long, ProjectPartAssignment> _projectPartAssignments = new();
@@ -77,6 +75,7 @@ namespace Binner.Testing
             }
         }
 
+
         public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)
         {
             part.UserId = userContext?.UserId;
@@ -113,7 +112,7 @@ namespace Binner.Testing
             return assignment;
         }
 
-        public async Task<Project> AddProjectAsync(Project project, IUserContext? userContext)
+        public async Task<Project?> AddProjectAsync(Project project, IUserContext? userContext)
         {
             project.UserId = userContext?.UserId;
             var id = _projects.OrderByDescending(x => x.Key).Select(x => x.Key).FirstOrDefault() + 1;
@@ -402,7 +401,7 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
-        public Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext? userContext)
+        public Task<OAuthCredential?> SaveOAuthCredentialAsync(OAuthCredential credential, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }
@@ -417,17 +416,17 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
-        public Task<Part> UpdatePartAsync(Part part, IUserContext? userContext)
+        public Task<Part?> UpdatePartAsync(Part part, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }
 
-        public Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
+        public Task<PartSupplier?> UpdatePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }
 
-        public Task<PartType> UpdatePartTypeAsync(PartType partType, IUserContext? userContext)
+        public Task<PartType?> UpdatePartTypeAsync(PartType partType, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }
@@ -442,17 +441,17 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
-        public Task<Project> UpdateProjectAsync(Project project, IUserContext? userContext)
+        public Task<Project?> UpdateProjectAsync(Project project, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ProjectPartAssignment> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
+        public Task<ProjectPartAssignment?> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ProjectPcbAssignment> UpdateProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
+        public Task<ProjectPcbAssignment?> UpdateProjectPcbAssignmentAsync(ProjectPcbAssignment assignment, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }
@@ -510,5 +509,6 @@ namespace Binner.Testing
         {
             throw new NotImplementedException();
         }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }
