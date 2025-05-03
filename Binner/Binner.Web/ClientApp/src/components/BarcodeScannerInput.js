@@ -6,10 +6,10 @@ import { BarcodeProfiles } from "../common/Types";
 import PropTypes from "prop-types";
 import { dynamicDebouncer } from "../common/dynamicDebouncer";
 import { AppEvents, Events } from "../common/events";
-import useSound from 'use-sound';
-import boopSfx from '../audio/softbeep.mp3';
 import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
+const soundSuccess = new Audio('/audio/scan-success.mp3');
+const soundFailure = new Audio('/audio/scan-failure.mp3');
 
 // this value will be replaced by the Barcode config. Lower values might fail to detect scans
 const DefaultDebounceIntervalMs = 80;
@@ -35,7 +35,6 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 	});
   const [isKeyboardListening, setIsKeyboardListening] = useState(listening || true);
 	const [previousIsKeyboardListeningState, setPreviousIsKeyboardListeningState] = useState(listening || true);
-	const [playScanSound] = useSound(boopSfx, { soundEnabled: true, volume: 1 });
 	const [isReceiving, setIsReceiving] = useState(false);
 	const isStartedReading = useRef(false);
 	const sourceElementRef = useRef(null);
@@ -43,7 +42,6 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 	const timerRef = useRef(null);
 	const listeningRef = useRef(isKeyboardListening);
 	const keyBufferRef = useRef([]);
-	const playScanSoundRef = useRef(playScanSound);
 	const keyTimes = useRef([]);
 	const lastKeyTime = useRef(0);
 
@@ -89,7 +87,10 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 			const input = processBarcodeInformation(barcodeText);
 
 			if (enableSound) {
-				playScanSoundRef.current();
+        if (input.invalidBarcodeDetected)
+          soundFailure.play();
+        else
+          soundSuccess.play();
 			}
 			isReadingComplete.current = true;
 
