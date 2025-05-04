@@ -34,8 +34,10 @@ import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
 import { getSystemSettings } from "../common/applicationSettings";
 // overrides BarcodeScannerInput audio support
+const enableSound = true;
 const soundSuccess = new Audio('/audio/scan-success.mp3');
 const soundFailure = new Audio('/audio/scan-failure.mp3');
+const soundDiscard = new Audio('/audio/discard.mp3');
 import "./Inventory.css";
 
 export function Inventory({ partNumber = "", ...rest }) {
@@ -170,6 +172,13 @@ export function Inventory({ partNumber = "", ...rest }) {
   partTypesRef.current = partTypes;
 
   useEffect(() => {
+    // when either of these change, play a sound
+    if (blocker.state === "blocked" || confirmDiscardChanges) {
+      if (enableSound) soundDiscard.play();
+    }
+  }, [blocker.state, confirmDiscardChanges]);
+
+  useEffect(() => {
     const partNumberRaw = rest.params.partNumber;
     let partNumberStr = partNumberRaw?.trim();
     let partId = 0;
@@ -201,7 +210,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       } else if (rest.params.partNumberToAdd) {
         // a part number to add is specified in the URL path
         const { data } = await doFetchPartMetadata(rest.params.partNumberToAdd, partToSearch, false);
-        processPartMetadataResponse(data, partToSearch, true, true);
+        processPartMetadataResponse(data, partToSearch.storedFiles, true, true);
         setLoadingPartMetadata(false);
         setIsDirty(true);
       } else {
@@ -212,7 +221,7 @@ export function Inventory({ partNumber = "", ...rest }) {
           // fetch part metadata, don't allow overwriting of fields that have already been entered
           setLoadingPartMetadata(true);
           const { data } = await doFetchPartMetadata(targetPart.partNumber, partToSearch, false);
-          processPartMetadataResponse(data, partToSearch, true, false); // false, don't overwrite entered fields
+          processPartMetadataResponse(data, partToSearch.storedFiles, true, false); // false, don't overwrite entered fields
           setLoadingPartMetadata(false);
           setIsDirty(true);
         }
@@ -254,7 +263,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       const { data, existsInInventory } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
       if (existsInInventory) setPartExistsInInventory(true);
 
-      processPartMetadataResponse(data, localPart, !pageHasParameters, false);
+      processPartMetadataResponse(data, localPart.storedFiles, !pageHasParameters, false);
       setLoadingPartMetadata(false);
       return { part: localPart, exists: existsInInventory };
     } catch (ex) {
@@ -403,9 +412,10 @@ export function Inventory({ partNumber = "", ...rest }) {
       entity.lowestCostSupplierUrl = lowestCostPart.productUrl;
     }
     setPart(entity);
+    return entity;
   }, []);
 
-  const processPartMetadataResponse = useCallback((data, localPart, allowSetFromMetadata, allowOverwrite) => {
+  const processPartMetadataResponse = useCallback((data, storedFiles, allowSetFromMetadata, allowOverwrite) => {
     // cancelled or auth required
     if (!data) {
       setLoadingPartMetadata(false);
@@ -416,14 +426,17 @@ export function Inventory({ partNumber = "", ...rest }) {
       setPartMetadataErrors(data.errors);
     }
 
+    let updatedPart = part;
     let metadataParts = [];
-    const infoResponse = mergeInfoResponse(data.response, localPart.storedFiles);
+    const infoResponse = mergeInfoResponse(data.response, storedFiles);
     if (infoResponse && infoResponse.parts && infoResponse.parts.length > 0) {
       metadataParts = infoResponse.parts;
 
       const suggestedPart = infoResponse.parts[0];
       // populate the form with data from the part metadata
-      if (allowSetFromMetadata) setPartFromMetadata(metadataParts, { ...suggestedPart, quantity: -1 }, allowOverwrite);
+      if (allowSetFromMetadata) { 
+        updatedPart = setPartFromMetadata(metadataParts, { ...suggestedPart, quantity: -1 }, allowOverwrite);
+      }
     } else {
       // no part metadata available
       setPartMetadataIsSubscribed(true);
@@ -435,8 +448,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     setInfoResponse(infoResponse);
     setMetadataParts(metadataParts);
     setLoadingPartMetadata(false);
-    return metadataParts;
-  }, [setPartFromMetadata]);
+    return { parts: metadataParts, part: updatedPart };
+  }, [setPartFromMetadata, part]);
 
   /**
    * Do a part information search
@@ -604,7 +617,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   // for processing barcode scanner input
-  const handleBarcodeInput = async (e, input, allowReImport = false) => {
+  const handleBarcodeInput = useCallback(async (e, input, allowReImport = false) => {
     if (!input?.value) return;
     toast.dismiss();
 
@@ -628,7 +641,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     // if we didn't rerceive a code we can understand, ignore it
     if (!cleanPartNumber || cleanPartNumber.length === 0) {
       console.debug('no clean part number found', cleanPartNumber, input?.value?.quantity);
-      soundFailure.play();
+      if (enableSound) soundFailure.play();
       return;
     }
 
@@ -641,28 +654,12 @@ export function Inventory({ partNumber = "", ...rest }) {
     } else if (validateResult === false) {
       // error occurred
       toast.error(`An error occurred while validating the barcode.`);
-      soundFailure.play();
+      if (enableSound) soundFailure.play();
       return;
-    } else {
-      // ================================
-      // label has _already_ been scanned
-      // ================================
-      if (isEditing && !allowReImport) {
-        // edit inventory mode.
-        // confirm do you want to import it again?
-        setConfirmReImportAction(() => async (confirmEvent) => await handleBarcodeInput(e, input, true));
-        setConfirmReImport(true);
-        soundFailure.play();
-        return;
-      } else if(!isEditing) {
-        // add inventory mode. we've already scanned this label so only allow loading of the part. Don't update it.
-        // todo: verify if this is the behavior we want. What if we used this to search AND add inventory at the same time?
-        toast.info(`Part loaded.`);
-        setLastBarcodeScan(null);
-        allowQuantityUpdate = false;
-      }
     }
-    soundSuccess.play();
+
+    // barcode scan successful
+    if (enableSound) soundSuccess.play();
     
     // add part
     console.debug('clean part number found through barcode', cleanPartNumber, input.value?.quantity);
@@ -686,7 +683,23 @@ export function Inventory({ partNumber = "", ...rest }) {
         console.debug('fetchPart', existingPart);
 
         const labelQuantity = parseInt(input.value?.quantity || "1");
-        if(existingPart) {
+        if (existingPart) {
+          // =========================
+          // EDIT EXISTING PART
+          // =========================
+
+          setIsEditing(true);
+          // ================================
+          // label has _already_ been scanned
+          // ================================
+          if (!allowReImport) {
+            // confirm do you want to import it again?
+            setConfirmReImportAction(() => async (confirmEvent) => await handleBarcodeInput(e, input, true));
+            setConfirmReImport(true);
+            if (enableSound) soundFailure.play();
+            return;
+          } 
+
           setInputPartNumber(existingPart.partNumber);
           
           const originalQuantity = existingPart.quantity;
@@ -702,23 +715,26 @@ export function Inventory({ partNumber = "", ...rest }) {
           setLoadingPartMetadata(true);
           await fetchPartMetadataAndInventory(existingPart.partNumber, existingPart);
           setLoadingPartMetadata(false);
-          setIsEditing(true);
           setIsDirty(true);
 
           if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: existingPart.quantity });
         } else {
+          // =================================
+          // ADD AS NEW PART
+          // =================================
           console.debug('no existing part, add as new');
+          setIsEditing(false);
+
           // part is not in inventory, add it as new
           setLoadingPartMetadata(true);
           const { data } = await doFetchPartMetadata(cleanPartNumber, part, false);
-          processPartMetadataResponse(data, part, true, true);
+          const metaResult = processPartMetadataResponse(data, part.storedFiles, true, true);
           setLoadingPartMetadata(false);
           setIsDirty(true);
-          setIsEditing(false);
-          console.debug('new part, setting quantity', labelQuantity, part);
+
           // new part being added
-          part.quantity = labelQuantity;
-          setPart(part);
+          metaResult.part.quantity = labelQuantity;
+          setPart(metaResult.part);
           toast.info(`Ready to add new part "${cleanPartNumber}", qty=${labelQuantity}`, { autoClose: false });
         }
       } else {
@@ -761,7 +777,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       }
       console.debug('barcode processing complete');
     }
-  };
+  }, [part, isEditing]);
 
   const formatField = (e) => {
     switch (e.target.name) {
@@ -1232,7 +1248,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     setLoadingPartMetadata(true);
     setConfirmRefreshPartIsOpen(false);
     const { data } = await doFetchPartMetadata(part.partNumber, part, false);
-    processPartMetadataResponse(data, part, true, true);
+    processPartMetadataResponse(data, part.storedFiles, true, true);
     setLoadingPartMetadata(false);
     setIsDirty(true);
     if (confirmRefreshPartDoNotAskAgain) {
