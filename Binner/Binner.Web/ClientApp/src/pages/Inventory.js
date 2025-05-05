@@ -698,7 +698,7 @@ export function Inventory({ partNumber = "", ...rest }) {
             setConfirmReImport(true);
             if (enableSound) soundFailure.play();
             return;
-          } 
+          }
 
           setInputPartNumber(existingPart.partNumber);
           

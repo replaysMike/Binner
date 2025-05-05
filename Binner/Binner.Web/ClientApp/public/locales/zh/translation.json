@@ -216,7 +216,11 @@
       "orderNum": "订单号（Order Number）",
       "instructions": "For <1>DigiKey(德捷电子)</1> orders, this is the <3>Sales Order #</3>.<4 />For <6>Mouser(贸泽电子)</6> orders, this is the <8>Web Order #</8>.<10 />For <12>Arrow(艾睿电子)</12> orders, this is the <14>Order Number</14>.",
       "mouserNote": "<0>备注：</0> Mouser(贸泽电子) only supports Web Order # so make sure when importing that you are using the Web Order # and <2>not the Sales Order #</2>",
-      "arrowNote": "<0>备注：</0> Arrow(艾睿电子) requires that you first request access to their Order API by sending them an email. See <2>Arrow Order Api</2>"
+      "arrowNote": "<0>备注：</0> Arrow(艾睿电子) requires that you first request access to their Order API by sending them an email. See <2>Arrow Order Api</2>",
+      "addedToInventory": "added to inventory",
+      "alreadyInInventory": "already in inventory",
+      "requestAllProductInformation": "Request all product information (slower)",
+      "apiMessages": "Api Messages"
     },
     "printLabels": {
       "title": "打印标签卡",
@@ -670,7 +674,8 @@
     "noPartMetadata": "Hiçbir parça meta verisi bulunamadı!",
     "scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
     "noOutOfStockParts": "Stokta tükenen parça yok.",
-    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts.",
+    "orderImportCancelled": "Order import cancelled."
   },
   "confirm": {
     "deleteProject": "确定删除此项目以及整个BOM吗?",

@@ -1,6 +1,7 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Integrations.DigiKey.V4;
 using Binner.Model.Responses;
 using System.Linq.Expressions;
 
@@ -19,6 +20,9 @@ namespace Binner.Testing
         private readonly Dictionary<long, PcbStoredFileAssignment> _pcbStoredFileAssignments = new();
         private readonly Dictionary<long, PartSupplier> _partSuppliers = new();
         private readonly Dictionary<long, User> _users = new();
+        private readonly Dictionary<long, PartScanHistory> _partScanHistories = new();
+        private readonly Dictionary<long, OrderImportHistory> _orderImportHistories = new();
+        private readonly Dictionary<long, OrderImportHistoryLineItem> _orderImportHistoryLineItems = new();
 
         public InMemoryStorageProvider(bool createEmpty = false)
         {
@@ -461,38 +465,24 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
-        public void Dispose()
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
         {
-            _parts.Clear();
-            _projects.Clear();
-            _projectPartAssignments.Clear();
-            _projectPcbAssignments.Clear();
-            _partTypes.Clear();
-            _pcbs.Clear();
-            _storedFiles.Clear();
-            _pcbStoredFileAssignments.Clear();
-            _partSuppliers.Clear();
-            _users.Clear();
+            return _partScanHistories.Where(x => x.Value.PartScanHistoryId == partScanHistory.PartScanHistoryId).Select(x => x.Value).FirstOrDefault();
         }
 
-        public Task<PartScanHistory?> GetPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(string rawScan, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return _partScanHistories.Where(x => x.Value.RawScan == rawScan).Select(x => x.Value).FirstOrDefault();
         }
 
-        public Task<PartScanHistory?> GetPartScanHistoryAsync(string rawScan, IUserContext? userContext)
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(int rawScanCrc, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return _partScanHistories.Where(x => x.Value.Crc == rawScanCrc).Select(x => x.Value).FirstOrDefault();
         }
 
-        public Task<PartScanHistory?> GetPartScanHistoryAsync(int rawScanCrc, IUserContext? userContext)
+        public async Task<PartScanHistory?> GetPartScanHistoryAsync(long partScanHistoryId, IUserContext? userContext)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<PartScanHistory?> GetPartScanHistoryAsync(long partScanHistoryId, IUserContext? userContext)
-        {
-            throw new NotImplementedException();
+            return _partScanHistories.Where(x => x.Value.PartScanHistoryId == partScanHistoryId).Select(x => x.Value).FirstOrDefault();
         }
 
         public Task<PartScanHistory> AddPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
@@ -508,6 +498,58 @@ namespace Binner.Testing
         public Task<bool> DeletePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(OrderImportHistory orderImportHistory, bool includeChildren, IUserContext? userContext)
+        {
+            return _orderImportHistories.Where(x => x.Value.OrderImportHistoryId == orderImportHistory.OrderImportHistoryId).Select(x => x.Value).FirstOrDefault();
+        }
+
+        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(long orderImportHistoryId, bool includeChildren, IUserContext? userContext)
+        {
+            return _orderImportHistories.Where(x => x.Value.OrderImportHistoryId == orderImportHistoryId).Select(x => x.Value).FirstOrDefault();
+        }
+
+        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(string orderNumber, string supplier, bool includeChildren, IUserContext? userContext)
+        {
+            return _orderImportHistories.Where(x => x.Value.SalesOrder == orderNumber && x.Value.Supplier == supplier).Select(x => x.Value).FirstOrDefault();
+        }
+
+        public Task<OrderImportHistory> AddOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OrderImportHistoryLineItem> AddOrderImportHistoryLineItemAsync(OrderImportHistoryLineItem orrderImportHistoryLineItem, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OrderImportHistory?> UpdateOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> DeleteOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            _parts.Clear();
+            _projects.Clear();
+            _projectPartAssignments.Clear();
+            _projectPcbAssignments.Clear();
+            _partTypes.Clear();
+            _pcbs.Clear();
+            _storedFiles.Clear();
+            _pcbStoredFileAssignments.Clear();
+            _partSuppliers.Clear();
+            _users.Clear();
+            _partScanHistories.Clear();
+            _orderImportHistories.Clear();
+            _orderImportHistoryLineItems.Clear();
         }
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
