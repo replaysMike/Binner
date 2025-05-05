@@ -21,7 +21,9 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	const id = useMemo(() => rest.id || uuidv4(), [rest.id]);
 
 	const barcodeReadStarted = (e) => {
-		window.requestAnimationFrame(() => { inputReceiving.current = true; });
+    rest.onChange(e, { value: '' });
+    inputReceiving.current = true;
+		//window.requestAnimationFrame(() => { inputReceiving.current = true; });
 		if (IsDebug) console.debug(`PI: sending read started id: ${id} dest: ${e.detail.destination.id}`);
 		if (e.detail.destination.id !== id) return;
 		if (IsDebug) console.debug('PI: barcodeReadStarted', e, e.detail.destination.id, id);
@@ -30,7 +32,8 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const barcodeReadCancelled = (e) => {
-		window.requestAnimationFrame(() => { inputReceiving.current = false; });
+    inputReceiving.current = false;
+    //window.requestAnimationFrame(() => { inputReceiving.current = false; });
 		if (IsDebug) console.debug(`PI: sending read cancelled id: ${id} dest: ${e.detail.destination.id}`);
 		if (e.detail.destination.id !== id) return;
 		if (IsDebug) console.debug('PI: barcodeReadCancelled', e, e.detail.destination.id, id);
@@ -39,7 +42,8 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const barcodeReadReceived = (e) => {
-		window.requestAnimationFrame(() => { inputReceiving.current = false; });
+    inputReceiving.current = false;
+    //window.requestAnimationFrame(() => { inputReceiving.current = false; });
 		if (IsDebug) console.debug(`PI: sending read complete id: ${id} dest: ${e.detail.destination?.id}`);
 		if (e.detail.destination && e.detail.destination.id !== id) return;
 		if (IsDebug) console.debug('PI: barcodeReadReceived', e, e.detail.destination?.id, id, clearOnScan);
@@ -73,14 +77,24 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 		// pass input to child control only when not receiving barcode data
 		if (!inputReceiving.current)
 			return rest.onChange(e, control);
+    else if (inputRef.current?.value?.length > 0) {
+      // reset the input control value while receiving barcode data
+      return rest.onChange(e, { value: ''});
+    }
 	};
 
 	// intercept the onChange & keydown events
 	const privateProps = {...rest, 
 		onChange: (e, control) => internalOnChange(e, control), 
 		onKeyDown: (e) => {	
-			// block enter key completely if configured to do so
-			const isCr = e.keyCode === 13;
+      if (inputReceiving.current) {
+        // dropping keydown, we are receiving a barcode
+        e.preventDefault();
+        return;
+      }
+      //console.log('kd', e.keyCode, inputReceiving.current);
+      // block enter key completely if configured to do so
+      const isCr = e.keyCode === 13;
 			if (isCr && !allowEnter) {
 				// prevent character
 				e.preventDefault();
@@ -136,6 +150,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 				}
 			}
 		});
+
 		return <Form.Input { ...propsToReturn } id={id}>
 			{children}
 			{!hideClearIcon && <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: propsToReturn.iconPosition !== "left" && getClearIconPosition(), left: 'unset', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />}
