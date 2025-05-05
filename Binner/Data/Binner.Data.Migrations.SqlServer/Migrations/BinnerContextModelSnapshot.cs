@@ -252,6 +252,114 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.ToTable("OAuthRequests", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrderImportHistory", b =>
+                {
+                    b.Property<long>("OrderImportHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderImportHistoryId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Invoice")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Packlist")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SalesOrder")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Supplier")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OrderImportHistoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrderImportHistories", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrderImportHistoryLineItem", b =>
+                {
+                    b.Property<long>("OrderImportHistoryLineItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderImportHistoryLineItemId"));
+
+                    b.Property<double>("Cost")
+                        .HasColumnType("float");
+
+                    b.Property<string>("CustomerReference")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Manufacturer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ManufacturerPartNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("OrderImportHistoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("PartId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PartNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Quantity")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OrderImportHistoryLineItemId");
+
+                    b.HasIndex("OrderImportHistoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrderImportHistoryLineItems", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Organization", b =>
                 {
                     b.Property<int>("OrganizationId")
@@ -1489,6 +1597,34 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrderImportHistory", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("OrderImportHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrderImportHistoryLineItem", b =>
+                {
+                    b.HasOne("Binner.Data.Model.OrderImportHistory", "OrderImportHistory")
+                        .WithMany("OrderImportHistoryLineItems")
+                        .HasForeignKey("OrderImportHistoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("OrderImportHistoryLineItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("OrderImportHistory");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.HasOne("Binner.Data.Model.PartType", "PartType")
@@ -1785,6 +1921,11 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("Labels");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrderImportHistory", b =>
+                {
+                    b.Navigation("OrderImportHistoryLineItems");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.Navigation("PartScanHistories");
@@ -1836,6 +1977,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("OAuthCredentials");
 
                     b.Navigation("OAuthRequests");
+
+                    b.Navigation("OrderImportHistory");
+
+                    b.Navigation("OrderImportHistoryLineItems");
 
                     b.Navigation("PartScanHistories");
 

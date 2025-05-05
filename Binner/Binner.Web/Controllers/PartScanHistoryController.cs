@@ -2,7 +2,6 @@
 using Binner.Common.IO;
 using Binner.Common.Services;
 using Binner.Model;
-using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.AspNetCore.Mvc;
@@ -19,15 +18,11 @@ namespace Binner.Web.Controllers
     public class PartScanHistoryController : ControllerBase
     {
         private readonly ILogger<PartScanHistoryController> _logger;
-        private readonly WebHostServiceConfiguration _config;
-        private readonly IPartService _partService;
         private readonly IPartScanHistoryService _partScanHistoryService;
 
-        public PartScanHistoryController(ILogger<PartScanHistoryController> logger, WebHostServiceConfiguration config, IPartService partService, IPartScanHistoryService partScanHistoryService)
+        public PartScanHistoryController(ILogger<PartScanHistoryController> logger, IPartScanHistoryService partScanHistoryService)
         {
             _logger = logger;
-            _config = config;
-            _partService = partService;
             _partScanHistoryService = partScanHistoryService;
         }
 
@@ -95,7 +90,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateProjectAsync(UpdatePartScanHistoryRequest request)
+        public async Task<IActionResult> UpdatePartScanHistoryAsync(UpdatePartScanHistoryRequest request)
         {
             var mappedPartScanHistory = Mapper.Map<UpdatePartScanHistoryRequest, PartScanHistory>(request);
             var project = await _partScanHistoryService.UpdatePartScanHistoryAsync(mappedPartScanHistory);
@@ -108,7 +103,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> DeleteProjectAsync(DeletePartScanHistoryRequest request)
+        public async Task<IActionResult> DeletePartScanHistoryAsync(DeletePartScanHistoryRequest request)
         {
             var isDeleted = await _partScanHistoryService.DeletePartScanHistoryAsync(new PartScanHistory
             {

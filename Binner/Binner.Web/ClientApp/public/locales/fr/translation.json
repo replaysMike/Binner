@@ -249,7 +249,7 @@
       "arrowNote": "<0>Note :</0> Arrow exige que vous demandiez d'abord l'accès à leur API de commande en leur envoyant un e-mail. Voir <2>API de commande Arrow</2>",
       "addedToInventory": "ajouté à l'inventaire",
       "alreadyInInventory": "déjà dans l'inventaire",
-      "requestAllProductInformation": "Demander toutes les informations sur le produit",
+      "requestAllProductInformation": "Demander toutes les informations sur le produit (slower)",
       "apiMessages": "Messages de l'API"
     },
     "printLabels": {
@@ -836,7 +836,8 @@
     "noPartMetadata": "Aucune métadonnée de pièce trouvée !",
     "scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
     "noOutOfStockParts": "Aucune pièce en rupture de stock.",
-    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts.",
+    "orderImportCancelled": "Order import cancelled."
   },
   "confirm": {
     "deleteProject": "Êtes-vous sûr de vouloir supprimer ce projet et toute votre nomenclature ?",

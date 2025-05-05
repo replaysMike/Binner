@@ -55,6 +55,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ProjectProduceHistory, options => options.Ignore())
                 .ForMember(x => x.ProjectPcbProduceHistory, options => options.Ignore())
                 .ForMember(x => x.PartScanHistories, options => options.Ignore())
+                .ForMember(x => x.OrderImportHistory, options => options.Ignore())
+                .ForMember(x => x.OrderImportHistoryLineItems, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.User, User>()

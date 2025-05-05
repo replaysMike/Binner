@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NPOI.HSSF.Record;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -42,13 +43,14 @@ namespace Binner.Web.Controllers
         private readonly IPartTypeService _partTypeService;
         private readonly IProjectService _projectService;
         private readonly IPartScanHistoryService _partScanHistoryService;
+        private readonly IOrderImportHistoryService _orderImportHistoryService;
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly IUserService _userService;
         private readonly IPrintService _printService;
         private readonly ILabelGenerator _labelGenerator;
 
-        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService, IPrintService printService, ILabelGenerator labelGenerator)
+        public PartController(ILogger<PartController> logger, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService, IPrintService printService, ILabelGenerator labelGenerator)
         {
             _logger = logger;
             _config = config;
@@ -56,6 +58,7 @@ namespace Binner.Web.Controllers
             _partTypeService = partTypeService;
             _projectService = projectService;
             _partScanHistoryService = partScanHistoryService;
+            _orderImportHistoryService = orderImportHistoryService;
             _labelPrinter = labelPrinter;
             _barcodeGenerator = barcodeGenerator;
             _userService = userService;
@@ -580,55 +583,66 @@ namespace Binner.Web.Controllers
             var response = new OrderImportResponse
             {
                 OrderId = request.OrderId,
+                Invoice = request.Invoice,
+                Packlist = request.Packlist,
                 Supplier = request.Supplier
             };
             if (request.Parts == null || request.Parts.Count == 0)
                 return Ok(response);
 
-            foreach (var commonPart in request.Parts)
+            // create an order import history record
+            var history = await _orderImportHistoryService.AddOrderImportHistoryAsync(new OrderImportHistory
+            {
+                SalesOrder = request.OrderId,
+                Supplier = request.Supplier,
+                Invoice = request.Invoice,
+                Packlist = request.Packlist,
+            });
+
+            foreach (var importedPart in request.Parts)
             {
                 try
                 {
-                    var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == commonPart.ManufacturerPartNumber);
+                    var existingParts = await _partService.GetPartsAsync(x => x.ManufacturerPartNumber == importedPart.ManufacturerPartNumber);
                     if (existingParts.Any())
                     {
                         var existingPart = existingParts.First();
                         // update quantity and cost
                         var existingQuantity = existingPart.Quantity;
-                        existingPart.Quantity += commonPart.QuantityAvailable;
-                        existingPart.Cost = commonPart.Cost;
-                        existingPart.Currency = commonPart.Currency;
+                        existingPart.Quantity += importedPart.QuantityAvailable;
+                        existingPart.Cost = importedPart.Cost;
+                        existingPart.Currency = importedPart.Currency;
                         existingPart = await _partService.UpdatePartAsync(existingPart);
-                        var successPart = Mapper.Map<CommonPart, ImportPartResponse>(commonPart);
-                        if (string.IsNullOrEmpty(commonPart.PartType))
+                        var successPart = Mapper.Map<CommonPart, ImportPartResponse>(importedPart);
+                        if (string.IsNullOrEmpty(importedPart.PartType))
                         {
                             successPart.PartType = SystemDefaults.DefaultPartTypes.Other.ToString();
                         }
                         successPart.QuantityExisting = existingQuantity;
-                        successPart.QuantityAdded = commonPart.QuantityAvailable;
+                        successPart.QuantityAdded = importedPart.QuantityAvailable;
                         successPart.IsImported = true;
                         response.Parts.Add(successPart);
                     }
                     else
                     {
                         // create new part
-                        var part = Mapper.Map<CommonPart, Part>(commonPart);
-                        part.Quantity += commonPart.QuantityAvailable;
-                        part.Cost = commonPart.Cost;
-                        part.Currency = commonPart.Currency;
-                        if (commonPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
-                            part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
-                        if (commonPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
-                            part.MouserPartNumber = commonPart.SupplierPartNumber;
-                        if (commonPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
-                            part.ArrowPartNumber = commonPart.SupplierPartNumber;
-                        part.DatasheetUrl = commonPart.DatasheetUrls.FirstOrDefault();
-                        part.PartNumber = commonPart.ManufacturerPartNumber;
+                        var part = Mapper.Map<CommonPart, Part>(importedPart);
+                        part.Quantity += importedPart.QuantityAvailable;
+                        part.Cost = importedPart.Cost;
+                        part.Currency = importedPart.Currency;
+                        if (importedPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
+                            part.DigiKeyPartNumber = importedPart.SupplierPartNumber;
+                        if (importedPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
+                            part.MouserPartNumber = importedPart.SupplierPartNumber;
+                        if (importedPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
+                            part.ArrowPartNumber = importedPart.SupplierPartNumber;
+                        part.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
+                        part.PartNumber = importedPart.ManufacturerPartNumber;
 
                         PartType? partType = null;
-                        if (!string.IsNullOrEmpty(commonPart.PartType))
+                        if (!string.IsNullOrEmpty(importedPart.PartType))
                         {
-                            partType = await GetPartTypeAsync(commonPart.PartType);
+                            partType = await GetPartTypeAsync(importedPart.PartType);
                             part.PartTypeId = partType?.PartTypeId ?? (int)SystemDefaults.DefaultPartTypes.Other;
                         }
                         else if (part.PartTypeId == 0)
@@ -638,18 +652,39 @@ namespace Binner.Web.Controllers
 
                         part.DateCreatedUtc = DateTime.UtcNow;
                         part = await _partService.AddPartAsync(part);
-                        var successPart = Mapper.Map<CommonPart, ImportPartResponse>(commonPart);
-                        successPart.PartType = partType?.Name ?? SystemDefaults.DefaultPartTypes.Other.ToString();
+                        if (part != null)
+                        {
+                            // create an order import history line item
+                            if (history != null)
+                            {
+                                var historyLineItem = await _orderImportHistoryService.AddOrderImportHistoryLineItemAsync(new OrderImportHistoryLineItem
+                                {
+                                    OrderImportHistoryId = history.OrderImportHistoryId,
+                                    Supplier = importedPart.Supplier,
+                                    Cost = importedPart.Cost,
+                                    CustomerReference = importedPart.Reference,
+                                    Description = importedPart.Description,
+                                    Manufacturer = importedPart.Manufacturer,
+                                    ManufacturerPartNumber = importedPart.ManufacturerPartNumber,
+                                    PartNumber = part.PartNumber,
+                                    Quantity = importedPart.QuantityAvailable,
+                                    PartId = part.PartId,
+                                });
+                            }
 
-                        successPart.QuantityExisting = 0;
-                        successPart.QuantityAdded = commonPart.QuantityAvailable;
-                        successPart.IsImported = true;
-                        response.Parts.Add(successPart);
+                            var successPart = Mapper.Map<CommonPart, ImportPartResponse>(importedPart);
+                            successPart.PartType = partType?.Name ?? SystemDefaults.DefaultPartTypes.Other.ToString();
+
+                            successPart.QuantityExisting = 0;
+                            successPart.QuantityAdded = importedPart.QuantityAvailable;
+                            successPart.IsImported = true;
+                            response.Parts.Add(successPart);
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    var failedPart = Mapper.Map<CommonPart, ImportPartResponse>(commonPart);
+                    var failedPart = Mapper.Map<CommonPart, ImportPartResponse>(importedPart);
                     failedPart.IsImported = false;
                     failedPart.ErrorMessage = ex.GetBaseException().Message;
                     response.Parts.Add(failedPart);

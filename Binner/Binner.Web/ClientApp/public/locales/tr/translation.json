@@ -248,7 +248,7 @@
       "arrowNote": "<0>Not:</0> Arrow, öncelikle Sipariş API'lerine bir e-posta göndererek erişim talebinde bulunmanızı gerektirir. Bkz. <2>Arrow Order API</2>",
       "addedToInventory": "envantere eklendi",
       "alreadyInInventory": "zaten envanterde",
-      "requestAllProductInformation": "Tüm ürün bilgilerini talep et",
+      "requestAllProductInformation": "Tüm ürün bilgilerini talep et (slower)",
       "apiMessages": "Api Mesajları"
     },
     "printLabels": {
@@ -835,7 +835,8 @@
     "noPartMetadata": "Hiçbir parça meta verisi bulunamadı!",
     "scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
     "noOutOfStockParts": "Stokta tükenen parça yok.",
-    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts.",
+    "orderImportCancelled": "Order import cancelled."
   },
   "confirm": {
     "deleteProject": "Bu projeyi ve ürün reçetenizin tamamını silmek istediğinizden emin misiniz?",

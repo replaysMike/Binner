@@ -145,6 +145,10 @@ namespace Binner.Data.Model
 
         public ICollection<OAuthRequest>? OAuthRequests { get; set; }
 
+        public ICollection<OrderImportHistory>? OrderImportHistory { get; set; }
+
+        public ICollection<OrderImportHistoryLineItem>? OrderImportHistoryLineItems { get; set; }
+
         public ICollection<PartScanHistory>? PartScanHistories { get; set; }
 
         public ICollection<PartSupplier>? PartSuppliers { get; set; }

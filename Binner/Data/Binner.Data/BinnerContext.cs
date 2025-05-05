@@ -27,6 +27,16 @@ namespace Binner.Data
         public DbSet<OAuthRequest> OAuthRequests { get; set; } = null!;
 
         /// <summary>
+        /// History of imported orders
+        /// </summary>
+        public DbSet<OrderImportHistory> OrderImportHistories { get; set; } = null!;
+
+        /// <summary>
+        /// Individual line items associated with an Order Import History
+        /// </summary>
+        public DbSet<OrderImportHistoryLineItem> OrderImportHistoryLineItems { get; set; } = null!;
+
+        /// <summary>
         /// Parts
         /// </summary>
         public DbSet<Part> Parts { get; set; } = null!;

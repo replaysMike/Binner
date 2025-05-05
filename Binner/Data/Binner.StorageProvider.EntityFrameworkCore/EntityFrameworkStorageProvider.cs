@@ -8,6 +8,7 @@ using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
 using DataModel = Binner.Data.Model;
@@ -69,10 +70,11 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (entity == null)
                 return false;
             EnforceIntegrityCreate(entity, userContext);
-            await context.PartSuppliers.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
-            await context.ProjectPartAssignments.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
-            await context.StoredFiles.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
-            await context.PartScanHistories.Where(x => x.PartId == part.PartId).ExecuteDeleteAsync();
+            await context.PartSuppliers.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.ProjectPartAssignments.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.StoredFiles.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.PartScanHistories.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.OrderImportHistoryLineItems.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             context.Parts.Remove(entity);
             await context.SaveChangesAsync();
             _partTypesCache.InvalidateCache();
@@ -1041,6 +1043,103 @@ INNER JOIN (
                 return false;
 
             context.PartScanHistories.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(OrderImportHistory orderImportHistory, bool includeChildren, IUserContext ? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var query = context.OrderImportHistories.AsQueryable();
+            if (includeChildren)
+                query = query.Include(x => x.OrderImportHistoryLineItems);
+            var entity = await query
+                .FirstOrDefaultAsync(x => x.OrderImportHistoryId == orderImportHistory.OrderImportHistoryId && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<OrderImportHistory?>(entity);
+        }
+
+        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(long orderImportHistoryId, bool includeChildren, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var query = context.OrderImportHistories.AsQueryable();
+            if (includeChildren)
+                query = query.Include(x => x.OrderImportHistoryLineItems);
+            var entity = await query
+                .FirstOrDefaultAsync(x => x.OrderImportHistoryId == orderImportHistoryId && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<OrderImportHistory?>(entity);
+        }
+
+        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(string orderNumber, string supplier, bool includeChildren, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var query = context.OrderImportHistories.AsQueryable();
+            if (includeChildren)
+                query = query.Include(x => x.OrderImportHistoryLineItems);
+            var entity = await query
+                .FirstOrDefaultAsync(x => x.SalesOrder == orderNumber && x.Supplier == supplier && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<OrderImportHistory?>(entity);
+        }
+
+        public async Task<OrderImportHistory> AddOrderImportHistoryAsync(OrderImportHistory orderImportHistory, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.OrderImportHistory>(orderImportHistory);
+            EnforceIntegrityCreate(entity, userContext);
+            context.OrderImportHistories.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<OrderImportHistory>(entity);
+        }
+
+        public async Task<OrderImportHistoryLineItem> AddOrderImportHistoryLineItemAsync(OrderImportHistoryLineItem orderImportHistoryLineItem, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.OrderImportHistoryLineItem>(orderImportHistoryLineItem);
+            EnforceIntegrityCreate(entity, userContext);
+            context.OrderImportHistoryLineItems.Add(entity);
+            await context.SaveChangesAsync();
+            return _mapper.Map<OrderImportHistoryLineItem>(entity);
+        }
+
+        public async Task<OrderImportHistory?> UpdateOrderImportHistoryAsync(OrderImportHistory orderImportHistory, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.OrderImportHistories
+                .FirstOrDefaultAsync(x => x.OrderImportHistoryId == orderImportHistory.OrderImportHistoryId && x.OrganizationId == userContext.OrganizationId);
+            if (entity != null)
+            {
+                entity = _mapper.Map(orderImportHistory, entity);
+                EnforceIntegrityModify(entity, userContext);
+                await context.SaveChangesAsync();
+                return _mapper.Map<OrderImportHistory>(entity);
+            }
+            return null;
+        }
+
+        public async Task<bool> DeleteOrderImportHistoryAsync(OrderImportHistory orderImportHistory, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = context.OrderImportHistories
+                .FirstOrDefault(x => x.OrderImportHistoryId == orderImportHistory.OrderImportHistoryId && x.OrganizationId == userContext.OrganizationId);
+            if (entity == null)
+                return false;
+
+            var lineItems = context.OrderImportHistoryLineItems
+                .Where(x => x.OrderImportHistoryId == orderImportHistory.OrderImportHistoryId)
+                .ToList();
+            if (lineItems.Any())
+                context.OrderImportHistoryLineItems.RemoveRange(lineItems);
+
+            context.OrderImportHistories.Remove(entity);
             await context.SaveChangesAsync();
             return true;
         }

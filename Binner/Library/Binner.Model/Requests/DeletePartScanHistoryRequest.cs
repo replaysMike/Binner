@@ -3,7 +3,7 @@
     public class DeletePartScanHistoryRequest
     {
         /// <summary>
-        /// PartScanHistory id
+        /// Part Scan History id
         /// </summary>
         public long PartScanHistoryId { get; set; }
     }

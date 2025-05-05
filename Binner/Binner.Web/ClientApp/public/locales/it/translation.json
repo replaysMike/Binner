@@ -247,7 +247,9 @@
 			"mouserNote": "<0>Nota:</0> Mouser supporta soltanto Web Order # quindi quando si importa assicurarsi di utilizzare il Web Order # e <2>non il Sales Order #</2>",
 			"arrowNote": "<0>Note:</0> Arrow richiede che sia richiesto via email l'accesso al loro Order API. Vedi <2>Arrow Order Api</2>",
 			"addedToInventory": "aggiunto all'inventario",
-			"alreadyInInventory": "già presente in inventario"
+			"alreadyInInventory": "già presente in inventario",
+      "requestAllProductInformation": "Request all product information (slower)",
+      "apiMessages": "Api Messages"
 		},
 		"printLabels": {
 			"title": "Stampa Etichette",
@@ -832,7 +834,8 @@
 		"noPartMetadata": "Non ci sono metadati per il componente!",
 		"scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
 		"noOutOfStockParts": "Non ci sono componenti sottoscorta.",
-    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts."
+    "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts.",
+    "orderImportCancelled": "Order import cancelled."
 	},
 	"confirm": {
 		"deleteProject": "Sicuro di voler eliminare questo progetto e l'intera DBA?",

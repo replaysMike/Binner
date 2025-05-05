@@ -3,7 +3,7 @@
     public class GetPartScanHistoryRequest
     {
         /// <summary>
-        /// The project id
+        /// The part scan history id
         /// </summary>
         public long PartScanHistoryId { get; set; }
 

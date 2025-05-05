@@ -119,6 +119,7 @@ namespace Binner.Web.Configuration
             container.Register<IAdminService, AdminService>(new PerScopeLifetime());
             container.Register<IPrintService, PrintService>(new PerScopeLifetime());
             container.Register<IPartScanHistoryService, PartScanHistoryService>(new PerScopeLifetime());
+            container.Register<IOrderImportHistoryService, OrderImportHistoryService>(new PerScopeLifetime());
             container.Register<IBackupProvider, BackupProvider>(new PerScopeLifetime());
             container.Register<JwtService>(new PerScopeLifetime());
             container.Register<IntegrationService>(new PerScopeLifetime());

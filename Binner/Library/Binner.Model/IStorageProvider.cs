@@ -598,5 +598,61 @@ namespace Binner.Model
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
         Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext);
+
+        /// <summary>
+        /// Get an order import history record
+        /// </summary>
+        /// <param name="orderImportHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<OrderImportHistory?> GetOrderImportHistoryAsync(OrderImportHistory orderImportHistory, bool includeChildren, IUserContext? userContext);
+
+        /// <summary>
+        /// Get an order import history record
+        /// </summary>
+        /// <param name="orderImportHistoryId"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<OrderImportHistory?> GetOrderImportHistoryAsync(long orderImportHistoryId, bool includeChildren, IUserContext? userContext);
+
+        /// <summary>
+        /// Get an order import history record
+        /// </summary>
+        /// <param name="orderImportHistoryId"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<OrderImportHistory?> GetOrderImportHistoryAsync(string orderNumber, string supplier, bool includeChildren, IUserContext? userContext);
+
+        /// <summary>
+        /// Add a new order import history record
+        /// </summary>
+        /// <param name="partScanHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<OrderImportHistory> AddOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext);
+
+        /// <summary>
+        /// Add a new order import history line item
+        /// </summary>
+        /// <param name="orrderImportHistoryLineItem"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<OrderImportHistoryLineItem> AddOrderImportHistoryLineItemAsync(OrderImportHistoryLineItem orrderImportHistoryLineItem, IUserContext? userContext);
+
+        /// <summary>
+        /// Update an existing order import history record
+        /// </summary>
+        /// <param name="partScanHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<OrderImportHistory?> UpdateOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext);
+
+        /// <summary>
+        /// Delete an existing order import history record
+        /// </summary>
+        /// <param name="partScanHistory"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<bool> DeleteOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext);
     }
 }
