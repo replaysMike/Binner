@@ -680,7 +680,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         setPartMetadataErrors([]);
         // we already have a usable part number, look up its data
         const existingPart = await fetchPart(cleanPartNumber);
-        console.debug('fetchPart', existingPart);
+        //console.debug('fetchPart', existingPart);
 
         const labelQuantity = parseInt(input.value?.quantity || "1");
         if (existingPart) {
@@ -1086,15 +1086,15 @@ export function Inventory({ partNumber = "", ...rest }) {
     //e.stopPropagation();
     setPartMetadataIsSubscribed(false);
     setPartMetadataErrors([]);
-    let searchPartNumber = control.value;
+    let searchPartNumber = control.value || '';
 
     if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
       searchPartNumber = control.value.replace("\t", "");
       await searchDebounced(searchPartNumber, part, partTypes);
+      setIsDirty(true);
     }
 
     setInputPartNumber(searchPartNumber);
-    setIsDirty(true);
 
     // wont work unless we update render
     //setRenderIsDirty(!renderIsDirty);

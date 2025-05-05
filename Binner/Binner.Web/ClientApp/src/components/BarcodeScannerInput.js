@@ -583,10 +583,12 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
 			if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < barcodeConfig.maxKeystrokeThresholdMs) {
-				setIsReceiving(true);
+        //console.log('BSI: Detected start of barcode scan', isStartedReading.current, keyBufferRef.current.length, MinKeystrokesToConsiderScanningEvent, barcodeConfig.maxKeystrokeThresholdMs, maxTime);
+        setIsReceiving(true);
 				isReadingComplete.current = false;
 				// only send the event once when we've determined we are capturing
 				if(!isStartedReading.current) {
+          //console.log('BSI: Starting event', keyBufferRef.current.length, maxTime);
 					sourceElementRef.current = document.activeElement;
 					AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
 				}
