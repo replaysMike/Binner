@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Form, Popup, Input, Icon, Button, Breadcrumb, Table } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { BarcodeScannerInput } from "../../components/BarcodeScannerInput";
+import { BarcodeExamplesModal } from "../../components/modals/BarcodeExamplesModal";
 import { Clipboard } from "../../components/Clipboard";
 import { GetTypeName, BarcodeProfiles } from "../../common/Types";
 import ProtectedInput from "../../components/ProtectedInput";
@@ -33,6 +34,7 @@ export function BarcodeScanner(props) {
   const [unprotectedDummy, setUnprotectedDummy] = useState(null);
   const [unprotectedDummyStartTime, setUnprotectedDummyStartTime] = useState(null);
   const [dummyStartTime, setDummyStartTime] = useState(null);
+  const [examplesIsOpen, setExamplesIsOpen] = useState(false);
   const dummyTimerRef = useRef();
   const unprotectedDummyTimerRef = useRef();
 
@@ -75,6 +77,7 @@ export function BarcodeScanner(props) {
 
   // debounced handler for processing barcode scanner input
   const handleBarcodeInput = (e, input) => {
+    setExamplesIsOpen(false);
     viewItem(input);
     const item = {
       ...input,
@@ -143,6 +146,17 @@ export function BarcodeScanner(props) {
     viewItem(item);
   };
 
+  const handleOpenExamples = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setExamplesIsOpen(true);
+  };
+
+  const handleBarcodeExamplesClose = (e) => {
+    console.log('close');
+    setExamplesIsOpen(false);
+  };
+
   const getRandomKey = () => Math.floor(Math.random() * 999999);
   let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={getRandomKey()} className="control rs">{match}</span>));
   barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={getRandomKey()} className="control gs">{match}</span>));
@@ -161,6 +175,11 @@ export function BarcodeScanner(props) {
         onSetConfig={handleSetConfig} 
         onDisabled={() => toast.error('Barcode scanning support is currently disabled. See Settings page.', { autoClose: false })} 
       />
+      <BarcodeExamplesModal isOpen={examplesIsOpen} onClose={handleBarcodeExamplesClose} />
+      <div style={{ float: 'right', marginRight: '20px', textAlign: 'center' }}>
+        <Link onClick={handleOpenExamples}><Icon name="qrcode" size='large' /></Link><br/>
+        <Link onClick={handleOpenExamples}><span style={{fontSize: '0.8em'}}>View Barcode Examples</span></Link>
+      </div>
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />

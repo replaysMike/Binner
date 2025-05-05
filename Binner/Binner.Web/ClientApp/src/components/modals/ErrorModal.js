@@ -15,7 +15,7 @@ export default function ErrorModal(props) {
   }, [props.context]);
 
   const handleCloseErrorModal = () => {
-    window.showErrorWindow();
+    if (window?.showErrorWindow) window.showErrorWindow();
   };
 
   const hasErrorMessage = (message) => {
