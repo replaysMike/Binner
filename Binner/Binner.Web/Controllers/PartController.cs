@@ -628,6 +628,10 @@ namespace Binner.Web.Controllers
                             existingPart.TmePartNumber = importedPart.SupplierPartNumber;
                         if (string.IsNullOrEmpty(existingPart.DatasheetUrl))
                             existingPart.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
+                        if (string.IsNullOrEmpty(existingPart.ProductUrl))
+                            existingPart.ProductUrl = importedPart.ProductUrl;
+                        if (string.IsNullOrEmpty(existingPart.Manufacturer))
+                            existingPart.Manufacturer = importedPart.Manufacturer;
                         // add the reference line as an extension value
                         if (string.IsNullOrEmpty(existingPart.ExtensionValue1) || existingPart.ExtensionValue1 == importedPart.Reference)
                             existingPart.ExtensionValue1 = importedPart.Reference;
@@ -661,6 +665,8 @@ namespace Binner.Web.Controllers
                         if (importedPart.Supplier?.Equals("tme", StringComparison.InvariantCultureIgnoreCase) == true)
                             part.TmePartNumber = importedPart.SupplierPartNumber;
                         part.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
+                        part.ProductUrl = importedPart.ProductUrl;
+                        part.Manufacturer = importedPart.Manufacturer;
                         part.PartNumber = importedPart.ManufacturerPartNumber;
                         // add the reference line as an extension value
                         part.ExtensionValue1 = importedPart.Reference;
