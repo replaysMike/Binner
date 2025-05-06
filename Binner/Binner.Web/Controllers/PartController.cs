@@ -607,11 +607,33 @@ namespace Binner.Web.Controllers
                     if (existingParts.Any())
                     {
                         var existingPart = existingParts.First();
-                        // update quantity and cost
+                        // update quantity and cost, as well as fields with no value
                         var existingQuantity = existingPart.Quantity;
                         existingPart.Quantity += importedPart.QuantityAvailable;
                         existingPart.Cost = importedPart.Cost;
                         existingPart.Currency = importedPart.Currency;
+
+                        // fields that may have no current value
+                        if (string.IsNullOrEmpty(existingPart.Description))
+                            existingPart.Description = importedPart.Description;
+                        if (string.IsNullOrEmpty(existingPart.ManufacturerPartNumber))
+                            existingPart.ManufacturerPartNumber = importedPart.ManufacturerPartNumber;
+                        if (string.IsNullOrEmpty(existingPart.DigiKeyPartNumber) && importedPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
+                            existingPart.DigiKeyPartNumber = importedPart.SupplierPartNumber;
+                        if (string.IsNullOrEmpty(existingPart.MouserPartNumber) && importedPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
+                            existingPart.MouserPartNumber = importedPart.SupplierPartNumber;
+                        if (string.IsNullOrEmpty(existingPart.ArrowPartNumber) && importedPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
+                            existingPart.ArrowPartNumber = importedPart.SupplierPartNumber;
+                        if (string.IsNullOrEmpty(existingPart.TmePartNumber) && importedPart.Supplier?.Equals("tme", StringComparison.InvariantCultureIgnoreCase) == true)
+                            existingPart.TmePartNumber = importedPart.SupplierPartNumber;
+                        if (string.IsNullOrEmpty(existingPart.DatasheetUrl))
+                            existingPart.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
+                        // add the reference line as an extension value
+                        if (string.IsNullOrEmpty(existingPart.ExtensionValue1) || existingPart.ExtensionValue1 == importedPart.Reference)
+                            existingPart.ExtensionValue1 = importedPart.Reference;
+                        else if (string.IsNullOrEmpty(existingPart.ExtensionValue2))
+                            existingPart.ExtensionValue2 = importedPart.Reference;
+
                         existingPart = await _partService.UpdatePartAsync(existingPart);
                         var successPart = Mapper.Map<CommonPart, ImportPartResponse>(importedPart);
                         if (string.IsNullOrEmpty(importedPart.PartType))
@@ -636,8 +658,12 @@ namespace Binner.Web.Controllers
                             part.MouserPartNumber = importedPart.SupplierPartNumber;
                         if (importedPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
                             part.ArrowPartNumber = importedPart.SupplierPartNumber;
+                        if (importedPart.Supplier?.Equals("tme", StringComparison.InvariantCultureIgnoreCase) == true)
+                            part.TmePartNumber = importedPart.SupplierPartNumber;
                         part.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
                         part.PartNumber = importedPart.ManufacturerPartNumber;
+                        // add the reference line as an extension value
+                        part.ExtensionValue1 = importedPart.Reference;
 
                         PartType? partType = null;
                         if (!string.IsNullOrEmpty(importedPart.PartType))

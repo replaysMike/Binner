@@ -90,7 +90,7 @@ export function OrderImport(props) {
 
     const newOrder = { ...order, orderId: orderNumber, invoice: invoice, packlist: packlist };
     setOrder({ ...newOrder });
-    getPartsToImport(e, newOrder);
+    getPartsToImport(e, newOrder, true, true);
   };
 
   const handleImportParts = async (e) => {
@@ -159,7 +159,7 @@ export function OrderImport(props) {
     });
   };
 
-  const getPartsToImport = async (e, order, validateExistingOrder = true) => {
+  const getPartsToImport = async (e, order, validateExistingOrder = true, viaBarcode = false) => {
     e.preventDefault();
     OrderImport.getPartsToImport?.abort(); // Cancel the previous request
     OrderImport.getPartsToImport = new AbortController();
@@ -175,19 +175,19 @@ export function OrderImport(props) {
       } else if (validateResult === false) {
         // error occurred
         toast.error(`An error occurred while validating the order import.`);
-        if (enableSound) soundFailure.play();
+        if (enableSound && viaBarcode) soundFailure.play();
         return;
       } else {
         // confirm do you want to import it again?
-        setConfirmReImportAction(() => async (confirmEvent) => await getPartsToImport(e, order, false));
+        setConfirmReImportAction(() => async (confirmEvent) => await getPartsToImport(e, order, false, viaBarcode));
         setConfirmReImport(true);
-        if (enableSound) soundFailure.play();
+        if (enableSound && viaBarcode) soundFailure.play();
         return;
       }
     }
 
     // barcode scan successful
-    if (enableSound) soundSuccess.play();
+    if (enableSound && viaBarcode) soundSuccess.play();
     toast.info(t('message.loadingOrder', "Loading order# {{order}}", { order: order.orderId }), { autoClose: 10000 });
 
     setLoading(true);
