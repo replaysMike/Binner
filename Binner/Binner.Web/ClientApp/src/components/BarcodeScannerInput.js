@@ -531,13 +531,13 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 
   const addKeyboardHandler = () => {
     if (document) {
-      document.addEventListener("keydown", onKeydown);
+      //document.addEventListener("keydown", onKeydown);
     }
   };
 
   const removeKeyboardHandler = () => {
     if (document) {
-      document.removeEventListener("keydown", onKeydown);
+      //document.removeEventListener("keydown", onKeydown);
     }
   };
 
@@ -581,8 +581,9 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 
 			keyBufferRef.current.push(e);
 
+      // todo: problematic code when holding down normal keys
 			const maxTime = getMaxValueFast(keyTimes.current, 1);
-			if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < barcodeConfig.maxKeystrokeThresholdMs) {
+			/*if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < barcodeConfig.maxKeystrokeThresholdMs) {
         //console.log('BSI: Detected start of barcode scan', isStartedReading.current, keyBufferRef.current.length, MinKeystrokesToConsiderScanningEvent, barcodeConfig.maxKeystrokeThresholdMs, maxTime);
         setIsReceiving(true);
 				isReadingComplete.current = false;
@@ -593,7 +594,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 					AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
 				}
 				isStartedReading.current = true;	
-			}
+			}*/
 
 			// visual indicator of input received
 			if (timerRef.current) clearTimeout(timerRef.current);

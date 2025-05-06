@@ -256,7 +256,6 @@ export default function PartsGrid2Memoized({
   };
 
   const tableColumns = useMemo(() => {
-    console.debug('render tableColumns');
     const handleSelfLink = (e, part, propertyName) => {
       e.preventDefault();
       e.stopPropagation();
@@ -397,7 +396,6 @@ export default function PartsGrid2Memoized({
     if (rest.onPartClick) rest.onPartClick(row, row.original);
   };
 
-  console.debug('totalPages', _totalPages);
   return (
     <div id="partsGrid">
       <style>{mediaStyles}</style>
