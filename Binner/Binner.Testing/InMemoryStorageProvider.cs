@@ -487,17 +487,17 @@ namespace Binner.Testing
 
         public Task<PartScanHistory> AddPartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(partScanHistory);
         }
 
         public Task<PartScanHistory?> UpdatePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((PartScanHistory?)partScanHistory);
         }
 
         public Task<bool> DeletePartScanHistoryAsync(PartScanHistory partScanHistory, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
 
         public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(OrderImportHistory orderImportHistory, bool includeChildren, IUserContext? userContext)
@@ -517,27 +517,27 @@ namespace Binner.Testing
 
         public Task<OrderImportHistory> AddOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(partScanHistory);
         }
 
-        public Task<OrderImportHistoryLineItem> AddOrderImportHistoryLineItemAsync(OrderImportHistoryLineItem orrderImportHistoryLineItem, IUserContext? userContext)
+        public Task<OrderImportHistoryLineItem> AddOrderImportHistoryLineItemAsync(OrderImportHistoryLineItem orderImportHistoryLineItem, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(orderImportHistoryLineItem);
         }
 
-        public Task<OrderImportHistory?> UpdateOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext)
+        public Task<OrderImportHistory?> UpdateOrderImportHistoryAsync(OrderImportHistory orderImportHistory, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((OrderImportHistory?)orderImportHistory);
         }
 
-        public Task<bool> DeleteOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext)
+        public Task<bool> DeleteOrderImportHistoryAsync(OrderImportHistory orderImportHistory, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
 
         public Task<IDictionary<string, long>> GetPartIdsFromManufacturerPartNumbersAsync(ICollection<string> partNumbers, IUserContext? userContext)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((IDictionary<string, long>)new Dictionary<string, long>());
         }
 
         public void Dispose()
