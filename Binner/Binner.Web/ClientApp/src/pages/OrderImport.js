@@ -159,31 +159,31 @@ export function OrderImport(props) {
     });
   };
 
-  const getPartsToImport = async (e, order, allowReImport = false) => {
+  const getPartsToImport = async (e, order, validateExistingOrder = true) => {
     e.preventDefault();
     OrderImport.getPartsToImport?.abort(); // Cancel the previous request
     OrderImport.getPartsToImport = new AbortController();
     setError(null);
     setOrderImportSearchResult(null);
 
-    const validateResult = await validateExistingOrderImport(order);
-    if (validateResult === true) {
-      // ================================
-      // no order import history, proceed
-      // ================================
-    } else if (validateResult === false) {
-      // error occurred
-      toast.error(`An error occurred while validating the order import.`);
-      if (enableSound) soundFailure.play();
-      return;
-    }
-
-    if (!allowReImport) {
-      // confirm do you want to import it again?
-      setConfirmReImportAction(() => async (confirmEvent) => await getPartsToImport(e, order, true));
-      setConfirmReImport(true);
-      if (enableSound) soundFailure.play();
-      return;
+    if (validateExistingOrder) {
+      const validateResult = await validateExistingOrderImport(order);
+      if (validateResult === true) {
+        // ================================
+        // no order import history, proceed
+        // ================================
+      } else if (validateResult === false) {
+        // error occurred
+        toast.error(`An error occurred while validating the order import.`);
+        if (enableSound) soundFailure.play();
+        return;
+      } else {
+        // confirm do you want to import it again?
+        setConfirmReImportAction(() => async (confirmEvent) => await getPartsToImport(e, order, false));
+        setConfirmReImport(true);
+        if (enableSound) soundFailure.play();
+        return;
+      }
     }
 
     // barcode scan successful
@@ -446,8 +446,8 @@ export function OrderImport(props) {
                 </Table.Cell>
                 <Table.Cell textAlign="center">
                   {p.partId 
-                    ? <Popup content={<p>{t('popup.partExists', "Part exists in inventory.")}</p>} trigger={<Icon name="check circle" color="blue" size="large" />} /> 
-                    : <Popup content={<p>{t('popup.newPart', "New part does not exist in inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="large" />} />
+                    ? <Popup content={<p>{t('page.orderImport.popup.partExists', "Part exists in your inventory.")}</p>} trigger={<Icon name="check circle" color="blue" size="large" />} /> 
+                    : <Popup content={<p>{t('page.orderImport.popup.newPart', "New part does not exist in your inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="large" />} />
                   }
                 </Table.Cell>
                 <Table.Cell className="expandable-cell width-100">
