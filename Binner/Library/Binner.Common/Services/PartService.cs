@@ -16,13 +16,11 @@ using Binner.Model.Responses;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.Cmp;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security;
 using System.Threading.Tasks;
 using Part = Binner.Model.Part;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
@@ -542,9 +540,9 @@ namespace Binner.Common.Services
             ManufacturerPartNumber = part.ManufacturerProductNumber,
             Manufacturer = part.Manufacturer?.Name ?? string.Empty,
             Description = part.Description.ProductDescription + "\r\n" + part.Description.DetailedDescription,
-            ImageUrl = part.PhotoUrl,
-            DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
-            ProductUrl = part.ProductUrl,
+            ImageUrl = SystemPaths.EnsureValidAbsoluteHttpUrl(part.PhotoUrl),
+            DatasheetUrls = new List<string> { SystemPaths.EnsureValidAbsoluteHttpUrl(part.DatasheetUrl) ?? string.Empty },
+            ProductUrl = SystemPaths.EnsureValidAbsoluteHttpUrl(part.ProductUrl),
             Status = part.ProductStatus.Status,
             Currency = currency,
             AdditionalPartNumbers = additionalPartNumbers,
@@ -563,9 +561,9 @@ namespace Binner.Common.Services
             ManufacturerPartNumber = part.ManufacturerPartNumber,
             Manufacturer = part.Manufacturer?.Value ?? string.Empty,
             Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
-            ImageUrl = part.PrimaryPhoto,
-            DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
-            ProductUrl = part.ProductUrl,
+            ImageUrl = SystemPaths.EnsureValidAbsoluteHttpUrl(part.PrimaryPhoto),
+            DatasheetUrls = new List<string> { SystemPaths.EnsureValidAbsoluteHttpUrl(part.PrimaryDatasheet) ?? string.Empty },
+            ProductUrl = SystemPaths.EnsureValidAbsoluteHttpUrl(part.ProductUrl),
             Status = part.ProductStatus,
             Currency = currency,
             AdditionalPartNumbers = additionalPartNumbers,
