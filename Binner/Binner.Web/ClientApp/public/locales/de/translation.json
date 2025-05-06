@@ -250,7 +250,11 @@
       "addedToInventory": "Zum Lagerbestand hinzugefügt",
       "alreadyInInventory": "Befindet sich bereits im Lagerbestand",
       "requestAllProductInformation": "Request all product information (slower)",
-      "apiMessages": "Api Messages"
+      "apiMessages": "Api Messages",
+      "popup": {
+        "partExists": "Part exists in your inventory.",
+        "newPart": "New part does not exist in your inventory."
+      }
     },
     "printLabels": {
       "title": "Etiketten drucken",

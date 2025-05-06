@@ -249,7 +249,11 @@
       "addedToInventory": "envantere eklendi",
       "alreadyInInventory": "zaten envanterde",
       "requestAllProductInformation": "Tüm ürün bilgilerini talep et (slower)",
-      "apiMessages": "Api Mesajları"
+      "apiMessages": "Api Mesajları",
+      "popup": {
+        "partExists": "Part exists in your inventory.",
+        "newPart": "New part does not exist in your inventory."
+      }
     },
     "printLabels": {
       "title": "Etiketleri Yazdır",

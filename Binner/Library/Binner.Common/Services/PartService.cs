@@ -221,6 +221,19 @@ namespace Binner.Common.Services
             return ServiceResult<CategoriesResponse?>.Create("Invalid response received", apiResponse.ApiName);
         }
 
+        private async Task<List<CommonPart>> MapCommonPartIdsAsync(List<CommonPart> parts)
+        {
+            var partNumbers = parts.Select(x => x.ManufacturerPartNumber ?? string.Empty).ToList();
+            var partIds = await _storageProvider.GetPartIdsFromManufacturerPartNumbersAsync(partNumbers, _requestContext.GetUserContext());
+            foreach (var part in parts)
+            {
+                var key = part.ManufacturerPartNumber ?? string.Empty;
+                if (partIds.ContainsKey(key))
+                    part.PartId = partIds[key];
+            }
+            return parts;
+        }
+
         /// <summary>
         /// Get an external order
         /// </summary>
@@ -389,6 +402,7 @@ namespace Binner.Common.Services
                 part.PartType = DeterminePartType(part, partTypes);
                 part.Keywords = DetermineKeywordsFromPart(part, partTypes);
             }
+            commonParts = await MapCommonPartIdsAsync(commonParts);
             return ServiceResult<ExternalOrderResponse?>.Create(new ExternalOrderResponse
             {
                 OrderDate = digikeyResponse.DateEntered,
@@ -508,6 +522,7 @@ namespace Binner.Common.Services
                 part.PartType = DeterminePartType(part, partTypes);
                 part.Keywords = DetermineKeywordsFromPart(part, partTypes);
             }
+            commonParts = await MapCommonPartIdsAsync(commonParts);
             return ServiceResult<ExternalOrderResponse?>.Create(new ExternalOrderResponse
             {
                 OrderDate = digikeyResponse.ShippingDetails.Any() ? DateTime.Parse(digikeyResponse.ShippingDetails.First().DateTransaction ?? DateTime.MinValue.ToString()) : DateTime.MinValue,
@@ -687,7 +702,7 @@ namespace Binner.Common.Services
                     part.PartType = DeterminePartType(part, partTypes);
                     part.Keywords = DetermineKeywordsFromPart(part, partTypes);
                 }
-
+                commonParts = await MapCommonPartIdsAsync(commonParts);
                 return ServiceResult<ExternalOrderResponse?>.Create(new ExternalOrderResponse
                 {
                     OrderDate = mouserOrderResponse.OrderDate,
@@ -805,7 +820,7 @@ namespace Binner.Common.Services
                     part.PartType = DeterminePartType(part, partTypes);
                     part.Keywords = DetermineKeywordsFromPart(part, partTypes);
                 }
-
+                commonParts = await MapCommonPartIdsAsync(commonParts);
                 return ServiceResult<ExternalOrderResponse?>.Create(new ExternalOrderResponse
                 {
                     OrderDate = DateTime.MinValue,
@@ -929,6 +944,7 @@ namespace Binner.Common.Services
                     part.PartType = DeterminePartType(part, partTypes);
                     part.Keywords = DetermineKeywordsFromPart(part, partTypes);
                 }
+                response.Parts = await MapCommonPartIdsAsync(response.Parts);
             }
 
             return ServiceResult<PartResults>.Create(response);
@@ -1140,6 +1156,9 @@ namespace Binner.Common.Services
                 .ThenBy(x => x.BasePartNumber)
                 .ThenBy(x => x.Status)
                 .ToList();
+
+            // map PartIds for local inventory
+            response.Parts = await MapCommonPartIdsAsync(response.Parts);
 
             // Combine all the product images and datasheets into the root response and remove duplicates
             response.ProductImages = partInfoResults.PartResults.ProductImages.DistinctBy(x => x.Value).ToList();

@@ -573,7 +573,7 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// External order import parts
+        /// External order import parts into local inventory
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>

@@ -8,6 +8,11 @@
         public int Rank { get; set; }
 
         /// <summary>
+        /// The local part id, if it exists in inventory
+        /// </summary>
+        public long? PartId { get; set; }
+
+        /// <summary>
         /// Add a link to the part number manufacturer (Swarm)
         /// </summary>
         public int? SwarmPartNumberManufacturerId { get; set; }
