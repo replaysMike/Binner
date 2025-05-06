@@ -113,6 +113,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     storedFiles: []
   };
 
+  const [example, setExample] = useState("");
   const [inputPartNumber, setInputPartNumber] = useState(rest.params.partNumberToAdd || "");
   const [infoResponse, setInfoResponse] = useState({});
   const [parts, setParts] = useState([]);
@@ -1107,28 +1108,38 @@ export function Inventory({ partNumber = "", ...rest }) {
     setIsDirty(true);
   };
 
+  const handleChange2 = (e, control) => {
+    //e.preventDefault();
+    //e.stopPropagation();
+
+    //console.log('control', control.name, control.value);
+    //part[control.name] = control.value;
+    //setPart({...part});
+    setExample(control.value || '');
+  };
+
   const handleChange = (e, control) => {
     e.preventDefault();
     e.stopPropagation();
     setPartMetadataIsSubscribed(false);
     setPartMetadataErrors([]);
-    const updatedPart = { ...part };
 
-    updatedPart[control.name] = control.value;
+    part[control.name] = control.value;
+    
     switch (control.name) {
       case "partNumber":
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) {
-          updatedPart[control.name] = control.value.replace("\t", "");
-          searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
+        if (part.partNumber && part.partNumber.length > 0) {
+          part[control.name] = control.value.replace("\t", "");
+          searchDebounced(part.partNumber, part, partTypes);
         }
         break;
       case "partTypeId":
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastPartTypeId: control.value });
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
+        if (part.partNumber && part.partNumber.length > 0) searchDebounced(part.partNumber, part, partTypes);
         break;
       case "mountingTypeId":
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastMountingTypeId: control.value });
-        if (updatedPart.partNumber && updatedPart.partNumber.length > 0) searchDebounced(updatedPart.partNumber, updatedPart, partTypes);
+        if (part.partNumber && part.partNumber.length > 0) searchDebounced(part.partNumber, part, partTypes);
         break;
       case "quantity":
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ quantity: parseInt(control.value) || DefaultQuantity });
@@ -1137,21 +1148,21 @@ export function Inventory({ partNumber = "", ...rest }) {
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lowStockThreshold: control.value });
         break;
       case "location":
-        updatedPart[control.name] = control.value.replace("\t", "");
-        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastLocation: updatedPart[control.name] });
+        part[control.name] = control.value.replace("\t", "");
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastLocation: part[control.name] });
         break;
       case "binNumber":
-        updatedPart[control.name] = control.value.replace("\t", "");
-        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastBinNumber: updatedPart[control.name] });
+        part[control.name] = control.value.replace("\t", "");
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastBinNumber: part[control.name] });
         break;
       case "binNumber2":
-        updatedPart[control.name] = control.value.replace("\t", "");
-        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastBinNumber2: updatedPart[control.name] });
+        part[control.name] = control.value.replace("\t", "");
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastBinNumber2: part[control.name] });
         break;
       default:
         break;
     }
-    setPart({ ...updatedPart });
+    setPart(part);
     setIsDirty(true);
   };
 
@@ -1438,24 +1449,19 @@ export function Inventory({ partNumber = "", ...rest }) {
 
                     {!disableRendering.current && <>
                       <Form.Group>
-                        <div>
-                          <Popup
-                            hideOnScroll
-                            disabled={viewPreferences.helpDisabled}
-                            onOpen={disableHelp}
-                            content={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
-                            trigger={
-                              <Form.Field
-                                control={NumberPicker}
-                                label={t('label.quantity', "Quantity")}
-                                placeholder="10"
-                                min={0}
-                                value={part.quantity || 0}
-                                onChange={updateNumberPicker}
-                                name="quantity"
-                                autoComplete="off"
-                              />
-                            }
+                        <div style={{position: 'relative'}}>
+                          <Form.Field
+                            control={NumberPicker}
+                            label={t('label.quantity', "Quantity")}
+                            placeholder="10"
+                            min={0}
+                            value={part.quantity || 0}
+                            onChange={updateNumberPicker}
+                            name="quantity"
+                            autoComplete="off"
+                            help={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
+                            helpDisabled={viewPreferences.helpDisabled}
+                            helpOnOpen={disableHelp}
                           />
                           <div className="quantityAdded">{quantityAdded > 0 ? <div className="suggested-part"><Icon name="plus" />{quantityAdded} <span>qty added</span></div> : (<></>)}</div>
                         </div>
@@ -1481,56 +1487,41 @@ export function Inventory({ partNumber = "", ...rest }) {
                     {/* Part Location Information */}
                     {!disableRendering.current && <Segment secondary>
                       <Form.Group>
-                        <Popup
-                          hideOnScroll
-                          disabled={viewPreferences.helpDisabled}
-                          onOpen={disableHelp}
-                          content={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
-                          trigger={
-                            <ClearableInput
-                              label={t('label.location', "Location")}
-                              placeholder="Home lab"
-                              value={part.location || ""}
-                              onChange={handleChange}
-                              name="location"
-                              width={5}
-                              icon="home"
-                              iconPosition="left"
-                            />
-                          }
+                        <ClearableInput
+                          label={t('label.location', "Location")}
+                          placeholder="Home lab"
+                          value={part.location || ""}
+                          onChange={handleChange}
+                          name="location"
+                          width={5}
+                          icon="home"
+                          iconPosition="left"
+                          help={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
+                          helpDisabled={viewPreferences.helpDisabled}
+                          helpOnOpen={disableHelp}
                         />
-                        <Popup
-                          hideOnScroll
-                          disabled={viewPreferences.helpDisabled}
-                          onOpen={disableHelp}
-                          content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
-                          trigger={
-                            <ClearableInput
-                              label={t('label.binNumber', "Bin Number")}
-                              placeholder={t('page.inventory.placeholder.binNumber', "IC Components 2")}
-                              value={part.binNumber || ""}
-                              onChange={handleChange}
-                              name="binNumber"
-                              width={4}
-                            />
-                          }
+                        <ClearableInput
+                          label={t('label.binNumber', "Bin Number")}
+                          placeholder={t('page.inventory.placeholder.binNumber', "IC Components 2")}
+                          value={part.binNumber || ""}
+                          onChange={handleChange}
+                          name="binNumber"
+                          width={4}
+                          help={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
+                          helpDisabled={viewPreferences.helpDisabled}
+                          helpOnOpen={disableHelp}
                         />
-                        <Popup
-                          hideOnScroll
-                          disabled={viewPreferences.helpDisabled}
-                          onOpen={disableHelp}
-                          content={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
-                          trigger={
-                            <ClearableInput
-                              label={t('label.binNumber2', "Bin Number 2")}
-                              placeholder={t('page.inventory.placeholder.binNumber2', "14")}
-                              value={part.binNumber2 || ""}
-                              onChange={handleChange}
-                              name="binNumber2"
-                              width={4}
-                            />
-                          }
-                        />
+                          <ClearableInput
+                            label={t('label.binNumber2', "Bin Number 2")}
+                            placeholder={t('page.inventory.placeholder.binNumber2', "14")}
+                            value={part.binNumber2 || ""}
+                            onChange={handleChange}
+                            name="binNumber2"
+                            width={4}
+                            help={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
+                            helpDisabled={viewPreferences.helpDisabled}
+                            helpOnOpen={disableHelp}
+                          />
                       </Form.Group>
                     </Segment>}
                   </div>
@@ -1770,31 +1761,19 @@ export function Inventory({ partNumber = "", ...rest }) {
                   <Form.Group>
                     <Form.Field width={4}>
                       <label>{t('label.symbolName', "KiCad Symbol Name")}</label>
-                      <Popup
-                        content={<p>{t('page.inventory.popup.symbolName', "Associate a KiCad symbol name with this part")}</p>}
-                        trigger={<ClearableInput placeholder='R_0601' value={part.symbolName || ''} onChange={handleChange} name='symbolName' />}
-                      />
+                      <ClearableInput placeholder='R_0601' value={part.symbolName || ''} onChange={handleChange} name='symbolName' help={t('page.inventory.popup.symbolName', "Associate a KiCad symbol name with this part")} />
                     </Form.Field>
                     <Form.Field width={4}>
                       <label>{t('label.footprintName', "KiCad Footprint Name")}</label>
-                      <Popup
-                        content={<p>{t('page.inventory.popup.footprintName', "Associate a KiCad footprint name with this part")}</p>}
-                        trigger={<ClearableInput placeholder='Resistor SMD 0601_1608Matric' value={part.footprintName || ''} onChange={handleChange} name='footprintName' />}
-                      />
+                      <ClearableInput placeholder='Resistor SMD 0601_1608Matric' value={part.footprintName || ''} onChange={handleChange} name='footprintName' help={t('page.inventory.popup.footprintName', "Associate a KiCad footprint name with this part")} />
                     </Form.Field>
                     <Form.Field width={4}>
                       <label>{t('label.extensionValue1', "Extension Value 1")}</label>
-                      <Popup
-                        content={<p>{t('page.inventory.popup.extensionValue', "Associate a custom value with this part")}</p>}
-                        trigger={<ClearableInput placeholder='' value={part.extensionValue1 || ''} onChange={handleChange} name='extensionValue1' />}
-                      />
+                      <ClearableInput placeholder='' value={part.extensionValue1 || ''} onChange={handleChange} name='extensionValue1' help={t('page.inventory.popup.extensionValue', "Associate a custom value with this part")} />
                     </Form.Field>
                     <Form.Field width={4}>
                       <label>{t('label.extensionValue2', "Extension Value 2")}</label>
-                      <Popup
-                        content={<p>{t('page.inventory.popup.extensionValue', "Associate a custom value with this part")}</p>}
-                        trigger={<ClearableInput placeholder='' value={part.extensionValue2 || ''} onChange={handleChange} name='extensionValue2' />}
-                      />
+                      <ClearableInput placeholder='' value={part.extensionValue2 || ''} onChange={handleChange} name='extensionValue2' help={t('page.inventory.popup.extensionValue', "Associate a custom value with this part")} />
                     </Form.Field>
                   </Form.Group>
                 </Segment>}

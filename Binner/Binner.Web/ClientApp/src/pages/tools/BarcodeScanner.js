@@ -8,6 +8,7 @@ import { BarcodeExamplesModal } from "../../components/modals/BarcodeExamplesMod
 import { Clipboard } from "../../components/Clipboard";
 import { GetTypeName, BarcodeProfiles } from "../../common/Types";
 import ProtectedInput from "../../components/ProtectedInput";
+import ClearableInput from "../../components/ClearableInput";
 import { Format12HourTimeSeconds } from "../../common/datetime";
 import { format } from "date-fns";
 
@@ -35,6 +36,7 @@ export function BarcodeScanner(props) {
   const [unprotectedDummyStartTime, setUnprotectedDummyStartTime] = useState(null);
   const [dummyStartTime, setDummyStartTime] = useState(null);
   const [examplesIsOpen, setExamplesIsOpen] = useState(false);
+  const [testInput, setTestInput] = useState('');
   const dummyTimerRef = useRef();
   const unprotectedDummyTimerRef = useRef();
 
@@ -69,6 +71,9 @@ export function BarcodeScanner(props) {
         clearTimeout(unprotectedDummyTimerRef.current);
         unprotectedDummyTimerRef.current = setTimeout(() => { console.debug('Unprotected Dummy took', new Date().getTime() - unprotectedDummyStartTime - 500); }, 500);
         setUnprotectedDummy(control.value);
+        break;
+      case 'testInput':
+        setTestInput(control.value);
         break;
       default:
         break;
@@ -199,6 +204,9 @@ export function BarcodeScanner(props) {
             focus
             />
           <Form.Input name="unprotectedDummy" placeholder="A regular unprotected input text box" value={unprotectedDummy || ''} onChange={handleChange} />
+          <div style={{width: '150px'}}>
+            <ClearableInput placeholder='' value={testInput} onChange={handleChange} name='testInput' />
+          </div>
           {barcodeObject.length > 1 && (<div style={{ display: 'flex', marginBottom: '5px', float: 'right' }}>
             <div style={{ padding: '0 10px' }}>
               <Clipboard text={barcodeValue} /> <span>{t('button.copy', "Copy")}</span>
