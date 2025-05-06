@@ -256,7 +256,11 @@
       "addedToInventory": "added to inventory",
       "alreadyInInventory": "already in inventory",
       "requestAllProductInformation": "Request all product information (slower)",
-      "apiMessages": "Api Messages"
+      "apiMessages": "Api Messages",
+      "popup": {
+        "partExists": "Part exists in your inventory.",
+        "newPart": "New part does not exist in your inventory."
+      }
     },
     "printLabels": {
       "title": "Print Labels",

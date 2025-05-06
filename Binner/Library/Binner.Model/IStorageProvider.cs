@@ -654,5 +654,13 @@ namespace Binner.Model
         /// <param name="userContext"></param>
         /// <returns></returns>
         Task<bool> DeleteOrderImportHistoryAsync(OrderImportHistory partScanHistory, IUserContext? userContext);
+
+        /// <summary>
+        /// Given a list of part numbers, get the local part ids if they match
+        /// </summary>
+        /// <param name="partNumbers"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<IDictionary<string, long>> GetPartIdsFromManufacturerPartNumbersAsync(ICollection<string> partNumbers, IUserContext? userContext);
     }
 }

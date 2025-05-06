@@ -535,6 +535,11 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
+        public Task<IDictionary<string, long>> GetPartIdsFromManufacturerPartNumbersAsync(ICollection<string> partNumbers, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Dispose()
         {
             _parts.Clear();

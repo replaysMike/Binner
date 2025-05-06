@@ -16,7 +16,6 @@ import sha256 from 'crypto-js/sha256';
 const enableSound = true;
 const soundSuccess = new Audio('/audio/scan-success.mp3');
 const soundFailure = new Audio('/audio/scan-failure.mp3');
-const soundDiscard = new Audio('/audio/discard.mp3');
 
 export function OrderImport(props) {
   const { t } = useTranslation();
@@ -91,7 +90,6 @@ export function OrderImport(props) {
 
     const newOrder = { ...order, orderId: orderNumber, invoice: invoice, packlist: packlist };
     setOrder({ ...newOrder });
-    toast.info(t('messasge.loadingOrder', "Loading order# {{order}}", { order: orderNumber }), { autoClose: 10000 });
     getPartsToImport(e, newOrder);
   };
 
@@ -190,6 +188,7 @@ export function OrderImport(props) {
 
     // barcode scan successful
     if (enableSound) soundSuccess.play();
+    toast.info(t('message.loadingOrder', "Loading order# {{order}}", { order: order.orderId }), { autoClose: 10000 });
 
     setLoading(true);
     const request = {
@@ -379,13 +378,19 @@ export function OrderImport(props) {
     setConfirmReImportAction(null);
   };
 
+  const handleViewPart = (e, part) => {
+    if (part.partId && part.manufacturerPartNumber) {
+      if (window?.open) window.open(`/inventory/${part.manufacturerPartNumber}:${part.partId}`, "_blank");
+    }
+  };
+
   const renderAllMatchingParts = (order) => {
     return (
       <div>
         <Table compact celled selectable size="small" className="partstable expandable-table">
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell colSpan="10">
+              <Table.HeaderCell colSpan="11">
                 <Table>
                   <Table.Body>
                     <Table.Row>
@@ -410,7 +415,7 @@ export function OrderImport(props) {
               </Table.HeaderCell>
             </Table.Row>
             {order.messages.length > 0 && <Table.Row>
-              <Table.Cell colSpan={10}>
+              <Table.Cell colSpan={11}>
                 <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
                 <ul style={{ marginBottom: '10px' }} className="errors">
                   {order.messages.map((messageItem, key) => (
@@ -421,6 +426,7 @@ export function OrderImport(props) {
             </Table.Row>}
             <Table.Row>
               <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('label.exists', "Exists")}</Table.HeaderCell>
               <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
               <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
               <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
@@ -434,18 +440,24 @@ export function OrderImport(props) {
           </Table.Header>
           <Table.Body>
             {order.parts.map((p, index) => (
-              <Table.Row key={index}>
+              <Table.Row key={index} onClick={e => handleViewPart(e, p)}>
                 <Table.Cell>
                   <Checkbox toggle checked={p.selected} onChange={(e) => handleChecked(e, p)} data={p} />
+                </Table.Cell>
+                <Table.Cell textAlign="center">
+                  {p.partId 
+                    ? <Popup content={<p>{t('popup.partExists', "Part exists in inventory.")}</p>} trigger={<Icon name="check circle" color="blue" size="large" />} /> 
+                    : <Popup content={<p>{t('popup.newPart', "New part does not exist in inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="large" />} />
+                  }
                 </Table.Cell>
                 <Table.Cell className="expandable-cell width-100">
                   <Popup wide hoverable content={<p>{p.description}</p>} trigger={<span>{p.description}</span>} />
                 </Table.Cell>
                 <Table.Cell className="expandable-cell width-100">
-                  <Popup wide hoverable content={<p>{p.manufacturerPartNumber}{p.reference && <><br /><p className="part-reference expandable-cell width-100">{p.reference}</p></>}</p>} trigger={<p>
+                  <Popup wide hoverable content={<p>{p.manufacturerPartNumber}{p.reference && <><br />{p.reference}</>}</p>} trigger={<div>
                     {p.manufacturerPartNumber}
-                    {p.reference && <><br /><p className="part-reference expandable-cell width-100">{p.reference}</p></>}
-                  </p>} />
+                    {p.reference && <><br /><div className="part-reference expandable-cell width-100">{p.reference}</div></>}
+                  </div>} />
                 </Table.Cell>
                 <Table.Cell className="expandable-cell width-100">
                   <Popup wide hoverable content={<p>{p.manufacturer}</p>} trigger={<span>{p.manufacturer}</span>} />
@@ -493,17 +505,19 @@ export function OrderImport(props) {
           <Table.Body>
             {importResult.parts.map((p, index) => (
               <React.Fragment key={index}>
-                <Table.Row>
+                <Table.Row onClick={e => handleViewPart(e, p)}>
                   <Table.Cell>
                     <Icon name={p.isImported ? "check circle" : "times circle"} color={p.isImported ? "green" : "red"} />
                   </Table.Cell>
                   <Table.Cell className="expandable-cell width-100">
                     {p.description}
                   </Table.Cell>
-                  <Table.Cell className="expandable-cell width-100">{p.manufacturerPartNumber}</Table.Cell>
+                  <Table.Cell className="expandable-cell width-100">
+                    {p.manufacturerPartNumber}
+                    {p.reference && <><br /><p className="part-reference expandable-cell width-100">{p.reference}</p></>}
+                  </Table.Cell>
                   <Table.Cell className="expandable-cell width-100">
                     {p.manufacturer}
-                    {p.reference && <><br /><p className="part-reference expandable-cell width-100">{p.reference}</p></>}
                   </Table.Cell>
                   <Table.Cell className="expandable-cell width-50" textAlign="center">{p.partType}</Table.Cell>
                   <Table.Cell className="expandable-cell width-100">{p.supplierPartNumber}</Table.Cell>
@@ -558,7 +572,7 @@ export function OrderImport(props) {
               onCancel={handleCancelReImport}
               onConfirm={handleConfirmReImport}
             />
-      <BarcodeScannerInput onReceived={handleBarcodeInput} swallowKeyEvent={false} minInputLength={4} />
+      <BarcodeScannerInput onReceived={handleBarcodeInput} swallowKeyEvent={false} minInputLength={4} enableSound={false} />
       <h1>{t('page.orderImport.title', "Order Import")}</h1>
       <Form>
         <Form.Group>

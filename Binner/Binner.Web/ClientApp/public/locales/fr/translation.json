@@ -250,7 +250,11 @@
       "addedToInventory": "ajouté à l'inventaire",
       "alreadyInInventory": "déjà dans l'inventaire",
       "requestAllProductInformation": "Demander toutes les informations sur le produit (slower)",
-      "apiMessages": "Messages de l'API"
+      "apiMessages": "Messages de l'API",
+      "popup": {
+        "partExists": "Part exists in your inventory.",
+        "newPart": "New part does not exist in your inventory."
+      }
     },
     "printLabels": {
       "title": "Imprimer des étiquettes",

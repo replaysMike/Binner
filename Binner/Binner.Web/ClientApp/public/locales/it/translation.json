@@ -249,7 +249,11 @@
 			"addedToInventory": "aggiunto all'inventario",
 			"alreadyInInventory": "già presente in inventario",
       "requestAllProductInformation": "Request all product information (slower)",
-      "apiMessages": "Api Messages"
+      "apiMessages": "Api Messages",
+      "popup": {
+        "partExists": "Part exists in your inventory.",
+        "newPart": "New part does not exist in your inventory."
+      }
 		},
 		"printLabels": {
 			"title": "Stampa Etichette",

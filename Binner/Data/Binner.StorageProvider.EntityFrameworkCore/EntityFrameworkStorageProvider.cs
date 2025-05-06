@@ -1460,6 +1460,16 @@ INNER JOIN (
             return _mapper.Map<ICollection<Part>>(entities);
         }
 
+        public async Task<IDictionary<string, long>> GetPartIdsFromManufacturerPartNumbersAsync(ICollection<string> partNumbers, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Parts
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .Where(x => x.PartNumber != null && partNumbers.Contains(x.PartNumber))
+                .ToDictionaryAsync(key => key.PartNumber ?? string.Empty, value => value.PartId);
+        }
+
         public async Task<long> GetPartsCountAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
