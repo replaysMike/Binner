@@ -14,6 +14,11 @@
 .licensing-modal .description footer {
 	position: absolute;
 	bottom: 0;
+  z-index: 999999;
+  display: block;
+  height: unset;
+  min-height: unset;
+  text-align: left;
 }
 
 .licensing-modal .description hr {

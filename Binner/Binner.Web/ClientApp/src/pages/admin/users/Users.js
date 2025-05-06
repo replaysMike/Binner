@@ -92,6 +92,15 @@ export function Users(props) {
       setAddVisible(false);
       refreshClean();
       toast.success(t("page.admin.users.userAdded", "User {{emailAddress}} added!", { emailAddress: user.emailAddress }));
+    }).catch((ex) => {
+      const { data, responseObject } = ex;
+      if (responseObject.status === 426) {
+        // license err will be handled
+        console.info('License requirement exceeded.', data.message);
+        return;
+      }
+      console.error('Unexpected server error', ex);
+      toast.error(`Server returned ${responseObject.status} error.`);
     });
   };
 

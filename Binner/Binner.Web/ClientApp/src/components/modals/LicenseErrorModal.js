@@ -15,7 +15,7 @@ export default function LicenseErrorModal(props) {
   }, [props.context]);
 
   const handleCloseErrorModal = () => {
-    window.showLicenseErrorWindow();
+    if (window?.showLicenseErrorWindow) window.showLicenseErrorWindow();
   };
 
   const hasErrorMessage = (message) => {

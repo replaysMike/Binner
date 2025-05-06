@@ -281,7 +281,7 @@ const invokeLicensingErrorHandler = async (response) => {
     status: response.status,
     ...responseObject
   };
-  window.showLicenseErrorWindow(errorObject);
+  if (window?.showLicenseErrorWindow) window.showLicenseErrorWindow(errorObject);
   // return the original response along with the responseObject that was read
   return Promise.reject(wrapReturn(responseObject, response));
 };
