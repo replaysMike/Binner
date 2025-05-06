@@ -38,6 +38,8 @@ Binner is a free open-source parts inventory tracking system you can run locally
 - [x] Auto update (Q1)
 - [x] Full BOM / PCB management (Q1)
 - [x] TME parts api support
+- [x] DigiKey V4 api support
+- [x] Enhanced Barcode scanning support 
 - [ ] Electronic bins support (Q2)
 - [ ] Maybe a parts marketplace? with lasers?
 
