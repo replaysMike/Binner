@@ -29,6 +29,7 @@
 */
 .ui.input:has(label) {
   top: 1.6em;
+  margin-bottom: 15px;
 }
 
 .ui.input label {
@@ -41,8 +42,10 @@
   top: -22px;
 }
 
-.ui.input:has(label) input {
-  width: 100% !important;
+.ui.form .required.field .ui.input label::after {
+  margin: -.2em 0 0 .2em;
+  content: '*';
+  color: #db2828;
 }
 
 /* end experimental */

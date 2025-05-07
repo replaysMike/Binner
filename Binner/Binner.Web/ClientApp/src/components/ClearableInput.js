@@ -59,7 +59,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     : <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{ right: getClearIconPosition(), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden' }} />;
 
   let inputElement = ((<Input {...propsToReturn}>
-    {label && <div><label for={propsToReturn.name}>{label}</label></div>}
+    {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
     <input />
     {propsForChild.icon && <Icon name={propsForChild.icon} />}
     {icons}
@@ -83,7 +83,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     if (type === "Form.Input") {
       // use Form.Input component
       inputElement = (<Form.Input {...propsToReturn}>
-        {label && <div><label for={propsToReturn.name}>{label}</label></div>}
+        {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
         {children}
         {icons}
       </Form.Input>);
@@ -92,7 +92,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     }
     // use Input component
     inputElement = (<Input {...propsToReturn}>
-      {label && <div><label for={propsToReturn.name}>{label}</label></div>}
+      {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
       {children}
       {icons}
     </Input>);
@@ -103,7 +103,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
   // no children, render directly
   if (type === "Form.Input") {
     inputElement = (<Form.Input {...propsToReturn}>
-      {label && <div><label for={propsToReturn.name}>{label}</label></div>}
+      {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
       <input />
       {propsForChild.icon && <Icon name={propsForChild.icon} />}
       {icons}
