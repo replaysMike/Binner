@@ -13,6 +13,7 @@ import ProtectedInput from "../components/ProtectedInput";
 import ClearableInput from "../components/ClearableInput";
 import NumberPicker from "../components/NumberPicker";
 import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
+import ConfirmAction from "../components/modals/ConfirmAction";
 import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/modals/ChooseAlternatePartModal";
 import { PartMediaMemoized } from "../components/PartMediaMemoized";
@@ -37,15 +38,14 @@ import { getSystemSettings } from "../common/applicationSettings";
 const enableSound = true;
 const soundSuccess = new Audio('/audio/scan-success.mp3');
 const soundFailure = new Audio('/audio/scan-failure.mp3');
-const soundDiscard = new Audio('/audio/discard.mp3');
 import "./Inventory.css";
 
 export function Inventory({ partNumber = "", ...rest }) {
   const SearchDebounceTimeMs = 750;
-  const IcPartType = 14;
+  const DefaultPartType = 14; // IC
   const DefaultLowStockThreshold = 10;
   const DefaultQuantity = 1;
-  const DefaultMountingTypeId = 0;
+  const DefaultMountingTypeId = 0;  // None/Unspecified
   const maxRecentAddedParts = 10;
   const MinSearchKeywordLength = 3;
   const { t } = useTranslation();
@@ -63,18 +63,37 @@ export function Inventory({ partNumber = "", ...rest }) {
     removeLocalData(preferenceName, { settingsName: 'inventory' });
   };
 
-  const defaultViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
-    helpDisabled: false,
-    lastPartTypeId: IcPartType, // IC
-    lastMountingTypeId: DefaultMountingTypeId, // None
-    lastQuantity: DefaultQuantity,
-    lastProjectId: null,
-    lastLocation: "",
-    lastBinNumber: "",
-    lastBinNumber2: "",
-    lowStockThreshold: DefaultLowStockThreshold,
-    rememberLast: true
+  const removeViewPreferences = () => {
+    localStorage.removeItem("viewPreferences");
   };
+
+  const getViewPreferences = () => {
+    let savedViewPreferences = JSON.parse(localStorage.getItem("viewPreferences")) || {
+      helpDisabled: false,
+      lastPartTypeId: DefaultPartType,
+      lastMountingTypeId: DefaultMountingTypeId, // None
+      lastQuantity: DefaultQuantity,
+      lastProjectId: null,
+      lastLocation: "",
+      lastBinNumber: "",
+      lastBinNumber2: "",
+      lowStockThreshold: DefaultLowStockThreshold,
+      rememberLast: true
+    };
+    // validate the values
+    if (typeof typeof savedViewPreferences.lastPartTypeId !== 'number') savedViewPreferences.lastPartTypeId = parseInt(savedViewPreferences.lastPartTypeId);
+    if (typeof typeof savedViewPreferences.lastMountingTypeId !== 'number') savedViewPreferences.lastMountingTypeId = parseInt(savedViewPreferences.lastMountingTypeId);
+    if (typeof typeof savedViewPreferences.lastQuantity !== 'number') savedViewPreferences.lastQuantity = parseInt(savedViewPreferences.lastQuantity);
+    if (typeof typeof savedViewPreferences.lowStockThreshold !== 'number') savedViewPreferences.lowStockThreshold = parseInt(savedViewPreferences.lowStockThreshold);
+    // validate value ranges
+    if (savedViewPreferences.lastPartTypeId < 0) savedViewPreferences.lastPartTypeId = 0;
+    if (savedViewPreferences.lastMountingTypeId < 0 || savedViewPreferences.lastMountingTypeId > 2) savedViewPreferences.lastMountingTypeId = 0;
+    if (savedViewPreferences.lastQuantity < 0) savedViewPreferences.lastQuantity = 0;
+    if (savedViewPreferences.lowStockThreshold < 0) savedViewPreferences.lowStockThreshold = 0;
+    return savedViewPreferences;
+  };
+
+  const defaultViewPreferences = getViewPreferences();
   const [viewPreferences, setViewPreferences] = useState(defaultViewPreferences);
   const pageHasParameters = rest.params?.partNumber?.length > 0;
   const defaultPart = {
@@ -83,7 +102,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     allowPotentialDuplicate: false,
     quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) ? viewPreferences.lastQuantity : DefaultQuantity,
     lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) ? viewPreferences.lowStockThreshold + "" : DefaultLowStockThreshold + "",
-    partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) ? viewPreferences.lastPartTypeId : IcPartType,
+    partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) ? viewPreferences.lastPartTypeId : DefaultPartType,
     mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) ? viewPreferences.lastMountingTypeId : DefaultMountingTypeId,
     packageType: "",
     keywords: "",
@@ -113,7 +132,6 @@ export function Inventory({ partNumber = "", ...rest }) {
     storedFiles: []
   };
 
-  const [example, setExample] = useState("");
   const [inputPartNumber, setInputPartNumber] = useState(rest.params.partNumberToAdd || "");
   const [infoResponse, setInfoResponse] = useState({});
   const [parts, setParts] = useState([]);
@@ -175,7 +193,6 @@ export function Inventory({ partNumber = "", ...rest }) {
   useEffect(() => {
     // when either of these change, play a sound
     if (blocker.state === "blocked" || confirmDiscardChanges) {
-      if (enableSound) soundDiscard.play();
     }
   }, [blocker.state, confirmDiscardChanges]);
 
@@ -1008,7 +1025,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       allowPotentialDuplicate: false,
       quantity: (clearAll || !viewPreferences.rememberLast) ? DefaultQuantity : viewPreferences.lastQuantity || DefaultQuantity,
       lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? DefaultLowStockThreshold : viewPreferences.lowStockThreshold || DefaultLowStockThreshold,
-      partTypeId: (clearAll || !viewPreferences.rememberLast) ? IcPartType : viewPreferences.lastPartTypeId || IcPartType,
+      partTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultPartType : viewPreferences.lastPartTypeId || DefaultPartType,
       mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultMountingTypeId : viewPreferences.lastMountingTypeId || DefaultMountingTypeId,
       packageType: "",
       keywords: "",
@@ -1045,19 +1062,20 @@ export function Inventory({ partNumber = "", ...rest }) {
     document.getElementById('inputPartNumber').focus();
   };
 
-  const clearForm = (e) => {
+  const clearForm = (e, clearConfirm = true) => {
     // e could be null as this special method can be called outside of the component without a synthetic event
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    if (isDirty && inputPartNumber) {
-      setConfirmDiscardAction(() => () => { resetForm("", true); });
+    if (clearConfirm && isDirty && inputPartNumber) {
+      setConfirmDiscardAction(() => () => { clearForm(e, false); });
       setConfirmDiscardChanges(true);
       return;
     }
 
     resetForm("", true);
+    removeViewPreferences();
 
     if (rest.params.partNumber) {
       navigate("/inventory/add");
@@ -1066,9 +1084,17 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const updateNumberPicker = (e) => {
-    if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: parseInt(e.value) || DefaultQuantity });
-    setPart({ ...part, quantity: e.value.toString() });
-    setIsDirty(true);
+    switch(e.name) {
+      case 'quantity':
+        if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: parseInt(e.value) || DefaultQuantity });
+        setPart({ ...part, quantity: e.value.toString() });
+        break;
+      case 'lowStockThreshold':
+        if (viewPreferences.rememberLast) updateViewPreferences({ lastLowStockThreshold: parseInt(e.value) || DefaultLowStockThreshold });
+        setPart({ ...part, lowStockThreshold: e.value.toString() });
+        break;
+    }
+    if (inputPartNumber) setIsDirty(true);
   };
 
   const updateViewPreferences = (preference) => {
@@ -1106,17 +1132,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastPartTypeId: partType.partTypeId });
     const updatedPart = { ...partRef.current, partTypeId: partType.partTypeId };
     setPart(updatedPart);
-    setIsDirty(true);
-  };
-
-  const handleChange2 = (e, control) => {
-    //e.preventDefault();
-    //e.stopPropagation();
-
-    //console.log('control', control.name, control.value);
-    //part[control.name] = control.value;
-    //setPart({...part});
-    setExample(control.value || '');
+    if (updatedPart.partNumber) setIsDirty(true);
   };
 
   const handleChange = (e, control) => {
@@ -1162,7 +1178,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         break;
     }
     setPart(part);
-    setIsDirty(true);
+    if (part.partNumber) setIsDirty(true);
   };
 
   const printLabel = async (e) => {
@@ -1340,7 +1356,10 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const handleInputPartNumberClear = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     removeViewPreference('digikey');
+    clearForm(e, true);
   };
 
   /* RENDER */
@@ -1448,8 +1467,8 @@ export function Inventory({ partNumber = "", ...rest }) {
                     </Form.Group>
 
                     {!disableRendering.current && <>
-                      <Form.Group>
-                        <div style={{position: 'relative'}}>
+                      <Form.Group style={{alignItems: 'start', flexDirection: 'row'}}>
+                        <div style={{position: 'relative', flex: '0 1' }}>
                           <Form.Field
                             control={NumberPicker}
                             label={t('label.quantity', "Quantity")}
@@ -1462,26 +1481,26 @@ export function Inventory({ partNumber = "", ...rest }) {
                             help={t('page.inventory.popup.quantity', "Use the mousewheel and CTRL/ALT to change step size")}
                             helpDisabled={viewPreferences.helpDisabled}
                             helpOnOpen={disableHelp}
+                            className="numberpicker"
                           />
                           <div className="quantityAdded">{quantityAdded > 0 ? <div className="suggested-part"><Icon name="plus" />{quantityAdded} <span>qty added</span></div> : (<></>)}</div>
                         </div>
-                        <Popup
-                          hideOnScroll
-                          disabled={viewPreferences.helpDisabled}
-                          onOpen={disableHelp}
-                          content={t('page.inventory.popup.lowStock', "Alert when the quantity gets below this value")}
-                          trigger={
-                            <Form.Input
-                              label={t('label.lowStock', "Low Stock")}
-                              placeholder="10"
-                              value={part.lowStockThreshold || ""}
-                              onChange={handleChange}
-                              name="lowStockThreshold"
-                              width={3}
-                              autoComplete="off"
-                            />
-                          }
-                        />
+                        <div style={{ position: 'relative', flex: '0 1' }}>
+                          <Form.Field
+                            control={NumberPicker}
+                            label={t('label.lowStock', "Low Stock")}
+                            placeholder="10"
+                            min={0}
+                            value={part.lowStockThreshold || 0}
+                            onChange={updateNumberPicker}
+                            name="lowStockThreshold"
+                            autoComplete="off"
+                            help={t('page.inventory.popup.lowStock', "Alert when the quantity gets below this value")}
+                            helpDisabled={viewPreferences.helpDisabled}
+                            helpOnOpen={disableHelp}
+                            className="numberpicker"
+                          />
+                        </div>
                       </Form.Group>
                     </>}
 
@@ -1871,7 +1890,8 @@ export function Inventory({ partNumber = "", ...rest }) {
         </p>
         }
       />
-      <Confirm
+      <ConfirmAction
+        name="inventoryConfirmDiscard"
         header={<div className="header"><Icon name="undo" color="grey" /> {t('confirm.discardChanges', "You have unsaved changes.")}</div>}
         open={blocker.state === "blocked" || confirmDiscardChanges}
         confirmButton={t('button.discard', "Discard")}
@@ -1886,6 +1906,8 @@ export function Inventory({ partNumber = "", ...rest }) {
         }
         onCancel={handleCancelDiscard}
         onConfirm={handleConfirmDiscard}
+        dontAskAgain={true}
+        enableSound={true}
       />
       <Confirm
         header={<div className="header"><Icon name="undo" color="grey" /> {t('confirm.importLabel', "Import Label")}</div>}

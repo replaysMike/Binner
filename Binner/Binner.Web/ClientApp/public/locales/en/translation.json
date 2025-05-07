@@ -335,7 +335,12 @@
     },
     "accountSettings": {
       "title": "Account Settings",
-      "description": "Edit account settings"
+      "description": "Edit account settings",
+      "profileImage": "Profile Image",
+      "dragImage": "Drag an image to upload",
+      "popup": {
+        "resetPreferences": "Reset remembered UI preferences to their default values."
+      }
     },
     "activateLicense": {
       "title": "",
@@ -705,7 +710,8 @@
     "copy": "Copy",
     "copyRaw": "Copy Raw",
     "discard": "Discard",
-    "noTakeMeBack": "No, take me back!"
+    "noTakeMeBack": "No, take me back!",
+    "resetPreferences": "Reset Preferences"
   },
   "label": {
     "name": "Name",
@@ -827,7 +833,7 @@
     "extensionValue1": "Extension Value 1",
     "extensionValue2": "Extension Value 2",
     "partId": "Part Id",
-    "tmePartNumber": "TME Part Number"
+    "tmePartNumber": "TME Part Number",
   },
   "message": {
     "noPartsAdded": "No parts added.",
@@ -901,7 +907,8 @@
     "invalidOrder": "Hmmm, that doesn't look like a valid order number!",
     "invalid2dBarcode": "Hmmm, I don't recognize that 2D barcode!",
     "failedDeleteRecord": "Failed to record!",
-    "failedToSaveSettings": "Failed to save settings!"
+    "failedToSaveSettings": "Failed to save settings!",
+    "passwordsDoNotMatch": "Passwords do not match"
   },
   "success": {
     "producedPcbs": "{{quantity}} PCB's were produced!",
@@ -915,7 +922,9 @@
     "partsImported": "{{count}} of {{totalCount}} parts were imported!",
     "deletedProject": "Project was deleted!",
     "deletedPcb": "Pcb was deleted!",
-    "deletedRecord": "Record was deleted!"
+    "deletedRecord": "Record was deleted!",
+    "uiPrefsReset": "UI preferences have been reset to default values.",
+    "accountUpdated": "Account updated!"
   },
   "popup": {
     "bom": {
