@@ -580,6 +580,27 @@ section.formHeader {
     background-color: #fff !important;
 }
 
+/* set number picker sizes*/
+.field.numberpicker.tiny .ui.input {
+  width: 150px !important;
+}
+
+.field.numberpicker .ui.input, .field.numberpicker.small .ui.input {
+  width: 200px !important;
+}
+
+.field.numberpicker .ui.input input {
+  width: 40% !important;
+}
+
+.field.numberpicker.medium .ui.input {
+  width: 250px !important;
+}
+
+.field.numberpicker.large .ui.input {
+  width: 300px !important;
+}
+
 .dropzone {
     transition: outline-color .3s ease-in-out;
     outline: 4px dashed transparent;

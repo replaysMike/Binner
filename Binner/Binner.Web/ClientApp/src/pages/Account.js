@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
-import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb } from "semantic-ui-react";
+import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb, Popup } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
@@ -104,7 +104,7 @@ export function Account(props) {
         console.debug("account response", data);
         if (data.isSuccessful) {
           setIsDirty(false);
-          toast.success("Account updated!");
+          toast.success(t("success.accountUpdated", "Account updated!"));
           navigate(-1);
         } else {
           if (data.message === "Incorrect password.") setErrorPassword(true);
@@ -129,10 +129,22 @@ export function Account(props) {
     setAccount({ ...account });
     setIsDirty(true);
     if (account.newPassword !== account.confirmNewPassword) {
-      setPasswordErrorMessage("Passwords do not match");
+      setPasswordErrorMessage(t("error.passwordsDoNotMatch", "Passwords do not match"));
     } else if (passwordErrorMessage.length > 0) {
       setPasswordErrorMessage(null);
     }
+  };
+
+  const handleResetPreferences = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // todo: move these to a centralized location
+    localStorage.removeItem(`doNotAskAgain-inventoryConfirmDiscard`);
+    localStorage.removeItem(`showWelcome`);
+    localStorage.removeItem(`partsGridViewPreferences`);
+    localStorage.removeItem(`i18nextLng`);
+    localStorage.removeItem(`inventory`);
+    toast.info(t("success.uiPrefsReset", "UI preferences have been reset to default values."));
   };
 
   return (
@@ -167,8 +179,8 @@ export function Account(props) {
                       />
                     )}
                   </div>
-                  <h5>Profile Image</h5>
-                  <span style={{ fontSize: "0.6em" }}>Drag an image to upload</span>
+                  <h5>{t("page.profileImage", "Profile Image")}</h5>
+                  <span style={{ fontSize: "0.6em" }}>{t("page.accountSettings.dragImage", "Drag an image to upload")}</span>
                   <input {...getInputProps()} />
                 </div>
               </Grid.Column>
@@ -203,7 +215,7 @@ export function Account(props) {
           </Grid>
 
           <Segment tertiary>
-            <h4>Change Password</h4>
+            <h4>{t("label.changePassword", "Change Password")}</h4>
             <Form.Input
               type="password"
               label="Current Password"
@@ -243,8 +255,17 @@ export function Account(props) {
 
           <Button type="submit" primary disabled={!isDirty} style={{ marginTop: "10px" }}>
             <Icon name="save" />
-            Save
+            {t("button.save", "Save")}
           </Button>
+
+          <Popup 
+            wide
+            content={<p>{t("page.accountSettings.popup.resetPreferences", "Reset remembered UI preferences to their default values.")}</p>}
+            trigger={<Button type="button" style={{ marginTop: "10px" }} onClick={handleResetPreferences}>
+              <Icon name="refresh" />
+              {t('button.resetPreferences', "Reset Preferences")}
+            </Button>}
+          />
         </Form>
       </Segment>
     </div>

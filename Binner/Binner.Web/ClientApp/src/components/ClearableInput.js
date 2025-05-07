@@ -8,7 +8,10 @@ import "./ClearableInput.css";
  */
 export default function ClearableInput({ type = "Form.Input", ...rest }) {
   const handleClear = (e) => {
-    return rest.onChange(e, { ...rest, value: '' });
+    if (rest.onClear) rest.onClear(e);
+    if (!e.defaultPrevented && rest.onChange) {
+      rest.onChange(e, { ...rest, value: '' });
+    }
   };
 
   const getClearIconPosition = () => {
@@ -22,15 +25,16 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
   };
 
   // propsToExclude: exclude any props that only belong to our control
-  const { 
-    help, 
-    helpWide, 
-    helpWideVery, 
-    helpPosition, 
-    helpPositionFixed, 
-    helpHoverable, 
-    helpDisabled, 
-    helpHideOnScroll, 
+  const {
+    onClear,
+    help,
+    helpWide,
+    helpWideVery,
+    helpPosition,
+    helpPositionFixed,
+    helpHoverable,
+    helpDisabled,
+    helpHideOnScroll,
     helpOnOpen,
     label, // remove the label prop and implement manually to get rid of semantic warning
     ...propsToReturn } = rest;
@@ -119,6 +123,8 @@ ClearableInput.propTypes = {
   /** The type of element to render */
   type: PropTypes.oneOf(['Form.Input', 'Input']),
   /** !!! Note: All new props added must be excluded above. See propsToExclude */
+  /** Event triggered when the clear button is clicked */
+  onClear: PropTypes.func,
   help: PropTypes.string,
   helpWide: PropTypes.bool,
   helpWideVery: PropTypes.bool,

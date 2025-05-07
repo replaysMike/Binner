@@ -68,15 +68,16 @@ export const getCurrencySymbol = (currency = 'USD') => {
  * @returns language string
  */
 export const getLocaleLanguage = () => { 
+  const defaultLanguage = "en-US";
   try {
-    const uiLanguage = localStorage.getItem('i18nextLng');
+    const uiLanguage = localStorage.getItem('i18nextLng') || defaultLanguage;
     // if there is a ui language specified, and it's not the default english use it.
     if (uiLanguage !== 'en') return uiLanguage;
     
     // use the browser locale
     return (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.language;
   } catch {
-    return "en-US";
+    return defaultLanguage;
   }
 };
 

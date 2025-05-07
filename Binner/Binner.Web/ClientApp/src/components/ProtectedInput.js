@@ -104,7 +104,9 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 
 	const handleClear = (e) => {
     if (onClear) onClear(e);
-		return rest.onChange(e, { ...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: '' });
+		if (!e.defaultPrevented) {
+      rest.onChange(e, { ...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: '' });
+    }
 	};
 
   const handleIconClick = (e, control) => {
