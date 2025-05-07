@@ -71,6 +71,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("settings")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
         public IActionResult SaveSettings(SettingsRequest request) 
         {
             try
@@ -131,6 +132,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("/api/settings/testapi")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
         public async Task<IActionResult> TestApiAsync(TestApiRequest request)
         {
             try
@@ -154,6 +156,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("/api/settings/forgetcredentials")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
         public async Task<IActionResult> ForgetCredentialsAsync(ForgetCachedCredentialsRequest request)
         {
             try
@@ -215,6 +218,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("backup")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
         public async Task<IActionResult> BackupAsync()
         {
             try
@@ -235,6 +239,7 @@ namespace Binner.Web.Controllers
         /// <returns></returns>
         [HttpPost("restore")]
         [Consumes("multipart/form-data")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
         public async Task<IActionResult> RestoreAsync(IFormFile file)
         {
             try

@@ -144,12 +144,12 @@ export function Home(props) {
               </Statistic.Value>
               <Statistic.Label>{t('page.home.tools', "Tools")}</Statistic.Label>
             </Statistic>
-            <Statistic onClick={(e) => route(e, "/settings")} style={{ cursor: "pointer" }}>
+            {isAdmin() && <Statistic onClick={(e) => route(e, "/settings")} style={{ cursor: "pointer" }}>
               <Statistic.Value>
                 <Icon name="cog" />
               </Statistic.Value>
               <Statistic.Label>{t('page.home.settings', "Settings")}</Statistic.Label>
-            </Statistic>
+            </Statistic>}
             {isAdmin() && <Statistic onClick={(e) => route(e, "/admin")} style={{ cursor: "pointer" }}>
               <Statistic.Value>
                 <Icon name="user secret" />
