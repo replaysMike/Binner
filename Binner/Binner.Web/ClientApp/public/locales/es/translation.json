@@ -835,7 +835,7 @@
     "addXParts": "Added {{added}} parts, updated {{updated}} parts.",
     "savedPart": "Saved part {{partNumber}}!",
     "addedPart": "Added part {{partNumber}}!",
-    "failedSavePart": "Failed to update, check Part Type and Mounting Type",
+    "failedSavePart": "Failed to update. {{error}}",
     "noPartMetadata": "No part metadata found!",
     "scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
     "noOutOfStockParts": "No out of stock parts.",

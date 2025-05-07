@@ -125,12 +125,12 @@ namespace Binner.Web.Controllers
             mappedPart.Keywords = request.Keywords?.Split([" ", ","], StringSplitOptions.RemoveEmptyEntries);
 
             var partType = await GetPartTypeAsync(request.PartTypeId);
-            if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
+            if (partType == null) return BadRequest($"Invalid Part Type: '{request.PartTypeId}'");
 
             mappedPart.PartTypeId = partType.PartTypeId;
             mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
 
-            if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
+            if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: '{request.MountingTypeId}'");
 
             var duplicatePartResponse = await CheckForDuplicateAsync(request, mappedPart);
             if (duplicatePartResponse != null)

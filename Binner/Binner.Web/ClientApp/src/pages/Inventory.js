@@ -981,8 +981,9 @@ export function Inventory({ partNumber = "", ...rest }) {
       // refresh recent parts list
       await fetchRecentRows();
     } else if (response.responseObject.status === 400) {
+      const errorMessage = await response.responseObject.text();
       // other error (invalid part type, mounting type, etc.)
-      saveMessage = t('message.failedSavePart', "Failed to update, check Part Type and Mounting Type");
+      saveMessage = t('message.failedSavePart', "Failed to update. {{error}}", { error: errorMessage });
       setSaveMessage(saveMessage);
       toast.error(saveMessage);
     }
@@ -1135,11 +1136,9 @@ export function Inventory({ partNumber = "", ...rest }) {
         break;
       case "partTypeId":
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastPartTypeId: control.value });
-        if (part.partNumber && part.partNumber.length > 0) searchDebounced(part.partNumber, part, partTypes);
         break;
       case "mountingTypeId":
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastMountingTypeId: control.value });
-        if (part.partNumber && part.partNumber.length > 0) searchDebounced(part.partNumber, part, partTypes);
         break;
       case "quantity":
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ quantity: parseInt(control.value) || DefaultQuantity });
@@ -1398,12 +1397,13 @@ export function Inventory({ partNumber = "", ...rest }) {
                           focus
                           /* this should be the only field that is not updated on an info update */
                           value={inputPartNumber || ""}
-                          onChange={handleInputPartNumberChange}
                           name="inputPartNumber"
                           icon="search"
                           id="inputPartNumber"
                           hideIcon
                           clearOnScan={false}
+                          onChange={handleInputPartNumberChange}
+                          onIconClick={handleInputPartNumberChange}
                           onClear={handleInputPartNumberClear}
                           onBarcodeReadStarted={(e) => { window.requestAnimationFrame(() => { disableRendering.current = true; }); searchDebounced.cancel(); }}
                           onBarcodeReadCancelled={(e) => { window.requestAnimationFrame(() => { disableRendering.current = false; }); searchDebounced.cancel(); }}
