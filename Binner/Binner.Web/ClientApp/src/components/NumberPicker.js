@@ -14,7 +14,10 @@ export const INCREASE_VALUE = "INCREASE_VALUE";
  <Form.Field width="8" control={NumberPicker} basic label="basic buttons" placeholder="Enter a number" defaultValue={4} min={-40} max={40} step={2} />
 
  */
-export default function NumberPicker({ placeholder = '0', min = 1e10 * -1, max = 1e10, maxLength = 10, step = 1, required = false, basic = false, circular = false, compact = false, autoComplete = 'off', ...rest }) {
+export default function NumberPicker({ 
+  placeholder = '0', min = 1e10 * -1, max = 1e10, maxLength = 10, step = 1, required = false, basic = false, circular = false, compact = false, autoComplete = 'off', 
+  help, helpWide, helpWideVery, helpPosition, helpPositionFixed, helpHoverable, helpDisabled, helpHideOnScroll, helpOnOpen,
+  ...rest }) {
   const [touched, setTouched] = useState(false);
   const [buffer, setBuffer] = useState({});
   const defaultStyles = {
@@ -147,13 +150,13 @@ export default function NumberPicker({ placeholder = '0', min = 1e10 * -1, max =
   var _style = circular ? defaultStyles.circular : defaultStyles.default;
   var display = { circular, basic, compact };
   const popupOptions = {
-    position: rest.helpPosition,
-    positionFixed: rest.helpPositionFixed,
-    wide: rest.helpWideVery ? 'very' : rest.helpWide,
-    hoverable: rest.helpHoverable,
-    disabled: rest.helpDisabled,
-    hideOnScroll: rest.helpHideOnScroll,
-    onOpen: rest.helpOnOpen,
+    position: helpPosition,
+    positionFixed: helpPositionFixed,
+    wide: helpWideVery ? 'very' : helpWide,
+    hoverable: helpHoverable,
+    disabled: helpDisabled,
+    hideOnScroll: helpHideOnScroll,
+    onOpen: helpOnOpen,
   };
   let inputElement = (<Input {...rest}>
     <Button {...display} type="button" icon="minus" onClick={handleAction} name={DECREASE_VALUE} style={_style.buttonLeft} disabled={rest.value <= min} />
@@ -177,8 +180,8 @@ export default function NumberPicker({ placeholder = '0', min = 1e10 * -1, max =
     />
     <Button {...display} type="button" icon="plus" onClick={handleAction} name={INCREASE_VALUE} style={_style.buttonRight} disabled={rest.value >= max} />
   </Input>);
-  if (rest.help) {
-    inputElement = (<Popup {...popupOptions} content={<>{rest.help}</>} trigger={inputElement} />);
+  if (help) {
+    inputElement = (<Popup {...popupOptions} content={<>{help}</>} trigger={inputElement} />);
   }
 
   return inputElement;

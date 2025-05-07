@@ -22,8 +22,18 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
   };
 
   // propsToExclude: exclude any props that only belong to our control
-  const { help, ...propsToReturn } = rest;
-
+  const { 
+    help, 
+    helpWide, 
+    helpWideVery, 
+    helpPosition, 
+    helpPositionFixed, 
+    helpHoverable, 
+    helpDisabled, 
+    helpHideOnScroll, 
+    helpOnOpen,
+    label, // remove the label prop and implement manually to get rid of semantic warning
+    ...propsToReturn } = rest;
   const propsForChild = {};
   if (propsToReturn.icon && typeof propsToReturn.icon === "string") {
     // handle icon. When semantic Input has icon="name", it throws an error if it has children defined (our custom child input).
@@ -47,7 +57,9 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
   const icons = propsToReturn.iconPosition === "left"
     ? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{ left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden' }} />
     : <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{ right: getClearIconPosition(), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden' }} />;
+
   let inputElement = ((<Input {...propsToReturn}>
+    {label && <div><label for={propsToReturn.name}>{label}</label></div>}
     <input />
     {propsForChild.icon && <Icon name={propsForChild.icon} />}
     {icons}
@@ -71,6 +83,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     if (type === "Form.Input") {
       // use Form.Input component
       inputElement = (<Form.Input {...propsToReturn}>
+        {label && <div><label for={propsToReturn.name}>{label}</label></div>}
         {children}
         {icons}
       </Form.Input>);
@@ -79,6 +92,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     }
     // use Input component
     inputElement = (<Input {...propsToReturn}>
+      {label && <div><label for={propsToReturn.name}>{label}</label></div>}
       {children}
       {icons}
     </Input>);
@@ -89,6 +103,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
   // no children, render directly
   if (type === "Form.Input") {
     inputElement = (<Form.Input {...propsToReturn}>
+      {label && <div><label for={propsToReturn.name}>{label}</label></div>}
       <input />
       {propsForChild.icon && <Icon name={propsForChild.icon} />}
       {icons}
