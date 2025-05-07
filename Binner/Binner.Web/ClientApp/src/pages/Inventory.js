@@ -81,10 +81,10 @@ export function Inventory({ partNumber = "", ...rest }) {
     partId: 0,
     partNumber: rest.params.partNumber || "",
     allowPotentialDuplicate: false,
-    quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) || DefaultQuantity,
-    lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) + "",
-    partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) || IcPartType,
-    mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) || DefaultMountingTypeId,
+    quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) ? viewPreferences.lastQuantity : DefaultQuantity,
+    lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) ? viewPreferences.lowStockThreshold + "" : DefaultLowStockThreshold + "",
+    partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) ? viewPreferences.lastPartTypeId : IcPartType,
+    mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) ? viewPreferences.lastMountingTypeId : DefaultMountingTypeId,
     packageType: "",
     keywords: "",
     description: "",
@@ -93,9 +93,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     mouserPartNumber: "",
     arrowPartNumber: "",
     tmePartNumber: "",
-    location: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastLocation) || "",
-    binNumber: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber) || "",
-    binNumber2: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber2) || "",
+    location: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastLocation) ? viewPreferences.lastLocation : "",
+    binNumber: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber) ? viewPreferences.lastBinNumber : "",
+    binNumber2: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber2) ? viewPreferences.lastBinNumber2 : "",
     cost: "",
     lowestCostSupplier: "",
     lowestCostSupplierUrl: "",
@@ -1050,7 +1050,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       e.preventDefault();
       e.stopPropagation();
     }
-    if (isDirty) {
+    if (isDirty && inputPartNumber) {
       setConfirmDiscardAction(() => () => { resetForm("", true); });
       setConfirmDiscardChanges(true);
       return;
@@ -1387,8 +1387,8 @@ export function Inventory({ partNumber = "", ...rest }) {
             <Grid.Row>
               <Grid.Column width={12} className="left-column" style={{ minHeight: '1100px' }}>
                 {/** LEFT COLUMN */}
-                <div style={{ minHeight: '370px' }}>
-                  <div style={{ minHeight: '325px' }}>
+                <div style={{ minHeight: '325px' }}>
+                  <div style={{ minHeight: '280px' }}>
                     <Form.Group style={{ marginBottom: '0' }}>
                       <Form.Field>
                         <ProtectedInput
@@ -1478,6 +1478,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                               onChange={handleChange}
                               name="lowStockThreshold"
                               width={3}
+                              autoComplete="off"
                             />
                           }
                         />
@@ -1485,7 +1486,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                     </>}
 
                     {/* Part Location Information */}
-                    {!disableRendering.current && <Segment secondary>
+                    {!disableRendering.current && <Segment secondary className="part-location">
                       <Form.Group>
                         <ClearableInput
                           label={t('label.location', "Location")}
@@ -1499,6 +1500,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                           help={t('page.inventory.popup.location', "A custom value for identifying the parts location")}
                           helpDisabled={viewPreferences.helpDisabled}
                           helpOnOpen={disableHelp}
+                          autoComplete="off"
                         />
                         <ClearableInput
                           label={t('label.binNumber', "Bin Number")}
@@ -1510,6 +1512,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                           help={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
                           helpDisabled={viewPreferences.helpDisabled}
                           helpOnOpen={disableHelp}
+                          autoComplete="off"
                         />
                           <ClearableInput
                             label={t('label.binNumber2', "Bin Number 2")}
@@ -1521,6 +1524,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                             help={t('page.inventory.popup.binNumber', "A custom value for identifying the parts location")}
                             helpDisabled={viewPreferences.helpDisabled}
                             helpOnOpen={disableHelp}
+                            autoComplete="off"
                           />
                       </Form.Group>
                     </Segment>}

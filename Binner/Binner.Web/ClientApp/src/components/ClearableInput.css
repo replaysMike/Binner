@@ -23,3 +23,26 @@
 	opacity: 1 !important;
 	background-color: #fbfbfb;
 }
+
+/* experimental. 
+  This adds support for rendering labels inside .ui.input instead of outside 
+*/
+.ui.input:has(label) {
+  top: 1.6em;
+}
+
+.ui.input label {
+  font-weight: 700;
+  font-size: 1em;
+  line-height: 1em;
+  display: block !important;
+  width: 100%;
+  position: absolute;
+  top: -22px;
+}
+
+.ui.input:has(label) input {
+  width: 100% !important;
+}
+
+/* end experimental */

@@ -288,3 +288,7 @@
 .inventory .part-metadata-buttons .MuiSvgIcon-root.cadModels {
 	color: rgb(231, 66, 231);
 }
+
+.inventory .ui.secondary.segment.part-location {
+  padding-top: 5px;
+}
