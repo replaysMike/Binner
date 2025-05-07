@@ -80,6 +80,7 @@ namespace Binner.Common.Services
                             Message = authenticationResponse.Message,
                             Ip = _requestContext.GetIp(),
                             User = user,
+                            OrganizationId = user?.OrganizationId
                         });
                         await context.SaveChangesAsync();
                         await transaction.CommitAsync();
