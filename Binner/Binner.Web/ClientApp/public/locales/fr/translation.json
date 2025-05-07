@@ -836,7 +836,7 @@
     "addXParts": "Added {{added}} parts, updated {{updated}} parts.",
     "savedPart": "Pièce {{partNumber}} sauvegardée !",
     "addedPart": "Pièce {{partNumber}} ajoutée !",
-    "failedSavePart": "Échec de la mise à jour, vérifiez le type de pièce et le type de montage",
+    "failedSavePart": "Échec de la mise à jour. {{error}}",
     "noPartMetadata": "Aucune métadonnée de pièce trouvée !",
     "scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
     "noOutOfStockParts": "Aucune pièce en rupture de stock.",

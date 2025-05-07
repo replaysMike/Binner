@@ -674,7 +674,7 @@
     "addXParts": "Added {{added}} parts, updated {{updated}} parts.",
     "savedPart": "元器件{{partNumber}}已保存!",
     "addedPart": "元器件{{partNumber}}已添加!",
-    "failedSavePart": "更新失败, 请检查零件分类和安装方式",
+    "failedSavePart": "更新失败. {{error}}",
     "noPartMetadata": "Hiçbir parça meta verisi bulunamadı!",
     "scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
     "noOutOfStockParts": "Stokta tükenen parça yok.",

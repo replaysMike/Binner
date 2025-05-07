@@ -834,7 +834,7 @@
 		"addXParts": "Added {{added}} parts, updated {{updated}} parts.",
 		"savedPart": "Salvato il componente {{partNumber}}!",
 		"addedPart": "Aggiunto il componente {{partNumber}}!",
-		"failedSavePart": "Errore nell'aggiornamento, controllare Categoria e Tipo di montaggio",
+		"failedSavePart": "Errore nell'aggiornamento. {{error}}",
 		"noPartMetadata": "Non ci sono metadati per il componente!",
 		"scanPartExists": "Part exists in inventory, quantity specified by the label will be added to your inventory.",
 		"noOutOfStockParts": "Non ci sono componenti sottoscorta.",
