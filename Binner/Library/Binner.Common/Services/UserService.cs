@@ -57,8 +57,6 @@ namespace Binner.Common.Services
 
         public async Task<bool> DeleteUserAsync(int userId)
         {
-            if (userId == 1)
-                throw new SecurityException($"The root admin user cannot be deleted.");
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetUserQueryable(context, userContext)
@@ -68,6 +66,16 @@ namespace Binner.Common.Services
 
             if (entity == null)
                 throw new KeyNotFoundException($"Could not find user with id '{userId}'");
+
+            if (entity.IsAdmin)
+            {
+                var anyOtherAdminUser = await GetUserQueryable(context, userContext)
+                    .Where(x => x.IsAdmin && x.UserId != entity.UserId)
+                    .AsSplitQuery()
+                    .FirstOrDefaultAsync();
+                if (anyOtherAdminUser == null)
+                    throw new SecurityException($"Your server must have at least one admin user.");
+            }
 
             context.UserTokens.RemoveRange(await context.UserTokens.Where(x => x.UserId == userId).ToListAsync());
             context.UserLoginHistory.RemoveRange(await context.UserLoginHistory.Where(x => x.UserId == userId).ToListAsync());

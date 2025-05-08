@@ -59,22 +59,33 @@ export function Users(props) {
     }
   }, [hasMoreData]);
 
-  const deleteUser = (e, user) => {
+  const deleteUser = async (e, user) => {
     e.preventDefault();
     e.stopPropagation();
     setLoading(true);
-    fetchApi(`/api/user`, {
+    await fetchApi(`/api/user`, {
       method: "DELETE",
       body: user.userId
-    }).then(() => {
-      const newUsersData = _.filter(usersDataRef.current, (item) => item.userId !== user.userId);
-      usersDataRef.current = [...newUsersData];
+    }).then((response) => {
+      console.log('response', response);
+      if (response.responseObject.ok) {
+        const newUsersData = _.filter(usersDataRef.current, (item) => item.userId !== user.userId);
+        usersDataRef.current = [...newUsersData];
+      } else if (response.responseObject.status === 404) {
+        toast.error("User Not found!");
+      } else if (response.responseObject.status === 400) {
+        toast.error(response.data.message);
+      } else {
+        const errorMessage = getErrorsString(response);
+        console.error(errorMessage);
+        toast.error(errorMessage);
+      }
       setLoading(false);
       setConfirmDeleteIsOpen(false);
     });
   };
 
-  const handleAddUser = (e, user) => {
+  const handleAddUser = async (e, user) => {
     setLoading(true);
     const request = {
       name: user.name,
@@ -84,7 +95,7 @@ export function Users(props) {
       isAdmin: user.isAdmin === 1 ? true : false,
       isEmailConfirmed: user.isEmailConfirmed === 1 ? true : false
     };
-    fetchApi(`/api/user`, {
+    await fetchApi(`/api/user`, {
       method: "POST",
       body: JSON.stringify(request)
     }).then(() => {
@@ -295,9 +306,8 @@ export function Users(props) {
                 <Button
                   size="mini"
                   icon="delete"
-                  disabled={user.userId === 1 || user.userId === getUserAccount().id}
                   onClick={(e) => confirmDeleteOpen(e, user)}
-                  title={user.userId === 1 ? t("page.admin.users.canNotDeleteAdmin", "Can not delete master admin") : t("button.delete", "Delete")}
+                  title={t("button.delete", "Delete")}
                 />
               </Table.Cell>
             </Table.Row>

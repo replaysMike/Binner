@@ -10,6 +10,7 @@ using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Binner.LicensedProvider;
+using System.Security;
 
 namespace Binner.Web.Controllers
 {
@@ -41,6 +42,10 @@ namespace Binner.Web.Controllers
                 var users = await _userService.GetUsersAsync(request);
                 return Ok(users);
             }
+            catch (LicenseActionException ex)
+            {
+                return BadRequest(new LicenseResponse(ex));
+            }
             catch (LicenseException ex)
             {
                 return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
@@ -61,7 +66,12 @@ namespace Binner.Web.Controllers
             try
             {
                 var user = await _userService.GetUserAsync(request);
+                if (user == null) return NotFound();
                 return Ok(user);
+            }
+            catch (LicenseActionException ex)
+            {
+                return BadRequest(new LicenseResponse(ex));
             }
             catch (LicenseException ex)
             {
@@ -85,6 +95,10 @@ namespace Binner.Web.Controllers
                 var user = await _userService.CreateUserAsync(request);
                 return Ok(user);
             }
+            catch(LicenseActionException ex)
+            {
+                return BadRequest(new LicenseResponse(ex));
+            }
             catch (LicenseException ex)
             {
                 return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
@@ -107,6 +121,10 @@ namespace Binner.Web.Controllers
                 var user = await _userService.UpdateUserAsync(request);
                 return Ok(user);
             }
+            catch (LicenseActionException ex)
+            {
+                return BadRequest(new LicenseResponse(ex));
+            }
             catch (LicenseException ex)
             {
                 return StatusCode(StatusCodes.Status426UpgradeRequired, new LicenseResponse(ex));
@@ -128,6 +146,14 @@ namespace Binner.Web.Controllers
             {
                 var result = await _userService.DeleteUserAsync(userId);
                 return Ok(new { result });
+            }
+            catch (SecurityException ex)
+            {
+                return BadRequest(new LicenseResponse(ex));
+            }
+            catch (LicenseActionException ex)
+            {
+                return BadRequest(new LicenseResponse(ex));
             }
             catch (LicenseException ex)
             {

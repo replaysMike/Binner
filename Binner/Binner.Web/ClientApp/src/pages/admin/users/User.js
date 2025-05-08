@@ -4,7 +4,7 @@ import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Form, Segment, Button, Icon, Confirm, Breadcrumb, Header, Flag } from "semantic-ui-react";
 import { toast } from "react-toastify";
-import { fetchApi, getErrorsString } from "../../../common/fetchApi";
+import { fetchApi, getErrorsString, getText } from "../../../common/fetchApi";
 import { generatePassword } from "../../../common/Utils";
 import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Types";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
@@ -13,8 +13,8 @@ import ClearableInput from "../../../components/ClearableInput";
 
 export function User(props) {
   const { t } = useTranslation();
-	const [loading, setLoading] = useState(true);
-	const [user, setUser] = useState({
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({
     name: "",
     emailAddress: "",
     isAdmin: false,
@@ -34,35 +34,47 @@ export function User(props) {
   const [isDirty, setIsDirty] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [deleteSelectedItem, setDeleteSelectedItem] = useState(null);
-  
+
   const accountTypes = GetTypeDropdown(AccountTypes);
   const emailConfirmedTypes = GetTypeDropdown(BooleanTypes);
   const dateLockedTypes = GetTypeDropdown(BooleanTypes);
-  
+
   const params = useParams();
   const { userId } = params;
   const navigate = useNavigate();
 
-	useEffect(() => {
-		fetchUser();
-
-    function fetchUser() {
+  useEffect(() => {
+    const fetchUser = async () => {
       setLoading(true);
-      fetchApi(`/api/user?userId=${userId}`).then((response) => {
-        const { data } = response;
-        if (data) {
-          const newUser = {...data, isLocked: data.dateLockedUtc != null};
-          setUser(newUser);
-	        setLoading(false);
-				}
+      await fetchApi(`/api/user?userId=${userId}`).then((response) => {
+        if (response.responseObject.ok) {
+          const { data } = response;
+          if (data) {
+            const newUser = { ...data, isLocked: data.dateLockedUtc != null };
+            setUser(newUser);
+            setLoading(false);
+          }
+        }
+      }).catch((err) => {
+        if (err.responseObject.status === 404) {
+          toast.error("User Not found!");
+        } else if (err.responseObject.status === 400) {
+          toast.error(err.data.message);
+        } else {
+          const errorMessage = getErrorsString(response);
+          console.error(errorMessage);
+          toast.error(errorMessage);
+        }
       });
-    }
+    };
+
+    fetchUser();
   }, []);
 
-	const updateUser = (e) => {
-    if (user.isLocked && user.dateLockedUtc === null) 
+  const updateUser = async (e) => {
+    if (user.isLocked && user.dateLockedUtc === null)
       user.dateLockedUtc = new Date();
-    else if(!user.isLocked && user.dateLockedUtc !== null)
+    else if (!user.isLocked && user.dateLockedUtc !== null)
       user.dateLockedUtc = null;
 
     const userRequest = {
@@ -72,17 +84,20 @@ export function User(props) {
       dateLockedUtc: user.dateLockedUtc
     };
 
-    fetchApi(`/api/user`, {
+    await fetchApi(`/api/user`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(userRequest)
     }).then((response) => {
+      console.log('response', response);
       if (response.responseObject.ok) {
         setIsDirty(false);
         toast.success("Saved user!");
         navigate(-1);
+      } else if (response.responseObject.status === 400) {
+        toast.error(response.data.message);
       } else {
         const errorMessage = getErrorsString(response);
         console.error(errorMessage);
@@ -91,17 +106,25 @@ export function User(props) {
     });
   };
 
-  const deleteUser = (e, user) => {
+  const deleteUser = async (e, user) => {
     e.preventDefault();
     e.stopPropagation();
     setLoading(true);
-    fetchApi(`/api/user`, {
+    await fetchApi(`/api/user`, {
       method: "DELETE",
       body: user.userId
-    }).then(() => {
+    }).then((response) => {
       setLoading(false);
       setConfirmDeleteIsOpen(false);
-      navigate(-1);
+      if (response.responseObject.ok) {
+        navigate(-1);
+      } else if (response.responseObject.status === 400) {
+        toast.error(response.data.message);
+      } else {
+        const errorMessage = getErrorsString(response);
+        console.error(errorMessage);
+        toast.error(errorMessage);
+      }
     });
   };
 
@@ -125,10 +148,10 @@ export function User(props) {
     setIsDirty(true);
   };
 
-	return (
+  return (
     <div className="mask">
-			<Breadcrumb>
-      <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
         <Breadcrumb.Section link onClick={() => navigate("/admin")}>{t('bc.admin', "Admin")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -142,7 +165,7 @@ export function User(props) {
         </Trans>
       </FormHeader>
 
-			<Segment loading={loading} secondary>
+      <Segment loading={loading} secondary>
         <Confirm
           className="confirm"
           open={confirmDeleteIsOpen}
@@ -161,7 +184,7 @@ export function User(props) {
           </ClearableInput>
           <ClearableInput label={t('label.changePassword', "Change Password")} placeholder="Change existing password" action value={user.password || ""} name="password" onChange={handleChange}>
             <input />
-            <Button onClick={(e) => { e.preventDefault(); setUser({...user, password: generatePassword()}); }}>{t('button.generate', "Generate")}</Button>
+            <Button onClick={(e) => { e.preventDefault(); setUser({ ...user, password: generatePassword() }); }}>{t('button.generate', "Generate")}</Button>
           </ClearableInput>
           <Form.Dropdown
             required
@@ -245,13 +268,13 @@ export function User(props) {
             <Icon name="save" />
             {t('button.save', "Save")}
           </Button>
-          <Button type="button" disabled={user.userId === 1} title="Delete" onClick={(e) => confirmDeleteOpen(e, user)}>
+          <Button type="button" title="Delete" onClick={(e) => confirmDeleteOpen(e, user)}>
             <Icon name="delete" />
-            {t('button.delete', "Date")}
+            {t('button.delete', "Delete")}
           </Button>
         </Form>
 
-			</Segment>
-		</div>
-	);
+      </Segment>
+    </div>
+  );
 }
