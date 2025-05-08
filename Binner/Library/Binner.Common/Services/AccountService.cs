@@ -76,6 +76,24 @@ namespace Binner.Common.Services
                 };
             }
 
+            if (entity.EmailAddress != account.EmailAddress)
+            {
+                // user wants to change login email/username. Make sure it's not already in the system.
+                var existingEmails = await GetAccountQueryable(context)
+                .Where(x => x.EmailAddress == account.EmailAddress && x.OrganizationId == userContext.OrganizationId)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync();
+                if (existingEmails != null)
+                {
+                    return new UpdateAccountResponse
+                    {
+                        Account = _mapper.Map<Account>(entity),
+                        IsSuccessful = false,
+                        Message = $"A user with this email already exists.",
+                    };
+                }
+            }
+
             if (!string.IsNullOrEmpty(account.NewPassword))
             {
                 if (!PasswordHasher.Verify(account.Password, entity.PasswordHash))
