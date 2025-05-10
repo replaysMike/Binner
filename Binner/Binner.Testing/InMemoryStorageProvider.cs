@@ -582,6 +582,11 @@ namespace Binner.Testing
             return new List<CustomField>();
         }
 
+        public async Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields, IUserContext? userContext)
+        {
+            return new List<CustomField>();
+        }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

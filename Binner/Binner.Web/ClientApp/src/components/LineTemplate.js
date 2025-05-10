@@ -4,9 +4,8 @@ import { Input, Checkbox, Form, Segment, Header, Dropdown, Popup } from "semanti
 
 const TimeoutLength = 1500;
 
-export default function LineTemplate(props) {
+export default function LineTemplate({ line, fonts, title, color, font, name, onChange, ...rest }) {
   const { t } = useTranslation();
-  const { line, fonts, title, color, font, name, onChange } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [timeoutValue, setTimeoutValue] = useState(0);
   const [positionOptions] = useState([
@@ -41,7 +40,7 @@ export default function LineTemplate(props) {
   };
 
   return (
-    <Segment color={color} {...props}>
+    <Segment color={color} {...rest}>
       <Header dividing as="h3">
         {title}
       </Header>

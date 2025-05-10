@@ -1811,10 +1811,10 @@ INNER JOIN (
                     if (customField != null)
                     {
                         var customFieldValue = await context.CustomFieldValues
-                            .Where(x => 
-                                x.CustomFieldId == customField.CustomFieldId 
-                                && x.RecordId == recordId 
-                                && x.CustomFieldTypeId == customField.CustomFieldTypeId 
+                            .Where(x =>
+                                x.CustomFieldId == customField.CustomFieldId
+                                && x.RecordId == recordId
+                                && x.CustomFieldTypeId == customField.CustomFieldTypeId
                                 && x.OrganizationId == userContext.OrganizationId
                             ).FirstOrDefaultAsync();
                         if (customFieldValue == null)
@@ -1885,6 +1885,72 @@ INNER JOIN (
                 .ToListAsync();
 
             return _mapper.Map<ICollection<CustomField>>(customFields);
+        }
+
+        public async Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            // add any fields not already in the database
+            var customFieldIds = customFields.Select(x => x.CustomFieldId).ToList();
+            var existingFields = await context.CustomFields
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+            var existingFieldIds = existingFields.Select(x => x.CustomFieldId).ToList();
+            foreach (var customField in customFields)
+            {
+                if (!string.IsNullOrEmpty(customField.Name))
+                {
+                    var existingField = existingFields.FirstOrDefault(x => x.CustomFieldId == customField.CustomFieldId);
+                    if (customField.CustomFieldId == 0)
+                    {
+                        // add new field
+                        _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Created new custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
+                        context.CustomFields.Add(new DataModel.CustomField
+                        {
+                            CustomFieldTypeId = customField.CustomFieldTypeId,
+                            Name = customField.Name,
+                            Description = customField.Description,
+                            DateCreatedUtc = DateTime.UtcNow,
+                            DateModifiedUtc = DateTime.UtcNow,
+                            OrganizationId = userContext.OrganizationId,
+                            UserId = userContext.UserId,
+                        });
+                    }
+                    else if (existingField != null)
+                    {
+                        // update existing field
+                        if (existingField.Name != customField.Name.Trim())
+                            existingField.Name = customField.Name.Trim();
+                        if (existingField.Description != customField.Description?.Trim())
+                            existingField.Description = customField.Description?.Trim();
+                        if (existingField.CustomFieldTypeId != customField.CustomFieldTypeId)
+                            existingField.CustomFieldTypeId = customField.CustomFieldTypeId;
+                        if (context.Entry(existingField).State != EntityState.Unchanged)
+                        {
+                            existingField.DateModifiedUtc = DateTime.UtcNow;
+                            _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Updated custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
+                        }
+                    }
+                }
+            }
+
+            // delete any records not present in the passed list
+            foreach (var existingField in existingFields)
+            {
+                if (!customFieldIds.Contains(existingField.CustomFieldId))
+                {
+                    // record should be deleted
+                    var existingValues = await context.CustomFieldValues.Where(x => x.CustomFieldId == existingField.CustomFieldId).ToListAsync();
+                    context.CustomFieldValues.RemoveRange(existingValues);
+                    context.CustomFields.Remove(existingField);
+                    _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Deleted custom field named '{existingField.Name}' of type '{existingField.CustomFieldTypeId}'");
+                }
+            }
+
+            await context.SaveChangesAsync();
+
+            return customFields;
         }
 
         public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)

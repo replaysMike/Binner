@@ -1834,13 +1834,16 @@ export function Inventory({ partNumber = "", ...rest }) {
                     </Header>
                     <Form.Group>
                         {systemSettings.customFields.map((customField, fieldKey) => (
-                        <Form.Input 
-                          key={fieldKey} 
-                          label={customField.name} 
-                          value={_.find(part.customFields, x => x.field === customField.name)?.value || ''} 
-                          name={customField.name} 
-                          onChange={handleCustomFieldChange} 
-                        />
+                          <Popup 
+                            content={customField.description}
+                            trigger={<Form.Input
+                              key={fieldKey}
+                              label={customField.name}
+                              value={_.find(part.customFields, x => x.field === customField.name)?.value || ''}
+                              name={customField.name}
+                              onChange={handleCustomFieldChange}
+                            />}
+                          />
                       ))}
                     </Form.Group>
                     </>

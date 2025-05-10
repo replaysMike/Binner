@@ -37,6 +37,11 @@ namespace Binner.Model.Requests
         public SwarmUserConfiguration Binner { get; set; } = new();
 
         /// <summary>
+        /// List of user designed custom fields
+        /// </summary>
+        public ICollection<CustomField> CustomFields { get; set; } = new List<CustomField>();
+
+        /// <summary>
         /// Printer configuration
         /// </summary>
         public PrinterSettingsResponse Printer { get; set; } = new();

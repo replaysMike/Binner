@@ -67,7 +67,7 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Set the system settings
+        /// Save the system settings
         /// </summary>
         /// <returns></returns>
         [HttpPut("settings")]
@@ -94,7 +94,10 @@ namespace Binner.Web.Controllers
                 _credentialProvider.Cache.Clear(new ApiCredentialKey { UserId = user?.UserId ?? 0 });
 
                 var newConfiguration = _mapper.Map<SettingsRequest, WebHostServiceConfiguration>(request, _config);
-                _settingsService.SaveSettingsAs(newConfiguration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true);
+                _settingsService.SaveSettingsAsAsync(newConfiguration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true);
+
+                // also save the custom fields (add/update/remove)
+                _settingsService.SaveCustomFieldsAsync(request.CustomFields);
 
                 // register new configuration
                 _container.RegisterInstance(newConfiguration);
