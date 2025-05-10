@@ -125,7 +125,7 @@ namespace Binner.Common.Services
             return await _storageProvider.AddPartAsync(part, _requestContext.GetUserContext());
         }
 
-        public async Task<Part> UpdatePartAsync(Part part)
+        public async Task<Part?> UpdatePartAsync(Part part)
         {
             return await _storageProvider.UpdatePartAsync(part, _requestContext.GetUserContext());
         }

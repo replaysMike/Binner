@@ -113,11 +113,12 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("settings")]
-        public IActionResult GetSettings()
+        public async Task<IActionResult> GetSettingsAsync()
         {
             try
             {
                 var settingsResponse = _mapper.Map<SettingsResponse>(_config);
+                settingsResponse.CustomFields = await _settingsService.GetCustomFieldsAsync();
                 return Ok(settingsResponse);
             }
             catch (Exception ex)

@@ -173,7 +173,7 @@ namespace Binner.Model
         /// <summary>
         /// List of custom field values associated with this part
         /// </summary>
-        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
 
         /// <summary>
         /// The date the record was created

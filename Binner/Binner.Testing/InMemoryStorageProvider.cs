@@ -1,7 +1,6 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Integrations.DigiKey;
-using Binner.Model.Integrations.DigiKey.V4;
 using Binner.Model.Responses;
 using System.Linq.Expressions;
 
@@ -565,6 +564,22 @@ namespace Binner.Testing
             _partScanHistories.Clear();
             _orderImportHistories.Clear();
             _orderImportHistoryLineItems.Clear();
+        }
+
+        public async Task<ICollection<PartType>> GetPartTypesAsync(bool filterEmpty, IUserContext? userContext)
+        {
+            var partTypes = await GetPartTypesAsync(userContext);
+            return partTypes;
+        }
+
+        public async Task<ICollection<CustomValue>> GetCustomFieldsAsync(CustomFieldTypes customFieldType, long recordId, IUserContext? userContext)
+        {
+            return new List<CustomValue>();
+        }
+
+        public async Task<ICollection<CustomField>> GetCustomFieldsAsync(IUserContext? userContext)
+        {
+            return new List<CustomField>();
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

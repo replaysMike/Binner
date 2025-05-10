@@ -242,7 +242,7 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
 	}, [theMetadataParts, thePart]);
 
   return (
-    <Segment loading={isLoadingPartMetadata} color="violet">
+    <Segment loading={isLoadingPartMetadata} color="orange">
       <Header dividing as="h3">
         {t("page.inventory.suppliers", "Suppliers")}
       </Header>

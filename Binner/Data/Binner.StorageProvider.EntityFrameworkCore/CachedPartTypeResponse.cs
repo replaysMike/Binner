@@ -1,4 +1,6 @@
-﻿namespace Binner.StorageProvider.EntityFrameworkCore;
+﻿using Binner.Model;
+
+namespace Binner.StorageProvider.EntityFrameworkCore;
 
 public class CachedPartTypeResponse
 {
@@ -39,7 +41,7 @@ public class CachedPartTypeResponse
 
     public bool IsSystem { get; set; }
 
-    public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
+    public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
 
     public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 

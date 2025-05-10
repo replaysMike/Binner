@@ -151,5 +151,7 @@
         /// Parametric part value
         /// </summary>
         public string? Value { get; set; }
+
+        public ICollection<CustomValue>? CustomFields { get; set; }
     }
 }

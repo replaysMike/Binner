@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using AngleSharp.Dom;
+using AutoMapper;
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
@@ -44,6 +45,10 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
             part.PartId = entity.PartId;
+
+            // also update custom fields
+            await AddOrUpdateCustomFieldValuesAsync(part.PartId, part.CustomFields, CustomFieldTypes.Inventory, userContext);
+
             _partTypesCache.InvalidateCache();
             return part;
         }
@@ -1197,7 +1202,10 @@ INNER JOIN (
             var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
-            return _mapper.Map<Part?>(entity);
+            var model = _mapper.Map<Part?>(entity);
+            if (model != null)
+                model.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Inventory, entity.PartId, userContext);
+            return model;
         }
 
         public async Task<Part?> GetPartAsync(string partNumber, IUserContext? userContext)
@@ -1207,7 +1215,11 @@ INNER JOIN (
             var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
-            return _mapper.Map<Part?>(entity);
+            var model = _mapper.Map<Part?>(entity);
+            if (model != null)
+                model.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Inventory, entity.PartId, userContext);
+            return model;
+
         }
 
         private IQueryable<DataModel.Part> GetPartsQueryable(BinnerContext context, PaginatedRequest request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
@@ -1347,7 +1359,15 @@ INNER JOIN (
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToListAsync();
-                return new PaginatedResponse<Part>(totalParts, request.Results, request.Page, _mapper.Map<ICollection<Part>>(entities));
+                var parts = _mapper.Map<ICollection<Part>>(entities);
+                if (parts.Any())
+                {
+                    foreach (var part in parts)
+                    {
+                        part.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Inventory, part.PartId, userContext);
+                    }
+                }
+                return new PaginatedResponse<Part>(totalParts, request.Results, request.Page, parts);
             }
             catch (InvalidOperationException)
             {
@@ -1655,6 +1675,10 @@ INNER JOIN (
                 entity = _mapper.Map(part, entity);
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
+
+                // also update custom fields
+                await AddOrUpdateCustomFieldValuesAsync(part.PartId, part.CustomFields, CustomFieldTypes.Inventory, userContext);
+
                 _partTypesCache.InvalidateCache();
                 return _mapper.Map<Part>(entity);
             }
@@ -1770,6 +1794,97 @@ INNER JOIN (
                 .Where(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<Part>>(entities);
+        }
+
+        public async Task AddOrUpdateCustomFieldValuesAsync(long recordId, ICollection<CustomValue> values, CustomFieldTypes customFieldType, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            if (values.Any())
+            {
+                await using var context = await _contextFactory.CreateDbContextAsync();
+                foreach (var value in values)
+                {
+                    var customField = await context.CustomFields.FirstOrDefaultAsync(x =>
+                        x.Name == value.Field
+                        && x.CustomFieldTypeId == customFieldType
+                        && x.OrganizationId == userContext.OrganizationId);
+                    if (customField != null)
+                    {
+                        var customFieldValue = await context.CustomFieldValues
+                            .Where(x => 
+                                x.CustomFieldId == customField.CustomFieldId 
+                                && x.RecordId == recordId 
+                                && x.CustomFieldTypeId == customField.CustomFieldTypeId 
+                                && x.OrganizationId == userContext.OrganizationId
+                            ).FirstOrDefaultAsync();
+                        if (customFieldValue == null)
+                        {
+                            customFieldValue = new DataModel.CustomFieldValue
+                            {
+                                CustomFieldId = customField.CustomFieldId,
+                                RecordId = recordId,
+                                Value = value.Value,
+                                OrganizationId = userContext.OrganizationId,
+                                UserId = userContext.UserId,
+                                CustomFieldTypeId = customFieldType,
+                                DateCreatedUtc = DateTime.UtcNow,
+                                DateModifiedUtc = DateTime.UtcNow,
+                            };
+                            context.CustomFieldValues.Add(customFieldValue);
+                        }
+                        else
+                        {
+                            customFieldValue.Value = value.Value;
+                            customFieldValue.DateModifiedUtc = DateTime.UtcNow;
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"There is no custom field named '{value.Field}' defined for field type '{customFieldType}'.");
+                    }
+                }
+
+                // save changes
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<ICollection<CustomValue>> GetCustomFieldsAsync(CustomFieldTypes customFieldType, long recordId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var fields = new List<CustomValue>();
+
+            var customFields = await context.CustomFields
+                .Where(x => x.CustomFieldTypeId == customFieldType && x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+            if (customFields.Any())
+            {
+                foreach (var customField in customFields)
+                {
+                    var customFieldValue = await context.CustomFieldValues
+                        .FirstOrDefaultAsync(x =>
+                            x.CustomFieldId == customField.CustomFieldId
+                            && x.RecordId == recordId
+                            && x.OrganizationId == userContext.OrganizationId);
+                    fields.Add(new CustomValue(customField.Name, customFieldValue?.Value));
+                }
+            }
+
+            return fields;
+        }
+
+        public async Task<ICollection<CustomField>> GetCustomFieldsAsync(IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var fields = new List<CustomValue>();
+
+            var customFields = await context.CustomFields
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+
+            return _mapper.Map<ICollection<CustomField>>(customFields);
         }
 
         public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)
