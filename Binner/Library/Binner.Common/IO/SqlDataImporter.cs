@@ -51,7 +51,7 @@ namespace Binner.Common.IO
             foreach (var table in SupportedTables)
                 result.RowsImportedByTable.Add(table, 0);
             // get the global part types, and the user's custom part types
-            var partTypes = (await _storageProvider.GetPartTypesAsync(userContext)).ToList();
+            var partTypes = (await _storageProvider.GetPartTypesAsync(false, userContext)).ToList();
             try
             {
                 stream.Position = 0;

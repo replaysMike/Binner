@@ -59,6 +59,8 @@
 
         public Part Part { get; set; } = null!;
 
+        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
+
         /// <summary>
         /// Optional user id to associate
         /// </summary>

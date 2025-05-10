@@ -283,7 +283,7 @@ namespace Binner.Common.Services
                     OrganizationId = 1,
                     Name = request.Name,
                     EmailAddress = request.Email,
-                    EmailConfirmationToken = ConfirmationTokenGenerator.NewToken(),
+                    EmailConfirmationToken = TokenGenerator.NewToken(),
                     IsEmailConfirmed = false,
                     DateEmailConfirmedUtc = null,
                     IsEmailSubscribed = true,
@@ -379,7 +379,7 @@ namespace Binner.Common.Services
                 {
                     TokenTypeId = TokenTypes.PasswordResetToken,
                     DateExpiredUtc = DateTime.UtcNow.AddDays(1),
-                    Token = ConfirmationTokenGenerator.NewToken(),
+                    Token = TokenGenerator.NewToken(),
                     User = user,
                     Ip = _requestContext.GetIp()
                 };
@@ -499,7 +499,7 @@ namespace Binner.Common.Services
             _requestContext.SetUser(claimsPrincipal);
             return claimsPrincipal;
         }
-        
+
         private async Task<AuthenticatedTokens> GetAuthenticatedTokensAsync(BinnerContext context, UserContext userContext)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));

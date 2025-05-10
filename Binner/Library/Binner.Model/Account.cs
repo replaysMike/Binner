@@ -74,5 +74,14 @@
         /// The user's preferred currency, used for APIs and display
         /// </summary>
         public string? LocaleCurrency { get; set; }
+
+        /// <summary>
+        /// List of available user tokens
+        /// </summary>
+        public ICollection<Token>? Tokens { get; set; }
+
+        public ICollection<CustomField>? CustomFields { get; set; }
+
+        public ICollection<CustomFieldValue>? CustomFieldValues { get; set; }
     }
 }

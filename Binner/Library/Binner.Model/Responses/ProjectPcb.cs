@@ -56,5 +56,7 @@
         /// User uploaded file
         /// </summary>
         public StoredFile? StoredFile { get; set; }
+
+        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
     }
 }

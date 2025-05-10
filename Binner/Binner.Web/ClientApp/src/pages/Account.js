@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
-import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb, Popup } from "semantic-ui-react";
+import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb, Popup, Table, Confirm } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
@@ -10,9 +10,17 @@ import { MD5 } from "../common/Utils";
 import { fetchApi, getErrorsString } from "../common/fetchApi";
 import { FormHeader } from "../components/FormHeader";
 import { getAuthToken } from "../common/authentication";
+import { AddTokenModal } from "../components/modals/AddTokenModal";
+import { format, parseJSON } from "date-fns";
+import { FormatShortDate } from "../common/datetime";
+import { Clipboard } from "../components/Clipboard";
+import { UserTokenType } from "../common/UserTokenType";
+import { GetTypeName } from "../common/Types";
+import _ from "underscore";
 
 export function Account(props) {
   const { t } = useTranslation();
+  const [addTokenIsOpen, setAddTokenIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [account, setAccount] = useState({
     name: "",
@@ -27,6 +35,8 @@ export function Account(props) {
   const [image, setImage] = useState(null);
   const [errorPassword, setErrorPassword] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState(null);
+  const [confirmDeleteTokenIsOpen, setConfirmDeleteTokenIsOpen] = useState(false);
+  const [deleteTokenSelectedItem, setDeleteTokenSelectedItem] = useState(null);
   const navigate = useNavigate();
   const { acceptedFiles, isDragAccept, isDragReject, getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
@@ -147,8 +157,98 @@ export function Account(props) {
     toast.info(t("success.uiPrefsReset", "UI preferences have been reset to default values."));
   };
 
+  const handleOpenCreateTokenModal = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAddTokenIsOpen(true);
+  };
+
+  const handleCreateNewToken = (e, form) => {
+    const request = {
+      tokenType: form.tokenType
+    };
+    fetchApi(`/api/account/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
+    }).then((response) => {
+      if (response.responseObject.ok) {
+        const { data } = response;
+        // remove any tokens of the same type, only 1 allowed per user
+        account.tokens = _.filter(account.tokens, (item) => item.tokenType !== request.tokenType);
+        account.tokens.push(data);
+        setAccount(account);
+        toast.success(t("success.tokenCreated", "Token created!"));
+      } else {
+        const errorMessage = getErrorsString(response);
+        console.error(errorMessage);
+        toast.error(errorMessage);
+      }
+      setAddTokenIsOpen(false);
+    });
+  };
+
+  const deleteToken = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLoading(true);
+    const request = {
+      tokenType: deleteTokenSelectedItem.tokenType,
+      value: deleteTokenSelectedItem.value,
+    }
+    await fetchApi(`/api/account/token`, {
+      method: "DELETE",
+      body: JSON.stringify(request)
+    }).then((response) => {
+      console.log('response', response);
+      if (response.responseObject.ok) {
+        account.tokens = _.filter(account.tokens, (item) => item.value !== request.value);
+        setAccount(account);
+        toast.success("Token was deleted.");
+      } else if (response.responseObject.status === 404) {
+        toast.error("Token not found!");
+      } else if (response.responseObject.status === 400) {
+        toast.error(response.data.message);
+      } else {
+        const errorMessage = getErrorsString(response);
+        console.error(errorMessage);
+        toast.error(errorMessage);
+      }
+      setLoading(false);
+      setConfirmDeleteTokenIsOpen(false);
+    });
+  };
+
+  const confirmDeleteTokenClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteTokenSelectedItem(null);
+    setConfirmDeleteTokenIsOpen(false);
+  };
+
+  const confirmDeleteTokenOpen = (e, token) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteTokenSelectedItem(token);
+    setConfirmDeleteTokenIsOpen(true);
+  };
+
+  const handleCreateNewTokenClose = (e) => {
+    setAddTokenIsOpen(false);
+  };
+
   return (
     <div>
+      <Confirm
+        className="confirm"
+        open={confirmDeleteTokenIsOpen}
+        onCancel={confirmDeleteTokenClose}
+        onConfirm={deleteToken}
+        content={<p>{t("page.account.confirm.deleteToken", "Are you sure you want to delete this token?")}</p>}
+      />
+      <AddTokenModal isOpen={addTokenIsOpen} onAdd={handleCreateNewToken} onClose={handleCreateNewTokenClose} />
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>
           {t("bc.home", "Home")}
@@ -253,12 +353,50 @@ export function Account(props) {
             )}
           </Segment>
 
+          <Segment color="blue">
+            <h2>User Tokens</h2>
+            <div style={{float: 'right', marginBottom: '10px'}}>
+              <Button type="button" onClick={handleOpenCreateTokenModal}><Icon name="plus" /> Create</Button>
+            </div>
+            <Table compact celled striped size="small">
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>Type</Table.HeaderCell>
+                  <Table.HeaderCell>Token</Table.HeaderCell>
+                  <Table.HeaderCell>Created</Table.HeaderCell>
+                  <Table.HeaderCell>Expires</Table.HeaderCell>
+                  <Table.HeaderCell></Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {account.tokens?.length > 0
+                  ? account.tokens.map((token, key) => (
+                    <Table.Row key={key}>
+                      <Table.Cell>{GetTypeName(UserTokenType, token.tokenType)}</Table.Cell>
+                      <Table.Cell><div className="token">{token.value}</div><Clipboard text={token.value} /></Table.Cell>
+                      <Table.Cell>{format(parseJSON(token.dateCreatedUtc), FormatShortDate)}</Table.Cell>
+                      <Table.Cell>{token.dateExpiredUtc ? format(parseJSON(token.dateExpiredUtc), FormatShortDate) : "Never"}</Table.Cell>
+                      <Table.Cell textAlign="center">
+                        <Button
+                          size="mini"
+                          icon="delete"
+                          onClick={(e) => confirmDeleteTokenOpen(e, token)}
+                          title={t("button.delete", "Delete")}
+                        />
+                      </Table.Cell>
+                    </Table.Row>
+                  ))
+                  : <Table.Row><Table.Cell colSpan={5} textAlign="center">No tokens available.</Table.Cell></Table.Row>}
+              </Table.Body>
+            </Table>
+          </Segment>
+
           <Button type="submit" primary disabled={!isDirty} style={{ marginTop: "10px" }}>
             <Icon name="save" />
             {t("button.save", "Save")}
           </Button>
 
-          <Popup 
+          <Popup
             wide
             content={<p>{t("page.accountSettings.popup.resetPreferences", "Reset remembered UI preferences to their default values.")}</p>}
             trigger={<Button type="button" style={{ marginTop: "10px" }} onClick={handleResetPreferences}>

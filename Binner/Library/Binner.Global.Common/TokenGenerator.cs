@@ -5,7 +5,7 @@ namespace Binner.Global.Common
     /// <summary>
     /// Generates confirmation tokens
     /// </summary>
-    public static class ConfirmationTokenGenerator
+    public static class TokenGenerator
     {
         /// <summary>
         /// Generate a new token

@@ -38,23 +38,27 @@ namespace Binner.Common.Services
             => context.Users
                 .AsQueryable();
 
-        public async Task<Account> GetAccountAsync()
+        public async Task<Account?> GetAccountAsync()
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetAccountQueryable(context)
+                .Include(x => x.UserTokens)
                 .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
-            var model = _mapper.Map<Account>(entity);
             if (entity != null)
             {
+                // filter out tokens we want
+                entity.UserTokens = entity.UserTokens?.Where(x => x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken).ToList();
+                var model = _mapper.Map<Account>(entity);
                 model.PartsInventoryCount = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
                 model.PartTypesCount = await context.PartTypes.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
+                return model;
             }
 
-            return model;
+            return null;
         }
 
         public async Task<UpdateAccountResponse> UpdateAccountAsync(Account account)
@@ -118,6 +122,7 @@ namespace Binner.Common.Services
                 entity.PasswordHash = PasswordHasher.GeneratePasswordHash(account.NewPassword).ToString();
             }
 
+            account.Tokens = null; // ensure no tokens can be updated
             entity = _mapper.Map(account, entity);
 
             await context.SaveChangesAsync();
@@ -155,6 +160,75 @@ namespace Binner.Common.Services
             {
                 throw new Exception("Unable to save profile image", ex);
             }
+        }
+
+        public async Task<Token?> CreateKiCadApiTokenAsync()
+        {
+            var userContext = _requestContext.GetUserContext();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.UserTokens
+                .Where(x => x.UserId == userContext.UserId
+                    && x.OrganizationId == userContext.OrganizationId
+                    && x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync();
+
+            // delete any existing api token. user can only have 1
+            if (entity != null)
+            {
+                context.UserTokens.Remove(entity);
+            }
+
+            var newToken = new DataModel.UserToken()
+            {
+                Token = TokenGenerator.NewToken(),
+                DateCreatedUtc = DateTime.UtcNow,
+                DateExpiredUtc = null,
+                TokenTypeId = Model.Authentication.TokenTypes.KiCadApiToken,
+                UserId = userContext.UserId,
+                OrganizationId = userContext.OrganizationId,
+                Ip = _requestContext.GetIp()
+            };
+            context.UserTokens.Add(newToken);
+            await context.SaveChangesAsync();
+
+            return _mapper.Map<DataModel.UserToken, Token>(newToken);
+        }
+
+        public async Task<bool> DeleteKiCadApiTokenAsync(string token)
+        {
+            var userContext = _requestContext.GetUserContext();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.UserTokens
+                .Where(x => x.UserId == userContext.UserId
+                    && x.OrganizationId == userContext.OrganizationId
+                    && x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken
+                    && x.Token == token)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync();
+            
+            if (entity == null) return false;
+
+            context.UserTokens.Remove(entity);
+            await context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> ValidateKiCadApiToken(string token)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var apiToken = await context.UserTokens
+                .FirstOrDefaultAsync(x =>
+                    x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken
+                    && x.DateRevokedUtc == null
+                    && x.Token == token
+                    && (x.DateExpiredUtc == null || x.DateExpiredUtc > DateTime.UtcNow));
+
+            if (apiToken != null)
+                return true;
+
+            return false;
         }
     }
 }

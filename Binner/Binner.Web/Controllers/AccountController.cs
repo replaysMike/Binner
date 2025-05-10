@@ -1,6 +1,8 @@
 ﻿using Binner.Common.Services;
 using Binner.Model;
+using Binner.Model.Authentication;
 using Binner.Model.Configuration;
+using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -42,6 +44,40 @@ namespace Binner.Web.Controllers
             if (user != null)
                 user.IPAddress = Request.HttpContext.Connection?.RemoteIpAddress?.ToString();
             return Ok(user);
+        }
+
+        /// <summary>
+        /// Create an api token
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("token")]
+        public async Task<IActionResult> CreateTokenAsync(CreateTokenRequest request)
+        {
+            switch(request.TokenType)
+            {
+                case TokenTypes.KiCadApiToken:
+                    var token = await _accountService.CreateKiCadApiTokenAsync();
+                    return Ok(token);
+                default:
+                    return BadRequest("Unsupported token type");
+            }
+        }
+
+        /// <summary>
+        /// Delete an api token
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("token")]
+        public async Task<IActionResult> DeleteTokenAsync(DeleteTokenRequest request)
+        {
+            switch (request.TokenType)
+            {
+                case TokenTypes.KiCadApiToken:
+                    var token = await _accountService.DeleteKiCadApiTokenAsync(request.Value);
+                    return Ok(token);
+                default:
+                    return BadRequest("Unsupported token type");
+            }
         }
 
         /// <summary>

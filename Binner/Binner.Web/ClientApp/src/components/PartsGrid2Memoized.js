@@ -29,8 +29,8 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function PartsGrid2Memoized({
     loading = true,
-    columns = "partNumber,partId,quantity,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
-    defaultVisibleColumns = "partNumber,quantity,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
+    columns = "partNumber,partId,quantity,value,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
+    defaultVisibleColumns = "partNumber,quantity,value,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
     page = 1,
     totalPages = 1,
     totalRecords = 0,
@@ -204,6 +204,8 @@ export default function PartsGrid2Memoized({
         return 180;
       case "quantity":
         return 140;
+      case "value":
+        return 100;
       case "lowStockThreshold":
         return 220;
       case "manufacturerPartNumber":
@@ -278,7 +280,7 @@ export default function PartsGrid2Memoized({
     };
 
     const getColumnDefinition = (columnName, key) => {
-      const translatedColumnName = t(`comp.partsGrid.${columnName}`, `i18 ${columnName}`);
+      const translatedColumnName = t(`comp.partsGrid.${columnName}`, `${columnName}`);
   
       const def = {
         accessorKey: columnName,

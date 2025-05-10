@@ -19,6 +19,88 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                 .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "8.0.4");
 
+            modelBuilder.Entity("Binner.Data.Model.CustomField", b =>
+                {
+                    b.Property<long>("CustomFieldId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CustomFieldTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("CustomFieldId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomFields", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.CustomFieldValue", b =>
+                {
+                    b.Property<long>("CustomFieldValueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("CustomFieldId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CustomFieldTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("RecordId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("CustomFieldValueId");
+
+                    b.HasIndex("CustomFieldId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomFieldValues", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
                 {
                     b.Property<int>("LabelId")
@@ -477,6 +559,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("PartId");
 
                     b.HasIndex("ProjectId");
@@ -659,7 +744,13 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Icon")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Keywords")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -670,6 +761,12 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<long?>("ParentPartTypeId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReferenceDesignator")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SymbolId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
@@ -1512,6 +1609,34 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.ToTable("UserTokens", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.CustomField", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("CustomFields")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.CustomFieldValue", b =>
+                {
+                    b.HasOne("Binner.Data.Model.CustomField", "CustomField")
+                        .WithMany("CustomFieldValues")
+                        .HasForeignKey("CustomFieldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("CustomFieldValues")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CustomField");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
                 {
                     b.HasOne("Binner.Data.Model.LabelTemplate", "LabelTemplate")
@@ -1862,6 +1987,11 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.CustomField", b =>
+                {
+                    b.Navigation("CustomFieldValues");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.LabelTemplate", b =>
                 {
                     b.Navigation("Labels");
@@ -1920,6 +2050,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.User", b =>
                 {
+                    b.Navigation("CustomFieldValues");
+
+                    b.Navigation("CustomFields");
+
                     b.Navigation("OAuthCredentials");
 
                     b.Navigation("OAuthRequests");

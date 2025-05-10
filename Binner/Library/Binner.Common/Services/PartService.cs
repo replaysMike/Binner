@@ -156,18 +156,33 @@ namespace Binner.Common.Services
             return await _storageProvider.GetPartTypeAsync(partTypeId, _requestContext.GetUserContext());
         }
 
+        public async Task<PartType?> GetPartTypeAsync(string name)
+        {
+            return await _storageProvider.GetPartTypeAsync(name, _requestContext.GetUserContext());
+        }
+
         public async Task<ICollection<PartType>> GetPartTypesAsync()
         {
             return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
         }
 
+        public async Task<ICollection<PartType>> GetPartTypesAsync(bool filterEmpty)
+        {
+            return await _storageProvider.GetPartTypesAsync(filterEmpty, _requestContext.GetUserContext());
+        }
+
         public Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync()
         {
-            var models = _partTypesCache.Cache
+            var partTypes = _partTypesCache.Cache
                 .OrderBy(x => x.ParentPartType != null ? x.ParentPartType.Name : "")
                 .ThenBy(x => x.Name)
                 .ToList();
-            return Task.FromResult(_mapper.Map<ICollection<PartTypeResponse>>(models));
+            return Task.FromResult(_mapper.Map<ICollection<PartTypeResponse>>(partTypes));
+        }
+
+        public async Task<ICollection<Part>> GetPartsByPartTypeAsync(PartType partType)
+        {
+            return await _storageProvider.GetPartsByPartTypeAsync(partType, _requestContext.GetUserContext());
         }
 
         public async Task<ICollection<PartSupplier>> GetPartSuppliersAsync(long partId)

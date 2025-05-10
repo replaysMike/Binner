@@ -121,6 +121,10 @@ namespace Binner.Data.Model
         /// </summary>
         public string? LocaleCurrency { get; set; }
 
+        public ICollection<CustomField>? CustomFields { get; set; }
+        
+        public ICollection<CustomFieldValue>? CustomFieldValues { get; set; }
+
         public ICollection<UserToken>? UserTokens { get; set; }
 
         public ICollection<UserLoginHistory>? UserLoginHistory { get; set; }

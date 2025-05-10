@@ -601,6 +601,13 @@ section.formHeader {
   width: 300px !important;
 }
 
+.token {
+  font-family: 'Source Code Pro', monospace;
+  display: inline-block;
+  margin-right: 20px;
+  font-size: 1.2em;
+}
+
 .dropzone {
     transition: outline-color .3s ease-in-out;
     outline: 4px dashed transparent;

@@ -152,6 +152,14 @@ namespace Binner.Model
         Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext? userContext);
 
         /// <summary>
+        /// Get an existing part type
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext);
+
+        /// <summary>
         /// Update an existing part type
         /// </summary>
         /// <param name="partType"></param>
@@ -173,6 +181,14 @@ namespace Binner.Model
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
         Task<ICollection<PartType>> GetPartTypesAsync(IUserContext? userContext);
+
+        /// <summary>
+        /// Get all of the part types
+        /// </summary>
+        /// <param name="filterEmpty">True to filter empty part type categories (no parts assigned)</param>
+        /// <param name="userContext">The user performing the operation</param>
+        /// <returns></returns>
+        Task<ICollection<PartType>> GetPartTypesAsync(bool filterEmpty, IUserContext? userContext);
 
         /// <summary>
         /// Create a new user defined project
@@ -662,5 +678,13 @@ namespace Binner.Model
         /// <param name="userContext"></param>
         /// <returns></returns>
         Task<IDictionary<string, long>> GetPartIdsFromManufacturerPartNumbersAsync(ICollection<string> partNumbers, IUserContext? userContext);
+
+        /// <summary>
+        /// Get all parts that belong to a part type
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetPartsByPartTypeAsync(PartType partType, IUserContext? userContext);
     }
 }

@@ -74,7 +74,7 @@ namespace Binner.Common.Services.Authentication
         /// Generate a token that can be used to serve secure images
         /// </summary>
         /// <returns></returns>
-        public string? GenerateImagesToken() => ConfirmationTokenGenerator.NewToken();
+        public string? GenerateImagesToken() => TokenGenerator.NewToken();
 
         /// <summary>
         /// Get the security key
@@ -147,7 +147,7 @@ namespace Binner.Common.Services.Authentication
             var signingKey = _configuration.Authentication.JwtSecretKey;
             if (string.IsNullOrEmpty(signingKey))
             {
-                signingKey = ConfirmationTokenGenerator.NewSecurityToken(40);
+                signingKey = TokenGenerator.NewSecurityToken(40);
                 _configuration.Authentication.JwtSecretKey = signingKey;
                 // save to appsettings
                 _settingsService.SaveSettingsAs(_configuration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true);

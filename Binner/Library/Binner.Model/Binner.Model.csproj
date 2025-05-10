@@ -22,4 +22,8 @@
     <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="KiCad\Requests\" />
+  </ItemGroup>
+
 </Project>

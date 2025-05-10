@@ -28,6 +28,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.LabelTemplate, options => options.MapFrom(x => x.LabelTemplate))
                 .ForMember(x => x.Template, options => options.MapFrom(x => x.Template))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 ;
         }
     }

@@ -73,7 +73,8 @@
         "symbolName": "Associate a KiCad symbol name with this part",
         "footprintName": "Associate a KiCad footprint name with this part",
         "extensionValue": "Associate a custom value with this part",
-        "apiRefresh": "Refresh the part information from external APIs. All API provided fields will be overwritten."
+        "apiRefresh": "Refresh the part information from external APIs. All API provided fields will be overwritten.",
+        "value": "The parametric value of the part. Example: a resistor may have a value of '4.7k'"
       }
     },
     "lowInventory": {

@@ -12,8 +12,10 @@ using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.StorageProvider.EntityFrameworkCore;
+using Binner.Web.Authorization;
 using Binner.Web.ServiceHost;
 using LightInject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -27,6 +29,7 @@ namespace Binner.Web.Configuration
             // Transient = created each time requested, Scoped = once per http/scope request, Singleton = first time requested only
             // allow the container to be injected
             services.AddSingleton<IServiceContainer, ServiceContainer>();
+            services.AddSingleton<IAuthorizationHandler, KiCadTokenAuthorizationHandler>();
             services.AddSingleton(container);
             container.RegisterInstance(container);
 
