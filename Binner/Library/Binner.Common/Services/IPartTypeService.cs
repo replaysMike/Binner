@@ -18,7 +18,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="partType"></param>
         /// <returns></returns>
-        Task<PartType> UpdatePartTypeAsync(PartType partType);
+        Task<PartType?> UpdatePartTypeAsync(PartType partType);
 
         /// <summary>
         /// Delete an existing partType

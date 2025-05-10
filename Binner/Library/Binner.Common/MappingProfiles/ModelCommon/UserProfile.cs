@@ -57,6 +57,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartScanHistories, options => options.Ignore())
                 .ForMember(x => x.OrderImportHistory, options => options.Ignore())
                 .ForMember(x => x.OrderImportHistoryLineItems, options => options.Ignore())
+                .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ForMember(x => x.CustomFieldValues, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.User, User>()
@@ -80,6 +82,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                     .ForMember(x => x.PartsInventoryCount, options => options.Ignore())
                     .ForMember(x => x.PartTypesCount, options => options.Ignore())
                     .ForMember(x => x.ProfileImage, options => options.MapFrom(x => GetBase64Image(x.ProfileImage)))
+                    .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 ;
         }
 

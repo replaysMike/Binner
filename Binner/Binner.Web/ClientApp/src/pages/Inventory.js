@@ -102,6 +102,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     allowPotentialDuplicate: false,
     quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) ? viewPreferences.lastQuantity : DefaultQuantity,
     lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) ? viewPreferences.lowStockThreshold + "" : DefaultLowStockThreshold + "",
+    value: "",
     partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) ? viewPreferences.lastPartTypeId : DefaultPartType,
     mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) ? viewPreferences.lastMountingTypeId : DefaultMountingTypeId,
     packageType: "",
@@ -365,6 +366,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     const entity = { ...partRef.current };
     const mappedPart = {
       partNumber: suggestedPart.basePartNumber,
+      value: suggestedPart.value,
       partTypeId: getPartTypeId(suggestedPart.partType, partTypesRef.current),
       mountingTypeId: suggestedPart.mountingTypeId,
       packageType: suggestedPart.packageType,
@@ -386,6 +388,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       entity.quantity = mapIfValid("quantity", entity, mappedPart, allowOverwrite);
 
     entity.partNumber = mapIfValid("partNumber", entity, mappedPart, allowOverwrite);
+    entity.value = mapIfValid("value", entity, mappedPart, allowOverwrite);
     entity.supplier = mapIfValid("supplier", entity, mappedPart, allowOverwrite);
     entity.supplierPartNumber = mapIfValid("supplierPartNumber", entity, mappedPart, allowOverwrite);
     entity.partTypeId = mapIfValid("partTypeId", entity, mappedPart, allowOverwrite);
@@ -1501,6 +1504,19 @@ export function Inventory({ partNumber = "", ...rest }) {
                             className="numberpicker"
                           />
                         </div>
+                          <ClearableInput
+                            label={t('label.value', "Value")}
+                            placeholder="4.7k"
+                            width={3}
+                            value={part.value || ""}
+                            onChange={handleChange}
+                            name="value"
+                            autoComplete="off"
+                            help={t('page.inventory.popup.value', "The parametric value of the part. Example: a resistor may have a value of '4.7k'")}
+                            helpWide
+                            helpDisabled={viewPreferences.helpDisabled}
+                            helpOnOpen={disableHelp}
+                          />
                       </Form.Group>
                     </>}
 

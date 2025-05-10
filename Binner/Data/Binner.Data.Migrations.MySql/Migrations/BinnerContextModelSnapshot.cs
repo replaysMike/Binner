@@ -23,6 +23,92 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("Binner.Data.Model.CustomField", b =>
+                {
+                    b.Property<long>("CustomFieldId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("CustomFieldId"));
+
+                    b.Property<int>("CustomFieldTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomFieldId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomFields", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.CustomFieldValue", b =>
+                {
+                    b.Property<long>("CustomFieldValueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("CustomFieldValueId"));
+
+                    b.Property<long>("CustomFieldId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("CustomFieldTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("RecordId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("CustomFieldValueId");
+
+                    b.HasIndex("CustomFieldId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomFieldValues", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
                 {
                     b.Property<int>("LabelId")
@@ -497,6 +583,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Value")
+                        .HasColumnType("longtext");
+
                     b.HasKey("PartId");
 
                     b.HasIndex("ProjectId");
@@ -685,7 +774,13 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Icon")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Keywords")
                         .HasColumnType("longtext");
 
                     b.Property<string>("Name")
@@ -696,6 +791,12 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<long?>("ParentPartTypeId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("ReferenceDesignator")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SymbolId")
+                        .HasColumnType("longtext");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -1566,6 +1667,34 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.ToTable("UserTokens", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.CustomField", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("CustomFields")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.CustomFieldValue", b =>
+                {
+                    b.HasOne("Binner.Data.Model.CustomField", "CustomField")
+                        .WithMany("CustomFieldValues")
+                        .HasForeignKey("CustomFieldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("CustomFieldValues")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CustomField");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Label", b =>
                 {
                     b.HasOne("Binner.Data.Model.LabelTemplate", "LabelTemplate")
@@ -1916,6 +2045,11 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.CustomField", b =>
+                {
+                    b.Navigation("CustomFieldValues");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.LabelTemplate", b =>
                 {
                     b.Navigation("Labels");
@@ -1974,6 +2108,10 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.User", b =>
                 {
+                    b.Navigation("CustomFieldValues");
+
+                    b.Navigation("CustomFields");
+
                     b.Navigation("OAuthCredentials");
 
                     b.Navigation("OAuthRequests");

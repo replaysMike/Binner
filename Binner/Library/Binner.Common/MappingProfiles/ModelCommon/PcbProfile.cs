@@ -40,6 +40,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Cost, options => options.MapFrom(x => x.Cost))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 ;
 
             CreateMap<DataModel.Pcb, ProjectPcb>()
@@ -52,6 +53,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateModifiedUtc, options => options.MapFrom(x => x.DateModifiedUtc))
                 .ForMember(x => x.Cost, options => options.MapFrom(x => x.Cost))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
+                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 .ForMember(x => x.StoredFile, options => options.Ignore())
                 .ForMember(x => x.PartsCount, options => options.Ignore())
                 ;

@@ -8,7 +8,7 @@
         /// <summary>
         /// Access token (short-lived)
         /// </summary>
-        AccessToken,
+        AccessToken = 0,
         /// <summary>
         /// Refresh token (long-lived)
         /// </summary>
@@ -24,6 +24,10 @@
         /// <summary>
         /// Images access token
         /// </summary>
-        ImagesToken
+        ImagesToken,
+        /// <summary>
+        /// KiCad api access token
+        /// </summary>
+        KiCadApiToken
     }
 }

@@ -185,6 +185,12 @@ namespace Binner.Data.Model
         public string? ExtensionValue2 { get; set; }
 
         /// <summary>
+        /// Part value. '1k', '4.7uf', or the model name of the chip.
+        /// Used for KiCad part value.
+        /// </summary>
+        public string? Value { get; set; }
+
+        /// <summary>
         /// The date the record was created
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

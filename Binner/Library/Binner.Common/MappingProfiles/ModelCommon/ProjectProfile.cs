@@ -18,6 +18,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Notes, options => options.MapFrom(x => x.Notes))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 .ReverseMap();
         }
     }

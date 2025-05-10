@@ -43,6 +43,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.FootprintName, options => options.MapFrom(x => x.FootprintName))
                 .ForMember(x => x.ExtensionValue1, options => options.MapFrom(x => x.ExtensionValue1))
                 .ForMember(x => x.ExtensionValue2, options => options.MapFrom(x => x.ExtensionValue2))
+                .ForMember(x => x.Value, options => options.MapFrom(x => x.Value))
                 .ForMember(x => x.MountingType, options => options.Ignore())
                 ;
 
@@ -78,6 +79,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.FootprintName, options => options.MapFrom(x => x.FootprintName))
                 .ForMember(x => x.ExtensionValue1, options => options.MapFrom(x => x.ExtensionValue1))
                 .ForMember(x => x.ExtensionValue2, options => options.MapFrom(x => x.ExtensionValue2))
+                .ForMember(x => x.Value, options => options.MapFrom(x => x.Value))
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.KeywordsList, options => options.Ignore())
                 .ForMember(x => x.PartType, options => options.Ignore())
@@ -126,6 +128,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.FootprintName, options => options.MapFrom(x => x.FootprintName))
                 .ForMember(x => x.ExtensionValue1, options => options.MapFrom(x => x.ExtensionValue1))
                 .ForMember(x => x.ExtensionValue2, options => options.MapFrom(x => x.ExtensionValue2))
+                .ForMember(x => x.Value, options => options.MapFrom(x => x.Value))
+                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 ;
 
             CreateMap<Part, DataModel.Part>()
@@ -161,6 +165,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.FootprintName, options => options.MapFrom(x => x.FootprintName))
                 .ForMember(x => x.ExtensionValue1, options => options.MapFrom(x => x.ExtensionValue1))
                 .ForMember(x => x.ExtensionValue2, options => options.MapFrom(x => x.ExtensionValue2))
+                .ForMember(x => x.Value, options => options.MapFrom(x => x.Value))
                 .ForMember(x => x.PartSuppliers, options => options.Ignore())
                 .ForMember(x => x.PartType, options => options.Ignore())
                 .ForMember(x => x.Project, options => options.Ignore())

@@ -93,7 +93,11 @@ namespace Binner.Common.IO
                 {
                     ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
                     Name = name,
-                    DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>()
+                    DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                    Description = values.GetValue("Description").As<string?>(),
+                    ReferenceDesignator = values.GetValue("ReferenceDesignator").As<string?>(),
+                    SymbolId = values.GetValue("SymbolId").As<string?>(),
+                    Keywords = values.GetValue("Keywords").As<string?>(),
                 };
                 partType = await _storageProvider.GetOrCreatePartTypeAsync(partType, userContext);
                 if (partType != null)
@@ -118,6 +122,7 @@ namespace Binner.Common.IO
                 var part = new Part
                 {
                     PartTypeId = _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", values.GetValue("PartTypeId").As<long>()),
+                    Value = values.GetValue("Value").As<string?>(),
                     BinNumber = values.GetValue("BinNumber").As<string?>(),
                     BinNumber2 = values.GetValue("BinNumber2").As<string?>(),
                     Cost = values.GetValue("Cost").As<double>(),

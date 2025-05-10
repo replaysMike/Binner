@@ -3,12 +3,10 @@ using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
-using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
 using DataModel = Binner.Data.Model;
@@ -512,8 +510,8 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OAuthRequests
-                .FirstOrDefaultAsync(x => x.Provider == authRequest.Provider 
-                    && x.OrganizationId == userContext.OrganizationId 
+                .FirstOrDefaultAsync(x => x.Provider == authRequest.Provider
+                    && x.OrganizationId == userContext.OrganizationId
                     && x.UserId == userContext.UserId
                     && x.RequestId == authRequest.Id
                 );
@@ -1047,7 +1045,7 @@ INNER JOIN (
             return true;
         }
 
-        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(OrderImportHistory orderImportHistory, bool includeChildren, IUserContext ? userContext)
+        public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(OrderImportHistory orderImportHistory, bool includeChildren, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -1224,7 +1222,7 @@ INNER JOIN (
                 .Include(x => x.PartSuppliers)
                 .Where(x => x.OrganizationId == userContext.OrganizationId);
             var orderingApplied = false;
-            
+
             if (filterBy.Any())
             {
                 if (filterBy.Contains("partType", stringCompare) || filterBy.Contains("partTypeId", stringCompare))
@@ -1240,7 +1238,8 @@ INNER JOIN (
                             .First();
                         var partTypeId = int.Parse(filterByValues[index]);
                         matchingPartTypes = GetPartTypesFromId(partTypeId, userContext);
-                    }else if (filterBy.Contains("partType"))
+                    }
+                    else if (filterBy.Contains("partType"))
                     {
                         // ensure part type exists by partTypeId
                         var index = filterBy.Select((value, index) => new { value, index })
@@ -1287,7 +1286,7 @@ INNER JOIN (
             // finally, do any keyword filtering
             if (!string.IsNullOrEmpty(request.Keyword))
             {
-                entitiesQueryable = entitiesQueryable.Where(x => 
+                entitiesQueryable = entitiesQueryable.Where(x =>
                     EF.Functions.Like(x.PartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.ManufacturerPartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Description, '%' + request.Keyword + '%')
@@ -1507,16 +1506,51 @@ INNER JOIN (
             return _mapper.Map<PartType?>(entity);
         }
 
+        public async Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _partTypesCache.Cache
+                .FirstOrDefault(x => x.Name != null && x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
+            if (entity == null)
+                return null;
+            return _mapper.Map<PartType?>(entity);
+        }
+
         public Task<ICollection<PartType>> GetPartTypesAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+
             var entities = _partTypesCache.Cache
                 .Where(x => x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null)
                 .OrderBy(x => x.OrganizationId == null)
                 .ThenBy(x => x.ParentPartType?.Name)
                 .ThenBy(x => x.Name)
                 .ToList();
+
             return Task.FromResult(_mapper.Map<ICollection<PartType>>(entities));
+        }
+
+        public async Task<ICollection<PartType>> GetPartTypesAsync(bool filterEmpty, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+
+            if (filterEmpty)
+            {
+                await using var context = await _contextFactory.CreateDbContextAsync();
+                var partTypes = context.PartTypes
+                    .Include(x => x.ParentPartType)
+                    .Include(x => x.Parts)
+                    .Where(x => x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null)
+                    .Where(x => x.Parts.Any())
+                    .OrderBy(x => x.OrganizationId == null)
+                    .ThenBy(x => x.ParentPartType != null ? x.ParentPartType.Name : x.Name)
+                    .ThenBy(x => x.Name)
+                    .ToList();
+                return _mapper.Map<ICollection<PartType>>(partTypes);
+            }
+
+            return await GetPartTypesAsync(userContext);
         }
 
         public async Task<Project?> GetProjectAsync(long projectId, IUserContext? userContext)
@@ -1726,6 +1760,16 @@ INNER JOIN (
             context.PartSuppliers.Remove(entity);
             await context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<ICollection<Part>> GetPartsByPartTypeAsync(PartType partType, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.Parts
+                .Where(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<Part>>(entities);
         }
 
         public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)

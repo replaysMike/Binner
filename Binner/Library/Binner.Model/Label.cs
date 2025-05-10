@@ -28,5 +28,7 @@
         public bool IsPartLabelTemplate { get; set; }
 
         public LabelTemplate? LabelTemplate { get; set; }
+
+        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
     }
 }

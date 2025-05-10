@@ -35,10 +35,10 @@ namespace Binner.Common.Services
 
         public async Task<ICollection<PartType>> GetPartTypesAsync()
         {
-            return await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+            return await _storageProvider.GetPartTypesAsync(false, _requestContext.GetUserContext());
         }
 
-        public async Task<PartType> UpdatePartTypeAsync(PartType partType)
+        public async Task<PartType?> UpdatePartTypeAsync(PartType partType)
         {
             return await _storageProvider.UpdatePartTypeAsync(partType, _requestContext.GetUserContext());
         }

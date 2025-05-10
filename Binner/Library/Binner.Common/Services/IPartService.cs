@@ -88,6 +88,13 @@ namespace Binner.Common.Services
         Task<PartType?> GetPartTypeAsync(int partTypeId);
 
         /// <summary>
+        /// Get a partType by its name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        Task<PartType?> GetPartTypeAsync(string name);
+
+        /// <summary>
         /// Get information about a barcode
         /// </summary>
         /// <param name="barcode"></param>
@@ -130,14 +137,28 @@ namespace Binner.Common.Services
         /// <summary>
         /// Get all part types
         /// </summary>
-        /// <returns></returns>
+                /// <returns></returns>
         Task<ICollection<PartType>> GetPartTypesAsync();
+
+        /// <summary>
+        /// Get all part types
+        /// </summary>
+        /// <param name="filterEmpty">True to filter empty part type categories (no parts assigned)</param>
+        /// <returns></returns>
+        Task<ICollection<PartType>> GetPartTypesAsync(bool filterEmpty);
 
         /// <summary>
         /// Get all part types and the number of parts in each type
         /// </summary>
         /// <returns></returns>
         Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync();
+
+        /// <summary>
+        /// Get all parts by type
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        Task<ICollection<Part>> GetPartsByPartTypeAsync(PartType partType);
 
         /// <summary>
         /// Get count of all unique parts

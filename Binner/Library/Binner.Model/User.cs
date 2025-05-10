@@ -94,5 +94,7 @@
         public DateTime? DateLastLoginUtc { get; set; }
 
         public DateTime? DateLastActiveUtc { get; set; }
+
+        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
     }
 }

@@ -5,6 +5,7 @@ using Binner.Model.Configuration;
 using Binner.Web.Authorization;
 using Binner.Web.Configuration;
 using Binner.Web.Middleware;
+using Binner.Web.ServiceHost;
 using LightInject;
 using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
@@ -188,7 +189,8 @@ namespace Binner.Web.WebHost
             {
                 // initialize the database context
                 var context = scope.ServiceProvider.GetRequiredService<BinnerContext>();
-                BinnerContextInitializer.Initialize(context,
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<BinnerWebHostService>>();
+                BinnerContextInitializer.Initialize(logger, context,
                     (password) => PasswordHasher
                         .GeneratePasswordHash(password)
                         .GetBase64EncodedPasswordHash());

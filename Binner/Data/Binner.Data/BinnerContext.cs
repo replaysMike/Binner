@@ -7,6 +7,16 @@ namespace Binner.Data
     public class BinnerContext : DbContext
     {
         /// <summary>
+        /// User-defined custom fields
+        /// </summary>
+        public DbSet<CustomField> CustomFields { get; set; } = null!;
+
+        /// <summary>
+        /// Values for CustomFields
+        /// </summary>
+        public DbSet<CustomFieldValue> CustomFieldValues { get; set; } = null!;
+
+        /// <summary>
         /// Label designs
         /// </summary>
         public DbSet<Label> Labels { get; set; } = null!;

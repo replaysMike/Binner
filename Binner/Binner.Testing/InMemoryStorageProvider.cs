@@ -249,6 +249,16 @@ namespace Binner.Testing
             return _parts.Where(x => x.Value.PartNumber == partNumber).Select(x => x.Value).FirstOrDefault();
         }
 
+        public async Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext)
+        {
+            return _partTypes.Where(x => x.Value?.Name?.Equals(name, StringComparison.InvariantCultureIgnoreCase) == true).Select(x => x.Value).FirstOrDefault();
+        }
+
+        public async Task<ICollection<Part>> GetPartsByPartTypeAsync(PartType partType, IUserContext? userContext)
+        {
+            return _parts.Where(x => x.Value.PartTypeId == partType.PartTypeId).Select(x => x.Value).ToList();
+        }
+
         public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
         {
             //return _parts.Select(x => x.Value).ToList();
@@ -556,6 +566,7 @@ namespace Binner.Testing
             _orderImportHistories.Clear();
             _orderImportHistoryLineItems.Clear();
         }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

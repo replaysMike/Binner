@@ -11,7 +11,6 @@ import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../
 import { FormHeader } from "../../../components/FormHeader";
 import ClearableInput from "../../../components/ClearableInput";
 import { toast } from "react-toastify";
-import { getUserAccount } from "../../../common/authentication";
 
 export function Users(props) {
   const { t } = useTranslation();
@@ -72,7 +71,7 @@ export function Users(props) {
         const newUsersData = _.filter(usersDataRef.current, (item) => item.userId !== user.userId);
         usersDataRef.current = [...newUsersData];
       } else if (response.responseObject.status === 404) {
-        toast.error("User Not found!");
+        toast.error("User not found!");
       } else if (response.responseObject.status === 400) {
         toast.error(response.data.message);
       } else {
@@ -302,7 +301,7 @@ export function Users(props) {
               <Table.Cell>{user.emailAddress}</Table.Cell>
               <Table.Cell>{user.dateLastActiveUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), Date.parse(user.dateLastActiveUtc)), true) : "(never)"}</Table.Cell>
               <Table.Cell>{getFormattedTime(user.dateCreatedUtc)}</Table.Cell>
-              <Table.Cell>
+              <Table.Cell textAlign="center">
                 <Button
                   size="mini"
                   icon="delete"
