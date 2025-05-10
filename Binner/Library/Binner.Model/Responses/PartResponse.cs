@@ -167,5 +167,10 @@
         /// Used for KiCad part value.
         /// </summary>
         public string? Value { get; set; }
+
+        /// <summary>
+        /// List of custom field values associated with this part
+        /// </summary>
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

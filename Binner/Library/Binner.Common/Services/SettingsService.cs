@@ -1,14 +1,36 @@
-﻿using Newtonsoft.Json;
+﻿using Binner.Data;
+using Binner.Global.Common;
+using Binner.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Binner.Common.Services
 {
     public class SettingsService : ISettingsService
     {
         private const string BackupFilenameExtension = ".bak";
+
+        private readonly ILogger<SettingsService>? _logger;
+        private readonly IStorageProvider? _storageProvider;
+        private readonly IDbContextFactory<BinnerContext>? _contextFactory;
+        private readonly IRequestContextAccessor? _requestContext;
+
+        public SettingsService() { }
+
+        public SettingsService(ILogger<SettingsService> logger, IStorageProvider storageProvider, IDbContextFactory<BinnerContext> contextFactory, IRequestContextAccessor requestContextAccessor)
+        {
+            _logger = logger;
+            _storageProvider = storageProvider;
+            _contextFactory = contextFactory;
+            _requestContext = requestContextAccessor;
+        }
 
         public void SaveSettingsAs<T>(T instance, string sectionName, string filename, bool createBackup)
         {
@@ -43,6 +65,14 @@ namespace Binner.Common.Services
             var buffer = Encoding.Default.GetBytes(jsonOutput);
             file.Write(buffer, 0, buffer.Length);
             file.Close();
+        }
+
+        public async Task<ICollection<CustomField>> GetCustomFieldsAsync()
+        {
+            if (_storageProvider == null) throw new ArgumentNullException("StorageProvider not set!");
+            if (_requestContext == null) throw new ArgumentNullException("RequestContextAccessor not set!");
+
+            return await _storageProvider.GetCustomFieldsAsync(_requestContext.GetUserContext());
         }
     }
 }

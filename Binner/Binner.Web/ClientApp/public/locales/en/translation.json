@@ -39,13 +39,15 @@
       "recentlyAdded": "Recently Added",
       "partMetadata": "Part Metadata",
       "privatePartInfo": "Private Part Information",
-      "privatePartInfoMessage": "These values can be set manually and will not be synchronized automatically via apis.",
+      "privatePartInfoMessage": "These values can be set manually and will not be synchronized automatically via connected apis.",
       "suppliers": "Suppliers",
       "addKeyword": "Add Keyword",
       "chooseAlternatePart": "Choose alternate part ({{count}})",
       "refresh": "Refresh",
       "suggestedPart": "Suggested part number",
       "partExists": "This <1>part</1> <3>already exists</3> in your inventory.",
+      "integrations": "Integrations",
+      "integrationsMessage": "Connected integrations may require additional information about your part. You can specify them here.",
       "placeholder": {
         "location": "Home lab",
         "keywords": "op amp",
@@ -835,6 +837,7 @@
     "extensionValue2": "Extension Value 2",
     "partId": "Part Id",
     "tmePartNumber": "TME Part Number",
+    "customFields": "Custom Fields"
   },
   "message": {
     "noPartsAdded": "No parts added.",

@@ -29,6 +29,6 @@
 
         public LabelTemplate? LabelTemplate { get; set; }
 
-        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

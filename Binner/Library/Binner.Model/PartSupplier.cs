@@ -59,7 +59,7 @@
 
         public Part Part { get; set; } = null!;
 
-        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
 
         /// <summary>
         /// Optional user id to associate

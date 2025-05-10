@@ -686,5 +686,21 @@ namespace Binner.Model
         /// <param name="userContext"></param>
         /// <returns></returns>
         Task<ICollection<Part>> GetPartsByPartTypeAsync(PartType partType, IUserContext? userContext);
+
+        /// <summary>
+        /// Get the custom fields defined
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<CustomField>> GetCustomFieldsAsync(IUserContext? userContext);
+
+        /// <summary>
+        /// Get the custom field values for a record
+        /// </summary>
+        /// <param name="customFieldType"></param>
+        /// <param name="recordId"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<CustomValue>> GetCustomFieldsAsync(CustomFieldTypes customFieldType, long recordId, IUserContext? userContext);
     }
 }

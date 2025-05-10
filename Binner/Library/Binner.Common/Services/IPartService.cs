@@ -23,7 +23,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="part"></param>
         /// <returns></returns>
-        Task<Part> UpdatePartAsync(Part part);
+        Task<Part?> UpdatePartAsync(Part part);
 
         /// <summary>
         /// Delete an existing part

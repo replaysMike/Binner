@@ -44,6 +44,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ExtensionValue1, options => options.MapFrom(x => x.ExtensionValue1))
                 .ForMember(x => x.ExtensionValue2, options => options.MapFrom(x => x.ExtensionValue2))
                 .ForMember(x => x.Value, options => options.MapFrom(x => x.Value))
+                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 .ForMember(x => x.MountingType, options => options.Ignore())
                 ;
 

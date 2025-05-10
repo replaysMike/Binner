@@ -130,7 +130,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     footprintName: "",
     extensionValue1: "",
     extensionValue2: "",
-    storedFiles: []
+    storedFiles: [],
+    customFields: []
   };
 
   const [inputPartNumber, setInputPartNumber] = useState(rest.params.partNumberToAdd || "");
@@ -169,7 +170,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const disableRendering = useRef(false);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
   const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
-  const [systemSettings, setSystemSettings] = useState({ currency: "USD" });
+  const [systemSettings, setSystemSettings] = useState({ currency: "USD", customFields: [] });
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
   const [authorizationApiName, setAuthorizationApiName] = useState('');
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
@@ -211,7 +212,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     const newIsEditing = partNumberStr?.length > 0;
     setIsEditing(newIsEditing);
 
-    const fetchData = async (initialRequest, targetPart) => {
+    const fetchData = async (initialRequest, targetPart, systemSettings) => {
       let partToSearch = targetPart;
       setPartMetadataIsSubscribed(false);
       setPartMetadataErrors([]);
@@ -235,7 +236,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       } else {
         if (initialRequest) {
           // adding a new part, reset the form
-          resetForm();
+          resetForm("", false, true, systemSettings);
         } else {
           // fetch part metadata, don't allow overwriting of fields that have already been entered
           setLoadingPartMetadata(true);
@@ -257,11 +258,13 @@ export function Inventory({ partNumber = "", ...rest }) {
       initialRequest = false;
     }
 
-    fetchData(initialRequest, digikeyTempSettings || part).catch(console.error);
-    
     getSystemSettings().then((systemSettings) => {
+      const updatedPart = { ...part, customFields: systemSettings?.customFields?.map((field) => ({ field: field.name, value: '' })) || [] };
+      setPart(updatedPart);
       setSystemSettings(systemSettings);
+      fetchData(initialRequest, digikeyTempSettings || part, systemSettings).catch(console.error);
     });
+
     return () => {
       searchDebounced.cancel();
       Inventory.doFetchPartMetadataController?.abort();
@@ -1009,7 +1012,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
   };
 
-  const resetForm = (saveMessage = "", clearAll = false, dismiss = true) => {
+  const resetForm = (saveMessage = "", clearAll = false, dismiss = true, settings = systemSettings) => {
     if (dismiss) toast.dismiss();
 
     removeViewPreference('digikey');
@@ -1054,6 +1057,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       footprintName: "",
       extensionValue1: "",
       extensionValue2: "",
+      customFields: settings?.customFields?.map((field) => ({ field: field.name, value: ''})) || []
     };
     setPart(clearedPart);
     setLoadingPartMetadata(false);
@@ -1183,6 +1187,21 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPart(part);
     if (part.partNumber) setIsDirty(true);
   };
+
+  const handleCustomFieldChange = (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const field = _.find(part.customFields, x => x.field === control.name);
+    if (field) {
+      field.value = control.value;
+      const customFields = _.filter(part.customFields, x => x.field !== control.name);
+      customFields.push(field);
+      setPart({...part, customFields });
+      if (part.partNumber) setIsDirty(true);
+    } else {
+      console.log('field not found', control.name, part.customFields);
+    }
+  }
 
   const printLabel = async (e) => {
     e.preventDefault();
@@ -1795,17 +1814,9 @@ export function Inventory({ partNumber = "", ...rest }) {
                   <Header dividing as="h3">
                     {t('page.inventory.privatePartInfo', "Private Part Information")}
                   </Header>
-                  <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via apis.")}</p>
+                  <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via connected apis.")}</p>
 
                   <Form.Group>
-                    <Form.Field width={4}>
-                      <label>{t('label.symbolName', "KiCad Symbol Name")}</label>
-                      <ClearableInput placeholder='R_0601' value={part.symbolName || ''} onChange={handleChange} name='symbolName' help={t('page.inventory.popup.symbolName', "Associate a KiCad symbol name with this part")} />
-                    </Form.Field>
-                    <Form.Field width={4}>
-                      <label>{t('label.footprintName', "KiCad Footprint Name")}</label>
-                      <ClearableInput placeholder='Resistor SMD 0601_1608Matric' value={part.footprintName || ''} onChange={handleChange} name='footprintName' help={t('page.inventory.popup.footprintName', "Associate a KiCad footprint name with this part")} />
-                    </Form.Field>
                     <Form.Field width={4}>
                       <label>{t('label.extensionValue1', "Extension Value 1")}</label>
                       <ClearableInput placeholder='' value={part.extensionValue1 || ''} onChange={handleChange} name='extensionValue1' help={t('page.inventory.popup.extensionValue', "Associate a custom value with this part")} />
@@ -1813,6 +1824,45 @@ export function Inventory({ partNumber = "", ...rest }) {
                     <Form.Field width={4}>
                       <label>{t('label.extensionValue2', "Extension Value 2")}</label>
                       <ClearableInput placeholder='' value={part.extensionValue2 || ''} onChange={handleChange} name='extensionValue2' help={t('page.inventory.popup.extensionValue', "Associate a custom value with this part")} />
+                    </Form.Field>
+                  </Form.Group>
+                  <hr />
+                  {systemSettings?.customFields?.length > 0 
+                    ? <>
+                    <Header dividing as="h3">
+                      {t('label.customFields', "Custom Fields")}
+                    </Header>
+                    <Form.Group>
+                        {systemSettings.customFields.map((customField, fieldKey) => (
+                        <Form.Input 
+                          key={fieldKey} 
+                          label={customField.name} 
+                          value={_.find(part.customFields, x => x.field === customField.name)?.value || ''} 
+                          name={customField.name} 
+                          onChange={handleCustomFieldChange} 
+                        />
+                      ))}
+                    </Form.Group>
+                    </>
+                    : <></> }
+                  
+                </Segment>}
+
+                {/* Part Integrations */}
+                {!disableRendering.current && <Segment loading={loadingPartMetadata} color="violet">
+                  <Header dividing as="h3">
+                    {t('page.inventory.integrations', "Integrations")}
+                  </Header>
+                  <p>{t('page.inventory.integrationsMessage', "Connected integrations may require additional information about your part. You can specify them here.")}</p>
+
+                  <Form.Group>
+                    <Form.Field width={4}>
+                      <label>{t('label.symbolName', "KiCad Symbol Name")}</label>
+                      <ClearableInput placeholder='R_0601' value={part.symbolName || ''} onChange={handleChange} name='symbolName' help={t('page.inventory.popup.symbolName', "Associate a KiCad symbol name with this part")} />
+                    </Form.Field>
+                    <Form.Field width={6}>
+                      <label>{t('label.footprintName', "KiCad Footprint Name")}</label>
+                      <ClearableInput placeholder='Resistor SMD 0601_1608Matric' value={part.footprintName || ''} onChange={handleChange} name='footprintName' help={t('page.inventory.popup.footprintName', "Associate a KiCad footprint name with this part")} />
                     </Form.Field>
                   </Form.Group>
                 </Segment>}
@@ -1839,7 +1889,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         </Dimmer.Dimmable>
 
       </>);
-  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPart, loadingPartMetadata, partMetadataErrors, isEditing, allPartTypes, isDirty, handlePartTypeChange]);
+  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPart, loadingPartMetadata, partMetadataErrors, isEditing, allPartTypes, isDirty, handlePartTypeChange, systemSettings]);
 
   const handleCancelDiscard = (e) => {
     setConfirmDiscardAction(null);
