@@ -32,7 +32,7 @@ namespace Binner.Common.Services
             _requestContext = requestContextAccessor;
         }
 
-        public void SaveSettingsAs<T>(T instance, string sectionName, string filename, bool createBackup)
+        public async Task SaveSettingsAsAsync<T>(T instance, string sectionName, string filename, bool createBackup)
         {
             if (createBackup)
             {
@@ -73,6 +73,14 @@ namespace Binner.Common.Services
             if (_requestContext == null) throw new ArgumentNullException("RequestContextAccessor not set!");
 
             return await _storageProvider.GetCustomFieldsAsync(_requestContext.GetUserContext());
+        }
+
+        public async Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields)
+        {
+            if (_storageProvider == null) throw new ArgumentNullException("StorageProvider not set!");
+            if (_requestContext == null) throw new ArgumentNullException("RequestContextAccessor not set!");
+
+            return await _storageProvider.SaveCustomFieldsAsync(customFields, _requestContext.GetUserContext());
         }
     }
 }

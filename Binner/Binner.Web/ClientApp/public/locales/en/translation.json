@@ -193,6 +193,17 @@
       "maxKeystrokeThresholdMs": "Max Keystroke Threshold (ms)",
       "tmeSupport": "TME Support",
       "tmeResolveExternalLinks": "Resolve External Links",
+      "customFields": "Custom Fields",
+      "customFieldsDescription": "Add custom fields to store along with your data. This allows for extensions of Inventory, BOM Projects, etc.",
+      "fieldType": "Field Type",
+      "noCustomFieldsDefined": "No custom fields defined.",
+      "application": "Application",
+      "global": "Global",
+      "language": "Language",
+      "tmeelectronics": "TME Electronics",
+      "tmeDescription": "TME API Keys can be obtained at <1>https://developers.tme.eu</1>",
+      "printMode": "Print Mode",
+      "globalDescription": "Global application settings are used across the entire application.",
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
         "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
@@ -231,7 +242,17 @@
         "tmeApiKey": "Your api key for TME.",
         "tmeApplicationSecret": "Your application secret for TME.",
         "tmeApiUrl": "TME's API Url. This will be api.tme.eu",
-        "tmeResolveExternalLinks": "Choose if you would like to resolve external document links (slower)."
+        "tmeResolveExternalLinks": "Choose if you would like to resolve external document links (slower).",
+        "customFieldName": "Enter the name of the custom field.",
+        "customFieldDescription": "Add a description to identify the custom field.",
+        "fieldType": "Choose the type of data you would like to add the custom field to.",
+        "language": "The language setting specified here is passed to external APIs as your preferred language. This does not indicate the language selected for the user interface.",
+        "currency": "The currency setting will be used as your default currency. It is passed to external APIs as your preferred currency.",
+        "maxCacheItems": "Specify the maximum number of items allowed in the cache.",
+        "cacheAbsoluteExpirationMinutes": "Specify the total minutes in which a cache item will be expired (default: 0).",
+        "cacheSlidingExpirationMinutes": "Specify the minutes in which a cache item will be kept if it's touched within the time period (default: 30).",
+        "country": "Choose the country to pass the API.",
+        "printMode": "Choose if you would like to print directly to the printer (default) or using the web browser."
       }
     },
     "datasheet": {
@@ -837,7 +858,14 @@
     "extensionValue2": "Extension Value 2",
     "partId": "Part Id",
     "tmePartNumber": "TME Part Number",
-    "customFields": "Custom Fields"
+    "customFields": "Custom Fields",
+    "licenseKey": "License Key",
+    "currency": "Currency",
+    "maxCacheItems": "Max Cache Items",
+    "cacheAbsoluteExpirationMinutes": "Cache Absolute Expiration",
+    "cacheSlidingExpirationMinutes": "Cache Sliding Expiration",
+    "country": "Country",
+    "applicationSecret": "Application Secret"
   },
   "message": {
     "noPartsAdded": "No parts added.",
@@ -884,11 +912,14 @@
     "importLabel": "Import Label",
     "alreadyImportedLabel": "You have already imported this label.",
     "confirmReImport": "Do you want to import this label again?",
+    "deleteCustomField": "Are you sure you want to delete custom field <1>{{name}}</1>?",
+    "confirm.deleteCustomFieldValues": "<1><2>All of the values</2></1> will be deleted for the custom field.",
     "header": {
       "removeBomPart": "Remove Part from BOM",
       "deleteFile": "Delete File",
       "deletePart": "Delete Part",
-      "clearScan": "Clear Scanned Parts"
+      "clearScan": "Clear Scanned Parts",
+      "deleteCustomField": "Delete Custom Field"
     }    
   },
   "error": {

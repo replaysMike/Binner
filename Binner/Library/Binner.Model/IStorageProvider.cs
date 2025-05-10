@@ -702,5 +702,12 @@ namespace Binner.Model
         /// <param name="userContext"></param>
         /// <returns></returns>
         Task<ICollection<CustomValue>> GetCustomFieldsAsync(CustomFieldTypes customFieldType, long recordId, IUserContext? userContext);
+
+        /// <summary>
+        /// Perform a save of custom fields. All items will be added/updated/removed based on the values passed in.
+        /// </summary>
+        /// <param name="customFields"></param>
+        /// <returns></returns>
+        Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields, IUserContext? userContext);
     }
 }

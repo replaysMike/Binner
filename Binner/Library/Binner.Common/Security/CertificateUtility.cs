@@ -97,7 +97,7 @@ namespace Binner.Common.Security
                 {
                     webHostConfig.SslCertificate = certificateFilename;
                     var settingsService = new SettingsService();
-                    settingsService.SaveSettingsAs(webHostConfig, nameof(WebHostServiceConfiguration), _configFile, true);
+                    settingsService.SaveSettingsAsAsync(webHostConfig, nameof(WebHostServiceConfiguration), _configFile, true);
                 }
 
                 // attempt to register the certificate in the store for the given platform

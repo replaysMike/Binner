@@ -17,12 +17,19 @@ namespace Binner.Common.Services
         /// <param name="sectionName">The section name to replace</param>
         /// <param name="createBackup">True to create a backup before saving</param>
         /// <typeparam name="T"></typeparam>
-        void SaveSettingsAs<T>(T instance, string sectionName, string filename, bool createBackup);
+        Task SaveSettingsAsAsync<T>(T instance, string sectionName, string filename, bool createBackup);
 
         /// <summary>
         /// Get list of custom fields
         /// </summary>
         /// <returns></returns>
         Task<ICollection<CustomField>> GetCustomFieldsAsync();
+
+        /// <summary>
+        /// Save the list of custom fields. New fields will be added, existing fields will be updated.
+        /// </summary>
+        /// <param name="customFields"></param>
+        /// <returns></returns>
+        Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields);
     }
 }
