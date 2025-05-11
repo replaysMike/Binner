@@ -7,9 +7,12 @@ import { toast } from "react-toastify";
 import { fetchApi, getErrorsString, getText } from "../../../common/fetchApi";
 import { generatePassword } from "../../../common/Utils";
 import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Types";
+import { CustomFieldTypes } from "../../../common/customFieldTypes";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
 import { FormHeader } from "../../../components/FormHeader";
 import ClearableInput from "../../../components/ClearableInput";
+import { getSystemSettings } from "../../../common/applicationSettings";
+import { CustomFieldValues } from "../../../components/CustomFieldValues";
 
 export function User(props) {
   const { t } = useTranslation();
@@ -29,11 +32,13 @@ export function User(props) {
     payments: [],
     userIntegrationConfigurations: [],
     userPrinterConfigurations: [],
-    userPrinterTemplateConfigurations: []
+    userPrinterTemplateConfigurations: [],
+    customFields: []
   });
   const [isDirty, setIsDirty] = useState(false);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [deleteSelectedItem, setDeleteSelectedItem] = useState(null);
+  const [systemSettings, setSystemSettings] = useState({ currency: "USD", customFields: [] });
 
   const accountTypes = GetTypeDropdown(AccountTypes);
   const emailConfirmedTypes = GetTypeDropdown(BooleanTypes);
@@ -46,26 +51,35 @@ export function User(props) {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      await fetchApi(`/api/user?userId=${userId}`).then((response) => {
-        if (response.responseObject.ok) {
-          const { data } = response;
-          if (data) {
-            const newUser = { ...data, isLocked: data.dateLockedUtc != null };
-            setUser(newUser);
-            setLoading(false);
+      getSystemSettings().then(async (systemSettings) => {
+        setSystemSettings(systemSettings);
+        
+        await fetchApi(`/api/user?userId=${userId}`).then((response) => {
+          if (response.responseObject.ok) {
+            const { data } = response;
+            if (data) {
+              const newUser = { ...data, 
+                isLocked: data.dateLockedUtc != null, 
+                //customFields: _.filter(systemSettings?.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.map((field) => ({ field: field.name, value: '' })) || [] 
+              };
+              setUser(newUser);
+              setLoading(false);
+            }
           }
-        }
-      }).catch((err) => {
-        if (err.responseObject.status === 404) {
-          toast.error("User Not found!");
-        } else if (err.responseObject.status === 400) {
-          toast.error(err.data.message);
-        } else {
-          const errorMessage = getErrorsString(response);
-          console.error(errorMessage);
-          toast.error(errorMessage);
-        }
+        }).catch((err) => {
+          if (err.responseObject.status === 404) {
+            toast.error("User Not found!");
+          } else if (err.responseObject.status === 400) {
+            toast.error(err.data.message);
+          } else {
+            const errorMessage = getErrorsString(response);
+            console.error(errorMessage);
+            toast.error(errorMessage);
+          }
+        });
       });
+
+      
     };
 
     fetchUser();
@@ -91,7 +105,6 @@ export function User(props) {
       },
       body: JSON.stringify(userRequest)
     }).then((response) => {
-      console.log('response', response);
       if (response.responseObject.ok) {
         setIsDirty(false);
         toast.success("Saved user!");
@@ -140,6 +153,19 @@ export function User(props) {
     e.stopPropagation();
     setDeleteSelectedItem(null);
     setConfirmDeleteIsOpen(false);
+  };
+
+  const handleCustomFieldChange = (e, control, field, fieldDefinition) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (field) {
+      field.value = control.value;
+      const otherCustomFields = _.filter(user.customFields, x => x.field !== control.name);
+      setUser({...user, customFields: [ ...otherCustomFields, field ] });
+      setIsDirty(true);
+    } else {
+      console.error('field not found', control.name, user.customFields);
+    }
   };
 
   const handleChange = (e, control) => {
@@ -262,6 +288,17 @@ export function User(props) {
               <label>{t('label.dateLocked', "Date Locked")}</label>
               {getFormattedTime(user.dateLockedUtc)}
             </Form.Field>
+          </Form.Group>
+          <Form.Group>
+            {_.filter(systemSettings.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.length > 0 && <hr />}
+            <CustomFieldValues 
+              type={CustomFieldTypes.User}
+              header={t('label.customFields', "Custom Fields")}
+              headerElement="h3"
+              customFieldDefinitions={systemSettings.customFields} 
+              customFieldValues={user.customFields} 
+              onChange={handleCustomFieldChange}
+            />
           </Form.Group>
 
           <Button type="submit" primary disabled={!isDirty} style={{ marginTop: "10px" }}>

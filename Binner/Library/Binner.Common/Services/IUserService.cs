@@ -26,7 +26,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<User> GetUserAsync(User user);
+        Task<User?> GetUserAsync(User user);
 
         /// <summary>
         /// Get a list of users
@@ -40,7 +40,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<User> UpdateUserAsync(User user);
+        Task<User?> UpdateUserAsync(User user);
 
         /// <summary>
         /// Validate a user image token.

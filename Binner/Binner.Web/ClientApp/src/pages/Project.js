@@ -43,7 +43,8 @@ export function Project(props) {
     loading: false,
     parts: [],
     pcbs: [],
-    produceHistory: []
+    produceHistory: [],
+    customFields: []
   };
 	const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(defaultProject);
@@ -101,10 +102,10 @@ export function Project(props) {
 
   useEffect(() => {
     getSystemSettings()
-          .then((systemSettings) => {
-            setSystemSettings(systemSettings);
-            loadProject(props.params.project, systemSettings);
-          });
+      .then((systemSettings) => {
+        setSystemSettings(systemSettings);
+        loadProject(props.params.project, systemSettings);
+      });
     
   }, [props.params.project]);
 
@@ -226,7 +227,7 @@ export function Project(props) {
         const otherCustomFields = _.filter(project.customFields, x => x.field !== control.name);
         setProject({...project, customFields: [ ...otherCustomFields, field ] });
       } else {
-        console.log('field not found', control.name, project.customFields);
+        console.error('field not found', control.name, project.customFields);
       }
     };
 
@@ -437,6 +438,7 @@ export function Project(props) {
 							}
 						/>
 					</Form.Group>
+          {_.filter(systemSettings.customFields, x => x.customFieldTypeId === CustomFieldTypes.Project.value)?.length > 0 && <hr />}
           <CustomFieldValues 
             type={CustomFieldTypes.Project}
             header={t('label.customFields', "Custom Fields")}

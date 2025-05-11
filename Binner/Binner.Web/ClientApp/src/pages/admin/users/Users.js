@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
@@ -10,22 +10,27 @@ import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Typ
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
 import { FormHeader } from "../../../components/FormHeader";
 import ClearableInput from "../../../components/ClearableInput";
+import { CustomFieldTypes } from "../../../common/customFieldTypes";
+import { getSystemSettings } from "../../../common/applicationSettings";
+import { CustomFieldValues } from "../../../components/CustomFieldValues";
 import { toast } from "react-toastify";
 
 export function Users(props) {
   const { t } = useTranslation();
   const maxResults = 20;
-  const defaultAddUser = {
+  const defaultNewUser = {
     name: "",
     emailAddress: "",
     phoneNumber: "",
     password: "",
     isAdmin: false,
-    isEmailConfirmed: false
+    isEmailConfirmed: false,
+    customFields: []
   };
+  const [systemSettings, setSystemSettings] = useState({ currency: "USD", customFields: [] });
   const [loading, setLoading] = useState(true);
   const [addVisible, setAddVisible] = useState(false);
-  const [addUser, setAddUser] = useState(defaultAddUser);
+  const [newUser, setNewUser] = useState(defaultNewUser);
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
   const [hasMoreData, setHasMoreData] = useState(true);
@@ -38,11 +43,10 @@ export function Users(props) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUsers();
-    function fetchUsers(page = 1) {
+    const fetchUsers = async (page = 1) => {
       if (hasMoreData) {
         setLoading(true);
-        fetchApi(`/api/user/list?page=${page}&results=${maxResults}`).then((response) => {
+        await fetchApi(`/api/user/list?page=${page}&results=${maxResults}`).then((response) => {
           const { data } = response;
           if (data) {
             // update the page of data, as long as its not already in the data
@@ -55,7 +59,15 @@ export function Users(props) {
           }
         });
       }
-    }
+    };
+
+    getSystemSettings().then(async (systemSettings) => {
+      setSystemSettings(systemSettings);
+      // map defined custom fields to the new user object
+      const newUser = { ...defaultNewUser, customFields: _.filter(systemSettings?.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.map((field) => ({ field: field.name, value: '' })) || [] };
+      setNewUser(newUser);
+      await fetchUsers();
+    });
   }, [hasMoreData]);
 
   const deleteUser = async (e, user) => {
@@ -66,7 +78,6 @@ export function Users(props) {
       method: "DELETE",
       body: user.userId
     }).then((response) => {
-      console.log('response', response);
       if (response.responseObject.ok) {
         const newUsersData = _.filter(usersDataRef.current, (item) => item.userId !== user.userId);
         usersDataRef.current = [...newUsersData];
@@ -84,15 +95,12 @@ export function Users(props) {
     });
   };
 
-  const handleAddUser = async (e, user) => {
+  const onCreateUser = async (e) => {
     setLoading(true);
     const request = {
-      name: user.name,
-      emailAddress: user.emailAddress,
-      password: user.password,
-      phoneNumber: user.phoneNumber,
-      isAdmin: user.isAdmin === 1 ? true : false,
-      isEmailConfirmed: user.isEmailConfirmed === 1 ? true : false
+      ...newUser,
+      isAdmin: newUser.isAdmin === 1 ? true : false,
+      isEmailConfirmed: newUser.isEmailConfirmed === 1 ? true : false
     };
     await fetchApi(`/api/user`, {
       method: "POST",
@@ -101,7 +109,7 @@ export function Users(props) {
       setLoading(false);
       setAddVisible(false);
       refreshClean();
-      toast.success(t("page.admin.users.userAdded", "User {{emailAddress}} added!", { emailAddress: user.emailAddress }));
+      toast.success(t("page.admin.users.userAdded", "User {{emailAddress}} added!", { emailAddress: newUser.emailAddress }));
     }).catch((ex) => {
       const { data, responseObject } = ex;
       if (responseObject.status === 426) {
@@ -117,7 +125,8 @@ export function Users(props) {
   const refreshClean = () => {
     // refresh
     usersDataRef.current = [];
-    setAddUser(defaultAddUser);
+    // map defined custom fields to the new user object
+    setNewUser({ ...defaultNewUser, customFields: _.filter(systemSettings?.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.map((field) => ({ field: field.name, value: '' })) || [] });
     setHasMoreData(true);
     setCurrentPage(1);
   };
@@ -157,10 +166,23 @@ export function Users(props) {
     if (hasMoreData) setCurrentPage(currentPage + 1);
   };
 
-  const handleChange = (e, control) => {
-    addUser[control.name] = control.value;
-    setAddUser({ ...addUser });
-  };
+  const handleChange = useCallback((e, control) => {
+    newUser[control.name] = control.value;
+    setNewUser({ ...newUser });
+  }, [newUser]);
+
+  const handleCustomFieldChange = useCallback((e, control, field, fieldDefinition) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (field) {
+      field.value = control.value;
+      const otherCustomFields = _.filter(newUser.customFields, x => x.field !== control.name);
+      setNewUser({ ...newUser, customFields: [ ...otherCustomFields, field ] });
+      //setIsDirty(true);
+    } else {
+      console.error('field not found', control.name, newUser.customFields);
+    }
+  }, [newUser]);
 
   const handleShowAdd = (e) => {
     e.preventDefault();
@@ -219,7 +241,7 @@ export function Users(props) {
         onConfirm={(e) => deleteUser(e, deleteSelectedItem)}
         content={<p>{t("page.admin.users.confirm.areYouSure", "Are you sure you want to delete this user?")}</p>}
       />
-      <Form onSubmit={(e) => handleAddUser(e, addUser)}>
+      <Form onSubmit={onCreateUser}>
         <Form.Group>
           <Button type="button" onClick={handleShowAdd} icon size="mini">
             <Icon name="file" /> {t("button.addUser", "Add User")}
@@ -232,7 +254,7 @@ export function Users(props) {
               content={t("page.admin.users.popup.name", "Specify the user's first and last name")}
               trigger={
                 <Form.Field width={10}>
-                  <ClearableInput required label={t("label.name", "Name")} className="labeled" placeholder="John Doe" value={addUser.name} onChange={handleChange} name="name" />
+                  <ClearableInput required label={t("label.name", "Name")} className="labeled" placeholder="John Doe" value={newUser.name} onChange={handleChange} name="name" />
                 </Form.Field>
               }
             />
@@ -246,7 +268,7 @@ export function Users(props) {
                     label={t("label.usernameEmail", "Username / Email")}
                     className="labeled"
                     placeholder="john@example.com"
-                    value={addUser.emailAddress}
+                    value={newUser.emailAddress}
                     onChange={handleChange}
                     name="emailAddress"
                   />
@@ -254,12 +276,12 @@ export function Users(props) {
               }
             />
             <Form.Field width={10}>
-              <Form.Input action required label={t("label.password", "Password")} placeholder="Set a password" value={addUser.password || ""} name="password" onChange={handleChange}>
+              <Form.Input action required label={t("label.password", "Password")} placeholder="Set a password" value={newUser.password || ""} name="password" onChange={handleChange}>
                 <input />
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
-                    setAddUser({ ...addUser, password: generatePassword() });
+                    setNewUser({ ...newUser, password: generatePassword() });
                   }}
                 >
                   {t("button.generate", "Generate")}
@@ -272,13 +294,24 @@ export function Users(props) {
                 label={t("page.admin.users.accountType", "Account Type")}
                 placeholder={t("page.admin.users.accountType", "Account Type")}
                 selection
-                value={addUser.isAdmin || false}
-                className={addUser.isAdmin ? "blue" : ""}
+                value={newUser.isAdmin || false}
+                className={newUser.isAdmin ? "blue" : ""}
                 name="isAdmin"
                 options={accountTypes}
                 onChange={handleChange}
               />
             </Form.Field>
+            <Form.Group>
+              {_.filter(systemSettings.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.length > 0 && <hr />}
+              <CustomFieldValues 
+                type={CustomFieldTypes.User}
+                header={t('label.customFields', "Custom Fields")}
+                headerElement="h3"
+                customFieldDefinitions={systemSettings.customFields} 
+                customFieldValues={newUser.customFields} 
+                onChange={handleCustomFieldChange}
+              />
+            </Form.Group>
             <Form.Group>
               <Form.Button primary type="submit" icon>
                 <Icon name="save" /> {t("button.addUser", "Add User")}
@@ -290,22 +323,22 @@ export function Users(props) {
 
       <Segment loading={loading} secondary>
         <InifiniteScrollTable id="usersTable" compact celled sortable selectable striped unstackable size="small" headerRow={headerRow} nextPage={() => fetchNextPage()}>
-          {usersDataRef.current.map((user, i) => (
-            <Table.Row key={i} onClick={(e) => openUser(e, user)}>
-              <Table.Cell>{user.userId}</Table.Cell>
-              <Table.Cell style={{ textAlign: "center" }}>{user.isAdmin ? <Icon name="user secret" title="Admin" color="red" size="large" /> : <Icon name="user" title="Normal Account" />}</Table.Cell>
+          {usersDataRef.current.map((userRow, i) => (
+            <Table.Row key={i} onClick={(e) => openUser(e, userRow)}>
+              <Table.Cell>{userRow.userId}</Table.Cell>
+              <Table.Cell style={{ textAlign: "center" }}>{userRow.isAdmin ? <Icon name="user secret" title="Admin" color="red" size="large" /> : <Icon name="user" title="Normal Account" />}</Table.Cell>
               <Table.Cell style={{ textAlign: "center" }}>
-                {user.dateLockedUtc ? <Icon name="remove circle" color="red" title="Is Locked" /> : <Icon name="check circle" color="green" title="Not Locked" />}
+                {userRow.dateLockedUtc ? <Icon name="remove circle" color="red" title="Is Locked" /> : <Icon name="check circle" color="green" title="Not Locked" />}
               </Table.Cell>
-              <Table.Cell>{user.name}</Table.Cell>
-              <Table.Cell>{user.emailAddress}</Table.Cell>
-              <Table.Cell>{user.dateLastActiveUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), Date.parse(user.dateLastActiveUtc)), true) : "(never)"}</Table.Cell>
-              <Table.Cell>{getFormattedTime(user.dateCreatedUtc)}</Table.Cell>
+              <Table.Cell>{userRow.name}</Table.Cell>
+              <Table.Cell>{userRow.emailAddress}</Table.Cell>
+              <Table.Cell>{userRow.dateLastActiveUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), Date.parse(userRow.dateLastActiveUtc)), true) : "(never)"}</Table.Cell>
+              <Table.Cell>{getFormattedTime(userRow.dateCreatedUtc)}</Table.Cell>
               <Table.Cell textAlign="center">
                 <Button
                   size="mini"
                   icon="delete"
-                  onClick={(e) => confirmDeleteOpen(e, user)}
+                  onClick={(e) => confirmDeleteOpen(e, userRow)}
                   title={t("button.delete", "Delete")}
                 />
               </Table.Cell>

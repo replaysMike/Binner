@@ -18,7 +18,6 @@ import { Clipboard } from "../components/Clipboard";
 import { FormatFullDateTime } from "../common/datetime";
 import { getAuthToken } from "../common/authentication";
 import { getSystemSettings } from "../common/applicationSettings";
-import { CustomFieldValues } from "../components/CustomFieldValues";
 import { getProduciblePcbCount, getProducibleBomCount, getTotalOutOfStockParts, getTotalInStockParts, getProjectColor } from "../common/bomTools";
 import "./Bom.css";
 
