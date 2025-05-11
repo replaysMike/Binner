@@ -23,6 +23,7 @@ import { RecentParts } from "../components/RecentParts";
 import { PartSuppliersMemoized } from "../components/PartSuppliersMemoized";
 import { MatchingPartsMemoized } from "../components/MatchingPartsMemoized";
 import { DuplicatePartModal } from "../components/DuplicatePartModal";
+import { CustomFieldValues } from "../components/CustomFieldValues";
 import { fetchApi } from "../common/fetchApi";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { addMinutes } from "../common/datetime";
@@ -1188,20 +1189,18 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (part.partNumber) setIsDirty(true);
   };
 
-  const handleCustomFieldChange = (e, control) => {
+  const handleCustomFieldChange = (e, control, field, fieldDefinition) => {
     e.preventDefault();
     e.stopPropagation();
-    const field = _.find(part.customFields, x => x.field === control.name);
     if (field) {
       field.value = control.value;
-      const customFields = _.filter(part.customFields, x => x.field !== control.name);
-      customFields.push(field);
-      setPart({...part, customFields });
+      const otherCustomFields = _.filter(part.customFields, x => x.field !== control.name);
+      setPart({...part, customFields: [ ...otherCustomFields, field ] });
       if (part.partNumber) setIsDirty(true);
     } else {
       console.log('field not found', control.name, part.customFields);
     }
-  }
+  };
 
   const printLabel = async (e) => {
     e.preventDefault();
@@ -1827,28 +1826,13 @@ export function Inventory({ partNumber = "", ...rest }) {
                     </Form.Field>
                   </Form.Group>
                   <hr />
-                  {systemSettings?.customFields?.length > 0 
-                    ? <>
-                    <Header dividing as="h3">
-                      {t('label.customFields', "Custom Fields")}
-                    </Header>
-                    <Form.Group>
-                        {systemSettings.customFields.map((customField, fieldKey) => (
-                          <Popup 
-                            content={customField.description}
-                            trigger={<Form.Input
-                              key={fieldKey}
-                              label={customField.name}
-                              value={_.find(part.customFields, x => x.field === customField.name)?.value || ''}
-                              name={customField.name}
-                              onChange={handleCustomFieldChange}
-                            />}
-                          />
-                      ))}
-                    </Form.Group>
-                    </>
-                    : <></> }
-                  
+                  <CustomFieldValues 
+                    header={t('label.customFields', "Custom Fields")}
+                    headerElement="h3"
+                    customFieldDefinitions={systemSettings.customFields} 
+                    customFieldValues={part.customFields} 
+                    onChange={handleCustomFieldChange}
+                  />
                 </Segment>}
 
                 {/* Part Integrations */}
