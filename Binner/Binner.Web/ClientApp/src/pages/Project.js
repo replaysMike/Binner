@@ -29,6 +29,9 @@ import { getSystemSettings } from "../common/applicationSettings";
 import { CustomFieldValues } from "../components/CustomFieldValues";
 import "./Bom.css";
 
+/** Edit BOM Project
+ * Description: Edit a BOM project, it's PCBs and production history
+ */
 export function Project(props) {
   const { t } = useTranslation();
   const defaultProject = {

@@ -11,7 +11,6 @@ import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
 import { getCurrencySymbol } from "../common/Utils";
 import { format, parseJSON } from "date-fns";
-import { CustomFieldTypes } from "../common/customFieldTypes";
 import { AddBomPartModal } from "../components/modals/AddBomPartModal";
 import { AddPcbModal } from "../components/modals/AddPcbModal";
 import { ProducePcbModal } from "../components/modals/ProducePcbModal";
@@ -23,6 +22,9 @@ import { CustomFieldValues } from "../components/CustomFieldValues";
 import { getProduciblePcbCount, getProducibleBomCount, getTotalOutOfStockParts, getTotalInStockParts, getProjectColor } from "../common/bomTools";
 import "./Bom.css";
 
+/** BOM Management
+ * Description: Manage parts and PCBs that are part of a BOM project
+ */
 export function Bom(props) {
   const { t } = useTranslation();
   const PopupDelayMs = 500;
@@ -101,7 +103,7 @@ export function Bom(props) {
     });
     if (response && response.data) {
       const { data } = response;
-      setProject({ ...data }); // customFields: _.filter(systemSettings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Project.value)?.map((field) => ({ field: field.name, value: field.value || '' })) || []
+      setProject({ ...data });
       setInventoryMessage(getInventoryMessage(data));
       setTotalPages(Math.ceil(data.parts.length / pageSize));
       setCurrentPcbPages(_.map(data.pcbs, (x) => ({ pcbId: x.pcbId, page: 1 })));
@@ -139,30 +141,9 @@ export function Bom(props) {
     setCurrentPcbPages([...currentPcbPages]);
   };
 
-  const handleChange = (e, control) => {
-    project[control.name] = control.value;
-    setProject({ ...project });
-  };
-
-  const handleCustomFieldChange = (e, control, field, fieldDefinition) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (field) {
-        field.value = control.value;
-        const otherCustomFields = _.filter(project.customFields, x => x.field !== control.name);
-        setProject({...project, customFields: [ ...otherCustomFields, field ] });
-      } else {
-        console.log('field not found', control.name, project.customFields);
-      }
-    };
-
   const handleFilterInStockChange = (e, control) => {
     setFilterInStock(control.checked);
   };
-
-  const handleClick = (e, control) => {};
-
-  const onSubmit = () => {};
 
   const handleSort = (clickedColumn) => () => {
     if (column !== clickedColumn) {

@@ -15,6 +15,9 @@ import { getAuthToken } from "../common/authentication";
 import { getSystemSettings } from "../common/applicationSettings";
 import { CustomFieldValues } from "../components/CustomFieldValues";
 
+/** BOM Project listing
+ * Description: List BOM projects and create new ones.
+ */
 export function Boms (props) {
   const { t } = useTranslation();
   const defaultProject = {
@@ -111,13 +114,6 @@ export function Boms (props) {
         loadProjects(page, pageSize);
       });    
   }, [page]);
-
-  const handleNextPage = () => {
-    if (noRemainingData) return;
-
-    const nextPage = page + 1;
-    loadProjects(nextPage, pageSize);
-  };
 
   const handlePageSizeChange = async (e, control) => {
     const newPageSize = parseInt(control.value);
