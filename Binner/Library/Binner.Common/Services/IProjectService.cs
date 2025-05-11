@@ -27,7 +27,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        Task<Project> UpdateProjectAsync(Project project);
+        Task<Project?> UpdateProjectAsync(Project project);
 
         /// <summary>
         /// Delete an existing project

@@ -7,10 +7,13 @@ import _ from 'underscore';
 import { toast } from "react-toastify";
 import { fetchApi } from '../common/fetchApi';
 import { ProjectColors } from "../common/Types";
+import { CustomFieldTypes } from "../common/customFieldTypes";
 import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
 import axios from "axios";
 import { getAuthToken } from "../common/authentication";
+import { getSystemSettings } from "../common/applicationSettings";
+import { CustomFieldValues } from "../components/CustomFieldValues";
 
 export function Boms (props) {
   const { t } = useTranslation();
@@ -20,11 +23,13 @@ export function Boms (props) {
     location: '',
     color: 0,
     loading: false,
+    customFields: []
   };
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomsRecordsPerPage")) || 5);
   const [loading, setLoading] = useState(true);
+  const [systemSettings, setSystemSettings] = useState({ currency: "USD", customFields: [] });
   const [addVisible, setAddVisible] = useState(false);
   const [importVisible, setImportVisible] = useState(false);
   const [project, setProject] = useState(defaultProject);
@@ -100,7 +105,11 @@ export function Boms (props) {
   };
 
   useEffect(() => {
-    loadProjects(page, pageSize);
+    getSystemSettings()
+      .then((systemSettings) => {
+        setSystemSettings(systemSettings);
+        loadProjects(page, pageSize);
+      });    
   }, [page]);
 
   const handleNextPage = () => {
@@ -139,6 +148,7 @@ export function Boms (props) {
 
   const handleShowAdd = () => {
     setAddVisible(!addVisible);
+    setProject({ ...defaultProject, customFields: _.filter(systemSettings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Project.value)?.map((field) => ({ field: field.name, value: '' })) || [] });
   };
 
   const handleShowImport = () => {
@@ -306,6 +316,18 @@ export function Boms (props) {
     }
   };
 
+  const handleCustomFieldChange = (e, control, field, fieldDefinition) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (field) {
+      field.value = control.value;
+      const otherCustomFields = _.filter(project.customFields, x => x.field !== control.name);
+      setProject({...project, customFields: [ ...otherCustomFields, field ] });
+    } else {
+      console.log('field not found', control.name, project.customFields);
+    }
+  };
+
   const focusColumn = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -355,6 +377,14 @@ export function Boms (props) {
                 <Form.Input width={6} label={t('label.location', 'Location')} placeholder='New York' focus value={project.location} onChange={handleChange} name='location' />
                 <Form.Dropdown width={4} label={t('label.color', 'Color')} selection value={project.color} options={colors} onChange={handleChange} name='color' />
               </Form.Group>
+              <CustomFieldValues 
+                type={CustomFieldTypes.Project}
+                header={t('label.customFields', "Custom Fields")}
+                headerElement="h3"
+                customFieldDefinitions={systemSettings.customFields} 
+                customFieldValues={project.customFields} 
+                onChange={handleCustomFieldChange}
+              />
               <Button primary type='submit' icon><Icon name='save' /> <Trans i18nKey="button.save">Save</Trans></Button>
             </Form>
           </Segment>

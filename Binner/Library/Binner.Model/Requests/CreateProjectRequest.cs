@@ -1,6 +1,6 @@
 ﻿namespace Binner.Model.Requests
 {
-    public class CreateProjectRequest
+    public class CreateProjectRequest : ICustomFields
     {
         /// <summary>
         /// Name of project
@@ -21,5 +21,7 @@
         /// Color of project
         /// </summary>
         public int Color { get; set; }
+
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

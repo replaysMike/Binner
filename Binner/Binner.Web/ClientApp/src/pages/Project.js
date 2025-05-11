@@ -23,7 +23,10 @@ import _ from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
+import { CustomFieldTypes } from "../common/customFieldTypes";
 import { PcbHistoryModal } from "../components/modals/PcbHistoryModal";
+import { getSystemSettings } from "../common/applicationSettings";
+import { CustomFieldValues } from "../components/CustomFieldValues";
 import "./Bom.css";
 
 export function Project(props) {
@@ -43,6 +46,7 @@ export function Project(props) {
   const [project, setProject] = useState(defaultProject);
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
+  const [systemSettings, setSystemSettings] = useState({ currency: "USD", customFields: [] });
   const [confirmDeleteProjectIsOpen, setConfirmDeleteProjectIsOpen] = useState(false);
 	const [confirmDeletePcbIsOpen, setConfirmDeletePcbIsOpen] = useState(false);
   const [confirmDeleteProduceHistoryIsOpen, setConfirmDeleteProduceHistoryIsOpen] = useState(false);
@@ -70,7 +74,7 @@ export function Project(props) {
     })
   );
 
-  const loadProject = async (projectName) => {
+  const loadProject = async (projectName, systemSettings) => {
     setLoading(true);
     const response = await fetchApi(`/api/bom?name=${encodeURIComponent(projectName)}`)
 			.catch(c => {
@@ -85,6 +89,7 @@ export function Project(props) {
 			});
 		if (response && response.responseObject.status === 200) {
 			const { data } = response;
+      //data.customFields = _.filter(systemSettings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Project.value)?.map((field) => ({ field: field.name, value: '' })) || [];
       data.pcbs = _.map(data.pcbs, x => ({...x, cost: Number(x.cost).toFixed(2)}));
 			setProject(data);
 		}
@@ -92,7 +97,12 @@ export function Project(props) {
   };
 
   useEffect(() => {
-    loadProject(props.params.project);
+    getSystemSettings()
+          .then((systemSettings) => {
+            setSystemSettings(systemSettings);
+            loadProject(props.params.project, systemSettings);
+          });
+    
   }, [props.params.project]);
 
   const handleDeleteProject = async (e, control) => {
@@ -204,6 +214,18 @@ export function Project(props) {
     project[control.name] = control.value;
     setProject({ ...project });
   };
+
+  const handleCustomFieldChange = (e, control, field, fieldDefinition) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (field) {
+        field.value = control.value;
+        const otherCustomFields = _.filter(project.customFields, x => x.field !== control.name);
+        setProject({...project, customFields: [ ...otherCustomFields, field ] });
+      } else {
+        console.log('field not found', control.name, project.customFields);
+      }
+    };
 
   const handleSaveProject = async (e) => {
     setLoading(true);
@@ -412,6 +434,14 @@ export function Project(props) {
 							}
 						/>
 					</Form.Group>
+          <CustomFieldValues 
+            type={CustomFieldTypes.Project}
+            header={t('label.customFields', "Custom Fields")}
+            headerElement="h3"
+            customFieldDefinitions={systemSettings.customFields} 
+            customFieldValues={project.customFields} 
+            onChange={handleCustomFieldChange}
+          />
 					<Button primary type="submit" disabled={btnSubmitDisabled}><Icon name="save" /> {t('button.save', "Save")}</Button>
 					<Button onClick={confirmDeleteProjectOpen} disabled={btnDeleteDisabled}><Icon name="trash" /> {t('button.delete', "Delete")}</Button>
         </Segment>

@@ -3,7 +3,7 @@
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class ProjectResponse
+    public class ProjectResponse : ICustomFields
     {
         /// <summary>
         /// Primary key
@@ -39,5 +39,7 @@
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
+
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }
