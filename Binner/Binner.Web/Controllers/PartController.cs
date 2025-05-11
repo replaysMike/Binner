@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NPOI.HSSF.Record;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -25,9 +24,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Binner.Model.Common.SystemDefaults;
 
 namespace Binner.Web.Controllers
 {
@@ -118,19 +117,18 @@ namespace Binner.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePartAsync(CreatePartRequest request)
         {
-            if (string.IsNullOrEmpty(request.PartTypeId))
-                return BadRequest($"No part type specified!");
+            if (string.IsNullOrEmpty(request.PartNumber))
+                return BadRequest($"No part number specified!");
 
             var mappedPart = Mapper.Map<CreatePartRequest, Part>(request);
             mappedPart.Keywords = request.Keywords?.Split([" ", ","], StringSplitOptions.RemoveEmptyEntries);
 
-            var partType = await GetPartTypeAsync(request.PartTypeId);
-            if (partType == null) return BadRequest($"Invalid Part Type: '{request.PartTypeId}'");
+            var (partType, errorMessage) = await ValidatePartTypeAsync(request.PartTypeId, request.PartNumber);
+            if (partType == null)
+                return BadRequest(errorMessage);
 
             mappedPart.PartTypeId = partType.PartTypeId;
-            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
-
-            if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: '{request.MountingTypeId}'");
+            EnsureValidMountingType(mappedPart, request.MountingTypeId);
 
             var duplicatePartResponse = await CheckForDuplicateAsync(request, mappedPart);
             if (duplicatePartResponse != null)
@@ -148,6 +146,31 @@ namespace Binner.Web.Controllers
             partResponse.PartType = partType.Name;
             partResponse.Keywords = string.Join(" ", part.Keywords ?? new List<string>());
             return Ok(partResponse);
+        }
+
+        private async Task<(PartType? PartType, string? ErrorMessage)> ValidatePartTypeAsync(string? partTypeId, string? partNumber)
+        {
+            var partType = await GetPartTypeAsync(partTypeId);
+
+            if (partType == null)
+            {
+                // new behavior: default to a partType and log the warning
+                _logger.LogWarning($"Unknown part type '{partTypeId}' when creating part '{partNumber}'. Defaulting to {nameof(DefaultPartTypes.Other)}");
+                partType = await GetPartTypeAsync(DefaultPartTypes.Other);
+                if (partType == null)
+                {
+                    var error = $"Unknown default part type '{DefaultPartTypes.Other}' when creating part '{partNumber}'.";
+                    _logger.LogError(error);
+                    return (null, error);
+                }
+            }
+            return (partType, null);
+        }
+
+        private bool EnsureValidMountingType(Part part, string? mountingTypeId)
+        {
+            part.MountingTypeId = GetMountingTypeId(mountingTypeId);
+            return true;
         }
 
         private async Task AddScanHistoryAsync(Part part, BarcodeScan b)
@@ -182,17 +205,16 @@ namespace Binner.Web.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdatePartAsync(UpdatePartRequest request)
         {
-            if (string.IsNullOrEmpty(request.PartTypeId))
-                return BadRequest($"No part type specified!");
+            if (string.IsNullOrEmpty(request.PartNumber))
+                return BadRequest($"No part number specified!");
 
             var mappedPart = Mapper.Map<UpdatePartRequest, Part>(request);
-            var partType = await GetPartTypeAsync(request.PartTypeId);
-            if (partType == null) return BadRequest($"Invalid Part Type: {request.PartTypeId}");
+            var (partType, errorMessage) = await ValidatePartTypeAsync(request.PartTypeId, request.PartNumber);
+            if (partType == null)
+                return BadRequest(errorMessage);
 
             mappedPart.PartTypeId = partType.PartTypeId;
-            mappedPart.MountingTypeId = GetMountingTypeId(request.MountingTypeId ?? string.Empty);
-
-            if (mappedPart.MountingTypeId < 0) return BadRequest($"Invalid Mounting Type: {request.MountingTypeId}");
+            EnsureValidMountingType(mappedPart, request.MountingTypeId);
 
             mappedPart.PartId = request.PartId;
             mappedPart.Keywords = request.Keywords?.Split([" ", ","], StringSplitOptions.RemoveEmptyEntries);
@@ -946,8 +968,10 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <param name="partType"></param>
         /// <returns></returns>
-        private async Task<PartType?> GetPartTypeAsync(string partType)
+        private async Task<PartType?> GetPartTypeAsync(string? partType)
         {
+            if (string.IsNullOrEmpty(partType)) return null;
+
             PartType? result = null;
             if (int.TryParse(partType, out int partTypeId))
             {
@@ -965,8 +989,21 @@ namespace Binner.Web.Controllers
             return result;
         }
 
-        private int GetMountingTypeId(string mountingType)
+        /// <summary>
+        /// Get an existing part type from default part types
+        /// </summary>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        private async Task<PartType?> GetPartTypeAsync(DefaultPartTypes partType)
         {
+            return await _partService.GetPartTypeAsync(partType.ToString());
+        }
+
+        private int GetMountingTypeId(string? mountingType)
+        {
+            if (string.IsNullOrEmpty(mountingType))
+                return (int)MountingType.None;
+
             if (int.TryParse(mountingType, out int mountingTypeId))
             {
                 // numeric format
@@ -979,7 +1016,7 @@ namespace Binner.Web.Controllers
                 if (Enum.IsDefined(typeof(MountingType), mountingType))
                     return (int)Enum.Parse<MountingType>(mountingType.Replace(" ", ""), true);
             }
-            return -1;
+            return (int)MountingType.None;
         }
     }
 }
