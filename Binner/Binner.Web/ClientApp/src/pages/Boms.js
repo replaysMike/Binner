@@ -160,9 +160,7 @@ export function Boms (props) {
 
   const onCreateProject = async () => {
     const request = {
-      name: project.name,
-      description: project.description,
-      location: project.location,
+      ...project,
       color: Number.parseInt(project.color) || 0
     };
     const response = await fetchApi('/api/project', {
