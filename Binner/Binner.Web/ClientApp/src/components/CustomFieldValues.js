@@ -8,8 +8,7 @@ import _ from "underscore";
  * @param {props} props 
  * @returns 
  */
-export function CustomFieldValues({ customFieldDefinitions, customFieldValues, header = "Custom Fields", headerElement = "h3", onChange }) {
-  
+export function CustomFieldValues({ type, customFieldDefinitions, customFieldValues, header = "Custom Fields", headerElement = "h3", onChange }) {
   const renderCustomFields = useMemo(() => {
     return (
       <div className="customFieldValues">
@@ -17,7 +16,7 @@ export function CustomFieldValues({ customFieldDefinitions, customFieldValues, h
           <Header dividing as={headerElement}>{header}</Header>
         }
         <Form.Group>
-          {customFieldDefinitions.map((customFieldDefinition, fieldKey) => (
+          {_.filter(customFieldDefinitions, i => i.customFieldTypeId === type.value).map((customFieldDefinition, fieldKey) => (
             <Popup
               key={fieldKey}
               content={customFieldDefinition.description}
@@ -42,6 +41,7 @@ export function CustomFieldValues({ customFieldDefinitions, customFieldValues, h
 };
 
 CustomFieldValues.propTypes = {
+  type: PropTypes.object,
   /** array of custom fields */
   customFieldDefinitions: PropTypes.array,
   /** array of custom field values */

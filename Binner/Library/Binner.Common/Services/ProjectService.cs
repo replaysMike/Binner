@@ -130,7 +130,7 @@ namespace Binner.Common.Services
             return await _storageProvider.GetProjectsAsync(request, _requestContext.GetUserContext());
         }
 
-        public async Task<Project> UpdateProjectAsync(Project project)
+        public async Task<Project?> UpdateProjectAsync(Project project)
         {
             project.DateModifiedUtc = DateTime.UtcNow;
             return await _storageProvider.UpdateProjectAsync(project, _requestContext.GetUserContext());

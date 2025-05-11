@@ -3,7 +3,7 @@
     /// <summary>
     /// A part
     /// </summary>
-    public class PartResponse
+    public class PartResponse : ICustomFields
     {
         public long PartId { get; set; }
 

@@ -31,6 +31,7 @@ import { formatNumber } from "../common/Utils";
 import { getPartTypeId } from "../common/partTypes";
 import { getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
+import { CustomFieldTypes } from "../common/customFieldTypes";
 import { MountingTypes, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
@@ -1058,7 +1059,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       footprintName: "",
       extensionValue1: "",
       extensionValue2: "",
-      customFields: settings?.customFields?.map((field) => ({ field: field.name, value: ''})) || []
+      customFields: _.filter(settings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Inventory.value)?.map((field) => ({ field: field.name, value: ''})) || []
     };
     setPart(clearedPart);
     setLoadingPartMetadata(false);
@@ -1827,6 +1828,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                   </Form.Group>
                   <hr />
                   <CustomFieldValues 
+                    type={CustomFieldTypes.Inventory}
                     header={t('label.customFields', "Custom Fields")}
                     headerElement="h3"
                     customFieldDefinitions={systemSettings.customFields} 

@@ -78,6 +78,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             await context.StoredFiles.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.PartScanHistories.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.OrderImportHistoryLineItems.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.CustomFieldValues.Where(x => x.RecordId == part.PartId && x.CustomFieldTypeId == CustomFieldTypes.Inventory && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             context.Parts.Remove(entity);
             await context.SaveChangesAsync();
             _partTypesCache.InvalidateCache();
@@ -130,6 +131,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (entity == null)
                 return false;
             context.Projects.Remove(entity);
+            await context.CustomFieldValues.Where(x => x.RecordId == project.ProjectId && x.CustomFieldTypeId == CustomFieldTypes.Project && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.SaveChangesAsync();
             return true;
         }
@@ -1581,7 +1583,10 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
-            return _mapper.Map<Project?>(entity);
+            var model = _mapper.Map<Project?>(entity);
+            if (model != null)
+                model.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Project, entity.ProjectId, userContext);
+            return model;
         }
 
         public async Task<Project?> GetProjectAsync(string projectName, IUserContext? userContext)
@@ -1592,7 +1597,10 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.Name == projectName && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
-            return _mapper.Map<Project?>(entity);
+            var model = _mapper.Map<Project?>(entity);
+            if (model != null)
+                model.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Project, entity.ProjectId, userContext);
+            return model;
         }
 
         public async Task<ICollection<Project>> GetProjectsAsync(PaginatedRequest request, IUserContext? userContext)
@@ -1615,7 +1623,12 @@ INNER JOIN (
                 .Skip(pageRecords)
                 .Take(request.Results)
                 .ToListAsync();
-            return _mapper.Map<ICollection<Project>>(entities);
+            var models = _mapper.Map<ICollection<Project>>(entities);
+            foreach (var model in models)
+            {
+                model.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Project, model.ProjectId, userContext);
+            }
+            return models;
         }
 
         public async Task RemoveOAuthCredentialAsync(string providerName, IUserContext? userContext)
@@ -1720,7 +1733,11 @@ INNER JOIN (
                 entity = _mapper.Map(project, entity);
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
-                return _mapper.Map<Project?>(entity);
+                
+                // also update custom fields
+                await AddOrUpdateCustomFieldValuesAsync(project.ProjectId, project.CustomFields, CustomFieldTypes.Project, userContext);
+
+                return project;
             }
             return null;
         }

@@ -1,6 +1,6 @@
 ﻿namespace Binner.Model.Requests
 {
-    public class UpdateProjectRequest
+    public class UpdateProjectRequest : ICustomFields
     {
         /// <summary>
         /// Project id
@@ -26,5 +26,7 @@
         /// Color of project
         /// </summary>
         public int Color { get; set; }
+
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

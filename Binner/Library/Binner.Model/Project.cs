@@ -5,7 +5,7 @@ namespace Binner.Model
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class Project : IEntity
+    public class Project : IEntity, ICustomFields
     {
         /// <summary>
         /// Primary key

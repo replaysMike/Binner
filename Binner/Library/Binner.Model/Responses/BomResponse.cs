@@ -3,7 +3,7 @@
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class BomResponse
+    public class BomResponse : ICustomFields
     {
         /// <summary>
         /// Primary key
@@ -54,5 +54,7 @@
         /// The production history of the project
         /// </summary>
         public ICollection<ProjectProduceHistory> ProduceHistory { get; set; } = new List<ProjectProduceHistory>();
+
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

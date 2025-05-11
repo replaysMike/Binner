@@ -3,7 +3,7 @@
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class BomBasicResponse
+    public class BomBasicResponse : ICustomFields
     {
         /// <summary>
         /// Primary key
@@ -49,5 +49,7 @@
         /// Number of pcb's in the project
         /// </summary>
         public int PcbCount { get; set; }
+
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }
