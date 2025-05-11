@@ -3,7 +3,7 @@
     /// <summary>
     /// User account
     /// </summary>
-    public class User
+    public class User : ICustomFields
     {
         /// <summary>
         /// User Id
@@ -95,6 +95,6 @@
 
         public DateTime? DateLastActiveUtc { get; set; }
 
-        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

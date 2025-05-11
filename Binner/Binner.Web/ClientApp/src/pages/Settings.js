@@ -738,15 +738,15 @@ export const Settings = (props) => {
     setCustomFieldSettings({ ...customFieldSettings });
   };
 
-  const handleDeleteCustomField = (e) => {
+  const handleDeleteCustomField = (e, targetField) => {
     e.preventDefault();
     e.stopPropagation();
-    const field = selectedCustomField;
+    const field = selectedCustomField || targetField;
     const newCustomFieldSettings = { 
-      customFields: _.filter(customFieldSettings.customFields, x => !(x.customFieldId === field.customFieldId && x.customFieldTypeId === field.customFieldTypeId && x.name === field.name.trim()))
+      customFields: _.filter(customFieldSettings.customFields, x => !(x.customFieldId === field?.customFieldId && x.customFieldTypeId === field?.customFieldTypeId && x.name === field?.name.trim()))
     };
     setCustomFieldSettings(newCustomFieldSettings);
-    if (field.customFieldId !== 0) setIsDirty(true);
+    if (field?.customFieldId !== 0) setIsDirty(true);
     setConfirmDeleteCustomFieldIsOpen(false);
     setSelectedCustomField(null);
   };

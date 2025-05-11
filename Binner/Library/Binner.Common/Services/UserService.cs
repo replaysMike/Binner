@@ -49,11 +49,11 @@ namespace Binner.Common.Services
 
         public Task<User> CreateUserAsync(User user) => _licensedService.CreateUserAsync(user);
 
-        public Task<User> GetUserAsync(User user) => _licensedService.GetUserAsync(user);
+        public Task<User?> GetUserAsync(User user) => _licensedService.GetUserAsync(user);
 
         public Task<ICollection<User>> GetUsersAsync(PaginatedRequest request) => _licensedService.GetUsersAsync(request);
 
-        public Task<User> UpdateUserAsync(User user) => _licensedService.UpdateUserAsync(user);
+        public Task<User?> UpdateUserAsync(User user) => _licensedService.UpdateUserAsync(user);
 
         public async Task<bool> DeleteUserAsync(int userId)
         {
@@ -77,12 +77,13 @@ namespace Binner.Common.Services
                     throw new SecurityException($"Your server must have at least one admin user.");
             }
 
-            context.UserTokens.RemoveRange(await context.UserTokens.Where(x => x.UserId == userId).ToListAsync());
-            context.UserLoginHistory.RemoveRange(await context.UserLoginHistory.Where(x => x.UserId == userId).ToListAsync());
-            context.UserPrinterTemplateConfigurations.RemoveRange(await context.UserPrinterTemplateConfigurations.Where(x => x.UserId == userId).ToListAsync());
-            context.UserPrinterConfigurations.RemoveRange(await context.UserPrinterConfigurations.Where(x => x.UserId == userId).ToListAsync());
-            context.OAuthRequests.RemoveRange(await context.OAuthRequests.Where(x => x.UserId == userId).ToListAsync());
-            context.OAuthCredentials.RemoveRange(await context.OAuthCredentials.Where(x => x.UserId == userId).ToListAsync());
+            await context.UserTokens.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.UserLoginHistory.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.UserPrinterTemplateConfigurations.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.UserPrinterConfigurations.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.OAuthRequests.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.OAuthCredentials.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.CustomFieldValues.Where(x => x.RecordId == userId && x.CustomFieldTypeId == CustomFieldTypes.User && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
 
             context.Users.Remove(entity);
 

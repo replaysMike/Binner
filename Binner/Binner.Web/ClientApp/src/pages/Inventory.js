@@ -23,7 +23,6 @@ import { RecentParts } from "../components/RecentParts";
 import { PartSuppliersMemoized } from "../components/PartSuppliersMemoized";
 import { MatchingPartsMemoized } from "../components/MatchingPartsMemoized";
 import { DuplicatePartModal } from "../components/DuplicatePartModal";
-import { CustomFieldValues } from "../components/CustomFieldValues";
 import { fetchApi } from "../common/fetchApi";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { addMinutes } from "../common/datetime";
@@ -32,6 +31,7 @@ import { getPartTypeId } from "../common/partTypes";
 import { getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
 import { CustomFieldTypes } from "../common/customFieldTypes";
+import { CustomFieldValues } from "../components/CustomFieldValues";
 import { MountingTypes, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
@@ -1199,7 +1199,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       setPart({...part, customFields: [ ...otherCustomFields, field ] });
       if (part.partNumber) setIsDirty(true);
     } else {
-      console.log('field not found', control.name, part.customFields);
+      console.error('field not found', control.name, part.customFields);
     }
   };
 
@@ -1826,7 +1826,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                       <ClearableInput placeholder='' value={part.extensionValue2 || ''} onChange={handleChange} name='extensionValue2' help={t('page.inventory.popup.extensionValue', "Associate a custom value with this part")} />
                     </Form.Field>
                   </Form.Group>
-                  <hr />
+                  {_.filter(systemSettings.customFields, x => x.customFieldTypeId === CustomFieldTypes.Inventory.value)?.length > 0 && <hr />}
                   <CustomFieldValues 
                     type={CustomFieldTypes.Inventory}
                     header={t('label.customFields', "Custom Fields")}

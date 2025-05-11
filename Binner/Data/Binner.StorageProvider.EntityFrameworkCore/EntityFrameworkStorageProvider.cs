@@ -62,6 +62,10 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             context.Projects.Add(entity);
             await context.SaveChangesAsync();
             project.ProjectId = entity.ProjectId;
+
+            // also update custom fields
+            await AddOrUpdateCustomFieldValuesAsync(project.ProjectId, project.CustomFields, CustomFieldTypes.Project, userContext);
+
             return project;
         }
 
@@ -1737,6 +1741,7 @@ INNER JOIN (
                 // also update custom fields
                 await AddOrUpdateCustomFieldValuesAsync(project.ProjectId, project.CustomFields, CustomFieldTypes.Project, userContext);
 
+                project = _mapper.Map(entity, project);
                 return project;
             }
             return null;
@@ -1813,7 +1818,7 @@ INNER JOIN (
             return _mapper.Map<ICollection<Part>>(entities);
         }
 
-        public async Task AddOrUpdateCustomFieldValuesAsync(long recordId, ICollection<CustomValue> values, CustomFieldTypes customFieldType, IUserContext? userContext)
+        private async Task AddOrUpdateCustomFieldValuesAsync(long recordId, ICollection<CustomValue> values, CustomFieldTypes customFieldType, IUserContext? userContext)
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             if (values.Any())
@@ -1841,18 +1846,15 @@ INNER JOIN (
                                 CustomFieldId = customField.CustomFieldId,
                                 RecordId = recordId,
                                 Value = value.Value,
-                                OrganizationId = userContext.OrganizationId,
-                                UserId = userContext.UserId,
                                 CustomFieldTypeId = customFieldType,
-                                DateCreatedUtc = DateTime.UtcNow,
-                                DateModifiedUtc = DateTime.UtcNow,
                             };
+                            EnforceIntegrityCreate(customFieldValue, userContext);
                             context.CustomFieldValues.Add(customFieldValue);
                         }
                         else
                         {
                             customFieldValue.Value = value.Value;
-                            customFieldValue.DateModifiedUtc = DateTime.UtcNow;
+                            EnforceIntegrityModify(customFieldValue, userContext);
                         }
                     }
                     else
@@ -1923,16 +1925,14 @@ INNER JOIN (
                     {
                         // add new field
                         _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Created new custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
-                        context.CustomFields.Add(new DataModel.CustomField
+                        var newCustomField = new DataModel.CustomField
                         {
                             CustomFieldTypeId = customField.CustomFieldTypeId,
                             Name = customField.Name,
                             Description = customField.Description,
-                            DateCreatedUtc = DateTime.UtcNow,
-                            DateModifiedUtc = DateTime.UtcNow,
-                            OrganizationId = userContext.OrganizationId,
-                            UserId = userContext.UserId,
-                        });
+                        };
+                        EnforceIntegrityCreate(newCustomField, userContext);
+                        context.CustomFields.Add(newCustomField);
                     }
                     else if (existingField != null)
                     {
@@ -1945,6 +1945,7 @@ INNER JOIN (
                             existingField.CustomFieldTypeId = customField.CustomFieldTypeId;
                         if (context.Entry(existingField).State != EntityState.Unchanged)
                         {
+                            EnforceIntegrityModify(existingField, userContext);
                             existingField.DateModifiedUtc = DateTime.UtcNow;
                             _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Updated custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
                         }

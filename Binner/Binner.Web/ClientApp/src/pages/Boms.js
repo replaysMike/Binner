@@ -5,15 +5,15 @@ import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Breadcrumb,
 import { FormHeader } from "../components/FormHeader";
 import _ from 'underscore';
 import { toast } from "react-toastify";
+import { getSystemSettings } from "../common/applicationSettings";
 import { fetchApi } from '../common/fetchApi';
+import { getAuthToken } from "../common/authentication";
 import { ProjectColors } from "../common/Types";
 import { CustomFieldTypes } from "../common/customFieldTypes";
+import { CustomFieldValues } from "../components/CustomFieldValues";
 import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
 import axios from "axios";
-import { getAuthToken } from "../common/authentication";
-import { getSystemSettings } from "../common/applicationSettings";
-import { CustomFieldValues } from "../components/CustomFieldValues";
 
 /** BOM Project listing
  * Description: List BOM projects and create new ones.
@@ -144,6 +144,7 @@ export function Boms (props) {
 
   const handleShowAdd = () => {
     setAddVisible(!addVisible);
+    // map defined custom fields to the new project object
     setProject({ ...defaultProject, customFields: _.filter(systemSettings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Project.value)?.map((field) => ({ field: field.name, value: '' })) || [] });
   };
 
@@ -173,7 +174,8 @@ export function Boms (props) {
     });
     if (response.responseObject.status === 200) {
       // reset form
-      setProject(defaultProject);
+      // map defined custom fields to the new user object
+      setProject({ ...defaultProject, customFields: _.filter(systemSettings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Project.value)?.map((field) => ({ field: field.name, value: '' })) || [] });
       setAddVisible(false);
       setImportVisible(false);
       loadProjects(page, pageSize, true);
@@ -320,7 +322,7 @@ export function Boms (props) {
       const otherCustomFields = _.filter(project.customFields, x => x.field !== control.name);
       setProject({...project, customFields: [ ...otherCustomFields, field ] });
     } else {
-      console.log('field not found', control.name, project.customFields);
+      console.error('field not found', control.name, project.customFields);
     }
   };
 
