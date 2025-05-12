@@ -56,7 +56,7 @@ namespace Binner.Web.Controllers
             switch(request.TokenType)
             {
                 case TokenTypes.KiCadApiToken:
-                    var token = await _accountService.CreateKiCadApiTokenAsync();
+                    var token = await _accountService.CreateKiCadApiTokenAsync(request.TokenConfig);
                     return Ok(token);
                 default:
                     return BadRequest("Unsupported token type");

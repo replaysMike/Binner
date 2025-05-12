@@ -14,6 +14,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.TokenTypeId, options => options.MapFrom(x => x.TokenType))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 .ForMember(x => x.DateExpiredUtc, options => options.MapFrom(x => x.DateExpiredUtc))
+                .ForMember(x => x.TokenConfig, options => options.MapFrom(x => x.TokenConfig))
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.DateRevokedUtc, options => options.Ignore())
                 .ForMember(x => x.ReplacedByToken, options => options.Ignore())
@@ -30,6 +31,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Value, options => options.MapFrom(x => x.Token))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 .ForMember(x => x.DateExpiredUtc, options => options.MapFrom(x => x.DateExpiredUtc))
+                .ForMember(x => x.TokenConfig, options => options.MapFrom(x => x.TokenConfig))
                 ;
         }
 

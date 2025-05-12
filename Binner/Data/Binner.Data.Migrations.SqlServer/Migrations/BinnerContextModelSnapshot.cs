@@ -1654,6 +1654,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TokenConfig")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("TokenTypeId")
                         .HasColumnType("int");
 

@@ -1,9 +1,11 @@
 ﻿using AnyMapper;
 using AutoMapper;
 using Binner.Common.Services;
+using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.KiCad;
+using Binner.Model.Responses;
 using Binner.Web.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -27,18 +29,31 @@ namespace Binner.Web.Controllers
     public class KiCadController : ControllerBase
     {
         private readonly ILogger<KiCadController> _logger;
+        private readonly IRequestContextAccessor _requestContextAccessor;
         private readonly IMapper _mapper;
-        private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
-        private readonly IPartTypeService _partTypeService;
 
-        public KiCadController(ILogger<KiCadController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService)
+        public KiCadController(ILogger<KiCadController> logger, IMapper mapper, IPartService partService, IRequestContextAccessor requestContextAccessor)
         {
             _logger = logger;
             _mapper = mapper;
-            _config = config;
             _partService = partService;
-            _partTypeService = partTypeService;
+            _requestContextAccessor = requestContextAccessor;
+        }
+
+        /// <summary>
+        /// Endpoint that KiCad will initially connect to, to get the endpoint paths and verify the server is accessible
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult Get()
+        {
+            _logger.LogInformation($"[KiCadApi] Hello requested from IP '{_requestContextAccessor.GetIpAddress()}'.");
+            return Ok(new
+            {
+                categories = "", // use default: /kicad-api/v1/categories.json
+                parts = "" // use default: /kicad-api/v1/parts/category/{category}.json
+            });
         }
 
         /// <summary>
@@ -49,6 +64,7 @@ namespace Binner.Web.Controllers
         [HttpGet("parts/category/{categoryId}.json")]
         public async Task<IActionResult> GetPartsByCategoryAsync(string categoryId)
         {
+            _logger.LogInformation($"[KiCadApi] GET /parts/category/{categoryId}.json from IP '{_requestContextAccessor.GetIpAddress()}'.");
             PartType? partType;
             // parse the part type
             if (int.TryParse(categoryId, out var id))
@@ -67,6 +83,7 @@ namespace Binner.Web.Controllers
             if (!parts.Any()) return NotFound();
 
             var partResponse = _mapper.Map<ICollection<Part>, ICollection<KiCadPart>>(parts);
+            _logger.LogInformation($"[KiCadApi] GET /parts/category/{categoryId}.json returned {partResponse.Count} parts from IP '{_requestContextAccessor.GetIpAddress()}'.");
             return Ok(partResponse);
         }
 
@@ -78,6 +95,7 @@ namespace Binner.Web.Controllers
         [HttpGet("parts/{categoryId}.json")]
         public async Task<IActionResult> GetDetailedPartsByCategoryAsync(string categoryId)
         {
+            _logger.LogInformation($"[KiCadApi] GET /parts/{categoryId}.json from IP '{_requestContextAccessor.GetIpAddress()}'.");
             PartType? partType;
             // parse the part type
             if (int.TryParse(categoryId, out var id))
@@ -156,6 +174,7 @@ namespace Binner.Web.Controllers
                         partDetail.Fields.Custom3.Value = string.Join(" / ", values);
                 }
             }
+            _logger.LogInformation($"[KiCadApi] GET /parts/{categoryId}.json returned {partDetails.Count} parts from IP '{_requestContextAccessor.GetIpAddress()}'.");
             return Ok(partDetails);
         }
 
@@ -166,10 +185,12 @@ namespace Binner.Web.Controllers
         [HttpGet("categories.json")]
         public async Task<IActionResult> GetCategoriesAsync()
         {
+            _logger.LogInformation($"[KiCadApi] GET /categories.json from IP '{_requestContextAccessor.GetIpAddress()}'.");
             var partTypes = await _partService.GetPartTypesAsync(true);
             if (partTypes == null) return NotFound();
 
             var partResponse = _mapper.Map<ICollection<PartType>, ICollection<KiCadCategory>>(partTypes);
+            _logger.LogInformation($"[KiCadApi] GET /categories.json returned {partResponse.Count} categories from IP '{_requestContextAccessor.GetIpAddress()}'.");
             return Ok(partResponse);
         }
     }

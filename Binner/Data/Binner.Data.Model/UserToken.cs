@@ -61,6 +61,11 @@ namespace Binner.Data.Model
 
         public DateTime DateModifiedUtc { get; set; }
 
+        /// <summary>
+        /// An additional json formatted token configuration can be stored with the token
+        /// </summary>
+        public string? TokenConfig { get; set; }
+
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
     }

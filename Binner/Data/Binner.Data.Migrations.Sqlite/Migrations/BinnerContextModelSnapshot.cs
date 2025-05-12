@@ -1596,6 +1596,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TokenConfig")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("TokenTypeId")
                         .HasColumnType("INTEGER");
 

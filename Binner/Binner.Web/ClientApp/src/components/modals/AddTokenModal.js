@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation, Trans } from 'react-i18next';
-import { Icon, Button, Form, Modal, Dropdown, Popup } from "semantic-ui-react";
+import { Icon, Button, Form, Modal, Dropdown, Popup, Grid } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { UserTokenType } from "../../common/UserTokenType";
 import { GetTypeName, GetTypeProperty } from "../../common/Types";
@@ -13,7 +13,9 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
   const { t } = useTranslation();
   AddTokenModal.abortController = new AbortController();
   const defaultForm = { 
-    tokenType: ""
+    tokenType: "",
+    partsTimeout: 60,
+    categoriesTimeout: 600
   };
   const [_isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
@@ -29,7 +31,6 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
 
   const handleModalClose = (e) => {
     setIsOpen(false);
-    console.log('closing...');
     if (onClose) onClose();
   };
 
@@ -43,11 +44,53 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
   };
 
   const handleAdd = (e) => {
+    const data = {
+      tokenType: form.tokenType,
+      tokenConfig: JSON.stringify({
+        timeout_parts_seconds: parseInt(form.partsTimeout),
+        timeout_categories_seconds: parseInt(form.categoriesTimeout),
+      })
+    }
     if (onAdd) {
-      onAdd(e, form);
+      onAdd(e, data);
     } else {
       console.error("No onAdd handler defined!");
     }
+  };
+
+  const renderOptions = () => {
+    switch(form.tokenType){
+      case UserTokenType.KiCadApiToken.value:
+        return (
+          <div>
+            <Form.Field>
+              <Popup  
+                content={<p>Enter the timeout (in seconds) for the parts endpoint.<br /><i>Default: 60</i></p>}
+                trigger={<Form.Input
+                  label="Parts Timeout (seconds)"
+                  placeholder="60"
+                  value={form.partsTimeout || ''}
+                  name="partsTimeout"
+                  onChange={handleChange}
+                />}
+              />
+            </Form.Field>
+            <Form.Field>
+              <Popup
+                content={<p>Enter the timeout (in seconds) for the categories endpoint.<br /><i>Default: 600</i></p>}
+                trigger={<Form.Input
+                  label="Categories Timeout (seconds)"
+                  placeholder="600"
+                  value={form.categoriesTimeout || ''}
+                  name="categoriesTimeout"
+                  onChange={handleChange}
+                />}
+              />
+            </Form.Field>
+          </div>
+        );
+    }
+    return (<></>);
   };
 
   return (
@@ -56,22 +99,31 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
         <Modal.Header>{t('comp.addTokenModal.createToken', "Create Token")}</Modal.Header>
         <Modal.Content>
           <Form style={{ marginBottom: "10px", marginLeft: '50px', width: '100%' }}>
-            <Form.Field width={8}>
-              <Popup
-                wide
-                content={t('comp.addTokenModal.popup.tokenType', "Select the type of token you would like to create.")}
-                trigger={
-                  <Form.Dropdown 
-                    label={t('comp.addTokenModal.tokenType', "Select token type")} 
-                    selection 
-                    value={form.tokenType || ''} 
-                    options={tokenOptions} 
-                    onChange={handleChange} 
-                    name='tokenType' 
-                  />
-                }
-              />
-            </Form.Field>
+            <Grid columns={2}>
+              <Grid.Row>
+                <Grid.Column width={5}>
+                  <Form.Field>
+                    <Popup
+                      wide
+                      content={t('comp.addTokenModal.popup.tokenType', "Select the type of token you would like to create.")}
+                      trigger={
+                        <Form.Dropdown
+                          label={t('comp.addTokenModal.tokenType', "Select token type")}
+                          selection
+                          value={form.tokenType || ''}
+                          options={tokenOptions}
+                          onChange={handleChange}
+                          name='tokenType'
+                        />
+                      }
+                    />
+                  </Form.Field>
+                </Grid.Column>
+                <Grid.Column>
+                  {renderOptions()}
+                </Grid.Column>
+              </Grid.Row>
+            </Grid>
           </Form>
         </Modal.Content>
         <Modal.Actions>

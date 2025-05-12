@@ -1,0 +1,15 @@
+.hidden {
+  -webkit-text-security: disc !important;
+}
+
+.hider {
+  cursor: pointer;
+  color: #767676;
+  transition-property: color;
+  transition-duration: 250ms;
+  transition-timing-function: ease-in-out;
+}
+
+.hider:hover {
+  color: #2185d0 !important;
+}
