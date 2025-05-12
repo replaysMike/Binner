@@ -420,7 +420,7 @@ export function Account(props) {
                         {token.tokenType === UserTokenType.KiCadApiToken.value && 
                           <Popup 
                             wide
-                            content="Download the KiCad configuration file and add it to the KiCad Symbol Library (Preferences => Manage Symbol Libraries...)"
+                          content={<p>Download the KiCad configuration file and within KiCad add it to the Symbol Library<br /><span className="small">(KiCad <Icon name="arrow right" size='small' /> Preferences <Icon name="arrow right" size='small' /> Manage Symbol Libraries... <Icon name="arrow right" size='small' /> <Icon name="folder" color="grey" />)</span></p>}
                             trigger={<Link to={`/api/download/kicad?token=${token.value}`} onClick={e => handleDownloadKiCadToken(e, token.value)}><Icon name="download" /> Download Config</Link>} 
                           />
                         }

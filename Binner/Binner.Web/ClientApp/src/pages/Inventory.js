@@ -1845,13 +1845,31 @@ export function Inventory({ partNumber = "", ...rest }) {
                   <p>{t('page.inventory.integrationsMessage', "Connected integrations may require additional information about your part. You can specify them here.")}</p>
 
                   <Form.Group>
-                    <Form.Field width={4}>
+                    <Form.Field width={6}>
                       <label>{t('label.symbolName', "KiCad Symbol Name")}</label>
-                      <ClearableInput placeholder='R_0601' value={part.symbolName || ''} onChange={handleChange} name='symbolName' help={t('page.inventory.popup.symbolName', "Associate a KiCad symbol name with this part")} />
+                      <ClearableInput 
+                        placeholder='MCU_Microchip_ATtiny:ATtiny85-20P' 
+                        value={part.symbolName || ''} 
+                        onChange={handleChange} 
+                        name='symbolName' 
+                        help={<Trans i18nKey="page.inventory.popup.symbolName">
+                          Specify the symbol name used in KiCad for this part. Both the symbol group and symbol name should be specified and separated using a colon.<br /><i>Example:</i> <b>MCU_Microchip_ATtiny:ATtiny85-20P</b>
+                        </Trans>}
+                        helpWide
+                      />
                     </Form.Field>
                     <Form.Field width={6}>
                       <label>{t('label.footprintName', "KiCad Footprint Name")}</label>
-                      <ClearableInput placeholder='Resistor SMD 0601_1608Matric' value={part.footprintName || ''} onChange={handleChange} name='footprintName' help={t('page.inventory.popup.footprintName', "Associate a KiCad footprint name with this part")} />
+                      <ClearableInput 
+                        placeholder='Package_DIP:DIP-8_W7.62mm' 
+                        value={part.footprintName || ''} 
+                        onChange={handleChange} 
+                        name='footprintName' 
+                        help={<Trans i18nKey="page.inventory.popup.footprintName">
+                          Associate a KiCad footprint name with this part. Both the footprint group and footprint name should be specified and separated using a colon.<br /><i>Example:</i> <b>Package_DIP:DIP-8_W7.62mm</b>
+                        </Trans>}
+                        helpWide
+                      />
                     </Form.Field>
                   </Form.Group>
                 </Segment>}

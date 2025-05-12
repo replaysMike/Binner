@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation, Trans } from 'react-i18next';
-import { Icon, Button, Form, Modal, Dropdown, Popup, Grid } from "semantic-ui-react";
+import { Icon, Button, Form, Modal, Popup, Grid } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { UserTokenType } from "../../common/UserTokenType";
 import { GetTypeName, GetTypeProperty } from "../../common/Types";
-import { toast } from "react-toastify";
 
 /**
  * Add a new user token
@@ -14,8 +13,8 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
   AddTokenModal.abortController = new AbortController();
   const defaultForm = { 
     tokenType: "",
-    partsTimeout: 60,
-    categoriesTimeout: 600
+    partsTimeout: 5,
+    categoriesTimeout: 10
   };
   const [_isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
@@ -62,13 +61,13 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
     switch(form.tokenType){
       case UserTokenType.KiCadApiToken.value:
         return (
-          <div>
+          <div style={{padding: '20px'}}>
             <Form.Field>
               <Popup  
-                content={<p>Enter the timeout (in seconds) for the parts endpoint.<br /><i>Default: 60</i></p>}
+                content={<p>Enter the timeout (in seconds) for the parts endpoint.<br /><i>Default: 5</i></p>}
                 trigger={<Form.Input
                   label="Parts Timeout (seconds)"
-                  placeholder="60"
+                  placeholder="5"
                   value={form.partsTimeout || ''}
                   name="partsTimeout"
                   onChange={handleChange}
@@ -77,10 +76,10 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
             </Form.Field>
             <Form.Field>
               <Popup
-                content={<p>Enter the timeout (in seconds) for the categories endpoint.<br /><i>Default: 600</i></p>}
+                content={<p>Enter the timeout (in seconds) for the categories endpoint.<br /><i>Default: 10</i></p>}
                 trigger={<Form.Input
                   label="Categories Timeout (seconds)"
-                  placeholder="600"
+                  placeholder="10"
                   value={form.categoriesTimeout || ''}
                   name="categoriesTimeout"
                   onChange={handleChange}
@@ -101,7 +100,7 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
           <Form style={{ marginBottom: "10px", marginLeft: '50px', width: '100%' }}>
             <Grid columns={2}>
               <Grid.Row>
-                <Grid.Column width={5}>
+                <Grid.Column width={8}>
                   <Form.Field>
                     <Popup
                       wide

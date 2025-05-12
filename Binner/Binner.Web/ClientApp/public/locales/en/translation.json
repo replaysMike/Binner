@@ -72,8 +72,8 @@
         "technicalSpecs": "View technical specs",
         "compliance": "View compliance information",
         "cadModels": "View CAD Models available for this part",
-        "symbolName": "Associate a KiCad symbol name with this part",
-        "footprintName": "Associate a KiCad footprint name with this part",
+        "symbolName": "Specify the symbol name used in KiCad for this part. Both the symbol group and symbol name should be specified and separated using a colon.<1/><2>Example:</2> <4>MCU_Microchip_ATtiny:ATtiny85-20P</4>",
+        "footprintName": "Associate a KiCad footprint name with this part. Both the footprint group and footprint name should be specified and separated using a colon.<1/><2>Example:</2> <4>Package_DIP:DIP-8_W7.62mm</4>",
         "extensionValue": "Associate a custom value with this part",
         "apiRefresh": "Refresh the part information from external APIs. All API provided fields will be overwritten.",
         "value": "The parametric value of the part. Example: a resistor may have a value of '4.7k'"
@@ -103,7 +103,7 @@
     },
     "boms": {
       "header": {
-        "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<br/><br/>Choose or create the project to manage BOM for.<br/>" 
+        "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<1/><1/>Choose or create the project to manage BOM for.<1/>" 
       }
     },
     "partTypes": {

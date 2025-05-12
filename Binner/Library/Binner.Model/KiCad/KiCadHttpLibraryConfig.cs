@@ -29,10 +29,10 @@ namespace Binner.Model.KiCad
     public class KiCadTimeouts
     {
         [JsonProperty("timeout_parts_seconds")]
-        public int TimeOutPartsSeconds { get; set; } = 60;
+        public int TimeOutPartsSeconds { get; set; } = 5;
 
         [JsonProperty("timeout_categories_seconds")]
-        public int TimeOutCategoriesSeconds { get; set; } = 600;
+        public int TimeOutCategoriesSeconds { get; set; } = 10;
     }
 
     public class Source : KiCadTimeouts
