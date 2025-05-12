@@ -28,6 +28,8 @@ Binner is a free open-source parts inventory tracking system you can run locally
 * Simple web-based UI
 * Barcoding support
 * Label printing
+* KiCad HTTP Library support
+* Supports adding custom fields to your data
 
 ## Planned Upcoming Features for 2025
 - [x] Dedicated datasheet repository (Q1)
@@ -37,7 +39,9 @@ Binner is a free open-source parts inventory tracking system you can run locally
 - [x] Multiple language support (Q1)
 - [x] Auto update (Q1)
 - [x] Full BOM / PCB management (Q1)
-- [x] TME parts api support
+- [x] TME parts api support (Q2)
+- [x] KiCad HTTP Library api support (Q2)
+- [x] Ability to add custom fields (Q2)
 - [ ] Electronic bins support (Q2)
 - [ ] Maybe a parts marketplace? with lasers?
 
