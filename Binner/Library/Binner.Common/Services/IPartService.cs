@@ -85,7 +85,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="partTypeId"></param>
         /// <returns></returns>
-        Task<PartType?> GetPartTypeAsync(int partTypeId);
+        Task<PartType?> GetPartTypeAsync(long partTypeId);
 
         /// <summary>
         /// Get a partType by its name

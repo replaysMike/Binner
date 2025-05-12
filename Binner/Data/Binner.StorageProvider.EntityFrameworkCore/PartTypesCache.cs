@@ -60,7 +60,12 @@ namespace Binner.StorageProvider.EntityFrameworkCore
                     DateCreatedUtc = x.DateCreatedUtc,
                     IsSystem = x.UserId == null && x.OrganizationId == null,
                     UserId = x.UserId,
-                    OrganizationId = x.OrganizationId
+                    OrganizationId = x.OrganizationId,
+                    Description = x.Description,
+                    Keywords = x.Keywords,
+                    ReferenceDesignator = x.ReferenceDesignator,
+                    SymbolId = x.SymbolId,
+                    DateModifiedUtc = x.DateModifiedUtc
                 })
                 .ToList();
             // recursively map all partTypes and add up part counts to include its children

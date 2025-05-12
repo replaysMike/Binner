@@ -10,7 +10,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
         {
             CreateMap<Part, KiCadPartDetail>()
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.PartNumber))
-                .ForMember(x => x.SymbolIdStr, options => options.MapFrom(x => x.ExtensionValue1))
+                .ForMember(x => x.SymbolIdStr, options => options.MapFrom(x => x.SymbolName))
                 .ForMember(x => x.Id, options => options.MapFrom(x => x.PartId.ToString()))
                 // mapped manually
                 .ForMember(x => x.Fields, options => options.Ignore())

@@ -57,7 +57,7 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Get a list of parts for a specified category
+        /// Get a list of parts for a specified category by its numeric category id
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -88,100 +88,86 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
-        /// Get a list of part details for a specified category
+        /// Get part details for a specified part by its numeric part id
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="partId"></param>
         /// <returns></returns>
-        [HttpGet("parts/{categoryId}.json")]
-        public async Task<IActionResult> GetDetailedPartsByCategoryAsync(string categoryId)
+        /// <remarks>Called when symbol is clicked on in the Symbol Manager. It's cached between loads.</remarks>
+        [HttpGet("parts/{partId}.json")]
+        public async Task<IActionResult> GetDetailedPartsByCategoryAsync(string partId)
         {
-            _logger.LogInformation($"[KiCadApi] GET /parts/{categoryId}.json from IP '{_requestContextAccessor.GetIpAddress()}'.");
-            PartType? partType;
-            // parse the part type
-            if (int.TryParse(categoryId, out var id))
+            _logger.LogInformation($"[KiCadApi] GET /parts/{partId}.json from IP '{_requestContextAccessor.GetIpAddress()}'.");
+            var partIdInt = 0;
+            if (!int.TryParse(partId, out partIdInt))
+                return NotFound("Invalid part id");
+            var part = await _partService.GetPartAsync(new Model.Requests.GetPartRequest { PartId = partIdInt });
+            if (part == null)
             {
-                partType = await _partService.GetPartTypeAsync(id);
-            }
-            else
-            {
-                // it's not an id, its the name
-                partType = await _partService.GetPartTypeAsync(categoryId);
+                _logger.LogWarning($"[KiCadApi] GET /parts/{partId}.json part not found from IP '{_requestContextAccessor.GetIpAddress()}'.");
+                return NotFound();
             }
 
-            if (partType == null) return NotFound();
-
-            var parts = await _partService.GetPartsByPartTypeAsync(partType);
-            if (!parts.Any()) return NotFound();
-
-            var partDetails = _mapper.Map<ICollection<Part>, ICollection<KiCadPartDetail>>(parts);
-            foreach (var partDetail in partDetails)
+            var partType = await _partService.GetPartTypeAsync(part.PartTypeId);
+            if (partType == null)
             {
-                var part = parts.Where(x => x.PartId == int.Parse(partDetail.Id)).First();
-
-                partDetail.Fields.Reference = new KiCadValueItem { Value = partType.ReferenceDesignator ?? part.SymbolName?.First().ToString() ?? string.Empty };    // "R"
-
-                if (!string.IsNullOrEmpty(part.Description))
-                    partDetail.Fields.Description = new KiCadValueVisibleItem { Value = part.Description };             // "SMD RES 1k 0805"
-                
-                if (!string.IsNullOrEmpty(part.Value))
-                    partDetail.Fields.Value = new KiCadValueItem { Value = part.Value ?? part.PartNumber };                           // "R12"
-                
-                if (!string.IsNullOrEmpty(part.FootprintName))
-                    partDetail.Fields.Footprint = new KiCadValueVisibleItem { Value = part.FootprintName };             // "Resistor_SMD:R_0603_1608Metric"
-                if (part.Keywords != null && part.Keywords.Any())
-                    partDetail.Fields.Datasheet = new KiCadValueVisibleItem { Value = string.Join(" ", part.Keywords) };// keywords
-
-                // urls
-                if (!string.IsNullOrEmpty(part.DatasheetUrl))
-                    partDetail.Fields.Datasheet = new KiCadValueVisibleItem { Value = part.DatasheetUrl };
-                if (!string.IsNullOrEmpty(part.ProductUrl))
-                    partDetail.Fields.Custom1 = new KiCadValueVisibleItem { Value = part.ProductUrl };
-
-                // Custom2 contains additional meta data as key/value pairs
-                partDetail.Fields.Custom2 = new KiCadValueVisibleItem { Value = string.Empty };
-                var keyValueItems = new List<string>();
-                if (!string.IsNullOrEmpty(part.DigiKeyPartNumber))
-                    keyValueItems.Add($"DigiKey={part.DigiKeyPartNumber}");
-                if (!string.IsNullOrEmpty(part.DigiKeyPartNumber))
-                    keyValueItems.Add($"Mouser={part.MouserPartNumber}");
-                if (!string.IsNullOrEmpty(part.ArrowPartNumber))
-                    keyValueItems.Add($"Arrow={part.DigiKeyPartNumber}");
-                if (!string.IsNullOrEmpty(part.DigiKeyPartNumber))
-                    keyValueItems.Add($"TME={part.TmePartNumber}");
-                if (!string.IsNullOrEmpty(part.ExtensionValue1))
-                    keyValueItems.Add($"ExtensionValue1={part.ExtensionValue1}");
-                if (!string.IsNullOrEmpty(part.ExtensionValue2))
-                    keyValueItems.Add($"ExtensionValue2={part.ExtensionValue2}");
-                if (!string.IsNullOrEmpty(part.Location))
-                    keyValueItems.Add($"Location={part.Location}");
-                if (!string.IsNullOrEmpty(part.BinNumber))
-                    keyValueItems.Add($"Bin={part.BinNumber}");
-                if (!string.IsNullOrEmpty(part.BinNumber2))
-                    keyValueItems.Add($"Bin2={part.BinNumber2}");
-                if (keyValueItems.Any())
-                    partDetail.Fields.Custom2.Value = string.Join(", ", keyValueItems);
-
-                // Custom3 contains multiple values
-                if (!string.IsNullOrEmpty(part.ManufacturerPartNumber) || !string.IsNullOrEmpty(part.Manufacturer))
-                {
-                    partDetail.Fields.Custom3 = new KiCadValueVisibleItem { Value = string.Empty };
-                    var values = new List<string>();
-                    if (!string.IsNullOrEmpty(part.ManufacturerPartNumber))
-                        values.Add(part.ManufacturerPartNumber);
-                    if (!string.IsNullOrEmpty(part.Manufacturer))
-                        values.Add(part.Manufacturer);
-                    if (values.Any())
-                        partDetail.Fields.Custom3.Value = string.Join(" / ", values);
-                }
+                _logger.LogWarning($"[KiCadApi] GET /parts/{partId}.json part type not found from IP '{_requestContextAccessor.GetIpAddress()}'.");
+                return NotFound("Part type of part does not exist.");
             }
-            _logger.LogInformation($"[KiCadApi] GET /parts/{categoryId}.json returned {partDetails.Count} parts from IP '{_requestContextAccessor.GetIpAddress()}'.");
-            return Ok(partDetails);
+
+            var partDetail = _mapper.Map<Part, KiCadPartDetail>(part);
+
+            var referenceDesignator = partType.ReferenceDesignator;
+            if (string.IsNullOrEmpty(referenceDesignator) && !string.IsNullOrEmpty(part.SymbolName))
+                referenceDesignator = part.SymbolName[0].ToString();
+            if (string.IsNullOrEmpty(referenceDesignator))
+                referenceDesignator = "U"; // default if not specified
+
+            // I'm guessing here they expect the category/part type for this value. It doesn't seem to do anything.
+            if (string.IsNullOrEmpty(partDetail.SymbolIdStr))
+                partDetail.SymbolIdStr = partType.Name ?? "Unknown";
+
+            // todo: get this from BOM? investigate.
+            CreateField("Reference", referenceDesignator);// "U"
+            CreateField("Part Number", part.PartNumber, true); // force it to be displayed
+            CreateField("Description", part.Description);// "SMD RES 1k 0805"
+            CreateField("Value", part.Value, true);// "1k"
+            CreateField("Footprint", part.FootprintName);// "Resistor_SMD:R_0603_1608Metric"
+            if (part.Keywords != null && part.Keywords.Any())
+            {
+                var keywords = string.Join(" ", part.Keywords);
+                CreateField("Keywords", keywords);
+            }
+            CreateField("Datasheet", part.DatasheetUrl);
+            CreateField("Product Url", part.ProductUrl);
+
+            CreateField("DigiKey", part.DigiKeyPartNumber);
+            CreateField("Mouser", part.MouserPartNumber);
+            CreateField("Arrow", part.ArrowPartNumber);
+            CreateField("Tme", part.TmePartNumber);
+            CreateField("ExtensionValue1", part.ExtensionValue1);
+            CreateField("ExtensionValue2", part.ExtensionValue2);
+            CreateField("Location", part.Location);
+            CreateField("Bin", part.BinNumber);
+            CreateField("Bin2", part.BinNumber2);
+            CreateField("Qty In Stock", part.Quantity.ToString());
+            CreateField("Manufacturer", part.Manufacturer);
+            CreateField("Manufacturer Part Number", part.ManufacturerPartNumber);
+
+            void CreateField(string fieldName, string? fieldValue, bool visible = false)
+            {
+                if (!string.IsNullOrEmpty(fieldValue))
+                    partDetail.Fields.Add(fieldName, new KiCadValueVisibleItem(fieldValue, visible));
+            }
+
+            _logger.LogInformation($"[KiCadApi] GET /parts/{partId}.json OK from IP '{_requestContextAccessor.GetIpAddress()}'.");
+            return Ok(partDetail);
         }
 
         /// <summary>
         /// Get a list of categories
         /// </summary>
         /// <returns></returns>
+        /// <remarks>Called only on KiCad startup</remarks>
         [HttpGet("categories.json")]
         public async Task<IActionResult> GetCategoriesAsync()
         {

@@ -11,5 +11,11 @@
         public KiCadValueVisibleItem? Custom1 { get; set; }
         public KiCadValueVisibleItem? Custom2 { get; set; }
         public KiCadValueVisibleItem? Custom3 { get; set; }
+        public KiCadValueVisibleItem DigiKey { get; set; } = new();
+        public KiCadValueVisibleItem Mouser { get; set; } = new();
+        public KiCadValueVisibleItem Arrow { get; set; } = new();
+        public KiCadValueVisibleItem Tme { get; set; } = new();
+        public KiCadValueVisibleItem ExtensionValue1 { get; set; } = new();
+        public KiCadValueVisibleItem ExtensionValue2 { get; set; } = new();
     }
 }
