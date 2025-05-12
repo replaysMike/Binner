@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Button, Form, Segment, Icon, Label, Grid, Image, Breadcrumb, Popup, Table, Confirm } from "semantic-ui-react";
 import { toast } from "react-toastify";
@@ -8,6 +8,7 @@ import axios from "axios";
 import { config } from "../common/config";
 import { MD5 } from "../common/Utils";
 import { fetchApi, getErrorsString } from "../common/fetchApi";
+import { Hide } from "../components/Hide";
 import { FormHeader } from "../components/FormHeader";
 import { getAuthToken } from "../common/authentication";
 import { AddTokenModal } from "../components/modals/AddTokenModal";
@@ -165,7 +166,8 @@ export function Account(props) {
 
   const handleCreateNewToken = (e, form) => {
     const request = {
-      tokenType: form.tokenType
+      tokenType: form.tokenType,
+      tokenConfig: form.tokenConfig
     };
     fetchApi(`/api/account/token`, {
       method: "POST",
@@ -237,6 +239,37 @@ export function Account(props) {
 
   const handleCreateNewTokenClose = (e) => {
     setAddTokenIsOpen(false);
+  };
+
+  const handleDownloadKiCadToken = (e, token) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fetchApi("/api/authentication/identity").then((_) => {
+      axios
+        .request({
+          method: "get",
+          url: `/api/download/kicad?token=${token}`,
+          headers: { Authorization: `Bearer ${getAuthToken()}` },
+          responseType: "blob"
+        })
+        .then((blob) => {
+          // specifying blob filename, must create an anchor tag and use it as suggested: https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
+          var file = window.URL.createObjectURL(blob.data);
+          var a = document.createElement("a");
+          document.body.appendChild(a);
+          a.style = "display: none";
+          a.href = file;
+          const today = new Date();
+          a.download = `Binner.kicad_httplib`;
+          a.click();
+          window.URL.revokeObjectURL(file);
+        })
+        .catch((error) => {
+          toast.dismiss();
+          console.error("error", error);
+          toast.error(t('message.downloadFailed', "Download failed!"));
+        });
+    });
   };
 
   return (
@@ -366,6 +399,7 @@ export function Account(props) {
                   <Table.HeaderCell>Created</Table.HeaderCell>
                   <Table.HeaderCell>Expires</Table.HeaderCell>
                   <Table.HeaderCell></Table.HeaderCell>
+                  <Table.HeaderCell></Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -373,9 +407,24 @@ export function Account(props) {
                   ? account.tokens.map((token, key) => (
                     <Table.Row key={key}>
                       <Table.Cell>{GetTypeName(UserTokenType, token.tokenType)}</Table.Cell>
-                      <Table.Cell><div className="token">{token.value}</div><Clipboard text={token.value} /></Table.Cell>
+                      <Table.Cell>
+                        <div className="token" name="token">{token.value}</div>
+                        <div style={{float: 'right'}}>
+                          <Clipboard text={token.value} style={{marginRight: '10px'}} />
+                          <Hide element="token" />
+                        </div>
+                        </Table.Cell>
                       <Table.Cell>{format(parseJSON(token.dateCreatedUtc), FormatShortDate)}</Table.Cell>
                       <Table.Cell>{token.dateExpiredUtc ? format(parseJSON(token.dateExpiredUtc), FormatShortDate) : "Never"}</Table.Cell>
+                      <Table.Cell textAlign="center">
+                        {token.tokenType === UserTokenType.KiCadApiToken.value && 
+                          <Popup 
+                            wide
+                            content="Download the KiCad configuration file and add it to the KiCad Symbol Library (Preferences => Manage Symbol Libraries...)"
+                            trigger={<Link to={`/api/download/kicad?token=${token.value}`} onClick={e => handleDownloadKiCadToken(e, token.value)}><Icon name="download" /> Download Config</Link>} 
+                          />
+                        }
+                      </Table.Cell>
                       <Table.Cell textAlign="center">
                         <Button
                           size="mini"
@@ -386,7 +435,7 @@ export function Account(props) {
                       </Table.Cell>
                     </Table.Row>
                   ))
-                  : <Table.Row><Table.Cell colSpan={5} textAlign="center">No tokens available.</Table.Cell></Table.Row>}
+                  : <Table.Row><Table.Cell colSpan={6} textAlign="center">No tokens available.</Table.Cell></Table.Row>}
               </Table.Body>
             </Table>
           </Segment>

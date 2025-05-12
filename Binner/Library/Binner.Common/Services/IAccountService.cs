@@ -34,7 +34,7 @@ namespace Binner.Common.Services
         /// Create a KiCad api token
         /// </summary>
         /// <returns></returns>
-        Task<Token?> CreateKiCadApiTokenAsync();
+        Task<Token?> CreateKiCadApiTokenAsync(string? tokenConfig);
 
         /// <summary>
         /// Delete a KiCad api token
@@ -42,6 +42,13 @@ namespace Binner.Common.Services
         /// <param name="token"></param>
         /// <returns></returns>
         Task<bool> DeleteKiCadApiTokenAsync(string token);
+
+        /// <summary>
+        /// Get a user token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        Task<Token?> GetTokenAsync(string token, Model.Authentication.TokenTypes? tokenType = null);
 
         /// <summary>
         /// Validate a KiCad api token.

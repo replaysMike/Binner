@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Binner.Common.Extensions;
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.Model;
@@ -162,7 +163,7 @@ namespace Binner.Common.Services
             }
         }
 
-        public async Task<Token?> CreateKiCadApiTokenAsync()
+        public async Task<Token?> CreateKiCadApiTokenAsync(string? tokenConfig)
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -182,6 +183,7 @@ namespace Binner.Common.Services
             var newToken = new DataModel.UserToken()
             {
                 Token = TokenGenerator.NewToken(),
+                TokenConfig = tokenConfig,
                 DateCreatedUtc = DateTime.UtcNow,
                 DateExpiredUtc = null,
                 TokenTypeId = Model.Authentication.TokenTypes.KiCadApiToken,
@@ -206,13 +208,30 @@ namespace Binner.Common.Services
                     && x.Token == token)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
-            
+
             if (entity == null) return false;
 
             context.UserTokens.Remove(entity);
             await context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<Token?> GetTokenAsync(string token, Model.Authentication.TokenTypes? tokenType = null)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var apiToken = await context.UserTokens
+                .WhereIf(tokenType != null, x => x.TokenTypeId == tokenType)
+                .Where(x =>
+                    x.DateRevokedUtc == null
+                    && x.Token == token
+                    && (x.DateExpiredUtc == null || x.DateExpiredUtc > DateTime.UtcNow))
+                .FirstOrDefaultAsync();
+
+            if (apiToken != null)
+                return _mapper.Map<Token>(apiToken);
+
+            return null;
         }
 
         public async Task<bool> ValidateKiCadApiToken(string token)

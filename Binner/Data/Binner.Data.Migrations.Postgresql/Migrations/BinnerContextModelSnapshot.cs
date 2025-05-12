@@ -1654,6 +1654,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("TokenConfig")
+                        .HasColumnType("text");
+
                     b.Property<int>("TokenTypeId")
                         .HasColumnType("integer");
 
