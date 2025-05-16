@@ -52,6 +52,9 @@ namespace Binner.Web.Configuration
             services.Configure<AuthenticationConfiguration>(options => configuration.GetSection(nameof(AuthenticationConfiguration)).Bind(options));
 
             // register traditional configuration with LightInject
+            var licenseConfig = new LicenseConfiguration { LicenseKey = serviceConfiguration.LicenseKey };
+            container.RegisterInstance(licenseConfig);
+            services.AddSingleton(licenseConfig);
             container.RegisterInstance(configuration);
             services.AddSingleton(serviceConfiguration);
             container.RegisterInstance(serviceConfiguration);

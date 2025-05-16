@@ -1,4 +1,5 @@
 ﻿using AutoMapper.Internal;
+using Binner.Common.Database;
 using Binner.Common.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
@@ -62,7 +63,7 @@ namespace Binner.Web.Configuration
 
             container.RegisterSingleton<IStorageProvider>((factory) =>
             {
-                var storageProvider = providerFactory.Create(container, storageProviderConfig.Provider, storageProviderConfig.ProviderConfiguration);
+                var storageProvider = providerFactory.Create(container, storageProviderConfig);
                 return storageProvider;
             });
 

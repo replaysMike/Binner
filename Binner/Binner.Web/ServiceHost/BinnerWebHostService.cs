@@ -1,5 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.Configuration;
+using Binner.Common.Database;
 using Binner.Common.Extensions;
 using Binner.Common.Security;
 using Binner.Common.StorageProviders;
@@ -49,7 +50,23 @@ namespace Binner.Web.ServiceHost
 
         public bool Start(HostControl hostControl)
         {
-            Task.Run(InitializeWebHostAsync).ContinueWith(t =>
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            RunStartAsync(hostControl);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            _nlogLogger.Info("Start completed()");
+            return true;
+        }
+
+        public bool Stop(HostControl hostControl)
+        {
+            ShutdownWebHost();
+            return true;
+        }
+
+        private async Task RunStartAsync(HostControl hostControl)
+        {
+            _nlogLogger.Info("Start()");
+            await Task.Run(InitializeWebHostAsync).ContinueWith(t =>
             {
                 if (t.Exception != null)
                 {
@@ -75,19 +92,13 @@ namespace Binner.Web.ServiceHost
                     }
                     hostControl.Stop();
                 }
-            }, TaskContinuationOptions.OnlyOnFaulted); ;
-            return true;
-        }
-
-        public bool Stop(HostControl hostControl)
-        {
-            ShutdownWebHost();
-            return true;
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         private async Task InitializeWebHostAsync()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            Console.WriteLine("InitializeWebHostAsync()");
+            var version = Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? "0.0.0";
             _nlogLogger.Info($"Binner Service v{version} starting...");
             // run without awaiting to avoid service startup delays, and allow the service to shutdown cleanly
             var configPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule!.FileName) ?? string.Empty;
@@ -228,6 +239,7 @@ namespace Binner.Web.ServiceHost
                 }
             }
 
+            Console.WriteLine("Running()");
             await _webHost.RunAsync(_cancellationTokenSource.Token);
 
             // stop the service

@@ -1,36 +1,15 @@
-﻿using Binner.Data;
-using Binner.Data.Generators;
-using Binner.Model.Configuration;
+﻿using Binner.Model.Configuration;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using MySqlConnector;
 using Npgsql;
 using System;
 using System.Linq;
-using Binner.Model;
 
-namespace Binner.Web.Configuration
+namespace Binner.Common.Database
 {
-    public static class HostBuilderFactory
+    public static class ConnectionStringConstructor
     {
-        public const string SqlLiteMigrationsAssemblyName = "Binner.Data.Migrations.Sqlite";
-        public const string SqlServerMigrationsAssemblyName = "Binner.Data.Migrations.SqlServer";
-        public const string PostgresqlMigrationsAssemblyName = "Binner.Data.Migrations.Postgresql";
-        public const string MySqlMigrationsAssemblyName = "Binner.Data.Migrations.MySql";
-
-        public static IHostBuilder Create(StorageProviderConfiguration configuration)
-        {
-            return Host.CreateDefaultBuilder()
-                .ConfigureServices((hostContext, services) =>
-                {
-                    RegisterDbContext(services, configuration);
-                });
-        }
-
-        private static string ConstructConnectionString(StorageProviderConfiguration configuration)
+        public static string ConstructConnectionString(StorageProviderConfiguration configuration)
         {
             var connectionString = configuration.ProviderConfiguration
                 .Where(x => x.Key == "ConnectionString")
@@ -71,8 +50,8 @@ namespace Binner.Web.Configuration
 
             switch (configuration.StorageProvider)
             {
-                case StorageProviders.Binner:
-                case StorageProviders.Sqlite:
+                case Model.StorageProviders.Binner:
+                case Model.StorageProviders.Sqlite:
                     {
                         var filename = configuration.ProviderConfiguration
                             .Where(x => x.Key == "Filename")
@@ -80,7 +59,7 @@ namespace Binner.Web.Configuration
                             .FirstOrDefault();
                         return EnsureSqliteConnectionString(connectionString, filename);
                     }
-                case StorageProviders.SqlServer:
+                case Model.StorageProviders.SqlServer:
                     {
                         var builder = new SqlConnectionStringBuilder(connectionString);
                         if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(port))
@@ -103,7 +82,7 @@ namespace Binner.Web.Configuration
                             return $"{builder};{additionalParameters}";
                         return $"{builder}";
                     }
-                case StorageProviders.Postgresql:
+                case Model.StorageProviders.Postgresql:
                     {
                         var builder = new NpgsqlConnectionStringBuilder(connectionString);
                         if (!string.IsNullOrEmpty(host))
@@ -131,7 +110,7 @@ namespace Binner.Web.Configuration
                             return $"{builder};{additionalParameters}";
                         return $"{builder}";
                     }
-                case StorageProviders.MySql:
+                case Model.StorageProviders.MySql:
                     {
                         var builder = new MySqlConnectionStringBuilder(connectionString ?? string.Empty);
                         if (!string.IsNullOrEmpty(host))
@@ -154,43 +133,6 @@ namespace Binner.Web.Configuration
                 default:
                     throw new NotSupportedException($"Unsupported provider: {configuration.Provider}");
             }
-        }
-
-        public static IServiceCollection RegisterDbContext(IServiceCollection services, StorageProviderConfiguration configuration)
-        {
-            var connectionString = ConstructConnectionString(configuration);
-
-            services.AddDbContext<BinnerContext>(options => _ = configuration.StorageProvider switch
-            {
-                // binner and sqlite are now the same
-                StorageProviders.Binner => options.UseSqlite(connectionString, x =>
-                {
-                    x.MigrationsAssembly(SqlLiteMigrationsAssemblyName);
-                }).ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>(),
-
-                StorageProviders.Sqlite => options.UseSqlite(connectionString, x =>
-                {
-                    x.MigrationsAssembly(SqlLiteMigrationsAssemblyName);
-                }).ReplaceService<IMigrationsSqlGenerator, SqliteCustomMigrationsSqlGenerator>(),
-
-                // alternative storage provider registrations
-                StorageProviders.SqlServer => options.UseSqlServer(connectionString, x => x.MigrationsAssembly(SqlServerMigrationsAssemblyName)),
-
-                StorageProviders.Postgresql => options.UseNpgsql(connectionString, x =>
-                {
-                    x.MigrationsAssembly(PostgresqlMigrationsAssemblyName);
-                    x.MigrationsHistoryTable("__EFMigrationsHistory", "dbo");
-                }).ReplaceService<IMigrationsSqlGenerator, PostgresqlCustomMigrationsSqlGenerator>(),
-
-                StorageProviders.MySql => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), x =>
-                {
-                    x.MigrationsAssembly(MySqlMigrationsAssemblyName);
-                    x.SchemaBehavior(Pomelo.EntityFrameworkCore.MySql.Infrastructure.MySqlSchemaBehavior.Ignore);
-                }).ReplaceService<IMigrationsSqlGenerator, MySqlCustomMigrationsSqlGenerator>(),
-                _ => throw new NotSupportedException($"Unsupported provider: {configuration.Provider}")
-            });
-            services.AddDbContextFactory<BinnerContext>(lifetime: ServiceLifetime.Scoped);
-            return services;
         }
 
         private static string EnsureSqliteConnectionString(string? connectionString, string? filename)

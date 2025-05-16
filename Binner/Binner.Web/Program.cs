@@ -19,9 +19,6 @@ var LogManagerConfigFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVa
 var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogManagerConfigFile);
 var logger = NLog.Web.NLogBuilder.ConfigureNLog(logFile).GetCurrentClassLogger();
 
-// create a console
-var console = new BinnerConsole(logger, configFile);
-
 if (!Directory.Exists(Path.GetDirectoryName(configFile)))
 {
     BinnerConsole.PrintError($"Path to configuration file '{Path.GetDirectoryName(configFile)}' does not exist!");
@@ -62,19 +59,14 @@ catch (Exception ex)
     return;
 }
 
+// create a console
+var console = new BinnerConsole(logger, configFile, configRoot, webHostConfig);
+
 // process any optional arguments
-console.CheckArgs(args, webHostConfig);
+await console.CheckArgsAsync(args, webHostConfig);
 
 // print the header and runtime information
 await console.PrintHeaderAsync(args, webHostConfig);
-
-// check if port is in use before proceeding
-if (Ports.IsPortInUse(webHostConfig.Port))
-{
-    BinnerConsole.PrintError($"The port '{webHostConfig.Port}' is currently in use.");
-    Environment.Exit(ExitCodes.PortInUse);
-    return;
-}
 
 // setup service info
 var displayName = typeof(BinnerWebHostService).GetDisplayName();
@@ -82,6 +74,10 @@ var serviceName = displayName.Replace(" ", "");
 var serviceDescription = typeof(BinnerWebHostService).GetDescription();
 
 // create a service using TopShelf
+//Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
+Console.WriteLine($"TopShelf starting:");
+logger.Info($"TopShelf starting:");
 var rc = HostFactory.Run(x =>
 {
     if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
@@ -89,12 +85,24 @@ var rc = HostFactory.Run(x =>
         x.UseEnvironmentBuilder(target => new DotNetCoreEnvironmentBuilder(target));
     }
 
-    x.AddCommandLineSwitch("dbinfo", v => BinnerConsole.PrintDbInfo(configRoot, webHostConfig));
-    x.ApplyCommandLine();
-
     x.Service<BinnerWebHostService>(s =>
     {
         s.ConstructUsing(name => new BinnerWebHostService());
+        /*s.BeforeStartingService(async tc =>
+        {
+            // check if port is in use before proceeding
+            if (Ports.IsPortInUse(webHostConfig.Port))
+            {
+                var message = $"The port '{webHostConfig.Port}' is currently in use.";
+                logger.Error(message);
+                BinnerConsole.PrintError(message);
+                Environment.Exit(ExitCodes.PortInUse);
+                return;
+            }
+
+            // check for new version
+            await console.CheckNewVersionAsync();
+        });*/
         s.WhenStarted((tc, hostControl) => tc.Start(hostControl));
         s.WhenStopped((tc, hostControl) => tc.Stop(hostControl));
     });
@@ -103,17 +111,22 @@ var rc = HostFactory.Run(x =>
     x.SetDescription(serviceDescription);
     x.SetDisplayName(displayName);
     x.SetServiceName(serviceName);
+    x.SetStartTimeout(TimeSpan.FromSeconds(15));
+    x.SetStopTimeout(TimeSpan.FromSeconds(10));
     x.BeforeInstall(() => logger.Info($"Installing service {serviceName}..."));
     x.BeforeUninstall(() => logger.Info($"Uninstalling service {serviceName}..."));
     x.AfterInstall(() => logger.Info($"{serviceName} service installed."));
     x.AfterUninstall(() => logger.Info($"{serviceName} service uninstalled."));
-    x.OnException((ex) => logger.Error(ex, $"{serviceName} exception thrown: {ex.Message}"));
-
-    x.SetHelpTextPrefix("\nCustom commands: \n\n  Binner.Web.exe [-switch]\n\n    dbinfo              Shows database configuration diagnostics info\n\n");
+    x.OnException((ex) =>
+    {
+        logger.Error(ex, $"{serviceName} exception thrown: {ex.Message}");
+    });
 
     x.UnhandledExceptionPolicy = UnhandledExceptionPolicyCode.LogErrorAndStopService;
 });
 
 // exit with code
 var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());
+Console.WriteLine($"TopShelf service Exit code: {rc} ({exitCode})");
+logger.Info($"TopShelf service Exit code: {rc} ({exitCode})");
 Environment.ExitCode = exitCode;

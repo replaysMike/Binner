@@ -587,6 +587,21 @@ namespace Binner.Testing
             return new List<CustomField>();
         }
 
+        public async Task<bool> ResetUserCredentialsAsync(string username)
+        {
+            return false;
+        }
+
+        public async Task<int> GetUserCountAsync()
+        {
+            return _users.Count;
+        }
+
+        public async Task<int> GetUserAdminCountAsync()
+        {
+            return _users.Count(x => x.Value.IsAdmin);
+        }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

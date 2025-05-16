@@ -1,5 +1,5 @@
 ﻿using Binner.Model;
-using System.Collections.Generic;
+using Binner.Model.Configuration;
 
 namespace Binner.Common.StorageProviders
 {
@@ -9,9 +9,16 @@ namespace Binner.Common.StorageProviders
         /// Create an instance of IStorageProvider
         /// </summary>
         /// <param name="container">The service container</param>
-        /// <param name="providerName">The name of the storage provider</param>
-        /// <param name="config">Configuration to pass to the storage provider</param>
+        /// <param name="storageProviderConfiguration">The storage provider configuration section from <see cref="WebHostServiceConfiguration"/></param>
         /// <returns></returns>
-        IStorageProvider Create(LightInject.IServiceContainer container, string providerName, IDictionary<string, string> config);
+        IStorageProvider Create(LightInject.IServiceContainer container, StorageProviderConfiguration storageProviderConfiguration);
+
+        /// <summary>
+        /// Create a limited instance of IStorageProvider
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        IStorageProvider CreateLimited(LightInject.IServiceContainer container, StorageProviderConfiguration configuration);
     }
 }

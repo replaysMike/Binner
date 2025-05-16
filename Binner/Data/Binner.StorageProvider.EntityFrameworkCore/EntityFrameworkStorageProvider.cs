@@ -25,6 +25,13 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         private readonly ILicensedStorageProvider _licensedStorageProvider;
         private readonly ILogger<EntityFrameworkStorageProvider> _logger;
 
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, string providerName, IDictionary<string, string> config)
+        {
+            _contextFactory = contextFactory;
+            _providerName = providerName;
+            _config = config;
+        }
+
         public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider, ILogger<EntityFrameworkStorageProvider> logger)
         {
             _contextFactory = contextFactory;
@@ -1969,6 +1976,49 @@ INNER JOIN (
             await context.SaveChangesAsync();
 
             return customFields;
+        }
+
+        public async Task<bool> ResetUserCredentialsAsync(string username)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var fields = new List<CustomValue>();
+
+            var entity = await context.Users
+                .Where(x => x.EmailAddress == username)
+                .FirstOrDefaultAsync();
+
+            if (entity != null)
+            {
+                entity.PasswordHash = string.Empty;
+                entity.DateModifiedUtc = DateTime.UtcNow;
+                await context.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<int> GetUserCountAsync()
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var fields = new List<CustomValue>();
+
+            var count = await context.Users
+                .CountAsync();
+
+            return count;
+        }
+
+        public async Task<int> GetUserAdminCountAsync()
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var fields = new List<CustomValue>();
+
+            var count = await context.Users
+                .Where(x => x.IsAdmin)
+                .CountAsync();
+
+            return count;
         }
 
         public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)

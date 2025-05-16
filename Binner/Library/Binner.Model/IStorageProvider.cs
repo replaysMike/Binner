@@ -709,5 +709,24 @@ namespace Binner.Model
         /// <param name="customFields"></param>
         /// <returns></returns>
         Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields, IUserContext? userContext);
+
+        /// <summary>
+        /// Reset user credentials to empty password (Admin only)
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        Task<bool> ResetUserCredentialsAsync(string username);
+
+        /// <summary>
+        /// Get the number of users
+        /// </summary>
+        /// <returns></returns>
+        Task<int> GetUserCountAsync();
+
+        /// <summary>
+        /// Get the number of admin users
+        /// </summary>
+        /// <returns></returns>
+        Task<int> GetUserAdminCountAsync();
     }
 }
