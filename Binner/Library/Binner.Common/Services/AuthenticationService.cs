@@ -56,14 +56,15 @@ namespace Binner.Common.Services
                 {
                     var userContext = Map(user);
                     var isLoginAllowed = false;
-                    if (string.IsNullOrEmpty(user.PasswordHash) && string.IsNullOrEmpty(model.Password))
+                    if (string.IsNullOrWhiteSpace(user.PasswordHash) && _configuration.AllowPasswordRecovery)
                     {
-                        // special case for lost passwords on local installations only, requires database-level password clear as it can't be done via the api
+                        // special case for lost passwords on local installations only, requires database-level password clear
+                        // (./Binner.Web.exe --resetuser --username XXXXXXXX) as it can't be done via the api. Requires administrative priveleges
                         isLoginAllowed = true;
                     }
-                    else
+                    else if(!string.IsNullOrEmpty(model.Password))
                     {
-                        // validate password
+                        // validate password normally
                         isLoginAllowed = PasswordHasher.Verify(model.Password, user.PasswordHash);
                     }
                     if (isLoginAllowed)
