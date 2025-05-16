@@ -48,5 +48,12 @@ namespace Binner.Common.Services
         /// <param name="token">Token to validate</param>
         /// <returns>null if token is invalid</returns>
         Task<IUserContext?> ValidateUserImageToken(string token);
+
+        /// <summary>
+        /// Get the global user context for a user id.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<UserContext?> GetGlobalUserContextAsync(int userId);
     }
 }

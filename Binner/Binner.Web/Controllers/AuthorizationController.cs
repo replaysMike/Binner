@@ -130,11 +130,11 @@ namespace Binner.Web.Controllers
                 authRequest.AuthorizationCode = code;
 
                 // reconstruct the user's session based on their UserId, since we don't have a Jwt token here for the user
-                var user = await _userService.GetUserAsync(new Model.User { UserId = userId });
+                var user = await _userService.GetGlobalUserContextAsync(userId);
                 if (user == null)
                 {
-                    _logger.LogError($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] UserId '{userId}' not found!");
-                    throw new AuthenticationException($"UserId '{userId}' not found!");
+                    _logger.LogError($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] UserId '{userId}' not found! Can't complete DigiKey authorization.");
+                    throw new AuthenticationException($"UserId '{userId}' not found! Can't complete DigiKey authorization.");
                 }
 
                 // create claims for the user's identity
