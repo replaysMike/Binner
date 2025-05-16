@@ -101,6 +101,7 @@ namespace Binner.Web.Controllers
 
                 // register new configuration
                 _container.RegisterInstance(newConfiguration);
+                _container.RegisterInstance(newConfiguration.Locale);
 
                 return Ok(new OperationSuccessResponse());
             }

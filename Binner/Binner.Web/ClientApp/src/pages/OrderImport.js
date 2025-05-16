@@ -274,6 +274,14 @@ export function OrderImport(props) {
     window.open(`mailto:api@arrow.com?SUBJECT=${encodeURIComponent("Orders API")}&BODY=${encodeURIComponent(body)}`, "_blank");
   };
 
+  const handleInlineChange = (e, control, part) => {
+    e.preventDefault();
+    e.stopPropagation();
+    part[control.name] = control.value;
+    const parts = _.filter(order.parts, p => p.key != part.key);
+    setOrder({...order, parts: { ...parts, part } });
+  };
+
   const handleChange = (e, control) => {
     const newOrder = order;
     switch (control.name) {
@@ -387,99 +395,113 @@ export function OrderImport(props) {
   const renderAllMatchingParts = (order) => {
     return (
       <div>
-        <Table compact celled selectable size="small" className="partstable expandable-table">
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell colSpan="11">
-                <Table>
-                  <Table.Body>
-                    <Table.Row>
-                      <Table.Cell>
-                        <Label>{t('label.customerId', "Customer Id")}:</Label>
-                        {order.customerId || "Unspecified"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Label>{t('label.orderAmount', "Order Amount")}:</Label>{formatCurrency(order.amount, order.currency)} (<i>{order.currency}</i>)
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Label>{t('label.orderDate', "Order Date")}:</Label>
-                        {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
-                        {formatTrackingNumber(order.trackingNumber)}
-                      </Table.Cell>
-                    </Table.Row>
-                  </Table.Body>
-                </Table>
-              </Table.HeaderCell>
-            </Table.Row>
-            {order.messages.length > 0 && <Table.Row>
-              <Table.Cell colSpan={11}>
-                <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
-                <ul style={{ marginBottom: '10px' }} className="errors">
-                  {order.messages.map((messageItem, key) => (
-                    <li key={key} className={`${messageItem.isError ? 'error' : ''}`}>{messageItem.isError ? t('label.error', 'Error') + ': ' : ''}{messageItem.description}</li>
-                  ))}
-                </ul>
-              </Table.Cell>
-            </Table.Row>}
-            <Table.Row>
-              <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.exists', "Exists")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.supplierPart', "Supplier Part")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.quantityShort', "Qty")}</Table.HeaderCell>
-              <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
-              <Table.HeaderCell></Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {order.parts.map((p, index) => (
-              <Table.Row key={index} onClick={e => handleViewPart(e, p)}>
-                <Table.Cell>
-                  <Checkbox toggle checked={p.selected} onChange={(e) => handleChecked(e, p)} data={p} />
-                </Table.Cell>
-                <Table.Cell textAlign="center">
-                  {p.partId 
-                    ? <Popup content={<p>{t('page.orderImport.popup.partExists', "Part exists in your inventory.")}</p>} trigger={<Icon name="check circle" color="blue" size="large" />} /> 
-                    : <Popup content={<p>{t('page.orderImport.popup.newPart', "New part does not exist in your inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="large" />} />
-                  }
-                </Table.Cell>
-                <Table.Cell className="expandable-cell width-100">
-                  <Popup wide hoverable content={<p>{p.description}</p>} trigger={<span>{p.description}</span>} />
-                </Table.Cell>
-                <Table.Cell className="expandable-cell width-100">
-                  <Popup wide hoverable content={<p>{p.manufacturerPartNumber}{p.reference && <><br />{p.reference}</>}</p>} trigger={<div>
-                    {p.manufacturerPartNumber}
-                    {p.reference && <><br /><div className="part-reference expandable-cell width-100">{p.reference}</div></>}
-                  </div>} />
-                </Table.Cell>
-                <Table.Cell className="expandable-cell width-100">
-                  <Popup wide hoverable content={<p>{p.manufacturer}</p>} trigger={<span>{p.manufacturer}</span>} />
-                </Table.Cell>
-                <Table.Cell className="expandable-cell width-50" textAlign="center">{p.partType}</Table.Cell>
-                <Table.Cell className="expandable-cell width-150"><Popup wide hoverable content={p.supplierPartNumber} trigger={<span>{p.supplierPartNumber}</span>} /></Table.Cell>
-                <Table.Cell className="expandable-cell width-50">{formatCurrency(p.cost, p.currency || "USD")}<br/><i>{p.currency || "USD"}</i></Table.Cell>
-                <Table.Cell className="expandable-cell width-50">{p.quantityAvailable}</Table.Cell>
-                <Table.Cell className="expandable-cell width-50">
-                  <Image src={p.imageUrl} size="mini"></Image>
-                </Table.Cell>
-                <Table.Cell>
-                  {p.datasheetUrls.map((d, dindex) => (
-                    <Link key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)} to="">
-                      {t('button.viewDatasheet', "View Datasheet")}
-                    </Link>
-                  ))}
-                </Table.Cell>
+        <div className="scrollable" style={{width: '100%'}}>
+          <Table compact celled size="small" className="partstable" style={{width: '100%'}}>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell colSpan="13">
+                  <Table>
+                    <Table.Body>
+                      <Table.Row>
+                        <Table.Cell>
+                          <Label>{t('label.customerId', "Customer Id")}:</Label>
+                          {order.customerId || "Unspecified"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Label>{t('label.orderAmount', "Order Amount")}:</Label>{formatCurrency(order.amount, order.currency)} (<i>{order.currency}</i>)
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Label>{t('label.orderDate', "Order Date")}:</Label>
+                          {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
+                          {formatTrackingNumber(order.trackingNumber)}
+                        </Table.Cell>
+                      </Table.Row>
+                    </Table.Body>
+                  </Table>
+                </Table.HeaderCell>
               </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
+              {order.messages.length > 0 && <Table.Row>
+                <Table.Cell colSpan={13}>
+                  <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
+                  <ul style={{ marginBottom: '10px' }} className="errors">
+                    {order.messages.map((messageItem, key) => (
+                      <li key={key} className={`${messageItem.isError ? 'error' : ''}`}>{messageItem.isError ? t('label.error', 'Error') + ': ' : ''}{messageItem.description}</li>
+                    ))}
+                  </ul>
+                </Table.Cell>
+              </Table.Row>}
+              <Table.Row>
+                <Table.HeaderCell>{t('label.importQuestion', "Import?")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.exists', "Exists")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.part', "Part")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.partNumberShort', "Part#")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.reference', "Reference")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.manufacturer', "Manufacturer")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.partType', "Part Type")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.supplierPart', "Supplier Part")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.cost', "Cost")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.total', "Total")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.quantityShort', "Qty")}</Table.HeaderCell>
+                <Table.HeaderCell>{t('label.image', "Image")}</Table.HeaderCell>
+                <Table.HeaderCell></Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {order.parts.map((p, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell>
+                    <Checkbox toggle checked={p.selected} onChange={(e) => handleChecked(e, p)} data={p} />
+                  </Table.Cell>
+                  <Table.Cell textAlign="center">
+                    {p.partId 
+                      ? <Popup content={<p>{t('page.orderImport.popup.partExists', "Part exists in your inventory. If selected, quantity will be added to it.")}</p>} trigger={<Icon name="check circle" color="blue" size="large" />} /> 
+                      : <Popup content={<p>{t('page.orderImport.popup.newPart', "New part does not exist in your inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="large" />} />
+                    }
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Popup wide hoverable content={<p>{p.description}</p>} trigger={<Form.Input className="inline-editable" transparent fluid name="description" value={p.description || ''} onChange={(e, control) => handleInlineChange(e, control, p)} />} />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Popup wide hoverable content={<p>{p.manufacturerPartNumber}</p>} trigger={
+                      <div>
+                        <Form.Input className="inline-editable" transparent fluid name="manufacturerPartNumber" value={p.manufacturerPartNumber || ''} onChange={(e, control) => handleInlineChange(e, control, p)} />
+                    </div>} 
+                    />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Popup wide hoverable content={<p>{p.reference}</p>} trigger={
+                      <div>
+                        <Form.Input className="inline-editable" transparent fluid name="reference" value={p.reference || ''} onChange={(e, control) => handleInlineChange(e, control, p)} />
+                      </div>} 
+                    />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Popup wide hoverable content={<p>{p.manufacturer}</p>} trigger={<Form.Input className="inline-editable" transparent fluid name="manufacturer" value={p.manufacturer || ''} onChange={(e, control) => handleInlineChange(e, control, p)} />} />
+                  </Table.Cell>
+                  <Table.Cell textAlign="center">{p.partType}</Table.Cell>
+                  <Table.Cell><Popup wide hoverable content={p.supplierPartNumber} trigger={<span>{p.supplierPartNumber}</span>} /></Table.Cell>
+                  <Table.Cell>{formatCurrency(p.cost, p.currency || "USD")}<br/><i>{p.currency || "USD"}</i></Table.Cell>
+                  <Table.Cell>{formatCurrency(p.totalCost, p.currency || "USD")}<br /><i>{p.currency || "USD"}</i></Table.Cell>
+                  <Table.Cell><Form.Input className="inline-editable" transparent fluid name="quantity" value={p.quantity || ''} onChange={(e, control) => handleInlineChange(e, control, p)} /></Table.Cell>
+                  <Table.Cell>
+                    <Image src={p.imageUrl} size="mini"></Image>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {p.partId > 0 && <Link onClick={e => handleViewPart(e, p)}>View Part</Link>}<br/>
+                    {p.datasheetUrls.map((d, dindex) => (
+                      <Link key={dindex} onClick={(e) => handleHighlightAndVisit(e, d)} to="">
+                        {t('button.viewDatasheet', "View Datasheet")}
+                      </Link>
+                    ))}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </div>
         <Button primary onClick={handleImportParts} disabled={_.filter(orderImportSearchResult.parts, i => i.selected).length === 0}>{t('button.importParts', "Import Parts")}</Button>
       </div>
     );
@@ -488,7 +510,7 @@ export function OrderImport(props) {
   const renderImportResult = (importResult) => {
     return (
       <div>
-        <Table compact celled selectable size="small" className="partstable">
+        <Table compact celled size="small" className="partstable">
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell></Table.HeaderCell>
@@ -505,7 +527,7 @@ export function OrderImport(props) {
           <Table.Body>
             {importResult.parts.map((p, index) => (
               <React.Fragment key={index}>
-                <Table.Row onClick={e => handleViewPart(e, p)}>
+                <Table.Row>
                   <Table.Cell>
                     <Icon name={p.isImported ? "check circle" : "times circle"} color={p.isImported ? "green" : "red"} />
                   </Table.Cell>
@@ -522,7 +544,7 @@ export function OrderImport(props) {
                   <Table.Cell className="expandable-cell width-50" textAlign="center">{p.partType}</Table.Cell>
                   <Table.Cell className="expandable-cell width-100">{p.supplierPartNumber}</Table.Cell>
                   <Table.Cell className="expandable-cell width-50">{formatCurrency(p.cost, p.currency || "USD")}</Table.Cell>
-                  <Table.Cell className="expandable-cell width-50">{p.quantityAvailable}</Table.Cell>
+                  <Table.Cell className="expandable-cell width-50">{p.quantity}</Table.Cell>
                   <Table.Cell className="expandable-cell width-50"><Image src={p.imageUrl} size="mini"></Image></Table.Cell>
                 </Table.Row>
                 <Table.Row style={{ backgroundColor: '#fafafa' }}>
@@ -557,21 +579,21 @@ export function OrderImport(props) {
         }
       />
       <Confirm
-              header={<div className="header"><Icon name="undo" color="grey" /> {t('confirm.importOrder', "Import Order")}</div>}
-              open={confirmReImport}
-              confirmButton={t('button.import', "Import")}
-              cancelButton={t('button.cancel', "Cancel")}
-              content={
-                <p style={{ padding: "20px", fontSize: '1.2em', textAlign: "center" }}>
-                  <span style={{ color: '#666' }}>{t('confirm.alreadyImportedOrder', "You have already imported this order.")}</span>
-                  <br />
-                  <br />
-                  {t('confirm.confirmReImportOrder', "Do you want to import this order again?")}
-                </p>
-              }
-              onCancel={handleCancelReImport}
-              onConfirm={handleConfirmReImport}
-            />
+        header={<div className="header"><Icon name="undo" color="grey" /> {t('confirm.importOrder', "Import Order")}</div>}
+        open={confirmReImport}
+        confirmButton={t('button.import', "Import")}
+        cancelButton={t('button.cancel', "Cancel")}
+        content={
+          <p style={{ padding: "20px", fontSize: '1.2em', textAlign: "center" }}>
+            <span style={{ color: '#666' }}>{t('confirm.alreadyImportedOrder', "You have already imported this order.")}</span>
+            <br />
+            <br />
+            {t('confirm.confirmReImportOrder', "Do you want to import this order again?")}
+          </p>
+        }
+        onCancel={handleCancelReImport}
+        onConfirm={handleConfirmReImport}
+      />
       <BarcodeScannerInput onReceived={handleBarcodeInput} swallowKeyEvent={false} minInputLength={4} enableSound={false} />
       <h1>{t('page.orderImport.title', "Order Import")}</h1>
       <Form>
@@ -594,16 +616,18 @@ export function OrderImport(props) {
               </div>
             }
             trigger={
-              <ProtectedInput
-                label={orderLabel}
-                placeholder="1023840"
-                icon="search"
-                focus
-                value={order.orderId}
-                onChange={handleChange}
-                onClear={handleOrderIdClear}
-                name="orderId"
-              />
+              <div>
+                <ProtectedInput
+                  label={orderLabel}
+                  placeholder="1023840"
+                  icon="search"
+                  focus
+                  value={order.orderId}
+                  onChange={handleChange}
+                  onClear={handleOrderIdClear}
+                  name="orderId"
+                />
+              </div>
             }
           />
           {order.supplier === "Arrow" &&

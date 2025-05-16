@@ -30,6 +30,7 @@ namespace Binner.Web.Configuration
             if (serviceConfiguration == null) throw new InvalidOperationException($"Could not load WebHostServiceConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             var integrationConfiguration = serviceConfiguration.Integrations;
             var authenticationConfiguration = serviceConfiguration.Authentication;
+            var localeConfiguration = serviceConfiguration.Locale;
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
             if (storageProviderConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             // inject configuration from environment variables (if set)
@@ -55,6 +56,8 @@ namespace Binner.Web.Configuration
             var licenseConfig = new LicenseConfiguration { LicenseKey = serviceConfiguration.LicenseKey };
             container.RegisterInstance(licenseConfig);
             services.AddSingleton(licenseConfig);
+            container.RegisterInstance(localeConfiguration);
+            services.AddSingleton(localeConfiguration);
             container.RegisterInstance(configuration);
             services.AddSingleton(serviceConfiguration);
             container.RegisterInstance(serviceConfiguration);

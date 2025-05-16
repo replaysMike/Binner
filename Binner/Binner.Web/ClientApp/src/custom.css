@@ -985,6 +985,10 @@ div:has(.popup),div:has(.Toastify>*) {
     font-size: 0.9em;
 }
 
+.scrollable {
+  overflow-x: scroll;
+}
+
 .expandable-table {
   overflow: scroll;
 }

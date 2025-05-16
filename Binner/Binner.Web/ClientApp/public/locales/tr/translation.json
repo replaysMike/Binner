@@ -251,7 +251,7 @@
       "requestAllProductInformation": "Tüm ürün bilgilerini talep et (slower)",
       "apiMessages": "Api Mesajları",
       "popup": {
-        "partExists": "Part exists in your inventory.",
+        "partExists": "Part exists in your inventory. If selected, quantity will be added to it.",
         "newPart": "New part does not exist in your inventory."
       }
     },

@@ -14,7 +14,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using static Binner.Common.Integrations.DigikeyApi;
 
 namespace Binner.Common.Integrations
 {
@@ -65,7 +64,7 @@ namespace Binner.Common.Integrations
         {
             try
             {
-                // set what fields we want from the API
+                // set what fields we want from the API (RetrieveSalesOrder)
                 var uri = Url.Combine(_configuration.ApiUrl, $"orderstatus/v4/salesorder/{orderId}");
                 var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                 // perform a keywords API search
