@@ -90,6 +90,24 @@ namespace Binner.Common.Services
             return await context.SaveChangesAsync() > 0;
         }
 
+        public async Task<UserContext?> GetGlobalUserContextAsync(int userId)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Users
+                .Where(x => x.UserId == userId)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync();
+            if (entity == null) return null;
+
+            return new UserContext
+            {
+                EmailAddress = entity.EmailAddress,
+                UserId = entity.UserId,
+                OrganizationId = entity.OrganizationId,
+                Name = entity.Name
+            };
+        }
+
         public async Task<IUserContext?> ValidateUserImageToken(string token)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
