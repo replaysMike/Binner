@@ -76,8 +76,6 @@ var serviceDescription = typeof(BinnerWebHostService).GetDescription();
 // create a service using TopShelf
 //Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
-Console.WriteLine($"TopShelf starting:");
-logger.Info($"TopShelf starting:");
 var rc = HostFactory.Run(x =>
 {
     if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
@@ -85,10 +83,12 @@ var rc = HostFactory.Run(x =>
         x.UseEnvironmentBuilder(target => new DotNetCoreEnvironmentBuilder(target));
     }
 
+    //x.AddCommandLineSwitch("dbinfo", v => BinnerConsole.PrintDbInfo(configRoot, webHostConfig));
+    //x.ApplyCommandLine();
     x.Service<BinnerWebHostService>(s =>
     {
         s.ConstructUsing(name => new BinnerWebHostService());
-        /*s.BeforeStartingService(async tc =>
+        s.BeforeStartingService(async tc =>
         {
             // check if port is in use before proceeding
             if (Ports.IsPortInUse(webHostConfig.Port))
@@ -102,7 +102,7 @@ var rc = HostFactory.Run(x =>
 
             // check for new version
             await console.CheckNewVersionAsync();
-        });*/
+        });
         s.WhenStarted((tc, hostControl) => tc.Start(hostControl));
         s.WhenStopped((tc, hostControl) => tc.Stop(hostControl));
     });
@@ -127,6 +127,6 @@ var rc = HostFactory.Run(x =>
 
 // exit with code
 var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());
-Console.WriteLine($"TopShelf service Exit code: {rc} ({exitCode})");
-logger.Info($"TopShelf service Exit code: {rc} ({exitCode})");
+Console.WriteLine($"Exit code: {rc} ({exitCode})");
+logger.Info($"Exit code: {rc} ({exitCode})");
 Environment.ExitCode = exitCode;
