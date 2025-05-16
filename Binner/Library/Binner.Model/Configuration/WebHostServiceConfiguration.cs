@@ -218,6 +218,11 @@
         public TimeSpan MaxPartTypesCacheLifetime { get; set; } = TimeSpan.FromMinutes(30);
 
         /// <summary>
+        /// Allow the ability to login when passwords are empty in the database. See https://github.com/replaysMike/Binner/wiki/Lost-password-recovery
+        /// </summary>
+        public bool AllowPasswordRecovery { get; set; } = true;
+
+        /// <summary>
         /// Locale configuration
         /// </summary>
         public LocaleConfiguration Locale { get; set; } = new();
