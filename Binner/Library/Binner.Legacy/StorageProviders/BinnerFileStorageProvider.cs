@@ -816,7 +816,7 @@ namespace Binner.Legacy.StorageProviders
         }
 
         #region BinnerDb V4
-        
+
         public async Task<Pcb?> GetPcbAsync(long pcbId, IUserContext? userContext)
         {
             await _dataLock.WaitAsync();
@@ -1004,9 +1004,9 @@ namespace Binner.Legacy.StorageProviders
                 assignment.UserId = userContext?.UserId;
                 // first get the full entity
                 var assignmentEntity = (_db as BinnerDbV7)?.PcbStoredFileAssignments
-                    .FirstOrDefault(x => assignment.PcbStoredFileAssignmentId > 0 
-                        ? x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId 
-                        : (x.PcbId == assignment.PcbId && x.StoredFileId == assignment.StoredFileId) 
+                    .FirstOrDefault(x => assignment.PcbStoredFileAssignmentId > 0
+                        ? x.PcbStoredFileAssignmentId == assignment.PcbStoredFileAssignmentId
+                        : (x.PcbId == assignment.PcbId && x.StoredFileId == assignment.StoredFileId)
                           && x.UserId == assignment.UserId);
                 if (assignmentEntity == null)
                     return false;
@@ -1166,9 +1166,9 @@ namespace Binner.Legacy.StorageProviders
                 assignment.UserId = userContext?.UserId;
                 // first get the full entity
                 var assignmentEntity = (_db as BinnerDbV7)?.ProjectPartAssignments
-                    .FirstOrDefault(x => assignment.ProjectPartAssignmentId > 0 
-                        ? x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId 
-                        : (x.ProjectId == assignment.ProjectId && x.PcbId == assignment.PcbId) 
+                    .FirstOrDefault(x => assignment.ProjectPartAssignmentId > 0
+                        ? x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId
+                        : (x.ProjectId == assignment.ProjectId && x.PcbId == assignment.PcbId)
                           && x.UserId == assignment.UserId);
                 if (assignmentEntity == null)
                     return false;
@@ -1267,9 +1267,9 @@ namespace Binner.Legacy.StorageProviders
                 assignment.UserId = userContext?.UserId;
                 // first get the full entity
                 var assignmentEntity = (_db as BinnerDbV7)?.ProjectPcbAssignments
-                    .FirstOrDefault(x => assignment.ProjectPcbAssignmentId > 0 
-                        ? x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId 
-                        : (x.ProjectId == assignment.ProjectId && x.PcbId == assignment.PcbId) 
+                    .FirstOrDefault(x => assignment.ProjectPcbAssignmentId > 0
+                        ? x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId
+                        : (x.ProjectId == assignment.ProjectId && x.PcbId == assignment.PcbId)
                         && x.UserId == assignment.UserId);
                 if (assignmentEntity == null)
                     return false;
@@ -1488,7 +1488,7 @@ namespace Binner.Legacy.StorageProviders
                 .Select(x => new SearchResult<Part>(x, 400))
                 .ToList();
             matches.AddRange(arrowMatches);
-            
+
             // by bin number
             var binNumberMatches = _db.Parts.Where(x => words.Any(y => x.BinNumber?.Contains(y, comparisonType) == true || x.BinNumber2?.Contains(y, comparisonType) == true) && x.UserId == userContext?.UserId)
                 .Select(x => new SearchResult<Part>(x, 500))
@@ -1511,9 +1511,16 @@ namespace Binner.Legacy.StorageProviders
                     await _dataLock.WaitAsync();
                 try
                 {
-                    using (var stream = File.OpenRead(_config.Filename))
+                    using (var stream = File.Open(_config.Filename, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        Version = ReadDbVersion(stream);
+                        if (TryReadDbVersion(stream, out var version))
+                        {
+                            Version = version;
+                        }
+                        else
+                        {
+                            throw new Exception("Database is not a legacy Binner database file.");
+                        }
 
                         // copy the rest of the bytes
                         var bytes = new byte[stream.Length - stream.Position];
@@ -1648,12 +1655,21 @@ namespace Binner.Legacy.StorageProviders
             }
         }
 
-        private BinnerDbVersion ReadDbVersion(Stream stream)
+        private bool TryReadDbVersion(Stream stream, out BinnerDbVersion binnerDbVersion)
         {
             using var reader = new BinaryReader(stream, Encoding.UTF8, true);
             var versionByte = reader.ReadByte();
             var versionCreated = reader.ReadInt64();
-            return new BinnerDbVersion(versionByte, DateTime.FromBinary(versionCreated));
+            try
+            {
+                binnerDbVersion = new BinnerDbVersion(versionByte, DateTime.FromBinary(versionCreated));
+                return true;
+            }
+            catch (Exception)
+            {
+                binnerDbVersion = new BinnerDbVersion(0, DateTime.MinValue);
+            }
+            return false;
         }
 
         private void WriteDbVersion(Stream stream, BinnerDbVersion version)
