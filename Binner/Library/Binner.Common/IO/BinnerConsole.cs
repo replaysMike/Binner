@@ -9,6 +9,7 @@ using Binner.Legacy.StorageProviders;
 using Binner.Model;
 using Binner.Model.Configuration;
 using CommandLine;
+using CommandLine.Text;
 using LightInject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -155,7 +156,7 @@ namespace Binner.Common.IO
             }
         }
 
-        public async Task<bool> PrintDbInfo()
+        public async Task<bool> PrintDbInfoAsync()
         {
             var storageProviderConfiguration = LoadStorageConfiguration();
             var builder = new ContainerBuilder(_webHostConfig, storageProviderConfiguration);
@@ -376,7 +377,7 @@ namespace Binner.Common.IO
             if (usersEmptyPassword.Any())
             {
                 PrintErrorItem("User(s) empty password set."); hasError = true;
-                foreach(var user in usersEmptyPassword)
+                foreach (var user in usersEmptyPassword)
                 {
                     Console.WriteLine($"         User: {user.EmailAddress}");
                 }
@@ -448,7 +449,7 @@ namespace Binner.Common.IO
             if (!hasError)
                 PrintOk();
 
-            
+
         }
 
         private static async Task<bool> CheckOrgAsync<T>(BinnerContext context, IQueryable<T> query, string tableName) where T : IUserData
@@ -470,7 +471,7 @@ namespace Binner.Common.IO
         {
             if (!await query.AnyAsync())
             {
-                if(!isWarning)
+                if (!isWarning)
                     PrintErrorItem($"{tableName}(s) is empty.");
                 else
                     PrintWarnItem($"{tableName}(s) is empty.");
@@ -558,99 +559,136 @@ namespace Binner.Common.IO
         public async Task<bool> CheckArgsAsync(string[] args, WebHostServiceConfiguration webHostConfig)
         {
             var isHandled = false;
-            var parserResult = Parser.Default.ParseArguments<CommandLineOptions>(args);
-            await parserResult
-                .WithParsedAsync(async o =>
+            // any of these values will skip parsing and go straight to topshelf. This is due to incompatibility with the command line parser.
+            var bypassArgs = new[] { "install", "uninstall", "start", "stop", "-username", "-password", "-instance", "--autostart", "--disabled", "--manual", "--delayed", "--localsystem", "--localservice", "--networkservice", "--interactive", "--sudo", "-servicename", "-description", "-displayname" };
+            foreach(var arg in args)
+            {
+                if (bypassArgs.Contains(arg.ToLower()))
                 {
-                    if (o.DbInfo)
+                    return false;
+                }
+            }
+
+            try
+            {
+                var parserResult = Parser.Default.ParseArguments<CommandLineOptions>(args);
+                await parserResult
+                    .WithParsedAsync(async o =>
                     {
-                        // print database info
-                        PrintDbInfo();
-                        Environment.Exit(ExitCodes.Success);
-                    }
-                    if (o.GenerateCertificate)
-                    {
-                        // option to generate a self-signed certificate
-                        Console.WriteLine("Generating certificate...");
-                        try
+                        if (o.DbInfo)
                         {
-                            var result = _certificateUtility.GenerateSelfSignedCertificate(webHostConfig, true);
-                            if (result.Status.HasFlag(CertificateState.Created))
+                            isHandled = true;
+                            // print database info
+                            await PrintDbInfoAsync();
+                            Environment.Exit(ExitCodes.Success);
+                        }
+                        if (o.GenerateCertificate)
+                        {
+                            isHandled = true;
+                            // option to generate a self-signed certificate
+                            Console.WriteLine("Generating certificate...");
+                            try
                             {
-                                Console.WriteLine("Successfully created certificate.");
-                                if (result.Status.HasFlag(CertificateState.Registered))
+                                var result = _certificateUtility.GenerateSelfSignedCertificate(webHostConfig, true);
+                                if (result.Status.HasFlag(CertificateState.Created))
                                 {
-                                    Console.WriteLine("Successfully registered certificate.");
+                                    Console.WriteLine("Successfully created certificate.");
+                                    if (result.Status.HasFlag(CertificateState.Registered))
+                                    {
+                                        Console.WriteLine("Successfully registered certificate.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Failed to register certificate.");
+                                    }
+                                    Environment.Exit(ExitCodes.Success);
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Failed to register certificate.");
+                                    Console.WriteLine($"Error: Failed to create certificate! {result.Error}");
+                                    Environment.Exit(ExitCodes.FailedToCreateCertificate);
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Error: Failed to create certificate!");
+                                Console.WriteLine($"Exception: {ex.GetBaseException().Message}");
+                                Environment.Exit(ExitCodes.FailedToCreateCertificate);
+                            }
+
+                        }
+
+                        if (o.ResetUser)
+                        {
+                            isHandled = true;
+                            if (!Environment.IsPrivilegedProcess)
+                            {
+                                Console.WriteLine($"Error: This command must be run in an elevated process (Administrator/root).");
+                                Environment.Exit(ExitCodes.AccessDenied);
+                            }
+
+                            if (string.IsNullOrEmpty(o.Username))
+                            {
+                                Console.WriteLine($"Error: --username must be specified.");
+                                Environment.Exit(ExitCodes.InvalidOptions);
+                            }
+
+                            // reset password for user
+                            var storageProviderConfiguration = LoadStorageConfiguration();
+                            var builder = new ContainerBuilder(_webHostConfig, storageProviderConfiguration);
+                            var container = builder.Build();
+
+                            var storageProvider = container.GetInstance<IStorageProvider>();
+                            var isSuccess = await storageProvider.ResetUserCredentialsAsync(o.Username);
+                            if (isSuccess)
+                            {
+                                Console.WriteLine($"Password for '{o.Username}' was reset successfully. You may now login with a blank password.");
                                 Environment.Exit(ExitCodes.Success);
                             }
                             else
                             {
-                                Console.WriteLine($"Error: Failed to create certificate! {result.Error}");
-                                Environment.Exit(ExitCodes.FailedToCreateCertificate);
+                                Console.WriteLine($"Error: Failed to reset user '{o.Username}'. Please ensure that you have a valid username.");
+                                Environment.Exit(ExitCodes.Success);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Error: Failed to create certificate!");
-                            Console.WriteLine($"Exception: {ex.GetBaseException().Message}");
-                            Environment.Exit(ExitCodes.FailedToCreateCertificate);
-                        }
+                    });
 
-                    }
+                parserResult.WithNotParsed(errors =>
+                {
+                    // user requested help
+                    if (errors.Any(x => x is HelpRequestedError) || errors.Any(x => x is VersionRequestedError))
+                        Environment.Exit(ExitCodes.Success);
 
-                    if (o.ResetUser)
+                    Log("One or more errors occurred parsing the command line options:");
+                    foreach (var error in errors)
                     {
-                        if (!Environment.IsPrivilegedProcess)
-                        {
-                            Console.WriteLine($"Error: This command must be run in an elevated process (Administrator/root).");
-                            Environment.Exit(ExitCodes.AccessDenied);
-                        }
-
-                        if (string.IsNullOrEmpty(o.Username))
-                        {
-                            Console.WriteLine($"Error: --username must be specified.");
-                            Environment.Exit(ExitCodes.InvalidOptions);
-                        }
-
-                        // reset password for user
-                        var storageProviderConfiguration = LoadStorageConfiguration();
-                        var builder = new ContainerBuilder(_webHostConfig, storageProviderConfiguration);
-                        var container = builder.Build();
-
-                        var storageProvider = container.GetInstance<IStorageProvider>();
-                        var isSuccess = await storageProvider.ResetUserCredentialsAsync(o.Username);
-                        if (isSuccess)
-                        {
-                            Console.WriteLine($"User '{o.Username}' was reset successfully.");
-                            Environment.Exit(ExitCodes.Success);
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Error: Failed to reset user '{o.Username}'. Please ensure that you have a valid username.");
-                            Environment.Exit(ExitCodes.Success);
-                        }
+                        Log($"{error.Tag}: {error.StopsProcessing} ({error.ToString()})");
                     }
+                    Log($"Exiting: {ExitCodes.InvalidOptions}");
+                    Environment.Exit(ExitCodes.InvalidOptions);
                 });
 
-            parserResult.WithNotParsed(errors =>
-            {
-                // user requested help
-                if (errors.Any(x => x is HelpRequestedError) || errors.Any(x => x is VersionRequestedError))
-                    Environment.Exit(ExitCodes.Success);
-
-                Console.WriteLine("One or more errors occurred:");
-                foreach (var error in errors)
+                if (args.Length > 0 && !isHandled)
                 {
-                    Console.WriteLine(error);
+                    // WithNotParsed didn't handle it, throw an error.
+                    Log($"Unknown option(s): {string.Join(", ", args)}");
+                    var helpText = HelpText.AutoBuild(parserResult, x => x, x => x);
+                    Console.WriteLine(helpText);
+                    Environment.Exit(ExitCodes.InvalidOptions);
                 }
-                Environment.Exit(ExitCodes.InvalidOptions);
-            });
+            }
+            catch (Exception ex)
+            {
+                Log($"ERROR: Failed to process CheckArgsAsync(): {ex.GetBaseException().Message}");
+            }
+            
             return isHandled;
+        }
+
+        private void Log(string message)
+        {
+            _logger.Error(message);
+            Console.WriteLine(message);
         }
 
     }

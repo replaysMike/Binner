@@ -97,7 +97,6 @@ namespace Binner.Web.ServiceHost
 
         private async Task InitializeWebHostAsync()
         {
-            Console.WriteLine("InitializeWebHostAsync()");
             var version = Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? "0.0.0";
             _nlogLogger.Info($"Binner Service v{version} starting...");
             // run without awaiting to avoid service startup delays, and allow the service to shutdown cleanly
@@ -239,13 +238,12 @@ namespace Binner.Web.ServiceHost
                 }
             }
 
-            Console.WriteLine("Running()");
             await _webHost.RunAsync(_cancellationTokenSource.Token);
 
             // stop the service
             _logger.LogInformation($"WebHost stopped!");
             // because of the way storage providers are initialized using RegisterInstance(), we must dispose of it manually
-            _webHost.Services.GetRequiredService<Binner.Model.Common.IStorageProvider>()
+            _webHost.Services.GetService<Binner.Model.Common.IStorageProvider>()
                 ?.Dispose();
         }
 
