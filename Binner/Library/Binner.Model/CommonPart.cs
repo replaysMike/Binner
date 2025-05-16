@@ -13,6 +13,11 @@
         public long? PartId { get; set; }
 
         /// <summary>
+        /// A unique key to reference this record
+        /// </summary>
+        public Guid Key { get; set; } = Guid.NewGuid();
+
+        /// <summary>
         /// Add a link to the part number manufacturer (Swarm)
         /// </summary>
         public int? SwarmPartNumberManufacturerId { get; set; }
@@ -51,6 +56,11 @@
         /// Cost for part from this supplier
         /// </summary>
         public double Cost { get; set; }
+
+        /// <summary>
+        /// Total Cost for part (order line item total cost)
+        /// </summary>
+        public double TotalCost { get; set; }
 
         /// <summary>
         /// Cost currency
@@ -103,9 +113,14 @@
         public string? Status { get; set; }
 
         /// <summary>
-        /// Quantity of parts
+        /// Quantity of parts available for part
         /// </summary>
         public long QuantityAvailable { get; set; }
+
+        /// <summary>
+        /// Quantity of parts in order
+        /// </summary>
+        public long Quantity { get; set; }
 
         /// <summary>
         /// Minimum order quanity

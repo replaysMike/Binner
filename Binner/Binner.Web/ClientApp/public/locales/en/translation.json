@@ -282,7 +282,7 @@
       "requestAllProductInformation": "Request all product information (slower)",
       "apiMessages": "Api Messages",
       "popup": {
-        "partExists": "Part exists in your inventory.",
+        "partExists": "Part exists in your inventory. If selected, quantity will be added to it.",
         "newPart": "New part does not exist in your inventory."
       }
     },

@@ -294,14 +294,18 @@ namespace Binner.Common.Services
         private async Task<IServiceResult<ExternalOrderResponse?>> ProcessDigiKeyV4OrderResponseAsync(Integrations.DigikeyApi digikeyApi, IApiResponse apiResponse, OrderImportRequest request)
         {
             var messages = new List<Model.Responses.Message>();
-            var digikeyResponse = (V4.SalesOrder?)apiResponse.Response ?? new V4.SalesOrder();
+            var digikeyOrderResponse = (V4.SalesOrder?)apiResponse.Response ?? new V4.SalesOrder();
 
-            var lineItems = digikeyResponse.LineItems;
+            var lineItems = digikeyOrderResponse.LineItems;
             var commonParts = new List<CommonPart>();
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
 
             var digikeyApiMaxOrderLineItems = 50;
             var isLargeOrder = lineItems.Count > digikeyApiMaxOrderLineItems;
+            var currency = digikeyOrderResponse.Currency;
+            // always use the currency of the order, as product details may be specified in the user's chosen currency in Binner
+            if (string.IsNullOrEmpty(currency))
+                currency = _configuration.Locale.Currency.ToString().ToUpper();
 
             if (isLargeOrder)
             {
@@ -322,10 +326,11 @@ namespace Binner.Common.Services
 
                 if (!request.RequestProductInfo || lineItemCount > digikeyApiMaxOrderLineItems || errorsEncountered > 0)
                 {
-                    commonParts.Add(DigiKeyV4LineItemToCommonPart(lineItem));
+                    commonParts.Add(DigiKeyV4LineItemToCommonPart(lineItem, currency));
                     continue;
                 }
 
+                // for each line item, get the full product information from the product details api endpoint (max 50 requests).
                 IApiResponse? partResponse = null;
                 var productResponseSuccess = false;
                 try
@@ -386,9 +391,7 @@ namespace Binner.Common.Services
                             if (mountingTypeString?.Contains("ThroughHole", ComparisonType) == true) // some part types are comma delimited
                                 mountingTypeString = "ThroughHole";
                             Enum.TryParse<MountingType>(mountingTypeString, out var mountingTypeId);
-                            var currency = digikeyResponse.Currency;
-                            if (string.IsNullOrEmpty(currency))
-                                currency = _configuration.Locale.Currency.ToString().ToUpper();
+
                             var packageType = part.Parameters
                                     ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
                                     .Select(x => x.ValueText)
@@ -407,7 +410,7 @@ namespace Binner.Common.Services
                 {
                     messages.Add(Model.Responses.Message.FromInfo($"No additional product details available on part '{lineItem.DigiKeyProductNumber}'."));
                     // use the more minimal information provided by the order import call
-                    commonParts.Add(DigiKeyV4LineItemToCommonPart(lineItem));
+                    commonParts.Add(DigiKeyV4LineItemToCommonPart(lineItem, currency));
                 }
             }
             foreach (var part in commonParts)
@@ -418,9 +421,9 @@ namespace Binner.Common.Services
             commonParts = await MapCommonPartIdsAsync(commonParts);
             return ServiceResult<ExternalOrderResponse?>.Create(new ExternalOrderResponse
             {
-                OrderDate = digikeyResponse.DateEntered,
-                Currency = digikeyResponse.Currency,
-                CustomerId = digikeyResponse.CustomerId.ToString(),
+                OrderDate = digikeyOrderResponse.DateEntered,
+                Currency = digikeyOrderResponse.Currency,
+                CustomerId = digikeyOrderResponse.CustomerId.ToString(),
                 Amount = lineItems.Sum(x => x.TotalPrice),
                 TrackingNumber = string.Join(",", lineItems.SelectMany(x => x.ItemShipments.Where(y => !string.IsNullOrEmpty(y.TrackingNumber)).Select(y => y.TrackingNumber)).Distinct()),
                 Messages = messages,
@@ -459,7 +462,7 @@ namespace Binner.Common.Services
 
                 if (!request.RequestProductInfo || lineItemCount > digikeyApiMaxOrderLineItems || errorsEncountered > 0)
                 {
-                    commonParts.Add(DigiKeyLineItemToCommonPart(lineItem));
+                    commonParts.Add(DigiKeyV3LineItemToCommonPart(lineItem));
                     continue;
                 }
 
@@ -527,7 +530,7 @@ namespace Binner.Common.Services
                 {
                     messages.Add(Model.Responses.Message.FromInfo($"No additional product details available on part '{lineItem.DigiKeyPartNumber}'."));
                     // use the more minimal information provided by the order import call
-                    commonParts.Add(DigiKeyLineItemToCommonPart(lineItem));
+                    commonParts.Add(DigiKeyV3LineItemToCommonPart(lineItem));
                 }
             }
             foreach (var part in commonParts)
@@ -559,13 +562,15 @@ namespace Binner.Common.Services
             DatasheetUrls = new List<string> { SystemPaths.EnsureValidAbsoluteHttpUrl(part.DatasheetUrl) ?? string.Empty },
             ProductUrl = SystemPaths.EnsureValidAbsoluteHttpUrl(part.ProductUrl),
             Status = part.ProductStatus.Status,
-            Currency = currency,
+            Currency = currency, // currency should be from the order
             AdditionalPartNumbers = additionalPartNumbers,
             BasePartNumber = basePart,
             MountingTypeId = mountingTypeId,
             PackageType = packageType,
-            Cost = lineItem.UnitPrice,
-            QuantityAvailable = lineItem.QuantityOrdered,
+            Cost = lineItem.UnitPrice,  // cost should be from the order
+            TotalCost = lineItem.TotalPrice,
+            QuantityAvailable = part.QuantityAvailable, // qty should be from the order
+            Quantity = lineItem.QuantityOrdered,  // qty should be from the order
             Reference = lineItem.CustomerReference,
         };
 
@@ -580,29 +585,34 @@ namespace Binner.Common.Services
             DatasheetUrls = new List<string> { SystemPaths.EnsureValidAbsoluteHttpUrl(part.PrimaryDatasheet) ?? string.Empty },
             ProductUrl = SystemPaths.EnsureValidAbsoluteHttpUrl(part.ProductUrl),
             Status = part.ProductStatus,
-            Currency = currency,
+            Currency = currency,    // currency should be from the order
             AdditionalPartNumbers = additionalPartNumbers,
             BasePartNumber = basePart,
             MountingTypeId = mountingTypeId,
             PackageType = packageType,
-            Cost = lineItem.UnitPrice,
-            QuantityAvailable = lineItem.Quantity,
+            Cost = lineItem.UnitPrice,  // cost should be from the order
+            TotalCost = lineItem.TotalPrice,
+            QuantityAvailable = part.QuantityAvailable,  // qty available is vendor stock
+            Quantity = lineItem.Quantity,  // qty should be from the order
             Reference = lineItem.CustomerReference,
         };
 
-        private CommonPart DigiKeyV4LineItemToCommonPart(V4.LineItem lineItem) => new CommonPart
+        private CommonPart DigiKeyV4LineItemToCommonPart(V4.LineItem lineItem, string currency) => new CommonPart
         {
             SupplierPartNumber = lineItem.DigiKeyProductNumber,
             Supplier = "DigiKey",
             ManufacturerPartNumber = lineItem.ManufacturerProductNumber,
             Manufacturer = string.Empty,
             Description = lineItem.Description,
+            Currency = currency,
             Cost = lineItem.UnitPrice,
+            TotalCost = lineItem.TotalPrice,
             QuantityAvailable = lineItem.QuantityOrdered,
+            Quantity = lineItem.QuantityOrdered,  // quantity ordered
             Reference = lineItem.CustomerReference,
         };
 
-        private CommonPart DigiKeyLineItemToCommonPart(V3.LineItem lineItem) => new CommonPart
+        private CommonPart DigiKeyV3LineItemToCommonPart(V3.LineItem lineItem) => new CommonPart
         {
             SupplierPartNumber = lineItem.DigiKeyPartNumber,
             Supplier = "DigiKey",
@@ -610,7 +620,9 @@ namespace Binner.Common.Services
             Manufacturer = string.Empty,
             Description = lineItem.ProductDescription,
             Cost = lineItem.UnitPrice,
+            TotalCost = lineItem.TotalPrice,
             QuantityAvailable = lineItem.Quantity,
+            Quantity = lineItem.Quantity, // quantity ordered
             Reference = lineItem.CustomerReference,
         };
 
@@ -751,6 +763,7 @@ namespace Binner.Common.Services
                 PackageType = "",
                 Cost = orderLine.UnitPrice,
                 QuantityAvailable = orderLine.Quantity,
+                Quantity = orderLine.Quantity,
                 Reference = orderLine.ProductInfo.CustomerPartNumber,
             };
         }
@@ -774,7 +787,9 @@ namespace Binner.Common.Services
                 MountingTypeId = 0,
                 PackageType = "",
                 Cost = orderLine.UnitPrice,
+                TotalCost = orderLine.UnitPrice * orderLine.Quantity,
                 QuantityAvailable = orderLine.Quantity,
+                Quantity = orderLine.Quantity,
                 Reference = orderLine.ProductInfo.CustomerPartNumber,
             };
         }
@@ -823,7 +838,9 @@ namespace Binner.Common.Services
                         MountingTypeId = 0,
                         PackageType = "",
                         Cost = lineItem.UnitPrice,
+                        TotalCost = lineItem.UnitPrice * lineItem.Quantity,
                         QuantityAvailable = (long)lineItem.Quantity,
+                        Quantity = (long)lineItem.Quantity,
                         Reference = lineItem.CustomerPartNo,
                     });
                 }
@@ -997,6 +1014,7 @@ namespace Binner.Common.Services
                 AdditionalPartNumbers = additionalPartNumbers,
                 Manufacturer = part.Manufacturer?.Value ?? string.Empty,
                 ManufacturerPartNumber = part.ManufacturerPartNumber,
+                TotalCost = part.UnitPrice,
                 Cost = part.UnitPrice,
                 Currency = currency,
                 DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
@@ -1010,7 +1028,8 @@ namespace Binner.Common.Services
                 PartType = "",
                 ProductUrl = part.ProductUrl,
                 Status = part.ProductStatus,
-                QuantityAvailable = barcodeResponse.Quantity
+                QuantityAvailable = barcodeResponse.Quantity,
+                Quantity = barcodeResponse.Quantity,
             };
         }
         
@@ -1049,6 +1068,7 @@ namespace Binner.Common.Services
                     AdditionalPartNumbers = additionalPartNumbers,
                     Manufacturer = part.Manufacturer?.Name ?? string.Empty,
                     ManufacturerPartNumber = part.ManufacturerProductNumber,
+                    TotalCost = part.UnitPrice * barcodeResponse.Quantity,
                     Cost = part.UnitPrice,
                     Currency = currency,
                     DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
@@ -1059,7 +1079,8 @@ namespace Binner.Common.Services
                     PartType = "",
                     ProductUrl = part.ProductUrl,
                     Status = part.ProductStatus.Status,
-                    QuantityAvailable = barcodeResponse.Quantity
+                    QuantityAvailable = barcodeResponse.Quantity,
+                    Quantity = barcodeResponse.Quantity,
                 };
         }
 
@@ -1105,11 +1126,13 @@ namespace Binner.Common.Services
                             SupplierPartNumber = supplier.SupplierPartNumber,
                             ManufacturerPartNumber = inventoryPart.ManufacturerPartNumber,
                             BasePartNumber = inventoryPart.PartNumber,
+                            TotalCost = supplier.Cost ?? 0,
                             Cost = supplier.Cost ?? 0,
                             Currency = _configuration.Locale.Currency.ToString().ToUpper(),
                             ImageUrl = supplier.ImageUrl,
                             ProductUrl = supplier.ProductUrl,
                             QuantityAvailable = supplier.QuantityAvailable,
+                            Quantity = supplier.QuantityAvailable,
                             MinimumOrderQuantity = supplier.MinimumOrderQuantity,
                             // unique to these types of responses
                             PartSupplierId = supplier.PartSupplierId

@@ -140,41 +140,6 @@
             }
         }
 
-        private string? _language = "en";
-        /// <summary>
-        /// Default language
-        /// </summary>
-        public string? Language
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.Language)))
-                    return System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.Language);
-                return _language;
-            }
-            set
-            {
-                _language = value;
-            }
-        }
-
-        private string? _currency = "USD";
-        /// <summary>
-        /// Default currency
-        /// </summary>
-        public string? Currency {
-            get
-            {
-                if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.Currency)))
-                    return System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.Currency);
-                return _currency;
-            }
-            set
-            {
-                _currency = value;
-            }
-        }
-
         private string? _licenseKey = string.Empty;
         /// <summary>
         /// License key

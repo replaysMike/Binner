@@ -567,7 +567,9 @@ export const Settings = (props) => {
         const { data } = response;
         setLoading(false);
         // break out data into multiple state variables to optimize render performance
-        const { licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes } = data;
+        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes } = data;
+        const language = data.language.toLowerCase(); // to match lowercase option value
+        const currency = data.currency.toUpperCase(); // to match uppercase option value
         setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes });
         const { binner, digikey, mouser, arrow, octopart, tme } = data;
         setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme });
