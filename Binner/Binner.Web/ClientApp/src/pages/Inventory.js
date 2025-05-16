@@ -1817,11 +1817,11 @@ export function Inventory({ partNumber = "", ...rest }) {
                   <p>{t('page.inventory.privatePartInfoMessage', "These values can be set manually and will not be synchronized automatically via connected apis.")}</p>
 
                   <Form.Group>
-                    <Form.Field width={4}>
+                    <Form.Field width={8}>
                       <label>{t('label.extensionValue1', "Extension Value 1")}</label>
                       <ClearableInput placeholder='' value={part.extensionValue1 || ''} onChange={handleChange} name='extensionValue1' help={t('page.inventory.popup.extensionValue', "Associate a custom value with this part")} />
                     </Form.Field>
-                    <Form.Field width={4}>
+                    <Form.Field width={8}>
                       <label>{t('label.extensionValue2', "Extension Value 2")}</label>
                       <ClearableInput placeholder='' value={part.extensionValue2 || ''} onChange={handleChange} name='extensionValue2' help={t('page.inventory.popup.extensionValue', "Associate a custom value with this part")} />
                     </Form.Field>

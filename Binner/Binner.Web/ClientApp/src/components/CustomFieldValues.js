@@ -16,7 +16,7 @@ export function CustomFieldValues({ type, customFieldDefinitions, customFieldVal
 
   return (
     <div className="customFieldValues">
-      {header?.length > 0 &&
+      {header?.length > 0 && _.filter(customFieldDefinitions, i => i.customFieldTypeId === type.value)?.length > 0 &&
         <Header dividing as={headerElement}>{header}</Header>
       }
       <Form.Group>
