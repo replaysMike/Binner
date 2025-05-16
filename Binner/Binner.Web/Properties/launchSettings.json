@@ -2,7 +2,6 @@
   "profiles": {
     "Binner.Web": {
       "commandName": "Project",
-      "commandLineArgs": "start",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
