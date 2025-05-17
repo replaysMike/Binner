@@ -515,6 +515,11 @@
 			"extensionValue1": "Valore aggiuntivo 1",
 			"extensionValue2": "Valore aggiuntivo 2",
 			"ok": "Ok",
+      "totalCost": "Total Cost",
+      "manufacturer": "Manufacturer",
+      "reference": "Reference",
+      "currency": "Currency",
+      "supplierPartNumber": "Supplier Part Number",
 			"popup": {
 				"lowStock": "Se la disponibilità del componente è inferiore a questo valore il componente sarà considerato sottoscorta.",
 				"quantity": "La quantità attualmente disponibile."
@@ -665,7 +670,7 @@
 		"search": "Cerca",
 		"clear": "Pulisci",
 		"reset": "Reset",
-		"importParts": "Importare Componenti",
+		"importParts": "Importare ({{count}}) Componenti",
 		"preview": "Anteprima",
 		"print": "Stampa",
 		"load": "Caricare",
@@ -693,7 +698,8 @@
 		"addAnyway": "Aggiungere comunque",
 		"move": "Spostare",
 		"moveTo": "Spostare in",
-		"select": "Selezionare"
+		"select": "Selezionare",
+    "viewPart": "View Part"
 	},
 	"label": {
 		"name": "Nome",

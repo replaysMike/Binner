@@ -517,6 +517,11 @@
       "extensionValue2": "Valeur d'extension 2",
       "partId": "ID de la pièce",
       "ok": "Ok",
+      "totalCost": "Total Cost",
+      "manufacturer": "Manufacturer",
+      "reference": "Reference",
+      "currency": "Currency",
+      "supplierPartNumber": "Supplier Part Number",
       "popup": {
         "lowStock": "Les quantités inférieures à cette valeur indiqueront que la pièce est en rupture de stock.",
         "quantity": "La quantité de pièces actuellement en stock."
@@ -667,7 +672,7 @@
     "search": "Rechercher",
     "clear": "Effacer",
     "reset": "Réinitialiser",
-    "importParts": "Importer des composants",
+    "importParts": "Importer ({{count}}) des composants",
     "preview": "Aperçu",
     "print": "Imprimer",
     "load": "Charger",
@@ -695,7 +700,8 @@
     "addAnyway": "Ajouter quand même",
     "move": "Déplacer",
     "moveTo": "Déplacer à",
-    "select": "Sélectionner"
+    "select": "Sélectionner",
+    "viewPart": "View Part"
   },
   "label": {
     "name": "Nom",

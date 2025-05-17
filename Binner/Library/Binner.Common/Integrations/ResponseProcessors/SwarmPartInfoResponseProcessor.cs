@@ -249,6 +249,8 @@ namespace Binner.Common.Integrations.ResponseProcessors
                                 MountingTypeId = (int)mountingTypeId,
                                 PartType = context.PartTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.Name)
                                     .FirstOrDefault() ?? string.Empty,
+                                PartTypeId = context.PartTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.PartTypeId)
+                                    .FirstOrDefault(),
                                 ProductUrl = supplierPart.ProductUrl,
                                 Status = manufacturerPart.IsObsolete ? "Inactive" : "Active",
                                 QuantityAvailable = supplierPart.QuantityAvailable ?? 0,

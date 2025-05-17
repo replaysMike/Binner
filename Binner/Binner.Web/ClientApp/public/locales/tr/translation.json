@@ -516,6 +516,11 @@
       "extensionValue2": "Uzantı Değeri 2",
       "partId": "Parça Kimliği",
       "ok": "Tamam",
+      "totalCost": "Total Cost",
+      "manufacturer": "Manufacturer",
+      "reference": "Reference",
+      "currency": "Currency",
+      "supplierPartNumber": "Supplier Part Number",
       "popup": {
         "lowStock": "Bu değerin altındaki miktarlar parçanın stoğunun düşük olduğunu gösterir.",
         "quantity": "Şu anda stokta bulunan parçaların miktarı."
@@ -666,7 +671,7 @@
     "search": "Ara",
     "clear": "Temizle",
     "reset": "Sıfırla",
-    "importParts": "Parçaları İçe Aktar",
+    "importParts": "Parçaları ({{count}}) İçe Aktar",
     "preview": "Önizleme",
     "print": "Yazdır",
     "load": "Yükle",
@@ -694,7 +699,8 @@
     "addAnyway": "Yine de Ekle",
     "move": "Hareket",
     "moveTo": "Şuraya taşı:",
-    "select": "Seç"
+    "select": "Seç",
+    "viewPart": "View Part"
   },
   "label": {
     "name": "Ad",

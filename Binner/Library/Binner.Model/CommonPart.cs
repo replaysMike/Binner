@@ -83,6 +83,11 @@
         public string? PartType { get; set; }
 
         /// <summary>
+        /// Type id of part
+        /// </summary>
+        public long PartTypeId { get; set; }
+
+        /// <summary>
         /// Mounting type of part
         /// </summary>
         public int MountingTypeId { get; set; }
