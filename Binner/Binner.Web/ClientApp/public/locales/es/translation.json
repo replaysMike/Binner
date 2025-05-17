@@ -516,6 +516,11 @@
       "extensionValue2": "Extension Value 2",
       "partId": "Part Id",
       "ok": "Ok",
+      "totalCost": "Total Cost",
+      "manufacturer": "Manufacturer",
+      "reference": "Reference",
+      "currency": "Currency",
+      "supplierPartNumber": "Supplier Part Number",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
         "quantity": "The quantity of parts currently in stock."
@@ -666,7 +671,7 @@
     "search": "Search",
     "clear": "Clear",
     "reset": "Reset",
-    "importParts": "Import Parts",
+    "importParts": "Import ({{count}}) Selected Parts",
     "preview": "Preview",
     "print": "Print",
     "load": "Load",
@@ -694,7 +699,8 @@
     "addAnyway": "Add Anyway",
     "move": "Move",
     "moveTo": "Move to",
-    "select": "Select"
+    "select": "Select",
+    "viewPart": "View Part"
   },
   "label": {
     "name": "Name",

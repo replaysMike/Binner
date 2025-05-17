@@ -117,15 +117,7 @@ namespace Binner.Common.Services
         /// </summary>
         /// <param name="part"></param>
         /// <returns></returns>
-        Task<string> DeterminePartTypeAsync(CommonPart part);
-
-        /// <summary>
-        /// Determine the part type
-        /// </summary>
-        /// <param name="part"></param>
-        /// <param name="partTypes"></param>
-        /// <returns></returns>
-        string DeterminePartType(CommonPart part, ICollection<PartType> partTypes);
+        Task<PartType?> DeterminePartTypeAsync(CommonPart part);
 
         /// <summary>
         /// Get an external order

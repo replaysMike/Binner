@@ -388,6 +388,11 @@
       "noResults": "无相应记录。",
       "partType": "类别",
       "ok": "Ok",
+      "totalCost": "Total Cost",
+      "manufacturer": "Manufacturer",
+      "reference": "Reference",
+      "currency": "Currency",
+      "supplierPartNumber": "Supplier Part Number",
       "popup": {
         "lowStock": "若数量低于该阈值，则应及时采购补货。",
         "quantity": "当前库存数量。"
@@ -514,7 +519,7 @@
     "search": "搜索",
     "clear": "清空",
     "reset": "重置",
-    "importParts": "导入元器件",
+    "importParts": "导入 ({{count}}) 元器件",
     "preview": "预览",
     "print": "打印",
     "load": "载入",
@@ -534,7 +539,21 @@
     "restore": "还原",
     "createBackup": "创建备份",
     "produceHistory": "历史记录",
-    "rename": "重命名"
+    "rename": "重命名",
+    "parts": "Parts",
+    "specs": "Specs",
+    "compliance": "Compliance",
+    "cadModels": "CAD Models",
+    "addAnyway": "Add Anyway",
+    "move": "Move",
+    "moveTo": "Move to",
+    "select": "Select",
+    "copy": "Copy",
+    "copyRaw": "Copy Raw",
+    "discard": "Discard",
+    "noTakeMeBack": "No, take me back!",
+    "resetPreferences": "Reset Preferences",
+    "viewPart": "View Part"
   },
   "label": {
     "name": "名称",

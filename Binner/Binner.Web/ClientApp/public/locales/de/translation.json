@@ -516,6 +516,11 @@
       "extensionValue1": "Erweiterungswert 1",
       "extensionValue2": "Erweiterungswert 2",
       "ok": "OK",
+      "totalCost": "Total Cost",
+      "manufacturer": "Manufacturer",
+      "reference": "Reference",
+      "currency": "Currency",
+      "supplierPartNumber": "Supplier Part Number",
       "popup": {
         "lowStock": "Mengen unter diesem Wert werden als geringen Lagerbestand für das Bauteil angezeigt.",
         "quantity": "Die aktuelle Menge an Bauteilen im Lagerbestand."
@@ -666,7 +671,7 @@
     "search": "Suche",
     "clear": "Leeren",
     "reset": "Reset",
-    "importParts": "Bauteile importieren",
+    "importParts": "Bauteile ({{count}}) importieren",
     "preview": "Vorschau",
     "print": "Drucken",
     "load": "Öffnen",
@@ -694,7 +699,8 @@
     "addAnyway": "Trotzdem hinzufügen",
     "move": "Bewegen",
     "moveTo": "Move to",
-    "select": "Wählen"
+    "select": "Wählen",
+    "viewPart": "View Part"
   },
   "label": {
     "name": "Name",
