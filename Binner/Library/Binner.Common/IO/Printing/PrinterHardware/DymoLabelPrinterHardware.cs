@@ -1,5 +1,6 @@
 ﻿using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
+using Microsoft.Extensions.Logging;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -19,11 +20,13 @@ namespace Binner.Common.IO.Printing
     /// </summary>
     public class DymoLabelPrinterHardware : ILabelPrinterHardware
     {
+        public static string FontsPath = "./Fonts";
         private const string DefaultFontName = "Segoe UI";
-        private const float Dpi = 300;
-        private const string FontsPath = "./Fonts";
+        private const float VerticalDpi = 300;
+        private const float HorizontalDpi = 600;
         private static readonly Color DefaultTextColor = Color.Black;
         private static readonly Lazy<FontCollection> FontCollection = new(() => new FontCollection());
+        private ILoggerFactory _loggerFactory;
         private static FontFamily _fontFamily;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly List<PointF> _labelStart = new();
@@ -41,11 +44,12 @@ namespace Binner.Common.IO.Printing
             LoadFonts();
         }
 
-        public DymoLabelPrinterHardware(IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator)
+        public DymoLabelPrinterHardware(ILoggerFactory loggerFactory, IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator)
         {
+            _loggerFactory = loggerFactory;
             PrinterSettings = printerSettings ?? throw new ArgumentNullException(nameof(printerSettings));
             _barcodeGenerator = barcodeGenerator;
-            _printer = new PrinterFactory().CreatePrinter(printerSettings);
+            _printer = new PrinterFactory(loggerFactory).CreatePrinter(printerSettings);
         }
 
         private static void LoadFonts()
@@ -140,8 +144,8 @@ namespace Binner.Common.IO.Printing
                 _labelStart.Add(new PointF(0, labelProperties.TopMargin + _paperRect.Height - (_paperRect.Height / i)));
 
             var printerImage = new Image<Rgba32>(_paperRect.Width, _paperRect.Height);
-            printerImage.Metadata.VerticalResolution = Dpi;
-            printerImage.Metadata.HorizontalResolution = Dpi;
+            printerImage.Metadata.VerticalResolution = labelProperties.Dpi;
+            printerImage.Metadata.HorizontalResolution = labelProperties.HorizontalDpi;
 
             return (printerImage, labelProperties);
         }
@@ -150,11 +154,10 @@ namespace Binner.Common.IO.Printing
         {
             var margins = new Margin(0, 0, 0, 0);
             var lastLinePosition = new List<PointF>();
-            for (var i = 0; i < labelProperties.LabelCount; i++)
-                lastLinePosition.Add(_labelStart[i]);
+            var prevLine = _labelStart.Last();
             foreach (var line in lines)
             {
-                lastLinePosition[line.Label - 1] = DrawLine(image, labelProperties, lastLinePosition[line.Label - 1], null, line.Content, line, paperRect, margins);
+                prevLine = DrawLine(image, labelProperties, prevLine, null, line.Content, line, paperRect, margins);
             }
         }
 
@@ -242,7 +245,7 @@ namespace Binner.Common.IO.Printing
             // autowrap line 2
             do
             {
-                len = TextMeasurer.MeasureSize(line1, new TextOptions(fontFirstLine) { Dpi = Dpi } );
+                len = TextMeasurer.MeasureSize(line1, new TextOptions(fontFirstLine) { Dpi = HorizontalDpi } );
                 if (len.Width > paperRect.Width - margins.Right - margins.Left)
                     line1 = line1.Substring(0, line1.Length - 1);
             } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -252,7 +255,7 @@ namespace Binner.Common.IO.Printing
                 line2 = description.Substring(line1.Length, description.Length - line1.Length).Trim();
                 do
                 {
-                    len = TextMeasurer.MeasureSize(line2, new TextOptions(fontSecondLine) { Dpi = Dpi });
+                    len = TextMeasurer.MeasureSize(line2, new TextOptions(fontSecondLine) { Dpi = HorizontalDpi });
                     if (len.Width > paperRect.Width - margins.Right - margins.Left)
                         line2 = line2.Substring(0, line2.Length - 1);
                 } while (len.Width > paperRect.Width - margins.Right - margins.Left);
@@ -269,7 +272,7 @@ namespace Binner.Common.IO.Printing
             var font = CreateFont(template, text, paperRect);
             
             var fontColor = string.IsNullOrEmpty(template.Color) ? DefaultTextColor : template.Color.StartsWith("#") ? Color.ParseHex(template.Color) : Color.Parse(template.Color);
-            var textOptions = new RichTextOptions(font) { Dpi = Dpi, KerningMode = KerningMode.Auto };
+            var textOptions = new RichTextOptions(font) { Dpi = HorizontalDpi, KerningMode = KerningMode.Auto };
             var textBounds = TextMeasurer.MeasureSize(text, textOptions);
             var x = 0f;
             var y = lineOffset.Y;
@@ -277,9 +280,9 @@ namespace Binner.Common.IO.Printing
             y += template.Margin.Top;
             if (template.Barcode == true)
             {
-                x = 0;
+                x = template.Margin.Left;
                 y += 12;
-                DrawBarcode128(image, fontColor, Color.White, text, new Rectangle((int)x, (int)y, paperRect.Width, paperRect.Height));
+                DrawBarcode128(image, fontColor, Color.White, text, new Rectangle((int)x, (int)y, (int)(paperRect.Width - x), paperRect.Height), (int)((template.FontSize ?? 6) * 10f));
             }
             else
             {
@@ -313,7 +316,7 @@ namespace Binner.Common.IO.Printing
                     var textOptions2 = new RichTextOptions(font)
                     {
                         Origin = new PointF(0, 0),
-                        Dpi = Dpi,
+                        Dpi = HorizontalDpi,
                         KerningMode = KerningMode.Standard,
                     };
                     image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), null));
@@ -336,7 +339,7 @@ namespace Binner.Common.IO.Printing
                     var textOptions2 = new RichTextOptions(font)
                     {
                         Origin = new PointF(x, y),
-                        Dpi = Dpi,
+                        Dpi = HorizontalDpi,
                         KerningMode = KerningMode.Standard
                     };
                     image.Mutate(c => c.DrawText(drawingOptions, textOptions2, text, Brushes.Solid(fontColor), null));
@@ -402,18 +405,18 @@ namespace Binner.Common.IO.Printing
             return value;
         }
 
-        private void DrawBarcode128(Image<Rgba32> image, Color foregroundColor, Color backgroundColor, string encodeValue, Rectangle rect)
+        private void DrawBarcode128(Image<Rgba32> image, Color foregroundColor, Color backgroundColor, string encodeValue, Rectangle rect, int barcodeHeight)
         {
             var graphicsOptions = new GraphicsOptions
             {
                 Antialias = false,
             };
-            var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, foregroundColor, backgroundColor, rect.Width, 55);
+            var generatedBarcodeImage = _barcodeGenerator.GenerateBarcode(encodeValue, foregroundColor, backgroundColor, rect.Width - 20, Math.Max(barcodeHeight, rect.Height));
             try
             {
                 image.Mutate(c => c.DrawImage(generatedBarcodeImage, new Point(0, rect.Y), graphicsOptions));
-                image.Metadata.HorizontalResolution = Dpi;
-                image.Metadata.VerticalResolution = Dpi;
+                image.Metadata.HorizontalResolution = HorizontalDpi;
+                image.Metadata.VerticalResolution = VerticalDpi;
             }
             catch (Exception)
             {
@@ -432,7 +435,7 @@ namespace Binner.Common.IO.Printing
                     var testFont = new Font(fontFamily, DrawingUtilities.PointToPixel(newFontSize * _scaleFactor));
                     var textOptions = new TextOptions(testFont)
                     {
-                        Dpi = Dpi
+                        Dpi = HorizontalDpi
                     };
                     len = TextMeasurer.MeasureSize(text, textOptions);
                     if (len.Width > maxWidth)

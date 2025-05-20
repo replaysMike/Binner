@@ -1,4 +1,5 @@
 ﻿using Binner.Model.IO.Printing;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace Binner.Common.IO.Printing
@@ -9,6 +10,13 @@ namespace Binner.Common.IO.Printing
     /// <exception cref="PlatformNotSupportedException"></exception>
     internal class PrinterFactory
     {
+        private readonly ILoggerFactory _loggerFactory;
+
+        internal PrinterFactory(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
         /// <summary>
         /// Create a printer instance
         /// </summary>
@@ -18,11 +26,11 @@ namespace Binner.Common.IO.Printing
         {
             if (OperatingSystem.IsWindows())
             {
-                return new WindowsPrinterEnvironment(printerSettings);
+                return new WindowsPrinterEnvironment(_loggerFactory.CreateLogger<WindowsPrinterEnvironment>(), printerSettings);
             }
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() || OperatingSystem.IsFreeBSD())
             {
-                return new CupsPrinterEnvironment(printerSettings);
+                return new CupsPrinterEnvironment(_loggerFactory.CreateLogger<CupsPrinterEnvironment>(), printerSettings);
             }
 
             throw new PlatformNotSupportedException();
