@@ -24,7 +24,13 @@
     <None Remove="IO\Parts.csv" />
     <None Remove="IO\PartTypes.csv" />
     <None Remove="IO\Projects.csv" />
+    <None Remove="IO\_Data\Barcodes\ShouldGenerate30277PartLabelAsync.png" />
+    <None Remove="IO\_Data\Barcodes\ShouldGenerate30346BarcodeAsync.png" />
+    <None Remove="IO\_Data\Barcodes\ShouldGenerate30346LongBarcodeAsync.png" />
+    <None Remove="IO\_Data\Barcodes\ShouldGenerate30346LongPartLabelAsync.png" />
+    <None Remove="IO\_Data\Barcodes\ShouldGenerate30346PartLabelAsync.png" />
     <None Remove="IO\_Data\Barcodes\ShouldGenerateBarcodeAsync.png" />
+    <None Remove="IO\_Data\Barcodes\ShouldGeneratePartLabelAsync.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -256,7 +262,19 @@
     <Content Include="Fonts\Staatliches-Regular.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="IO\_Data\Barcodes\ShouldGenerateBarcodeAsync.png">
+    <Content Include="IO\_Data\Barcodes\ShouldGenerate30277PartLabelAsync.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IO\_Data\Barcodes\ShouldGenerate30346BarcodeAsync.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IO\_Data\Barcodes\ShouldGenerate30346LongBarcodeAsync.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IO\_Data\Barcodes\ShouldGenerate30346LongPartLabelAsync.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IO\_Data\Barcodes\ShouldGenerate30346PartLabelAsync.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="IO\_Data\BinnerParts.xlsx">
@@ -354,6 +372,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="IntegrationApiResponses\Tme-PartSearch-1-Search.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IO\_Data\Barcodes\ShouldGenerateLongBarcodeAsync.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IO\_Data\Barcodes\ShouldGenerateLongPartLabelAsync.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
