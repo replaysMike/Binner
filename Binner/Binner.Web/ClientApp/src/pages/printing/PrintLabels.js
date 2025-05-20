@@ -319,6 +319,7 @@ export function PrintLabels(props) {
     e.stopPropagation();
     const label = _.find(labelNames, (x) => x && x.value === labelName);
     const lastLine = _.last(lines);
+    
     const newLine = {
       id: lines.length + 1,
       label: (lastLine && lastLine.label) || (label && label.defaults.label),
@@ -336,13 +337,14 @@ export function PrintLabels(props) {
       font:
         label &&
         label.defaults.fonts.length > lines.length &&
-        (label.defaults.fonts[lines.length] || DEFAULT_FONT),
+        (label.defaults.fonts[lines.length]) || DEFAULT_FONT,
       barcode:
         label &&
         label.defaults.isBarcodes.length >= lines.length &&
         (label.defaults.isBarcodes[lines.length] || false)
     };
     lines.push(newLine);
+    console.log('newline', newLine, label.defaults.fonts, lines.length);
     setLines([...lines]);
   };
 

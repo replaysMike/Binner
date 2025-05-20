@@ -1,4 +1,5 @@
 ﻿using Binner.Model.IO.Printing;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -21,16 +22,18 @@ namespace Binner.Common.IO.Printing
     [SupportedOSPlatform("macos")]
     [SupportedOSPlatform("freebsd")]
     [SupportedOSPlatform("osx")]
-    internal class CupsPrinterEnvironment : IPrinterEnvironment
+    public class CupsPrinterEnvironment : IPrinterEnvironment
     {
         private const bool OutputDebug = true;
         private const bool FlipLabelImage = true;
         private const string CupsError = "Please ensure CUPS print server is installed on your environment. Example: `sudo apt install cups`";
+        private readonly ILogger<CupsPrinterEnvironment> _logger;
         private readonly IPrinterSettings _printerSettings;
         private LabelDefinition _labelProperties;
 
-        public CupsPrinterEnvironment(IPrinterSettings printerSettings)
+        public CupsPrinterEnvironment(ILogger<CupsPrinterEnvironment> logger, IPrinterSettings printerSettings)
         {
+            _logger = logger;
             _printerSettings = printerSettings;
             _labelProperties = new LabelDefinition();
         }
@@ -88,6 +91,7 @@ namespace Binner.Common.IO.Printing
                     innerProcess.BeginErrorReadLine();
                     innerProcess.BeginOutputReadLine();
                     WriteDebug($"CUPS: Print process id {innerProcess.Id} started!");
+                    //_logger.LogInformation($"Printing label at dpi X:{e.PageSettings.PrinterResolution.X}, Y:{e.PageSettings.PrinterResolution.Y}");
                     innerProcess.WaitForExit();
                     try
                     {

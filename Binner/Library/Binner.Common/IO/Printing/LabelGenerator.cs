@@ -1,11 +1,11 @@
-﻿using AnyBarcode;
-using Barcoder.Renderer.Image;
+﻿using Barcoder.Renderer.Image;
 using Binner.Common.Extensions;
 using Binner.Common.Services;
 using Binner.Model;
 using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
 using Binner.StorageProvider.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using QRCoder;
 using SixLabors.Fonts;
@@ -47,12 +47,12 @@ namespace Binner.Common.IO.Printing
             LoadFonts();
         }
 
-        public LabelGenerator(IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator, IPartTypeService partTypeService)
+        public LabelGenerator(ILoggerFactory loggerFactory, IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator, IPartTypeService partTypeService)
         {
             PrinterSettings = printerSettings ?? throw new ArgumentNullException(nameof(printerSettings));
             _barcodeGenerator = barcodeGenerator;
             _partTypeService = partTypeService;
-            _printer = new PrinterFactory().CreatePrinter(printerSettings);
+            _printer = new PrinterFactory(loggerFactory).CreatePrinter(printerSettings);
         }
 
         public Image<Rgba32> CreateLabelImage(Label label, Part part)
