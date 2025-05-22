@@ -40,6 +40,7 @@ import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalc
 import { SmdResistorCodeCalculator } from "./pages/tools/SmdResistorCodeCalculator";
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
 import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
+import { KeyboardDump } from "./pages/tools/KeyboardDump";
 import { Help } from "./pages/help/Home";
 import { Scanning } from "./pages/help/Scanning";
 import { ApiIntegrations } from "./pages/help/ApiIntegrations";
@@ -164,6 +165,10 @@ const AppRoutes = [
   {
     path: 'tools/barcodescanner',
     element: <BarcodeScanner />
+  },
+  {
+    path: 'tools/keyboarddump',
+    element: <KeyboardDump />
   },
   {
     path: 'settings',

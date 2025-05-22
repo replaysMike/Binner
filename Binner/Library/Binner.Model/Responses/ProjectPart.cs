@@ -21,6 +21,11 @@ namespace Binner.Model.Responses
         public long? PartId { get; set; }
 
         /// <summary>
+        /// A unique 10 character part identifier (for Binner use) that can be used to identify the inventory part
+        /// </summary>
+        public string? ShortId { get; set; }
+
+        /// <summary>
         /// The associated pcb id (optional)
         /// </summary>
         public long? PcbId { get; set; }

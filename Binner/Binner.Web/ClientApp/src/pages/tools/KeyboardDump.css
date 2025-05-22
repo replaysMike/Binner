@@ -1,0 +1,52 @@
+.modifiers {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+}
+
+.sacm {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+}
+
+.ui.table {
+  font-size: 0.9em;
+}
+
+.ui.table thead tr th {
+  padding: 5px 10px;
+}
+
+.ui.table tr td {
+  padding: 2px 10px;
+}
+
+.ui.table tr.keydown>td:first-child {
+  color: #060;
+}
+
+.ui.table tr.keyup>td:first-child {
+  color: #c00;
+}
+
+.history {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.history .unicode {
+  font-size: 1.75em;
+  font-weight: 500;
+  color: rgb(13, 75, 218);
+  padding: 0;
+  margin: 0;
+}
+
+.history .unicode.red {
+  color: #c00;
+}
+.history .unicode.green {
+  color: #0a0;
+}
+.history .unicode.blue {
+  color: #00c;
+}

@@ -574,6 +574,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ShortId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SymbolName")
                         .HasColumnType("nvarchar(max)");
 

@@ -122,6 +122,7 @@ namespace Binner.Common.IO
                 var part = new Part
                 {
                     PartTypeId = _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", values.GetValue("PartTypeId").As<long>()),
+                    ShortId = values.GetValue("ShortId").As<string?>() ?? ShortIdGenerator.Generate(),
                     Value = values.GetValue("Value").As<string?>(),
                     BinNumber = values.GetValue("BinNumber").As<string?>(),
                     BinNumber2 = values.GetValue("BinNumber2").As<string?>(),

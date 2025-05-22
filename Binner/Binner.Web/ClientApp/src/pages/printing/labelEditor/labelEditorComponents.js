@@ -1,4 +1,5 @@
 import { QRCodeIcon, DataMatrixIcon, AztecCodeIcon, Code128NoTextIcon, PDF417Icon } from "./icons";
+import { Popup } from "semantic-ui-react";
 
 export const getChildrenByName = (name) => {
   switch (name) {
@@ -16,8 +17,10 @@ export const getChildrenByName = (name) => {
       return <PDF417Icon style={{ width: "160px" }} />;
     case 'text':
       return <span>Regular Text</span>;
+    case 'shortId':
+      return <Popup wide content={<p>Identifies a part using a 10 character code unique to your Binner inventory only. Useful for making a smaller barcode (now default).</p>} trigger={<span>Short Id</span>} />;
     case 'partNumber':
-      return "Part Number";
+      return <Popup wide content={<p>The full part number.</p>} trigger={<span>Part Number</span>} />;
     case 'partId':
       return "Part Id";
     case 'manufacturerPartNumber':

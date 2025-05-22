@@ -59,6 +59,13 @@ export function Tools(props) {
             </Statistic.Value>
             <Statistic.Label>{t('page.tools.barcodeScanner', "Barcode Scanner")}</Statistic.Label>
           </Statistic>
+
+          <Statistic onClick={(e) => route(e, "/tools/keyboarddump")} style={{ cursor: "pointer" }}>
+            <Statistic.Value>
+              <Icon name="keyboard" />
+            </Statistic.Value>
+            <Statistic.Label>{t('page.tools.keyboardDump', "Keyboard Dump")}</Statistic.Label>
+          </Statistic>
         </Statistic.Group>
       </Segment>
     </div>

@@ -48,6 +48,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.Part>(part);
+            entity.ShortId = ShortIdGenerator.Generate();
             EnforceIntegrityCreate(entity, userContext);
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
@@ -1697,6 +1698,8 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(part, entity);
+                if (string.IsNullOrEmpty(entity.ShortId))
+                    entity.ShortId = ShortIdGenerator.Generate();
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
 
