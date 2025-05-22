@@ -205,6 +205,7 @@ namespace Binner.Common.IO.Printing
                 if (text.StartsWith("http"))
                     urlEncode = true;
 
+                text = text.Replace("{shortId}", Encode(part.ShortId, urlEncode));
                 text = text.Replace("{partNumber}", Encode(part.PartNumber, urlEncode));
                 text = text.Replace("{partId}", Encode(part.PartId.ToString(), urlEncode));
                 text = text.Replace("{partTypeId}", Encode(part.PartTypeId.ToString(), urlEncode));
@@ -437,18 +438,12 @@ namespace Binner.Common.IO.Printing
             var rs = "\u001e"; // \u001e, \u005e, \u241e (␞)
             var gs = "\u001d"; // \u001d, \u005d, \u241d (␝)
             var eot = "\u0004"; // \u0004, ^\u0044, \u2404 (␄)
-            builder.Append($"[)>{rs}06{gs}");
-            builder.Append($"{part.PartNumber}");
-            builder.Append($"{gs}1P{part.ManufacturerPartNumber}");
-            builder.Append($"{gs}K");
-            builder.Append($"{gs}{part.Description}");
-            builder.Append($"{gs}{part.PartTypeId}");
-            builder.Append($"{gs}{part.MountingTypeId}");
-            builder.Append($"{gs}{part.PackageType}");
-            builder.Append($"{gs}Q{part.Quantity}");
-            builder.Append($"{gs}{part.Location}");
-            builder.Append($"{gs}{part.BinNumber}");
-            builder.Append($"{gs}{part.BinNumber2}");
+            builder.Append($"[)>{rs}9");
+            builder.Append($"{gs}SN{part.ShortId}");
+            builder.Append($"{gs}PN{part.PartNumber}");
+            builder.Append($"{gs}BL{part.Location}");
+            builder.Append($"{gs}B1{part.BinNumber}");
+            builder.Append($"{gs}B2{part.BinNumber2}");
             builder.Append($"{gs}\r");
             builder.Append($"{eot}\r");
             return builder.ToString();
@@ -456,7 +451,7 @@ namespace Binner.Common.IO.Printing
 
         private string Encode1dBarcodePartData(Part part)
         {
-            return part?.PartNumber ?? part?.ManufacturerPartNumber ?? string.Empty;
+            return part?.ShortId ?? part?.PartNumber ?? part?.ManufacturerPartNumber ?? string.Empty;
         }
 
         private HorizontalAlignment GetTextAlignment(LabelAlign align)

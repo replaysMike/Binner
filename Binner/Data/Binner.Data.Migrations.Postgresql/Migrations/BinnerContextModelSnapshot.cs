@@ -574,6 +574,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ShortId")
+                        .HasColumnType("text");
+
                     b.Property<string>("SymbolName")
                         .HasColumnType("text");
 

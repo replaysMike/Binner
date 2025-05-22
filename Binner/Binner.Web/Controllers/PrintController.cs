@@ -1,6 +1,7 @@
 ﻿using Binner.Common;
 using Binner.Common.IO.Printing;
 using Binner.Common.Services;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
@@ -11,16 +12,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SixLabors.ImageSharp;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Binner.Model;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System.Collections.Generic;
 
 namespace Binner.Web.Controllers
 {
@@ -74,6 +74,7 @@ namespace Binner.Web.Controllers
                 var part = new Part
                 {
                     PartId = 1,
+                    ShortId = "xQmVnsy-Tr",
                     PartNumber = "NCC-1701-G",
                     Description = "This part is an placeholder for an actual part for print testing purposes.",
                     ManufacturerPartNumber = "NCC-1701-G-TI4473",

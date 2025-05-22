@@ -900,6 +900,7 @@ export function LabelEditor(props) {
               <label>{t('page.printing.labelTemplates.partInformation', "Part Information")}</label>
             </div>
             <div className="wrapper" style={{ flex: "1", padding: "0 20px" }}>
+              <DraggableBox name="shortId">{getChildrenByName('shortId')}</DraggableBox>
               <DraggableBox name="partNumber">{getChildrenByName('partNumber')}</DraggableBox>
               <DraggableBox name="partId">{getChildrenByName('partId')}</DraggableBox>
               <DraggableBox name="manufacturerPartNumber">{getChildrenByName('manufacturerPartNumber')}</DraggableBox>

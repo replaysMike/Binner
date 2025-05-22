@@ -14,6 +14,11 @@ namespace Binner.Model
         public long PartId { get; set; }
 
         /// <summary>
+        /// A unique 10 character part identifier (for Binner use) that can be used to identify the inventory part
+        /// </summary>
+        public string? ShortId { get; set; }
+
+        /// <summary>
         /// The number of items in stock
         /// </summary>
         public long Quantity { get; set; }

@@ -574,6 +574,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ShortId")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("SymbolName")
                         .HasColumnType("longtext");
 

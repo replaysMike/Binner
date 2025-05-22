@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Binner.Global.Common;
+using Microsoft.Extensions.Logging;
 using TypeSupport.Extensions;
 using static Binner.Model.SystemDefaults;
 
@@ -27,14 +28,15 @@ namespace Binner.Data
                 // seed data
                 SeedInitialUsers(logger, context, passwordHasher);
                 if (context.ChangeTracker.HasChanges())
-                {
                     context.SaveChanges();
-                }
+
                 AddOrUpdatePartTypes(logger, context);
                 if (context.ChangeTracker.HasChanges())
-                {
                     context.SaveChanges();
-                }
+
+                AddMissingShortIds(logger, context);
+                if (context.ChangeTracker.HasChanges())
+                    context.SaveChanges();
                 transaction.Commit();
             }
             catch (Exception)
@@ -132,6 +134,17 @@ namespace Binner.Data
                         logger.LogInformation($"Updated part type '{existingPartType.Name}'!");
                     }
                 }
+            }
+        }
+
+        private static void AddMissingShortIds(ILogger logger, BinnerContext context)
+        {
+            var partsWithMissingShortIds = context.Parts.Where(x => x.ShortId == null).ToList();
+            foreach(var part in partsWithMissingShortIds)
+            {
+                part.ShortId = ShortIdGenerator.Generate();
+                part.DateModifiedUtc = DateTime.UtcNow;
+                logger.LogInformation($"Generated shortId '{part.ShortId}' for part '{part.PartNumber}'!");
             }
         }
     }

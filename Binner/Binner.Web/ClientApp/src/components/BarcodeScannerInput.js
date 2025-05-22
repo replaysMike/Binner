@@ -187,10 +187,13 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
     let rsDetected = false;
     let eotDetected = false;
     let invalidBarcodeDetected = false;
+    let vendor = "Unknown";
+
     if (value.startsWith(barcodeConfig.prefix2D)) {
       // 2D DotMatrix barcode. Process into value.
       barcodeType = "datamatrix";
       const parseResult = parseDataMatrix(value);
+      vendor = parseResult.vendor;
       parsedValue = parseResult.value;
       gsDetected = parseResult.gsDetected;
       rsDetected = parseResult.rsDetected;
@@ -204,6 +207,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
 
     return {
       type: barcodeType,
+      vendor: vendor,
       value: parsedValue,
       correctedValue: correctedValue,
       rawValue: value,
@@ -227,8 +231,14 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
     const stxCharCodes = ["\u0002"]; // CTRL-B, \u0002 START OF TEXT
     const etxCharCodes = ["\u0003"]; // CTRL-C, \u0003 END OF TEXT
     const header = barcodeConfig.prefix2D;
-    const expectedFormatNumber = 6; /** 22z22 barcode */
-    const controlChars = ["P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z"];
+    const expectedFormatNumber = 6; /** digikey barcode */
+    const expectedBinnerFormatNumber = 9; /** binner barcode */
+    let vendor = "Unknown";
+    const controlChars = [
+      // digikey specific labels
+      "P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", 
+      // binner specific labels
+      "SN", "PN", "BL", "B1", "B2"];
 
     let gsCodePresent = false;
     let rsCodePresent = false;
@@ -239,22 +249,17 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
     let formatNumberIndex = 0;
     let correctedValue = value.toString();
     // normalize the control codes so we don't have multiple values to worry about
+    console.log('originalValue', correctedValue);
     correctedValue = normalizeControlCharacters(correctedValue);
-
-    correctedValue = correctedValue.replaceAll("\u001d", "\u241d"); // GS
-    correctedValue = correctedValue.replaceAll("\u005d", "\u241d"); // GS
-
-    correctedValue = correctedValue.replaceAll("\u001e", "\u241e"); // RS
-    correctedValue = correctedValue.replaceAll("\u005e", "\u241e"); // RS
-    correctedValue = correctedValue.replaceAll("\u0004", "\u2404"); // EOT
-    correctedValue = correctedValue.replaceAll("^\u0044", "\u2404"); // EOT
+    console.log('correctedValue', correctedValue);
 
     gsCodePresent = gsCharCodes.some(v => correctedValue.includes(v));
     rsCodePresent = rsCharCodes.some(v => correctedValue.includes(v));
     eotCodePresent = eotCharCodes.some(v => correctedValue.includes(v));
+    console.log('presence', gsCodePresent, rsCodePresent, eotCodePresent);
     //console.debug('codePresent', gsCodePresent, rsCodePresent, eotCodePresent);
 
-    // read in the format number first. For Digikey 2d barcodes, this should be 6 (expectedFormatNumber)
+    // read in the format number first. For Digikey 2d barcodes, this should be 6 (expectedFormatNumber) for DigiKey, 9 (expectedBinnerFormatNumber) for Binner
     for (i = 0; i < correctedValue.length; i++) {
       buffer += correctedValue[i];
       if (buffer === header) {
@@ -270,13 +275,20 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       }
     }
     // assert expected barcode format number
-    if (formatNumber !== expectedFormatNumber) {
+    const expectedFormatNumbers = [ expectedFormatNumber, expectedBinnerFormatNumber ];
+    if (!expectedFormatNumbers.includes(formatNumber)) {
       // error
-      console.error(`BSI: Expected the 2D barcode format number of ${expectedFormatNumber} but was ${formatNumber}`);
+      console.error(`BSI: Expected the 2D barcode format number of any [${expectedFormatNumbers.join()}]  but was ${formatNumber}`);
       return {};
     }
+    const isBinnerBarcode = formatNumber === expectedBinnerFormatNumber;
+    const isDigiKeyBarcode = formatNumber === expectedFormatNumber;
+    
+    // todo: investigate detection of other vendors part labels
+    if (isBinnerBarcode) vendor = "Binner";
+    if (isDigiKeyBarcode) vendor = "DigiKey";
 
-    let lastPosition = i;
+    let lastPosition = i - 1;
     let gsLines = [];
     let gsLine = '';
     // break each group separator into an array
@@ -293,6 +305,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
     }
     if (gsLine.length > 0)
       gsLines.push(gsLine);
+    console.log('gsLines', gsLines);
 
     let invalidBarcodeDetected = false;
     // some older DigiKey barcodes are encoded incorrectly, and have a blank GSRS at the end. Filter them out.
@@ -324,7 +337,33 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       }
 
       /** NOTE: supported commands below must be present in the controlChars array */
+      console.log('readCommandType', i, readCommandType, readControlChars);
       switch (readCommandType) {
+        case "SN":
+          // Binner short id
+          if (isBinnerBarcode)
+            parsedValue["shortId"] = readValue;
+          break;
+        case "PN":
+          // Binner part number
+          if (isBinnerBarcode)
+            parsedValue["description"] = readValue;
+          break;
+        case "BL":
+          // Binner location
+          if (isBinnerBarcode)
+            parsedValue["location"] = readValue;
+          break;
+        case "B1":
+          // Binner bin number 1
+          if (isBinnerBarcode)
+            parsedValue["binNumber1"] = readValue;
+          break;
+        case "B2":
+          // Binner bin number 2
+          if (isBinnerBarcode)
+            parsedValue["binNumber2"] = readValue;
+          break;
         case "P":
           // could be DigiKey part number, or customer reference value
           parsedValue["description"] = readValue;
@@ -390,9 +429,11 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       }
     }
 
-    correctedValue = buildBarcode(expectedFormatNumber, gsLines);
+    const useFormatNumber = isBinnerBarcode ? expectedBinnerFormatNumber : expectedFormatNumber;
+    correctedValue = buildBarcode(useFormatNumber, gsLines);
     return {
       rawValue: value,
+      vendor: vendor,
       value: parsedValue,
       correctedValue: correctedValue,
       gsDetected: gsCodePresent,

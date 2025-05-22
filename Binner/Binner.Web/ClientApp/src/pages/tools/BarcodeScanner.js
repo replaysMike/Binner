@@ -307,7 +307,7 @@ export function BarcodeScanner(props) {
                 <Table.Row key={key}>
                   <Table.Cell><Link onClick={e => loadHistory(e, item)}>View</Link></Table.Cell>
                   <Table.Cell>{item.success ? <Icon name="check circle" color="green" /> : <Icon name="times circle" color="red" />}</Table.Cell>
-                  <Table.Cell>{item.value.supplierPartNumber || item.value.description || item.value.mfgPartNumber || item.value.salesOrder || "unknown"}</Table.Cell>
+                  <Table.Cell>{item.value?.supplierPartNumber || item.value?.description || item.value?.mfgPartNumber || item.value?.salesOrder || "unknown"}</Table.Cell>
                   <Table.Cell>{item.type}</Table.Cell>
                   <Table.Cell>{item.rawValue.length}</Table.Cell>
                   <Table.Cell>{item.rsDetected && "RS"} {item.gsDetected && "GS"} {item.eotDetected && "EOT"}</Table.Cell>

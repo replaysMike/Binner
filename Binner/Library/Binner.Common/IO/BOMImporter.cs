@@ -2,7 +2,6 @@
 using Binner.Model;
 using NPOI.SS.UserModel;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -58,6 +57,7 @@ namespace Binner.Common.IO
                 else
                 {
                     part = new Part();
+                    part.ShortId = ShortIdGenerator.Generate();
                     part.PartNumber = partNumber;
                     part.Quantity = 0;
                     part.UserId = userContext?.UserId;
