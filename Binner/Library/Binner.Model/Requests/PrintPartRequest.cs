@@ -8,6 +8,11 @@
         public string? PartNumber { get; set; }
 
         /// <summary>
+        /// The part's short id
+        /// </summary>
+        public string? ShortId { get; set; }
+
+        /// <summary>
         /// Optional part id
         /// </summary>
         public long PartId { get; set; }

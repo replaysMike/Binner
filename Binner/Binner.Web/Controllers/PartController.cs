@@ -426,58 +426,59 @@ namespace Binner.Web.Controllers
         /// <param name="exactMatch">True if only searching for an exact match</param>
         /// <returns></returns>
         [HttpGet("search")]
-        public async Task<IActionResult> SearchAsync([FromQuery] string keywords, [FromQuery] bool exactMatch = false)
+        public async Task<IActionResult> SearchAsync([FromQuery] string? keywords, [FromQuery] string? shortId, [FromQuery] bool exactMatch = false)
         {
-            if (exactMatch)
+            if (!string.IsNullOrEmpty(keywords))
+            {
+                // search by keyword, multiple results
+                var parts = await _partService.FindPartsAsync(keywords);
+                if (!parts.Any()) return NotFound();
+
+                var partsOrdered = parts
+                    .OrderBy(x => x.Rank)
+                    .Select(x => x.Result)
+                    .ToList();
+                var partsResponses = await MapPartTypesAsync(partsOrdered);
+                // return multiple results
+                return Ok(partsResponses);
+            }
+            else if (!string.IsNullOrEmpty(shortId))
+            {
+                // search by short id, return single result but as a collection
+                var part = await _partService.GetPartAsync(new GetPartRequest { ShortId = shortId });
+                if (part == null) return NotFound();
+
+                var partsResponses = await MapPartTypesAsync(new List<Part>() { part });
+                return Ok(partsResponses);
+            }
+            else if (exactMatch)
             {
                 // search by exact part name match
                 var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = keywords });
                 if (part == null) return NotFound();
 
-                var partTypes = await _partService.GetPartTypesAsync();
-                var mappedPart = Mapper.Map<Part, PartResponse>(part);
+                var partResponse = await MapPartTypesAsync(new List<Part> { part });
+                // return only one result
+                return Ok(partResponse.First());
+            }
+
+            return BadRequest();
+        }
+
+        private async Task<ICollection<PartResponse>> MapPartTypesAsync(ICollection<Part> parts)
+        {
+            var partTypes = await _partService.GetPartTypesAsync();
+            var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(parts);
+            // map part types
+            foreach (var mappedPart in partsResponse)
+            {
                 mappedPart.PartType = partTypes
                     .Where(x => x.PartTypeId == mappedPart.PartTypeId)
                     .Select(x => x.Name)
                     .FirstOrDefault();
                 mappedPart.MountingType = ((MountingType)mappedPart.MountingTypeId).ToString();
-                var keywordsList = part.Keywords;
-                if (keywordsList != null)
-                    mappedPart.Keywords = string.Join(" ", keywordsList);
-                var partResponse = new List<PartResponse>
-                {
-                    mappedPart
-                };
-
-                return Ok(partResponse);
             }
-            else
-            {
-                // search by keyword
-                var parts = await _partService.FindPartsAsync(keywords);
-                if (!parts.Any())
-                    return NotFound();
-                var partTypes = await _partService.GetPartTypesAsync();
-                var partsOrdered = parts
-                    .OrderBy(x => x.Rank)
-                    .Select(x => x.Result)
-                    .ToList();
-                var partsResponse = Mapper.Map<ICollection<Part>, ICollection<PartResponse>>(partsOrdered);
-                // map part types
-                foreach (var mappedPart in partsResponse)
-                {
-                    mappedPart.PartType = partTypes
-                        .Where(x => x.PartTypeId == mappedPart.PartTypeId)
-                        .Select(x => x.Name)
-                        .FirstOrDefault();
-                    mappedPart.MountingType = ((MountingType)mappedPart.MountingTypeId).ToString();
-                    var keywordsList = partsOrdered.First(x => x.PartId == mappedPart.PartId).Keywords;
-                    if (keywordsList != null)
-                        mappedPart.Keywords = string.Join(" ", keywordsList);
-                }
-
-                return Ok(partsResponse);
-            }
+            return partsResponse;
         }
 
         /// <summary>
@@ -759,7 +760,15 @@ namespace Binner.Web.Controllers
             try
             {
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
-                var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = request.PartNumber, PartId = request.PartId });
+
+                if (request.PartNumber?.Contains(":") == true)
+                {
+                    var parts = request.PartNumber.Split(':');
+                    request.PartNumber = parts[0];
+                }
+
+                var getPartRequest = new GetPartRequest { PartNumber = request.PartNumber, ShortId = request.ShortId, PartId = request.PartId };
+                var part = await _partService.GetPartAsync(getPartRequest);
                 if (part == null) return NotFound();
 
                 if (await _printService.HasPartLabelTemplateAsync())
@@ -810,15 +819,22 @@ namespace Binner.Web.Controllers
                 if (userContext == null) return GetInvalidTokenImage();
                 System.Threading.Thread.CurrentPrincipal = new TokenPrincipal(userContext, request.Token);
 
+                if (request.PartNumber?.Contains(":") == true)
+                {
+                    var parts = request.PartNumber.Split(':');
+                    request.PartNumber = parts[0];
+                }
+
                 if (string.IsNullOrEmpty(request.PartNumber)) return BadRequest("No part number specified.");
-                var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = request.PartNumber, PartId = request.PartId });
+                var getPartRequest = new GetPartRequest { PartNumber = request.PartNumber, ShortId = request.ShortId, PartId = request.PartId };
+                var part = await _partService.GetPartAsync(getPartRequest);
 
                 var stream = new MemoryStream();
                 if (await _printService.HasPartLabelTemplateAsync())
                 {
                     // use the new part label template
                     var label = await _printService.GetPartLabelTemplateAsync();
-                    var image = _labelGenerator.CreateLabelImage(label, part ?? new Part { PartNumber = request.PartNumber });
+                    var image = _labelGenerator.CreateLabelImage(label, part ?? new Part { PartNumber = request.PartNumber, ShortId = request.ShortId });
                     await image.SaveAsPngAsync(stream);
                     stream.Seek(0, SeekOrigin.Begin);
                     return new FileStreamResult(stream, "image/png");
@@ -826,8 +842,6 @@ namespace Binner.Web.Controllers
                 else
                 {
                     // generate a label for a part
-
-                    // generate a general barcode as the part isn't created or doesn't exist
                     Image<Rgba32> image;
                     if (part == null)
                         image = _barcodeGenerator.GenerateBarcode(request.PartNumber, Color.Black, Color.White, 300, 25);

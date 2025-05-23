@@ -6,6 +6,7 @@ using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -48,7 +49,15 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _mapper.Map<DataModel.Part>(part);
-            entity.ShortId = ShortIdGenerator.Generate();
+
+            // ensure shortid is unique
+            var exists = false;
+            do
+            {
+                entity.ShortId = ShortIdGenerator.Generate();
+                exists = await context.Parts.AnyAsync(x => x.ShortId == entity.ShortId && x.OrganizationId == userContext.OrganizationId);
+            } while (exists);
+            
             EnforceIntegrityCreate(entity, userContext);
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
@@ -1233,7 +1242,19 @@ INNER JOIN (
             if (model != null)
                 model.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Inventory, entity.PartId, userContext);
             return model;
+        }
 
+        public async Task<Part?> GetPartByShortIdAsync(string shortId, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Parts.FirstOrDefaultAsync(x => x.ShortId == shortId.ToUpper() && x.OrganizationId == userContext.OrganizationId);
+            if (entity == null)
+                return null;
+            var model = _mapper.Map<Part?>(entity);
+            if (model != null)
+                model.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Inventory, entity.PartId, userContext);
+            return model;
         }
 
         private IQueryable<DataModel.Part> GetPartsQueryable(BinnerContext context, PaginatedRequest request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
@@ -1313,7 +1334,8 @@ INNER JOIN (
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 entitiesQueryable = entitiesQueryable.Where(x =>
-                    EF.Functions.Like(x.PartNumber, '%' + request.Keyword + '%')
+                    x.ShortId == request.Keyword
+                    || EF.Functions.Like(x.PartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.ManufacturerPartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Description, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Manufacturer, '%' + request.Keyword + '%')
@@ -1699,7 +1721,15 @@ INNER JOIN (
             {
                 entity = _mapper.Map(part, entity);
                 if (string.IsNullOrEmpty(entity.ShortId))
-                    entity.ShortId = ShortIdGenerator.Generate();
+                {
+                    // ensure shortid is unique
+                    var exists = false;
+                    do
+                    {
+                        entity.ShortId = ShortIdGenerator.Generate();
+                        exists = await context.Parts.AnyAsync(x => x.ShortId == entity.ShortId && x.OrganizationId == userContext.OrganizationId);
+                    } while (exists);
+                }
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
 

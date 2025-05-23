@@ -235,10 +235,11 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
     const expectedBinnerFormatNumber = 9; /** binner barcode */
     let vendor = "Unknown";
     const controlChars = [
+      // binner specific labels
+      "BS", "BN", "BL", "B1", "B2", "BV",
       // digikey specific labels
       "P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", 
-      // binner specific labels
-      "SN", "PN", "BL", "B1", "B2"];
+    ];
 
     let gsCodePresent = false;
     let rsCodePresent = false;
@@ -305,7 +306,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
     }
     if (gsLine.length > 0)
       gsLines.push(gsLine);
-    console.log('gsLines', gsLines);
+    //console.log('gsLines', gsLines);
 
     let invalidBarcodeDetected = false;
     // some older DigiKey barcodes are encoded incorrectly, and have a blank GSRS at the end. Filter them out.
@@ -337,17 +338,17 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       }
 
       /** NOTE: supported commands below must be present in the controlChars array */
-      console.log('readCommandType', i, readCommandType, readControlChars);
+      //console.log('readCommandType', i, readCommandType, readControlChars);
       switch (readCommandType) {
-        case "SN":
+        case "BS":
           // Binner short id
           if (isBinnerBarcode)
             parsedValue["shortId"] = readValue;
           break;
-        case "PN":
+        case "BN":
           // Binner part number
           if (isBinnerBarcode)
-            parsedValue["description"] = readValue;
+            parsedValue["partNumber"] = readValue;
           break;
         case "BL":
           // Binner location
@@ -363,6 +364,11 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
           // Binner bin number 2
           if (isBinnerBarcode)
             parsedValue["binNumber2"] = readValue;
+          break;
+        case "BV":
+          // Binner label version
+          if (isBinnerBarcode)
+            parsedValue["version"] = readValue;
           break;
         case "P":
           // could be DigiKey part number, or customer reference value

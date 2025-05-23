@@ -439,11 +439,12 @@ namespace Binner.Common.IO.Printing
             var gs = "\u001d"; // \u001d, \u005d, \u241d (␝)
             var eot = "\u0004"; // \u0004, ^\u0044, \u2404 (␄)
             builder.Append($"[)>{rs}9");
-            builder.Append($"{gs}SN{part.ShortId}");
-            builder.Append($"{gs}PN{part.PartNumber}");
-            builder.Append($"{gs}BL{part.Location}");
-            builder.Append($"{gs}B1{part.BinNumber}");
-            builder.Append($"{gs}B2{part.BinNumber2}");
+            builder.Append($"{gs}BV01");                // label version
+            builder.Append($"{gs}BS{part.ShortId}");    // part short id (unique to binner inventory)
+            builder.Append($"{gs}BN{part.PartNumber}"); // part number
+            builder.Append($"{gs}BL{part.Location}");   // location
+            builder.Append($"{gs}B1{part.BinNumber}");  // binNumber1
+            builder.Append($"{gs}B2{part.BinNumber2}"); // binNumber2
             builder.Append($"{gs}\r");
             builder.Append($"{eot}\r");
             return builder.ToString();
