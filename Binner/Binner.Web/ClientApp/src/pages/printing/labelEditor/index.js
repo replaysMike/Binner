@@ -873,6 +873,10 @@ export function LabelEditor(props) {
                             Part template values should be of the following format: <i><b>&#123;</b>partNumber<b>&#125;</b></i>
                             <br /><br />
                             Website URLs are also permitted: https://localhost:8090/inventory/<i><b>&#123;</b>partNumber<b>&#125;</b>:<b>&#123;</b>partId<b>&#125;</b></i>
+                            <br /><br />
+                            2D Barcodes Default value:<br /><span className="example">&#91;&#41;&gt;<span className="separator">&#x241E;</span>9<span className="separator">&#x241D;</span>BV01<span className="separator">&#x241D;</span><b>&#123;</b>shortId<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>partNumber<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>location<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>binNumber<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>binNumber2<b>&#125;</b><span className="separator">&#x241D;</span><span className="separator">&#x2404;</span></span>
+                            <br/>
+                            1D Barcodes Default value:<br /><span className="example"><b>&#123;</b>partNumber<b>&#125;</b></span>
                           </p>}
                           trigger={<Input
                             fluid

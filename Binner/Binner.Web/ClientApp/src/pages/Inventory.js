@@ -651,20 +651,39 @@ export function Inventory({ partNumber = "", ...rest }) {
     setLastBarcodeScan(input);
     console.debug('barcode input received', input);
     let cleanPartNumber = "";
+    let shortId = "";
+    let isBinnerLabel = false;
     if (input.type === "datamatrix") {
-      // datamatrix codes contain additional information we can use directly
-      // use the manufacturer's part number
-      if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
-      // use the supplier's part number
-      else if (input.value.supplierPartNumber && input.value.supplierPartNumber.length > 0) cleanPartNumber = input.value.supplierPartNumber;
-      // use the description fallback, which works on older labels
-      else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
+      // datamatrix codes contain additional information we can use directly. Could be a Binner label, or a DigiKey part label
+
+      if (input.vendor === 'Binner') {
+        isBinnerLabel = true;
+        allowQuantityUpdate = false; // binner labels should never add to quantity
+        // binner part label, the item is an inventory item. we want to search by shortId if it's encoded
+        if (input.value.shortId) {
+          console.debug('search by Binner shortid', input);
+          cleanPartNumber = input.value.partNumber;
+          shortId = input.value.shortId;
+        } else if (input.value.partNumber) {
+          // search by part number
+          console.debug('search by Binner partNumber', input.value.partNumber);
+          cleanPartNumber = input.value.partNumber;
+        }
+      }
+      else if (input.vendor === 'DigiKey') {
+        // use the manufacturer's part number
+        if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
+        // use the supplier's part number
+        else if (input.value.supplierPartNumber && input.value.supplierPartNumber.length > 0) cleanPartNumber = input.value.supplierPartNumber;
+        // use the description fallback, which works on older labels
+        else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
+      }
     } else if (input.type === "code128") {
       // code128 are 1-dimensional codes that only contain a single alphanumeric string, usually a part number
       cleanPartNumber = input.value;
     }
 
-    // if we didn't rerceive a code we can understand, ignore it
+    // if we didn't receive a code we can understand, ignore it
     if (!cleanPartNumber || cleanPartNumber.length === 0) {
       console.debug('no clean part number found', cleanPartNumber, input?.value?.quantity);
       if (enableSound) soundFailure.play();
@@ -697,15 +716,17 @@ export function Inventory({ partNumber = "", ...rest }) {
       resetForm("", false, false);
       const scannedPart = {
         partNumber: cleanPartNumber,
+        shortId: shortId,
         barcode: input.correctedValue
       };
       setInputPartNumber(cleanPartNumber);
-      if ((input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0)
+      if (isBinnerLabel
+        || (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0)
         || (input.value.supplierPartNumber && input.value.supplierPartNumber.length > 0)) {
         setPartMetadataIsSubscribed(false);
         setPartMetadataErrors([]);
         // we already have a usable part number, look up its data
-        const existingPart = await fetchPart(cleanPartNumber);
+        const existingPart = await fetchPart(cleanPartNumber, null, shortId);
         //console.debug('fetchPart', existingPart);
 
         const labelQuantity = parseInt(input.value?.quantity || "1");
@@ -718,7 +739,7 @@ export function Inventory({ partNumber = "", ...rest }) {
           // ================================
           // label has _already_ been scanned
           // ================================
-          if (!allowReImport) {
+          if (!isBinnerLabel && !allowReImport) {
             // confirm do you want to import it again?
             setConfirmReImportAction(() => async (confirmEvent) => await handleBarcodeInput(e, input, true));
             setConfirmReImport(true);
@@ -817,7 +838,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPart(part);
   };
 
-  const fetchPart = async (partNumber, partId) => {
+  /** fetch an existing part from inventory */
+  const fetchPart = async (partNumber, partId, shortId) => {
     Inventory.fetchPartController?.abort();
     Inventory.fetchPartController = new AbortController();
     setLoadingPart(true);
@@ -826,7 +848,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     const validPartId = typeof partId === "number" ? partId : partId && parseInt(partId.trim());
     if (validPartId > 0)
       query += `&partId=${partId}`;
-
+    if (shortId)
+      query += `&shortId=${shortId}`;
     // this endpoint can return an expected 404
     return await fetchApi(`/api/part?${query}`, {
       signal: Inventory.fetchPartController.signal

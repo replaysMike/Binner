@@ -243,6 +243,11 @@ namespace Binner.Testing
             return _parts.Where(x => x.Key == partId).Select(x => x.Value).FirstOrDefault();
         }
 
+        public async Task<Part?> GetPartByShortIdAsync(string shortId, IUserContext? userContext)
+        {
+            return _parts.Where(x => x.Value.ShortId == shortId).Select(x => x.Value).FirstOrDefault();
+        }
+
         public async Task<Part?> GetPartAsync(string partNumber, IUserContext? userContext)
         {
             return _parts.Where(x => x.Value.PartNumber == partNumber).Select(x => x.Value).FirstOrDefault();

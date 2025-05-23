@@ -175,3 +175,15 @@ td.zoomTools div {
 	outline-color: #0478d1;
 	outline-offset: -1px;
 }
+
+.example {
+  font-family: 'Courier New', Courier, monospace;
+  font-style: italic;
+}
+
+.separator {
+  font-weight: 500;
+  color: #c00;
+  font-size: 1.5em;
+  margin: 0;
+}

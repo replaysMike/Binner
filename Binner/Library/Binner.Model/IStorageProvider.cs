@@ -103,6 +103,14 @@ namespace Binner.Model
         Task<Part?> GetPartAsync(string partNumber, IUserContext? userContext);
 
         /// <summary>
+        /// Get a part by its short id
+        /// </summary>
+        /// <param name="shortId"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<Part?> GetPartByShortIdAsync(string shortId, IUserContext? userContext);
+
+        /// <summary>
         /// Get all parts
         /// </summary>
         /// <param name="request"></param>

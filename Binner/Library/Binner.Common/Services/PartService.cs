@@ -93,6 +93,8 @@ namespace Binner.Common.Services
         {
             if (request.PartId > 0)
                 return await _storageProvider.GetPartAsync(request.PartId, _requestContext.GetUserContext());
+            else if (!string.IsNullOrEmpty(request.ShortId))
+                return await _storageProvider.GetPartByShortIdAsync(request.ShortId, _requestContext.GetUserContext());
             else
                 return await _storageProvider.GetPartAsync(request.PartNumber ?? string.Empty, _requestContext.GetUserContext());
         }

@@ -1,4 +1,5 @@
 ﻿using Binner.Global.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TypeSupport.Extensions;
 using static Binner.Model.SystemDefaults;
@@ -142,7 +143,13 @@ namespace Binner.Data
             var partsWithMissingShortIds = context.Parts.Where(x => x.ShortId == null).ToList();
             foreach(var part in partsWithMissingShortIds)
             {
-                part.ShortId = ShortIdGenerator.Generate();
+                // ensure shortid is unique
+                var exists = false;
+                do
+                {
+                    part.ShortId = ShortIdGenerator.Generate();
+                    exists = context.Parts.Any(x => x.ShortId == part.ShortId);
+                } while (exists);
                 part.DateModifiedUtc = DateTime.UtcNow;
                 logger.LogInformation($"Generated shortId '{part.ShortId}' for part '{part.PartNumber}'!");
             }

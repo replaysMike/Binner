@@ -32,7 +32,7 @@ export function Search(props) {
   const [sortDirection, setSortDirection] = useState("Descending");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(-1);
+  const [pageSize, setPageSize] = useState(25);
   const [loading, setLoading] = useState(true);
   const [totalRecords, setTotalRecords] = useState(0);
   const [renderIsDirty, setRenderIsDirty] = useState(true);
@@ -44,17 +44,11 @@ export function Search(props) {
     setInitComplete(true);
   };
 
-  // debounced handler for processing barcode scanner input
-  const handleBarcodeInput = async (e, input) => {
-    let cleanPartNumber = "";
-    if (input.type === "datamatrix") {
-      if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
-      else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
-    } else if (input.type === "code128") {
-      cleanPartNumber = input.value;
-    }
-    setKeyword(cleanPartNumber);
+  const searchBinnerInventory = useCallback(async (shortIdOrPartNumber) => {
+    await loadParts(1, true, filterBy, filterByValue, 1, sortBy, sortDirection, shortIdOrPartNumber);
+  }, [keyword]);
 
+  const searchBarcode = async (cleanPartNumber) => {
     const response = await fetchApi(`/api/part/barcode/info?barcode=${encodeURIComponent(cleanPartNumber.trim())}`, {
       method: "GET",
       headers: {
@@ -70,14 +64,14 @@ export function Search(props) {
       }
       if (data.errors && data.errors.length > 0) {
         const errorMessage = data.errors.join("\n");
-        if(data.errors[0] === "Api is not enabled."){
+        if (data.errors[0] === "Api is not enabled.") {
           // supress warning for barcode scans
         }
         else
           toast.error(errorMessage);
       } else if (data.response.parts.length > 0) {
         // show the metadata in the UI
-        var partInfo =  data.response.parts[0];
+        var partInfo = data.response.parts[0];
         setKeyword(partInfo.basePartNumber);
         await search(partInfo.basePartNumber);
       } else {
@@ -89,6 +83,34 @@ export function Search(props) {
       toast.error('Barcode search returned an error!');
     }
   };
+
+  // debounced handler for processing barcode scanner input
+  const handleBarcodeInput = useCallback(async (e, input) => {
+    let cleanPartNumber = "";
+    if (input.type === "datamatrix") {
+      if (input.vendor === 'Binner') {
+        // search by shortid
+        cleanPartNumber = input.value.partNumber;
+        if (input.value.shortId)
+          await searchBinnerInventory(input.value.shortId);
+        else if (input.value.partNumber)
+          await searchBinnerInventory(input.value.partNumber);
+      } else if (input.vendor === 'DigiKey'){
+        // search by manufacturer part number or description
+        if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
+        else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
+        await searchBarcode(cleanPartNumber);
+      } else {
+        // handle unknown vendor
+        if (input.value.mfgPartNumber && input.value.mfgPartNumber.length > 0) cleanPartNumber = input.value.mfgPartNumber;
+        else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
+        searchBarcode(cleanPartNumber);
+      }
+    } else if (input.type === "code128") {
+      cleanPartNumber = input.value;
+    }
+    setKeyword(cleanPartNumber);
+  }, [keyword]);
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection, keyword = null) => {
     const response = await fetchApi(

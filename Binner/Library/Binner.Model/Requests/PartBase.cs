@@ -152,6 +152,11 @@
         /// </summary>
         public string? Value { get; set; }
 
+        /// <summary>
+        /// A unique 10 character part identifier (for Binner use) that can be used to identify the inventory part
+        /// </summary>
+        public string? ShortId { get; set; }
+
         public ICollection<CustomValue>? CustomFields { get; set; }
     }
 }
