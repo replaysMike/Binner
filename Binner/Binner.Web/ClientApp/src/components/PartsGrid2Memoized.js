@@ -29,7 +29,7 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function PartsGrid2Memoized({
     loading = true,
-    columns = "partNumber,partId,quantity,value,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digikeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
+    columns = "partNumber,partId,quantity,value,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
     defaultVisibleColumns = "partNumber,quantity,value,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
     page = 1,
     totalPages = 1,
@@ -42,6 +42,7 @@ export default function PartsGrid2Memoized({
     by = [],
     byValue = [],
     parts = [],
+    disabledPartIds = [],
     ...rest
   }) {
   const { t } = useTranslation();
@@ -87,6 +88,7 @@ export default function PartsGrid2Memoized({
   const [columnsVisibleArray, setColumnsVisibleArray] = useState(defaultVisibleColumns.split(','));
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
   const [sorting, setSorting] = useState([]);
+  const [_disabledPartIds, setDisabledPartIds] = useState([]);
   const itemsPerPageOptions = [
     { key: 1, text: "10", value: 10 },
     { key: 2, text: "25", value: 25 },
@@ -123,7 +125,8 @@ export default function PartsGrid2Memoized({
     setEditable(editable);
     setVisitable(visitable);
     setTotalPages(totalPages);
-  }, [parts, loading, columns, defaultVisibleColumns, page, selectedPart, editable, visitable, totalPages]);
+    setDisabledPartIds(disabledPartIds);
+  }, [parts, loading, columns, defaultVisibleColumns, page, selectedPart, editable, visitable, totalPages, disabledPartIds]);
 
   const handlePageChange = (e, control) => {
     setPage(control.activePage);
@@ -434,6 +437,11 @@ export default function PartsGrid2Memoized({
             onColumnVisibilityChange={handleColumnVisibilityChange}
             onColumnOrderChange={handleColumnOrderChange}
             onSortingChange={handleSortChange}
+            muiTableBodyCellProps={({row}) => ({
+              sx: {
+                borderBottom: _disabledPartIds.includes(row.original.partId) ? '2px solid #c66' : 'none',
+              },
+            })}
             state={{ 
               showProgressBars: isLoading,
               columnVisibility, 
@@ -447,10 +455,12 @@ export default function PartsGrid2Memoized({
             renderBottomToolbar={(<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)}
             muiTableBodyRowProps={({row}) => ({
               onClick: () => handleRowClick(row),
+              title: _disabledPartIds.includes(row.original.partId) ? t("comp.partsGrid.alreadyInBom", 'Already in your BOM') : '',
+              className: _disabledPartIds.includes(row.original.partId) ? 'disabled-highlight' : '',
               selected: _selectedPart === row.original,
               hover: false, // important for proper row highlighting on hover
               sx: {
-                cursor: 'pointer'
+                cursor: 'pointer',
               }
             })}
           />
@@ -510,5 +520,6 @@ PartsGrid2Memoized.propTypes = {
   onInit: PropTypes.func,
   keyword: PropTypes.string,
   by: PropTypes.array,
-  byValue: PropTypes.array
+  byValue: PropTypes.array,
+  disabledPartIds: PropTypes.array
 };
