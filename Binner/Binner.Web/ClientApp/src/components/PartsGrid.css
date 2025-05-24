@@ -34,3 +34,53 @@
 #partsGrid td:has(a):hover { 
 	background-color: #ccc;
 }
+
+#partsGrid .field.inline-editable {
+  display: inline;
+}
+
+#partsGrid .field.inline-editable .ui.transparent.input {
+  width: unset;
+}
+
+#partsGrid .field.inline-editable>label {
+  display: inline;
+}
+
+#partsGrid .field.inline-editable .ui.input >input {
+  display: inline;
+  border: 1px solid transparent !important;
+  margin-left: 2px;
+}
+
+#partsGrid .field.inline-editable .ui.input input:hover {
+  border: 1px solid rgb(185, 220, 253) !important;
+}
+
+#partsGrid .field.inline-editable .ui.input >input:focus {
+  border: 1px solid rgb(63, 160, 250) !important;
+}
+
+#partsGrid .inline-editable .ui.input >input {
+  width: 90%;
+}
+
+#partsGrid .inline-editable > textarea {
+  width: 90%;
+  height: 25px;
+  min-height: 25px;
+  padding: 5px;
+}
+
+#partsGrid .customfields {
+
+}
+
+#partsGrid .customfields .customfield {
+  margin-right: 5px;
+}
+
+#partsGrid .customfields .customfield i {
+  font-weight: 700;
+  font-style: normal;
+}

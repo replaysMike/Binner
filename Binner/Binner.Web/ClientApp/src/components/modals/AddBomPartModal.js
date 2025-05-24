@@ -6,6 +6,7 @@ import { fetchApi } from "../../common/fetchApi";
 import PartsGrid2Memoized from "../PartsGrid2Memoized";
 import NumberPicker from "../NumberPicker";
 import debounce from "lodash.debounce";
+import _ from "underscore";
 
 /**
  * Add a part to a BOM project
@@ -15,23 +16,29 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
   AddBomPartModal.abortController = new AbortController();
   const defaultForm = {
     keyword: "",
-    pcbId: null,
+    pcbId: rest.defaultPcb?.pcbId,
     quantity: '1',
     referenceId: '',
     notes: '',
     schematicReferenceId: '',
     customDescription: ''
   };
+  const [form, setForm] = useState(defaultForm);
   const [_isOpen, setIsOpen] = useState(false);
   const [addPartSearchResults, setAddPartSearchResults] = useState([]);
+  const [projectPartIds, setProjectPartIds] = useState(_.filter(rest.parts, i => form.pcbId > 0 ? i.pcbId === form.pcbId : true).map(i => (i.partId)) || []);
   const [pcbs, setPcbs] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState(defaultForm);
   const [confirmAddPartIsOpen, setConfirmAddPartIsOpen] = useState(false);
+  const [filterBy, setFilterBy] = useState([]);
+  const [filterByValue, setFilterByValue] = useState([]);
+  const [sortBy, setSortBy] = useState("DateCreatedUtc");
+  const [sortDirection, setSortDirection] = useState("Descending");
 
   const pcbOptions = [{ key: 0, text: t('comp.addBomPartModal.none', "None"), value: 0 }];
   if (pcbs && pcbs.length > 0) {
@@ -39,11 +46,34 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
       pcbOptions.push({ key: i + 1, text: pcbs[i].name, description: pcbs[i].description, value: pcbs[i].pcbId });
   }
 
+  const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection, keyword = null) => {
+    setLoading(true);  
+    const response = await fetchApi(
+        `/api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&keyword=${keyword || ""}&by=${by?.join(',')}&value=${byValue?.join(',')}`
+      );
+    const { data } = response;
+    const pageOfData = data.items;
+    let newData = [];
+    if (pageOfData) {
+      if (reset) 
+        newData = [...pageOfData];
+      else 
+        newData = [...addPartSearchResults, ...pageOfData];
+    }
+    setAddPartSearchResults(newData);
+    setPage(page);
+    setTotalPages(data.totalPages);
+    setTotalRecords(data.totalItems);
+    setLoading(false);
+    return response;
+  };
+
   const search = async (keyword) => {
     AddBomPartModal.abortController.abort(); // Cancel the previous request
     AddBomPartModal.abortController = new AbortController();
 
     setLoading(true);
+    setPage(1);
 
     try {
       const response = await fetchApi(`/api/part/search?keywords=${encodeURIComponent(keyword.trim())}`, {
@@ -55,6 +85,9 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
 
       if (response && response.responseObject.ok) {
         const { data } = response;
+        setTotalRecords(data.length);
+        setTotalPages(1);
+        setPage(1);
         setLoading(false);
         setAddPartSearchResults(data || []);
       } else {
@@ -75,18 +108,25 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
     setIsOpen(isOpen);
     setForm(defaultForm);
     setAddPartSearchResults([]);
+    if (isOpen) loadParts(page);
   }, [isOpen]);
 
   useEffect(() => {
     setPcbs(rest.pcbs);
   }, [rest.pcbs]);
 
+  useEffect(() => {
+    setProjectPartIds(_.filter(rest.parts, i => form.pcbId > 0 ? i.pcbId === form.pcbId : true ).map(i => (i.partId)) || []);
+  }, [rest.parts, form.pcbId]);
+
   const handleModalClose = (e) => {
     setIsOpen(false);
     if (rest.onClose) rest.onClose();
   };
 
-  const handleAddPartsNextPage = (e) => { };
+  const handleAddPartsNextPage = async (e, page) => { 
+    await loadParts(page, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, form.keyword || "");
+  };
 
   const handleAddPartSelectPart = (e, part) => {
     if (selectedPart === part)
@@ -96,7 +136,13 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
   };
 
   const handlePageSizeChange = async (e, pageSize) => {
+    setPage(1);
     setPageSize(pageSize);
+    setAddPartSearchResults([]);
+    if (form.keyword)
+      await search(form.keyword);
+    else
+      await loadParts(1, true);
   };
 
   const updateNumberPicker = (e) => {
@@ -268,6 +314,7 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
             defaultVisibleColumns="partNumber,quantity,manufacturerPartNumber,description,cost"
             editable={false}
             visitable={false}
+            disabledPartIds={projectPartIds || []}
             settingsName="bomAddPartModal"
             name="partsGrid"
           >
@@ -293,5 +340,9 @@ AddBomPartModal.propTypes = {
   /** Event handler when closing modal */
   onClose: PropTypes.func,
   /** Set this to true to open model */
-  isOpen: PropTypes.bool
+  isOpen: PropTypes.bool,
+  /** The pcb to select when the modal is opened */
+  defaultPcb: PropTypes.object,
+  /** The list of parts in the BOM */
+  parts: PropTypes.array
 };

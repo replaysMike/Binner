@@ -105,3 +105,8 @@
 .Mui-TableHeadCell-Content-Labels .Mui-TableHeadCell-Content-Wrapper {
   padding-right: 2px;
 }
+
+.disabled-highlight {
+  background-color: rgb(250, 242, 242) !important;
+  border-top: 2px solid #f00 !important;
+}

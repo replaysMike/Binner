@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { HashLink } from 'react-router-hash-link';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { Icon, Input, Tab, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb, Statistic, Menu, Label } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import axios from "axios";
-import _ from "underscore";
+import _, { sortBy } from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ import { FormatFullDateTime } from "../common/datetime";
 import { getAuthToken } from "../common/authentication";
 import { getSystemSettings } from "../common/applicationSettings";
 import { getProduciblePcbCount, getProducibleBomCount, getTotalOutOfStockParts, getTotalInStockParts, getProjectColor } from "../common/bomTools";
+import BomPartsGrid from "../components/BomPartsGrid";
 import "./Bom.css";
 
 /** BOM Management
@@ -39,7 +40,8 @@ export function Bom(props) {
   };
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomRecordsPerPage")) || 5);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomRecordsPerPage")) || 25);
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(defaultProject);
   const [column, setColumn] = useState(null);
@@ -58,6 +60,8 @@ export function Bom(props) {
   const [btnDeleteText, setBtnDeleteText] = useState(t("button.removePart", "Remove Part"));
   const [currentPcbPages, setCurrentPcbPages] = useState([]);
   const [activeTab, setActiveTab] = useState(-1);
+  const [sortBy, setSortBy] = useState("PcbId");
+  const [sortDirection, setSortDirection] = useState("Ascending");
 
   const [colors] = useState(
     _.map(ProjectColors, function (c) {
@@ -102,8 +106,9 @@ export function Bom(props) {
     });
     if (response && response.data) {
       const { data } = response;
-      setProject({ ...data });
+      setProject({ ...data, parts: data.parts.map((part) => ({...part, selected: false })) });
       setInventoryMessage(getInventoryMessage(data));
+      setTotalRecords(data.parts.length);
       setTotalPages(Math.ceil(data.parts.length / pageSize));
       setCurrentPcbPages(_.map(data.pcbs, (x) => ({ pcbId: x.pcbId, page: 1 })));
       setLoading(false);
@@ -118,16 +123,11 @@ export function Bom(props) {
       });
   }, [props.params.project]);
 
-  const handlePageSizeChange = async (e, control) => {
-    const newPageSize = parseInt(control.value);
-    const newTotalPages = Math.ceil(project.parts.length / newPageSize);
-    setPageSize(newPageSize);
-    setTotalPages(newTotalPages);
-    localStorage.setItem("bomRecordsPerPage", newPageSize);
-    // redirect to the last page if less pages
-    if (page > newTotalPages) {
-      setPage(newTotalPages);
-    }
+  const handlePageSizeChange = async (e, pageSize) => {
+    setPageSize(pageSize);
+    setPage(1);
+    setTotalPages(Math.ceil(totalRecords / pageSize));
+    localStorage.setItem("bomRecordsPerPage", pageSize);
   };
 
   const handlePageChange = (e, control) => {
@@ -310,27 +310,6 @@ export function Bom(props) {
 
   const handleTabChange = (e, data) => {
     setActiveTab(data.activeIndex);
-  };
-
-  const getPage = (pcb) => {
-    let currentPage = page;
-    if (pcb.pcbId > 0) {
-      currentPage = getPcbCurrentPage(pcb.pcbId);
-    }
-    const start = (currentPage - 1) * pageSize;
-    let dataSource = [];
-    // show all parts, or the active PCB tab
-    if (pcb.pcbId === -1) dataSource = project.parts;
-    else dataSource = _.filter(project.parts, (x) => x.pcbId === pcb.pcbId);
-
-    let parts = [];
-    if (filterInStock) parts = _.filter(dataSource, (x) => x.quantity > x.part.quantity);
-    else parts = dataSource;
-    const partsPage = [];
-    for (let i = start; i < start + pageSize; i++) {
-      if (i < parts.length) partsPage.push(parts[i]);
-    }
-    return partsPage;
   };
 
   const handleAddPart = async (e, addPartSelectedPart) => {
@@ -640,353 +619,114 @@ export function Bom(props) {
     }
   };
 
-  const renderTabContent = (pcb = { pcbId: -1 }) => {
-    const pageParts = getPage(pcb);
+  const handleSaveInlineChange = async (e, control, part) => {
+    await savePartInlineChange(part);
+  };
+
+  const handleChecked = (e, part) => {
+    const newProject = { ...project, parts: [..._.filter(project.parts, i => i.partId !== part.partId), part] };
+    setProject(newProject);
+    const checkboxesChecked = _.filter(newProject.parts, i => i.selected);
+    if (checkboxesChecked.length > 0) {
+      if (checkboxesChecked.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: checkboxesChecked.length }));
+      else setBtnDeleteText(t("button.removePart", "Remove Part"));
+      setBtnSelectToolsDisabled(false);
+    } else {
+      setBtnDeleteText(t("button.removePart", "Remove Part"));
+      setBtnSelectToolsDisabled(true);
+    }
+  };
+
+  const handleSetPage = (e, page) => {
+    setPage(page);
+  };
+
+  const handlePartClick = (e) => {
+
+  };
+
+  const handleSortChange = async (sortBy, sortDirection) => {
+    console.log('handleSortChange', sortBy, sortDirection);
+    const newSortBy = sortBy || "DateCreatedUtc";
+    const newSortDirection = sortDirection || "Descending";
+    setSortBy(newSortBy);
+    setSortDirection(newSortDirection);
+  };
+
+  const handleInit = (e) => {
+
+  };
+
+  const handleSelectAll = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const parts = _.map(project.parts, i => ({ ...i, selected: true }));
+    const newProject = { ...project, parts };
+    setProject(newProject);
+  };
+
+  const handleSelectNone = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const parts = _.map(project.parts, i => ({ ...i, selected: false }));
+    const newProject = { ...project, parts };
+    setProject(newProject);
+  };
+
+  const sorter = (v) => {
+
+  };
+
+  const renderTabContent = useCallback((pcb = { pcbId: -1 }) => {
+    let tabParts = project.parts;
+    if (pcb.pcbId > 0) tabParts = _.filter(project.parts, i => i.pcbId === pcb.pcbId);
+
+    // handle sorting
+    if (sortBy) {
+      // todo: problem! some fields come from the root bom part, some from the part child object.
+      // not all bom parts have an associated part by design.
+      // need to normalize this in the UI somehow so we always sort on the correct value
+      tabParts = _.sortBy(tabParts, i => i.part[sortBy]);
+      if (sortDirection === 'Descending')
+        tabParts.reverse();
+    }
+
+    const totalPagesForTab = Math.ceil(tabParts.length / pageSize);
+
     return (
       <div className="scroll-container">
         {pcb.pcbId > 0 && <div className="produce-summary">{getInventoryMessage(project, pcb)}</div>}
-        <Table className="bom" style={{ width: pageParts.length === 0 ? "auto" : "" }}>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell></Table.HeaderCell>
-              {pcb.pcbId === -1 && (
-                <Table.HeaderCell style={{ width: "120px" }} sorted={column === "PCB" ? direction : null} onClick={handleSort("PCB")}>
-                  <Popup
-                    wide="very"
-                    mouseEnterDelay={PopupDelayMs}
-                    content={
-                      <p>
-                        <Trans i18nKey="popup.bom.pcb">
-                          Indicates which PCB your part is assigned to. A PCB assignment is optional, all unassigned parts will appear in the <b>All</b> tab.
-                        </Trans>
-                      </p>
-                    }
-                    trigger={<span>{t("label.pcb", "PCB")}</span>}
-                  />
-                </Table.HeaderCell>
-              )}
-              <Table.HeaderCell width={2} sorted={column === "partNumber" ? direction : null} onClick={handleSort("partNumber")}>
-                {t("label.partNumber", "Part Number")}
-              </Table.HeaderCell>
-              <Table.HeaderCell width={2} sorted={column === "manufacturerPartNumber" ? direction : null} onClick={handleSort("manufacturerPartNumber")}>
-                {t("label.mfrPart", "Mfr Part")}
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "100px" }} sorted={column === "partType" ? direction : null} onClick={handleSort("partType")}>
-                {t("label.partType", "Part Type")}
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "102px" }} sorted={column === "cost" ? direction : null} onClick={handleSort("cost")}>
-                {t("label.cost", "Cost")}
-              </Table.HeaderCell>
-              <Table.HeaderCell sorted={column === "quantity" ? direction : null} onClick={handleSort("quantity")}>
-                <Popup
-                  mouseEnterDelay={PopupDelayMs}
-                  content={<p>{t("popup.bom.quantity", "The quantity of parts required for a single PCB")}</p>}
-                  trigger={<span>{t("label.quantity", "Quantity")}</span>}
-                />
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "90px" }} sorted={column === "stock" ? direction : null} onClick={handleSort("stock")}>
-                <Popup
-                  mouseEnterDelay={PopupDelayMs}
-                  content={<p>{t("popup.bom.inventoryQuantity", "The quantity of parts currently in inventory")}</p>}
-                  trigger={<span>{t("label.inStock", "In Stock")}</span>}
-                />
-              </Table.HeaderCell>
-              <Table.HeaderCell sorted={column === "leadTime" ? direction : null} onClick={handleSort("leadTime")}>
-                {t("label.leadTime", "Lead Time")}
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "110px" }} sorted={column === "referenceId" ? direction : null} onClick={handleSort("referenceId")}>
-                <Popup
-                  wide="very"
-                  mouseEnterDelay={PopupDelayMs}
-                  content={
-                    <p>
-                      <Trans i18nKey="popup.bom.referenceId">
-                        Your custom <Icon name="terminal" />
-                        reference Id(s) you can use for identifying this part.
-                      </Trans>
-                    </p>
-                  }
-                  trigger={<span>{t("label.referenceIds", "Reference Id(s)")}</span>}
-                />
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "110px" }} sorted={column === "schematicReferenceId" ? direction : null} onClick={handleSort("schematicReferenceId")}>
-                <Popup
-                  wide="very"
-                  mouseEnterDelay={PopupDelayMs}
-                  content={
-                    <p>
-                      <Trans i18nKey="popup.bom.schematicReferenceId">
-                        Your custom <Icon name="hashtag" /> schematic reference Id(s) that identify the part on the PCB silkscreen.
-                        <br />
-                        Examples: <i>D1</i>, <i>C2</i>, <i>Q1</i>
-                      </Trans>
-                    </p>
-                  }
-                  trigger={<span>{t("label.schematicReferenceIds", "Schematic Reference Id(s)")}</span>}
-                />
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "200px" }} sorted={column === "description" ? direction : null} onClick={handleSort("description")}>
-                {t("label.description", "Description")}
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "200px" }} sorted={column === "customDescription" ? direction : null} onClick={handleSort("customDescription")}>
-                {t("label.customDescription", "Custom Description")}
-              </Table.HeaderCell>
-              <Table.HeaderCell style={{ width: "200px" }} sorted={column === "note" ? direction : null} onClick={handleSort("note")}>
-                {t("label.note", "Note")}
-              </Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {pageParts.length > 0 ? (
-              pageParts.map((bomPart, key) => (
-                <Table.Row key={key} onMouseEnter={(e) => setActivePartName(e, bomPart.part?.partNumber || bomPart.partName)} onMouseLeave={(e) => setActivePartName(e, "")}>
-                  <Table.Cell>
-                    <input type="checkbox" name="chkSelect" value={bomPart.projectPartAssignmentId} onChange={(e) => handlePartSelected(e, bomPart)} />
-                  </Table.Cell>
-                  {pcb.pcbId === -1 && (
-                    <Table.Cell className="overflow">
-                      <div style={{ maxWidth: "120px" }}>{_.find(project.pcbs, (x) => x.pcbId === bomPart.pcbId)?.name}</div>
-                    </Table.Cell>
-                  )}
-                  <Table.Cell>
-                    <Clipboard text={bomPart.part?.partNumber || bomPart.partName} />
-                    {bomPart.part ? (
-                      <Link to={`/inventory/${encodeURIComponent(bomPart.part.partNumber)}`}>{bomPart.part.partNumber}</Link>
-                    ) : (
-                      <Popup
-                        wide
-                        mouseEnterDelay={PopupDelayMs}
-                        content={
-                          <p>
-                            <Trans i18nKey="popup.bom.unassociatedPartName">
-                              Edit the name of your unassociated <Icon name="microchip" /> part
-                            </Trans>
-                          </p>
-                        }
-                        trigger={
-                          <Input
-                            type="text"
-                            transparent
-                            name="partName"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.partName || 0}
-                            className="inline-editable"
-                          />
-                        }
-                      />
-                    )}
-                  </Table.Cell>
-                  <Table.Cell>
-                    {bomPart.part?.manufacturerPartNumber && (
-                      <>
-                        <Clipboard text={bomPart.part?.manufacturerPartNumber} /> {bomPart.part?.manufacturerPartNumber}
-                      </>
-                    )}
-                  </Table.Cell>
-                  <Table.Cell>{bomPart.part?.partType}</Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      wide
-                      mouseEnterDelay={PopupDelayMs}
-                      content={
-                        <p>
-                          <Trans i18nKey="popup.bom.bomCost">Edit the part cost</Trans>
-                        </p>
-                      }
-                      trigger={
-                        <Input
-                          label={getCurrencySymbol(bomPart.part?.currency || bomPart.currency || "USD")}
-                          type="text"
-                          transparent
-                          name="cost"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.part?.cost || bomPart.cost || 0}
-                          fluid
-                          className="inline-editable"
-                        />
-                      }
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      wide
-                      mouseEnterDelay={PopupDelayMs}
-                      content={
-                        <p>
-                          <Trans i18nKey="popup.bom.bomQuantity">
-                            Edit the <Icon name="clipboard list" /> BOM quantity required
-                          </Trans>
-                        </p>
-                      }
-                      trigger={
-                        <Input
-                          type="text"
-                          transparent
-                          name="quantity"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.quantity || 0}
-                          fluid
-                          className={`inline-editable ${bomPart.quantity > (bomPart.part?.quantity || bomPart.quantityAvailable || 0) ? "outofstock" : ""}`}
-                        />
-                      }
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      wide="very"
-                      mouseEnterDelay={PopupDelayMs}
-                      content={
-                        <p>
-                          <Trans i18nKey="popup.bom.quantityAvailable">
-                            Edit the quantity available in your <Icon name="box" /> inventory
-                          </Trans>
-                        </p>
-                      }
-                      trigger={
-                        <Input
-                          type="text"
-                          transparent
-                          name="quantityAvailable"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.part?.quantity || bomPart.quantityAvailable || 0}
-                          fluid
-                          className="inline-editable"
-                        />
-                      }
-                    />
-                  </Table.Cell>
-                  <Table.Cell>{bomPart.part?.leadTime || ""}</Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      wide="very"
-                      mouseEnterDelay={PopupDelayMs}
-                      content={
-                        <p>
-                          <Trans i18nKey="popup.bom.referenceId">
-                            Edit your custom <Icon name="terminal" /> reference Id(s) you can use for identifying this part.
-                          </Trans>
-                        </p>
-                      }
-                      trigger={
-                        <Input
-                          type="text"
-                          transparent
-                          name="referenceId"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.referenceId || ""}
-                          fluid
-                          className="inline-editable"
-                        />
-                      }
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      wide="very"
-                      mouseEnterDelay={PopupDelayMs}
-                      content={
-                        <p>
-                          <Trans i18nKey="popup.bom.editSchematicReferenceId">
-                            Edit your custom <Icon name="hashtag" /> schematic reference Id(s) that identify the part on the PCB silkscreen.
-                            <br />
-                            Examples: <i>D1</i>, <i>C2</i>, <i>Q1</i>
-                          </Trans>
-                        </p>
-                      }
-                      trigger={
-                        <Input
-                          type="text"
-                          transparent
-                          name="schematicReferenceId"
-                          onBlur={(e) => saveColumn(e, bomPart)}
-                          onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                          value={bomPart.schematicReferenceId || ""}
-                          fluid
-                          className="inline-editable"
-                        />
-                      }
-                    />
-                  </Table.Cell>
-                  <Table.Cell className="overflow">
-                    <div style={{ width: "250px" }}>
-                      {bomPart.part?.description && (
-                        <>
-                          <Clipboard text={bomPart.part?.description} />
-                          <Popup hoverable content={<p>{bomPart.part?.description}</p>} trigger={<span>{bomPart.part?.description}</span>} />
-                        </>
-                      )}
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      wide
-                      mouseEnterDelay={PopupDelayMs}
-                      content={<p>{t("popup.bom.customDescription", "Provide a custom description")}</p>}
-                      trigger={
-                        <div style={{ maxWidth: "250px" }}>
-                          <Form.Field
-                            type="text"
-                            control={TextArea}
-                            style={{ height: "50px", minHeight: "50px", padding: "5px" }}
-                            name="customDescription"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.customDescription || ""}
-                            className="transparent inline-editable"
-                          />
-                        </div>
-                      }
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      wide
-                      mouseEnterDelay={PopupDelayMs}
-                      content={<p>{t("popup.bom.customNote", "Provide a custom note")}</p>}
-                      trigger={
-                        <div style={{ maxWidth: "250px" }}>
-                          <Form.Field
-                            type="text"
-                            control={TextArea}
-                            style={{ height: "50px", minHeight: "50px", padding: "5px" }}
-                            name="notes"
-                            onBlur={(e) => saveColumn(e, bomPart)}
-                            onChange={(e, control) => handlePartsInlineChange(e, control, bomPart)}
-                            value={bomPart.notes || ""}
-                            className="transparent inline-editable"
-                          />
-                        </div>
-                      }
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              ))
-            ) : (
-              <Table.Row>
-                <Table.Cell colSpan={14} textAlign="center" style={{ padding: "30px" }}>
-                  {filterInStock ? t("message.noOutOfStockParts", "No out of stock parts.") :
-                    <>
-                    {t("message.noPartsAdded", "No parts added.")}
-                    <br />
-                    <br />
-                    <Link to="" onClick={handleOpenAddPart}>
-                      {t("button.addFirstPart", "Add your first part!")}
-                    </Link>
-                    </>
-                  }
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table>
-      </div>
-    );
-  };
+        <BomPartsGrid
+          project={project}
+          parts={_.chain(tabParts).drop((page-1) * pageSize).take(pageSize).value()}
+          onCheckedChange={handleChecked}
+          page={page}
+          totalPages={totalPagesForTab}
+          totalRecords={project.parts.length}
+          loading={loading}
+          loadPage={handleSetPage}
+          onPartClick={handlePartClick}
+          onPageSizeChange={handlePageSizeChange}
+          onSortChange={handleSortChange}
+          onInit={handleInit}
+          onSelectAll={handleSelectAll}
+          onSelectNone={handleSelectNone}
+          onRowEditChange={handlePartsInlineChange}
+          onSaveInlineChange={handleSaveInlineChange}
+          name="partsGrid">
+          {filterInStock ? t("message.noOutOfStockParts", "No out of stock parts.") :
+            <>
+              {t("message.noPartsAdded", "No parts added.")}
+              <br />
+              <br />
+              <Link to="" onClick={handleOpenAddPart}>
+                {t("button.addFirstPart", "Add your first part!")}
+              </Link>
+            </>
+          }
+        </BomPartsGrid>
+      </div>);
+  }, [project, filterInStock, page, pageSize, totalPages, loading, sortBy, sortDirection]);
 
   const getPcbTotalPages = (pcbId) => {
     return Math.ceil(_.filter(project.parts, (x) => x.pcbId === pcbId).length / pageSize);
@@ -1022,11 +762,6 @@ export function Bom(props) {
       ),
       render: () => (
         <Tab.Pane>
-          <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em", marginTop: "7px", marginRight: "5px", height: "0" }}>
-            <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="small labeled" onChange={handlePageSizeChange} />
-            <span>{t("label.recordsPerPage", "records per page")}</span>
-          </div>
-          <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" style={{ margin: "5px" }} />
           {renderTabContent()}
         </Tab.Pane>
       )
@@ -1052,19 +787,6 @@ export function Bom(props) {
       ),
       render: () => (
         <Tab.Pane>
-          <div style={{ float: "right", verticalAlign: "middle", fontSize: "0.9em", marginTop: "7px", marginRight: "5px", height: "0" }}>
-            <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="small labeled" onChange={handlePageSizeChange} />
-            <span>{t("label.recordsPerPage", "records per page")}</span>
-          </div>
-          <Pagination
-            activePage={getPcbCurrentPage(pcb.pcbId)}
-            totalPages={getPcbTotalPages(pcb.pcbId)}
-            firstItem={null}
-            lastItem={null}
-            onPageChange={(e, control) => handlePcbPageChange(e, control, pcb.pcbId)}
-            size="mini"
-            style={{ margin: "5px" }}
-          />
           {renderTabContent(pcb)}
         </Tab.Pane>
       )
@@ -1091,7 +813,7 @@ export function Bom(props) {
       <FormHeader name={t("page.bom.header.title", "Bill of Materials")} to="/">
         <Trans i18nKey="page.bom.header.description">Manage your BOM by creating PCB(s) and adding your parts.</Trans>
       </FormHeader>
-      <AddBomPartModal isOpen={addPartModalOpen} onAdd={handleAddPart} onClose={() => setAddPartModalOpen(false)} pcbs={project.pcbs || []} />
+      <AddBomPartModal isOpen={addPartModalOpen} onAdd={handleAddPart} onClose={() => setAddPartModalOpen(false)} parts={project.parts || []} pcbs={project.pcbs || []} defaultPcb={activeTab > -1 ? project.pcbs[activeTab - 1] : null} />
       <AddPcbModal isOpen={addPcbModalOpen} onAdd={handleAddPcb} onClose={() => setAddPcbModalOpen(false)} />
       <ProducePcbModal isOpen={producePcbModalOpen} onSubmit={handleProducePcb} onClose={() => setProducePcbModalOpen(false)} project={project} />
       <Confirm

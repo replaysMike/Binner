@@ -9,7 +9,7 @@ import "./Clipboard.css";
  * @param {props} props 
  * @returns 
  */
-export function Clipboard({ text = '', color = 'grey', size, ...rest}) {
+export function Clipboard({ text = '', color = 'grey', size, className, showEmpty = false, ...rest}) {
 	const handleCopy = (e, copyText) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -17,7 +17,7 @@ export function Clipboard({ text = '', color = 'grey', size, ...rest}) {
 		toast.info('Copied!');
 	};
 
-	return (<Popup 
+  return ((showEmpty || text) && <Popup 
 		content="Copy" 
 		offset={[-15, -5]} 
 		trigger={<Icon 
@@ -26,7 +26,7 @@ export function Clipboard({ text = '', color = 'grey', size, ...rest}) {
 			color={color} 
 			size={size} 
 			{...rest} 
-			className="clipboard" 
+			className={`clipboard ${className}`}
 			onClick={e => handleCopy(e, text)} 
 		/>}
 	/>);
@@ -38,5 +38,9 @@ Clipboard.propTypes = {
 	/** Color of icon */
 	color: PropTypes.string,
 	/** Size of icon */
-	size: PropTypes.string
+	size: PropTypes.string,
+  /** True to show the control even when it has no value */
+  showEmpty: PropTypes.bool,
+  /** additional class names */
+  className: PropTypes.string
 };

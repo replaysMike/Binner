@@ -150,6 +150,7 @@ namespace Binner.Common.Services
                     if (part != null)
                     {
                         projectPart.Part = Mapper.Map<PartResponse>(part);
+                        projectPart.ShortId = part.ShortId;
                         parts.Add(projectPart);
                     }
                 }
