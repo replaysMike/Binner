@@ -174,7 +174,7 @@ export default function BomPartsGrid({
       case "mountingType":
         return 150;
       case "cost":
-        return 100;
+        return 110;
       case "totalCost":
         return 160;
       case "currency":

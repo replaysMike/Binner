@@ -673,20 +673,27 @@ export function Bom(props) {
     setProject(newProject);
   };
 
-  const sorter = (v) => {
-
+  const createSortablePart = (bomPart) => {
+    return {
+      ...bomPart,
+      // virtualized fields for sorting
+      sorted_cost: bomPart.cost || bomPart.part.cost,
+      sorted_quantity: bomPart.quantity,
+      sorted_quantityAvailable: bomPart.quantityAvailable || bomPart.part.quantity,
+      sorted_pcb: bomPart.pcbId
+    };
   };
 
   const renderTabContent = useCallback((pcb = { pcbId: -1 }) => {
     let tabParts = project.parts;
     if (pcb.pcbId > 0) tabParts = _.filter(project.parts, i => i.pcbId === pcb.pcbId);
+    tabParts = tabParts.map(i => createSortablePart(i));
 
     // handle sorting
     if (sortBy) {
-      // todo: problem! some fields come from the root bom part, some from the part child object.
-      // not all bom parts have an associated part by design.
-      // need to normalize this in the UI somehow so we always sort on the correct value
-      tabParts = _.sortBy(tabParts, i => i.part[sortBy]);
+      // some fields come from the root bom part, some from the part child object. Use virtualized fields when available
+      const sortField = 'sorted_' + sortBy; // first look for sorted_*, then try the root property, then the root.part property
+      tabParts = _.sortBy(tabParts, bomPart => sortField in bomPart ? bomPart[sortField] : sortBy in bomPart ? bomPart[sortBy] : bomPart.part[sortBy]);
       if (sortDirection === 'Descending')
         tabParts.reverse();
     }
