@@ -681,6 +681,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     } else if (input.type === "code128") {
       // code128 are 1-dimensional codes that only contain a single alphanumeric string, usually a part number
       cleanPartNumber = input.value;
+      console.debug('processing code128', cleanPartNumber);
     }
 
     // if we didn't receive a code we can understand, ignore it
@@ -701,6 +702,9 @@ export function Inventory({ partNumber = "", ...rest }) {
       toast.error(`An error occurred while validating the barcode.`);
       if (enableSound) soundFailure.play();
       return;
+    } else {
+      // we have scanned this part before and validateResult contains an object.
+      // logic will follow through
     }
 
     // barcode scan successful
@@ -785,6 +789,18 @@ export function Inventory({ partNumber = "", ...rest }) {
           toast.info(`Ready to add new part "${cleanPartNumber}", qty=${labelQuantity}`, { autoClose: false });
         }
       } else {
+        // if we already have the part in inventory, switch to edit mode
+        if (validateResult.partId) {
+          const existingPart = await fetchPart(cleanPartNumber, validateResult.partId);
+          setIsEditing(true);
+          setLoadingPartMetadata(true);
+          await fetchPartMetadataAndInventory(existingPart.partNumber, existingPart);
+          setLoadingPartMetadata(false);
+          setIsDirty(false);
+          return;
+        }
+        
+        console.debug('trying barcode lookup');
         // fetch metadata on the barcode if available
         await doBarcodeLookup(scannedPart, async (partInfo) => {
           console.debug("doBarcodeLookup success, getting metadata", cleanPartNumber);

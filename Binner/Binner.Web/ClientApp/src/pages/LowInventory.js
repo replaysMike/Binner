@@ -148,6 +148,7 @@ export function LowInventory (props) {
       onInit={handleInit}
       by={filterBy}
       byValue={filterByValue}
+      disabledPartIds={[]}
       name='partsGrid' 
       visitUrl="/lowstock"
     >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2Memoized>);
