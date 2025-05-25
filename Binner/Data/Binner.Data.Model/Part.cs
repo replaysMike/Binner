@@ -196,6 +196,73 @@ namespace Binner.Data.Model
         public string? Value { get; set; }
 
         /// <summary>
+        /// Lead time for ordering new parts
+        /// </summary>
+        public string? LeadTime { get; set; }
+
+        /// <summary>
+        /// The status of the part, typically 'In Stock', 'Out of Stock', 'Backordered', etc.
+        /// </summary>
+        public string? ProductStatus { get; set; }
+
+        /// <summary>
+        /// The base product number, if available
+        /// </summary>
+        public string? BaseProductNumber { get; set; }
+
+        /// <summary>
+        /// The name of the product series, if available
+        /// </summary>
+        public string? Series { get; set; }
+
+        /// <summary>
+        /// Rohs status
+        /// </summary>
+        public string? RohsStatus { get; set; }
+
+        /// <summary>
+        /// Reach status
+        /// </summary>
+        public string? ReachStatus { get; set; }
+
+        /// <summary>
+        /// Moisture sensitivity level
+        /// </summary>
+        public string? MoistureSensitivityLevel { get; set; }
+
+        /// <summary>
+        /// Export control class
+        /// </summary>
+        public string? ExportControlClassNumber { get; set; }
+
+        /// <summary>
+        /// Htsus code
+        /// </summary>
+        public string? HtsusCode { get; set; }
+
+        /// <summary>
+        /// A comma delimited list of other names for the product
+        /// </summary>
+        public string? OtherNames { get; set; }
+
+        public PartDataSources DataSource { get; set; } = PartDataSources.ManualInput;
+
+        /// <summary>
+        /// If a data source other than manual input, indicate the order id it came from
+        /// </summary>
+        public string? DataSourceId { get; set; }
+
+        /// <summary>
+        /// The date the part metadata was last updated from external sources
+        /// </summary>
+        public DateTime MetadataLastUpdatedUtc { get; set; }
+
+        /// <summary>
+        /// The date the part metadata was last syncrhonized to/from swarm
+        /// </summary>
+        public DateTime? LastSwarmSyncUtc { get; set; }
+
+        /// <summary>
         /// The date the record was created
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
@@ -218,6 +285,8 @@ namespace Binner.Data.Model
         public ICollection<PartScanHistory>? PartScanHistories { get; set; }
         public ICollection<ProjectPartAssignment>? ProjectPartAssignments { get; set; }
         public ICollection<StoredFile>? StoredFiles { get; set; }
+        public ICollection<PartModel>? PartModels { get; set; }
         public ICollection<PartSupplier>? PartSuppliers { get; set; }
+        public ICollection<PartParametric>? PartParametrics { get; set; }
     }
 }

@@ -156,12 +156,23 @@ export function Bom(props) {
     }
   };
 
+  /** Get all parts for a pcb */
+  const getPartsForPcb = (pcbId) => {
+    return _.filter(project.parts, part => part.pcbId === pcbId);
+  };
+
+  /** Get the projectPartAssignmentId for all selected parts */
+  const handleGetSelectedPartAssignmentIds = (parts) => {
+    return handleGetSelectedParts(parts).map(i => i.projectPartAssignmentId);
+  };
+
+  /** Get all selected parts */
+  const handleGetSelectedParts = (parts) => {
+    return _.filter(parts, i => i.selected);
+  };
+
   const handleDelete = async (e, control) => {
-    const checkboxes = document.getElementsByName("chkSelect");
-    let checkedValues = [];
-    for (let i = 0; i < checkboxes.length; i++) {
-      if (checkboxes[i].checked) checkedValues.push(parseInt(checkboxes[i].value));
-    }
+    const checkedValues = handleGetSelectedPartAssignmentIds(project.parts);
 
     setLoading(true);
     const request = {
@@ -177,12 +188,8 @@ export function Bom(props) {
     });
     if (response.responseObject.status === 200) {
       const parts = _.filter(project.parts, (i) => !checkedValues.includes(i.projectPartAssignmentId));
-
-      // also reset the checkboxes
-      for (let i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = false;
-      }
-      const newProject = { ...project, parts: parts };
+      // reset all the parts to unselected
+      const newProject = { ...project, parts: parts.map(i => ({...i, selected: false })) };
       setProject(newProject);
       setInventoryMessage(getInventoryMessage(newProject));
       setTotalPages(Math.ceil(parts.length / pageSize));
@@ -211,31 +218,6 @@ export function Bom(props) {
     e.preventDefault();
     e.stopPropagation();
     setAddPcbModalOpen(true);
-  };
-
-  const handlePartSelected = (e, part) => {
-    const checkboxesChecked = getPartsSelected();
-    if (checkboxesChecked.length > 0) {
-      if (checkboxesChecked.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: checkboxesChecked.length }));
-      else setBtnDeleteText(t("button.removePart", "Remove Part"));
-      setBtnSelectToolsDisabled(false);
-    } else {
-      setBtnDeleteText(t("button.removePart", "Remove Part"));
-      setBtnSelectToolsDisabled(true);
-    }
-  };
-
-  const getPartsSelected = () => {
-    const checkboxes = document.getElementsByName("chkSelect");
-    let checkboxesChecked = [];
-    for (let i = 0; i < checkboxes.length; i++) {
-      if (checkboxes[i].checked) checkboxesChecked.push(checkboxes[i]);
-    }
-    return checkboxesChecked;
-  };
-
-  const saveColumn = async (e, bomPart) => {
-    await savePartInlineChange(bomPart);
   };
 
   const savePartInlineChange = async (bomPart) => {
@@ -424,14 +406,11 @@ export function Bom(props) {
   };
 
   const handleMove = async (e, control) => {
-    const checkboxes = document.getElementsByName("chkSelect");
-    let checkedValues = [];
-    for (let i = 0; i < checkboxes.length; i++) {
-      if (checkboxes[i].checked) checkedValues.push(parseInt(checkboxes[i].value));
-    }
+    const selectedParts = handleGetSelectedPartAssignmentIds(project.parts);
+
     const request = {
       projectId: project.projectId,
-      ids: checkedValues,
+      ids: selectedParts,
       pcbId: control.value
     };
     setLoading(true);
@@ -447,16 +426,13 @@ export function Bom(props) {
       // success
       // todo: finish move internal data
       const parts = _.map(project.parts, (part) => {
-        if (checkedValues.includes(part.projectPartAssignmentId)) {
+        if (selectedParts.includes(part.projectPartAssignmentId)) {
           part.pcbId = control.value;
         }
         return part;
       });
       // also reset the checkboxes
-      for (let i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = false;
-      }
-      const newProject = { ...project, parts: parts };
+      const newProject = { ...project, parts: parts.map(i => ({ ...i, selected: false})) };
       setProject(newProject);
       setInventoryMessage(getInventoryMessage(newProject));
       setTotalPages(Math.ceil(parts.length / pageSize));
@@ -525,13 +501,12 @@ export function Bom(props) {
   const confirmDeleteOpen = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const checkboxesChecked = getPartsSelected();
-    const selectedPartAssignmentIds = checkboxesChecked.map((c) => parseInt(c.value));
+    const selectedPartAssignmentIds = handleGetSelectedPartAssignmentIds(project.parts);
     setConfirmDeleteIsOpen(true);
     setConfirmPartDeleteContent(
       <p>
-        <Trans i18nKey="confirm.removeBomParts" quantity={checkboxesChecked.length}>
-          Are you sure you want to remove these <b>{{ quantity: checkboxesChecked.length }}</b> part(s) from your BOM?
+        <Trans i18nKey="confirm.removeBomParts" quantity={selectedPartAssignmentIds.length}>
+          Are you sure you want to remove these <b>{{ quantity: selectedPartAssignmentIds.length }}</b> part(s) from your BOM?
         </Trans>
         <br />
         <br />
@@ -558,7 +533,7 @@ export function Bom(props) {
 
   const getInventoryMessage = (project, pcb) => {
     if (pcb && pcb.pcbId > 0) {
-      const pcbParts = _.filter(project.parts, (p) => p.pcbId === pcb.pcbId);
+      const pcbParts = getPartsForPcb(pcb.pcbId);
       const pcbCount = getProduciblePcbCount(project.parts, pcb);
       if (pcbParts.length > 0 && pcbCount.count === 0) {
         return <div className="inventorymessage">{t("page.bom.notEnoughPartsToProducePcb", "You do not have enough parts to produce this PCB.")}</div>;
@@ -611,7 +586,7 @@ export function Bom(props) {
     const activePartName = document.getElementById("activePartName");
     if (activePartName) {
       activePartName.innerHTML = partName;
-      if (partName.length > 0) {
+      if (partName?.length > 0) {
         activePartName.style.opacity = 1;
       } else {
         activePartName.style.opacity = 0;
@@ -623,12 +598,21 @@ export function Bom(props) {
     await savePartInlineChange(part);
   };
 
-  const handleChecked = (e, part) => {
-    const newProject = { ...project, parts: [..._.filter(project.parts, i => i.partId !== part.partId), part] };
-    setProject(newProject);
-    const checkboxesChecked = _.filter(newProject.parts, i => i.selected);
-    if (checkboxesChecked.length > 0) {
-      if (checkboxesChecked.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: checkboxesChecked.length }));
+  /** Fired when the checkbox/toggle for a part is changed */
+  const handleSelectPartChanged = (e, part) => {
+    // get all the parts
+    const updatedProject = { ...project, parts: project.parts.map(p => {
+      if (p.projectPartAssignmentId === part.projectPartAssignmentId) {
+        return part;
+      }
+      return p;
+    })};
+    //const updatedProject = { ...project, parts: [..._.filter(project.parts, i => i.partId !== part.partId), part] };
+    setProject(updatedProject);
+    const selectedParts = handleGetSelectedParts(updatedProject.parts);
+    console.log('selectedParts', updatedProject);
+    if (selectedParts.length > 0) {
+      if (selectedParts.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: selectedParts.length }));
       else setBtnDeleteText(t("button.removePart", "Remove Part"));
       setBtnSelectToolsDisabled(false);
     } else {
@@ -641,8 +625,8 @@ export function Bom(props) {
     setPage(page);
   };
 
-  const handlePartClick = (e) => {
-
+  const handlePartClick = (e, part) => {
+    //setActivePartName(e, part.partName);
   };
 
   const handleSortChange = async (sortBy, sortDirection) => {
@@ -686,7 +670,7 @@ export function Bom(props) {
 
   const renderTabContent = useCallback((pcb = { pcbId: -1 }) => {
     let tabParts = project.parts;
-    if (pcb.pcbId > 0) tabParts = _.filter(project.parts, i => i.pcbId === pcb.pcbId);
+    if (pcb.pcbId > 0) tabParts = getPartsForPcb(pcb.pcbId);
     tabParts = tabParts.map(i => createSortablePart(i));
 
     // handle sorting
@@ -706,7 +690,7 @@ export function Bom(props) {
         <BomPartsGrid
           project={project}
           parts={_.chain(tabParts).drop((page-1) * pageSize).take(pageSize).value()}
-          onCheckedChange={handleChecked}
+          onCheckedChange={handleSelectPartChanged}
           page={page}
           totalPages={totalPagesForTab}
           totalRecords={project.parts.length}
@@ -736,7 +720,7 @@ export function Bom(props) {
   }, [project, filterInStock, page, pageSize, totalPages, loading, sortBy, sortDirection]);
 
   const getPcbTotalPages = (pcbId) => {
-    return Math.ceil(_.filter(project.parts, (x) => x.pcbId === pcbId).length / pageSize);
+    return Math.ceil(getPartsForPcb(pcbId).length / pageSize);
   };
 
   const getPcbCurrentPage = (pcbId) => {
@@ -786,7 +770,7 @@ export function Bom(props) {
               <div>
                 {project.pcbs.length <= 4 && <i className="pcb-icon tiny" />}
                 {pcb.name}
-                {pcb.quantity > 1 && <b>&nbsp;x{pcb.quantity}</b>} {project.pcbs.length <= 5 && <Label>{_.filter(project.parts, (x) => x.pcbId === pcb.pcbId).length}</Label>}
+                {pcb.quantity > 1 && <b>&nbsp;x{pcb.quantity}</b>} {project.pcbs.length <= 5 && <Label>{getPartsForPcb(pcb.pcbId).length}</Label>}
               </div>
             }
           />

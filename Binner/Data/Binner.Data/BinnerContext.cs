@@ -52,6 +52,16 @@ namespace Binner.Data
         public DbSet<Part> Parts { get; set; } = null!;
 
         /// <summary>
+        /// Part cad models
+        /// </summary>
+        public DbSet<PartModel> PartModels { get; set; } = null!;
+
+        /// <summary>
+        /// Part parametrics
+        /// </summary>
+        public DbSet<PartParametric> PartParametrics { get; set; } = null!;
+
+        /// <summary>
         /// History of barcode scanned labels
         /// </summary>
         public DbSet<PartScanHistory> PartScanHistories { get; set; } = null!;

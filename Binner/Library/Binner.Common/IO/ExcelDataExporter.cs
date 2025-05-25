@@ -1,4 +1,5 @@
-﻿using NPOI.HSSF.Util;
+﻿using Binner.Model;
+using NPOI.HSSF.Util;
 using NPOI.OpenXmlFormats.Spreadsheet;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -6,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using Binner.Model;
 
 namespace Binner.Common.IO
 {

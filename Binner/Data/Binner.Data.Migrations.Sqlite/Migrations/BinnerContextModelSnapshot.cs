@@ -458,6 +458,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("ArrowPartNumber")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("BaseProductNumber")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("BinNumber")
                         .HasColumnType("TEXT");
 
@@ -468,6 +471,12 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Currency")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DataSource")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DataSourceId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DatasheetUrl")
@@ -489,6 +498,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ExportControlClassNumber")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ExtensionValue1")
                         .HasColumnType("TEXT");
 
@@ -498,10 +510,19 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("FootprintName")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("HtsusCode")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Keywords")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastSwarmSyncUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LeadTime")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
@@ -522,6 +543,12 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("ManufacturerPartNumber")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("MetadataLastUpdatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MoistureSensitivityLevel")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("MountingTypeId")
                         .HasColumnType("INTEGER");
 
@@ -530,6 +557,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("OtherNames")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PackageType")
                         .HasColumnType("TEXT");
@@ -541,6 +571,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<long>("PartTypeId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ProductStatus")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ProductUrl")
                         .HasColumnType("TEXT");
 
@@ -549,6 +582,15 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<long>("Quantity")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReachStatus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RohsStatus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Series")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ShortId")
                         .HasColumnType("TEXT");
@@ -594,6 +636,113 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("PartTypeId", "UserId");
 
                     b.ToTable("Parts", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartModel", b =>
+                {
+                    b.Property<long>("PartModelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Filename")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ModelType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("PartId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PartModelId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PartId", "OrganizationId");
+
+                    b.ToTable("PartModels", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartParametric", b =>
+                {
+                    b.Property<long>("PartParametricId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("DigiKeyParameterId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DigiKeyParameterType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DigiKeyValueId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("PartId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("ValueNumber")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.HasKey("PartParametricId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PartId", "OrganizationId");
+
+                    b.ToTable("PartParametrics", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
@@ -1727,6 +1876,42 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.PartModel", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Part", "Part")
+                        .WithMany("PartModels")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PartModels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartParametric", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Part", "Part")
+                        .WithMany("PartParametrics")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PartParametrics")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
                 {
                     b.HasOne("Binner.Data.Model.Part", "Part")
@@ -2010,6 +2195,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
+                    b.Navigation("PartModels");
+
+                    b.Navigation("PartParametrics");
+
                     b.Navigation("PartScanHistories");
 
                     b.Navigation("PartSuppliers");
@@ -2067,6 +2256,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("OrderImportHistory");
 
                     b.Navigation("OrderImportHistoryLineItems");
+
+                    b.Navigation("PartModels");
+
+                    b.Navigation("PartParametrics");
 
                     b.Navigation("PartScanHistories");
 

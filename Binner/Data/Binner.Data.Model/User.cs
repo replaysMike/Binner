@@ -153,7 +153,11 @@ namespace Binner.Data.Model
 
         public ICollection<OrderImportHistoryLineItem>? OrderImportHistoryLineItems { get; set; }
 
+        public ICollection<PartModel>? PartModels { get; set; }
+
         public ICollection<PartScanHistory>? PartScanHistories { get; set; }
+
+        public ICollection<PartParametric>? PartParametrics { get; set; }
 
         public ICollection<PartSupplier>? PartSuppliers { get; set; }
 

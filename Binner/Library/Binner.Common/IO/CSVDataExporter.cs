@@ -1,4 +1,5 @@
 ﻿using Binner.Model;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -36,6 +37,7 @@ namespace Binner.Common.IO
                     writer.Write($"#{string.Join(delimiter, headerValues)}{lineBreak}");
 
                     // write data
+                    var lineNumber = 0;
                     foreach (DataRow row in dataTable.Rows)
                     {
                         var rowValues = new List<string>();
@@ -43,7 +45,11 @@ namespace Binner.Common.IO
                         {
                             rowValues.Add($"{EscapeValue(row[col], col.DataType)}");
                         }
-                        writer.Write($"{string.Join(delimiter, rowValues)}{lineBreak}");
+                        if (lineNumber < dataTable.Rows.Count - 1)
+                            writer.Write($"{string.Join(delimiter, rowValues)}{lineBreak}");
+                        else
+                            writer.Write($"{string.Join(delimiter, rowValues)}"); // no line break on last record as per csv standards
+                        lineNumber++;
                     }
                 }
                 stream.Seek(0, SeekOrigin.Begin);
@@ -56,11 +62,13 @@ namespace Binner.Common.IO
         {
             if (Options.HasFlag(CsvOptions.QuoteStrings))
             {
+                if (value == null) return @""""""; // return empty quoted string
                 if (dataType == typeof(string))
                     return $@"""{value?.ToString().Replace("\"", "\"\"")}""";
                 if (dataType == typeof(ICollection<string>))
                     return $@"""{string.Join(",", value).Replace("\"", "\"\"")}""";
             }
+            if (value == null) return string.Empty; // return empty string
             if (dataType == typeof(ICollection<string>))
                 return $@"{string.Join(" ", value).Replace("\"", "\"\"")}";
             if (dataType == typeof(DateTime))
