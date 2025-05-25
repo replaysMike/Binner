@@ -482,6 +482,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("ArrowPartNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BaseProductNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("BinNumber")
                         .HasColumnType("nvarchar(450)");
 
@@ -492,6 +495,12 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DataSource")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DataSourceId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DatasheetUrl")
@@ -513,6 +522,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ExportControlClassNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ExtensionValue1")
                         .HasColumnType("nvarchar(max)");
 
@@ -522,11 +534,20 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("FootprintName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("HtsusCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keywords")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("LastSwarmSyncUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LeadTime")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Location")
                         .HasColumnType("nvarchar(450)");
@@ -546,6 +567,12 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("ManufacturerPartNumber")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime>("MetadataLastUpdatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MoistureSensitivityLevel")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MountingTypeId")
                         .HasColumnType("int");
 
@@ -554,6 +581,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
+
+                    b.Property<string>("OtherNames")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PackageType")
                         .HasColumnType("nvarchar(max)");
@@ -565,6 +595,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<long>("PartTypeId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ProductStatus")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ProductUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -573,6 +606,15 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("ReachStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RohsStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Series")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ShortId")
                         .HasColumnType("nvarchar(max)");
@@ -618,6 +660,117 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("PartTypeId", "UserId");
 
                     b.ToTable("Parts", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartModel", b =>
+                {
+                    b.Property<long>("PartModelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PartModelId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Filename")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ModelType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("PartId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PartModelId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PartId", "OrganizationId");
+
+                    b.ToTable("PartModels", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartParametric", b =>
+                {
+                    b.Property<long>("PartParametricId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PartParametricId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("DigiKeyParameterId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DigiKeyParameterType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DigiKeyValueId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("PartId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ValueNumber")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.HasKey("PartParametricId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PartId", "OrganizationId");
+
+                    b.ToTable("PartParametrics", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
@@ -1785,6 +1938,42 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.PartModel", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Part", "Part")
+                        .WithMany("PartModels")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PartModels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartParametric", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Part", "Part")
+                        .WithMany("PartParametrics")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PartParametrics")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
                 {
                     b.HasOne("Binner.Data.Model.Part", "Part")
@@ -2068,6 +2257,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
+                    b.Navigation("PartModels");
+
+                    b.Navigation("PartParametrics");
+
                     b.Navigation("PartScanHistories");
 
                     b.Navigation("PartSuppliers");
@@ -2125,6 +2318,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("OrderImportHistory");
 
                     b.Navigation("OrderImportHistoryLineItems");
+
+                    b.Navigation("PartModels");
+
+                    b.Navigation("PartParametrics");
 
                     b.Navigation("PartScanHistories");
 

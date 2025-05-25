@@ -30,7 +30,7 @@ namespace Binner.Common.IO
                 data = data.Replace("\r", "");
 
                 // Parse out rows
-                var rows = SplitBoundaries(data, new char[] { '\n' });
+                var rows = SplitBoundaries(data, ['\n']);
                 if (!rows.Any())
                 {
                     result.Success = true;

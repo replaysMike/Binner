@@ -422,7 +422,7 @@ namespace Binner.Web.Controllers
                     // write stream to a buffer
                     stream.Value.Seek(0, SeekOrigin.Begin);
                     var buffer = new byte[stream.Value.Length];
-                    stream.Value.Read(buffer, 0, (int)stream.Value.Length);
+                    stream.Value.ReadExactly(buffer, 0, (int)stream.Value.Length);
 
                     // add the stream to the zipfile
                     var file = zipFile.CreateEntry($"{stream.Key.Name}.{stream.Key.FileExtension}");
@@ -440,8 +440,9 @@ namespace Binner.Web.Controllers
             using (var zipFile = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
             {
                 // write stream to a buffer
+                stream.Seek(0, SeekOrigin.Begin);
                 var buffer = new byte[stream.Length];
-                stream.Read(buffer, 0, (int)stream.Length);
+                stream.ReadExactly(buffer, 0, (int)stream.Length);
 
                 // add the stream to the zipfile
                 var file = zipFile.CreateEntry($"{filename}.xlsx");

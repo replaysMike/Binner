@@ -154,6 +154,17 @@ namespace Binner.Common.IO
                     ExtensionValue2 = values.GetValue("ExtensionValue2").As<string?>(),
                     FootprintName = values.GetValue("FootprintName").As<string?>(),
                     SymbolName = values.GetValue("Symbol").As<string?>(),
+                    BaseProductNumber = values.GetValue("BaseProductNumber").As<string?>(),
+                    ExportControlClassNumber = values.GetValue("ExportControlClassNumber").As<string?>(),
+                    HtsusCode = values.GetValue("HtsusCode").As<string?>(),
+                    LeadTime = values.GetValue("LeadTime").As<string?>(),
+                    MoistureSensitivityLevel = values.GetValue("MoistureSensitivityLevel").As<string?>(),
+                    OtherNames = values.GetValue("OtherNames").As<string?>(),
+                    ProductStatus = values.GetValue("ProductStatus").As<string?>(),
+                    RohsStatus = values.GetValue("RohsStatus").As<string?>(),
+                    ReachStatus = values.GetValue("ReachStatus").As<string?>(),
+                    Series = values.GetValue("Series").As<string?>(),
+                    DataSource = PartDataSources.DataImport,
                 };
                 // some data validation required
                 if (part.ProjectId == 0) part.ProjectId = null;

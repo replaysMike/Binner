@@ -71,7 +71,35 @@ namespace Binner.Model.Responses
         /// </summary>
         public string? SchematicReferenceId { get; set; }
 
+        /// <summary>
+        /// Custom user provided description for BOM purposes
+        /// </summary>
         public string? CustomDescription { get; set; }
+
+        /// <summary>
+        /// Lead time for ordering new parts
+        /// </summary>
+        public string? LeadTime { get; set; }
+
+        /// <summary>
+        /// The status of the part, typically 'In Stock', 'Out of Stock', 'Backordered', etc.
+        /// </summary>
+        public string? ProductStatus { get; set; }
+
+        /// <summary>
+        /// The base product number, if available
+        /// </summary>
+        public string? BaseProductNumber { get; set; }
+
+        /// <summary>
+        /// The name of the product series, if available
+        /// </summary>
+        public string? Series { get; set; }
+
+        /// <summary>
+        /// Rohs status
+        /// </summary>
+        public string? RohsStatus { get; set; }
 
         /// <summary>
         /// Creation date

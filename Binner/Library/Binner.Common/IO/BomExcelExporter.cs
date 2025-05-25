@@ -35,6 +35,7 @@ namespace Binner.Common.IO
             CreateCell(allHeaderRow, "Mfr Part", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Part Type", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Cost", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "TotalCost", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Currency", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Qty Required", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Qty In Stock", "header", styles, ref columnIndex);
@@ -44,6 +45,50 @@ namespace Binner.Common.IO
             CreateCell(allHeaderRow, "Note", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "SchematicReferenceId", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "CustomDescription", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Package", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Mounting Type", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "DatasheetUrl", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "ProductUrl", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Location", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "BinNumber", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "BinNumber2", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "ExtensionValue1", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "ExtensionValue2", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "DigiKey Part", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Mouser Part", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Arrow Part", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Tme Part", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Footprint Name", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Symbol Name", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Keywords", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Custom", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Product Status", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Base Product Number", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Series", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Rohs Status", "header", styles, ref columnIndex);
+            /*
+             "Package",
+                "Mounting Type",
+                "DatasheetUrl",
+                "ProductUrl",
+                "Location",
+                "BinNumber",
+                "BinNumber2",
+                "ExtensionValue1",
+                "ExtensionValue2",
+                "DigiKey Part",
+                "Mouser Part",
+                "Arrow Part",
+                "Tme Part",
+                "Footprint Name",
+                "Symbol Name",
+                "Keywords",
+                "Custom",
+                "Product Status",
+                "Base Product Number",
+                "Series",
+                "Rohs Status",
+             */
 
             foreach (var part in data.Parts.OrderBy(x => x.PcbId).ThenBy(x => x.PartName))
             {
@@ -58,16 +103,38 @@ namespace Binner.Common.IO
                 SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Quantity * (part.Part?.Cost ?? part.Cost), styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
-                SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.LeadTime ?? part.Part?.LeadTime, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.ReferenceId, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.Description, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.SchematicReferenceId, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.CustomDescription, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.PackageType, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.MountingType, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.DatasheetUrl, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.ProductUrl, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Location, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.BinNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.BinNumber2, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.ExtensionValue1, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.ExtensionValue2, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.DigiKeyPartNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.MouserPartNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.ArrowPartNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.TmePartNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.FootprintName, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.SymbolName, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Keywords, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), string.Join(", ", part.Part?.CustomFields.Select(x => $"{x.Field}={x.Value}").ToList() ?? new List<string>()), styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.ProductStatus, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.BaseProductNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Series, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.RohsStatus, styles, rowStyle); columnIndex++;
             }
             for (var i = 0; i < 10; i++)
             {
@@ -92,6 +159,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mfr Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Part Type", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Cost", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Total Cost", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Currency", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty Required", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty In Stock", "header", styles, ref columnIndex);
@@ -113,11 +181,12 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.LeadTime ?? part.Part?.LeadTime, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.ReferenceId, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Description, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
@@ -147,6 +216,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mfr Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Part Type", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Cost", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Total Cost", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Currency", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty Required", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty In Stock", "header", styles, ref columnIndex);
@@ -156,6 +226,27 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Note", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Package", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Mounting Type", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "DatasheetUrl", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "ProductUrl", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Location", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "BinNumber", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "BinNumber2", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "ExtensionValue1", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "ExtensionValue2", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "DigiKey Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Mouser Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Arrow Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Tme Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Footprint Name", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Symbol Name", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Keywords", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Custom", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Product Status", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Base Product Number", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Series", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Rohs Status", "header", styles, ref columnIndex);
 
                 foreach (var part in data.Parts.Where(x => x.PcbId == pcb.PcbId).OrderBy(x => x.PartName))
                 {
@@ -168,16 +259,38 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), "", styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.LeadTime ?? part.Part?.LeadTime, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.ReferenceId, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Description, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.SchematicReferenceId, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.CustomDescription, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.PackageType, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.MountingType, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.DatasheetUrl, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ProductUrl, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Location, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.BinNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.BinNumber2, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ExtensionValue1, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ExtensionValue2, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.DigiKeyPartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.MouserPartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ArrowPartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.TmePartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.FootprintName, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.SymbolName, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Keywords, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), string.Join(", ", part.Part?.CustomFields.Select(x => $"{x.Field}={x.Value}").ToList() ?? new List<string>()), styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.ProductStatus, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.BaseProductNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Series, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.RohsStatus, styles, rowStyle); columnIndex++;
                 }
                 for (var i = 0; i < 10; i++)
                 {
@@ -203,6 +316,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mfr Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Part Type", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Cost", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Total Cost", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Currency", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty Required", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Qty In Stock", "header", styles, ref columnIndex);
@@ -212,6 +326,27 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Note", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "SchematicReferenceId", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "CustomDescription", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Package", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Mounting Type", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "DatasheetUrl", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "ProductUrl", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Location", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "BinNumber", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "BinNumber2", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "ExtensionValue1", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "ExtensionValue2", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "DigiKey Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Mouser Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Arrow Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Tme Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Footprint Name", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Symbol Name", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Keywords", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Custom", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Product Status", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Base Product Number", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Series", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Rohs Status", "header", styles, ref columnIndex);
 
                 foreach (var part in data.Parts.Where(x => x.Quantity > (x.Part?.Quantity ?? x.QuantityAvailable)).OrderBy(x => x.PcbId).ThenBy(x => x.PartName))
                 {
@@ -223,7 +358,8 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), (double?)part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
@@ -233,6 +369,27 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.Notes, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.SchematicReferenceId, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.CustomDescription, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.PackageType, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.MountingType, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.DatasheetUrl, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ProductUrl, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Location, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.BinNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.BinNumber2, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ExtensionValue1, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ExtensionValue2, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.DigiKeyPartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.MouserPartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.ArrowPartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.TmePartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.FootprintName, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.SymbolName, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Keywords, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), string.Join(", ", part.Part?.CustomFields.Select(x => $"{x.Field}={x.Value}").ToList() ?? new List<string>()), styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.ProductStatus, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.BaseProductNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Series, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.RohsStatus, styles, rowStyle); columnIndex++;
                 }
                 for (var i = 0; i < 10; i++)
                 {

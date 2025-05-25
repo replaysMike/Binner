@@ -482,6 +482,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("ArrowPartNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("BaseProductNumber")
+                        .HasColumnType("text");
+
                     b.Property<string>("BinNumber")
                         .HasColumnType("text");
 
@@ -492,6 +495,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Currency")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DataSource")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DataSourceId")
                         .HasColumnType("text");
 
                     b.Property<string>("DatasheetUrl")
@@ -513,6 +522,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("ExportControlClassNumber")
+                        .HasColumnType("text");
+
                     b.Property<string>("ExtensionValue1")
                         .HasColumnType("text");
 
@@ -522,10 +534,19 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("FootprintName")
                         .HasColumnType("text");
 
+                    b.Property<string>("HtsusCode")
+                        .HasColumnType("text");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
                     b.Property<string>("Keywords")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastSwarmSyncUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LeadTime")
                         .HasColumnType("text");
 
                     b.Property<string>("Location")
@@ -546,6 +567,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("ManufacturerPartNumber")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("MetadataLastUpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MoistureSensitivityLevel")
+                        .HasColumnType("text");
+
                     b.Property<int>("MountingTypeId")
                         .HasColumnType("integer");
 
@@ -554,6 +581,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("OtherNames")
+                        .HasColumnType("text");
 
                     b.Property<string>("PackageType")
                         .HasColumnType("text");
@@ -565,6 +595,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<long>("PartTypeId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ProductStatus")
+                        .HasColumnType("text");
+
                     b.Property<string>("ProductUrl")
                         .HasColumnType("text");
 
@@ -573,6 +606,15 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("ReachStatus")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RohsStatus")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Series")
+                        .HasColumnType("text");
 
                     b.Property<string>("ShortId")
                         .HasColumnType("text");
@@ -618,6 +660,117 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasIndex("PartTypeId", "UserId");
 
                     b.ToTable("Parts", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartModel", b =>
+                {
+                    b.Property<long>("PartModelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartModelId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("Filename")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ModelType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("PartId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PartModelId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PartId", "OrganizationId");
+
+                    b.ToTable("PartModels", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartParametric", b =>
+                {
+                    b.Property<long>("PartParametricId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PartParametricId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("DigiKeyParameterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DigiKeyParameterType")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DigiKeyValueId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("PartId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("ValueNumber")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.HasKey("PartParametricId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PartId", "OrganizationId");
+
+                    b.ToTable("PartParametrics", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
@@ -1785,6 +1938,42 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.PartModel", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Part", "Part")
+                        .WithMany("PartModels")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PartModels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PartParametric", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Part", "Part")
+                        .WithMany("PartParametrics")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("PartParametrics")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.PartScanHistory", b =>
                 {
                     b.HasOne("Binner.Data.Model.Part", "Part")
@@ -2068,6 +2257,10 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
+                    b.Navigation("PartModels");
+
+                    b.Navigation("PartParametrics");
+
                     b.Navigation("PartScanHistories");
 
                     b.Navigation("PartSuppliers");
@@ -2125,6 +2318,10 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("OrderImportHistory");
 
                     b.Navigation("OrderImportHistoryLineItems");
+
+                    b.Navigation("PartModels");
+
+                    b.Navigation("PartParametrics");
 
                     b.Navigation("PartScanHistories");
 
