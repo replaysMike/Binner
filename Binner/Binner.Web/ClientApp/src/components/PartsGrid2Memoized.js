@@ -13,6 +13,7 @@ import { getLocalData, setLocalData } from "../common/storage";
 import { formatCurrency } from "../common/Utils";
 import { getIcon } from "../common/partTypes";
 import "./PartsGrid2.css";
+import { toast } from "react-toastify";
 
 const AppMedia = createMedia({
   breakpoints: {
@@ -88,7 +89,7 @@ export default function PartsGrid2Memoized({
   const [columnsVisibleArray, setColumnsVisibleArray] = useState(defaultVisibleColumns.split(','));
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
   const [sorting, setSorting] = useState([]);
-  const [_disabledPartIds, setDisabledPartIds] = useState([]);
+  const [_disabledPartIds, setDisabledPartIds] = useState(disabledPartIds);
   const itemsPerPageOptions = [
     { key: 1, text: "10", value: 10 },
     { key: 2, text: "25", value: 25 },
@@ -125,8 +126,11 @@ export default function PartsGrid2Memoized({
     setEditable(editable);
     setVisitable(visitable);
     setTotalPages(totalPages);
+  }, [parts, loading, columns, defaultVisibleColumns, page, selectedPart, editable, visitable, totalPages]);
+
+  useEffect(() => {
     setDisabledPartIds(disabledPartIds);
-  }, [parts, loading, columns, defaultVisibleColumns, page, selectedPart, editable, visitable, totalPages, disabledPartIds]);
+  }, [disabledPartIds]);
 
   const handlePageChange = (e, control) => {
     setPage(control.activePage);
@@ -148,6 +152,10 @@ export default function PartsGrid2Memoized({
   const handleDeletePart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!_selectedPart) {
+      toast.error('Error - no part selected!');
+      return;
+    }
     
     await fetchApi(`/api/part`, {
       method: "DELETE",
@@ -165,8 +173,9 @@ export default function PartsGrid2Memoized({
   const confirmDeleteOpen = (e, part) => {
     e.preventDefault();
     e.stopPropagation();
-    setConfirmDeleteIsOpen(true);
     setSelectedPart(part);
+    console.log('set selected part to ', part);
+    setConfirmDeleteIsOpen(true);
     setConfirmPartDeleteContent(
       <p>
         <Trans i18nKey="confirm.deletePart" name={part.partNumber}>
@@ -357,7 +366,7 @@ export default function PartsGrid2Memoized({
       setColumnOrder(columnsArray)
     
     return headers;
-  }, [_parts, partTypes, columnsArray, columnsVisibleArray, columnOrder, navigate, t, rest.onPartClick]);
+  }, [_parts, partTypes, columnsArray, columnsVisibleArray, columnOrder, navigate, t, rest.onPartClick, _selectedPart]); // end useMemo
 
   const handleColumnVisibilityChange = (item) => {
     let newColumnVisibility = {...columnVisibility};

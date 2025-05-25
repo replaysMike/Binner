@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Binner.Model.Common.SystemDefaults;
@@ -175,26 +176,60 @@ namespace Binner.Web.Controllers
 
         private async Task AddScanHistoryAsync(Part part, BarcodeScan b)
         {
-            var partScanHistory = new PartScanHistory
+            if (b.Value is JsonElement jsonElement)
             {
-                PartId = part.PartId,
-                RawScan = b.CorrectedValue ?? b.RawValue,
-                BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
-                CountryOfOrigin = b.Value.GetValue("countryOfOrigin").As<string?>(),
-                Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
-                Description = b.Value.GetValue("description").As<string?>(),
-                Invoice = b.Value.GetValue("invoice").As<string?>(),
-                LotCode = b.Value.GetValue("lotCode").As<string?>(),
-                ManufacturerPartNumber = b.Value.GetValue("mfgPartNumber").As<string?>(),
-                Mid = b.Value.GetValue("mid").As<string?>(),
-                Packlist = b.Value.GetValue("unknown").As<string?>(),
-                Quantity = b.Value.GetValue("quantity").As<int>(),
-                SalesOrder = b.Value.GetValue("salesOrder").As<string?>(),
-                ScannedLabelType = b.ScannedLabelType,
-                Supplier = b.Supplier,
-                SupplierPartNumber = b.Value.GetValue("supplierPartNumber").As<string?>(),
-            };
-            await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
+                if (jsonElement.ValueKind == JsonValueKind.Object)
+                {
+                    // 2d barcode
+                    var partScanHistory = new PartScanHistory
+                    {
+                        PartId = part.PartId,
+                        RawScan = b.CorrectedValue ?? b.RawValue,
+                        BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
+                        CountryOfOrigin = jsonElement.GetProperty("countryOfOrigin").GetString(),
+                        Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
+                        Description = jsonElement.GetProperty("description").GetString(),
+                        Invoice = jsonElement.GetProperty("invoice").GetString(),
+                        LotCode = jsonElement.GetProperty("lotCode").GetString(),
+                        ManufacturerPartNumber = jsonElement.GetProperty("mfgPartNumber").GetString(),
+                        Mid = jsonElement.GetProperty("mid").As<string?>(),
+                        Packlist = jsonElement.GetProperty("unknown").GetString(),
+                        Quantity = jsonElement.GetProperty("quantity").GetInt32(),
+                        SalesOrder = jsonElement.GetProperty("salesOrder").GetString(),
+                        ScannedLabelType = b.ScannedLabelType,
+                        Supplier = b.Supplier,
+                        SupplierPartNumber = jsonElement.GetProperty("supplierPartNumber").GetString(),
+                    };
+                    await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
+                }
+                else if (jsonElement.ValueKind == JsonValueKind.String)
+                {
+                    // 1d barcode
+                    var partScanHistory = new PartScanHistory
+                    {
+                        PartId = part.PartId,
+                        RawScan = b.CorrectedValue ?? b.RawValue,
+                        BarcodeType = BarcodeTypesHelper.GetBarcodeType(b.Type),
+                        Crc = Checksum.Compute(b.CorrectedValue ?? b.RawValue),
+                        Description = b.Value?.ToString(),
+                        ManufacturerPartNumber = b.Value?.ToString(),
+                        SupplierPartNumber = b.Value?.ToString(),
+                        ScannedLabelType = b.ScannedLabelType,
+                        Supplier = b.Supplier,
+                    };
+                    await _partScanHistoryService.AddPartScanHistoryAsync(partScanHistory);
+                }
+                else
+                {
+                    // unsupported request
+                    _logger.LogWarning($"Unknown barcode object data type '{jsonElement.ValueKind}'");
+                }
+            }
+            else
+            {
+                // unsupported request
+                _logger.LogWarning($"Barcode object request is invalid. Barcode value type '{b.Value?.GetType()}' not supported.");
+            }
         }
 
         /// <summary>

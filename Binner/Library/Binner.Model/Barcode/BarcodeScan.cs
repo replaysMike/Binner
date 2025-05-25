@@ -5,7 +5,7 @@ namespace Binner.Model.Barcode
     public class BarcodeScan
     {
         public string Type { get; set; } = null!;
-        public Dictionary<string, object?> Value { get; set; } = new Dictionary<string, object?>();
+        public object? Value { get; set; } // can be string or Dictionary<string, object?>
         public ScannedLabelType ScannedLabelType { get; set; } = ScannedLabelType.Unknown;
         public Suppliers Supplier { get; set; } = Suppliers.Unknown;
         public string? CorrectedValue { get; set; }
