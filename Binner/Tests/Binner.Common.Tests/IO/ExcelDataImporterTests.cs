@@ -18,7 +18,7 @@ namespace Binner.Common.Tests.IO
             var importer = new ExcelDataImporter(storageProvider);
             var userContext = new UserContext { UserId = 99 };
 
-            using var stream = new FileStream(".\\IO\\Data\\BinnerParts.xlsx", FileMode.Open);
+            using var stream = new FileStream(".\\IO\\_Data\\BinnerParts.xlsx", FileMode.Open);
             var result = await importer.ImportAsync("BinnerParts.xlsx", stream, userContext);
 
             var db = await storageProvider.GetDatabaseAsync(userContext);
