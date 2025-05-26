@@ -56,7 +56,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost("beta")]
+        [HttpPost("preview")]
         [AllowAnonymous]
         public async Task<IActionResult> PrintLabel(CustomLabelRequest request)
         {
@@ -113,7 +113,7 @@ namespace Binner.Web.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error!", ex));
             }
         }
 
@@ -133,7 +133,7 @@ namespace Binner.Web.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to create label template! ", ex));
             }
         }
 
@@ -153,7 +153,7 @@ namespace Binner.Web.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to update label template! ", ex));
             }
         }
 
@@ -208,7 +208,30 @@ namespace Binner.Web.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to create label! ", ex));
+            }
+        }
+
+        /// <summary>
+        /// Delete a label
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpDelete("label")]
+        public async Task<IActionResult> DeleteLabelAsync(DeleteLabelRequest request)
+        {
+            try
+            {
+                if (request.LabelId <= 0)
+                    return BadRequest();
+                var result = await _printService.DeleteLabelAsync(new Label { LabelId = request.LabelId });
+                if (!result) return NotFound();
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to delete label! ", ex));
             }
         }
 
@@ -227,7 +250,7 @@ namespace Binner.Web.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to get labels!", ex));
             }
         }
 
@@ -259,7 +282,7 @@ namespace Binner.Web.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error! ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Print Error!", ex));
             }
         }
 
@@ -277,7 +300,7 @@ namespace Binner.Web.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Fonts Error! ", ex));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to get fonts!", ex));
             }
 
         }

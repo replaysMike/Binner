@@ -118,9 +118,19 @@ namespace Binner.Common.Services
             if (model.IsPartLabelTemplate)
             {
                 // unset any labels marked as the part label template
-                var defaultPartLabel = await context.Labels.Where(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId).ToListAsync();
+                var defaultPartLabel = await context.Labels
+                    .Where(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId)
+                    .ToListAsync();
                 foreach (var label in defaultPartLabel)
                     label.IsPartLabelTemplate = false;
+            }
+            else
+            {
+                // ensure there is at least one default label template
+                var existing = await context.Labels
+                    .Where(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId)
+                    .AnyAsync();
+                if (!existing) throw new InvalidOperationException($"There must always be at least 1 default label template.");
             }
 
             DataModel.Label? entity = null;
@@ -159,6 +169,15 @@ namespace Binner.Common.Services
                 .FirstOrDefaultAsync();
             if (entity != null)
             {
+                if (!model.IsPartLabelTemplate)
+                {
+                    // ensure there is at least one default label template
+                    var existing = await context.Labels
+                        .Where(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId)
+                        .AnyAsync();
+                    if (!existing) throw new InvalidOperationException($"There must always be at least 1 default label template.");
+                }
+
                 entity = _mapper.Map(model, entity);
                 entity.UserId = user.UserId;
                 entity.OrganizationId = user.OrganizationId;
@@ -179,7 +198,26 @@ namespace Binner.Common.Services
             if (entity != null)
             {
                 context.Labels.Remove(entity);
-                return await context.SaveChangesAsync() > 0;
+                var result = await context.SaveChangesAsync() > 0;
+                if (result)
+                {
+                    // also make sure there is always a default template
+                    var defaultEntityExists = await context.Labels.AnyAsync(x => x.IsPartLabelTemplate && x.OrganizationId == user.OrganizationId);
+                    if (!defaultEntityExists)
+                    {
+                        var defaultEntity = await context.Labels
+                            .Where(x => x.OrganizationId == user.OrganizationId)
+                            .OrderBy(x => x.DateCreatedUtc)
+                            .FirstOrDefaultAsync();
+                        if (defaultEntity != null)
+                        {
+                            defaultEntity.IsPartLabelTemplate = true;
+                            defaultEntity.DateModifiedUtc = DateTime.UtcNow;
+                            await context.SaveChangesAsync();
+                        }
+                    }
+                }
+                return result;
             }
             return false;
         }

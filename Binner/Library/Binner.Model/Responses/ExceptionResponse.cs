@@ -11,6 +11,11 @@
         public string Message { get; set; }
 
         /// <summary>
+        /// The brief underlying error message
+        /// </summary>
+        public string Error { get; set; }
+
+        /// <summary>
         /// The type of exception that occurred
         /// </summary>
         public string ExceptionType { get;set;}
@@ -25,9 +30,12 @@
         public ExceptionResponse(string message, Exception exception)
         {
             ExceptionType = $"{exception.GetType().FullName}";
+            Error = exception.GetBaseException().Message;
+
             Message = $"{message}{Environment.NewLine}";
             Message += $"An exception occurred of type {ExceptionType}{Environment.NewLine}";
             Message += $"{exception.Message}{Environment.NewLine}";
+
             if (exception.InnerException != null)
             {
                 Message += $"Base Exception:{Environment.NewLine}{exception.GetBaseException().Message}{Environment.NewLine}";

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import _ from "underscore";
-import { Popup, Dropdown, Table, Input, Button, Icon, Image, Checkbox } from "semantic-ui-react";
+import { Popup, Dropdown, Table, Input, Button, Icon, Image, Checkbox, Confirm } from "semantic-ui-react";
 import debounce from "lodash.debounce";
 import AlignVerticalTopIcon from '@mui/icons-material/AlignVerticalTop';
 import AlignVerticalCenterIcon from '@mui/icons-material/AlignVerticalCenter';
@@ -55,6 +55,9 @@ export function LabelEditor(props) {
   const [labelTemplate, setLabelTemplate] = useState({});
   const [labelTemplateIsDirty, setLabelTemplateIsDirty] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState(null);
+  const [confirmDeleteLabelIsOpen, setConfirmDeleteLabelIsOpen] = useState(false);
+  const [confirmDeleteLabelContent, setConfirmDeleteLabelContent] = useState(null);
 
   const alignOptions = [
     { key: 0, text: "Center", value: 0 },
@@ -146,7 +149,7 @@ export function LabelEditor(props) {
       generateImageOnly: generateImageOnly
     };
 
-    return await fetchApi("/api/print/beta", {
+    return await fetchApi("/api/print/preview", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -458,6 +461,9 @@ export function LabelEditor(props) {
         toast.error("Failed to save label!");
       }
       setLabelSetNameModalIsOpen(false);
+    }).catch((err) => {
+      console.error(err);
+      toast.error(`${err.data.error}`);
     });
 
   };
@@ -548,10 +554,56 @@ export function LabelEditor(props) {
     }
   }, [boxes, labelTemplate, previewDebounced, selectedItem]);
 
+  const closeDeleteLabel = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteLabelIsOpen(false);
+  };
+
+  const handleDeleteLabel = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await fetchApi(`/api/print/label`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ labelId: label.labelId })
+    });
+    setConfirmDeleteLabelIsOpen(false);
+    handleLoad();
+  };
+
+  const openDeleteLabel = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setConfirmDeleteLabelContent(
+        <p>
+          <Trans i18nKey="confirm.deleteLabel" name={label.name}>
+            Are you sure you want to delete label <b>{{ name: label.name }}</b>?
+          </Trans>
+          <br />
+          <br />
+          <Trans i18nKey="confirm.permanent">
+            This action is <i>permanent and cannot be recovered</i>.
+          </Trans>
+        </p>
+      );
+      setConfirmDeleteLabelIsOpen(true);
+    };
+
   return (
     <div className="labelEditor">
       <LabelSelectionModal isOpen={labelSelectionModalIsOpen} onSelect={handleSelectLabel} onClose={() => setLabelSelectionModalIsOpen(false)} />
       <LabelSetNameModal isOpen={labelSetNameModalIsOpen} name={label?.name || ""} isDefaultPartLabel={label?.isPartLabelTemplate || false} onSave={handleSave} onClose={() => setLabelSetNameModalIsOpen(false)} />
+      <Confirm
+        className="confirm"
+        header={t('confirm.header.deleteLabel', "Delete Label")}
+        open={confirmDeleteLabelIsOpen}
+        onCancel={closeDeleteLabel}
+        onConfirm={handleDeleteLabel}
+        content={confirmDeleteLabelContent}
+      />
       <DndProvider backend={HTML5Backend}>
         <div className="tools left">
           <div style={{ display: "flex", flexDirection: "column", flex: "1", alignItems: "start" }}>
@@ -677,6 +729,15 @@ export function LabelEditor(props) {
                             />
                           </div>
                           <div style={{ flex: "1", display: "flex", justifyContent: "end" }}>
+                            <Popup
+                              wide
+                              content="Delete this label design"
+                              trigger={
+                                <Button size="mini" onClick={openDeleteLabel} disabled={labelTemplate.labelId === 0}>
+                                  <Icon name="trash" /> {t('button.delete', "Delete")}
+                                </Button>
+                              }
+                            />
                             <Popup
                               wide
                               content="Load another label or create a new one"

@@ -40,7 +40,7 @@ export function LabelSelectionModal({ isOpen = false, onSelect, onClose }) {
 
   const handleSelect = (e) => {
     if (onSelect) {
-      onSelect(e, _.find(labels, i => i.labelId === form.labelId));
+    onSelect(e, _.find(labels, i => i.labelId === form.labelId));
 		setLabels([]);
 		setLabelOptions([]);
 		setForm(defaultForm);
