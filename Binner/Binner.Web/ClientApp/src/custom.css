@@ -1107,3 +1107,13 @@ ul.errors li.error:before {
   font-weight: 400;
   padding-right: 10px;
 }
+
+.ui.form .customFieldValues h3 {
+  border-bottom: 1px solid #2184d06c;
+  color: #2185d0;
+}
+
+.ui.form .customFieldValues div.fields {
+  display: flex;
+  flex-wrap: wrap;
+}
