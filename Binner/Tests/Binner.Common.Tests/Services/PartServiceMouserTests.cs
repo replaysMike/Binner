@@ -22,9 +22,9 @@ namespace Binner.Common.Tests.Services
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-CAD.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
-            
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
+
             var request = new Model.Requests.OrderImportRequest
             {   
                 OrderId = TestConstants.OrderId,
@@ -54,8 +54,8 @@ namespace Binner.Common.Tests.Services
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-USD.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -86,8 +86,8 @@ namespace Binner.Common.Tests.Services
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-EUR.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var request = new Model.Requests.OrderImportRequest
             {

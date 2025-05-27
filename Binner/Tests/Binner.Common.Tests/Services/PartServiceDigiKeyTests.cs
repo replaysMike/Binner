@@ -24,8 +24,8 @@ namespace Binner.Common.Tests.Services
                 { $"/OrderDetails/v3/Status/", "DigiKey-v3-ExternalOrder-1-CAD.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
             
             var request = new Model.Requests.OrderImportRequest
             {   
@@ -61,8 +61,8 @@ namespace Binner.Common.Tests.Services
                 { $"/OrderDetails/v3/Status/", "DigiKey-v3-ExternalOrder-1-USD.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -98,8 +98,8 @@ namespace Binner.Common.Tests.Services
                 { $"/OrderDetails/v3/Status/", "DigiKey-v3-ExternalOrder-1-EUR.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -135,8 +135,8 @@ namespace Binner.Common.Tests.Services
                 { $"orderstatus/v4/salesorder/", "DigiKey-v4-ExternalOrder-1-CAD.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -175,8 +175,8 @@ namespace Binner.Common.Tests.Services
                 { $"orderstatus/v4/salesorder/", "DigiKey-v4-ExternalOrder-1-USD.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -215,8 +215,8 @@ namespace Binner.Common.Tests.Services
                 { $"orderstatus/v4/salesorder/", "DigiKey-v4-ExternalOrder-1-EUR.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                                testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -255,8 +255,8 @@ namespace Binner.Common.Tests.Services
                 { "/Search/v3/Products/Keyword", "DigiKey-v3-PartSearch-1.json" },
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var response = await partService.GetPartInformationAsync("LM358");
 
@@ -291,8 +291,8 @@ namespace Binner.Common.Tests.Services
                 { "/products/v4/search/keyword", "DigiKey-v4-PartSearch-1.json" },
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var response = await partService.GetPartInformationAsync("LM358");
 

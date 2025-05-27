@@ -240,12 +240,12 @@ namespace Binner.Model
         /// <summary>
         /// List of all parametrics for part
         /// </summary>
-        public ICollection<PartParametric>? PartParametrics { get; set; }
+        public ICollection<PartParametric>? Parametrics { get; set; }
 
         /// <summary>
         /// List of all cad models for part
         /// </summary>
-        public ICollection<PartModel>? PartModels { get; set; }
+        public ICollection<PartModel>? Models { get; set; }
 
         /// <summary>
         /// The date the part metadata was last updated from external sources

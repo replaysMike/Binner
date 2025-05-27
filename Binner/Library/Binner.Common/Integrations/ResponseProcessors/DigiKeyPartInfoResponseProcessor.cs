@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TypeSupport.Extensions;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
 using V4 = Binner.Model.Integrations.DigiKey.V4;
 
@@ -357,7 +358,27 @@ namespace Binner.Common.Integrations.ResponseProcessors
                         QuantityAvailable = part.QuantityAvailable,
                         MinimumOrderQuantity = part.MinimumOrderQuantity,
                         //FactoryStockAvailable = factoryStockAvailable,
-                        //FactoryLeadTime = part.LeadTime
+                        FactoryLeadTime = part.LeadStatus,
+                        Series = part.Series.Value,
+                        RohsStatus = part.RoHSStatus,
+                        ReachStatus = part.TariffDescription,
+                        //ExportControlClassNumber = part.Classifications?.ExportControlClassNumber,
+                        //HtsusCode = part.Classifications?.HtsusCode,
+                        //MoistureSensitivityLevel = part.Classifications?.MoistureSensitivityLevel,
+                        Parametrics = part.Parameters?.Select(x => new PartParametric
+                        {
+                            DigiKeyParameterId = x.ParameterId,
+                            DigiKeyParameterText = x.Parameter,
+                            DigiKeyParameterType = null,
+                            DigiKeyValueId = x.ValueId,
+                            DigiKeyValueText = x.Value,
+                            Name = x.Parameter,
+                            Value = x.Value ?? string.Empty,
+                            ValueNumber = CommonPartValueFormatter.DetectValueFromText(x.Value),
+                            Units = CommonPartValueFormatter.DetectUnitsFromText(x.Value),
+                        }).ToList(),
+                        // todo: source if there is an api endpoint for this
+                        Models = new List<PartModel>()
                     });
                 }
             }
@@ -372,6 +393,8 @@ namespace Binner.Common.Integrations.ResponseProcessors
             foreach (var part in response.Products)
             {
                 var additionalPartNumbers = new List<string>();
+                if (part.OtherNames?.Any() == true)
+                    additionalPartNumbers.AddRange(part.OtherNames);
                 if (part.Parameters != null)
                 {
                     var basePart = part.Parameters
@@ -463,7 +486,27 @@ namespace Binner.Common.Integrations.ResponseProcessors
                         QuantityAvailable = part.QuantityAvailable,
                         MinimumOrderQuantity = minimumOrderQuantity,
                         FactoryStockAvailable = part.ManufacturerPublicQuantity,
-                        FactoryLeadTime = part.ManufacturerLeadWeeks
+                        FactoryLeadTime = part.ManufacturerLeadWeeks,
+                        Series = part.Series?.Name,
+                        RohsStatus = part.Classifications?.RohsStatus,
+                        ReachStatus = part.Classifications?.ReachStatus,
+                        ExportControlClassNumber = part.Classifications?.ExportControlClassNumber,
+                        HtsusCode = part.Classifications?.HtsusCode,
+                        MoistureSensitivityLevel = part.Classifications?.MoistureSensitivityLevel,
+                        Parametrics = part.Parameters?.Select(x => new PartParametric
+                        {
+                            DigiKeyParameterId = x.ParameterId,
+                            DigiKeyParameterType = x.ParameterType.ToString(),
+                            DigiKeyParameterText = x.ParameterText,
+                            DigiKeyValueId = x.ValueId,
+                            DigiKeyValueText = x.ValueText,
+                            Name = x.ParameterText,
+                            Value = x.ValueText,
+                            ValueNumber = CommonPartValueFormatter.DetectValueFromText(x.ValueText),
+                            Units = CommonPartValueFormatter.DetectUnitsFromText(x.ValueText),
+                        }).ToList(),
+                        // todo: source if there is an api endpoint for this
+                        Models = new List<PartModel>()
                     });
                 }
             }

@@ -735,11 +735,17 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int>("DigiKeyParameterId")
                         .HasColumnType("int");
 
+                    b.Property<string>("DigiKeyParameterText")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("DigiKeyParameterType")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("DigiKeyValueId")
-                        .HasColumnType("int");
+                    b.Property<string>("DigiKeyValueId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("DigiKeyValueText")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()

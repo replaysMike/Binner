@@ -1222,7 +1222,12 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId);
+            var entity = await context.Parts
+                .Include(x => x.PartType)
+                .Include(x => x.PartSuppliers)
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
+                .FirstOrDefaultAsync(x => x.PartId == partId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             var model = _mapper.Map<Part?>(entity);
@@ -1235,7 +1240,12 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.Parts.FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.OrganizationId == userContext.OrganizationId);
+            var entity = await context.Parts
+                .Include(x => x.PartType)
+                .Include(x => x.PartSuppliers)
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
+                .FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             var model = _mapper.Map<Part?>(entity);
@@ -1248,7 +1258,12 @@ INNER JOIN (
         {
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.Parts.FirstOrDefaultAsync(x => x.ShortId == shortId.ToUpper() && x.OrganizationId == userContext.OrganizationId);
+            var entity = await context.Parts
+                .Include(x => x.PartType)
+                .Include(x => x.PartSuppliers)
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
+                .FirstOrDefaultAsync(x => x.ShortId == shortId.ToUpper() && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             var model = _mapper.Map<Part?>(entity);

@@ -25,9 +25,9 @@ namespace Binner.Common.Tests.Services
                 { "/Products/GetProductsFiles.json", "Tme-PartSearch-1-Files.json" },
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
-            
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
+
             var response = await partService.GetPartInformationAsync("LM393");
 
             Assert.NotNull(response?.Response);
@@ -61,8 +61,8 @@ namespace Binner.Common.Tests.Services
                 { "/Products/Search.json", "TmePartSearch-NoResults.json" }
             });
 
-            var partService = new PartService(testContext.DbFactory.Object, testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.SwarmService.Object, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.LicensedService.Object);
+            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
 
             var response = await partService.GetPartInformationAsync("LN393");
 

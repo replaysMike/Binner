@@ -6,6 +6,7 @@
     public enum ParametricUnits
     {
         None = 0,
+        Count, // any numeric match
         [Abbreviation("A")]
         Amp,        // A
         [Abbreviation("mA")]
@@ -40,17 +41,17 @@
         [Abbreviation("GV")]
         Gigavolt,   // GV
 
-        [Abbreviation("Ω", "ohm")]
+        [Abbreviation("Ω", "ohm", "o")]
         Ohms,       // Ω
-        [Abbreviation("mΩ", "milliohm")]
+        [Abbreviation("mΩ", "milliohm", "mohm", "m", "mΩ")]
         Milliohm,   // mΩ
-        [Abbreviation("nΩ", "nanoohm")]
+        [Abbreviation("nΩ", "nanoohm", "nohm", "n", "nΩ")]
         Nanoohm,    // nΩ
-        [Abbreviation("kΩ", "kiloohm")]
+        [Abbreviation("kΩ", "kiloohm", "kohm", "k", "kΩ")]
         Kiloohm,    // kΩ
-        [Abbreviation("MΩ", "megaohm")]
+        [Abbreviation("MΩ", "megaohm", "Mohm", "M", "MΩ")]
         Megaohm,    // MΩ
-        [Abbreviation("GΩ", "gigaohm")]
+        [Abbreviation("GΩ", "gigaohm", "gohm", "G", "gΩ")]
         Gigaohm,    // GΩ
         [Abbreviation("statΩ", "statohm")]
         Statohm,    // statΩ
@@ -105,6 +106,23 @@
         Terahertz,  // THz
         [Abbreviation("PHz")]
         Petahertz,  // PHz
+
+        [Abbreviation("°C")]
+        TemperatureMetric,  // C
+        [Abbreviation("°F")]
+        TemperatureImperial,  // F
+        [Abbreviation("°K")]
+        TemperatureKelvin,  // K
+        [Abbreviation("°R", "°Ra")]
+        TemperatureRankine,  // R
+        [Abbreviation("°D")]
+        TemperatureDelisle,  // D
+        [Abbreviation("°N")]
+        TemperatureNewton,  // N
+        [Abbreviation("°Ré", "°Re")]
+        TemperatureReaumur,  // Ré
+        [Abbreviation("°Rø", "°Ro")]
+        TemperatureRomer,  // Rø
     }
 
     public class AbbreviationAttribute : Attribute

@@ -40,9 +40,13 @@ namespace Binner.Data.Model
 
         public int DigiKeyParameterId { get; set; }
 
-        public int DigiKeyValueId { get; set; }
+        public string? DigiKeyParameterText { get; set; }
 
         public string? DigiKeyParameterType { get; set; }
+
+        public string? DigiKeyValueId { get; set; }
+
+        public string? DigiKeyValueText { get; set; }
 
         /// <summary>
         /// Creation date

@@ -3,6 +3,7 @@ using System;
 using Binner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Binner.Data.Migrations.Postgresql.Migrations
 {
     [DbContext(typeof(BinnerContext))]
-    partial class BinnerContextModelSnapshot : ModelSnapshot
+    [Migration("20250527020712_AddDKParamFix")]
+    partial class AddDKParamFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -735,16 +738,10 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("DigiKeyParameterId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("DigiKeyParameterText")
-                        .HasColumnType("text");
-
                     b.Property<string>("DigiKeyParameterType")
                         .HasColumnType("text");
 
                     b.Property<string>("DigiKeyValueId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DigiKeyValueText")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")

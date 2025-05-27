@@ -735,11 +735,17 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("DigiKeyParameterId")
                         .HasColumnType("int");
 
+                    b.Property<string>("DigiKeyParameterText")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DigiKeyParameterType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DigiKeyValueId")
-                        .HasColumnType("int");
+                    b.Property<string>("DigiKeyValueId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DigiKeyValueText")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()

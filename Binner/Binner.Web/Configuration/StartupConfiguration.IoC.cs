@@ -3,6 +3,7 @@ using Binner.Common.Database;
 using Binner.Common.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
+using Binner.Common.MappingProfiles.ModelCommon;
 using Binner.Common.Services;
 using Binner.Common.Services.Authentication;
 using Binner.Common.StorageProviders;
@@ -12,6 +13,7 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
+using Binner.Model.Responses;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Web.Authorization;
 using Binner.Web.ServiceHost;
@@ -19,6 +21,7 @@ using LightInject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using DataModel = Binner.Data.Model;
 
 namespace Binner.Web.Configuration
 {
@@ -88,12 +91,17 @@ namespace Binner.Web.Configuration
                 config.AddProfile(profile);
             });
             // register automapper
+            container.Register<PartTypeMappingAction<DataModel.Part, PartResponse>>(new PerScopeLifetime());
+            container.Register<PartTypeMappingAction<Part, Binner.Model.CommonPart>>(new PerScopeLifetime());
+            container.Register<PartTypeMappingAction<Part, PartResponse>>(new PerScopeLifetime());
             var config = new AutoMapper.MapperConfiguration(cfg =>
             {
                 // see: https://github.com/AutoMapper/AutoMapper/issues/3988
-                cfg.Internal().MethodMappingEnabled = false; 
+                cfg.Internal().MethodMappingEnabled = false;
+                cfg.ConstructServicesUsing(t => container.GetInstance(t));  
                 cfg.AddMaps(Assembly.Load("Binner.Common"));
             });
+            
             config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
             container.RegisterInstance(mapper);

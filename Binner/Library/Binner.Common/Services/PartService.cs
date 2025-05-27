@@ -2,9 +2,7 @@
 using Binner.Common.Extensions;
 using Binner.Common.Integrations;
 using Binner.Common.Integrations.Models;
-using Binner.Data;
 using Binner.Global.Common;
-using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
@@ -33,29 +31,23 @@ namespace Binner.Common.Services
         private const string MissingDatasheetCoverName = "datasheetcover.png";
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
 
-        private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly WebHostServiceConfiguration _configuration;
         private readonly IStorageProvider _storageProvider;
         private readonly IMapper _mapper;
         private readonly IIntegrationApiFactory _integrationApiFactory;
         private readonly IRequestContextAccessor _requestContext;
-        private readonly ISwarmService _swarmService;
         private readonly ILogger<PartService> _logger;
         private readonly IPartTypesCache _partTypesCache;
-        private readonly ILicensedService _licensedService;
 
-        public PartService(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, ISwarmService swarmService, IRequestContextAccessor requestContextAccessor, IPartTypesCache partTypesCache, ILicensedService licensedService)
+        public PartService(WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IPartTypesCache partTypesCache)
         {
-            _contextFactory = contextFactory;
             _configuration = configuration;
             _logger = logger;
             _storageProvider = storageProvider;
             _mapper = mapper;
             _integrationApiFactory = integrationApiFactory;
             _requestContext = requestContextAccessor;
-            _swarmService = swarmService;
             _partTypesCache = partTypesCache;
-            _licensedService = licensedService;
         }
 
         public async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords)

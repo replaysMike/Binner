@@ -707,11 +707,17 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("DigiKeyParameterId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("DigiKeyParameterText")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("DigiKeyParameterType")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("DigiKeyValueId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("DigiKeyValueId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DigiKeyValueText")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()

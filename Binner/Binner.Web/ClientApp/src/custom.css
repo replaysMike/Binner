@@ -711,6 +711,15 @@ section.formHeader {
     font-family: 'Source Code Pro', monospace;
 }
 
+.ui.modal .description p {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 300;
+  font-family: 'Source Code Pro', monospace;
+  padding: 5px 0px 0px 25px;
+  
+}
+
 .page-banner {
     min-height: 30px;
 }
@@ -1116,4 +1125,16 @@ ul.errors li.error:before {
 .ui.form .customFieldValues div.fields {
   display: flex;
   flex-wrap: wrap;
+}
+
+.MuiSvgIcon-root.compliance {
+  color: rgb(3, 175, 3);
+}
+
+.MuiSvgIcon-root.technical-specs {
+  color: rgb(8, 114, 212);
+}
+
+.MuiSvgIcon-root.cadModels {
+  color: rgb(231, 66, 231);
 }

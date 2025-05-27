@@ -16,6 +16,9 @@ import PartTypeSelectorMemoized from "../components/PartTypeSelectorMemoized";
 import ConfirmAction from "../components/modals/ConfirmAction";
 import { FormHeader } from "../components/FormHeader";
 import { ChooseAlternatePartModal } from "../components/modals/ChooseAlternatePartModal";
+import { PartParametricsModal } from "../components/modals/PartParametricsModal";
+import { PartModelsModal } from "../components/modals/PartModelsModal";
+import { PartComplianceModal } from "../components/modals/PartComplianceModal";
 import { PartMediaMemoized } from "../components/PartMediaMemoized";
 import { BulkScanModal } from "../components/BulkScanModal";
 import { BulkScanIconMemoized } from "../components/BulkScanIconMemoized";
@@ -163,6 +166,9 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [partMetadataErrors, setPartMetadataErrors] = useState([]);
   const [saveMessage, setSaveMessage] = useState("");
   const [bulkScanIsOpen, setBulkScanIsOpen] = useState(false);
+  const [partParametricsModalIsOpen, setPartParametricsModalIsOpen] = useState(false);
+  const [partModelsModalIsOpen, setPartModelsModalIsOpen] = useState(false);
+  const [partComplianceModalIsOpen, setPartComplianceModalIsOpen] = useState(false);
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
   const [lastBarcodeScan, setLastBarcodeScan] = useState(null);
   const [isBulkScanSaving, setBulkScanSaving] = useState(false);
@@ -1800,15 +1806,15 @@ export function Inventory({ partNumber = "", ...rest }) {
                       <label>&nbsp;</label>
                       <Popup
                         content={<p>{t('page.inventory.popup.technicalSpecs', "View technical specs")}</p>}
-                        trigger={<Button type="button" secondary disabled><TextSnippet className="technical-specs" /> {t('button.specs', "Specs")}</Button>}
+                        trigger={<Button type="button" secondary onClick={() => setPartParametricsModalIsOpen(true)} disabled={!(part?.parametrics?.length > 0)}><TextSnippet className="technical-specs" /> {t('button.specs', "Specs")}</Button>}
                       />
                       <Popup
                         content={<p>{t('page.inventory.popup.compliance', "View compliance information")}</p>}
-                        trigger={<Button type="button" secondary disabled><BeenhereIcon className="compliance" /> {t('button.compliance', "Compliance")}</Button>}
+                        trigger={<Button type="button" secondary onClick={() => setPartComplianceModalIsOpen(true)}><BeenhereIcon className="compliance" /> {t('button.compliance', "Compliance")}</Button>}
                       />
                       <Popup
                         content={<p>{t('page.inventory.popup.cadModels', "View CAD Models available for this part")}</p>}
-                        trigger={<Button type="button" secondary disabled><ViewInArIcon className="cadModels" /> {t('button.cadModels', "CAD Models")}</Button>}
+                        trigger={<Button type="button" secondary onClick={() => setPartModelsModalIsOpen(true)} disabled={!(part?.models?.length > 0)}><ViewInArIcon className="cadModels" /> {t('button.cadModels', "CAD Models")}</Button>}
                       />
                     </Form.Field>
                   </Form.Group>
@@ -1844,6 +1850,66 @@ export function Inventory({ partNumber = "", ...rest }) {
                     <Form.Field width={4}>
                       <label>{t('label.tmePartNumber', "TME Part Number")}</label>
                       <ClearableInput placeholder='LM358PWR' value={part.tmePartNumber || ''} onChange={handleChange} name='tmePartNumber' />
+                    </Form.Field>
+                  </Form.Group>
+                  <Form.Group>
+                    <Form.Field width={3}>
+                      <label>{t('label.leadTime', "Lead Time")}</label>
+                      <Popup
+                        content={<p>Amount of time it may take to produce a product that is not in stock.</p>}
+                        trigger={<div><ClearableInput placeholder='4 weeks' value={part.leadTime || ''} onChange={handleChange} name='leadTime' /></div>}
+                      />
+                    </Form.Field>
+                    <Form.Field width={6}>
+                      <label>{t('label.baseProductNumber', "Base Product Number")}</label>
+                      <Popup
+                        content={<p>Indicates if the product has a base product number common with other variations.</p>}
+                        trigger={<div><ClearableInput placeholder='LM358' value={part.baseProductNumber || ''} onChange={handleChange} name='baseProductNumber' /></div>}
+                      />
+                    </Form.Field>
+                    <Form.Field width={4}>
+                      <label>{t('label.series', "Series")}</label>
+                      <Popup
+                        content={<p>Indicates if the product is part of a series line or grouping.</p>}
+                        trigger={<div><ClearableInput placeholder='LM358 Series' value={part.series || ''} onChange={handleChange} name='series' /></div>}
+                      />
+                    </Form.Field>
+                    <Form.Field width={3}>
+                      <label>{t('label.ProductStatus', "Product Status")}</label>
+                      <Popup
+                        content={<p>The product's status, usually <i>Active</i> or <i>Obsolete</i>.</p>}
+                        trigger={<div><ClearableInput placeholder='Active' value={part.productStatus || ''} onChange={handleChange} name='productStatus' /></div>}
+                      />                      
+                    </Form.Field>
+                  </Form.Group>
+                  <Form.Group>
+                    <Form.Field width={16}>
+                      <label>{t('label.otherNames', "Other Names")}</label>
+                      <Popup
+                        content={<p>A comma-delimited list of other names a product may be known for.</p>}
+                        trigger={<div>
+                          <Input
+                            icon="tags"
+                            iconPosition="left"
+                            label={{ tag: true, content: t('page.inventory.addOtherName', "Add Other Name") }}
+                            labelPosition="right"
+                            placeholder="LM358SNGOS, LM358SNG-ND"
+                            onChange={handleChange}
+                            value={part.otherNames || ""}
+                            name="otherNames"
+                          />
+                          </div>}
+                      />
+                    </Form.Field>
+                  </Form.Group>
+                  <Form.Group>
+                    <Form.Field width={16}>
+                      <label>{t('label.moistureSensitivity', "Moisture Sensitivity (MSL)")}</label>
+                      <Popup
+                        wide
+                        content={<p>A number from 1 (unaffected) to 6 (most sensitive) indicating the moisture sensitivity level a product can be exposed to.</p>}
+                        trigger={<div><ClearableInput placeholder='1 (Unlimited)' value={part.moistureSensitivityLevel || ''} onChange={handleChange} name='moistureSensitivityLevel' /></div>}
+                      />
                     </Form.Field>
                   </Form.Group>
                 </Segment>}
@@ -2047,7 +2113,22 @@ export function Inventory({ partNumber = "", ...rest }) {
         onGetPartMetadata={doFetchPartMetadata}
         onInventoryPartSearch={doInventoryPartSearch}
       />
-
+      <PartParametricsModal 
+        part={part}
+        isOpen={partParametricsModalIsOpen}
+        onClose={() => setPartParametricsModalIsOpen(false)}
+      />
+      <PartModelsModal
+        part={part}
+        isOpen={partModelsModalIsOpen}
+        onClose={() => setPartModelsModalIsOpen(false)}
+      />
+      <PartComplianceModal
+        part={part}
+        isOpen={partComplianceModalIsOpen}
+        onClose={() => setPartComplianceModalIsOpen(false)}
+        onChange={handleChange}
+      />
       {/* FORM START */}
 
       <Form onSubmit={e => onSubmit(e, part)} className="inventory">

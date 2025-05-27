@@ -151,5 +151,45 @@
         /// The internal part id for manually added suppliers
         /// </summary>
         public long? PartSupplierId { get; set; }
+
+        /// <summary>
+        /// The name of the product series, if available
+        /// </summary>
+        public string? Series { get; set; }
+
+        /// <summary>
+        /// Rohs status
+        /// </summary>
+        public string? RohsStatus { get; set; }
+
+        /// <summary>
+        /// Reach status
+        /// </summary>
+        public string? ReachStatus { get; set; }
+
+        /// <summary>
+        /// Moisture sensitivity level
+        /// </summary>
+        public string? MoistureSensitivityLevel { get; set; }
+
+        /// <summary>
+        /// Export control class
+        /// </summary>
+        public string? ExportControlClassNumber { get; set; }
+
+        /// <summary>
+        /// Htsus code
+        /// </summary>
+        public string? HtsusCode { get; set; }
+
+        /// <summary>
+        /// List of all parametrics for part
+        /// </summary>
+        public ICollection<PartParametric>? Parametrics { get; set; }
+
+        /// <summary>
+        /// List of all cad models for part
+        /// </summary>
+        public ICollection<PartModel>? Models { get; set; }
     }
 }
