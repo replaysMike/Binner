@@ -41,7 +41,7 @@ namespace Binner.Common.Tests.Services
             Assert.That(part.Description, Is.EqualTo("IC: comparator; universal; Cmp: 2; 2÷30V; SMT; VSSOP8; reel,tape"));
             Assert.That(part.Manufacturer, Is.EqualTo("TEXAS INSTRUMENTS"));
             Assert.That(part.ManufacturerPartNumber, Is.EqualTo("LM393DGKR"));
-            Assert.That(part.Keywords.Count, Is.EqualTo(7));
+            Assert.That(part.Keywords.Count, Is.EqualTo(6));
             Assert.That(part.Cost, Is.EqualTo(0.477));
             Assert.That(part.Currency, Is.EqualTo("USD"));
             Assert.That(part.PartType, Is.EqualTo("IC"));

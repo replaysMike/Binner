@@ -1280,7 +1280,7 @@ namespace Binner.Common.Services
             {
                 foreach (var word in desc)
                 {
-                    if (!ignoredWords.Contains(word, StringComparer.InvariantCultureIgnoreCase) &&
+                    if (word.Length > 1 && !ignoredWords.Contains(word, StringComparer.InvariantCultureIgnoreCase) &&
                         !keywords.Contains(word, StringComparer.InvariantCultureIgnoreCase))
                     {
                         keywords.Add(word.ToLower());
@@ -1293,10 +1293,10 @@ namespace Binner.Common.Services
             }
 
             foreach (var basePart in part.AdditionalPartNumbers)
-                if (!keywords.Contains(basePart, StringComparer.InvariantCultureIgnoreCase))
-                    keywords.Add(basePart.ToLower());
+                if (basePart.Length > 1 && !keywords.Contains(basePart, StringComparer.InvariantCultureIgnoreCase))
+                    keywords.Add(basePart);
             var mountingType = (MountingType)part.MountingTypeId;
-            if (!string.IsNullOrEmpty(mountingType.ToString()) && !keywords.Contains(mountingType.ToString(), StringComparer.InvariantCultureIgnoreCase))
+            if (mountingType != MountingType.None && !string.IsNullOrEmpty(mountingType.ToString()) && !keywords.Contains(mountingType.ToString(), StringComparer.InvariantCultureIgnoreCase))
                 keywords.Add(mountingType.ToString().ToLower());
 
             return keywords.Distinct().ToList();

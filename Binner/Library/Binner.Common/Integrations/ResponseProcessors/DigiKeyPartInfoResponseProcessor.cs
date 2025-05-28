@@ -359,9 +359,10 @@ namespace Binner.Common.Integrations.ResponseProcessors
                         MinimumOrderQuantity = part.MinimumOrderQuantity,
                         //FactoryStockAvailable = factoryStockAvailable,
                         FactoryLeadTime = part.LeadStatus,
-                        Series = part.Series.Value,
+                        Series = part.Series?.Value,
                         RohsStatus = part.RoHSStatus,
                         ReachStatus = part.TariffDescription,
+                        // these values are not available in the V3 api
                         //ExportControlClassNumber = part.Classifications?.ExportControlClassNumber,
                         //HtsusCode = part.Classifications?.HtsusCode,
                         //MoistureSensitivityLevel = part.Classifications?.MoistureSensitivityLevel,

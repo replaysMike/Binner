@@ -307,7 +307,7 @@ namespace Binner.Common.Tests.Services
             Assert.That(part.Description, Is.EqualTo("IC OPAMP GP 2 CIRCUIT 8DIP\r\nGeneral Purpose Amplifier 2 Circuit 8-PDIP"));
             Assert.That(part.Manufacturer, Is.EqualTo("Texas Instruments"));
             Assert.That(part.ManufacturerPartNumber, Is.EqualTo("LM358PE3"));
-            Assert.That(part.Keywords.Count, Is.EqualTo(7));
+            Assert.That(part.Keywords.Count, Is.EqualTo(12));
             Assert.That(part.Cost, Is.EqualTo(0.14));
             Assert.That(part.Currency, Is.EqualTo("USD"));
             Assert.That(part.PartType, Is.EqualTo("IC"));
