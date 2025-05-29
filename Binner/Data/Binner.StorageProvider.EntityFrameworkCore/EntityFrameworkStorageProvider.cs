@@ -8,6 +8,7 @@ using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
@@ -59,9 +60,23 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             } while (exists);
             
             EnforceIntegrityCreate(entity, userContext);
+
+            if (entity.PartParametrics?.Any() == true)
+                foreach(var partParametric in entity.PartParametrics)
+                    EnforceIntegrityCreate(partParametric, userContext);
+            if (entity.PartModels?.Any() == true)
+                foreach (var partModel in entity.PartModels)
+                    EnforceIntegrityCreate(partModel, userContext);
+
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
             part.PartId = entity.PartId;
+
+            // update dependencies
+            if (part.Parametrics?.Any() == true)
+                await AddOrUpdateOrDeletePartParametricsAsync(part.PartId, part.Parametrics, userContext);
+            if (part.Models?.Any() == true)
+                await AddOrUpdateOrDeletePartModelsAsync(part.PartId, part.Models, userContext);
 
             // also update custom fields
             await AddOrUpdateCustomFieldValuesAsync(part.PartId, part.CustomFields, CustomFieldTypes.Inventory, userContext);
@@ -100,6 +115,8 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             await context.PartScanHistories.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.OrderImportHistoryLineItems.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.CustomFieldValues.Where(x => x.RecordId == part.PartId && x.CustomFieldTypeId == CustomFieldTypes.Inventory && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.PartParametrics.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.PartModels.Where(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             context.Parts.Remove(entity);
             await context.SaveChangesAsync();
             _partTypesCache.InvalidateCache();
@@ -1731,6 +1748,8 @@ INNER JOIN (
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Parts
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
                 .FirstOrDefaultAsync(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
@@ -1746,7 +1765,14 @@ INNER JOIN (
                     } while (exists);
                 }
                 EnforceIntegrityModify(entity, userContext);
+
                 await context.SaveChangesAsync();
+
+                // update dependencies
+                if (part.Parametrics?.Any() == true)
+                    await AddOrUpdateOrDeletePartParametricsAsync(part.PartId, part.Parametrics, userContext);
+                if (part.Models?.Any() == true)
+                    await AddOrUpdateOrDeletePartModelsAsync(part.PartId, part.Models, userContext);
 
                 // also update custom fields
                 await AddOrUpdateCustomFieldValuesAsync(part.PartId, part.CustomFields, CustomFieldTypes.Inventory, userContext);
@@ -1871,6 +1897,138 @@ INNER JOIN (
                 .Where(x => x.PartTypeId == partType.PartTypeId && x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
             return _mapper.Map<ICollection<Part>>(entities);
+        }
+
+        private async Task AddOrUpdateOrDeletePartParametricsAsync(long partId, ICollection<PartParametric> values, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            if (values.Any())
+            {
+                await using var context = await _contextFactory.CreateDbContextAsync();
+                var parametricEntities = await context.PartParametrics
+                    .Where(x =>
+                        x.PartId == partId
+                        && x.OrganizationId == userContext.OrganizationId)
+                    .ToListAsync();
+                foreach (var value in values)
+                {
+                    var parametricEntity = parametricEntities.Where(x =>
+                        x.PartParametricId == value.PartParametricId
+                        && x.OrganizationId == userContext.OrganizationId)
+                        .FirstOrDefault();
+                    if (parametricEntity == null)
+                    {
+                        parametricEntity = new DataModel.PartParametric
+                        {
+                            PartId = partId,
+                            Name = value.Name,
+                            Units = value.Units,
+                            Value = value.Value,
+                            ValueNumber = value.ValueNumber,
+                            DigiKeyValueId = value.DigiKeyValueId,
+                            DigiKeyParameterId = value.DigiKeyParameterId,
+                            DigiKeyParameterText = value.DigiKeyParameterText,
+                            DigiKeyParameterType = value.DigiKeyParameterType,
+                            DigiKeyValueText = value.DigiKeyValueText,
+                        };
+                        EnforceIntegrityCreate(parametricEntity, userContext);
+                        context.PartParametrics.Add(parametricEntity);
+                    }
+                    else
+                    {
+                        parametricEntity.Name = value.Name;
+                        parametricEntity.Units = value.Units;
+                        parametricEntity.Value = value.Value;
+                        parametricEntity.ValueNumber = value.ValueNumber;
+                        parametricEntity.DigiKeyValueId = value.DigiKeyValueId;
+                        parametricEntity.DigiKeyParameterId = value.DigiKeyParameterId;
+                        parametricEntity.DigiKeyParameterText = value.DigiKeyParameterText;
+                        parametricEntity.DigiKeyParameterType = value.DigiKeyParameterType;
+                        parametricEntity.DigiKeyValueText = value.DigiKeyValueText;
+                        EnforceIntegrityModify(parametricEntity, userContext);
+                    }
+                }
+
+                // save changes
+                await context.SaveChangesAsync();
+
+                // handle delete of parametrics
+                foreach (var parametricEntity in parametricEntities)
+                {
+                    if (!values.Any(x => x.PartParametricId == parametricEntity.PartParametricId))
+                    {
+                        // wasn't passed, delete it
+                        await context.PartParametrics
+                            .Where(x => x.PartParametricId == parametricEntity.PartParametricId)
+                            .ExecuteDeleteAsync();
+                    }
+                }
+                // save deletes
+                if (context.ChangeTracker.HasChanges())
+                    await context.SaveChangesAsync();
+
+            }
+        }
+
+        private async Task AddOrUpdateOrDeletePartModelsAsync(long partId, ICollection<PartModel> values, IUserContext? userContext)
+        {
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
+            if (values.Any())
+            {
+                await using var context = await _contextFactory.CreateDbContextAsync();
+                var modelEntities = await context.PartModels
+                    .Where(x =>
+                        x.PartId == partId
+                        && x.OrganizationId == userContext.OrganizationId)
+                    .ToListAsync();
+                foreach (var value in values)
+                {
+                    var modelEntity = await context.PartModels.FirstOrDefaultAsync(x =>
+                        x.PartModelId == value.PartModelId
+                        && x.OrganizationId == userContext.OrganizationId);
+                    if (modelEntity == null)
+                    {
+                        modelEntity = new DataModel.PartModel
+                        {
+                            PartId = partId,
+                            Name = value.Name,
+                            Filename = value.Filename,
+                            ModelType = value.ModelType,
+                            Source = value.Source,
+                            Url = value.Url,
+                        };
+                        EnforceIntegrityCreate(modelEntity, userContext);
+                        context.PartModels.Add(modelEntity);
+                    }
+                    else
+                    {
+                        modelEntity.Name = value.Name;
+                        modelEntity.Filename = value.Filename;
+                        modelEntity.ModelType = value.ModelType;
+                        modelEntity.Source = value.Source;
+                        modelEntity.Url = value.Url;
+                        EnforceIntegrityModify(modelEntity, userContext);
+                    }
+                }
+
+                // save changes
+                await context.SaveChangesAsync();
+
+                // handle delete of models
+                foreach (var modelEntity in modelEntities)
+                {
+                    if (!values.Any(x => x.PartModelId == modelEntity.PartModelId))
+                    {
+                        // wasn't passed, delete it
+                        await context.PartModels
+                            .Where(x => x.PartModelId == modelEntity.PartModelId)
+                            .ExecuteDeleteAsync();
+                    }
+                }
+                // save deletes
+                if (context.ChangeTracker.HasChanges())
+                    await context.SaveChangesAsync();
+            }
         }
 
         private async Task AddOrUpdateCustomFieldValuesAsync(long recordId, ICollection<CustomValue> values, CustomFieldTypes customFieldType, IUserContext? userContext)

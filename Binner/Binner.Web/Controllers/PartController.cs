@@ -238,15 +238,18 @@ namespace Binner.Web.Controllers
             EnsureValidMountingType(mappedPart, request.MountingTypeId);
 
             var part = await _partService.UpdatePartAsync(mappedPart);
-
-            if (request.BarcodeObject != null)
+            if (part != null)
             {
-                // add the scanned barcode to history
-                await AddScanHistoryAsync(part, request.BarcodeObject);
-            }
+                if (request.BarcodeObject != null)
+                {
+                    // add the scanned barcode to history
+                    await AddScanHistoryAsync(part, request.BarcodeObject);
+                }
 
-            var partResponse = _mapper.Map<Part, PartResponse>(part);
-            return Ok(partResponse);
+                var partResponse = _mapper.Map<Part, PartResponse>(part);
+                return Ok(partResponse);
+            }
+            return BadRequest();
         }
 
         [HttpGet("barcode/info")]

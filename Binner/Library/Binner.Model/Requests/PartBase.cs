@@ -218,5 +218,22 @@
         /// A comma delimited list of other names for the product
         /// </summary>
         public string? OtherNames { get; set; }
+
+        public PartDataSources DataSource { get; set; } = PartDataSources.ManualInput;
+
+        /// <summary>
+        /// If a data source other than manual input, indicate the order id it came from
+        /// </summary>
+        public string? DataSourceId { get; set; }
+
+        /// <summary>
+        /// List of all parametrics for part
+        /// </summary>
+        public ICollection<PartParametric>? Parametrics { get; set; }
+
+        /// <summary>
+        /// List of all cad models for part
+        /// </summary>
+        public ICollection<PartModel>? Models { get; set; }
     }
 }

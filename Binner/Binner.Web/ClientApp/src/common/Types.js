@@ -108,9 +108,7 @@ export const GetTypeValue = (type, name) => {
   const valueType = typeValues && typeValues.length > 0 ? typeValues[0] : "number";
   switch(typeof valueType){
     case "object":
-      let searchObj = {};
-      searchObj[valueProperty] = value;
-      const matchingType = _.find(typeValues, searchObj);
+      const matchingType = _.find(typeValues, t => t[valueProperty] === value);
       if (matchingType)
         return matchingType;
       return null;

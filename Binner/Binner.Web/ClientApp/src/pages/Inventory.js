@@ -376,23 +376,13 @@ export function Inventory({ partNumber = "", ...rest }) {
 
     const entity = { ...partRef.current };
     const mappedPart = {
+      ...suggestedPart,
       partNumber: suggestedPart.basePartNumber,
-      value: suggestedPart.value,
+      baseProductNumber: suggestedPart.basePartNumber,
+      productStatus: suggestedPart.status,
       partTypeId: getPartTypeId(suggestedPart.partType, partTypesRef.current),
-      mountingTypeId: suggestedPart.mountingTypeId,
-      packageType: suggestedPart.packageType,
       keywords: suggestedPart.keywords && suggestedPart.keywords.join(" ").toLowerCase(),
-      description: suggestedPart.description,
-      datasheetUrls: suggestedPart.datasheetUrls,
-      supplier: suggestedPart.supplier,
-      supplierPartNumber: suggestedPart.supplierPartNumber,
-      cost: suggestedPart.cost,
-      productUrl: suggestedPart.productUrl,
-      manufacturer: suggestedPart.manufacturer,
-      manufacturerPartNumber: suggestedPart.manufacturerPartNumber,
-      imageUrl: suggestedPart.imageUrl,
-      status: suggestedPart.status,
-      quantity: suggestedPart.quantity,
+      otherNames: suggestedPart.additionalPartNumbers.join(" ")
     };
 
     if (mappedPart.quantity > 0)
@@ -414,6 +404,20 @@ export function Inventory({ partNumber = "", ...rest }) {
     entity.imageUrl = mapIfValid("imageUrl", entity, mappedPart, allowOverwrite);
     if ((allowOverwrite || !entity.datasheetUrl) && mappedPart.datasheetUrls.length > 0) {
       entity.datasheetUrl = _.first(mappedPart.datasheetUrls) || "";
+    }
+    entity.baseProductNumber = mapIfValid("basePartNumber", entity, mappedPart, allowOverwrite);
+    entity.exportControlClassNumber = mapIfValid("exportControlClassNumber", entity, mappedPart, allowOverwrite);
+    entity.leadTime = mapIfValid("factoryLeadTime", entity, mappedPart, allowOverwrite);
+    entity.htsusCode = mapIfValid("htsusCode", entity, mappedPart, allowOverwrite);
+    entity.moistureSensitivityLevel = mapIfValid("moistureSensitivityLevel", entity, mappedPart, allowOverwrite);
+    entity.reachStatus = mapIfValid("reachStatus", entity, mappedPart, allowOverwrite);
+    entity.rohsStatus = mapIfValid("rohsStatus", entity, mappedPart, allowOverwrite);
+    entity.series = mapIfValid("series", entity, mappedPart, allowOverwrite);
+    entity.productStatus = mapIfValid("status", entity, mappedPart, allowOverwrite);
+    entity.models = mapIfValid("models", entity, mappedPart, allowOverwrite);
+    entity.parametrics = mapIfValid("parametrics", entity, mappedPart, allowOverwrite);
+    if ((allowOverwrite || !entity.otherNames) && mappedPart.additionalPartNumbers.length > 0) {
+      entity.otherNames = mappedPart.additionalPartNumbers.join(" ");
     }
     mapSupplierPartNumbers(entity, metadataParts, allowOverwrite);
     
@@ -1886,14 +1890,14 @@ export function Inventory({ partNumber = "", ...rest }) {
                     <Form.Field width={16}>
                       <label>{t('label.otherNames', "Other Names")}</label>
                       <Popup
-                        content={<p>A comma-delimited list of other names a product may be known for.</p>}
+                        content={<p>A list of other names a product may be known for.</p>}
                         trigger={<div>
                           <Input
                             icon="tags"
                             iconPosition="left"
                             label={{ tag: true, content: t('page.inventory.addOtherName', "Add Other Name") }}
                             labelPosition="right"
-                            placeholder="LM358SNGOS, LM358SNG-ND"
+                            placeholder="LM358SNGOS LM358SNG-ND"
                             onChange={handleChange}
                             value={part.otherNames || ""}
                             name="otherNames"
@@ -2029,6 +2033,28 @@ export function Inventory({ partNumber = "", ...rest }) {
     setConfirmReImportAction(null);
   };
 
+  const handlePartParametricsAdd = (e, control, newParametric) => {
+    setPart({ ...part, parametrics: [...part.parametrics, newParametric] });
+  };
+
+  const handlePartParametricsChange = (e, control, parametric) => {
+    setPart({ ...part, parametrics: part.parametrics.map((p) => {
+      if (p.partParametricId === parametric.partParametricId){
+        return parametric;
+      }
+      return p;
+    })});
+    setIsDirty(true);
+  };
+
+  const handlePartParametricsDelete = (e, control, parametric) => {
+    setPart({
+      ...part, 
+      parametrics: _.filter(part.parametrics, i => i.partParametricId !== parametric.partParametricId)
+    });
+    setIsDirty(true);
+  };
+
   return (
     <div className="inventory mask">
       <DuplicatePartModal
@@ -2117,6 +2143,9 @@ export function Inventory({ partNumber = "", ...rest }) {
         part={part}
         isOpen={partParametricsModalIsOpen}
         onClose={() => setPartParametricsModalIsOpen(false)}
+        onAdd={handlePartParametricsAdd}
+        onChange={handlePartParametricsChange}
+        onDelete={handlePartParametricsDelete}
       />
       <PartModelsModal
         part={part}

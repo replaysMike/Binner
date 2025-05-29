@@ -65,8 +65,9 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.MapFrom(x => x.LastSwarmSyncUtc))
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.PartParametrics))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.PartModels))
-                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 .ForMember(x => x.MountingType, options => options.MapFrom(x => ((MountingType)x.MountingTypeId).ToString()))
+
+                .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 .AfterMap<PartTypeMappingAction<DataModel.Part, PartResponse>>()
                 ;
 
@@ -80,7 +81,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DigiKeyPartNumber, options => options.MapFrom(x => x.DigiKeyPartNumber))
                 .ForMember(x => x.ImageUrl, options => options.MapFrom(x => x.ImageUrl))
                 .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords))
-                .ForMember(x => x.KeywordsList, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(",", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
+                .ForMember(x => x.KeywordsList, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
                 .ForMember(x => x.Location, options => options.MapFrom(x => x.Location))
                 .ForMember(x => x.LowestCostSupplier, options => options.MapFrom(x => x.LowestCostSupplier))
                 .ForMember(x => x.LowestCostSupplierUrl, options => options.MapFrom(x => x.LowestCostSupplierUrl))
@@ -118,6 +119,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.MapFrom(x => x.MetadataLastUpdatedUtc))
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.MapFrom(x => x.LastSwarmSyncUtc))
+
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.KeywordsList, options => options.Ignore())
                 .ForMember(x => x.PartType, options => options.Ignore())
@@ -145,7 +147,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
                 .ForMember(x => x.DigiKeyPartNumber, options => options.MapFrom(x => x.DigiKeyPartNumber))
                 .ForMember(x => x.ImageUrl, options => options.MapFrom(x => x.ImageUrl))
-                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(",", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
+                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
                 .ForMember(x => x.Location, options => options.MapFrom(x => x.Location))
                 .ForMember(x => x.LowestCostSupplier, options => options.MapFrom(x => x.LowestCostSupplier))
                 .ForMember(x => x.LowestCostSupplierUrl, options => options.MapFrom(x => x.LowestCostSupplierUrl))
@@ -186,6 +188,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.MapFrom(x => x.LastSwarmSyncUtc))
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.PartParametrics))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.PartModels))
+
                 .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 ;
 
@@ -238,6 +241,8 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.MapFrom(x => x.MetadataLastUpdatedUtc))
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.MapFrom(x => x.LastSwarmSyncUtc))
+
+
                 .ForMember(x => x.PartSuppliers, options => options.Ignore())
                 .ForMember(x => x.PartType, options => options.Ignore())
                 .ForMember(x => x.Project, options => options.Ignore())
@@ -263,7 +268,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
                 .ForMember(x => x.DigiKeyPartNumber, options => options.MapFrom(x => x.DigiKeyPartNumber))
                 .ForMember(x => x.ImageUrl, options => options.MapFrom(x => x.ImageUrl))
-                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(",", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
+                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
                 .ForMember(x => x.Location, options => options.MapFrom(x => x.Location))
                 .ForMember(x => x.LowestCostSupplier, options => options.MapFrom(x => x.LowestCostSupplier))
                 .ForMember(x => x.LowestCostSupplierUrl, options => options.MapFrom(x => x.LowestCostSupplierUrl))
@@ -296,12 +301,12 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.OtherNames, options => options.MapFrom(x => x.OtherNames))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
-                .ForMember(x => x.DataSource, options => options.Ignore())
-                .ForMember(x => x.DataSourceId, options => options.Ignore())
+                .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
+                .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
+                .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
+                .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
-                .ForMember(x => x.Models, options => options.Ignore())
-                .ForMember(x => x.Parametrics, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.PartId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
@@ -316,7 +321,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
                 .ForMember(x => x.DigiKeyPartNumber, options => options.MapFrom(x => x.DigiKeyPartNumber))
                 .ForMember(x => x.ImageUrl, options => options.MapFrom(x => x.ImageUrl))
-                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(",", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
+                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
                 .ForMember(x => x.Location, options => options.MapFrom(x => x.Location))
                 .ForMember(x => x.LowestCostSupplier, options => options.MapFrom(x => x.LowestCostSupplier))
                 .ForMember(x => x.LowestCostSupplierUrl, options => options.MapFrom(x => x.LowestCostSupplierUrl))
@@ -350,12 +355,12 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
-                .ForMember(x => x.DataSource, options => options.Ignore())
-                .ForMember(x => x.DataSourceId, options => options.Ignore())
+                .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
+                .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
+                .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
+                .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
-                .ForMember(x => x.Models, options => options.Ignore())
-                .ForMember(x => x.Parametrics, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 ;
@@ -369,7 +374,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
                 .ForMember(x => x.DigiKeyPartNumber, options => options.MapFrom(x => x.DigiKeyPartNumber))
                 .ForMember(x => x.ImageUrl, options => options.MapFrom(x => x.ImageUrl))
-                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(",", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
+                .ForMember(x => x.Keywords, options => options.MapFrom(x => x.Keywords != null ? x.Keywords.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
                 .ForMember(x => x.Location, options => options.MapFrom(x => x.Location))
                 .ForMember(x => x.LowestCostSupplier, options => options.MapFrom(x => x.LowestCostSupplier))
                 .ForMember(x => x.LowestCostSupplierUrl, options => options.MapFrom(x => x.LowestCostSupplierUrl))
@@ -402,12 +407,13 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.OtherNames, options => options.MapFrom(x => x.OtherNames))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
-                .ForMember(x => x.DataSource, options => options.Ignore())
-                .ForMember(x => x.DataSourceId, options => options.Ignore())
+                .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
+                .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
+                .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
+                .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
+
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
-                .ForMember(x => x.Models, options => options.Ignore())
-                .ForMember(x => x.Parametrics, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.PartId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
@@ -433,7 +439,6 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.BasePartNumber, options => options.MapFrom(x => x.BaseProductNumber))
                 .ForMember(x => x.FactoryLeadTime, options => options.MapFrom(x => x.LeadTime))
                 .ForMember(x => x.Status, options => options.MapFrom(x => x.ProductStatus))
-
                 .ForMember(x => x.Series, options => options.MapFrom(x => x.Series))
                 .ForMember(x => x.RohsStatus, options => options.MapFrom(x => x.RohsStatus))
                 .ForMember(x => x.ReachStatus, options => options.MapFrom(x => x.ReachStatus))
@@ -442,7 +447,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                 .ForMember(x => x.HtsusCode, options => options.MapFrom(x => x.HtsusCode))
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
-                .ForMember(x => x.AdditionalPartNumbers, options => options.MapFrom(x => x.OtherNames != null ? x.OtherNames.Split(",", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
+                .ForMember(x => x.AdditionalPartNumbers, options => options.MapFrom(x => x.OtherNames != null ? x.OtherNames.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
 
                 .ForMember(x => x.FactoryStockAvailable, options => options.Ignore())
                 .ForMember(x => x.MinimumOrderQuantity, options => options.Ignore())
@@ -502,9 +507,12 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                .ForMember(x => x.OtherNames, options => options.MapFrom(x => x.OtherNames))
                .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
                .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
+               .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
+               .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
                .ForMember(x => x.MetadataLastUpdatedUtc, options => options.MapFrom(x => x.MetadataLastUpdatedUtc))
                .ForMember(x => x.LastSwarmSyncUtc, options => options.MapFrom(x => x.LastSwarmSyncUtc))
                .ForMember(x => x.MountingType, options => options.MapFrom(x => ((MountingType)x.MountingTypeId).ToString()))
+
                .ForMember(x => x.PartType, options => options.Ignore())
                .AfterMap<PartTypeMappingAction<Part, PartResponse>>()
                ;
@@ -557,6 +565,7 @@ namespace Binner.Common.MappingProfiles.ModelCommon
                .ForMember(x => x.MetadataLastUpdatedUtc, options => options.MapFrom(x => x.MetadataLastUpdatedUtc))
                .ForMember(x => x.LastSwarmSyncUtc, options => options.MapFrom(x => x.LastSwarmSyncUtc))
                .ForMember(x => x.MountingType, options => options.MapFrom(x => ((MountingType)x.MountingTypeId).ToString()))
+
                .ForMember(x => x.PartType, options => options.Ignore())
                .ForMember(x => x.StoredFiles, options => options.Ignore())
                .AfterMap<PartTypeMappingAction<Part, PartResponse>>()

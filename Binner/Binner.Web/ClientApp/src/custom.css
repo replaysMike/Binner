@@ -1138,3 +1138,7 @@ ul.errors li.error:before {
 .MuiSvgIcon-root.cadModels {
   color: rgb(231, 66, 231);
 }
+
+.ui.table td.disabled {
+  background-color: #f6f6f6;
+}
