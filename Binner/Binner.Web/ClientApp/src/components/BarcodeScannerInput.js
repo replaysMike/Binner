@@ -7,8 +7,10 @@ import PropTypes from "prop-types";
 import { dynamicDebouncer } from "../common/dynamicDebouncer";
 import { AppEvents, Events } from "../common/events";
 import { fetchApi } from '../common/fetchApi';
-import { copyString, isNumeric } from "../common/Utils";
-import _ from "underscore";
+import { copyString } from "../common/Utils";
+import { detectKemetLabel, detectBournsLabel } from "../common/labelDetection";
+
+import _, { detect } from "underscore";
 const soundSuccess = new Audio('/audio/scan-success.mp3');
 const soundFailure = new Audio('/audio/scan-failure.mp3');
 
@@ -499,6 +501,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       labelType: 'Unknown',
       success: false,
       containsSpaces: false,
+      containsPlus: false,
       spacesCount: 0,
       sections: [],
       length: value.length,
@@ -513,68 +516,18 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       const detectValue = detectKemetLabel(detected, value);
       console.debug('Kemet result', detectValue);
       if (detectValue.success) 
-        detected = { ...detectValue, vendor: 'Kemet', ...detectValue.parsedValue };
-      else
-        console.debug('Failed to detect barcode', detectValue);
+        return { ...detectValue, vendor: 'Kemet', ...detectValue.parsedValue };
+    }
+    if (value.includes('+')) {
+      detected.containsPlus = true;
+      detected.sections = value.replaceAll('\r', '').split('+');
+      const detectValue = detectBournsLabel(detected, value);
+      console.debug('Bourns result', detectValue);
+      if (detectValue.success)
+        return { ...detectValue, vendor: 'Bourns', ...detectValue.parsedValue };
     }
 
     return detected;
-  };
-
-  const detectKemetLabel = (detected, value) => {
-    console.debug('detectKemetLabel', detected, value);
-    const detectValue = {
-      type: null,
-      labelType: null,
-      success: false,
-      parsedValue: null,
-      reason: null,
-    };
-    if (detected.sections.length === 6 || detected.sections.length === 10) {
-      // could be kemet label, check the data to see if it looks right
-      let batch = 0;
-      let batchStr = null; // batch number or ID, must be a number
-      batchStr = detected.sections[0];
-      if (!isNumeric(batchStr)) return { ...detectValue, reason: `Batch '${batchStr}' not a number` };
-      batch = parseInt(batchStr);
-      let station = ''; // station which it was produced
-      station = detected.sections[1].substring(0, 2);
-      let pkg = 0;
-      let pkgStr = ''; // package number, must be a number
-      pkgStr = detected.sections[1].substring(2, 5);
-      if (!isNumeric(pkgStr)) return { ...detectValue, reason: `Pkg '${pkgStr}' not a number` };
-      pkg = parseInt(pkgStr);
-      let partNumber = ''; // part number, could be anything
-      if (detected.sections[1].length - station.length - pkgStr.length > 0)
-        partNumber = detected.sections[1].substring(station.length + pkgStr.length, detected.sections[1].length);
-      let qty = 0;
-      let country = null;
-      if (detected.sections.length > 5) {
-        const qtyStr = detected.sections[5].substring(0, 7); // must be a number
-        if (!isNumeric(qtyStr)) return { ...detectValue, reason: `Qty '${qtyStr}' not a number` };
-        qty = parseInt(qtyStr);
-        if (detected.sections[5].length - qtyStr.length > 0)
-          country = detected.sections[5].substring(qtyStr.length, detected.sections[5].length);
-      }
-      let countryCode = null;
-      if (detected.sections.length === 10)
-        countryCode = detected.sections[9];
-      
-      detectValue.success = true;
-      detectValue.type = 'pdf417';
-      detectValue.labelType = 'part';
-      detectValue.parsedValue = {
-        batch,
-        station,
-        package: pkg,
-        partNumber,
-        quantity: qty,
-        country,
-        countryCode
-      };
-      return detectValue;
-    }
-    return {...detectValue, reason: `Sections != 6 or 10 (${detected.sections.length})`};
   };
 
   const normalizeControlCharacters = (str) => {
