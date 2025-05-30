@@ -1,0 +1,21 @@
+{
+  "type": "code128",
+  "labelType": "part",
+  "vendor": "Panasonic",
+  "value": {
+    "partNumber": "ERJ-3EKF1502V",
+    "quantity": 5000,
+    "labelType": 1,
+    "barcodeType": "part"
+  },
+  "correctedValue": "3N1ERJ-3EKF1502V 5000\r",
+  "rawValue": "3N1ERJ-3EKF1502V 5000\r",
+  "length": 22,
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "success": true,
+  "logDate": "2025-05-30T22:57:13.435Z",
+  "rawValueFormatted": "3N1ERJ-3EKF1502V 5000␍"
+}
