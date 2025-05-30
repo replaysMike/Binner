@@ -206,7 +206,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       labelType = parseResult.labelType;
     } else {
       // possible 1D barcode
-      console.debug('possible 1D code...');
+      console.debug('possible 1D or 2D code...');
       parsedValue = value.replace("\n", "").replace("\r", "");
       // try to detect if we know what kind of label it is
       let detectedValues = { success: false };
