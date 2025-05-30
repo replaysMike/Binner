@@ -5,7 +5,7 @@ import { isNumeric } from "../Utils";
 export default function Vishay(value) {
   const execute = () => {
     // fixed width, using ' ' character to fill empty space
-    console.debug(`Detect ${Stackpole.Name} data length=${value.length}`, value);
+    console.debug(`Detect ${Vishay.Name} data length=${value.length}`, value);
     let detectValue = {
       type: null,
       labelType: null,

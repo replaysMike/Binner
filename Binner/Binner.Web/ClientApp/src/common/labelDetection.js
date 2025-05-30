@@ -2,7 +2,7 @@ import Koa from "./labelDetection/Koa";
 import Bourns from "./labelDetection/Bourns";
 import Kemet from "./labelDetection/Kemet";
 import Yageo from "./labelDetection/Yageo";
-import Stackpole from "./labelDetection/Kemet";
+import Stackpole from "./labelDetection/Stackpole";
 import Vishay from "./labelDetection/Vishay";
 import GenericTokenized from "./labelDetection/GenericTokenized";
 import GenericOneDimensional from "./labelDetection/GenericOneDimensional";
@@ -10,7 +10,7 @@ import _ from "underscore";
 
 export const detectLabel = (value) => {
   // add detectors here
-  let detectors = [ Vishay, Kemet, Bourns, Koa, Yageo, Stackpole, GenericTokenized, GenericOneDimensional];
+  let detectors = [Vishay, Kemet, Bourns, Koa, Yageo, Stackpole, GenericTokenized, GenericOneDimensional];
   //let detectors = [Yageo];
 
   let detectValue = {
