@@ -1,9 +1,13 @@
 {
-  "type": "code128",
+  "type": "pdf417",
   "labelType": "part",
-  "vendor": "Generic",
+  "vendor": "Stackpole",
   "value": {
-    "partNumber": "RMCF2010ZT0R00,Q4000,1TT170419155,17/16,JP"
+    "partNumber": "RMCF2010ZT0R00",
+    "quantity": 4000,
+    "lot": "T170419155",
+    "dateCode": "17/16",
+    "country": "JP"
   },
   "correctedValue": "1PRMCF2010ZT0R00,Q4000,1TT170419155,17/16,JP\r",
   "rawValue": "1PRMCF2010ZT0R00,Q4000,1TT170419155,17/16,JP\r",
