@@ -85,17 +85,20 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     // reset key buffer
     keyBufferRef.current.length = 0;
 
-    processStringInput(e, result);
-    const maxTime = getMaxValueFast(keyTimes.current, 1);
-    const sum = getSumFast(keyTimes.current, 1);
-    if (barcodeConfig.isDebug)
-      console.debug(`BSI: keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
-    else
-      console.debug(`BSI: Barcode event processed in ${sum}ms`);
-    keyTimes.current = [];
+    if (result) {
+      processStringInput(e, result);
+      const maxTime = getMaxValueFast(keyTimes.current, 1);
+      const sum = getSumFast(keyTimes.current, 1);
+      if (barcodeConfig.isDebug)
+        console.debug(`BSI: keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
+      else
+        console.debug(`BSI: Barcode event processed in ${sum}ms`);
+      keyTimes.current = [];
+  }
   };
 
   const processStringInput = (e, result) => {
+    if (!result) return;
     const barcodeText = result.barcodeText;
     const text = result.text;
     // process raw value into an input object with decoded information
@@ -233,6 +236,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       value: parsedValue,
       correctedValue: correctedValue,
       rawValue: value,
+      length: value?.length || 0,
       rsDetected,
       gsDetected,
       eotDetected,
