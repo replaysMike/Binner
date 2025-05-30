@@ -21,7 +21,6 @@ export default function GenericOneDimensional(value) {
       let valueStr;
       let knownIdentifier = knownIdentifiers[i];
       if (value.startsWith(knownIdentifier)) {
-        console.log('starts with', knownIdentifier);
         switch (knownIdentifier) {
           case '1P':
             // for Yageo reels, this is the part number
