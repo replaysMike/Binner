@@ -1,5 +1,6 @@
 import { BarcodeLabelTypes } from "../barcodeLabelTypes";
 import { isNumeric } from "../Utils";
+import Samsung from "./Samsung";
 
 /** Detect a 1D part label */
 export default function GenericOneDimensional(value) {
@@ -16,16 +17,17 @@ export default function GenericOneDimensional(value) {
       reason: null
     };
     if (!value?.length > 0) return detectValue;
-    const knownIdentifiers = ['1P', 'Q', 'K', 'P', 'J', '1T', '9D', '4L'];
+    const knownIdentifiers = ['1P', 'T', 'Q', 'K', 'P', 'J', '1T', '9D', '4L'];
     for (let i = 0; i < knownIdentifiers.length; i++) {
+      let cleanValue = value.replaceAll('\r', '');
       let valueStr;
       let knownIdentifier = knownIdentifiers[i];
-      if (value.startsWith(knownIdentifier)) {
+      if (cleanValue.startsWith(knownIdentifier)) {
         switch (knownIdentifier) {
           case '1P':
             // for Yageo reels, this is the part number
-            if (value.length > 5) {
-              valueStr = value.substring(2, value.length - 1);
+            if (cleanValue.length > 5) {
+              valueStr = cleanValue.substring(2, cleanValue.length);
               detectValue.success = true;
               detectValue.type = 'code128';
               detectValue.labelType = 'part';
@@ -36,9 +38,24 @@ export default function GenericOneDimensional(value) {
               return detectValue;
             }
             break;
+          case 'T':
+            // for some Samsung reels, this is the part number
+            if (cleanValue.length > 5) {
+              valueStr = value.substring(1, cleanValue.length);
+              detectValue.success = true;
+              detectValue.type = 'code128';
+              detectValue.labelType = 'part';
+              detectValue.vendor = Samsung.Name;
+              detectValue.certainty = 0.9;
+              detectValue.parsedValue = {
+                partNumber: valueStr
+              };
+              return detectValue;
+            }
+            break;
           case 'K':
-            if (value.length > 5) {
-              valueStr = value.substring(1, value.length - 1);
+            if (cleanValue.length > 5) {
+              valueStr = cleanValue.substring(1, cleanValue.length);
               detectValue.success = true;
               detectValue.type = 'code128';
               detectValue.labelType = 'part';
@@ -51,7 +68,7 @@ export default function GenericOneDimensional(value) {
             break;
           case 'Q':
             // value must be a number
-            valueStr = value.substring(1, value.length - 1);
+            valueStr = cleanValue.substring(1, cleanValue.length);
             if (isNumeric(valueStr)) {
               detectValue.success = true;
               detectValue.type = 'code128';
@@ -64,8 +81,8 @@ export default function GenericOneDimensional(value) {
             return detectValue;
           case 'P':
             // for Yageo reels, this is the customer part number (not useful)
-            if (value.length > 5) {
-              valueStr = value.substring(1, value.length - 1);
+            if (cleanValue.length > 5) {
+              valueStr = cleanValue.substring(1, cleanValue.length);
               detectValue.success = true;
               detectValue.type = 'code128';
               detectValue.labelType = 'part';
@@ -78,7 +95,7 @@ export default function GenericOneDimensional(value) {
             break;
           case 'J':
             // a unique item number
-            valueStr = value.substring(1, value.length - 1);
+            valueStr = cleanValue.substring(1, cleanValue.length);
             detectValue.success = true;
             detectValue.type = 'code128';
             detectValue.labelType = 'part';
@@ -89,7 +106,7 @@ export default function GenericOneDimensional(value) {
             return detectValue;
           case '1T':
             // lot number
-            valueStr = value.substring(2, value.length - 1);
+            valueStr = cleanValue.substring(2, cleanValue.length);
             detectValue.success = true;
             detectValue.type = 'code128';
             detectValue.labelType = 'part';
@@ -100,8 +117,8 @@ export default function GenericOneDimensional(value) {
             return detectValue;
           case '9D':
             // date code
-            if (value.length > 3 && value.length < 6) {
-              valueStr = value.substring(2, value.length - 1);
+            if (cleanValue.length === 2 + 4) {
+              valueStr = cleanValue.substring(2, cleanValue.length);
               detectValue.success = true;
               detectValue.type = 'code128';
               detectValue.labelType = 'part';
@@ -111,11 +128,11 @@ export default function GenericOneDimensional(value) {
               };
               return detectValue;
             }
-            break;
+            return { ...detectValue, reason: `Date code wrong length '${cleanValue.length}' should be '6'` };
           case '4L':
             // country of origin (COO)
-            if (value.length > 3 && value.length < 6) {
-              valueStr = value.substring(2, value.length - 1);
+            if (cleanValue.length > 3 && cleanValue.length < 7) {
+              valueStr = cleanValue.substring(2, cleanValue.length);
               detectValue.success = true;
               detectValue.type = 'code128';
               detectValue.labelType = 'part';
@@ -125,7 +142,7 @@ export default function GenericOneDimensional(value) {
               };
               return detectValue;
             }
-            break;
+            return { ...detectValue, reason: `COO wrong length '${cleanValue.length}' should be between 4 and 6` };
           default:
             break;
         }
@@ -153,5 +170,5 @@ export default function GenericOneDimensional(value) {
 
   return execute();
 };
-GenericOneDimensional.Name = 'Generic';
+GenericOneDimensional.Name = 'Generic 1D';
 GenericOneDimensional.LabelType = BarcodeLabelTypes.Tokenized;

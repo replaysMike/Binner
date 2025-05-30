@@ -1,0 +1,19 @@
+{
+  "type": "qrcode",
+  "labelType": "part",
+  "vendor": "Samsung Electronics",
+  "value": {
+    "partNumber": "CL10C101JB8NNNC",
+    "quantity": 4000,
+    "dateCode": 1687,
+    "lotCode": "AJ1FP7G"
+  },
+  "correctedValue": "AJ1FP7G/CL10C101JB8NNNC/1687/0004000\r",
+  "rawValue": "AJ1FP7G/CL10C101JB8NNNC/1687/0004000\r",
+  "length": 37,
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "AJ1FP7G/CL10C101JB8NNNC/1687/0004000␍"
+}

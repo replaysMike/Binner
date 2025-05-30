@@ -99,5 +99,5 @@ export default function Panasonic(value) {
 
   return execute();
 };
-Panasonic.Name = 'Panasonic';
+Panasonic.Name = 'Panasonic Electronic Components';
 Panasonic.LabelType = BarcodeLabelTypes.Tokenized;

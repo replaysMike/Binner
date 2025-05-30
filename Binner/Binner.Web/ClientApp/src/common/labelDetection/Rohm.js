@@ -58,5 +58,5 @@ export default function Rohm(value) {
 
   return execute();
 };
-Rohm.Name = 'Rohm';
+Rohm.Name = 'Rohm Semiconductor';
 Rohm.LabelType = BarcodeLabelTypes.FixedWidth;
