@@ -8,9 +8,8 @@ import { dynamicDebouncer } from "../common/dynamicDebouncer";
 import { AppEvents, Events } from "../common/events";
 import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
-import { detectKemetLabel, detectBournsLabel } from "../common/labelDetection";
-
-import _, { detect } from "underscore";
+import { detectLabel } from "../common/labelDetection";
+import _ from "underscore";
 const soundSuccess = new Audio('/audio/scan-success.mp3');
 const soundFailure = new Audio('/audio/scan-failure.mp3');
 
@@ -18,7 +17,7 @@ const soundFailure = new Audio('/audio/scan-failure.mp3');
 const DefaultDebounceIntervalMs = 80;
 const DefaultIsDebug = false;
 // lower values will falsely detect scans, higher may fail on short barcodes
-const MinBufferLengthToAccept = 15;
+const MinBufferLengthToAccept = 5;
 const AbortBufferTimerMs = 2000;
 // if any keystrokes have a delay between them greater than this value, the buffer will be dropped
 const DefaultMaxKeystrokeThresholdMs = 300;
@@ -27,7 +26,7 @@ const MinKeystrokesToConsiderScanningEvent = 10;
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({ listening = true, minInputLength = 4, onReceived, helpUrl = "/help/scanning", swallowKeyEvent = true, passThrough, enableSound = true, config, onSetConfig, id, onDisabled }) {
+export function BarcodeScannerInput({ listening = true, minInputLength = MinBufferLengthToAccept, onReceived, helpUrl = "/help/scanning", swallowKeyEvent = true, passThrough, enableSound = true, config, onSetConfig, id, onDisabled }) {
   const [barcodeConfig, setBarcodeConfig] = useState(config || {
     enabled: true,
     isDebug: DefaultIsDebug,
@@ -63,7 +62,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       navigator.clipboard.writeText(keypressHistoryText);
       console.log('onReceivedBarcodeInput keypress history copied to clipboard'/*, debugBuffer*/);
     }
-    if (buffer.length < MinBufferLengthToAccept && processKeyBuffer(buffer, barcodeConfig.prefix2D.length) !== barcodeConfig.prefix2D) {
+    if (buffer.length < minInputLength && processKeyBuffer(buffer, barcodeConfig.prefix2D.length) !== barcodeConfig.prefix2D) {
       keyBufferRef.current.length = 0;
       if (barcodeConfig.isDebug) console.debug('BSI: timeout: barcode dropped input', buffer);
       const maxTime = getMaxValueFast(keyTimes.current, 1);
@@ -496,7 +495,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
   };
 
   const tryDetectBarcode = (value) => {
-    let detected = {
+    /*let detected = {
       type: 'code128',
       labelType: 'Unknown',
       success: false,
@@ -507,26 +506,9 @@ export function BarcodeScannerInput({ listening = true, minInputLength = 4, onRe
       length: value.length,
       vendor: '',
       parsedValue: {},
-    };
+    };*/
     // does it contain spaces?
-    if (value.includes(' ')){
-      detected.containsSpaces = true;
-      detected.spacesCount = (value.match(/ /g) || []).length;
-      detected.sections = value.replaceAll('\r', '').split(' ');
-      const detectValue = detectKemetLabel(detected, value);
-      console.debug('Kemet result', detectValue);
-      if (detectValue.success) 
-        return { ...detectValue, vendor: 'Kemet', ...detectValue.parsedValue };
-    }
-    if (value.includes('+')) {
-      detected.containsPlus = true;
-      detected.sections = value.replaceAll('\r', '').split('+');
-      const detectValue = detectBournsLabel(detected, value);
-      console.debug('Bourns result', detectValue);
-      if (detectValue.success)
-        return { ...detectValue, vendor: 'Bourns', ...detectValue.parsedValue };
-    }
-
+    let detected = detectLabel(value);
     return detected;
   };
 

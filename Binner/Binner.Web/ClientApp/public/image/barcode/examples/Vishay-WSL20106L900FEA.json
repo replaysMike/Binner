@@ -1,0 +1,33 @@
+{
+  "type": "pdf417",
+  "labelType": "part",
+  "vendor": "Vishay",
+  "value": {
+    "lot1": "0054334265",
+    "lot2": "",
+    "lotDate": "03/29/13",
+    "batch": "201312IL",
+    "partNumber": "WSL20106L900FEA",
+    "quantity": 4000,
+    "mfgPo": "00048999730001",
+    "unknown": "",
+    "dateCode": "1312",
+    "dateCode2": "",
+    "region": 6140,
+    "sl": "0010",
+    "chkD": "",
+    "operator": "LFSH903",
+    "lot1Again": "1312AA            WBI9 R0069F",
+    "quantityAgain": 4000,
+    "partNumberAgain": "WSL20106L900FEA",
+    "alternateName": "WSL-2010  0.0069 1  EA E3",
+    "serial": "B0XW00664283"
+  },
+  "correctedValue": "   WSL20106L900FEA005433426503/29/13                                                       201312IL     4000.00000048999730001               1312    61400010                           LFSH903 1312AA            WBI9 R0069F  4000                              WSL20106L900FEAWSL-2010  0.0069 1  EA E3                B0XW00664283\r",
+  "rawValue": "   WSL20106L900FEA005433426503/29/13                                                       201312IL     4000.00000048999730001               1312    61400010                           LFSH903 1312AA            WBI9 R0069F  4000                              WSL20106L900FEAWSL-2010  0.0069 1  EA E3                B0XW00664283\r",
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "   WSL20106L900FEA005433426503/29/13                                                       201312IL     4000.00000048999730001               1312    61400010                           LFSH903 1312AA            WBI9 R0069F  4000                              WSL20106L900FEAWSL-2010  0.0069 1  EA E3                B0XW00664283␍"
+}

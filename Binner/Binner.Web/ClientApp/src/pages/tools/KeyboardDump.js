@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 import { Table, Button, Icon, Checkbox, Breadcrumb, Segment } from "semantic-ui-react";
+import { Clipboard } from "../../components/Clipboard";
 import _ from "underscore";
 import "./KeyboardDump.css";
 
@@ -12,6 +13,7 @@ export function KeyboardDump(props) {
   const [events, setEvents] = useState([]);
   const [preventDefault, setPreventDefault] = useState(true);
   const [inputs, setInputs] = useState({ keydown: true, keyup: false, console: false });
+  const [historyElements, setHistoryElements] = useState([]);
   const [historyStr, setHistoryStr] = useState([]);
   const [activeModifierValues, setActiveModifierValues] = useState([]);
 
@@ -161,18 +163,32 @@ export function KeyboardDump(props) {
               entity = '\u241f'; // unit separator
               break;
             default:
-              entity = htmlDecode(`&#x${val};`);
+              entity = htmlDecode(`&#x${val};`); // convert to unicode
           }
-          const str = (<span className="unicode red">{entity}</span>);
-          setHistoryStr(prev => [...prev, str]);
+          const el = (<span className="unicode red">{entity}</span>);
+          setHistoryElements(prev => [...prev, el]);
+          setHistoryStr(prev => prev + entity);
           setActiveModifierValues([]);
         }
         
         if (!hasModifier) {
-          if (e.keyCode === 13) key = (<span className="unicode">&#x240D;</span>); // lf
-          if (e.keyCode === 12) key = (<span className="unicode">&#x240A;</span>); // cr
-          if (e.keyCode === 9) key = (<span className="unicode red">&#x2409;</span>); // tab
-          setHistoryStr(prev => [...prev, key]);
+          setHistoryElements(prev => [...prev, key]);
+          let str = e.key;
+          switch(e.keyCode) {
+            case 13:
+              key = (<span className="unicode">&#x240D;</span>); // lf
+              str = "\n";
+              break;
+            case 12:
+              key = (<span className="unicode">&#x240A;</span>); // cr
+              str = "\r";
+              break;
+            case 9:
+              key = (<span className="unicode red">&#x2409;</span>); // tab
+              str = "\t";
+              break;
+          }
+          setHistoryStr(prev => prev + str);
         }
       }
     }
@@ -231,6 +247,7 @@ export function KeyboardDump(props) {
     e.preventDefault();
     e.stopPropagation();
     setEvents([]);
+    setHistoryElements([]);
     setHistoryStr([]);
   };
 
@@ -269,7 +286,8 @@ export function KeyboardDump(props) {
         <Checkbox label="keyup" name="keyup" checked={inputs.keyup} onChange={handleChange} style={{ paddingLeft: '10px' }} />
         <Checkbox label="console" name="console" checked={inputs.console} onChange={handleChange} style={{ paddingLeft: '10px' }} />
         <div className="history">
-          {historyStr.map((element, ckey) => (<span key={ckey}>{element}</span>))}
+          {historyStr?.length > 0 && <Clipboard text={historyStr} />}
+          {historyElements.map((element, ckey) => (<span key={ckey}>{element}</span>))}
         </div>
       </Segment>
 
