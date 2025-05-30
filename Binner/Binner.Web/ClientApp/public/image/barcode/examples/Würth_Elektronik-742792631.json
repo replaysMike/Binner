@@ -1,0 +1,19 @@
+{
+  "type": "datamatrix",
+  "labelType": "part",
+  "vendor": "DigiKey",
+  "value": {
+    "mfgPartNumber": "742792631",
+    "quantity": 4000,
+    "lotCode": "187040481417000",
+    "formattedDateCode": "2014-04-21"
+  },
+  "correctedValue": "[)>␞06␝1P742792631␝Q4000␝1T187040481417000␝16D20140421\r␄\r",
+  "rawValue": "[)>06\u001d1P742792631\u001dQ4000\u001d1T187040481417000\u001d16D20140421\r",
+  "length": 54,
+  "rsDetected": false,
+  "gsDetected": true,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "[)>06␝1P742792631␝Q4000␝1T187040481417000␝16D20140421␍"
+}

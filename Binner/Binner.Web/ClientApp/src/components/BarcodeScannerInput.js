@@ -9,6 +9,7 @@ import { AppEvents, Events } from "../common/events";
 import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
 import { detectLabel } from "../common/labelDetection";
+import { parse, format } from "date-fns";
 import _ from "underscore";
 const soundSuccess = new Audio('/audio/scan-success.mp3');
 const soundFailure = new Audio('/audio/scan-failure.mp3');
@@ -265,7 +266,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       // binner specific labels
       "BS", "BN", "BL", "B1", "B2", "BV",
       // digikey specific labels
-      "P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", 
+      "P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", "16D"
     ];
 
     let gsCodePresent = false;
@@ -312,9 +313,9 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     const isBinnerBarcode = formatNumber === expectedBinnerFormatNumber;
     const isDigiKeyBarcode = formatNumber === expectedFormatNumber;
     
-    // todo: investigate detection of other vendors part labels
     if (isBinnerBarcode) vendor = "Binner";
     if (isDigiKeyBarcode) vendor = "DigiKey";
+    const wurthVendorName = "Würth_Elektronik";
 
     let lastPosition = i - 1;
     let gsLines = [];
@@ -434,7 +435,14 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         case "9D":
           // date code
           parsedValue["dateCode"] = readValue;
-          labelType = "part";
+          break;
+        case "16D":
+          // formatted date code
+          try {
+            parsedValue["formattedDateCode"] = format(parse(readValue, 'yyyyMMdd', new Date()), 'yyyy-MM-dd');
+          } catch(err) {
+            parsedValue["formattedDateCode"] = readValue;
+          }
           break;
         case "1T":
           // lot code
@@ -471,6 +479,12 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         default:
           break;
       }
+    }
+
+    // special case for Wurth labels - they are encoded the same as DigiKey but use less information
+    if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.mfgPartNumber?.length>0 && parsedValue.quantity>=0 && parsedValue.lotCode?.length>0 && parsedValue.formattedDateCode?.length>0) {
+      vendor = wurthVendorName;
+      parsedValue["partNumber"] = parsedValue.mfgPartNumber;
     }
 
     const useFormatNumber = isBinnerBarcode ? expectedBinnerFormatNumber : expectedFormatNumber;
