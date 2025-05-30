@@ -101,6 +101,6 @@ export default function Stackpole(value) {
   
   return execute();
 };
-Stackpole.Name = 'Stackpole';
+Stackpole.Name = 'Stackpole Electronics Inc';
 Stackpole.LabelType = BarcodeLabelTypes.Delimited;
 Stackpole.FieldDelimiter = ',';

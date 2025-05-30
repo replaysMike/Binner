@@ -96,5 +96,5 @@ export default function Vishay(value) {
 
   return execute();
 };
-Vishay.Name = 'Vishay';
+Vishay.Name = 'Vishay Dale';
 Vishay.LabelType = BarcodeLabelTypes.FixedWidth;

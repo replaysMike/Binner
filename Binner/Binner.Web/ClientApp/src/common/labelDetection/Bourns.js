@@ -17,7 +17,7 @@ export default function Bourns(value) {
       reason: null,
     };
     if (sections.length === 4) {
-      // could be kemet label, check the data to see if it looks right
+      // could be Bourns label, check the data to see if it looks right
       let partNumber = ''; // part number, alphanumeric
       if (sections[0].substring(0, 1) === 'P')
         partNumber = sections[0].substring(1, sections[0].length - 1);
