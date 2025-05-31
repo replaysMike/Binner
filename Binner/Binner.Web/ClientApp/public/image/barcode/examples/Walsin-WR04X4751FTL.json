@@ -1,0 +1,19 @@
+{
+  "type": "code128",
+  "labelType": "part",
+  "vendor": "Walsin Technology Corporation",
+  "value": {
+    "partNumber": "WR04X4751FTL",
+    "quantity": 10000
+  },
+  "correctedValue": "WR04X4751FTL    10000\r",
+  "rawValue": "WR04X4751FTL    10000\r",
+  "length": 22,
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "success": true,
+  "logDate": "2025-05-31T01:59:02.534Z",
+  "rawValueFormatted": "WR04X4751FTL    10000␍"
+}

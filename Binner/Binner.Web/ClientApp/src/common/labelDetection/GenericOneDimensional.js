@@ -19,8 +19,8 @@ export default function GenericOneDimensional(value) {
     };
     if (!value?.length > 0) return detectValue;
     const knownIdentifiers = ['1P', '30P', '31P', 'N', '32P', '42P', '50P', '51P', 'C', 'T', 'Q', '2Q', '3Q', 'K', '4K', '13K', '16K', 'P', 'J', '1T', '9D', '16D', '17D', 'D', '4L', 'L', '10L', 'V', 'R'];
+    let cleanValue = value.replaceAll('\r', '');
     for (let i = 0; i < knownIdentifiers.length; i++) {
-      let cleanValue = value.replaceAll('\r', '');
       let valueStr;
       let knownIdentifier = knownIdentifiers[i];
       if (cleanValue.startsWith(knownIdentifier)) {

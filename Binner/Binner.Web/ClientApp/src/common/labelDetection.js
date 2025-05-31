@@ -8,13 +8,14 @@ import Rohm from "./labelDetection/Rohm";
 import LiteOn from "./labelDetection/LiteOn";
 import Panasonic from "./labelDetection/Panasonic";
 import Samsung from "./labelDetection/Samsung";
+import Walsin from "./labelDetection/Walsin";
 import GenericTokenized from "./labelDetection/GenericTokenized";
 import GenericOneDimensional from "./labelDetection/GenericOneDimensional";
 import _ from "underscore";
 
 export const detectLabel = (value) => {
   // add detectors here (order matters, place generic ones at the end)
-  let detectors = [Vishay, Rohm, Kemet, Bourns, Koa, Yageo, Stackpole, LiteOn, Panasonic, Samsung, GenericTokenized, GenericOneDimensional];
+  let detectors = [Vishay, Rohm, Kemet, Bourns, Koa, Yageo, Stackpole, LiteOn, Panasonic, Samsung, Walsin, GenericTokenized, GenericOneDimensional];
   //let detectors = [Yageo];
 
   let detectValue = {

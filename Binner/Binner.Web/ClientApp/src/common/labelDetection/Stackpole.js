@@ -30,7 +30,7 @@ export default function Stackpole(value) {
       detectValue = processSection(detectValue, section, s, sections.length);
     }
 
-    if (detectValue.parsedValue.partNumber?.length > 0 && detectValue.parsedValue.quantity >= 0) {
+    if (detectValue.parsedValue.partNumber?.length > 0 && detectValue.parsedValue.quantity != null && detectValue.parsedValue.quantity >= 0 && detectValue.dateCode !== null && detectValue.lot !== null) {
       detectValue.success = true;
       detectValue.type = 'pdf417';
       detectValue.labelType = 'part';
@@ -54,9 +54,8 @@ export default function Stackpole(value) {
           case 'Q':
             // value must be a number
             valueStr = section.substring(1, section.length);
-            if (isNumeric(valueStr)) {
-              detectValue.parsedValue.quantity = parseInt(valueStr);
-            }
+            if (!isNumeric(valueStr)) return { ...detectValue, reason: `Qty '${qtyStr}' not a number` };
+            detectValue.parsedValue.quantity = parseInt(valueStr);
             break;
           case 'P':
             // alternate part number
@@ -73,8 +72,8 @@ export default function Stackpole(value) {
             break;
           case '9D':
             // date code
-              valueStr = section.substring(2, section.length);
-              detectValue.parsedValue.dateCode = valueStr;
+            valueStr = section.substring(2, section.length);
+            detectValue.parsedValue.dateCode = valueStr;
             break;
           case '4L':
             // country of origin (COO)
