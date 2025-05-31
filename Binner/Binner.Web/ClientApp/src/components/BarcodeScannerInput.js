@@ -268,7 +268,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       // digikey specific labels
       "P", "1P", "30P", "P1", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", "16D",
       // non-digikey labels
-      "K", "4K", "2Q", "3Q", "16K", "42P", "17D", "10L", "13K", "2E", "11N", "20T", "10V", "14D", "6D", "31P", "V", "3S"
+      "K", "4K", "2Q", "3Q", "16K", "42P", "17D", "11D", "10L", "13K", "2E", "11N", "20T", "10V", "14D", "6D", "31P", "V", "3S", "T"
     ];
 
     let gsCodePresent = false;
@@ -318,6 +318,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     const isDigiKeyBarcode = formatNumber === expectedFormatNumber;
     
     const wurthVendorName = "Würth_Elektronik";
+    const taiyoYudenVendorName = "Taiyo Yuden";
     if (isBinnerBarcode) vendor = "Binner";
     if (isDigiKeyBarcode) vendor = "DigiKey";
     if (hasNoFormatNumber) {
@@ -512,6 +513,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           parsedValue["manufacturer"] = readValue;
           break;
         case "17D":
+        case "11D": // seen on Taiyo Yuden
           // manufacture date
           parsedValue["manufactureDate"] = readValue;
           break;
@@ -556,6 +558,10 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           // package id
           parsedValue["packageId"] = readValue;
           break;
+        case "T":
+          // batch number, seen on Taiyo Yuden
+          parsedValue["batchNo"] = readValue;
+          break;
         default:
           break;
       }
@@ -565,6 +571,12 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.mfgPartNumber?.length>0 && parsedValue.quantity>=0 && parsedValue.lotCode?.length>0 && parsedValue.formattedDateCode?.length>0) {
       vendor = wurthVendorName;
       parsedValue["partNumber"] = parsedValue.mfgPartNumber;
+    }
+
+    // special case for Taiyio Yuden labels - they are encoded the same as DigiKey but use less information
+    if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.description?.length && parsedValue.manufactureDate?.length > 0 && parsedValue.quantity >= 0 && parsedValue.batchNo?.length > 0 && parsedValue.countryOfOrigin?.length > 0) {
+      vendor = taiyoYudenVendorName;
+      parsedValue["partNumber"] = parsedValue.description;
     }
 
     const useFormatNumber = isBinnerBarcode ? expectedBinnerFormatNumber : expectedFormatNumber;

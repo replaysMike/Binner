@@ -115,6 +115,7 @@ export default function GenericOneDimensional(value) {
             break;
           case 'T':
             // for some Samsung reels, this is the part number
+            // Taiyo Yuden calls this batch number
             if (cleanValue.length > 5) {
               valueStr = value.substring(1, cleanValue.length);
               detectValue.success = true;

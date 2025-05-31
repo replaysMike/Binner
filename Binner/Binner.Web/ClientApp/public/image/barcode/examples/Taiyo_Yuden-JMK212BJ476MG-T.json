@@ -1,0 +1,21 @@
+{
+  "type": "datamatrix",
+  "labelType": "Unknown",
+  "vendor": "Taiyo Yuden",
+  "value": {
+    "description": "RJC5164048/47",
+    "manufactureDate": "201627",
+    "quantity": 3000,
+    "batchNo": "Z531502225",
+    "countryOfOrigin": "MY",
+    "partNumber": "RJC5164048/47"
+  },
+  "correctedValue": "[)>␞06␝PRJC5164048/47␝11D201627␝Q3000␝TZ531502225␝4LMY\r␄\r",
+  "rawValue": "[)>06\u001dPRJC5164048/47\u001d11D201627\u001dQ3000\u001dTZ531502225\u001d4LMY\r",
+  "length": 54,
+  "rsDetected": false,
+  "gsDetected": true,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "[)>06␝PRJC5164048/47␝11D201627␝Q3000␝TZ531502225␝4LMY␍"
+}
