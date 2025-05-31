@@ -84,5 +84,5 @@ export default function Samsung(value) {
   return execute();
 };
 Samsung.Name = 'Samsung Electronics';
-Samsung.LabelType = BarcodeLabelTypes.Delimited;
+Samsung.LabelType = BarcodeLabelTypes.Multiple;
 Samsung.FieldDelimiter = '/';
