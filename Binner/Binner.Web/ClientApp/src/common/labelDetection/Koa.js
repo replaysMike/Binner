@@ -119,6 +119,6 @@ export default function Koa(value) {
 
   return execute();
 };
-Koa.Name = 'KOA';
+Koa.Name = 'KOA Speer Electronics, Inc';
 Koa.LabelType = BarcodeLabelTypes.Delimited;
 Koa.FieldDelimiter = ':';
