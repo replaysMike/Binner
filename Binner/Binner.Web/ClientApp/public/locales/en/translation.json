@@ -48,6 +48,7 @@
       "partExists": "This <1>part</1> <3>already exists</3> in your inventory.",
       "integrations": "Integrations",
       "integrationsMessage": "Connected integrations may require additional information about your part. You can specify them here.",
+      "addOtherName": "Add Other Name",
       "placeholder": {
         "location": "Home lab",
         "keywords": "op amp",
@@ -76,7 +77,8 @@
         "footprintName": "Associate a KiCad footprint name with this part. Both the footprint group and footprint name should be specified and separated using a colon.<1/><2>Example:</2> <4>Package_DIP:DIP-8_W7.62mm</4>",
         "extensionValue": "Associate a custom value with this part",
         "apiRefresh": "Refresh the part information from external APIs. All API provided fields will be overwritten.",
-        "value": "The parametric value of the part. Example: a resistor may have a value of '4.7k'"
+        "value": "The parametric value of the part. Example: a resistor may have a value of '4.7k'",
+        "partAddedUpdated": ""
       }
     },
     "lowInventory": {
@@ -663,9 +665,14 @@
     "bulkScanModal": {
       "autoIncrement": "Auto Increment",
       "rememberLocation": "Remember Location",
+      "alreadyScanned": "Part {{partNumber}} was already scanned. (qty: {{quantity}})",
       "popup": {
         "autoIncrement": "Auto increment of Bin Number 2",
-        "rememberLocation": "Repeat the location of each added part"
+        "rememberLocation": "Repeat the location of each added part",
+        "partAddedUpdated": "The part number being added/updated.",
+        "currentQuantity": "The quantity currently in your inventory.",
+        "newQuantity": "The quantity your inventory will be set to.",
+        "partOrigin": "The country of origin of the manufactured part."
       }
     },
     "duplicatePartModal": {
@@ -686,6 +693,20 @@
     },
     "hide": {
       "toggleShow": "Toggle show/hide"
+    },
+    "partCompliance": {
+      "title": "Part Compliance",
+      "description": "Listed below are all of the compliance standards for the part."
+    },
+    "partModels": {
+      "title": "Part Models",
+      "description":"Listed below are the CAD model downloads available for this part.",
+      "noResults": "No CAD models available."
+    },
+    "partParametrics": {
+      "title": "Part Parametrics",
+      "description": "Listed below are all of the electrical characteristics (parametrics) for the part.",
+      "noResults": "No parametrics available."
     }
   },
   "button": {
@@ -874,7 +895,24 @@
     "cacheAbsoluteExpirationMinutes": "Cache Absolute Expiration",
     "cacheSlidingExpirationMinutes": "Cache Sliding Expiration",
     "country": "Country",
-    "applicationSecret": "Application Secret"
+    "applicationSecret": "Application Secret",
+    "rohsStatus": "RoHS Status",
+    "reachStatus": "Reach Status",
+    "exportControlClassNumber": "Export Control Class (ECCN)",
+    "htsusCode": "Harmonized Tariff (HTS)",
+    "moistureSensitivity": "Moisture Sensitivity (MSL)",
+    "otherNames": "Other Names",
+    "productStatus": "Product Status",
+    "series": "Series",
+    "value": "Value",
+    "baseProductNumber": "Base Product Number",
+    "download": "Download",
+    "modelType": "ModelType",
+    "units": "Units",
+    "valueNumber": "Number",
+    "stock": "Stock",
+    "newQuantityShort": "New Qty",
+    "viewProduct": "View Product"
   },
   "message": {
     "noPartsAdded": "No parts added.",
@@ -899,7 +937,8 @@
     "noOutOfStockParts": "No out of stock parts.",
     "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts.",
     "orderImportCancelled": "Order import cancelled.",
-    "downloadFailed": "Download failed!"
+    "downloadFailed": "Download failed!",
+    "scanPartNew": "New part will be added to your inventory."
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",
@@ -929,7 +968,8 @@
       "deleteFile": "Delete File",
       "deletePart": "Delete Part",
       "clearScan": "Clear Scanned Parts",
-      "deleteCustomField": "Delete Custom Field"
+      "deleteCustomField": "Delete Custom Field",
+      "refreshPart": "Refresh Part Information"
     }    
   },
   "error": {
