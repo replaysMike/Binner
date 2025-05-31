@@ -1,0 +1,24 @@
+{
+  "type": "datamatrix",
+  "labelType": "part",
+  "vendor": "Lite-On Electronics",
+  "value": {
+    "customer": "",
+    "customerPartNumber": "",
+    "partNumber": "LTST-C191KGKT",
+    "lotCode": "2108404746",
+    "quantity": 5000,
+    "batch": "5/P/D",
+    "lpn": "RLC21032787551",
+    "dateCode": 2113,
+    "comment": "MADE IN CHINA"
+  },
+  "correctedValue": ";;LTST-C191KGKT;2108404746;5000;5/P/D;RLC21032787551;2113;MADE IN CHINA\r",
+  "rawValue": ";;LTST-C191KGKT;2108404746;5000;5/P/D;RLC21032787551;2113;MADE IN CHINA\r",
+  "length": 72,
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": ";;LTST-C191KGKT;2108404746;5000;5/P/D;RLC21032787551;2113;MADE IN CHINA␍"
+}
