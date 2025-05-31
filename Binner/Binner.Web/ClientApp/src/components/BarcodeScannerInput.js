@@ -268,7 +268,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       // digikey specific labels
       "P", "1P", "30P", "P1", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", "16D",
       // non-digikey labels
-      "K", "4K", "2Q", "3Q", "16K", "42P", "17D", "10L", "13K", "2E", "11N",
+      "K", "4K", "2Q", "3Q", "16K", "42P", "17D", "10L", "13K", "2E", "11N", "20T", "10V", "14D", "6D", "31P", "V", "3S"
     ];
 
     let gsCodePresent = false;
@@ -322,6 +322,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     if (isDigiKeyBarcode) vendor = "DigiKey";
     if (hasNoFormatNumber) {
       vendor = "Other";
+      // seen on Susumu, and some german suppliers
       gsCharCodes.push('@');
     }
 
@@ -515,6 +516,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           parsedValue["manufactureDate"] = readValue;
           break;
         case "10L":
+        case "10V":
           // manufacturer country
           parsedValue["manufacturerCountry"] = readValue;
           break;
@@ -529,6 +531,30 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         case "11N":
           // UL listed
           parsedValue["ulListed"] = readValue;
+          break;
+        case "20T":
+          // moisture level
+          parsedValue["moistureLevel"] = readValue;
+          break;
+        case "14D":
+          // expire date
+          parsedValue["expireDate"] = readValue;
+          break;
+        case "6D":
+          // date code
+          parsedValue["dateCode"] = readValue;
+          break;
+        case "31P":
+          // order code
+          parsedValue["orderCode"] = readValue;
+          break;
+        case "V":
+          // supplier id
+          parsedValue["supplierId"] = readValue;
+          break;
+        case "3S":
+          // package id
+          parsedValue["packageId"] = readValue;
           break;
         default:
           break;

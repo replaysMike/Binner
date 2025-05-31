@@ -18,7 +18,7 @@ export default function GenericOneDimensional(value) {
       reason: null
     };
     if (!value?.length > 0) return detectValue;
-    const knownIdentifiers = ['1P', '30P', '31P', '32P', '42P', '50P', '51P', 'T', 'Q', '2Q', '3Q', 'K', '4K', '13K', '16K', 'P', 'J', '1T', '9D', '16D', '17D', 'D', '4L', 'L', '10L', 'V', 'R'];
+    const knownIdentifiers = ['1P', '30P', '31P', 'N', '32P', '42P', '50P', '51P', 'C', 'T', 'Q', '2Q', '3Q', 'K', '4K', '13K', '16K', 'P', 'J', '1T', '9D', '16D', '17D', 'D', '4L', 'L', '10L', 'V', 'R'];
     for (let i = 0; i < knownIdentifiers.length; i++) {
       let cleanValue = value.replaceAll('\r', '');
       let valueStr;
@@ -39,6 +39,7 @@ export default function GenericOneDimensional(value) {
               return detectValue;
             }
             break;
+          case 'N': // seen on Susumu reels
           case '30P':
           case '31P':
             // for random reels, this is the part number
@@ -93,6 +94,21 @@ export default function GenericOneDimensional(value) {
               detectValue.certainty = 0.9;
               detectValue.parsedValue = {
                 manufacturerPartNumber: valueStr
+              };
+              return detectValue;
+            }
+            break;
+          case 'C':
+            // customer number
+            // seen on Susumu reels
+            if (cleanValue.length > 5) {
+              valueStr = cleanValue.substring(3, cleanValue.length);
+              detectValue.success = true;
+              detectValue.type = 'code128';
+              detectValue.labelType = 'part';
+              detectValue.certainty = 0.9;
+              detectValue.parsedValue = {
+                customerNumber: valueStr
               };
               return detectValue;
             }
