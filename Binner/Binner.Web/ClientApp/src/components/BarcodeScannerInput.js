@@ -266,7 +266,9 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       // binner specific labels
       "BS", "BN", "BL", "B1", "B2", "BV",
       // digikey specific labels
-      "P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", "16D"
+      "P", "1P", "30P", "P1", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", "16D",
+      // non-digikey labels
+      "K", "4K", "2Q", "3Q", "16K", "42P", "17D", "10L", "13K", "2E", "11N",
     ];
 
     let gsCodePresent = false;
@@ -305,17 +307,23 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     }
     // assert expected barcode format number
     const expectedFormatNumbers = [ expectedFormatNumber, expectedBinnerFormatNumber ];
+    let hasNoFormatNumber = false;
     if (!expectedFormatNumbers.includes(formatNumber)) {
       // error
       console.error(`BSI: Expected the 2D barcode format number of any [${expectedFormatNumbers.join()}]  but was ${formatNumber}`);
-      return {};
+      //return {};
+      hasNoFormatNumber = true;
     }
     const isBinnerBarcode = formatNumber === expectedBinnerFormatNumber;
     const isDigiKeyBarcode = formatNumber === expectedFormatNumber;
     
+    const wurthVendorName = "Würth_Elektronik";
     if (isBinnerBarcode) vendor = "Binner";
     if (isDigiKeyBarcode) vendor = "DigiKey";
-    const wurthVendorName = "Würth_Elektronik";
+    if (hasNoFormatNumber) {
+      vendor = "Other";
+      gsCharCodes.push('@');
+    }
 
     let lastPosition = i - 1;
     let gsLines = [];
@@ -334,7 +342,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     }
     if (gsLine.length > 0)
       gsLines.push(gsLine);
-    //console.log('gsLines', gsLines);
+    console.log('gsLines', gsLines);
 
     let invalidBarcodeDetected = false;
     // some older DigiKey barcodes are encoded incorrectly, and have a blank GSRS at the end. Filter them out.
@@ -475,6 +483,52 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         case "20Z":
           // reserved
           parsedValue["reserved"] = readValue;
+          break;
+        
+        // non-DigiKey label values
+        case "K":
+          // order number
+          parsedValue["orderNumber"] = readValue;
+          break;
+        case "4K":
+          // order number
+          parsedValue["orderItem"] = readValue;
+          break;
+        case "2Q":
+          // quantity other
+          parsedValue["quantityOther"] = readValue;
+          break;
+        case "3Q":
+          // quantity units (PCS)
+          parsedValue["quantityUnits"] = readValue;
+          break;
+        case "16K":
+          // delivery number
+          parsedValue["deliveryNo"] = readValue;
+          break;
+        case "42P":
+          // manufacturer
+          parsedValue["manufacturer"] = readValue;
+          break;
+        case "17D":
+          // manufacture date
+          parsedValue["manufactureDate"] = readValue;
+          break;
+        case "10L":
+          // manufacturer country
+          parsedValue["manufacturerCountry"] = readValue;
+          break;
+        case "13K":
+          // tariffNo
+          parsedValue["tariffNo"] = readValue;
+          break;
+        case "2E":
+          // ROHS classification code
+          parsedValue["rohsCode"] = readValue;
+          break;
+        case "11N":
+          // UL listed
+          parsedValue["ulListed"] = readValue;
           break;
         default:
           break;
