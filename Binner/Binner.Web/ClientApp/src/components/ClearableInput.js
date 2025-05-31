@@ -125,7 +125,7 @@ ClearableInput.propTypes = {
   /** !!! Note: All new props added must be excluded above. See propsToExclude */
   /** Event triggered when the clear button is clicked */
   onClear: PropTypes.func,
-  help: PropTypes.string,
+  help: PropTypes.any,
   helpWide: PropTypes.bool,
   helpWideVery: PropTypes.bool,
   helpPosition: PropTypes.oneOf(['top center', 'top left', 'top right', 'bottom center', 'bottom left', 'bottom right', 'right center', 'left center']),
