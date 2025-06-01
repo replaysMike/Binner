@@ -1,5 +1,6 @@
 import { BarcodeLabelTypes } from "../barcodeLabelTypes";
 import { isNumeric } from "../Utils";
+import _ from "underscore";
 
 /** Detect a Yageo part label */
 export default function Yageo(value) {

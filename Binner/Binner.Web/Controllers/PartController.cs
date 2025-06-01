@@ -90,7 +90,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -110,7 +110,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -153,7 +153,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -307,7 +307,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -321,7 +321,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -335,7 +335,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -502,7 +502,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -524,7 +524,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -575,7 +575,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
 
             return BadRequest();
@@ -841,7 +841,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -896,7 +896,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {
@@ -1012,7 +1012,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -1032,7 +1032,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -1052,7 +1052,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 

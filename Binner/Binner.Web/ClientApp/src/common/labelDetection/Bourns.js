@@ -1,5 +1,6 @@
 import { BarcodeLabelTypes } from "../barcodeLabelTypes";
 import { isNumeric } from "../Utils";
+import _ from "underscore";
 
 /** Detect a Bourns part label */
 export default function Bourns(value) {

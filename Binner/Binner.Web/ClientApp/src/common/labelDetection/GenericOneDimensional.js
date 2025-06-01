@@ -1,5 +1,6 @@
 import { BarcodeLabelTypes } from "../barcodeLabelTypes";
 import { isNumeric } from "../Utils";
+import _ from "underscore";
 import Samsung from "./Samsung";
 
 /** Detect a 1D part label */

@@ -1,5 +1,6 @@
 import { BarcodeLabelTypes } from "../barcodeLabelTypes";
 import { isNumeric } from "../Utils";
+import _ from "underscore";
 
 /** Detect a LiteOn part label */
 export default function LiteOn(value) {
