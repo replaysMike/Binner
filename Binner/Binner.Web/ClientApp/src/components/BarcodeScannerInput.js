@@ -321,6 +321,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     const wurthVendorName = "Würth_Elektronik";
     const taiyoYudenVendorName = "Taiyo Yuden";
     const texasInstrumentsVendorName = "Texas Instruments";
+    const nxpVendorName = "NXP Semiconductors";
     if (isBinnerBarcode) vendor = "Binner";
     if (isDigiKeyBarcode) vendor = "DigiKey";
     if (hasNoFormatNumber) {
@@ -632,6 +633,14 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       vendor = texasInstrumentsVendorName;
       parsedValue["partNumber"] = parsedValue.mfgPartNumber;
       parsedValue["description"] = parsedValue.mfgPartNumber;
+    }
+
+    // special case for NXP labels - they are encoded the same as DigiKey but use different short codes
+    if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.mfgPartNumber?.length && parsedValue.lotCode?.length > 0 && parsedValue.quantity >= 0 && parsedValue.dateCode?.length > 0 && parsedValue.orderCode?.length > 0 && parsedValue.lotNumber?.length > 0 && parsedValue.supplierPartNumber?.length > 0) {
+      //https://www.ersaelectronics.com/blog/a-360-degree-view-of-ti-labels
+      vendor = nxpVendorName;
+      parsedValue["partNumber"] = parsedValue.supplierPartNumber;
+      parsedValue["description"] = parsedValue.supplierPartNumber;
     }
 
     const useFormatNumber = isBinnerBarcode ? expectedBinnerFormatNumber : expectedFormatNumber;
