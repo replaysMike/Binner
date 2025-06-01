@@ -10,7 +10,7 @@ import "./ProtectedInput.css";
  * When barcode input is received, the control is masked out and content is replaced and cleared after a successful barcode scan.
  */
 export default function ProtectedInput({ clearOnScan = true, allowEnter = false, hideIcon = false, hideClearIcon = false, onClear, onIconClick, onBarcodeReadStarted, onBarcodeReadCancelled, onBarcodeReadReceived, ...rest }) {
-	const IsDebug = false;
+	const IsDebug = true;
 	const ScanSuccessClassRemovalMs = 2100;
 	const DefaultProtectedClassName = "protectedInput";
 	const DefaultIsScanningClassName = "isBarcodeScanning";
@@ -21,6 +21,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	const id = useMemo(() => rest.id || uuidv4(), [rest.id]);
 
 	const barcodeReadStarted = (e) => {
+    console.log('ProtectedInput.barcodeReadStarted', e);
     rest.onChange(e, { value: '' });
     inputReceiving.current = true;
 		//window.requestAnimationFrame(() => { inputReceiving.current = true; });
@@ -32,6 +33,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const barcodeReadCancelled = (e) => {
+    console.log('ProtectedInput.barcodeReadCancelled', e);
     inputReceiving.current = false;
     //window.requestAnimationFrame(() => { inputReceiving.current = false; });
 		if (IsDebug) console.debug(`PI: sending read cancelled id: ${id} dest: ${e.detail.destination.id}`);
@@ -42,6 +44,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const barcodeReadReceived = (e) => {
+    console.log('ProtectedInput.barcodeReadReceived', e.detail.destination, id);
     inputReceiving.current = false;
     //window.requestAnimationFrame(() => { inputReceiving.current = false; });
 		if (IsDebug) console.debug(`PI: sending read complete id: ${id} dest: ${e.detail.destination?.id}`);
@@ -58,20 +61,21 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
     }, ScanSuccessClassRemovalMs);
 		if (clearOnScan) {
 			// clear/restore the text input
-			rest.onChange(e, {...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: bufferedValue.current });
+      if (rest.onChange) rest.onChange(e, {...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: bufferedValue.current });
 		}
 		if (onBarcodeReadReceived) onBarcodeReadReceived(e);
 	};
 
 	useEffect(() => {
-		document.body.addEventListener(Events.BarcodeReading, barcodeReadStarted);
+    // todo: why does this break things????????????????????
+		/*document.body.addEventListener(Events.BarcodeReading, barcodeReadStarted);
 		document.body.addEventListener(Events.BarcodeReadingCancelled, barcodeReadCancelled);
 		document.body.addEventListener(Events.BarcodeReceived, barcodeReadReceived);
 		return () => {
 			document.body.removeEventListener(Events.BarcodeReading, barcodeReadStarted);
 			document.body.removeEventListener(Events.BarcodeReadingCancelled, barcodeReadCancelled);
 			document.body.removeEventListener(Events.BarcodeReceived, barcodeReadReceived);
-		};
+		};*/
 	}, []);
 
 	const internalOnChange = (e, control) => {

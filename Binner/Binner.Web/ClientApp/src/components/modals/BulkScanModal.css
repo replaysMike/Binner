@@ -195,3 +195,16 @@ body:focus #bulkScanModal.ui.modal {
 .animated-border {
   animation: rotate 4s linear infinite, opacityChange 3s infinite alternate;
 }
+
+.quantity {
+  padding: 2px;
+  margin: 0;
+  line-height: 1em;
+}
+
+.quantity.stock {
+}
+
+.quantity.added {
+  font-weight: 700;
+}

@@ -8,7 +8,7 @@ import ProtectedInput from "../ProtectedInput";
 import PropTypes from "prop-types";
 import { toast } from "react-toastify";
 import { Clipboard } from "../Clipboard";
-import { formatCurrency } from "../../common/Utils";
+import { formatCurrency, formatNumber, isNumeric } from "../../common/Utils";
 import "./BulkScanModal.css";
 // overrides BarcodeScannerInput audio support
 const enableSound = true;
@@ -69,22 +69,54 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
     setBulkScanSaving(rest.isBulkScanSaving);
   }, [rest.isBulkScanSaving]);
 
+  const updateQuantityOnly = useCallback((newQuantity) => {
+    const lastPartScanned = _.last(scannedParts);
+    if (lastPartScanned) {
+      toast.info(`Updated quantity of part '${lastPartScanned.partNumber}' from ${formatNumber(lastPartScanned.quantity)} to ${formatNumber(newQuantity)}`, { autoClose: 10000 });
+      setScannedParts(prev => prev.map(part => {
+        if (part.partNumber === lastPartScanned.partNumber)
+          part.quantity = newQuantity;
+        return part;
+      }));
+    }
+  }, [scannedParts]);
+
+  useEffect(() => {
+    // perform a quantity update of the last part added
+    if (rest.quantityInput > 0) {
+      updateQuantityOnly(rest.quantityInput);
+    }
+  }, [rest.quantityInput]);
+
+  useEffect(() => {
+    toast.dismiss();
+  }, [rest.isBarcodeReceiving]);
+  
+
   useEffect(() => {
     const doAutoIncrement = (str) => {
-      let parsedNum = parseInt(str);
-      if (!isNaN(parsedNum)) {
-        return parsedNum + 1;
-      }
-      return str;
+      const parsedNum = parseInt(str) || 0;
+      return parsedNum + 1;
     };
+
     const handleBarcodeInput = (barcodeparams) => {
       // process barcode input data
       toast.dismiss();
+
+      if (typeof barcodeparams !== 'object') {
+        console.error('handleBarcodeInput non-object value!', barcodeparams);
+        return;
+      }
+
       const { cleanPartNumber, input } = barcodeparams;
+      if (input === undefined) {
+        console.error('handleBarcodeInput received empty value!', barcodeparams);
+        return;
+      }
 
       // bulk scan add part
       const lastPart = _.last(scannedParts);
-      console.debug('input', input.value);
+      console.debug('input', input);
       const scannedPart = {
         id: scannedParts.length + 1,
         partNumber: cleanPartNumber,
@@ -106,14 +138,21 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
         dateAdded: new Date().getTime(),
         barcodeObject: input
       };
-      console.debug('scannedPart', scannedPart);
+      console.debug('part information', scannedPart);
       // stupid hack
       const els = document.getElementsByClassName('noMoreAnimation');
       for (var i = 0; i < els.length; i++)
         els[i].classList.remove('noMoreAnimation');
 
-      if (scannedPart.binNumber2 && autoIncrement)
-        scannedPart.binNumber2 = doAutoIncrement(scannedPart.binNumber2);
+      if (autoIncrement) {
+        // get the last part with a binNumber value
+        const validParts = _.filter(scannedParts, i => i.binNumber2 === null || typeof i.binNumber2 === 'number' || i.binNumber2.length === 0 || isNumeric(i.binNumber2));
+        const lastPartAdded = _.last(validParts);
+        if (lastPartAdded)
+          scannedPart.binNumber2 = doAutoIncrement(lastPartAdded.binNumber2);
+        else
+          scannedPart.binNumber2 = 1;
+      }
 
       const existingPartNumber = _.find(scannedParts, { partNumber: cleanPartNumber });
       if (existingPartNumber) {
@@ -178,7 +217,8 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
               scannedPart.description = localInventoryResponse.data[0].description;
               scannedPart.location = localInventoryResponse.data[0].location;
               scannedPart.binNumber = localInventoryResponse.data[0].binNumber;
-              scannedPart.binNumber2 = localInventoryResponse.data[0].binNumber2;
+              if (localInventoryResponse.data[0].binNumber2)
+                scannedPart.binNumber2 = localInventoryResponse.data[0].binNumber2; // only overwrite if a value exists
               if (localInventoryResponse.data[0].manufacturer)
                 scannedPart.manufacturer = localInventoryResponse.data[0].manufacturer;
               if (localInventoryResponse.data[0].manufacturerPartNumber)
@@ -444,9 +484,9 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
                   hoverable
                   content={<div>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', width: '100%' }}>
-                      <div style={{ flex: '1' }}><b>Added Qty:</b> <span style={{ color: 'red' }}>+{p.scannedQuantity}</span></div>
-                      <div style={{ flex: '1' }}><b>In Stock Qty:</b> {p.originalQuantity}</div>
-                      <div style={{ flex: '1' }}><b>New Qty:</b> {p.quantity}</div>
+                      <div style={{ flex: '1' }}><b>Added Qty:</b> <span style={{ color: 'red' }}>+{formatNumber(p.scannedQuantity)}</span></div>
+                      <div style={{ flex: '1' }}><b>In Stock Qty:</b> {formatNumber(p.originalQuantity)}</div>
+                      <div style={{ flex: '1' }}><b>New Qty:</b> {formatNumber(p.quantity)}</div>
                     </div>
                     {p.manufacturerPartNumber?.length > 0 && <div><b>Manufacturer Part Number:</b> {p.manufacturerPartNumber} <Clipboard text={p.manufacturerPartNumber} /></div>}
                     {p.manufacturer?.length > 0 && <div><b>Manufacturer:</b> {p.manufacturer} <Clipboard text={p.manufacturer} /></div>}
@@ -485,7 +525,8 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
                   />
               </Table.Cell>
               <Table.Cell collapsing textAlign="center" style={{ lineHeight: '2.5em', fontWeight: '500', color: '#666' }}>
-                {p.originalQuantity || '-'}
+                <div className="quantity stock">{formatNumber(p.originalQuantity) || '-'}</div>
+                <div className="quantity added">+{formatNumber(p.scannedQuantity) || '-'}</div>
               </Table.Cell>
               <Table.Cell collapsing textAlign="center">
                 <ProtectedInput
@@ -577,7 +618,7 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
         <Modal centered open={isOpen} onClose={handleBulkScanClose} className="bulkScanModal" id="bulkScanModal" tabIndex={1}>
           <Modal.Dimmer blurring className="focusCheck" centered>
             <div>
-              <span>{t('comp.bulkScanModal.notFocused', "Click on this window to give it focus")}</span>
+              <span>{t('comp.bulkScanModal.notFocused', "Click on this window to continue scanning")}</span>
               <div style={{marginTop: '20px'}}><Icon name="warning sign" color="red" size="huge" /></div>
             </div>
           </Modal.Dimmer>
@@ -620,14 +661,15 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
                     <div className="anim-item anim-item-md"></div>
                   </div>
                 </div>
-            <p>{rest.isBarcodeReceiving ? t('page.inventory.processing', "Processing...") : t('page.inventory.startScanning', "Start scanning parts...")}</p>
+            <p>{rest.isBarcodeReceiving ? t('comp.bulkScanModal.processing', "Processing...") : scannedParts.length > 0 ? t('comp.bulkScanModal.ready', "Ready.") : t('comp.bulkScanModal.startScanning', "Start scanning parts...")}</p>
               </div>
               <div style={{ textAlign: "center" }}>
                 <Form>
                   <div style={{ textAlign: 'right', height: '35px', width: '100%', marginBottom: '2px' }}>
                     <Form.Group style={{ justifyContent: 'end' }}>
-                      <Form.Field style={{ margin: 'auto 0' }}><Popup hoverable content={<p>{t('comp.bulkScanModal.popup.autoIncrement', "Auto increment of Bin Number 2")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.autoIncrement', "Auto Increment")} checked={autoIncrement} onChange={handleAutoIncrementChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
-                      <Form.Field style={{ margin: 'auto 0' }}><Popup content={<p>{t('comp.bulkScanModal.popup.rememberLocation', "Repeat the location of each added part")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.rememberLocation', "Remember Location")} checked={rememberLocation} onChange={handleRememberLocationChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
+                      <Form.Field style={{ margin: 'auto 0', flex: '1', textAlign: 'left', fontSize: '0.9em' }}>{t('label.partsScanned', "({{count}}) parts", { count: scannedParts?.length || 0 })}.</Form.Field>
+                      <Form.Field style={{ margin: 'auto 0' }}><Popup hoverable content={<p>{t('comp.bulkScanModal.popup.autoIncrement', "When selected, Bin Number 2 will auto increment if it's a numeric data type.")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.autoIncrement', "Auto Increment")} checked={autoIncrement} onChange={handleAutoIncrementChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
+                      <Form.Field style={{ margin: 'auto 0' }}><Popup content={<p>{t('comp.bulkScanModal.popup.rememberLocation', "When selected, repeat the location of the last added part.")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.rememberLocation', "Remember Location")} checked={rememberLocation} onChange={handleRememberLocationChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
                       <Form.Field>
                         <Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" color="green" /> {t('button.manualAdd', "Manual Add")}</Button>
                       </Form.Field>
@@ -665,6 +707,8 @@ BulkScanModal.propTypes = {
   onClose: PropTypes.func,
   /** Set the barcode input when received */
   barcodeInput: PropTypes.object,
+  /** Set the quantity input (for quantity only updates) */
+  quantityInput: PropTypes.number,
   /** Set this to true to open model */
   isOpen: PropTypes.bool,
   isBulkScanSaving: PropTypes.bool,

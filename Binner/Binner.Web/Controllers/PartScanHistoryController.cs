@@ -75,7 +75,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -96,7 +96,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -116,7 +116,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -138,7 +138,7 @@ namespace Binner.Web.Controllers
             }
             catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
     }

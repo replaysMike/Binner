@@ -174,6 +174,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [isBulkScanSaving, setBulkScanSaving] = useState(false);
   const [isBarcodeReceiving, setIsBarcodeReceiving] = useState(false);
   const [scannedPartsBarcodeInput, setScannedPartsBarcodeInput] = useState(null);
+  const [scannedPartsBarcodeQuantity, setScannedPartsBarcodeQuantity] = useState(null);
   const [datasheetMeta, setDatasheetMeta] = useState(null);
   //const [disableRendering, setDisableRendering] = useState(false);
   const disableRendering = useRef(false);
@@ -655,26 +656,44 @@ export function Inventory({ partNumber = "", ...rest }) {
 
   // for processing barcode scanner input
   const handleBarcodeInput = useCallback(async (e, input, allowReImport = false) => {
+    console.debug('barcode input received', input);
+
     if (!input?.value) return;
     toast.dismiss();
 
     let isBulkScanOpen = bulkScanIsOpenRef.current;
+    // if the last added part has no quantity value, assume that the next barcode with quantity only is for that item.
+    if (input.value?.quantity > 0 && !input.value?.partNumber && !input.value?.mfgPartNumber && !input.value?.description) {
+      if (isBulkScanOpen) {
+        console.debug('setting quantity only', input.value.quantity);
+        setScannedPartsBarcodeQuantity(input.value.quantity);
+        return;
+      } else {
+        // update the current part's quantity
+        console.debug('setting quantity only for current part', input.value.quantity);
+        toast.info(`Updated quantity from ${formatNumber(part.quantity)} to ${formatNumber(input.value.quantity)}`, { autoClose: 10000 });
+        setPart(prevPart => ({...prevPart, quantity: input.value.quantity }));
+        setIsDirty(true);
+        return;
+      }
+    }
+
     let allowQuantityUpdate = true;
-    setLastBarcodeScan(input);
-    console.debug('barcode input received', input);
     let cleanPartNumber = "";
     let shortId = "";
     let isBinnerLabel = false;
-    if (input.type === "datamatrix") {
-      // datamatrix codes contain additional information we can use directly. Could be a Binner label, or a DigiKey part label
 
+    setLastBarcodeScan(input);
+
+    if (input.type === "datamatrix" || input.type === 'qrcode' || input.type === 'pdf417') {
+      // datamatrix codes contain additional information we can use directly. Could be a Binner label, or a DigiKey part label, or any other supported data
       if (input.vendor === 'Binner') {
         isBinnerLabel = true;
-        allowQuantityUpdate = false; // binner labels should never add to quantity
+        allowQuantityUpdate = false; // binner labels should never add to quantity, todo: re-address this. will need to change when we add manufacturer quantity replacement labels
         // binner part label, the item is an inventory item. we want to search by shortId if it's encoded
         if (input.value.shortId) {
           console.debug('search by Binner shortid', input);
-          cleanPartNumber = input.value.partNumber;
+          cleanPartNumber = input.value?.partNumber;
           shortId = input.value.shortId;
         } else if (input.value.partNumber) {
           // search by part number
@@ -689,16 +708,19 @@ export function Inventory({ partNumber = "", ...rest }) {
         else if (input.value.supplierPartNumber && input.value.supplierPartNumber.length > 0) cleanPartNumber = input.value.supplierPartNumber;
         // use the description fallback, which works on older labels
         else if (input.value.description && input.value.description.length > 0) cleanPartNumber = input.value.description;
+      } else if (input.value && input.value.partNumber || input.value.mfgPartNumber) {
+        // it's some other type of label that's been parsed
+        cleanPartNumber = input.value?.partNumber || input.value?.mfgPartNumber;
       }
-    } else if (input.type === "code128") {
+    } else {
       // code128 are 1-dimensional codes that only contain a single alphanumeric string, usually a part number
-      cleanPartNumber = input.value;
-      console.debug('processing code128', cleanPartNumber);
+      cleanPartNumber = input.value?.partNumber || input.value?.mfgPartNumber || input.value;
+      console.debug(`processing ${input.type}`, cleanPartNumber);
     }
 
     // if we didn't receive a code we can understand, ignore it
     if (!cleanPartNumber || cleanPartNumber.length === 0) {
-      console.debug('no clean part number found', cleanPartNumber, input?.value?.quantity);
+      console.debug('no clean part number found', input, input?.vendor, input?.type, input?.partNumber, cleanPartNumber, input?.value?.quantity);
       if (enableSound && !isBulkScanOpen) soundFailure.play();
       return;
     }
@@ -2135,6 +2157,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         isOpen={bulkScanIsOpen}
         onClose={() => setBulkScanIsOpen(false)}
         barcodeInput={scannedPartsBarcodeInput}
+        quantityInput={scannedPartsBarcodeQuantity}
         isBulkScanSaving={isBulkScanSaving}
         onSave={handleSaveScannedParts}
         onBarcodeLookup={doBarcodeLookup}
