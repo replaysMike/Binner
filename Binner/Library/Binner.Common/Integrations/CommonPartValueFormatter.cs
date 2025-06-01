@@ -13,7 +13,7 @@ namespace Binner.Common.Integrations
         {
             if (string.IsNullOrEmpty(value))
                 return 0d;
-            var resultString = Regex.Match(value, @"[-\d.]+").Value; // detect negative numbers, digits with decimals
+            var resultString = Regex.Match(value, @"-?[0-9]\d*(\.\d+)?").Value; // detect negative numbers, digits with decimals
             if (double.TryParse(resultString, out var result))
                 return result;
             return 0d;

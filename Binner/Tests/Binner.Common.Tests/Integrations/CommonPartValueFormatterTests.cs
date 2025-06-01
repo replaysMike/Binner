@@ -38,6 +38,7 @@ namespace Binner.Common.Tests.Integrations
         [TestCase("0°C ~ 70°C", 0)]
         [TestCase("70°C", 70)]
         [TestCase("8-PDIP", 8)]
+        [TestCase("-18°C", -18)]
         public void ShouldDetectValueFromText(string input, double expected)
         {
             var result = CommonPartValueFormatter.DetectValueFromText(input);

@@ -20,12 +20,12 @@ import { PartParametricsModal } from "../components/modals/PartParametricsModal"
 import { PartModelsModal } from "../components/modals/PartModelsModal";
 import { PartComplianceModal } from "../components/modals/PartComplianceModal";
 import { PartMediaMemoized } from "../components/PartMediaMemoized";
-import { BulkScanModal } from "../components/BulkScanModal";
+import { BulkScanModal } from "../components/modals/BulkScanModal";
 import { BulkScanIconMemoized } from "../components/BulkScanIconMemoized";
 import { RecentParts } from "../components/RecentParts";
 import { PartSuppliersMemoized } from "../components/PartSuppliersMemoized";
 import { MatchingPartsMemoized } from "../components/MatchingPartsMemoized";
-import { DuplicatePartModal } from "../components/DuplicatePartModal";
+import { DuplicatePartModal } from "../components/modals/DuplicatePartModal";
 import { fetchApi } from "../common/fetchApi";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { addMinutes } from "../common/datetime";
@@ -172,6 +172,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
   const [lastBarcodeScan, setLastBarcodeScan] = useState(null);
   const [isBulkScanSaving, setBulkScanSaving] = useState(false);
+  const [isBarcodeReceiving, setIsBarcodeReceiving] = useState(false);
   const [scannedPartsBarcodeInput, setScannedPartsBarcodeInput] = useState(null);
   const [datasheetMeta, setDatasheetMeta] = useState(null);
   //const [disableRendering, setDisableRendering] = useState(false);
@@ -657,6 +658,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (!input?.value) return;
     toast.dismiss();
 
+    let isBulkScanOpen = bulkScanIsOpenRef.current;
     let allowQuantityUpdate = true;
     setLastBarcodeScan(input);
     console.debug('barcode input received', input);
@@ -697,7 +699,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     // if we didn't receive a code we can understand, ignore it
     if (!cleanPartNumber || cleanPartNumber.length === 0) {
       console.debug('no clean part number found', cleanPartNumber, input?.value?.quantity);
-      if (enableSound) soundFailure.play();
+      if (enableSound && !isBulkScanOpen) soundFailure.play();
       return;
     }
 
@@ -710,7 +712,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     } else if (validateResult === false) {
       // error occurred
       toast.error(`An error occurred while validating the barcode.`);
-      if (enableSound) soundFailure.play();
+      if (enableSound && !isBulkScanOpen) soundFailure.play();
       return;
     } else {
       // we have scanned this part before and validateResult contains an object.
@@ -718,11 +720,11 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
 
     // barcode scan successful
-    if (enableSound) soundSuccess.play();
+    if (enableSound && !isBulkScanOpen) soundSuccess.play();
     
     // add part
     console.debug('clean part number found through barcode', cleanPartNumber, input.value?.quantity);
-    if (bulkScanIsOpenRef.current) {
+    if (isBulkScanOpen) {
       // bulk scan add part
       setScannedPartsBarcodeInput({ cleanPartNumber, input });
     } else {
@@ -1879,7 +1881,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                       />
                     </Form.Field>
                     <Form.Field width={3}>
-                      <label>{t('label.ProductStatus', "Product Status")}</label>
+                      <label>{t('label.productStatus', "Product Status")}</label>
                       <Popup
                         content={<p>The product's status, usually <i>Active</i> or <i>Obsolete</i>.</p>}
                         trigger={<div><ClearableInput placeholder='Active' value={part.productStatus || ''} onChange={handleChange} name='productStatus' /></div>}
@@ -2138,6 +2140,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         onBarcodeLookup={doBarcodeLookup}
         onGetPartMetadata={doFetchPartMetadata}
         onInventoryPartSearch={doInventoryPartSearch}
+        isBarcodeReceiving={isBarcodeReceiving}
       />
       <PartParametricsModal 
         part={part}
@@ -2161,7 +2164,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       {/* FORM START */}
 
       <Form onSubmit={e => onSubmit(e, part)} className="inventory">
-        <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} enableSound={false} />
+        <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} enableSound={false} onReadStarted={() => setIsBarcodeReceiving(true)} onReadStopped={() => setIsBarcodeReceiving(false)} />
         {part && part.partId > 0 && (
           <Button
             type="button"

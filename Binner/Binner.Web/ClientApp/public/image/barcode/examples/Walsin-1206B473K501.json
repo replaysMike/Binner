@@ -1,0 +1,20 @@
+{
+  "type": "qrcode",
+  "labelType": "part",
+  "vendor": "Walsin Technology Corporation",
+  "value": {
+    "partNumber": "1206B473K501CTQ",
+    "quantity": 2000,
+    "lot": "130I263678D",
+    "date": "181029",
+    "dateFormatted": "18-10-29"
+  },
+  "correctedValue": "P1206B473K501CTQ2000L130I263678D181029\r",
+  "rawValue": "P1206B473K501CTQ2000L130I263678D181029\r",
+  "length": 39,
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "P1206B473K501CTQ2000L130I263678D181029␍"
+}

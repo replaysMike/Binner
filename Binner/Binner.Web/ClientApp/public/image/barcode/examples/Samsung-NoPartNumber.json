@@ -1,0 +1,20 @@
+{
+  "type": "code128",
+  "labelType": "part",
+  "vendor": "Samsung Electronics",
+  "value": {
+    "quantity": 4000,
+    "dateCode": 16,
+    "lotCode": "KX6EJ33"
+  },
+  "correctedValue": "KX6EJ3300160004000\r",
+  "rawValue": "KX6EJ3300160004000\r",
+  "length": 19,
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "success": true,
+  "logDate": "2025-05-30T23:39:39.036Z",
+  "rawValueFormatted": "KX6EJ3300160004000␍"
+}

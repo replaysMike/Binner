@@ -51,8 +51,11 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 		bufferedValue.current = bufferedValue.current?.replaceAll(e.detail.text, "");
 		inputRef.current.classList.remove(DefaultIsScanningClassName);
 		inputRef.current.classList.add(DefaultScanningCompleteClassName);
-		// remove class in a bit to allow animations to finish
-		setTimeout(() => { inputRef.current.classList.remove(DefaultScanningCompleteClassName); }, ScanSuccessClassRemovalMs);
+    // remove class in a bit to allow animations to finish
+    setTimeout(() => { 
+      if (inputRef.current?.classList)
+        inputRef.current.classList.remove(DefaultScanningCompleteClassName); 
+    }, ScanSuccessClassRemovalMs);
 		if (clearOnScan) {
 			// clear/restore the text input
 			rest.onChange(e, {...rest, clearOnScan, allowEnter, hideIcon, hideClearIcon, value: bufferedValue.current });

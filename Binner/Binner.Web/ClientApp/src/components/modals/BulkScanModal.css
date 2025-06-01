@@ -1,0 +1,197 @@
+.bulkScanModal .anim-box {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	transition: transform .6s ease-out;
+	animation-play-state: running;
+	background-color: #000;
+	overflow: hidden;
+}
+
+.bulkScanModal .anim-item {
+	display: inline-block;
+	background-color: #fff;
+	height: 100%;
+}
+
+.bulkScanModal .anim-item-sm {
+	width: 2px;
+	margin-right: 3px;
+}
+
+.bulkScanModal .anim-item-md {
+	width: 3px;
+	margin-right: 2px;
+}
+
+.bulkScanModal .anim-item-lg {
+	width: 5px;
+	margin-right: 5px;
+}
+
+.bulkScanModal .scanner {
+	width: 95%;
+	margin: 0 auto;
+	margin-top: -1px;
+	height: 1px;
+	background-color: red;
+	opacity: 0.7;
+	position: relative;
+	box-shadow: 0px 0px 2px 3px rgba(170, 11, 23, 0.4);
+	top: 50%;
+	animation-name: scan;
+	animation-duration: 2s;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+	animation-play-state: paused;
+}
+
+.bulkScanModal .scanner.animated {
+	animation-play-state: running;
+}
+
+@keyframes scan {
+	0% {
+			box-shadow: 0px 0px 4px 5px rgba(170, 11, 23, 0.49);
+			top: 50%;
+	}
+
+	25% {
+			box-shadow: 0px 6px 4px 5px rgba(170, 11, 23, 0.49);
+			top: 5px;
+	}
+
+	75% {
+			box-shadow: 0px -6px 4px 5px rgba(170, 11, 23, 0.49);
+			top: 98%;
+	}
+}
+
+.bulkScanModal .lastScannedPart {
+	transition-duration: 1s;
+	transition-property: background-color;
+	background-color: #dff1fe;
+}
+
+.bulkScanModal .lastScannedPart.scannedPartAnimation {
+	background-color: #2185d0;
+}
+
+.bulkScanModal .exists {
+	background-color: #f3b4b4;
+}
+
+body:focus #bulkScanModal.ui.modal {
+  border: 20px solid #0c0;
+}
+
+#bulkScanModal.ui.modal {
+  transition-property: border;
+  transition-duration: 500ms;
+  transition-timing-function: ease;
+}
+
+#bulkScanModal.ui.modal .focusCheck {
+  transition-property: border;
+  transition-duration: 500ms;
+  transition-timing-function: ease;
+  border: 4px dashed transparent;
+}
+
+#bulkScanModal.ui.modal:focus .focusCheck,
+#bulkScanModal.ui.modal:focus-within .focusCheck,
+#bulkScanModal.ui.modal:focus-visible .focusCheck {
+  visibility: hidden !important;
+}
+
+#bulkScanModal.ui.modal:not(:focus, :focus-within, :focus-visible) .focusCheck,
+#bulkScanModal.ui.modal.visible:not(:focus, :focus-within, :focus-visible) .focusCheck {
+  visibility: visible !important;
+  border: 4px dashed #f00;
+  text-align: center;
+  font-size: 1.5em;
+  color: #fff;
+}
+
+#bulkScanModal.ui.modal {
+  border: 20px solid #f00;
+}
+
+#bulkScanModal.ui.modal:focus {
+  border: 20px solid #0c0 !important;
+}
+
+#bulkScanModal.ui.modal:focus-within {
+  border: 20px solid #060;
+}
+
+#bulkScanModal.ui.modal:focus-visible {
+  border: 20px solid #060;
+}
+
+:root {
+--angle: 45deg;
+--opacity: 0.5;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.animated-border.visible {
+  border-image: conic-gradient(from var(--angle),
+        #1bd133 0deg 90deg,
+        #17af2b 90deg 180deg,
+        #128622 180deg 270deg,
+        #17af2b 270deg 360deg) 1 stretch;
+    background: rgb(255 255 255 / var(--opacity));
+}
+
+.animated-border {
+  border-color: white;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  padding: 2rem;
+  margin: auto;
+
+  display: grid;
+  place-content: center;
+  text-align: center;
+
+  font-size: 1.5em;
+
+  --border-size: 0.75rem;
+  border: var(--border-size) solid transparent;
+}
+
+@property --opacity {
+  syntax: "<number>";
+  initial-value: 0.5;
+  inherits: false;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes opacityChange {
+  to {
+    --opacity: 1;
+  }
+}
+
+@keyframes rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.animated-border {
+  animation: rotate 4s linear infinite, opacityChange 3s infinite alternate;
+}

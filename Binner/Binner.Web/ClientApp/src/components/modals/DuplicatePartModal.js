@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Modal } from "semantic-ui-react";
-import { DuplicateParts } from "../components/DuplicateParts";
+import { DuplicateParts } from "../DuplicateParts";
 import PropTypes from "prop-types";
 
 /**

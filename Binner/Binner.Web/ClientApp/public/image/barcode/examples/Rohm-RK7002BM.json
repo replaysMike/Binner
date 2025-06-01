@@ -1,0 +1,20 @@
+{
+  "type": "qrcode",
+  "labelType": "part",
+  "vendor": "Rohm",
+  "value": {
+    "partNumber": "RK7002BMT116",
+    "quantity": 3000,
+    "dateCode": "1752",
+    "lot": "E1019K",
+    "pbFree": "017"
+  },
+  "correctedValue": "RK7002BMT116       0030001752E1019K017                                                                            \r",
+  "rawValue": "RK7002BMT116       0030001752E1019K017                                                                            \r",
+  "length": 115,
+  "rsDetected": false,
+  "gsDetected": false,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "RK7002BMT116       0030001752E1019K017                                                                            ␍"
+}

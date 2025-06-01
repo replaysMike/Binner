@@ -9,6 +9,7 @@ import { AppEvents, Events } from "../common/events";
 import { fetchApi } from '../common/fetchApi';
 import { copyString } from "../common/Utils";
 import { detectLabel } from "../common/labelDetection";
+import { parse, format } from "date-fns";
 import _ from "underscore";
 const soundSuccess = new Audio('/audio/scan-success.mp3');
 const soundFailure = new Audio('/audio/scan-failure.mp3');
@@ -26,7 +27,7 @@ const MinKeystrokesToConsiderScanningEvent = 10;
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({ listening = true, minInputLength = MinBufferLengthToAccept, onReceived, helpUrl = "/help/scanning", swallowKeyEvent = true, passThrough, enableSound = true, config, onSetConfig, id, onDisabled }) {
+export function BarcodeScannerInput({ listening = true, minInputLength = MinBufferLengthToAccept, onReceived, helpUrl = "/help/scanning", swallowKeyEvent = true, passThrough, enableSound = true, config, onSetConfig, id, onDisabled, onReadStarted, onReadStopped }) {
   const [barcodeConfig, setBarcodeConfig] = useState(config || {
     enabled: true,
     isDebug: DefaultIsDebug,
@@ -85,17 +86,20 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     // reset key buffer
     keyBufferRef.current.length = 0;
 
-    processStringInput(e, result);
-    const maxTime = getMaxValueFast(keyTimes.current, 1);
-    const sum = getSumFast(keyTimes.current, 1);
-    if (barcodeConfig.isDebug)
-      console.debug(`BSI: keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
-    else
-      console.debug(`BSI: Barcode event processed in ${sum}ms`);
-    keyTimes.current = [];
+    if (result) {
+      processStringInput(e, result);
+      const maxTime = getMaxValueFast(keyTimes.current, 1);
+      const sum = getSumFast(keyTimes.current, 1);
+      if (barcodeConfig.isDebug)
+        console.debug(`BSI: keytimes maxtime2 '${maxTime}' sum: ${sum}`, keyTimes.current);
+      else
+        console.debug(`BSI: Barcode event processed in ${sum}ms`);
+      keyTimes.current = [];
+  }
   };
 
   const processStringInput = (e, result) => {
+    if (!result) return;
     const barcodeText = result.barcodeText;
     const text = result.text;
     // process raw value into an input object with decoded information
@@ -114,6 +118,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       onReceived(e, input);
       // fire a domain event
       AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text }, id || "BarcodeScannerInput", sourceElementRef.current);
+      if (onReadStopped) onReadStopped({ barcode: input, text: text }, id || "BarcodeScannerInput", sourceElementRef.current);
       sourceElementRef.current = null;
     } else {
       console.warn('BSI: no scan found, filtered.');
@@ -206,7 +211,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       labelType = parseResult.labelType;
     } else {
       // possible 1D barcode
-      console.debug('possible 1D code...');
+      console.debug('possible 1D or 2D code...');
       parsedValue = value.replace("\n", "").replace("\r", "");
       // try to detect if we know what kind of label it is
       let detectedValues = { success: false };
@@ -233,6 +238,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       value: parsedValue,
       correctedValue: correctedValue,
       rawValue: value,
+      length: value?.length || 0,
       rsDetected,
       gsDetected,
       eotDetected,
@@ -261,7 +267,9 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       // binner specific labels
       "BS", "BN", "BL", "B1", "B2", "BV",
       // digikey specific labels
-      "P", "1P", "30P", "P1", "K", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", 
+      "P", "1P", "30P", "P1", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", "16D",
+      // non-digikey labels
+      "K", "4K", "2Q", "3Q", "16K", "42P", "17D", "11D", "10L", "13K", "2E", "11N", "20T", "10V", "14D", "6D", "31P", "V", "3S", "T"
     ];
 
     let gsCodePresent = false;
@@ -300,17 +308,25 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     }
     // assert expected barcode format number
     const expectedFormatNumbers = [ expectedFormatNumber, expectedBinnerFormatNumber ];
+    let hasNoFormatNumber = false;
     if (!expectedFormatNumbers.includes(formatNumber)) {
       // error
       console.error(`BSI: Expected the 2D barcode format number of any [${expectedFormatNumbers.join()}]  but was ${formatNumber}`);
-      return {};
+      //return {};
+      hasNoFormatNumber = true;
     }
     const isBinnerBarcode = formatNumber === expectedBinnerFormatNumber;
     const isDigiKeyBarcode = formatNumber === expectedFormatNumber;
     
-    // todo: investigate detection of other vendors part labels
+    const wurthVendorName = "Würth_Elektronik";
+    const taiyoYudenVendorName = "Taiyo Yuden";
     if (isBinnerBarcode) vendor = "Binner";
     if (isDigiKeyBarcode) vendor = "DigiKey";
+    if (hasNoFormatNumber) {
+      vendor = "Other";
+      // seen on Susumu, and some german suppliers
+      gsCharCodes.push('@');
+    }
 
     let lastPosition = i - 1;
     let gsLines = [];
@@ -329,7 +345,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     }
     if (gsLine.length > 0)
       gsLines.push(gsLine);
-    //console.log('gsLines', gsLines);
+    console.log('gsLines', gsLines);
 
     let invalidBarcodeDetected = false;
     // some older DigiKey barcodes are encoded incorrectly, and have a blank GSRS at the end. Filter them out.
@@ -430,7 +446,14 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         case "9D":
           // date code
           parsedValue["dateCode"] = readValue;
-          labelType = "part";
+          break;
+        case "16D":
+          // formatted date code
+          try {
+            parsedValue["formattedDateCode"] = format(parse(readValue, 'yyyyMMdd', new Date()), 'yyyy-MM-dd');
+          } catch(err) {
+            parsedValue["formattedDateCode"] = readValue;
+          }
           break;
         case "1T":
           // lot code
@@ -464,9 +487,97 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           // reserved
           parsedValue["reserved"] = readValue;
           break;
+        
+        // non-DigiKey label values
+        case "K":
+          // order number
+          parsedValue["orderNumber"] = readValue;
+          break;
+        case "4K":
+          // order number
+          parsedValue["orderItem"] = readValue;
+          break;
+        case "2Q":
+          // quantity other
+          parsedValue["quantityOther"] = readValue;
+          break;
+        case "3Q":
+          // quantity units (PCS)
+          parsedValue["quantityUnits"] = readValue;
+          break;
+        case "16K":
+          // delivery number
+          parsedValue["deliveryNo"] = readValue;
+          break;
+        case "42P":
+          // manufacturer
+          parsedValue["manufacturer"] = readValue;
+          break;
+        case "17D":
+        case "11D": // seen on Taiyo Yuden
+          // manufacture date
+          parsedValue["manufactureDate"] = readValue;
+          break;
+        case "10L":
+        case "10V":
+          // manufacturer country
+          parsedValue["manufacturerCountry"] = readValue;
+          break;
+        case "13K":
+          // tariffNo
+          parsedValue["tariffNo"] = readValue;
+          break;
+        case "2E":
+          // ROHS classification code
+          parsedValue["rohsCode"] = readValue;
+          break;
+        case "11N":
+          // UL listed
+          parsedValue["ulListed"] = readValue;
+          break;
+        case "20T":
+          // moisture level
+          parsedValue["moistureLevel"] = readValue;
+          break;
+        case "14D":
+          // expire date
+          parsedValue["expireDate"] = readValue;
+          break;
+        case "6D":
+          // date code
+          parsedValue["dateCode"] = readValue;
+          break;
+        case "31P":
+          // order code
+          parsedValue["orderCode"] = readValue;
+          break;
+        case "V":
+          // supplier id
+          parsedValue["supplierId"] = readValue;
+          break;
+        case "3S":
+          // package id
+          parsedValue["packageId"] = readValue;
+          break;
+        case "T":
+          // batch number, seen on Taiyo Yuden
+          parsedValue["batchNo"] = readValue;
+          break;
         default:
           break;
       }
+    }
+
+    // special case for Wurth labels - they are encoded the same as DigiKey but use less information
+    if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.mfgPartNumber?.length>0 && parsedValue.quantity>=0 && parsedValue.lotCode?.length>0 && parsedValue.formattedDateCode?.length>0) {
+      vendor = wurthVendorName;
+      parsedValue["partNumber"] = parsedValue.mfgPartNumber;
+    }
+
+    // special case for Taiyio Yuden labels - they are encoded the same as DigiKey but use less information
+    if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.description?.length && parsedValue.manufactureDate?.length > 0 && parsedValue.quantity >= 0 && parsedValue.batchNo?.length > 0 && parsedValue.countryOfOrigin?.length > 0) {
+      vendor = taiyoYudenVendorName;
+      parsedValue["partNumber"] = parsedValue.description;
     }
 
     const useFormatNumber = isBinnerBarcode ? expectedBinnerFormatNumber : expectedFormatNumber;
@@ -688,6 +799,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           //console.log('BSI: Starting event', keyBufferRef.current.length, maxTime);
           sourceElementRef.current = document.activeElement;
           AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
+          if (onReadStarted) onReadStarted(keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
         }
         isStartedReading.current = true;
       }
@@ -699,6 +811,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         setIsReceiving(false);
         if (isStartedReading.current && !isReadingComplete.current) {
           AppEvents.sendEvent(Events.BarcodeReadingCancelled, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
+          if (onReadStopped) onReadStopped(keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
           sourceElementRef.current = null;
         }
         isStartedReading.current = false;
@@ -792,7 +905,11 @@ BarcodeScannerInput.propTypes = {
   /** Fired when the configuration is updated */
   onSetConfig: PropTypes.func,
   /** Fired when barcode support is disabled */
-  onDisabled: PropTypes.func
+  onDisabled: PropTypes.func,
+  /** Fired when the barcode reading has started */
+  onReadStarted: PropTypes.func,
+  /** Fired when the barcode reading has stopped */
+  onReadStopped: PropTypes.func,
 };
 
 // store the debounce interval statically, so it can be modified and used by a memoized debounce function

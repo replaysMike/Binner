@@ -1,6 +1,6 @@
-import { Modal } from "semantic-ui-react";
-import { useTranslation } from "react-i18next";
 import React, { useState, useEffect } from "react";
+import { Modal, Button } from "semantic-ui-react";
+import { useTranslation } from "react-i18next";
 import reactStringReplace from "react-string-replace";
 import "./ErrorModal.css";
 
@@ -15,7 +15,7 @@ export default function ErrorModal(props) {
   }, [props.context]);
 
   const handleCloseErrorModal = () => {
-    if (window?.showErrorWindow) window.showErrorWindow();
+    setContext(null);
   };
 
   const hasErrorMessage = (message) => {
@@ -33,7 +33,7 @@ export default function ErrorModal(props) {
 		}
 	
     return (
-      <Modal centered open={hasErrorMessage(context.errorMessage)} onClose={handleCloseErrorModal} className="error-modal" dimmer="blurring">
+      <Modal centered open={hasErrorMessage(context.errorMessage)} className="error-modal" dimmer="blurring">
         <Modal.Header>{context.modalTitle}</Modal.Header>
         <Modal.Content>
           <Modal.Description>
@@ -56,6 +56,9 @@ export default function ErrorModal(props) {
             </footer>
           </Modal.Description>
         </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={handleCloseErrorModal}>{t('button.close', "Close")}</Button>
+        </Modal.Actions>
       </Modal>
     );
   }

@@ -87,7 +87,6 @@ export const deAuthenticateUserAccount = () => {
 			const newResponseData = await newResponse.clone().json();
 			// we have a new token
 			if (newResponseData.isAuthenticated) {
-        console.debug('received new jwt-token');
 				// use the new token
 				let userAccount = getUserAccount();
 				userAccount.accessToken = newResponseData.jwtToken;
@@ -101,11 +100,11 @@ export const deAuthenticateUserAccount = () => {
 				const finalResult = await fetchApi(requestContext.url, requestContext.data, true);
 				return finalResult.responseObject;
 			} else {
-        console.debug('failed to refresh token', newResponseData.message);
+        console.error('failed to refresh token', newResponseData.message);
 			}
 		}else if (newResponse.status === 401 || newResponse.status === 403) {
 			// failed to refresh token
-      console.debug('failed to refresh token 401', newResponse);
+      console.error('failed to refresh token 401', newResponse);
 		}
 
 		return newResponse;
