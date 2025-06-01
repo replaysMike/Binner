@@ -1,0 +1,24 @@
+{
+  "type": "datamatrix",
+  "labelType": "part",
+  "vendor": "Kyocera AVX",
+  "value": {
+    "materialId": "CM274662",
+    "description": "P210378BFKAX00",
+    "supplierId": "80036966",
+    "quantity": 4000,
+    "lotCode": "SV8211X347",
+    "manufactureDate": "2022-05-23",
+    "expireDate": "20240523",
+    "mfgPartNumber": "08052C103M4Z2A",
+    "partNumber": "08052C103M4Z2A"
+  },
+  "correctedValue": "[)>␞06␝SCM274662␝PP210378BFKAX00␝V80036966␝Q4000␝1TSV8211X347␝16D20220523␝14D20240523␝1P08052C103M4Z2A␝I␝\r␄\r",
+  "rawValue": "[)>06\u001dSCM274662\u001dPP210378BFKAX00\u001dV80036966\u001dQ4000\u001d1TSV8211X347\u001d16D20220523\u001d14D20240523\u001d1P08052C103M4Z2A\u001dI\u001d\r",
+  "length": 105,
+  "rsDetected": false,
+  "gsDetected": true,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "[)>06␝SCM274662␝PP210378BFKAX00␝V80036966␝Q4000␝1TSV8211X347␝16D20220523␝14D20240523␝1P08052C103M4Z2A␝I␝␍"
+}

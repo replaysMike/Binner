@@ -280,7 +280,6 @@ export default function GenericOneDimensional(value) {
             return detectValue;
           case '9D':
           case 'D':
-          case '16D':
             // date code
             if (cleanValue.length === 2 + 4) {
               valueStr = cleanValue.substring(2, cleanValue.length);
@@ -294,6 +293,7 @@ export default function GenericOneDimensional(value) {
               return detectValue;
             }
             return { ...detectValue, reason: `Date code wrong length '${cleanValue.length}' should be '6'` };
+          case '16D':
           case '17D':
             // manufactured date
             if (cleanValue.length > 5) {
