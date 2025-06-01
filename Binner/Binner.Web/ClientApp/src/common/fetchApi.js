@@ -42,7 +42,6 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
     url: rootUrl,
     data: fetchData
   };
-
   const responseBody = await fetch(requestContext.url, requestContext.data)
     .then((response) => {
       return handleJsonResponse(response, requestContext, isReissuedRequest);
@@ -52,7 +51,9 @@ export const fetchApi = async (url, data = { method: "GET", headers: {}, body: n
       if (data.catchErrors) {
         // swallow errors and let the caller handle them
         return response;
-      } else return Promise.reject(response);
+      }
+  
+      return Promise.reject(response);
     });
   return responseBody;
 };
@@ -164,6 +165,8 @@ export const getText = async (response) => {
 const handle401UnauthorizedAsync = async (response, requestContext, isReissuedRequest) => {
   if (response.status === 401 || response.status === 403) {
     // unauthorized
+
+    // if we tried to reissue and received a second 401, send user to login page
     if (isReissuedRequest) {
       deAuthenticateUserAccount();
       window.location.replace("/login");
@@ -224,7 +227,7 @@ const handle401UnauthorizedAsync = async (response, requestContext, isReissuedRe
         ok: false,
         response: await invokeLicensingErrorHandler(response)
       };
-    } else if (response.status >= 404) {
+    } else if (response.status >= 405) {
       // response has an error, we want to display a error modal box
       return {
         ok: false,
@@ -272,7 +275,10 @@ const invokeErrorHandler = async (response) => {
     status: response.status,
     ...responseObject
   };
-  if (window.showErrorWindow) window.showErrorWindow(errorObject);
+  if (window.showErrorWindow) {
+    window.showErrorWindow(errorObject);
+  }
+
   // return the original response along with the responseObject that was read
   return Promise.reject(wrapReturn(responseObject, response));
 };
