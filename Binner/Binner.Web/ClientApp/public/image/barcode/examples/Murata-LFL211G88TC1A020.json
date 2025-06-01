@@ -1,0 +1,29 @@
+{
+  "type": "datamatrix",
+  "labelType": "order",
+  "vendor": "Murata",
+  "value": {
+    "expireDate": "MM5NB92",
+    "description": "RTN202909/1",
+    "revision": "",
+    "mfgPartNumber": "LFL211G88TC1A020",
+    "internalMfgPartNumber": "LFL211G88TC1A020+CN/R01",
+    "quantity": 4000,
+    "lotCode": "OA641859B",
+    "packageId": "",
+    "orderNumber": "BEL/2339214",
+    "salesOrder": "L56C454",
+    "countryOfOrigin": "JP",
+    "dateCode": "27102016",
+    "supplierId": "25793",
+    "partNumber": "LFL211G88TC1A020"
+  },
+  "correctedValue": "[)>␞06␝10ZP␝3ZMM5NB92␝PRTN202909/1␝2P␝1PLFL211G88TC1A020␝6PLFL211G88TC1A020+CN/R01␝Q4000␝1TOA641859B␝3S␝KBEL/2339214␝1KL56C454␝3N5␝3L35␝4LJP␝6V␝99P1␝9D27102016␝V25793\r␄\r",
+  "rawValue": "[)>06\u001d10ZP\u001d3ZMM5NB92\u001dPRTN202909/1\u001d2P\u001d1PLFL211G88TC1A020\u001d6PLFL211G88TC1A020+CN/R01\u001dQ4000\u001d1TOA641859B\u001d3S\u001dKBEL/2339214\u001d1KL56C454\u001d3N5\u001d3L35\u001d4LJP\u001d6V\u001d99P1\u001d9D27102016\u001dV25793\r",
+  "length": 166,
+  "rsDetected": false,
+  "gsDetected": true,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "[)>06␝10ZP␝3ZMM5NB92␝PRTN202909/1␝2P␝1PLFL211G88TC1A020␝6PLFL211G88TC1A020+CN/R01␝Q4000␝1TOA641859B␝3S␝KBEL/2339214␝1KL56C454␝3N5␝3L35␝4LJP␝6V␝99P1␝9D27102016␝V25793␍"
+}
