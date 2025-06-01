@@ -27,7 +27,7 @@ const MinKeystrokesToConsiderScanningEvent = 10;
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
  */
-export function BarcodeScannerInput({ listening = true, minInputLength = MinBufferLengthToAccept, onReceived, helpUrl = "/help/scanning", swallowKeyEvent = true, passThrough, enableSound = true, config, onSetConfig, id, onDisabled }) {
+export function BarcodeScannerInput({ listening = true, minInputLength = MinBufferLengthToAccept, onReceived, helpUrl = "/help/scanning", swallowKeyEvent = true, passThrough, enableSound = true, config, onSetConfig, id, onDisabled, onReadStarted, onReadStopped }) {
   const [barcodeConfig, setBarcodeConfig] = useState(config || {
     enabled: true,
     isDebug: DefaultIsDebug,
@@ -118,6 +118,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       onReceived(e, input);
       // fire a domain event
       AppEvents.sendEvent(Events.BarcodeReceived, { barcode: input, text: text }, id || "BarcodeScannerInput", sourceElementRef.current);
+      if (onReadStopped) onReadStopped({ barcode: input, text: text }, id || "BarcodeScannerInput", sourceElementRef.current);
       sourceElementRef.current = null;
     } else {
       console.warn('BSI: no scan found, filtered.');
@@ -798,6 +799,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           //console.log('BSI: Starting event', keyBufferRef.current.length, maxTime);
           sourceElementRef.current = document.activeElement;
           AppEvents.sendEvent(Events.BarcodeReading, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
+          if (onReadStarted) onReadStarted(keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
         }
         isStartedReading.current = true;
       }
@@ -809,6 +811,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         setIsReceiving(false);
         if (isStartedReading.current && !isReadingComplete.current) {
           AppEvents.sendEvent(Events.BarcodeReadingCancelled, keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
+          if (onReadStopped) onReadStopped(keyBufferRef.current, id || "BarcodeScannerInput", sourceElementRef.current);
           sourceElementRef.current = null;
         }
         isStartedReading.current = false;
@@ -902,7 +905,11 @@ BarcodeScannerInput.propTypes = {
   /** Fired when the configuration is updated */
   onSetConfig: PropTypes.func,
   /** Fired when barcode support is disabled */
-  onDisabled: PropTypes.func
+  onDisabled: PropTypes.func,
+  /** Fired when the barcode reading has started */
+  onReadStarted: PropTypes.func,
+  /** Fired when the barcode reading has stopped */
+  onReadStopped: PropTypes.func,
 };
 
 // store the debounce interval statically, so it can be modified and used by a memoized debounce function

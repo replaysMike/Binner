@@ -172,6 +172,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [partExistsInInventory, setPartExistsInInventory] = useState(false);
   const [lastBarcodeScan, setLastBarcodeScan] = useState(null);
   const [isBulkScanSaving, setBulkScanSaving] = useState(false);
+  const [isBarcodeReceiving, setIsBarcodeReceiving] = useState(false);
   const [scannedPartsBarcodeInput, setScannedPartsBarcodeInput] = useState(null);
   const [datasheetMeta, setDatasheetMeta] = useState(null);
   //const [disableRendering, setDisableRendering] = useState(false);
@@ -2139,6 +2140,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         onBarcodeLookup={doBarcodeLookup}
         onGetPartMetadata={doFetchPartMetadata}
         onInventoryPartSearch={doInventoryPartSearch}
+        isBarcodeReceiving={isBarcodeReceiving}
       />
       <PartParametricsModal 
         part={part}
@@ -2162,7 +2164,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       {/* FORM START */}
 
       <Form onSubmit={e => onSubmit(e, part)} className="inventory">
-        <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} enableSound={false} />
+        <BarcodeScannerInput onReceived={handleBarcodeInput} minInputLength={4} swallowKeyEvent={false} enableSound={false} onReadStarted={() => setIsBarcodeReceiving(true)} onReadStopped={() => setIsBarcodeReceiving(false)} />
         {part && part.partId > 0 && (
           <Button
             type="button"
