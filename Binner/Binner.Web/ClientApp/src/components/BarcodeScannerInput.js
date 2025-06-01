@@ -269,7 +269,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       // digikey specific labels
       'P', '1P', '30P', 'P1', '1K', '10K', '11K', '4L', 'Q', '11Z', '12Z', '13Z', '20Z', '9D', '1T', '20Z', '16D',
       // non-digikey labels
-      'K', '4K', '2Q', '3Q', '16K', '42P', '17D', '11D', '10L', '13K', '2E', '11N', '20T', '10V', '14D', '16D', '6D', '31P', 'V', '3S', 'T', '31T', 'D', '20L', '21L', '22L', '23L', '2P', '4W', 'E', '3Z', 'L', 'S',
+      'K', '4K', '2Q', '3Q', '16K', '42P', '17D', '11D', '10L', '13K', '2E', '11N', '20T', '10V', '14D', '16D', '6D', '31P', 'V', '3S', 'T', '31T', 'D', '20L', '21L', '22L', '23L', '2P', '4W', 'E', '3Z', 'L', 'S', '6P',
     ];
 
     let gsCodePresent = false;
@@ -323,6 +323,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     const texasInstrumentsVendorName = "Texas Instruments";
     const nxpVendorName = "NXP Semiconductors";
     const kyoceraVendorName = "Kyocera AVX";
+    const murataVendorName = "Murata";
     if (isBinnerBarcode) vendor = "Binner";
     if (isDigiKeyBarcode) vendor = "DigiKey";
     if (hasNoFormatNumber) {
@@ -428,6 +429,10 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           // manufacturer part number
           parsedValue["mfgPartNumber"] = readValue;
           break;
+        case "6P":
+          // internal manufacturer part number (Murata)
+          parsedValue["internalMfgPartNumber"] = readValue;
+          break;
         case "1K":
           // Salesorder#
           parsedValue["salesOrder"] = readValue;
@@ -446,7 +451,8 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           // country of origin
           parsedValue["countryOfOrigin"] = readValue;
           break;
-        case "9D":
+        case "10D": // Murata
+        case "9D": // Murata
         case "D": // Texas Instruments
           // date code
           parsedValue["dateCode"] = readValue;
@@ -623,6 +629,12 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     // special case for NXP labels - they are encoded the same as DigiKey but use different short codes
     if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.mfgPartNumber?.length > 0 && parsedValue.quantity >= 0 && parsedValue.lotCode?.length > 0 && parsedValue.manufactureDate?.length > 0 && parsedValue.materialId?.length > 0 && parsedValue.expireDate?.length > 0 && parsedValue.manufactureDate?.length > 0) {
       vendor = kyoceraVendorName;
+      parsedValue["partNumber"] = parsedValue.mfgPartNumber;
+    }
+
+    // special case for Murata labels - they are encoded the same as DigiKey but use MORE information
+    if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.mfgPartNumber?.length > 0 && 'internalMfgPartNumber' in parsedValue && parsedValue.quantity >= 0 && parsedValue.lotCode?.length > 0 && parsedValue.dateCode?.length > 0 && parsedValue.countryOfOrigin?.length > 0) {
+      vendor = murataVendorName;
       parsedValue["partNumber"] = parsedValue.mfgPartNumber;
     }
 
