@@ -1,0 +1,24 @@
+{
+  "type": "datamatrix",
+  "labelType": "part",
+  "vendor": "NXP Semiconductors",
+  "value": {
+    "mfgPartNumber": "933714270653",
+    "supplierPartNumber": "74HC08D",
+    "quantity": 2500,
+    "dateCode": "1110",
+    "lotCode": "L0H4S5",
+    "orderCode": "1/240-1/260",
+    "lotNumber": "UXD",
+    "partNumber": "74HC08D",
+    "description": "74HC08D"
+  },
+  "correctedValue": "[)>␞06␝1P933714270653␝30P74HC08D␝Q2500␝9D1110␝1TL0H4S5␝30T␝30Q␝31P1/240-1/260␝31TUXD␝32TZ260␝30D␝31D␝33T16XPH113A4473\r␄\r",
+  "rawValue": "[)>06\u001d1P933714270653\u001d30P74HC08D\u001dQ2500\u001d9D1110\u001d1TL0H4S5\u001d30T\u001d30Q\u001d31P1/240-1/260\u001d31TUXD\u001d32TZ260\u001d30D\u001d31D\u001d33T16XPH113A4473\r",
+  "length": 117,
+  "rsDetected": false,
+  "gsDetected": true,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "[)>06␝1P933714270653␝30P74HC08D␝Q2500␝9D1110␝1TL0H4S5␝30T␝30Q␝31P1/240-1/260␝31TUXD␝32TZ260␝30D␝31D␝33T16XPH113A4473␍"
+}
