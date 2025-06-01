@@ -19,7 +19,7 @@ export default function GenericOneDimensional(value) {
       reason: null
     };
     if (!value?.length > 0) return detectValue;
-    const knownIdentifiers = ['1P', '30P', '31P', 'N', '32P', '42P', '50P', '51P', 'C', 'T', 'Q', '2Q', '3Q', 'K', '4K', '13K', '16K', 'P', 'J', '1T', '9D', '16D', '17D', 'D', '4L', 'L', '10L', 'V', 'R'];
+    const knownIdentifiers = ['1P', '30P', '31P', 'N', '32P', '42P', '50P', '51P', 'C', 'T', 'Q', '2Q', '3Q', 'K', '4K', '13K', '16K', 'P', 'J', '1T', '9D', '16D', '17D', 'D', '4L', 'L', '10L', 'V', 'R', '11K', '3S', 'T', '31T', 'D', '20L', '21L', '22L', '23L', '2P', '4W', 'E', '3Z', 'L'];
     let cleanValue = value.replaceAll('\r', '');
     for (let i = 0; i < knownIdentifiers.length; i++) {
       let valueStr;
@@ -268,7 +268,7 @@ export default function GenericOneDimensional(value) {
             };
             return detectValue;
           case 'V':
-            // version number
+            // version or supplierId number depending on the manufacturer
             valueStr = cleanValue.substring(2, cleanValue.length);
             detectValue.success = true;
             detectValue.type = 'code128';
@@ -331,6 +331,143 @@ export default function GenericOneDimensional(value) {
             detectValue.certainty = 0.9;
             detectValue.parsedValue = {
               reelId: valueStr,
+            };
+            return detectValue;
+          case '3S':
+            // package id
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              packageId: valueStr,
+            };
+            return detectValue;
+          case 'T':
+            // batch number, seen on Taiyo Yuden
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              batchNo: valueStr,
+            };
+            return detectValue;
+          // https://www.ersaelectronics.com/blog/a-360-degree-view-of-ti-labels
+          case '31T':
+            // lot number, seen on Texas Instruments
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              lotNumber: valueStr,
+            };
+            return detectValue;
+          case '4W':
+            // turnkey ('TKY'="Full Turnkey processing",'NTY'="Non-Turnkey",'SWR'="Special Work Request"), seen on Texas Instruments
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              turnkey: valueStr,
+            };
+            return detectValue;
+          case '2P':
+            // revision, seen on Texas Instruments
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              revision: valueStr,
+            };
+            return detectValue;
+          case '20L':
+            // Chip Source origin (CSO) 'MH8', seen on Texas Instruments
+            // specific fabrication facility location
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              chipSourceOrigin: valueStr,
+            };
+            return detectValue;
+          case '21L':
+            // Chip country of origin (CCO) 'JPN', seen on Texas Instruments
+            // country of the fabrication facility
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              chipCountryOrigin: valueStr,
+            };
+            return detectValue;
+          case '22L':
+            // Assembly source origin (ASO) 'QAB', seen on Texas Instruments
+            // specific assembly factory
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              assemblySourceOrigin: valueStr,
+            };
+            return detectValue;
+          case '23L':
+            // Assembly country of origin (ACO) 'PHL', seen on Texas Instruments
+            // country the assembly factory is in
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              assemblyCountryOrigin: valueStr,
+            };
+            return detectValue;
+          case 'E':
+            // ROHS clasification code (4), seen on Texas Instruments
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              rohsCode: valueStr,
+            };
+            return detectValue;
+          case '3Z':
+            // Expiry date code, delimited (2/260C/1YEAR;//;022319), seen on Texas Instruments
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              expireDate: valueStr,
+            };
+            return detectValue;
+          case 'L':
+            // destination warehouse, (1518), seen on Texas Instruments
+            valueStr = cleanValue.substring(1, cleanValue.length);
+            detectValue.success = true;
+            detectValue.type = 'code128';
+            detectValue.labelType = 'part';
+            detectValue.certainty = 0.9;
+            detectValue.parsedValue = {
+              destinationWarehouse: valueStr,
             };
             return detectValue;
           default:

@@ -265,11 +265,11 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     let vendor = "Unknown";
     const controlChars = [
       // binner specific labels
-      "BS", "BN", "BL", "B1", "B2", "BV",
+      'BS', 'BN', 'BL', 'B1', 'B2', 'BV',
       // digikey specific labels
-      "P", "1P", "30P", "P1", "1K", "10K", "11K", "4L", "Q", "11Z", "12Z", "13Z", "20Z", "9D", "1T", "20Z", "16D",
+      'P', '1P', '30P', 'P1', '1K', '10K', '11K', '4L', 'Q', '11Z', '12Z', '13Z', '20Z', '9D', '1T', '20Z', '16D',
       // non-digikey labels
-      "K", "4K", "2Q", "3Q", "16K", "42P", "17D", "11D", "10L", "13K", "2E", "11N", "20T", "10V", "14D", "6D", "31P", "V", "3S", "T"
+      'K', '4K', '2Q', '3Q', '16K', '42P', '17D', '11D', '10L', '13K', '2E', '11N', '20T', '10V', '14D', '6D', '31P', 'V', '3S', 'T', '31T', 'D', '20L', '21L', '22L', '23L', '2P', '4W', 'E', '3Z', 'L',
     ];
 
     let gsCodePresent = false;
@@ -320,6 +320,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     
     const wurthVendorName = "Würth_Elektronik";
     const taiyoYudenVendorName = "Taiyo Yuden";
+    const texasInstrumentsVendorName = "Texas Instruments";
     if (isBinnerBarcode) vendor = "Binner";
     if (isDigiKeyBarcode) vendor = "DigiKey";
     if (hasNoFormatNumber) {
@@ -377,7 +378,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       }
 
       /** NOTE: supported commands below must be present in the controlChars array */
-      //console.log('readCommandType', i, readCommandType, readControlChars);
+      // https://static.spiceworks.com/attachments/post/0016/2204/data_dictionary.pdf
       switch (readCommandType) {
         case "BS":
           // Binner short id
@@ -436,14 +437,15 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           labelType = "order";
           break;
         case "11K":
-          // don't know
-          parsedValue["unknown"] = readValue;
+          // delivery note, seen on Texas Instruments
+          parsedValue["deliveryNote"] = readValue;
           break;
         case "4L":
           // country of origin
           parsedValue["countryOfOrigin"] = readValue;
           break;
         case "9D":
+        case "D": // Texas Instruments
           // date code
           parsedValue["dateCode"] = readValue;
           break;
@@ -552,7 +554,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
           parsedValue["orderCode"] = readValue;
           break;
         case "V":
-          // supplier id
+          // supplier id, seen on Texas Instruments
           parsedValue["supplierId"] = readValue;
           break;
         case "3S":
@@ -562,6 +564,50 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         case "T":
           // batch number, seen on Taiyo Yuden
           parsedValue["batchNo"] = readValue;
+          break;
+        case "31T":
+          // lot number, seen on Texas Instruments
+          parsedValue["lotNumber"] = readValue;
+          break;
+        case "4W":
+          // turnkey ('TKY'="Full Turnkey processing",'NTY'="Non-Turnkey",'SWR'="Special Work Request"), seen on Texas Instruments
+          parsedValue["turnkey"] = readValue;
+          break;
+        case "2P":
+          // revision, seen on Texas Instruments
+          parsedValue["revision"] = readValue;
+          break;
+        case "20L":
+          // Chip Source origin (CSO) 'MH8', seen on Texas Instruments
+          // specific fabrication facility location
+          parsedValue["chipSourceOrigin"] = readValue;
+          break;
+        case "21L":
+          // Chip country of origin (CCO) 'JPN', seen on Texas Instruments
+          // country of the fabrication facility
+          parsedValue["chipCountryOrigin"] = readValue;
+          break;
+        case "22L":
+          // Assembly source origin (ASO) 'QAB', seen on Texas Instruments
+          // specific assembly factory
+          parsedValue["assemblySourceOrigin"] = readValue;
+          break;
+        case "23L":
+          // Assembly country of origin (ACO) 'PHL', seen on Texas Instruments
+          // country the assembly factory is in
+          parsedValue["assemblyCountryOrigin"] = readValue;
+          break;
+        case "E":
+          // ROHS clasification code (4), seen on Texas Instruments
+          parsedValue["rohsCode"] = readValue;
+          break;
+        case "3Z":
+          // Expiry date code, delimited (2/260C/1YEAR;//;022319), seen on Texas Instruments
+          parsedValue["expireDate"] = readValue;
+          break;
+        case "L":
+          // destination warehouse, (1518), seen on Texas Instruments
+          parsedValue["destinationWarehouse"] = readValue;
           break;
         default:
           break;
@@ -578,6 +624,14 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.description?.length && parsedValue.manufactureDate?.length > 0 && parsedValue.quantity >= 0 && parsedValue.batchNo?.length > 0 && parsedValue.countryOfOrigin?.length > 0) {
       vendor = taiyoYudenVendorName;
       parsedValue["partNumber"] = parsedValue.description;
+    }
+
+    // special case for Texas Instruments labels - they are encoded the same as DigiKey but use different short codes
+    if (isDigiKeyBarcode && !parsedValue.partNumber?.length && parsedValue.mfgPartNumber?.length && parsedValue.lotCode?.length > 0 && parsedValue.quantity >= 0 && parsedValue.tky?.length > 0 && parsedValue.cco?.length > 0 && parsedValue.aco?.length > 0 && parsedValue.supplierId?.length > 0) {
+      //https://www.ersaelectronics.com/blog/a-360-degree-view-of-ti-labels
+      vendor = texasInstrumentsVendorName;
+      parsedValue["partNumber"] = parsedValue.mfgPartNumber;
+      parsedValue["description"] = parsedValue.mfgPartNumber;
     }
 
     const useFormatNumber = isBinnerBarcode ? expectedBinnerFormatNumber : expectedFormatNumber;

@@ -1,0 +1,31 @@
+{
+  "type": "datamatrix",
+  "labelType": "part",
+  "vendor": "DigiKey",
+  "value": {
+    "description": "",
+    "mfgPartNumber": "TPS548D22RVFR",
+    "revision": "A",
+    "quantity": 2500,
+    "supplierId": "0033317",
+    "lotCode": "1396072ZE4",
+    "turnkey": "TKY",
+    "dateCode": "1850",
+    "lotNumber": "1180915CL8",
+    "chipSourceOrigin": "MH8",
+    "chipCountryOrigin": "JPN",
+    "assemblySourceOrigin": "QAB",
+    "assemblyCountryOrigin": "PHL",
+    "rohsCode": "X4",
+    "expireDate": "2/260C/1YEAR;//;022319",
+    "destinationWarehouse": "1518"
+  },
+  "correctedValue": "[)>␞06␝P␝1PTPS548D22RVFR␝6P␝2PA␝Q2500␝V0033317␝1T1396072ZE4␝4WTKY␝D1850␝31T1180915CL8␝20LMH8␝21LJPN␝22LQAB␝23LPHL␝EX4␝3Z2/260C/1YEAR;//;022319␝L1518␝7K␝N02\r␄\r",
+  "rawValue": "[)>06\u001dP\u001d1PTPS548D22RVFR\u001d6P\u001d2PA\u001dQ2500\u001dV0033317\u001d1T1396072ZE4\u001d4WTKY\u001dD1850\u001d31T1180915CL8\u001d20LMH8\u001d21LJPN\u001d22LQAB\u001d23LPHL\u001dEX4\u001d3Z2/260C/1YEAR;//;022319\u001dL1518\u001d7K\u001dN02\r",
+  "length": 155,
+  "rsDetected": false,
+  "gsDetected": true,
+  "eotDetected": false,
+  "invalidBarcodeDetected": false,
+  "rawValueFormatted": "[)>06␝P␝1PTPS548D22RVFR␝6P␝2PA␝Q2500␝V0033317␝1T1396072ZE4␝4WTKY␝D1850␝31T1180915CL8␝20LMH8␝21LJPN␝22LQAB␝23LPHL␝EX4␝3Z2/260C/1YEAR;//;022319␝L1518␝7K␝N02␍"
+}
