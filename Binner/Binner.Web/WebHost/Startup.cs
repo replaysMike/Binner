@@ -11,6 +11,7 @@ using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
@@ -148,7 +149,16 @@ namespace Binner.Web.WebHost
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (contextFeature != null)
                     {
-                        Console.WriteLine($"Application Error: {contextFeature.Endpoint}");
+                        var logger = Container.GetInstance<ILogger<Startup>>();
+                        if (contextFeature.Error is UserContextUnauthorizedException)
+                        {
+                            // user is not logged in, or access denied
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            logger.LogWarning(contextFeature.Error, $"User not authorized!\nEndpoint:'{contextFeature.Endpoint}'");
+                            return Task.CompletedTask;
+                        }
+                        logger.LogError(contextFeature.Error, $"Unhandled Application Exception!\nEndpoint: '{contextFeature.Endpoint}'");
+                        Console.WriteLine($"Application Error: '{contextFeature.Endpoint}'");
                         Console.WriteLine($"  Exception: {contextFeature.Error.GetType().Name} {contextFeature.Error.Message}");
                         if (contextFeature.Error.InnerException != null)
                             Console.WriteLine($"  Inner Exception: {contextFeature.Error.InnerException.GetType().Name} {contextFeature.Error.InnerException.Message}");

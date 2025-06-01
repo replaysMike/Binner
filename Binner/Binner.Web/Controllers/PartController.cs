@@ -88,9 +88,9 @@ namespace Binner.Web.Controllers
                 partResponse.StoredFiles = response.StoredFiles;
                 return Ok(partResponse);
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -108,9 +108,9 @@ namespace Binner.Web.Controllers
                 var partsResponse = _mapper.Map<ICollection<PartResponse>>(partsPage.Items);
                 return Ok(new PaginatedResponse<PartResponse>(partsPage.TotalItems, partsPage.PageSize, partsPage.PageNumber, partsResponse));
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -151,9 +151,9 @@ namespace Binner.Web.Controllers
                 var partResponse = _mapper.Map<Part, PartResponse>(part);
                 return Ok(partResponse);
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -305,9 +305,9 @@ namespace Binner.Web.Controllers
                 }
                 return BadRequest();
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -319,9 +319,9 @@ namespace Binner.Web.Controllers
                 var partDetails = await _partService.GetBarcodeInfoAsync(barcode, ScannedLabelType.Product);
                 return Ok(partDetails);
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -333,9 +333,9 @@ namespace Binner.Web.Controllers
                 var partDetails = await _partService.GetBarcodeInfoAsync(barcode, ScannedLabelType.Packlist);
                 return Ok(partDetails);
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -500,9 +500,9 @@ namespace Binner.Web.Controllers
                     Updated = _mapper.Map<ICollection<Part>, ICollection<PartResponse>>(updatedParts)
                 });
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -522,9 +522,9 @@ namespace Binner.Web.Controllers
                 });
                 return Ok(isDeleted);
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -573,9 +573,9 @@ namespace Binner.Web.Controllers
                     return Ok(partsResponses.First());
                 }
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
 
             return BadRequest();
@@ -839,9 +839,9 @@ namespace Binner.Web.Controllers
 
                 return Ok(response);
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -894,9 +894,9 @@ namespace Binner.Web.Controllers
                     return new FileStreamResult(stream, "image/png");
                 }
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
             catch (Exception ex)
             {
@@ -1010,9 +1010,9 @@ namespace Binner.Web.Controllers
                     return BadRequest("No partId specified.");
                 return Ok(await _partService.AddPartSupplierAsync(AnyMapper.Mapper.Map<PartSupplier>(request)));
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -1030,9 +1030,9 @@ namespace Binner.Web.Controllers
                     return BadRequest("No partId specified.");
                 return Ok(await _partService.UpdatePartSupplierAsync(AnyMapper.Mapper.Map<PartSupplier>(request)));
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 
@@ -1050,9 +1050,9 @@ namespace Binner.Web.Controllers
                     return BadRequest("No partSupplierId specified.");
                 return Ok(await _partService.DeletePartSupplierAsync(new PartSupplier { PartSupplierId = request.PartSupplierId }));
             }
-            catch (UnauthorizedException ex)
+            catch (UserContextUnauthorizedException ex)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(ex);
             }
         }
 

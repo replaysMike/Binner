@@ -8,7 +8,7 @@ import ProtectedInput from "../ProtectedInput";
 import PropTypes from "prop-types";
 import { toast } from "react-toastify";
 import { Clipboard } from "../Clipboard";
-import { formatCurrency, getCurrencySymbol } from "../../common/Utils";
+import { formatCurrency } from "../../common/Utils";
 import "./BulkScanModal.css";
 // overrides BarcodeScannerInput audio support
 const enableSound = true;
@@ -316,6 +316,8 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
     setScannedParts([]);
     setIsDirty(!isDirty);
     setConfirmClearIsOpen(false);
+    const el = document.getElementById('bulkScanModal');
+    if (el) el.focus();
   };
 
   const handleRememberLocationChange = (e, control) => {
@@ -452,7 +454,7 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
                     {p.supplierPartNumber?.length > 0 && <div><b>Supplier Part Number:</b> {p.supplierPartNumber} <Clipboard text={p.supplierPartNumber} /></div>}
                     {p.salesOrder?.length > 0 && <div><b>Sales Order:</b> {p.salesOrder} <Clipboard text={p.salesOrder} /></div>}
                     {p.cost && <div><b>Cost:</b> {formatCurrency(p.cost, p.currency || 'USD')}</div>}
-                    {p.description.length > 0 && <div><b>Description:</b> <Clipboard text={p.description} /><br />
+                    {p.description?.length > 0 && <div><b>Description:</b> <Clipboard text={p.description} /><br />
                       <pre>{p.description}</pre>
                     </div>}
                     {p.keywords?.length > 0 && <div><b>Keywords:</b> <Clipboard text={p.keywords.join(' ')} /><br />
@@ -582,59 +584,61 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
           <Modal.Header>{t('page.inventory.bulkScan', "Bulk Scan")}</Modal.Header>
           <Dimmer.Dimmable as={Modal.Content} scrolling>
             <Dimmer active={bulkScanSaving} inverted><Loader /></Dimmer>
-            <div style={{ width: "200px", height: "100px", margin: "auto" }}>
-              <div className="anim-box">
-                <div className="scanner animated" />
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-              </div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <Form>
-                <p>{t('page.inventory.startScanning', "Start scanning parts...")}</p>
-                <div style={{ textAlign: 'right', height: '35px', width: '100%', marginBottom: '2px' }}>
-                  <Form.Group style={{ justifyContent: 'end' }}>
-                    <Form.Field style={{ margin: 'auto 0' }}><Popup hoverable content={<p>{t('comp.bulkScanModal.popup.autoIncrement', "Auto increment of Bin Number 2")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.autoIncrement', "Auto Increment")} checked={autoIncrement} onChange={handleAutoIncrementChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
-                    <Form.Field style={{ margin: 'auto 0' }}><Popup content={<p>{t('comp.bulkScanModal.popup.rememberLocation', "Repeat the location of each added part")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.rememberLocation', "Remember Location")} checked={rememberLocation} onChange={handleRememberLocationChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
-                    <Form.Field>
-                      <Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" color="green" /> {t('button.manualAdd', "Manual Add")}</Button>
-                    </Form.Field>
-                  </Form.Group>
+            <div className={`animated-border ${rest.isBarcodeReceiving ? 'visible' : ''}`}>
+              <div style={{ width: "200px", height: "100px", margin: "auto" }}>
+                <div className="anim-box">
+                    <div className={`scanner ${rest.isBarcodeReceiving ? '' : 'animated'}`} />
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-md"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-md"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-md"></div>
+                    <div className="anim-item anim-item-md"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-md"></div>
+                    <div className="anim-item anim-item-lg"></div>
+                    <div className="anim-item anim-item-sm"></div>
+                    <div className="anim-item anim-item-md"></div>
+                  </div>
                 </div>
-                {isOpen && renderScannedParts(highlightScannedPart)}
-              </Form>
-            </div>
+            <p>{rest.isBarcodeReceiving ? t('page.inventory.processing', "Processing...") : t('page.inventory.startScanning', "Start scanning parts...")}</p>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <Form>
+                  <div style={{ textAlign: 'right', height: '35px', width: '100%', marginBottom: '2px' }}>
+                    <Form.Group style={{ justifyContent: 'end' }}>
+                      <Form.Field style={{ margin: 'auto 0' }}><Popup hoverable content={<p>{t('comp.bulkScanModal.popup.autoIncrement', "Auto increment of Bin Number 2")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.autoIncrement', "Auto Increment")} checked={autoIncrement} onChange={handleAutoIncrementChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
+                      <Form.Field style={{ margin: 'auto 0' }}><Popup content={<p>{t('comp.bulkScanModal.popup.rememberLocation', "Repeat the location of each added part")}</p>} trigger={<Checkbox toggle label={t('comp.bulkScanModal.rememberLocation', "Remember Location")} checked={rememberLocation} onChange={handleRememberLocationChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} style={{ scale: '0.8' }} />} /></Form.Field>
+                      <Form.Field>
+                        <Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" color="green" /> {t('button.manualAdd', "Manual Add")}</Button>
+                      </Form.Field>
+                    </Form.Group>
+                  </div>
+                  {isOpen && renderScannedParts(highlightScannedPart)}
+                </Form>
+              </div>
           </Dimmer.Dimmable>
           <Modal.Actions>
-            <Button onClick={confirmClearOpen} disabled={scannedParts.length === 0}>{t('button.clear', "Clear")}</Button>
+            <Button onClick={confirmClearOpen} disabled={scannedParts?.length === 0}>{t('button.clear', "Clear")}</Button>
             <Button onClick={handleBulkScanClose}>{t('button.cancel', "Cancel")}</Button>
             <Button primary onClick={handleOnSave} disabled={bulkScanSaving}>
               {t('button.save', "Save")}
@@ -664,4 +668,6 @@ BulkScanModal.propTypes = {
   /** Set this to true to open model */
   isOpen: PropTypes.bool,
   isBulkScanSaving: PropTypes.bool,
+  /** Set this to notify the modal a barcode is being received */
+  isBarcodeReceiving: PropTypes.bool,
 };
