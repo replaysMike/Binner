@@ -201,9 +201,9 @@ namespace Binner.Common.Integrations
             });
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 50, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);
 
-        public Task<IApiResponse> SearchAsync(string partNumber, string? partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
+        public Task<IApiResponse> SearchAsync(string partNumber, string? partType, int recordCount = 50, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
 
         /// <summary>
         /// Search for a part by part number
@@ -216,7 +216,7 @@ namespace Binner.Common.Integrations
         /// <param name="additionalOptions"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public async Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public async Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 50, Dictionary<string, string>? additionalOptions = null)
         {
             ValidateConfiguration();
 

@@ -54,7 +54,7 @@ namespace Binner.Common.Integrations
         /// <param name="recordCount"></param>
         /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null);
+        Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 50, Dictionary<string, string>? additionalOptions = null);
 
         /// <summary>
         /// Get an order by it's orderId
