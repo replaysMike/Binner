@@ -390,128 +390,134 @@ namespace Binner.Common.Integrations.ResponseProcessors
         {
             if (!response.Products.Any()) return Task.CompletedTask;
 
-            var imagesAdded = 0;
+            foreach (var part in response.ExactMatches)
+                addV4Part(api, response, context, part, _resultsRank-5);
             foreach (var part in response.Products)
-            {
-                var additionalPartNumbers = new List<string>();
-                if (part.OtherNames?.Any() == true)
-                    additionalPartNumbers.AddRange(part.OtherNames);
-                if (part.Parameters != null)
-                {
-                    var basePart = part.Parameters
-                        // todo: do we need to ask for it?
-                        .Where(x => x.ParameterText.Equals("Base Part Number", ComparisonType))
-                        .Where(x => x.ParameterText.Equals("Utilized IC / Part", ComparisonType))
-                        .Select(x => x.ValueText)
-                        .FirstOrDefault();
-                    if (!string.IsNullOrEmpty(basePart))
-                        additionalPartNumbers.Add(basePart);
-                    else
-                    {
-                        if (part.ManufacturerProductNumber?.Contains(context.PartNumber, ComparisonType) == true)
-                            basePart = context.PartNumber;
-                    }
+                addV4Part(api, response, context, part, _resultsRank);
 
-                    if (string.IsNullOrEmpty(basePart))
-                        basePart = part.ManufacturerProductNumber;
-                    var mountingTypeId = MountingType.None;
-                    var mountingTypeParameter = part.Parameters
-                        .Where(x => x.ParameterText.Equals("Mounting Type", ComparisonType))
-                        .Select(x => x.ValueText?.Replace(" ", ""))
-                        .FirstOrDefault();
-
-                    if (mountingTypeParameter?.Contains(",") == true)
-                    {
-                        // DigiKey very rarely returns a part as being more than one mounting type. Pick the last one.
-                        mountingTypeParameter = mountingTypeParameter.Split(",", StringSplitOptions.RemoveEmptyEntries).Last();
-                    }
-
-                    Enum.TryParse<MountingType>(mountingTypeParameter, out mountingTypeId);
-                    var currency = response.SearchLocaleUsed.Currency;
-                    if (string.IsNullOrEmpty(currency))
-                        currency = _configuration.Locale.Currency.ToString().ToUpper();
-                    var packageType = part.Parameters
-                        ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
-                        .Select(x => x.ValueText)
-                        .FirstOrDefault();
-                    if (string.IsNullOrEmpty(packageType))
-                        packageType = part.Parameters
-                            ?.Where(x => x.ParameterText.Equals("Package / Case", ComparisonType))
-                            .Select(x => x.ValueText)
-                            .FirstOrDefault();
-                    if (!string.IsNullOrEmpty(part.PhotoUrl)
-                        && !context.Results.ProductImages.Any(x => x.Value?.Equals(part.PhotoUrl, ComparisonType) == true)
-                        && imagesAdded < ProcessingContext.MaxImagesPerSupplier && context.Results.ProductImages.Count < ProcessingContext.MaxImagesTotal)
-                    {
-                        context.Results.ProductImages.Add(new NameValuePair<string>(part.ManufacturerProductNumber ?? string.Empty, part.PhotoUrl));
-                        imagesAdded++;
-                    }
-
-                    // if there is a datasheet that hasn't been added, add it
-                    if (!string.IsNullOrEmpty(part.DatasheetUrl) && !context.Results.Datasheets.Any(x => x.Value?.DatasheetUrl?.Equals(part.DatasheetUrl, ComparisonType) == true))
-                    {
-                        var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{ProcessingContext.MissingDatasheetCoverName}", part.DatasheetUrl,
-                            part.ManufacturerProductNumber, "", part.Manufacturer?.Name ?? string.Empty);
-                        context.Results.Datasheets.Add(new NameValuePair<DatasheetSource>(part.ManufacturerProductNumber ?? string.Empty, datasheetSource));
-                    }
-
-                    var minimumOrderQuantity = part.ProductVariations.Where(x => x.MinimumOrderQuantity > 0).Select(x => x.MinimumOrderQuantity).FirstOrDefault();
-                    if (minimumOrderQuantity == 0)
-                        minimumOrderQuantity = part.ProductVariations.Select(x => x.MinimumOrderQuantity).FirstOrDefault();
-                    var factoryStockAvailable = part.ProductVariations.Where(x => x.MinimumOrderQuantity > 0).Select(x => x.QuantityAvailableforPackageType).FirstOrDefault();
-                    if (factoryStockAvailable == 0)
-                        factoryStockAvailable = part.ProductVariations.Select(x => x.QuantityAvailableforPackageType).FirstOrDefault();
-                    context.Results.Parts.Add(new CommonPart
-                    {
-                        Rank = _resultsRank,
-                        SwarmPartNumberManufacturerId = null,
-                        Supplier = api.Name,
-                        SupplierPartNumber = part.ProductVariations.Where(x => x.DigiKeyProductNumber != null).Select(x => x.DigiKeyProductNumber).FirstOrDefault() ?? string.Empty,
-                        BasePartNumber = basePart,
-                        AdditionalPartNumbers = additionalPartNumbers,
-                        Manufacturer = part.Manufacturer?.Name ?? string.Empty,
-                        ManufacturerPartNumber = part.ManufacturerProductNumber ?? string.Empty,
-                        Cost = (double)part.UnitPrice,
-                        Currency = currency,
-                        DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
-                        Description = part.Description.ProductDescription + Environment.NewLine + part.Description.DetailedDescription,
-                        ImageUrl = part.PhotoUrl,
-                        PackageType = part.Parameters
-                            ?.Where(x => x.ParameterText.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
-                            .Select(x => x.ValueText)
-                            .FirstOrDefault(),
-                        MountingTypeId = (int)mountingTypeId,
-                        PartType = "",
-                        ProductUrl = part.ProductUrl,
-                        Status = part.ProductStatus.Status,
-                        QuantityAvailable = part.QuantityAvailable,
-                        MinimumOrderQuantity = minimumOrderQuantity,
-                        FactoryStockAvailable = part.ManufacturerPublicQuantity,
-                        FactoryLeadTime = part.ManufacturerLeadWeeks,
-                        Series = part.Series?.Name,
-                        RohsStatus = part.Classifications?.RohsStatus,
-                        ReachStatus = part.Classifications?.ReachStatus,
-                        ExportControlClassNumber = part.Classifications?.ExportControlClassNumber,
-                        HtsusCode = part.Classifications?.HtsusCode,
-                        MoistureSensitivityLevel = part.Classifications?.MoistureSensitivityLevel,
-                        Parametrics = part.Parameters?.Select(x => new PartParametric
-                        {
-                            DigiKeyParameterId = x.ParameterId,
-                            DigiKeyParameterType = x.ParameterType.ToString(),
-                            DigiKeyParameterText = x.ParameterText,
-                            DigiKeyValueId = x.ValueId,
-                            DigiKeyValueText = x.ValueText,
-                            Name = x.ParameterText,
-                            Value = x.ValueText,
-                            ValueNumber = CommonPartValueFormatter.DetectValueFromText(x.ValueText),
-                            Units = CommonPartValueFormatter.DetectUnitsFromText(x.ValueText),
-                        }).ToList(),
-                        // todo: source if there is an api endpoint for this
-                        Models = new List<PartModel>()
-                    });
-                }
-            }
             return Task.CompletedTask;
+        }
+
+        private void addV4Part(IIntegrationApi api, V4.KeywordSearchResponse response, ProcessingContext context, V4.Product part, int resultsRank)
+        {
+            var imagesAdded = 0;
+            var additionalPartNumbers = new List<string>();
+            if (part.OtherNames?.Any() == true)
+                additionalPartNumbers.AddRange(part.OtherNames);
+            if (part.Parameters != null)
+            {
+                var basePart = part.Parameters
+                    // todo: do we need to ask for it?
+                    .Where(x => x.ParameterText.Equals("Base Part Number", ComparisonType))
+                    .Where(x => x.ParameterText.Equals("Utilized IC / Part", ComparisonType))
+                    .Select(x => x.ValueText)
+                    .FirstOrDefault();
+                if (!string.IsNullOrEmpty(basePart))
+                    additionalPartNumbers.Add(basePart);
+                else
+                {
+                    if (part.ManufacturerProductNumber?.Contains(context.PartNumber, ComparisonType) == true)
+                        basePart = context.PartNumber;
+                }
+
+                if (string.IsNullOrEmpty(basePart))
+                    basePart = part.ManufacturerProductNumber;
+                var mountingTypeId = MountingType.None;
+                var mountingTypeParameter = part.Parameters
+                    .Where(x => x.ParameterText.Equals("Mounting Type", ComparisonType))
+                    .Select(x => x.ValueText?.Replace(" ", ""))
+                    .FirstOrDefault();
+
+                if (mountingTypeParameter?.Contains(",") == true)
+                {
+                    // DigiKey very rarely returns a part as being more than one mounting type. Pick the last one.
+                    mountingTypeParameter = mountingTypeParameter.Split(",", StringSplitOptions.RemoveEmptyEntries).Last();
+                }
+
+                Enum.TryParse<MountingType>(mountingTypeParameter, out mountingTypeId);
+                var currency = response.SearchLocaleUsed.Currency;
+                if (string.IsNullOrEmpty(currency))
+                    currency = _configuration.Locale.Currency.ToString().ToUpper();
+                var packageType = part.Parameters
+                    ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
+                    .Select(x => x.ValueText)
+                    .FirstOrDefault();
+                if (string.IsNullOrEmpty(packageType))
+                    packageType = part.Parameters
+                        ?.Where(x => x.ParameterText.Equals("Package / Case", ComparisonType))
+                        .Select(x => x.ValueText)
+                        .FirstOrDefault();
+                if (!string.IsNullOrEmpty(part.PhotoUrl)
+                    && !context.Results.ProductImages.Any(x => x.Value?.Equals(part.PhotoUrl, ComparisonType) == true)
+                    && imagesAdded < ProcessingContext.MaxImagesPerSupplier && context.Results.ProductImages.Count < ProcessingContext.MaxImagesTotal)
+                {
+                    context.Results.ProductImages.Add(new NameValuePair<string>(part.ManufacturerProductNumber ?? string.Empty, part.PhotoUrl));
+                    imagesAdded++;
+                }
+
+                // if there is a datasheet that hasn't been added, add it
+                if (!string.IsNullOrEmpty(part.DatasheetUrl) && !context.Results.Datasheets.Any(x => x.Value?.DatasheetUrl?.Equals(part.DatasheetUrl, ComparisonType) == true))
+                {
+                    var datasheetSource = new DatasheetSource($"https://{_configuration.ResourceSource}/{ProcessingContext.MissingDatasheetCoverName}", part.DatasheetUrl,
+                        part.ManufacturerProductNumber, "", part.Manufacturer?.Name ?? string.Empty);
+                    context.Results.Datasheets.Add(new NameValuePair<DatasheetSource>(part.ManufacturerProductNumber ?? string.Empty, datasheetSource));
+                }
+
+                var minimumOrderQuantity = part.ProductVariations.Where(x => x.MinimumOrderQuantity > 0).Select(x => x.MinimumOrderQuantity).FirstOrDefault();
+                if (minimumOrderQuantity == 0)
+                    minimumOrderQuantity = part.ProductVariations.Select(x => x.MinimumOrderQuantity).FirstOrDefault();
+                var factoryStockAvailable = part.ProductVariations.Where(x => x.MinimumOrderQuantity > 0).Select(x => x.QuantityAvailableforPackageType).FirstOrDefault();
+                if (factoryStockAvailable == 0)
+                    factoryStockAvailable = part.ProductVariations.Select(x => x.QuantityAvailableforPackageType).FirstOrDefault();
+                context.Results.Parts.Add(new CommonPart
+                {
+                    Rank = resultsRank,
+                    SwarmPartNumberManufacturerId = null,
+                    Supplier = api.Name,
+                    SupplierPartNumber = part.ProductVariations.Where(x => x.DigiKeyProductNumber != null).Select(x => x.DigiKeyProductNumber).FirstOrDefault() ?? string.Empty,
+                    BasePartNumber = basePart,
+                    AdditionalPartNumbers = additionalPartNumbers,
+                    Manufacturer = part.Manufacturer?.Name ?? string.Empty,
+                    ManufacturerPartNumber = part.ManufacturerProductNumber ?? string.Empty,
+                    Cost = (double)part.UnitPrice,
+                    Currency = currency,
+                    DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
+                    Description = part.Description.ProductDescription + Environment.NewLine + part.Description.DetailedDescription,
+                    ImageUrl = part.PhotoUrl,
+                    PackageType = part.Parameters
+                        ?.Where(x => x.ParameterText.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
+                        .Select(x => x.ValueText)
+                        .FirstOrDefault(),
+                    MountingTypeId = (int)mountingTypeId,
+                    PartType = "",
+                    ProductUrl = part.ProductUrl,
+                    Status = part.ProductStatus.Status,
+                    QuantityAvailable = part.QuantityAvailable,
+                    MinimumOrderQuantity = minimumOrderQuantity,
+                    FactoryStockAvailable = part.ManufacturerPublicQuantity,
+                    FactoryLeadTime = part.ManufacturerLeadWeeks,
+                    Series = part.Series?.Name,
+                    RohsStatus = part.Classifications?.RohsStatus,
+                    ReachStatus = part.Classifications?.ReachStatus,
+                    ExportControlClassNumber = part.Classifications?.ExportControlClassNumber,
+                    HtsusCode = part.Classifications?.HtsusCode,
+                    MoistureSensitivityLevel = part.Classifications?.MoistureSensitivityLevel,
+                    Parametrics = part.Parameters?.Select(x => new PartParametric
+                    {
+                        DigiKeyParameterId = x.ParameterId,
+                        DigiKeyParameterType = x.ParameterType.ToString(),
+                        DigiKeyParameterText = x.ParameterText,
+                        DigiKeyValueId = x.ValueId,
+                        DigiKeyValueText = x.ValueText,
+                        Name = x.ParameterText,
+                        Value = x.ValueText,
+                        ValueNumber = CommonPartValueFormatter.DetectValueFromText(x.ValueText),
+                        Units = CommonPartValueFormatter.DetectUnitsFromText(x.ValueText),
+                    }).ToList(),
+                    // todo: source if there is an api endpoint for this
+                    Models = new List<PartModel>()
+                });
+            }
         }
 
         private async Task<IServiceResult<V3.Product?>> GetBarcodeInfoProductAsync(IIntegrationApi api, string barcode, ScannedLabelType barcodeType)
