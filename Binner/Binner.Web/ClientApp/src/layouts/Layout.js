@@ -8,6 +8,7 @@ import { Outlet } from "react-router-dom";
 // components
 import ErrorModal from "../components/modals/ErrorModal";
 import LicenseErrorModal from "../components/modals/LicenseErrorModal";
+import { getUserAccount } from "../common/authentication";
 
 export function Layout(props) {
   const { t } = useTranslation('en');
@@ -125,10 +126,14 @@ export function Layout(props) {
     }
   };
 
+  // Get the max-width from local storage
+  const userAccount = getUserAccount();
+  const maxWidth = (userAccount && userAccount.maxWidth) || '50%';
+
   return (
     <div className="centered" style={{marginBottom: '50px', position: 'relative', zIndex: '50', textAlign: 'left'}}>
       <div id="banner" />
-      <Container>
+      <Container style={{ maxWidth: maxWidth }}>
         <Header />
         <Outlet />
         <Footer />
