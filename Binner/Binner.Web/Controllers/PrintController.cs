@@ -1,6 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.IO.Printing;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;

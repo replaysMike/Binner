@@ -1,4 +1,4 @@
-﻿using Binner.Common.Services;
+﻿using Binner.Services;
 using NUnit.Framework;
 using System.IO;
 using System.Threading.Tasks;

@@ -1,6 +1,4 @@
-﻿using Binner.Common.Integrations.Models;
-
-namespace Binner.Model.Integrations
+﻿namespace Binner.Model.Integrations
 {
     public class ApiResponseState
     {

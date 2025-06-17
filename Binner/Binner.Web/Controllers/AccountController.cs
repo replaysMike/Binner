@@ -1,4 +1,4 @@
-﻿using Binner.Common.Services;
+﻿using Binner.Services;
 using Binner.Model;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;

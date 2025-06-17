@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Binner.Common.Integrations;
-using Binner.Common.Services;
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
@@ -8,6 +7,8 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Services;
+using Binner.Services.Integrations;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Testing;
 using Microsoft.AspNetCore.Http;

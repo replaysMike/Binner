@@ -1,11 +1,10 @@
 ﻿using AutoMapper.Internal;
 using Binner.Common.Database;
-using Binner.Common.Integrations;
+using Binner.Services.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
 using Binner.Common.MappingProfiles.ModelCommon;
-using Binner.Common.Services;
-using Binner.Common.Services.Authentication;
+using Binner.Services;
 using Binner.Common.StorageProviders;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
@@ -22,6 +21,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using DataModel = Binner.Data.Model;
+using Binner.Services.Printing;
+using Binner.Services.Authentication;
+using Binner.Common.Integrations;
 
 namespace Binner.Web.Configuration
 {

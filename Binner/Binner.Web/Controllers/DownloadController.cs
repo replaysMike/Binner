@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Global.Common;
 using Binner.Model.KiCad;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

@@ -8,11 +8,11 @@ namespace Binner.Common.IO.Printing
     /// Generates an IPrinter instance for the designated platform
     /// </summary>
     /// <exception cref="PlatformNotSupportedException"></exception>
-    internal class PrinterFactory
+    public class PrinterFactory
     {
         private readonly ILoggerFactory _loggerFactory;
 
-        internal PrinterFactory(ILoggerFactory loggerFactory)
+        public PrinterFactory(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
         }
@@ -22,7 +22,7 @@ namespace Binner.Common.IO.Printing
         /// </summary>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
-        internal IPrinterEnvironment CreatePrinter(IPrinterSettings printerSettings)
+        public IPrinterEnvironment CreatePrinter(IPrinterSettings printerSettings)
         {
             if (OperatingSystem.IsWindows())
             {

@@ -1,4 +1,4 @@
-﻿using Binner.Common.Services;
+﻿using Binner.Services;
 using Binner.Testing;
 using NUnit.Framework;
 using System.Collections.Generic;

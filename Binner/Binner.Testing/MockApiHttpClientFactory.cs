@@ -1,5 +1,4 @@
-﻿using Binner.Common.Extensions;
-using Binner.Common.Integrations;
+﻿using Binner.Services.Integrations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;

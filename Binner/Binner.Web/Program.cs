@@ -3,6 +3,7 @@ using Binner.Common.Extensions;
 using Binner.Common.IO;
 using Binner.Model;
 using Binner.Model.Configuration;
+using Binner.Services;
 using Binner.Web.ServiceHost;
 using Microsoft.Extensions.Configuration;
 using System;

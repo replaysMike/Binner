@@ -112,6 +112,7 @@
     <ProjectReference Include="..\Data\Binner.Data.Migrations.SqlServer\Binner.Data.Migrations.SqlServer.csproj" />
     <ProjectReference Include="..\Library\Binner.Common\Binner.Common.csproj" />
     <ProjectReference Include="..\Library\Binner.Model\Binner.Model.csproj" />
+    <ProjectReference Include="..\Library\Binner.Services\Binner.Services.csproj" />
   </ItemGroup>
 
   <Target Name="RenameAppsettings" BeforeTargets="Publish">

@@ -4,7 +4,7 @@ using Binner.Common;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Barcode;

@@ -1,5 +1,5 @@
-﻿using Binner.Common.Services;
-using Binner.Model.Integrations.DigiKey;
+﻿using Binner.Model.Integrations.DigiKey;
+using Binner.Services;
 using Binner.Testing;
 using NUnit.Framework;
 using System.Collections.Generic;

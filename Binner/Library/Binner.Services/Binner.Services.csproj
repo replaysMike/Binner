@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Binner.Common\Binner.Common.csproj" />
+    <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
+    <ProjectReference Include="..\Binner.Model\Binner.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Integrations\DigikeyClient\Core\" />
+  </ItemGroup>
+
+</Project>

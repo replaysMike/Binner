@@ -81,10 +81,6 @@
     <PackageReference Include="TypeSupport" Version="1.2.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Integrations\DigikeyClient\Core\" />
-  </ItemGroup>
-
   <ItemGroup Condition="!Exists('..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
     <!-- Use the Barcoder public package -->
     <PackageReference Include="Barcoder" Version="2.0.0" PrivateAssets="Compile" />

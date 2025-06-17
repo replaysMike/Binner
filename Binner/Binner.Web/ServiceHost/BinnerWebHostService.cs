@@ -2,11 +2,11 @@
 using Binner.Common.Configuration;
 using Binner.Common.Database;
 using Binner.Common.Extensions;
-using Binner.Common.Security;
 using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.Model;
 using Binner.Model.Configuration;
+using Binner.Services.Security;
 using Binner.Web.Configuration;
 using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;

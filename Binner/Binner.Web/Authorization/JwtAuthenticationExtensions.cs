@@ -1,6 +1,6 @@
-﻿using Binner.Common.Services;
-using Binner.Common.Services.Authentication;
-using Binner.Model.Configuration;
+﻿using Binner.Model.Configuration;
+using Binner.Services;
+using Binner.Services.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
