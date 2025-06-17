@@ -217,7 +217,13 @@ export function Datasheets (props) {
         case 'website':
           return {...def, Cell: ({row}) => (<span>{row.original.swarmPartNumberManufacturerId ? "Binner Swarm" : getHostnameFromRegex(_.first(row.original.datasheetUrls))}</span>)};
         case 'status':
-          return {...def, Cell: ({row}) => (<span>{row.original.status === "Inactive" ? <span style={{color: '#bbb'}}>{t(row.original.status.toLowerCase(), row.original.status)}</span> : <b>{t(row.original.status.toLowerCase(), row.original.status)}</b>}</span>)};
+          return {...def, Cell: ({row}) => (<span>{
+                row.original.status !== null ? (row.original.status === "Inactive" ? 
+                    <span style={{color: '#bbb'}}>{t(row.original.status.toLowerCase(), row.original.status)}</span> : 
+                    <b>{t(row.original.status.toLowerCase(), row.original.status)}</b>
+                ) : ""
+            }</span>
+          )};
         case 'actions': 
           return {...def, Header: <i key={key}>{t('page.datasheet.datasheets', "Datasheets")}</i>, columnDefType: 'display', Cell: ({row}) => (
             <>
