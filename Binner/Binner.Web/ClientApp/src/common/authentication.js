@@ -4,6 +4,7 @@ export const EmptyUserAccount = {
   userId: 0,
   isAuthenticated: false,
   name: "",
+  maxWidth: "50%",
   accessToken: "",
 	imagesToken: "",
 	isAdmin: false,
