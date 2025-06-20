@@ -12,7 +12,7 @@ namespace Binner.Data.Model
 #else
         : IPartialEntity,
 #endif
-        IUserData
+        IOptionalUserData
     {
         /// <summary>
         /// Primary key

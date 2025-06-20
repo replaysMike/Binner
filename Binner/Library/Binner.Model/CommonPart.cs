@@ -5,6 +5,9 @@
     /// </summary>
     public class CommonPart
     {
+        /// <summary>
+        /// Order rank specifier
+        /// </summary>
         public int Rank { get; set; }
 
         /// <summary>

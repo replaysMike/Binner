@@ -55,6 +55,12 @@ namespace Binner.Global.Common
         /// Get the current http request
         /// </summary>
         /// <returns></returns>
+        public HttpContext? GetHttpContext();
+
+        /// <summary>
+        /// Get the current http request
+        /// </summary>
+        /// <returns></returns>
         HttpRequest? GetRequest();
 
         /// <summary>

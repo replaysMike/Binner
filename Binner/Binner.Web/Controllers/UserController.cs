@@ -11,6 +11,7 @@ using System.Net.Mime;
 using System.Threading.Tasks;
 using Binner.LicensedProvider;
 using System.Security;
+using Binner.Web.Conventions;
 
 namespace Binner.Web.Controllers
 {
@@ -19,12 +20,14 @@ namespace Binner.Web.Controllers
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
-    public class UserController : ControllerBase
+    [GenericControllerNameConvention]
+    public partial class UserController<TUser> : ControllerBase
+        where TUser : User, new()
     {
-        private readonly ILogger<UserController> _logger;
-        private readonly IUserService _userService;
+        private readonly ILogger<UserController<TUser>> _logger;
+        private readonly IUserService<TUser> _userService;
 
-        public UserController(ILogger<UserController> logger, IUserService userService)
+        public UserController(ILogger<UserController<TUser>> logger, IUserService<TUser> userService)
         {
             _logger = logger;
             _userService = userService;
@@ -61,7 +64,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetUserAsync([FromQuery] User request)
+        public async Task<IActionResult> GetUserAsync([FromQuery] TUser request)
         {
             try
             {
@@ -88,7 +91,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> CreateUserAsync(User request)
+        public async Task<IActionResult> CreateUserAsync(TUser request)
         {
             try
             {
@@ -114,7 +117,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateUserAsync(User request)
+        public async Task<IActionResult> UpdateUserAsync(TUser request)
         {
             try
             {

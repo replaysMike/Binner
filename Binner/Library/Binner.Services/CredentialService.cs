@@ -35,7 +35,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="authRequest"></param>
         /// <returns></returns>
-        public async Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest)
+        public async Task<OAuthAuthorization?> UpdateOAuthRequestAsync(OAuthAuthorization authRequest)
         {
             return await _storageProvider.UpdateOAuthRequestAsync(authRequest, _requestContext.GetUserContext());
         }
@@ -63,7 +63,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="credential"></param>
         /// <returns></returns>
-        public async Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential)
+        public async Task<OAuthCredential?> SaveOAuthCredentialAsync(OAuthCredential credential)
         {
             return await _storageProvider.SaveOAuthCredentialAsync(credential, _requestContext.GetUserContext());
         }

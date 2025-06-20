@@ -1,30 +1,26 @@
 ﻿using AutoMapper;
+using Binner.Common;
 using Binner.Common.Extensions;
-using Binner.Services.Integrations;
+using Binner.Common.Integrations;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations;
 using Binner.Model.Integrations.Arrow;
 using Binner.Model.Integrations.DigiKey;
 using Binner.Model.Integrations.Mouser;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Binner.Services.Integrations;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Part = Binner.Model.Part;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
 using V4 = Binner.Model.Integrations.DigiKey.V4;
-using Binner.Model.Integrations;
-using Binner.Common;
-using Binner.Common.Integrations;
 
 namespace Binner.Services
 {
@@ -169,7 +165,10 @@ namespace Binner.Services
 
         public Task<ICollection<PartTypeResponse>> GetPartTypesWithPartCountsAsync()
         {
+            var userContext = _requestContext.GetUserContext();
+            if (userContext == null) throw new ArgumentNullException(nameof(userContext));
             var partTypes = _partTypesCache.Cache
+                .Where(x => x.OrganizationId == userContext.OrganizationId || (x.UserId == null && x.OrganizationId == null))
                 .OrderBy(x => x.ParentPartType != null ? x.ParentPartType.Name : "")
                 .ThenBy(x => x.Name)
                 .ToList();
@@ -191,7 +190,7 @@ namespace Binner.Services
             return await _storageProvider.AddPartSupplierAsync(partSupplier, _requestContext.GetUserContext());
         }
 
-        public async Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier)
+        public async Task<PartSupplier?> UpdatePartSupplierAsync(PartSupplier partSupplier)
         {
             return await _storageProvider.UpdatePartSupplierAsync(partSupplier, _requestContext.GetUserContext());
         }

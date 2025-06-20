@@ -1,4 +1,4 @@
-﻿namespace Binner.Common
+﻿namespace Binner.Model
 {
     public enum ScannedLabelType
     {

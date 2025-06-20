@@ -1,4 +1,6 @@
-﻿namespace Binner.Model
+﻿using Binner.Global.Common;
+
+namespace Binner.Model
 {
     /// <summary>
     /// A pcb layout/design resource

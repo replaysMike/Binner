@@ -1,4 +1,5 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
+using Binner.Model;
 
 namespace Binner.StorageProvider.EntityFrameworkCore;
 

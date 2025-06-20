@@ -155,7 +155,7 @@ namespace Binner.Services
             return await _storageProvider.GetStoredFilesAsync(request, _requestContext.GetUserContext());
         }
 
-        public async Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile)
+        public async Task<StoredFile?> UpdateStoredFileAsync(StoredFile storedFile)
         {
             return await _storageProvider.UpdateStoredFileAsync(storedFile, _requestContext.GetUserContext());
         }

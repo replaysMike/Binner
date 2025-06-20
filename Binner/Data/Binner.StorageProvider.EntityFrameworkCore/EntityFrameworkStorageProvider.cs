@@ -6,9 +6,8 @@ using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
@@ -20,12 +19,12 @@ namespace Binner.StorageProvider.EntityFrameworkCore
     {
         public const string ProviderName = "EntityFramework";
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
-        private readonly string _providerName;
+        private readonly string? _providerName;
         private readonly IDictionary<string, string> _config;
         private readonly IMapper _mapper;
         private readonly IPartTypesCache _partTypesCache;
         private readonly ILicensedStorageProvider _licensedStorageProvider;
-        private readonly ILogger<EntityFrameworkStorageProvider> _logger;
+        private readonly ILogger<EntityFrameworkStorageProvider>? _logger;
 
         public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, string providerName, IDictionary<string, string> config)
         {
@@ -187,7 +186,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
 
         private FormattableString GetFindPartsQueryForProvider(string keywords, IUserContext userContext)
         {
-            switch (_providerName.ToLower())
+            switch (_providerName?.ToLower())
             {
                 case "postgresql":
                     return GetPostgresqlFindPartsQuery(keywords, userContext);
@@ -550,7 +549,7 @@ INNER JOIN (
             return _mapper.Map<OAuthAuthorization>(entity);
         }
 
-        public async Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext)
+        public async Task<OAuthAuthorization?> UpdateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -573,12 +572,12 @@ INNER JOIN (
         public async Task<OAuthAuthorization?> GetOAuthRequestAsync(Guid requestId, IUserContext? userContext)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
-            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)}() RequestId: {requestId} OrganizationId: {(userContext?.OrganizationId.ToString() ?? "<unset>")} UserId: {(userContext?.UserId.ToString() ?? "<unset>")}");
+            _logger?.LogDebug($"{nameof(GetOAuthRequestAsync)}() RequestId: {requestId} OrganizationId: {(userContext?.OrganizationId.ToString() ?? "<unset>")} UserId: {(userContext?.UserId.ToString() ?? "<unset>")}");
             var entity = await context.OAuthRequests
                 .Where(x => x.RequestId == requestId)
                 .WhereIf(userContext != null, x => x.OrganizationId == userContext!.OrganizationId && x.UserId == userContext.UserId)
                 .FirstOrDefaultAsync();
-            _logger.LogDebug($"{nameof(GetOAuthRequestAsync)} RequestId: {requestId} result Id: {entity?.OAuthRequestId} AuthCode: {entity?.AuthorizationCode} AuthorizationReceived: {entity?.AuthorizationReceived} OrganizationId: {entity?.OrganizationId} UserId: {entity?.UserId}");
+            _logger?.LogDebug($"{nameof(GetOAuthRequestAsync)} RequestId: {requestId} result Id: {entity?.OAuthRequestId} AuthCode: {entity?.AuthorizationCode} AuthorizationReceived: {entity?.AuthorizationReceived} OrganizationId: {entity?.OrganizationId} UserId: {entity?.UserId}");
             return _mapper.Map<OAuthAuthorization>(entity);
         }
 
@@ -694,7 +693,7 @@ INNER JOIN (
             return _mapper.Map<ICollection<StoredFile>>(entities);
         }
 
-        public async Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
+        public async Task<StoredFile?> UpdateStoredFileAsync(StoredFile storedFile, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -754,7 +753,7 @@ INNER JOIN (
             return _mapper.Map<Pcb>(entity);
         }
 
-        public async Task<Pcb> UpdatePcbAsync(Pcb pcb, IUserContext? userContext)
+        public async Task<Pcb?> UpdatePcbAsync(Pcb pcb, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -820,7 +819,7 @@ INNER JOIN (
             return _mapper.Map<PcbStoredFileAssignment>(entity);
         }
 
-        public async Task<PcbStoredFileAssignment> UpdatePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
+        public async Task<PcbStoredFileAssignment?> UpdatePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -1208,7 +1207,7 @@ INNER JOIN (
             await using var context = await _contextFactory.CreateDbContextAsync();
             if (userContext == null) throw new UserContextUnauthorizedException();
             var existingEntity = _partTypesCache.Cache
-                .FirstOrDefault(x => x.Name != null && x.Name == partType.Name && x.OrganizationId == userContext.OrganizationId);
+                .FirstOrDefault(x => x.Name != null && x.Name.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase) && x.OrganizationId == userContext.OrganizationId);
             if (existingEntity == null)
             {
                 if (!string.IsNullOrEmpty(partType.Icon))
@@ -1407,7 +1406,6 @@ INNER JOIN (
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             if (request == null) throw new ArgumentNullException(nameof(request));
-            if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
@@ -1531,8 +1529,7 @@ INNER JOIN (
                 new (x => x.FootprintName, x => x.FootprintName),
                 new (x => x.ExtensionValue1, x => x.ExtensionValue1),
                 new (x => x.ExtensionValue2, x => x.ExtensionValue2),
-                // todo: migrate
-                // new (x => x.SwarmPartNumberManufacturerId, x => x.SwarmPartNumberManufacturerId),
+                new (x => x.SwarmPartNumberManufacturerId, x => x.SwarmPartNumberManufacturerId),
                 new (x => x.UserId, x => x.UserId),
             };
             var mappedConverter = new MappedConverter<Part, DataModel.Part>(mappings.ToArray());
@@ -2137,7 +2134,7 @@ INNER JOIN (
                     if (customField.CustomFieldId == 0)
                     {
                         // add new field
-                        _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Created new custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
+                        _logger?.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Created new custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
                         var newCustomField = new DataModel.CustomField
                         {
                             CustomFieldTypeId = customField.CustomFieldTypeId,
@@ -2160,7 +2157,7 @@ INNER JOIN (
                         {
                             EnforceIntegrityModify(existingField, userContext);
                             existingField.DateModifiedUtc = DateTime.UtcNow;
-                            _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Updated custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
+                            _logger?.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Updated custom field named '{customField.Name}' of type '{customField.CustomFieldTypeId}'");
                         }
                     }
                 }
@@ -2175,7 +2172,7 @@ INNER JOIN (
                     var existingValues = await context.CustomFieldValues.Where(x => x.CustomFieldId == existingField.CustomFieldId).ToListAsync();
                     context.CustomFieldValues.RemoveRange(existingValues);
                     context.CustomFields.Remove(existingField);
-                    _logger.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Deleted custom field named '{existingField.Name}' of type '{existingField.CustomFieldTypeId}'");
+                    _logger?.LogInformation($"[{nameof(SaveCustomFieldsAsync)}] Deleted custom field named '{existingField.Name}' of type '{existingField.CustomFieldTypeId}'");
                 }
             }
 
@@ -2228,19 +2225,35 @@ INNER JOIN (
         }
 
         public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)
-            where T : DataModel.IEntity, DataModel.IUserData
+            where T : DataModel.IEntity
         {
-            entity.UserId = userContext.UserId;
-            entity.OrganizationId = userContext.OrganizationId;
+            if (entity is DataModel.IUserData)
+            {
+                ((DataModel.IUserData)entity).UserId = userContext.UserId;
+                ((DataModel.IUserData)entity).OrganizationId = userContext.OrganizationId;
+            }
+            if (entity is DataModel.IOptionalUserData)
+            {
+                ((DataModel.IOptionalUserData)entity).UserId = userContext.UserId;
+                ((DataModel.IOptionalUserData)entity).OrganizationId = userContext.OrganizationId;
+            }
             entity.DateCreatedUtc = DateTime.UtcNow;
             entity.DateModifiedUtc = DateTime.UtcNow;
         }
 
         public void EnforceIntegrityModify<T>(T entity, IUserContext userContext)
-            where T : DataModel.IEntity, DataModel.IUserData
+            where T : DataModel.IEntity
         {
-            entity.UserId = userContext.UserId;
-            entity.OrganizationId = userContext.OrganizationId;
+            if (entity is DataModel.IUserData)
+            {
+                ((DataModel.IUserData)entity).UserId = userContext.UserId;
+                ((DataModel.IUserData)entity).OrganizationId = userContext.OrganizationId;
+            }
+            if (entity is DataModel.IOptionalUserData)
+            {
+                ((DataModel.IOptionalUserData)entity).UserId = userContext.UserId;
+                ((DataModel.IOptionalUserData)entity).OrganizationId = userContext.OrganizationId;
+            }
             entity.DateModifiedUtc = DateTime.UtcNow;
         }
 

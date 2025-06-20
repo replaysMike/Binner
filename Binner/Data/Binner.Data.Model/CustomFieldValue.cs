@@ -1,10 +1,10 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class CustomFieldValue : IEntity, IUserData
+    public class CustomFieldValue : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

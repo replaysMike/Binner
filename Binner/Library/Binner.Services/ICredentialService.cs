@@ -26,7 +26,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="authRequest"></param>
         /// <returns></returns>
-        Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest);
+        Task<OAuthAuthorization?> UpdateOAuthRequestAsync(OAuthAuthorization authRequest);
 
         /// <summary>
         /// Get an existing (pending) oAuth request
@@ -41,7 +41,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="credential"></param>
         /// <returns></returns>
-        Task<OAuthCredential> SaveOAuthCredentialAsync(OAuthCredential credential);
+        Task<OAuthCredential?> SaveOAuthCredentialAsync(OAuthCredential credential);
 
         /// <summary>
         /// Get a saved a oAuth Credential

@@ -36,10 +36,10 @@ namespace Binner.Web.Controllers
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly ILabelGenerator _labelGenerator;
         private readonly FontManager _fontManager;
-        private readonly IUserService _userService;
+        private readonly IUserService<User> _userService;
         private readonly IPrintService _printService;
 
-        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, ILabelGenerator labelGenerator, FontManager fontManager, IUserService userService, IPrintService printService)
+        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, ILabelGenerator labelGenerator, FontManager fontManager, IUserService<User> userService, IPrintService printService)
         {
             _logger = logger;
             _config = config;

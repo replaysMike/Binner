@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Stores pending OAuth requests
     /// </summary>
-    public class OAuthRequest : IEntity, IUserData
+    public class OAuthRequest : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

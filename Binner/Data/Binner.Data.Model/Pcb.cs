@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A pcb layout/design resource
     /// </summary>
-    public class Pcb : IEntity, IUserData
+    public class Pcb : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

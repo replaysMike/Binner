@@ -199,7 +199,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="partSupplier"></param>
         /// <returns></returns>
-        Task<PartSupplier> UpdatePartSupplierAsync(PartSupplier partSupplier);
+        Task<PartSupplier?> UpdatePartSupplierAsync(PartSupplier partSupplier);
 
         /// <summary>
         /// Delete an existing part supplier

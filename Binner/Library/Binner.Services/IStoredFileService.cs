@@ -33,7 +33,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile);
+        Task<StoredFile?> UpdateStoredFileAsync(StoredFile storedFile);
 
         /// <summary>
         /// Delete an existing user uploaded file

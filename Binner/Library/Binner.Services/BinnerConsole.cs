@@ -445,18 +445,20 @@ namespace Binner.Services
             if (await CheckOrgAsync(context, context.ProjectProduceHistory, nameof(context.ProjectProduceHistory))) hasError = true;
             if (!hasError)
                 PrintOk();
-
-
         }
 
-        private static async Task<bool> CheckOrgAsync<T>(BinnerContext context, IQueryable<T> query, string tableName) where T : IUserData
+        private static async Task<bool> CheckOrgAsync<T>(BinnerContext context, IQueryable<T> query, string tableName)
         {
-            if (await query.Where(x => x.OrganizationId == 0).AnyAsync())
+            if (await query.Where(x => x is IUserData 
+                ? ((IUserData)x).OrganizationId == 0 
+                : (x is IOptionalUserData 
+                    ? ((IUserData)x).OrganizationId == 0 
+                    : false)).AnyAsync())
             {
                 PrintErrorItem($"{tableName}(s) missing OrganizationId.");
                 return true;
             }
-            if (await query.Where(x => x.UserId == 0).AnyAsync())
+            if (await query.Where(x => x is IUserData ? ((IUserData)x).UserId == 0 : (x is IOptionalUserData ? ((IUserData)x).UserId == 0 : false)).AnyAsync())
             {
                 PrintErrorItem($"{tableName}(s) missing UserId.");
                 return true;
@@ -464,7 +466,7 @@ namespace Binner.Services
             return false;
         }
 
-        private static async Task<bool> CheckEmptyAsync<T>(BinnerContext context, IQueryable<T> query, string tableName, bool isWarning = false) where T : IUserData
+        private static async Task<bool> CheckEmptyAsync<T>(BinnerContext context, IQueryable<T> query, string tableName, bool isWarning = false)
         {
             if (!await query.AnyAsync())
             {

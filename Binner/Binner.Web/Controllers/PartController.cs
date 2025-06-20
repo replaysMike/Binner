@@ -49,11 +49,11 @@ namespace Binner.Web.Controllers
         private readonly IOrderImportHistoryService _orderImportHistoryService;
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
-        private readonly IUserService _userService;
+        private readonly IUserService<User> _userService;
         private readonly IPrintService _printService;
         private readonly ILabelGenerator _labelGenerator;
 
-        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService, IPrintService printService, ILabelGenerator labelGenerator)
+        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService<User> userService, IPrintService printService, ILabelGenerator labelGenerator)
         {
             _logger = logger;
             _mapper = mapper;

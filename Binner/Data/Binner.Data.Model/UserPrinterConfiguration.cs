@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 
 namespace Binner.Data.Model
@@ -8,7 +9,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Stores user defined printer configurations
     /// </summary>
-    public class UserPrinterConfiguration : IEntity, IUserData
+    public class UserPrinterConfiguration : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key
@@ -38,6 +39,11 @@ namespace Binner.Data.Model
         /// Default: Dymo LabelWriter 450
         /// </summary>
         public string PrinterName { get; set; } = "Dymo LabelWriter 450 Twin Turbo";
+
+        /// <summary>
+        /// Choose the print mode to use for printing labels.
+        /// </summary>
+        public PrintModes PrintMode { get; set; } = PrintModes.Direct;
 
         /// <summary>
         /// Label model number

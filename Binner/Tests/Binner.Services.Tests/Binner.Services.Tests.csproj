@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Library\Binner.Model\Binner.Model.csproj" />
+    <ProjectReference Include="..\..\Library\Binner.Services\Binner.Services.csproj" />
+    <ProjectReference Include="..\Binner.Testing\Binner.Testing.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -14,5 +14,10 @@ namespace Binner.Model.Requests
         /// Clear-text password
         /// </summary>
         public string? Password { get; set; } = null!;
+
+        /// <summary>
+        /// The ReCaptcha or Turnstile token
+        /// </summary>
+        public string? Token { get; set; }
     }
 }

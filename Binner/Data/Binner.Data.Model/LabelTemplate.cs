@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class LabelTemplate : IEntity, IUserData
+    public class LabelTemplate : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

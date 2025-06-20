@@ -4,13 +4,8 @@ using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Security;
-using System.Threading.Tasks;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Services
@@ -18,24 +13,23 @@ namespace Binner.Services
     /// <summary>
     /// Manage users
     /// </summary>
-    public class UserService : IUserService
+    public class UserService<TUser> : IUserService<TUser>
+        where TUser : User, new()
     {
-        private readonly IDbContextFactory<BinnerContext> _contextFactory;
+        protected readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IMapper _mapper;
-        private readonly IRequestContextAccessor _requestContext;
-        private readonly IConfiguration _configuration;
-        private readonly ILicensedService _licensedService;
+        protected readonly IRequestContextAccessor _requestContext;
+        private readonly ILicensedService<TUser> _licensedService;
 
-        public UserService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, IConfigurationRoot configuration, ILicensedService licensedService)
+        public UserService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, ILicensedService<TUser> licensedService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _requestContext = requestContext;
-            _configuration = configuration;
             _licensedService = licensedService;
         }
 
-        private IQueryable<DataModel.User> GetUserQueryable(BinnerContext context, IUserContext userContext)
+        protected virtual IQueryable<DataModel.User> GetUserQueryable(BinnerContext context, IUserContext userContext)
             => context.Users
                 .Include(x => x.OAuthCredentials)
                 .Include(x => x.OAuthRequests)
@@ -47,15 +41,15 @@ namespace Binner.Services
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .AsQueryable();
 
-        public Task<User> CreateUserAsync(User user) => _licensedService.CreateUserAsync(user);
+        public virtual Task<TUser> CreateUserAsync(TUser user) => _licensedService.CreateUserAsync(user);
 
-        public Task<User?> GetUserAsync(User user) => _licensedService.GetUserAsync(user);
+        public virtual Task<TUser?> GetUserAsync(TUser user) => _licensedService.GetUserAsync(user);
 
-        public Task<ICollection<User>> GetUsersAsync(PaginatedRequest request) => _licensedService.GetUsersAsync(request);
+        public virtual Task<ICollection<TUser>> GetUsersAsync(PaginatedRequest request) => _licensedService.GetUsersAsync(request);
 
-        public Task<User?> UpdateUserAsync(User user) => _licensedService.UpdateUserAsync(user);
+        public virtual Task<TUser?> UpdateUserAsync(TUser user) => _licensedService.UpdateUserAsync(user);
 
-        public async Task<bool> DeleteUserAsync(int userId)
+        public virtual async Task<bool> DeleteUserAsync(int userId)
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -90,7 +84,7 @@ namespace Binner.Services
             return await context.SaveChangesAsync() > 0;
         }
 
-        public async Task<UserContext?> GetGlobalUserContextAsync(int userId)
+        public virtual async Task<UserContext?> GetGlobalUserContextAsync(int userId)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.Users
@@ -108,7 +102,7 @@ namespace Binner.Services
             };
         }
 
-        public async Task<IUserContext?> ValidateUserImageToken(string token)
+        public virtual async Task<IUserContext?> ValidateUserImageToken(string token)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
             var userToken = await context.UserTokens

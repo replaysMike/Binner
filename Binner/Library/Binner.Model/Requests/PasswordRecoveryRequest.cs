@@ -9,5 +9,10 @@ namespace Binner.Model.Requests
         /// </summary>
         [Required]
         public string EmailAddress { get; set; } = null!;
+        
+        /// <summary>
+        /// ReCaptcha token
+        /// </summary>
+        public string? Token { get;set;}
     }
 }

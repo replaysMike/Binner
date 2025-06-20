@@ -19,14 +19,14 @@ namespace Binner.Web.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public class AuthenticationController : ControllerBase
+    public partial class AuthenticationController : ControllerBase
     {
-        private readonly ILogger<AuthorizationController> _logger;
+        private readonly ILogger<AuthenticationController> _logger;
         private readonly IAuthenticationService _authenticationService;
         private readonly AuthenticationConfiguration _configuration;
         private readonly IRequestContextAccessor _requestContextAccessor;
 
-        public AuthenticationController(ILogger<AuthorizationController> logger, IAuthenticationService authenticationService, AuthenticationConfiguration configuration, IRequestContextAccessor requestContextAccessor)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, AuthenticationConfiguration configuration, IRequestContextAccessor requestContextAccessor)
         {
             _logger = logger;
             _authenticationService = authenticationService;

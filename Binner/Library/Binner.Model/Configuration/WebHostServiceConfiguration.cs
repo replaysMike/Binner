@@ -144,7 +144,8 @@
         /// <summary>
         /// License key
         /// </summary>
-        public string? LicenseKey {
+        public string? LicenseKey
+        {
             get
             {
                 if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.LicenseKey)))
@@ -195,7 +196,7 @@
         /// <summary>
         /// Authentication configuration
         /// </summary>
-        public AuthenticationConfiguration Authentication { get; set; } = new AuthenticationConfiguration();
+        public AuthenticationConfiguration Authentication { get; set; } = new();
 
         /// <summary>
         /// Digikey configuration

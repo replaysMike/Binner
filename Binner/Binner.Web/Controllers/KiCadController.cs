@@ -1,14 +1,10 @@
-﻿using AnyMapper;
-using AutoMapper;
-using Binner.Services;
+﻿using AutoMapper;
 using Binner.Global.Common;
 using Binner.Model;
-using Binner.Model.Configuration;
 using Binner.Model.KiCad;
-using Binner.Model.Responses;
+using Binner.Model.Requests;
+using Binner.Services;
 using Binner.Web.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -100,7 +96,7 @@ namespace Binner.Web.Controllers
             var partIdInt = 0;
             if (!int.TryParse(partId, out partIdInt))
                 return NotFound("Invalid part id");
-            var part = await _partService.GetPartAsync(new Model.Requests.GetPartRequest { PartId = partIdInt });
+            var part = await _partService.GetPartAsync(new GetPartRequest { PartId = partIdInt });
             if (part == null)
             {
                 _logger.LogWarning($"[KiCadApi] GET /parts/{partId}.json part not found from IP '{_requestContextAccessor.GetIpAddress()}'.");

@@ -1,18 +1,17 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Binner.Services
 {
-    public interface IUserService
+    public interface IUserService<TUser>
+        where TUser : User, new()
     {
         /// <summary>
         /// Create a new user
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<User> CreateUserAsync(User user);
+        Task<TUser> CreateUserAsync(TUser user);
 
         /// <summary>
         /// Delete an existing user
@@ -26,21 +25,21 @@ namespace Binner.Services
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<User?> GetUserAsync(User user);
+        Task<TUser?> GetUserAsync(TUser user);
 
         /// <summary>
         /// Get a list of users
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<ICollection<User>> GetUsersAsync(PaginatedRequest request);
+        Task<ICollection<TUser>> GetUsersAsync(PaginatedRequest request);
 
         /// <summary>
         /// Update existing user
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<User?> UpdateUserAsync(User user);
+        Task<TUser?> UpdateUserAsync(TUser user);
 
         /// <summary>
         /// Validate a user image token.

@@ -3,7 +3,7 @@ using Binner.Common.Database;
 using Binner.Services.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Common.MappingProfiles.ModelCommon;
+using Binner.Services.MappingProfiles.ModelCommon;
 using Binner.Services;
 using Binner.Common.StorageProviders;
 using Binner.Global.Common;
@@ -87,11 +87,6 @@ namespace Binner.Web.Configuration
 
         private static void RegisterMappingProfiles(IServiceContainer container)
         {
-            var profile = new BinnerMappingProfile();
-            AnyMapper.Mapper.Configure(config =>
-            {
-                config.AddProfile(profile);
-            });
             // register automapper
             container.Register<PartTypeMappingAction<DataModel.Part, PartResponse>>(new PerScopeLifetime());
             container.Register<PartTypeMappingAction<Part, Binner.Model.CommonPart>>(new PerScopeLifetime());
@@ -125,11 +120,10 @@ namespace Binner.Web.Configuration
             container.Register<IPcbService, PcbService>(new PerScopeLifetime());
             container.Register<ICredentialService, CredentialService>(new PerScopeLifetime());
             container.Register<ISettingsService, SettingsService>(new PerScopeLifetime());
-            container.Register<ISwarmService, SwarmService>(new PerScopeLifetime());
             container.Register<IStoredFileService, StoredFileService>(new PerScopeLifetime());
-            container.Register<IUserService, UserService>(new PerScopeLifetime());
+            container.Register<IUserService<User>, UserService<User>>(new PerScopeLifetime());
             container.Register<IAuthenticationService, AuthenticationService>(new PerScopeLifetime());
-            container.Register<IAccountService, AccountService>(new PerScopeLifetime());
+            container.Register<IAccountService<Account>, AccountService<Account>>(new PerScopeLifetime());
             container.Register<IAdminService, AdminService>(new PerScopeLifetime());
             container.Register<IPrintService, PrintService>(new PerScopeLifetime());
             container.Register<IPartScanHistoryService, PartScanHistoryService>(new PerScopeLifetime());
@@ -145,7 +139,7 @@ namespace Binner.Web.Configuration
             /* Register the licensed services, provided by PostSharp */
             var configLicenseKey = container.GetInstance<Binner.Model.Configuration.LicenseConfiguration>().LicenseKey;
             container.RegisterInstance<Binner.LicensedProvider.LicenseConfiguration>(new LicensedProvider.LicenseConfiguration { LicenseKey = configLicenseKey });
-            container.Register<ILicensedService, LicensedService>(new PerScopeLifetime());
+            container.Register<ILicensedService<User>, LicensedService<User>>(new PerScopeLifetime());
             container.Register<ILicensedStorageProvider, LicensedStorageProvider>(new PerScopeLifetime());
         }
 

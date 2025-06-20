@@ -5,11 +5,11 @@
         /// <summary>
         /// Associated User Id
         /// </summary>
-        int? UserId { get; set; }
+        int UserId { get; set; }
 
         /// <summary>
         /// Associated Organization Id
         /// </summary>
-        int? OrganizationId { get; set; }
+        int OrganizationId { get; set; }
     }
 }

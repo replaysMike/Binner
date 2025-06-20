@@ -19,5 +19,7 @@ namespace Binner.Data.Model
         public DateTime DateCreatedUtc { get; set; }
 
         public DateTime DateModifiedUtc { get; set; }
+
+        public ICollection<User>? Users { get; set; }
     }
 }

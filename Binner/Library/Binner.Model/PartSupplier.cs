@@ -1,4 +1,6 @@
-﻿namespace Binner.Model
+﻿using Binner.Global.Common;
+
+namespace Binner.Model
 {
     public class PartSupplier
     {

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class OrderImportHistoryLineItem : IEntity, IUserData
+    public class OrderImportHistoryLineItem : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

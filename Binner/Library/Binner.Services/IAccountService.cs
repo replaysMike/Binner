@@ -1,24 +1,23 @@
 ﻿using Binner.Model;
 using Binner.Model.Responses;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Binner.Services
 {
-    public interface IAccountService
+    public interface IAccountService<TAccount>
+        where TAccount : Account, new()
     {
         /// <summary>
         /// Get the user's account
         /// </summary>
         /// <returns></returns>
-        Task<Account?> GetAccountAsync();
+        Task<TAccount?> GetAccountAsync();
 
         /// <summary>
         /// Update the user's account
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
-        Task<UpdateAccountResponse> UpdateAccountAsync(Account account);
+        Task<UpdateAccountResponse> UpdateAccountAsync(TAccount account);
 
         /// <summary>
         /// Upload a new datasheet

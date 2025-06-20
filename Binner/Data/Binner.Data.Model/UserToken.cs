@@ -8,7 +8,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Tracks different kinds of authentication tokens
     /// </summary>
-    public class UserToken : IEntity, IUserData
+    public class UserToken : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

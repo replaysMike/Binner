@@ -1,4 +1,6 @@
-﻿namespace Binner.Model.Responses
+﻿using Binner.Global.Common;
+
+namespace Binner.Model.Responses
 {
     /// <summary>
     /// A user defined project

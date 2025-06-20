@@ -1,5 +1,5 @@
-﻿using AnyBarcode;
-using Binner.Common;
+﻿using Binner.Common;
+using Binner.Model;
 using Binner.Model.Barcode;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +9,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Stores the history of part labels scanned
     /// </summary>
-    public class PartScanHistory : IEntity, IUserData
+    public class PartScanHistory : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

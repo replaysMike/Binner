@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class Project : IEntity, IUserData
+    public class Project : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

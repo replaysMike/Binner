@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Binner.Global.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Model
 {
@@ -60,6 +61,11 @@ namespace Binner.Model
         /// Optional user id to associate
         /// </summary>
         public int? UserId { get; set; }
+
+        /// <summary>
+        /// Optional organization id to associate
+        /// </summary>
+        public int? OrganizationId { get; set; }
 
         public override bool Equals(object? obj)
         {

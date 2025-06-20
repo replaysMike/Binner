@@ -1,5 +1,4 @@
 ﻿using Binner.Global.Common;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TypeSupport.Extensions;
 using static Binner.Model.SystemDefaults;

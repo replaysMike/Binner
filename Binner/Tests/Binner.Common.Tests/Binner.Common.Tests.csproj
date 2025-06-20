@@ -300,9 +300,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Binner.Testing\Binner.Testing.csproj" />
     <ProjectReference Include="..\..\Library\Binner.Common\Binner.Common.csproj" />
     <ProjectReference Include="..\..\Library\Binner.Services\Binner.Services.csproj" />
+    <ProjectReference Include="..\Binner.Testing\Binner.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

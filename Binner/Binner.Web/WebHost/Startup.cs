@@ -4,6 +4,7 @@ using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Binner.Web.Authorization;
 using Binner.Web.Configuration;
+using Binner.Web.Conventions;
 using Binner.Web.Middleware;
 using Binner.Web.ServiceHost;
 using LightInject;
@@ -62,7 +63,11 @@ namespace Binner.Web.WebHost
 
             var configuration = StartupConfiguration.Configure(Container, services);
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(config =>
+            {
+                // add support for registering api controllers with generic type arguments
+                config.Conventions.Add(new GenericControllerNameConvention());
+            });
 
             services.Configure<FormOptions>(options =>
             {

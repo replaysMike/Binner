@@ -6,13 +6,8 @@ using Binner.Model;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Services
@@ -20,7 +15,8 @@ namespace Binner.Services
     /// <summary>
     /// Manage users
     /// </summary>
-    public class AccountService : IAccountService
+    public class AccountService<TAccount> : IAccountService<TAccount>
+        where TAccount : Account, new()
     {
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IMapper _mapper;
@@ -39,7 +35,7 @@ namespace Binner.Services
             => context.Users
                 .AsQueryable();
 
-        public async Task<Account?> GetAccountAsync()
+        public async Task<TAccount?> GetAccountAsync()
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -53,7 +49,7 @@ namespace Binner.Services
             {
                 // filter out tokens we want
                 entity.UserTokens = entity.UserTokens?.Where(x => x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken).ToList();
-                var model = _mapper.Map<Account>(entity);
+                var model = _mapper.Map<TAccount>(entity);
                 model.PartsInventoryCount = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
                 model.PartTypesCount = await context.PartTypes.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
                 return model;
@@ -62,7 +58,7 @@ namespace Binner.Services
             return null;
         }
 
-        public async Task<UpdateAccountResponse> UpdateAccountAsync(Account account)
+        public async Task<UpdateAccountResponse> UpdateAccountAsync(TAccount account)
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -75,7 +71,7 @@ namespace Binner.Services
             {
                 return new UpdateAccountResponse
                 {
-                    Account = _mapper.Map<Account>(entity),
+                    Account = _mapper.Map<TAccount>(entity),
                     IsSuccessful = false,
                     Message = $"Could not find user with id '{userContext.UserId}'",
                 };
@@ -92,7 +88,7 @@ namespace Binner.Services
                 {
                     return new UpdateAccountResponse
                     {
-                        Account = _mapper.Map<Account>(entity),
+                        Account = _mapper.Map<TAccount>(entity),
                         IsSuccessful = false,
                         Message = $"A user with this email already exists.",
                     };
@@ -105,7 +101,7 @@ namespace Binner.Services
                 {
                     return new UpdateAccountResponse
                     {
-                        Account = _mapper.Map<Account>(entity),
+                        Account = _mapper.Map<TAccount>(entity),
                         IsSuccessful = false,
                         Message = "Incorrect password.",
                     };
@@ -114,7 +110,7 @@ namespace Binner.Services
                 if (!account.NewPassword.Equals(account.ConfirmNewPassword))
                     return new UpdateAccountResponse
                     {
-                        Account = _mapper.Map<Account>(entity),
+                        Account = _mapper.Map<TAccount>(entity),
                         IsSuccessful = false,
                         Message = "Passwords do not match.",
                     };
@@ -130,7 +126,7 @@ namespace Binner.Services
 
             return new UpdateAccountResponse
             {
-                Account = _mapper.Map<Account>(entity),
+                Account = _mapper.Map<TAccount>(entity),
                 IsSuccessful = true
             };
         }

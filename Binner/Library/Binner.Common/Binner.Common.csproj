@@ -34,16 +34,6 @@
     <None Remove="Resources\**" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
-    <!-- Use the local licensedprovider project -->
-    <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
-    <!-- Use the licensedprovider package -->
-    <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="2.0.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
@@ -79,6 +69,16 @@
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="System.Runtime.Caching" Version="8.0.0" />
     <PackageReference Include="TypeSupport" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
+    <!-- Use the local licensedprovider project -->
+    <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
+    <!-- Use the licensedprovider package -->
+    <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
   </ItemGroup>
 
   <ItemGroup Condition="!Exists('..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">

@@ -36,7 +36,7 @@ namespace Binner.Model
         /// <param name="authRequest"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<OAuthAuthorization> UpdateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext);
+        Task<OAuthAuthorization?> UpdateOAuthRequestAsync(OAuthAuthorization authRequest, IUserContext? userContext);
 
         /// <summary>
         /// Get an existing (pending) oAuth request
@@ -322,7 +322,7 @@ namespace Binner.Model
         /// <param name="storedFile"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<StoredFile> UpdateStoredFileAsync(StoredFile storedFile, IUserContext? userContext);
+        Task<StoredFile?> UpdateStoredFileAsync(StoredFile storedFile, IUserContext? userContext);
 
         /// <summary>
         /// Delete existing user uploaded file
@@ -362,7 +362,7 @@ namespace Binner.Model
         /// <param name="pcb"></param>
         /// <param name="userContext"></param>
         /// <returns></returns>
-        Task<Pcb> UpdatePcbAsync(Pcb pcb, IUserContext? userContext);
+        Task<Pcb?> UpdatePcbAsync(Pcb pcb, IUserContext? userContext);
 
         /// <summary>
         /// Remove a pcb from a Project BOM
@@ -402,7 +402,7 @@ namespace Binner.Model
         /// <param name="assignment"></param>
         /// <param name="userContext"></param>
         /// <returns></returns>
-        Task<PcbStoredFileAssignment> UpdatePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext);
+        Task<PcbStoredFileAssignment?> UpdatePcbStoredFileAssignmentAsync(PcbStoredFileAssignment assignment, IUserContext? userContext);
 
         /// <summary>
         /// Remove a pcb stored file assignment BOM

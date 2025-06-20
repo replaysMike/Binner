@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Binner.Model.Configuration.Integrations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
@@ -7,7 +8,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Stores user defined integration configurations
     /// </summary>
-    public class UserIntegrationConfiguration : IEntity, IUserData
+    public class UserIntegrationConfiguration : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key
@@ -50,6 +51,11 @@ namespace Binner.Data.Model
         /// Digikey api enabled
         /// </summary>
         public bool DigiKeyEnabled { get; set; } = true;
+
+        /// <summary>
+        /// DigiKey site to use
+        /// </summary>
+        public DigikeyLocaleSite DigiKeySite { get; set; } = DigikeyLocaleSite.US;
 
         /// <summary>
         /// The Client Id
