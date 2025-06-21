@@ -17,5 +17,20 @@
         /// Description of project
         /// </summary>
         public long? ParentPartTypeId { get; set; }
+
+        /// <summary>
+        /// Part type description
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Reference designator
+        /// </summary>
+        public string? ReferenceDesignator { get; set; }
+
+        /// <summary>
+        /// The symbol id of the part type (KiCad)
+        /// </summary>
+        public string? SymbolId { get; set; }
     }
 }
