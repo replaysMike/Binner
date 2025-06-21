@@ -143,7 +143,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             ParametricType = (ParametricTypes)(int)p.ParametricType,
                             PartNumberManufacturerId = p.PartNumberManufacturerId,
                             PartNumberManufacturerParametricId = p.PartNumberManufacturerParametricId,
-                            Units = (Model.Swarm.ParametricUnits?)(int?)p.Units,
+                            Units = (ParametricUnits?)(int?)p.Units,
                             ValueAsBool = p.ValueAsBool,
                             ValueAsDouble = p.ValueAsDouble,
                             ValueAsString = p.ValueAsString

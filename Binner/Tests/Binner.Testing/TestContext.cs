@@ -9,17 +9,15 @@ using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
 using Binner.Services;
 using Binner.Services.Integrations;
+using Binner.Services.Integrations.PartInformation;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Binner.Common.Tests
+namespace Binner.Testing
 {
     public class TestContext
     {
@@ -40,6 +38,11 @@ namespace Binner.Common.Tests
                 HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object,
                 WebHostServiceConfiguration.Integrations, WebHostServiceConfiguration, ApiHttpClientFactory);
         public IApiHttpClientFactory ApiHttpClientFactory { get; set; }
+        public Mock<IExternalOrderService> ExternalOrderService { get; set; }
+        public Mock<IExternalBarcodeInfoService> ExternalBarcodeInfoService { get; set; }
+        public Mock<IExternalPartInfoService> ExternalPartInfoService { get; set; }
+        public Mock<IExternalCategoriesService> ExternalCategoriesService { get; set; }
+        public Mock<IBaseIntegrationBehavior> BaseIntegrationBehavior { get; set; }
 
         private readonly OAuthCredential _digiKeyV3Credential = new OAuthCredential
         {
@@ -105,6 +108,12 @@ namespace Binner.Common.Tests
 
             PartTypesCache = new Mock<IPartTypesCache>();
             LicensedService = new Mock<ILicensedService<User>>();
+
+            ExternalOrderService = new Mock<IExternalOrderService>();
+            ExternalBarcodeInfoService = new Mock<IExternalBarcodeInfoService>();
+            ExternalPartInfoService = new Mock<IExternalPartInfoService>();
+            ExternalCategoriesService = new Mock<IExternalCategoriesService>();
+            BaseIntegrationBehavior = new Mock<IBaseIntegrationBehavior>();
 
             IntegrationCredentialsCacheProvider = new Mock<IIntegrationCredentialsCacheProvider>();
 

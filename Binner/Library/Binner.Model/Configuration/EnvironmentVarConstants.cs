@@ -8,6 +8,7 @@
         public const string Ip = "BINNER_IP";                                          // IP address to bind to, default "*"
         public const string PublicUrl = "BINNER_PUBLICURL";                            // Public URL for the server, used for Digikey API features and serving content
         public const string Port = "BINNER_PORT";                                      // Port to bind to, default 8090
+        public const string SslPort = "BINNER_SSLPORT";                                // SSL Port to bind to, default 443
         public const string UseHttps = "BINNER_USEHTTPS";                              // Use HTTPS for the server, default true
         public const string SslCertificate = "BINNER_SSLCERTIFICATE";                  //  Path to the SSL certificate file
         public const string SslCertificatePassword = "BINNER_SSLCERTIFICATEPASSWORD";  // Password for the SSL certificate file

@@ -1,7 +1,5 @@
 ﻿using Binner.Services;
 using NUnit.Framework;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Binner.Common.Tests.Services
 {
@@ -20,7 +18,7 @@ namespace Binner.Common.Tests.Services
         [TestCase("myinvalidfile<>.jpg", "LM<>358", @"/userfiles@@ProductImage@@LM358-ProductImage.jpg")]
         public async Task ShouldNotCreateFilesWithInvalidChars(string testFilename, string partName, string expected)
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var partService = new StoredFileService(testContext.StorageProvider, testContext.RequestContextAccessor.Object, testContext.StorageProviderConfiguration);
             var part = await testContext.StorageProvider.GetPartAsync("LM358", testContext.RequestContextAccessor.Object.GetUserContext());
 

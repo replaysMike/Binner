@@ -42,7 +42,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         [Test]
         public async Task ShouldGenerate30346BarcodeAsync()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var printerSettings = GetPrinterSettings();
             var barcodeGenerator = new BarcodeGenerator();
             var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, printerSettings, barcodeGenerator);
@@ -75,7 +75,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         [Test]
         public async Task ShouldGenerate30346LongBarcodeAsync()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var printerSettings = GetPrinterSettings();
             var barcodeGenerator = new BarcodeGenerator();
             var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, printerSettings, barcodeGenerator);
@@ -108,7 +108,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         [Test]
         public async Task ShouldGenerate30346PartLabelAsync()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var printerSettings = GetPrinterSettings();
             var barcodeGenerator = new BarcodeGenerator();
             var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, printerSettings, barcodeGenerator);
@@ -158,7 +158,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         [Test]
         public async Task ShouldGenerate30346LongPartLabelAsync()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var printerSettings = GetPrinterSettings();
             var barcodeGenerator = new BarcodeGenerator();
             var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, printerSettings, barcodeGenerator);
@@ -208,7 +208,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         [Test]
         public async Task ShouldGenerate30277PartLabelAsync()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var printerSettings = GetPrinterSettings();
             var barcodeGenerator = new BarcodeGenerator();
             var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, printerSettings, barcodeGenerator);

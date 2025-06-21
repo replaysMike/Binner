@@ -14,10 +14,10 @@ namespace Binner.Services
     /// Manage users
     /// </summary>
     public class UserService<TUser> : IUserService<TUser>
-        where TUser : User, new()
+        where TUser : IUser, new()
     {
         protected readonly IDbContextFactory<BinnerContext> _contextFactory;
-        private readonly IMapper _mapper;
+        protected readonly IMapper _mapper;
         protected readonly IRequestContextAccessor _requestContext;
         private readonly ILicensedService<TUser> _licensedService;
 

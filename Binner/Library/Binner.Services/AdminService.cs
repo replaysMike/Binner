@@ -8,13 +8,8 @@ using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using NLog.Targets;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Binner.Services
 {
@@ -37,7 +32,7 @@ namespace Binner.Services
             _versionManagementService = versionManagementService;
         }
 
-        public async Task<SystemInfoResponse> GetSystemInfoAsync()
+        public virtual async Task<SystemInfoResponse> GetSystemInfoAsync()
         {
             var model = new SystemInfoResponse();
             var userContext = _requestContext.GetUserContext();

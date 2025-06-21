@@ -3,8 +3,6 @@ using Binner.Model;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -28,7 +26,7 @@ namespace Binner.Services.Authentication
             _settingsService = settingsService;
         }
 
-        public IEnumerable<Claim> GetClaims(UserContext user)
+        public virtual IEnumerable<Claim> GetClaims(UserContext user)
         {
             var claims = new List<Claim> {
                 new (ClaimTypes.NameIdentifier, user.UserId.ToString()),
@@ -50,7 +48,7 @@ namespace Binner.Services.Authentication
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public string GenerateJwtToken(UserContext user)
+        public virtual string GenerateJwtToken(UserContext user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             // generate token that is valid for 15 minutes
@@ -74,7 +72,7 @@ namespace Binner.Services.Authentication
         /// Generate a token that can be used to serve secure images
         /// </summary>
         /// <returns></returns>
-        public string? GenerateImagesToken() => TokenGenerator.NewToken();
+        public virtual string? GenerateImagesToken() => TokenGenerator.NewToken();
 
         /// <summary>
         /// Get the security key
@@ -88,7 +86,7 @@ namespace Binner.Services.Authentication
         /// Generate a new refresh token
         /// </summary>
         /// <returns></returns>
-        public RefreshToken GenerateRefreshToken()
+        public virtual RefreshToken GenerateRefreshToken()
         {
             var refreshToken = new RefreshToken
             {
@@ -112,7 +110,7 @@ namespace Binner.Services.Authentication
         /// </summary>
         /// <param name="encryptionBits"></param>
         /// <returns></returns>
-        public string GetSecurityAlgorithm(EncryptionBits encryptionBits)
+        public virtual string GetSecurityAlgorithm(EncryptionBits encryptionBits)
             => encryptionBits switch
             {
                 EncryptionBits.Bits128 => SecurityAlgorithms.Aes128CbcHmacSha256,
@@ -125,7 +123,7 @@ namespace Binner.Services.Authentication
         /// Get the token validation parameters that indicate how a Jwt token should be validated
         /// </summary>
         /// <returns></returns>
-        public TokenValidationParameters GetTokenValidationParameters()
+        public virtual TokenValidationParameters GetTokenValidationParameters()
         {
             return new TokenValidationParameters
             {
@@ -142,7 +140,7 @@ namespace Binner.Services.Authentication
             };
         }
 
-        private SecurityKey GetOrCreateJwtSigningKey()
+        protected virtual SecurityKey GetOrCreateJwtSigningKey()
         {
             var signingKey = _configuration.Authentication.JwtSecretKey;
             if (string.IsNullOrEmpty(signingKey))

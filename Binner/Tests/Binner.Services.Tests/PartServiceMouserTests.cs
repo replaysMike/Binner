@@ -1,9 +1,6 @@
 ﻿using Binner.Services;
 using Binner.Testing;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Binner.Common.Tests.Services
 {
@@ -13,7 +10,7 @@ namespace Binner.Common.Tests.Services
         [Test]
         public async Task ShouldImportMouserOrderCAD()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
             testContext.ApplyApiCredentials(apiCredentials);
 
@@ -22,8 +19,7 @@ namespace Binner.Common.Tests.Services
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-CAD.json" }
             });
 
-            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
+            var partService = ConstructPartService(testContext);
 
             var request = new Model.Requests.OrderImportRequest
             {   
@@ -45,7 +41,7 @@ namespace Binner.Common.Tests.Services
         [Test]
         public async Task ShouldImportMouserOrderUSD()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
             testContext.ApplyApiCredentials(apiCredentials);
 
@@ -54,8 +50,7 @@ namespace Binner.Common.Tests.Services
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-USD.json" }
             });
 
-            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
+            var partService = ConstructPartService(testContext);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -77,7 +72,7 @@ namespace Binner.Common.Tests.Services
         [Test]
         public async Task ShouldImportMouserOrderEUR()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
             testContext.ApplyApiCredentials(apiCredentials);
 
@@ -86,8 +81,7 @@ namespace Binner.Common.Tests.Services
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-EUR.json" }
             });
 
-            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
+            var partService = ConstructPartService(testContext);
 
             var request = new Model.Requests.OrderImportRequest
             {
@@ -105,5 +99,8 @@ namespace Binner.Common.Tests.Services
             Assert.That(response.Response.Parts.Count, Is.EqualTo(1));
             Assert.That(response.Response.Parts.First().QuantityAvailable, Is.EqualTo(5));
         }
+
+        private PartService ConstructPartService(Testing.TestContext testContext) => new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+            testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService.Object, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService.Object, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object);
     }
 }

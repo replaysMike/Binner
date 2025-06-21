@@ -38,10 +38,10 @@ namespace Binner.Services
         Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords);
 
         /// <summary>
-        /// List all DigiKey categories
+        /// List all categories from an external provider (default: DigiKey)
         /// </summary>
         /// <returns></returns>
-        Task<IServiceResult<CategoriesResponse?>> GetCategoriesAsync();
+        Task<IServiceResult<CategoriesResponse?>> GetCategoriesAsync(ExternalCategoriesRequest? request = null);
 
         /// <summary>
         /// Get a part by part number

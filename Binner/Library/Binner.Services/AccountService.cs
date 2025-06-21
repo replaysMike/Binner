@@ -31,11 +31,11 @@ namespace Binner.Services
             _configuration = configuration;
         }
 
-        private IQueryable<DataModel.User> GetAccountQueryable(BinnerContext context)
+        protected virtual IQueryable<DataModel.User> GetAccountQueryable(BinnerContext context)
             => context.Users
                 .AsQueryable();
 
-        public async Task<TAccount?> GetAccountAsync()
+        public virtual async Task<TAccount?> GetAccountAsync()
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -58,7 +58,7 @@ namespace Binner.Services
             return null;
         }
 
-        public async Task<UpdateAccountResponse> UpdateAccountAsync(TAccount account)
+        public virtual async Task<UpdateAccountResponse> UpdateAccountAsync(TAccount account)
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -131,7 +131,7 @@ namespace Binner.Services
             };
         }
 
-        public async Task UploadProfileImageAsync(MemoryStream stream, string originalFilename, string contentType, long length)
+        public virtual async Task UploadProfileImageAsync(MemoryStream stream, string originalFilename, string contentType, long length)
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -159,7 +159,7 @@ namespace Binner.Services
             }
         }
 
-        public async Task<Token?> CreateKiCadApiTokenAsync(string? tokenConfig)
+        public virtual async Task<Token?> CreateKiCadApiTokenAsync(string? tokenConfig)
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -193,7 +193,7 @@ namespace Binner.Services
             return _mapper.Map<DataModel.UserToken, Token>(newToken);
         }
 
-        public async Task<bool> DeleteKiCadApiTokenAsync(string token)
+        public virtual async Task<bool> DeleteKiCadApiTokenAsync(string token)
         {
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -213,7 +213,7 @@ namespace Binner.Services
             return true;
         }
 
-        public async Task<Token?> GetTokenAsync(string token, Model.Authentication.TokenTypes? tokenType = null)
+        public virtual async Task<Token?> GetTokenAsync(string token, Model.Authentication.TokenTypes? tokenType = null)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
             var apiToken = await context.UserTokens
@@ -230,7 +230,7 @@ namespace Binner.Services
             return null;
         }
 
-        public async Task<bool> ValidateKiCadApiToken(string token)
+        public virtual async Task<bool> ValidateKiCadApiToken(string token)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
             var apiToken = await context.UserTokens

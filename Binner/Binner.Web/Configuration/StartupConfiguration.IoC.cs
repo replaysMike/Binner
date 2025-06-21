@@ -1,10 +1,8 @@
 ﻿using AutoMapper.Internal;
 using Binner.Common.Database;
-using Binner.Services.Integrations;
+using Binner.Common.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Services.MappingProfiles.ModelCommon;
-using Binner.Services;
 using Binner.Common.StorageProviders;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
@@ -13,6 +11,15 @@ using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Responses;
+using Binner.Services;
+using Binner.Services.Authentication;
+using Binner.Services.Integrations;
+using Binner.Services.Integrations.Barcode;
+using Binner.Services.Integrations.Categories;
+using Binner.Services.Integrations.ExternalOrder;
+using Binner.Services.Integrations.PartInformation;
+using Binner.Services.MappingProfiles.ModelCommon;
+using Binner.Services.Printing;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Web.Authorization;
 using Binner.Web.ServiceHost;
@@ -21,9 +28,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using DataModel = Binner.Data.Model;
-using Binner.Services.Printing;
-using Binner.Services.Authentication;
-using Binner.Common.Integrations;
 
 namespace Binner.Web.Configuration
 {
@@ -132,6 +136,10 @@ namespace Binner.Web.Configuration
             container.Register<JwtService>(new PerScopeLifetime());
             container.Register<IntegrationService>(new PerScopeLifetime());
             container.Register<IVersionManagementService, VersionManagementService>(new PerScopeLifetime());
+            container.Register<IExternalOrderService, ExternalOrderService>(new PerScopeLifetime());
+            container.Register<IExternalPartInfoService, ExternalPartInfoService>(new PerScopeLifetime());
+            container.Register<IExternalBarcodeInfoService, ExternalBarcodeInfoService>(new PerScopeLifetime());
+            container.Register<IExternalCategoriesService, ExternalCategoriesService>(new PerScopeLifetime());
         }
 
         private static void RegisterLicensedServices(IServiceContainer container)
@@ -149,6 +157,19 @@ namespace Binner.Web.Configuration
             container.Register<IApiHttpClientFactory, ApiHttpClientFactory>(new PerScopeLifetime());
             container.Register<IIntegrationApiFactory, IntegrationApiFactory>(new PerScopeLifetime());
             container.Register<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>(new PerScopeLifetime());
+            container.Register<IBaseIntegrationBehavior, BaseIntegrationBehavior>(new PerScopeLifetime());
+
+            // external order services
+            container.Register<IDigiKeyExternalOrderService, DigiKeyExternalOrderService>(new PerScopeLifetime());
+            container.Register<IMouserExternalOrderService, MouserExternalOrderService>(new PerScopeLifetime());
+            container.Register<IArrowExternalOrderService, ArrowExternalOrderService>(new PerScopeLifetime());
+            container.Register<ITmeExternalOrderService, TmeExternalOrderService>(new PerScopeLifetime());
+
+            // external barcode info services
+            container.Register<IDigiKeyBarcodeInfoService, DigiKeyBarcodeInfoService>(new PerScopeLifetime());
+
+            // external categories services
+            container.Register<IDigiKeyExternalCategoriesService, DigiKeyExternalCategoriesService>(new PerScopeLifetime());
         }
     }
 }

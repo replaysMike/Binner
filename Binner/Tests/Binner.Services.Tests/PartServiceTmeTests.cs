@@ -1,9 +1,6 @@
 ﻿using Binner.Services;
 using Binner.Testing;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Binner.Common.Tests.Services
 {
@@ -13,7 +10,7 @@ namespace Binner.Common.Tests.Services
         [Test]
         public async Task ShouldSearchTmePart()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var apiCredentials = testContext.CreateApiCredentials(enableTme: true); // enable tme only
             testContext.ApplyApiCredentials(apiCredentials);
 
@@ -25,8 +22,7 @@ namespace Binner.Common.Tests.Services
                 { "/Products/GetProductsFiles.json", "Tme-PartSearch-1-Files.json" },
             });
 
-            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
+            var partService = ConstructPartService(testContext);
 
             var response = await partService.GetPartInformationAsync("LM393");
 
@@ -51,7 +47,7 @@ namespace Binner.Common.Tests.Services
         [Test]
         public async Task ShouldSearchTmePartNoResult()
         {
-            var testContext = new TestContext();
+            var testContext = new Testing.TestContext();
             var apiCredentials = testContext.CreateApiCredentials(enableTme: true); // enable tme only
             testContext.ApplyApiCredentials(apiCredentials);
 
@@ -61,8 +57,7 @@ namespace Binner.Common.Tests.Services
                 { "/Products/Search.json", "TmePartSearch-NoResults.json" }
             });
 
-            var partService = new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object);
+            var partService = ConstructPartService(testContext);
 
             var response = await partService.GetPartInformationAsync("LN393");
 
@@ -71,5 +66,8 @@ namespace Binner.Common.Tests.Services
             Assert.That(response.Response.Datasheets.Count, Is.EqualTo(0));
             Assert.That(response.Response.ProductImages.Count, Is.EqualTo(0));
         }
+
+        private PartService ConstructPartService(Testing.TestContext testContext) => new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
+            testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService.Object, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService.Object, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object);
     }
 }

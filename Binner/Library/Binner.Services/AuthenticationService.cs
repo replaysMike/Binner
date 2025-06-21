@@ -21,13 +21,13 @@ namespace Binner.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IStorageProvider _storageProvider;
-        private readonly IRequestContextAccessor _requestContext;
-        private readonly IDbContextFactory<BinnerContext> _contextFactory;
-        private readonly WebHostServiceConfiguration _configuration;
-        private readonly JwtService _jwt;
-        private readonly HttpClientFactory _httpClientFactory;
-        private readonly ILogger<AuthenticationService> _logger;
+        protected readonly IStorageProvider _storageProvider;
+        protected readonly IRequestContextAccessor _requestContext;
+        protected readonly IDbContextFactory<BinnerContext> _contextFactory;
+        protected readonly WebHostServiceConfiguration _configuration;
+        protected readonly JwtService _jwt;
+        protected readonly HttpClientFactory _httpClientFactory;
+        protected readonly ILogger<AuthenticationService> _logger;
 
         public AuthenticationService(ILogger<AuthenticationService> logger, IStorageProvider storageProvider, IDbContextFactory<BinnerContext> contextFactory, IRequestContextAccessor requestContextAccessor, JwtService jwt, WebHostServiceConfiguration configuration, HttpClientFactory httpClientFactory)
         {
@@ -40,7 +40,7 @@ namespace Binner.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<AuthenticationResponse> AuthenticateAsync(AuthenticationRequest model)
+        public virtual async Task<AuthenticationResponse> AuthenticateAsync(AuthenticationRequest model)
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
 
@@ -112,7 +112,7 @@ namespace Binner.Services
             }
         }
 
-        private async Task<AuthenticationResponse> CreateAuthenticationLoginAsync(BinnerContext context, Data.Model.User user, UserContext userContext)
+        protected virtual async Task<AuthenticationResponse> CreateAuthenticationLoginAsync(BinnerContext context, Data.Model.User user, UserContext userContext)
         {
             // are they allowed to login?
             if (!user.IsEmailConfirmed)
@@ -153,7 +153,7 @@ namespace Binner.Services
             return new AuthenticationResponse(userContext, authenticatedTokens);
         }
 
-        public async Task<AuthenticationResponse> RefreshTokenAsync(string token)
+        public virtual async Task<AuthenticationResponse> RefreshTokenAsync(string token)
         {
             if (string.IsNullOrEmpty(token)) throw new ArgumentNullException(nameof(token));
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -229,7 +229,7 @@ namespace Binner.Services
             });
         }
 
-        public async Task RevokeTokenAsync(string token)
+        public virtual async Task RevokeTokenAsync(string token)
         {
             if (string.IsNullOrEmpty(token)) throw new ArgumentNullException(nameof(token));
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -253,7 +253,7 @@ namespace Binner.Services
             }
         }
 
-        public async Task<UserContext?> GetUserAsync(int userId)
+        public virtual async Task<UserContext?> GetUserAsync(int userId)
         {
             if (userId == 0) throw new ArgumentNullException(nameof(userId));
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -261,7 +261,7 @@ namespace Binner.Services
             return userContext != null ? Map(userContext) : null;
         }
 
-        public async Task<RegisterNewAccountResponse> RegisterNewAccountAsync(RegisterNewAccountRequest request)
+        public virtual async Task<RegisterNewAccountResponse> RegisterNewAccountAsync(RegisterNewAccountRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
@@ -349,7 +349,7 @@ namespace Binner.Services
             }
         }
 
-        public async Task<PasswordRecoveryResponse> SendPasswordResetRequest(PasswordRecoveryRequest request)
+        public virtual async Task<PasswordRecoveryResponse> SendPasswordResetRequest(PasswordRecoveryRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
@@ -369,8 +369,10 @@ namespace Binner.Services
             var passwordResetToken = await context.UserTokens
                 .FirstOrDefaultAsync(x =>
                     x.UserId == user.UserId
+                    && x.OrganizationId == user.OrganizationId
                     && x.TokenTypeId == TokenTypes.PasswordResetToken
                     && x.DateExpiredUtc < DateTime.UtcNow
+                    && x.Token == request.Token
                     );
 
             if (passwordResetToken == null)
@@ -382,6 +384,7 @@ namespace Binner.Services
                     DateExpiredUtc = DateTime.UtcNow.AddDays(1),
                     Token = TokenGenerator.NewToken(),
                     User = user,
+                    OrganizationId = user.OrganizationId,
                     Ip = _requestContext.GetIp()
                 };
                 context.UserTokens.Add(passwordResetToken);
@@ -394,7 +397,7 @@ namespace Binner.Services
             };
         }
 
-        public async Task<PasswordRecoveryResponse> ValidatePasswordResetTokenAsync(ConfirmPasswordRecoveryRequest request)
+        public virtual async Task<PasswordRecoveryResponse> ValidatePasswordResetTokenAsync(ConfirmPasswordRecoveryRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -413,6 +416,7 @@ namespace Binner.Services
             var passwordResetToken = await context.UserTokens
                 .FirstOrDefaultAsync(x =>
                     x.UserId == user.UserId
+                    && x.OrganizationId == user.OrganizationId
                     && x.TokenTypeId == TokenTypes.PasswordResetToken
                     && x.DateExpiredUtc > DateTime.UtcNow
                     && x.Token == request.Token
@@ -434,7 +438,7 @@ namespace Binner.Services
             };
         }
 
-        public async Task<AuthenticationResponse> ResetPasswordUsingTokenAsync(PasswordRecoverySetNewPasswordRequest request)
+        public virtual async Task<AuthenticationResponse> ResetPasswordUsingTokenAsync(PasswordRecoverySetNewPasswordRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -449,6 +453,7 @@ namespace Binner.Services
             var passwordResetToken = await context.UserTokens
                 .FirstOrDefaultAsync(x =>
                     x.UserId == user.UserId
+                    && x.OrganizationId == user.OrganizationId
                     && x.TokenTypeId == TokenTypes.PasswordResetToken
                     && x.DateExpiredUtc > DateTime.UtcNow
                     && x.Token == request.Token
@@ -490,7 +495,7 @@ namespace Binner.Services
             return new AuthenticationResponse(false, "An unknown error occurred, your new password was not saved.");
         }
 
-        public async Task<ClaimsPrincipal> SetCurrentUserFromIdAsync(int userId)
+        public virtual async Task<ClaimsPrincipal> SetCurrentUserFromIdAsync(int userId)
         {
             var user = await GetUserAsync(userId);
             var claims = _jwt.GetClaims(user);
@@ -501,7 +506,7 @@ namespace Binner.Services
             return claimsPrincipal;
         }
 
-        private async Task<AuthenticatedTokens> GetAuthenticatedTokensAsync(BinnerContext context, UserContext userContext)
+        protected virtual async Task<AuthenticatedTokens> GetAuthenticatedTokensAsync(BinnerContext context, UserContext userContext)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (userContext == null) throw new ArgumentNullException(nameof(userContext));
@@ -523,7 +528,7 @@ namespace Binner.Services
             };
         }
 
-        private async Task<Data.Model.UserToken?> GetRefreshTokenAsync(BinnerContext context, string token)
+        protected virtual async Task<Data.Model.UserToken?> GetRefreshTokenAsync(BinnerContext context, string token)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             var userToken = await context.UserTokens
@@ -533,7 +538,7 @@ namespace Binner.Services
             return userToken;
         }
 
-        private (RefreshToken, string? imagesToken) RotateRefreshToken(Data.Model.UserToken refreshToken)
+        protected virtual (RefreshToken, string? imagesToken) RotateRefreshToken(Data.Model.UserToken refreshToken)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
             var newRefreshToken = _jwt.GenerateRefreshToken();
@@ -542,7 +547,7 @@ namespace Binner.Services
             return (newRefreshToken, newImagesToken);
         }
 
-        private async Task RemoveOldUserTokensAsync(BinnerContext context, Data.Model.User user)
+        protected virtual async Task RemoveOldUserTokensAsync(BinnerContext context, Data.Model.User user)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (user == null) throw new ArgumentNullException(nameof(user));
@@ -557,7 +562,7 @@ namespace Binner.Services
             context.UserTokens.RemoveRange(expiredTokens);
         }
 
-        private void RevokeDescendantRefreshTokens(Data.Model.UserToken refreshToken, Data.Model.User user, string reason)
+        protected virtual void RevokeDescendantRefreshTokens(Data.Model.UserToken refreshToken, Data.Model.User user, string reason)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
             if (user == null) throw new ArgumentNullException(nameof(user));
@@ -574,13 +579,13 @@ namespace Binner.Services
             }
         }
 
-        private void RevokeRefreshToken(Data.Model.UserToken token, string? replacedByToken = null)
+        protected virtual void RevokeRefreshToken(Data.Model.UserToken token, string? replacedByToken = null)
         {
             token.DateRevokedUtc = DateTime.UtcNow;
             token.ReplacedByToken = replacedByToken;
         }
 
-        private UserContext Map(Data.Model.User user)
+        protected virtual UserContext Map(Data.Model.User user)
         {
             return new UserContext
             {
