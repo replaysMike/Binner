@@ -614,7 +614,7 @@ export function PartTypes(props) {
               <Form.Input label="Symbol id" name="symbolId" value={modalContext?.symbolId || ''} onChange={handleSymbolIdChange} />
             </Form.Field>
             <Form.Field>
-              <Form.Dropdown label="Parent" className="icons" selection fluid value={iconDropdown} options={iconNames} onChange={handleNewPartTypeIconChange}  />
+              <Form.Dropdown label="Icon" className="icons" selection fluid value={iconDropdown} options={iconNames} onChange={handleNewPartTypeIconChange}  />
               <Popup 
                 wide="very"
                 hoverable
