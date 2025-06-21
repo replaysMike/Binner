@@ -154,6 +154,18 @@ export function PartTypes(props) {
     setModalContext({ ...modalContext, name: control.value });
   };
 
+  const handleDescriptionChange = (e, control) => {
+    setModalContext({ ...modalContext, description: control.value });
+  };
+
+  const handleReferenceDesignatorChange = (e, control) => {
+    setModalContext({ ...modalContext, referenceDesignator: control.value });
+  };
+
+  const handleSymbolIdChange = (e, control) => {
+    setModalContext({ ...modalContext, symbolId: control.value });
+  };
+
   const handleNewPartTypeIconNameChange = (e, control) => {
     setIconDropdown("");
     setModalContext({ ...modalContext, svg: control.value, icon: "" });
@@ -172,7 +184,10 @@ export function PartTypes(props) {
     setBtnAddDisabled(true);
     const request = {
       name: partType.name,
-      parentPartTypeId: Number.parseInt(partType.parentPartTypeId)
+      parentPartTypeId: Number.parseInt(partType.parentPartTypeId),
+      Description: partType.description,
+      ReferenceDesignator: partType.referenceDesignator,
+      SymbolId: partType.symbolId
     };
     const response = await fetchApi("/api/partType", {
       method: "POST",
@@ -590,7 +605,16 @@ export function PartTypes(props) {
               <Form.Input label="New Name" name="name" value={modalContext?.name || ''} onChange={handleNewPartTypeNameChange} />
             </Form.Field>
             <Form.Field>
-              <Form.Dropdown className="icons" selection fluid value={iconDropdown} options={iconNames} onChange={handleNewPartTypeIconChange}  />
+              <Form.Input label="Description" name="Description" value={modalContext?.description || ''} onChange={handleDescriptionChange} />
+            </Form.Field>
+            <Form.Field>
+              <Form.Input label="Reference designator" name="referenceDesignator" value={modalContext?.referenceDesignator || ''} onChange={handleReferenceDesignatorChange} />
+            </Form.Field>
+            <Form.Field>
+              <Form.Input label="Symbol id" name="symbolId" value={modalContext?.symbolId || ''} onChange={handleSymbolIdChange} />
+            </Form.Field>
+            <Form.Field>
+              <Form.Dropdown label="Parent" className="icons" selection fluid value={iconDropdown} options={iconNames} onChange={handleNewPartTypeIconChange}  />
               <Popup 
                 wide="very"
                 hoverable
@@ -660,6 +684,30 @@ export function PartTypes(props) {
                     value={partType.name}
                     onChange={handleChange}
                     name="name"
+                  />
+                </Form.Field>
+                <Form.Field>
+                  <Form.Input width={8}
+                    label={t("label.Description", "Description")}
+                    value={partType.description}
+                    onChange={handleChange}
+                    name="description"
+                  />
+                </Form.Field>
+                <Form.Field>
+                  <Form.Input width={8}
+                    label={t("label.ReferenceDesignator", "Reference designator")}
+                    value={partType.referenceDesignator}
+                    onChange={handleChange}
+                    name="referenceDesignator"
+                  />
+                </Form.Field>
+                <Form.Field>
+                  <Form.Input width={8}
+                    label={t("label.SymbolId", "Symbol id")}
+                    value={partType.symbolId}
+                    onChange={handleChange}
+                    name="symbolId"
                   />
                 </Form.Field>
                 <Form.Field width={8}>
