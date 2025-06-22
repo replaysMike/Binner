@@ -17,6 +17,11 @@ namespace Binner.Testing
             UriFileMapping = uriFileMapping;
         }
 
+        public void SetResponseMapping(Dictionary<string, string> uriFileMapping)
+        {
+            UriFileMapping = uriFileMapping;
+        }
+
         public IApiHttpClient Create()
         {
             if (!UriFileMapping.Any()) throw new ArgumentNullException("Filename was not set!");

@@ -438,7 +438,7 @@ namespace Binner.Services.Integrations
             if (user != null && user.UserId <= 0)
             {
                 _logger.LogError($"[{nameof(AuthorizeAsync)}] User is not authenticated!");
-                throw new AuthenticationException("User is not authenticated!");
+                throw new System.Security.Authentication.AuthenticationException("User is not authenticated!");
             }
 
             // check if we have saved an existing auth credential in the database

@@ -120,7 +120,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             ResourceSourceUrl = i.ResourceSourceUrl
                         }).ToList(),
                         IsObsolete = x.IsObsolete,
-                        Keywords = x.Keywords.Select(k => new Keyword
+                        Keywords = x.Keywords.Select(k => new Model.Swarm.Keyword
                         {
                             KeywordId = k.KeywordId,
                             Name = k.Name

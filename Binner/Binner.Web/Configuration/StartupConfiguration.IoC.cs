@@ -100,7 +100,7 @@ namespace Binner.Web.Configuration
                 // see: https://github.com/AutoMapper/AutoMapper/issues/3988
                 cfg.Internal().MethodMappingEnabled = false;
                 cfg.ConstructServicesUsing(t => container.GetInstance(t));  
-                cfg.AddMaps(Assembly.Load("Binner.Common"));
+                cfg.AddMaps(Assembly.Load("Binner.Services"));
             });
             
             config.AssertConfigurationIsValid();

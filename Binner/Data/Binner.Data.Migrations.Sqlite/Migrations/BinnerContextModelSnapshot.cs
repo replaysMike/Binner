@@ -433,10 +433,14 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .HasColumnType("TEXT");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
-                        .HasColumnType("TEXT");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
@@ -594,6 +598,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<string>("ShortId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("SwarmPartNumberManufacturerId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SymbolName")
                         .HasColumnType("TEXT");
@@ -1428,6 +1435,8 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.HasIndex("Name");
 
+                    b.HasIndex("OrganizationId");
+
                     b.HasIndex("PhoneNumber");
 
                     b.ToTable("Users", "dbo");
@@ -1476,6 +1485,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Property<string>("DigiKeyOAuthPostbackUrl")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("DigiKeySite")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("MouserApiUrl")
                         .HasColumnType("TEXT");
@@ -1615,6 +1627,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("PartLabelSource")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PrintMode")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PrinterName")
@@ -2126,6 +2141,17 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.User", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
@@ -2197,6 +2223,11 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
             modelBuilder.Entity("Binner.Data.Model.OrderImportHistory", b =>
                 {
                     b.Navigation("OrderImportHistoryLineItems");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.Organization", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>

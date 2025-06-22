@@ -12,4 +12,84 @@
     <ProjectReference Include="..\Binner.Testing\Binner.Testing.csproj" />
   </ItemGroup>
 
-</Project>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="NUnit" Version="4.1.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="IntegrationApiResponses\DigiKey-ExpiredBearerToken-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-ExpiredBearerToken-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidClientId-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidClientId-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidCredentials-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-InvalidCredentials-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-NotSubscribed-Type1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-NotSubscribed-Type2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v3-ExternalOrder-1-CAD.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v3-ExternalOrder-1-EUR.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v3-ExternalOrder-1-USD.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v3-PartSearch-1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v4-ExternalOrder-1-CAD.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v4-ExternalOrder-1-EUR.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v4-ExternalOrder-1-USD.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\DigiKey-v4-PartSearch-1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Mouser-ExternalOrder-1-CAD.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Mouser-ExternalOrder-1-EUR.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Mouser-ExternalOrder-1-USD.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Tme-PartSearch-1-Files.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Tme-PartSearch-1-Prices.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\Tme-PartSearch-1-Search.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationApiResponses\TmePartSearch-NoResults.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project> 

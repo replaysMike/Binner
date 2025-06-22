@@ -2,6 +2,7 @@
 using Binner.Global.Common;
 using Binner.Testing;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

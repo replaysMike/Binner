@@ -17,6 +17,9 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PhoneNumber, options => options.MapFrom(x => x.PhoneNumber))
                 .ForMember(x => x.LocaleLanguage, options => options.MapFrom(x => x.LocaleLanguage))
                 .ForMember(x => x.LocaleCurrency, options => options.MapFrom(x => x.LocaleCurrency))
+                .ForMember(x => x.CustomFields, options => options.MapFrom(x => x.CustomFields))
+                .ForMember(x => x.CustomFieldValues, options => options.MapFrom(x => x.CustomFieldValues))
+
                 .ForMember(x => x.ProfileImage, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.IsEmailSubscribed, options => options.Ignore())
@@ -48,6 +51,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.ProjectPartAssignments, options => options.Ignore())
                 .ForMember(x => x.ProjectPcbAssignments, options => options.Ignore())
                 .ForMember(x => x.StoredFiles, options => options.Ignore())
+                .ForMember(x => x.Organization, options => options.Ignore())
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ForMember(x => x.ProjectProduceHistory, options => options.Ignore())
                 .ForMember(x => x.ProjectPcbProduceHistory, options => options.Ignore())
@@ -56,8 +60,6 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.OrderImportHistoryLineItems, options => options.Ignore())
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
-                .ForMember(x => x.CustomFields, options => options.MapFrom(x => x.CustomFields))
-                .ForMember(x => x.CustomFieldValues, options => options.MapFrom(x => x.CustomFieldValues))
                 ;
 
             CreateMap<DataModel.User, Account>()

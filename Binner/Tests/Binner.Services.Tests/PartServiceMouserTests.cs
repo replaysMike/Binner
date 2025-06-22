@@ -14,7 +14,7 @@ namespace Binner.Common.Tests.Services
             var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
             testContext.ApplyApiCredentials(apiCredentials);
 
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            testContext.ApiHttpClientFactory.SetResponseMapping(new Dictionary<string, string>
             {
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-CAD.json" }
             });
@@ -45,7 +45,7 @@ namespace Binner.Common.Tests.Services
             var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
             testContext.ApplyApiCredentials(apiCredentials);
 
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            testContext.ApiHttpClientFactory.SetResponseMapping(new Dictionary<string, string>
             {
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-USD.json" }
             });
@@ -76,7 +76,7 @@ namespace Binner.Common.Tests.Services
             var apiCredentials = testContext.CreateApiCredentials(enableMouser: true); // enable mouser only
             testContext.ApplyApiCredentials(apiCredentials);
 
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            testContext.ApiHttpClientFactory.SetResponseMapping(new Dictionary<string, string>
             {
                 { $"/api/v1/orderhistory/webOrderNumber", "Mouser-ExternalOrder-1-EUR.json" }
             });
@@ -101,6 +101,6 @@ namespace Binner.Common.Tests.Services
         }
 
         private PartService ConstructPartService(Testing.TestContext testContext) => new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-            testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService.Object, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService.Object, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object);
+            testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object);
     }
 }

@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Binner.Web.Controllers
 {
@@ -271,7 +272,7 @@ namespace Binner.Web.Controllers
 
                 var stream = new MemoryStream();
 
-                Image image;
+                Image<Rgba32> image;
                 if (!request.Lines.Any())
                     image = new BlankImage(text: "No lines specified!", fontFamily: _fontManager.InstalledFonts.Families.First()).Image;
                 else

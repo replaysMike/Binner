@@ -132,6 +132,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartScanHistories, options => options.Ignore())
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
+                .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
 #if INITIALCREATE
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.User, options => options.Ignore())
@@ -310,6 +311,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.PartId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
+                .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
                 ;
 
             CreateMap<Binner.Model.Requests.UpdatePartRequest, Part>()
@@ -359,10 +361,12 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
                 .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
+
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
+                .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
                 ;
 
             CreateMap<Binner.Model.Requests.BulkPart, Part>()
@@ -417,6 +421,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.PartId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
+                .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
                 ;
 
             CreateMap<Part, Binner.Model.CommonPart>()
@@ -448,6 +453,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
                 .ForMember(x => x.AdditionalPartNumbers, options => options.MapFrom(x => x.OtherNames != null ? x.OtherNames.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
+                .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.MapFrom(x => x.SwarmPartNumberManufacturerId))
 
                 .ForMember(x => x.FactoryStockAvailable, options => options.Ignore())
                 .ForMember(x => x.MinimumOrderQuantity, options => options.Ignore())

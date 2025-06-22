@@ -1,5 +1,4 @@
-﻿using Binner.Testing;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Binner.Services.Tests
 {
@@ -13,7 +12,7 @@ namespace Binner.Services.Tests
             var apiCredentials = testContext.CreateApiCredentials(enableTme: true); // enable tme only
             testContext.ApplyApiCredentials(apiCredentials);
 
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            testContext.ApiHttpClientFactory.SetResponseMapping(new Dictionary<string, string>
             {
                 // tme makes 3 api calls to get all part information
                 { "/Products/Search.json", "Tme-PartSearch-1-Search.json" },
@@ -50,7 +49,7 @@ namespace Binner.Services.Tests
             var apiCredentials = testContext.CreateApiCredentials(enableTme: true); // enable tme only
             testContext.ApplyApiCredentials(apiCredentials);
 
-            testContext.ApiHttpClientFactory = new MockApiHttpClientFactory(new Dictionary<string, string>
+            testContext.ApiHttpClientFactory.SetResponseMapping(new Dictionary<string, string>
             {
                 // tme makes 3 api calls to get all part information
                 { "/Products/Search.json", "TmePartSearch-NoResults.json" }
@@ -67,6 +66,6 @@ namespace Binner.Services.Tests
         }
 
         private PartService ConstructPartService(Testing.TestContext testContext) => new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService.Object, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService.Object, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object);
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object);
     }
 }
