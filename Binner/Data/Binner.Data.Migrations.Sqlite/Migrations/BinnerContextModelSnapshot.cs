@@ -1544,6 +1544,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<bool>("TmeEnabled")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("TmeResolveExternalLinks")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 

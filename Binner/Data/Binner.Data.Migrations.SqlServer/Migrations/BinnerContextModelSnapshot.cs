@@ -1598,6 +1598,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<bool>("TmeEnabled")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("TmeResolveExternalLinks")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 

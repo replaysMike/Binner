@@ -15,7 +15,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Binner.Common.StorageProviders
+namespace Binner.Web.Database
 {
     public class MigrationHandler
     {

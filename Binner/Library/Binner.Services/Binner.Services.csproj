@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Binner.Common\Binner.Common.csproj" />
     <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
     <ProjectReference Include="..\Binner.Model\Binner.Model.csproj" />

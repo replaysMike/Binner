@@ -1,13 +1,12 @@
 ﻿using Binner.Common;
 using Binner.Common.Configuration;
-using Binner.Common.Database;
 using Binner.Common.Extensions;
-using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Services.Security;
 using Binner.Web.Configuration;
+using Binner.Web.Database;
 using Binner.Web.WebHost;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -155,6 +154,8 @@ namespace Binner.Web.ServiceHost
 
             var migrationHostBuilder = HostBuilderFactory.Create(storageConfig);
             var migrationHost = migrationHostBuilder.Build();
+
+            // create a custom migration handler to handle migrations for different database providers
             var contextFactory = migrationHost.Services.GetRequiredService<IDbContextFactory<BinnerContext>>();
             var migrationHandler = new MigrationHandler(_nlogLogger, storageConfig, contextFactory);
             if (migrationHandler.TryDetectMigrateNeeded(out var db))

@@ -1598,6 +1598,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<bool>("TmeEnabled")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("TmeResolveExternalLinks")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 

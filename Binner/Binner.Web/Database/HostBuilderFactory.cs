@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 
-namespace Binner.Common.Database
+namespace Binner.Web.Database
 {
     public static class HostBuilderFactory
     {

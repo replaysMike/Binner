@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.LicensedProvider;
 using Binner.Model;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
-namespace Binner.Common.StorageProviders
+namespace Binner.Web.Database
 {
     public class StorageProviderFactory : IStorageProviderFactory
     {

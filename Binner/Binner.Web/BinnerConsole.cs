@@ -1,5 +1,4 @@
 ﻿using Binner.Common;
-using Binner.Common.Database;
 using Binner.Common.Extensions;
 using Binner.Common.Security;
 using Binner.Data;
@@ -8,17 +7,22 @@ using Binner.Global.Common;
 using Binner.Legacy.StorageProviders;
 using Binner.Model;
 using Binner.Model.Configuration;
+using Binner.Services;
 using Binner.Services.Security;
+using Binner.Web.Database;
 using CommandLine;
 using CommandLine.Text;
 using LightInject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NLog;
+using System;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Binner.Services
+namespace Binner.Web
 {
     public class BinnerConsole
     {
@@ -559,10 +563,10 @@ namespace Binner.Services
         {
             var isHandled = false;
             // any of these values will skip parsing and go straight to topshelf. This is due to incompatibility with the command line parser.
-            var bypassArgs = new[] { "install", "uninstall", "start", "stop", "-username", "-password", "-instance", "--autostart", "--disabled", "--manual", "--delayed", "--localsystem", "--localservice", "--networkservice", "--interactive", "--sudo", "-servicename", "-description", "-displayname" };
+            var bypassArgs = new[] { "install", "uninstall", "start", "stop", "-username", "-password", "-instance", "--autostart", "--disabled", "--manual", "--delayed", "--localsystem", "--localservice", "--networkservice", "--interactive", "--sudo", "-servicename", "-description", "-displayname", "--applicationName", "-applicationName", "migrations" };
             foreach(var arg in args)
             {
-                if (bypassArgs.Contains(arg.ToLower()))
+                if (arg.Equals("--applicationName", StringComparison.InvariantCultureIgnoreCase) || arg.Equals("migrations", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return false;
                 }

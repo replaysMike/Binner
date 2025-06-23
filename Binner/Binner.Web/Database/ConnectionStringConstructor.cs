@@ -5,7 +5,7 @@ using Npgsql;
 using System;
 using System.Linq;
 
-namespace Binner.Common.Database
+namespace Binner.Web.Database
 {
     public static class ConnectionStringConstructor
     {

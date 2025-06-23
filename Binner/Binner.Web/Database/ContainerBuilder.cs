@@ -1,5 +1,4 @@
 ﻿using Binner.Common.StorageProviders;
-using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
 using LightInject;
@@ -7,7 +6,7 @@ using LightInject.Microsoft.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
-namespace Binner.Common.Database
+namespace Binner.Web.Database
 {
     public class ContainerBuilder
     {

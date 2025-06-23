@@ -1,5 +1,4 @@
 ﻿using AutoMapper.Internal;
-using Binner.Common.Database;
 using Binner.Common.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
@@ -22,6 +21,7 @@ using Binner.Services.MappingProfiles.ModelCommon;
 using Binner.Services.Printing;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Web.Authorization;
+using Binner.Web.Database;
 using Binner.Web.ServiceHost;
 using LightInject;
 using Microsoft.AspNetCore.Authorization;
@@ -41,7 +41,6 @@ namespace Binner.Web.Configuration
             services.AddSingleton<IServiceContainer, ServiceContainer>();
             services.AddSingleton<IAuthorizationHandler, KiCadTokenAuthorizationHandler>();
             services.AddSingleton(container);
-            container.RegisterInstance(container);
 
             // register printer configuration
             RegisterPrinterService(container);

@@ -40,8 +40,8 @@
     <PackageReference Include="AnyMapper" Version="1.0.34" />
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="LightInject" Version="6.6.4" />
-    <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.7.1" />
+    <PackageReference Include="LightInject" Version="7.0.1" />
+    <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
       <Version>9.*-*</Version>
@@ -110,6 +110,7 @@
     <ProjectReference Include="..\Data\Binner.Data.Migrations.Postgresql\Binner.Data.Migrations.Postgresql.csproj" />
     <ProjectReference Include="..\Data\Binner.Data.Migrations.Sqlite\Binner.Data.Migrations.Sqlite.csproj" />
     <ProjectReference Include="..\Data\Binner.Data.Migrations.SqlServer\Binner.Data.Migrations.SqlServer.csproj" />
+    <ProjectReference Include="..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Library\Binner.Common\Binner.Common.csproj" />
     <ProjectReference Include="..\Library\Binner.Model\Binner.Model.csproj" />
     <ProjectReference Include="..\Library\Binner.Services\Binner.Services.csproj" />

@@ -43,8 +43,8 @@
     <PackageReference Include="Binner.SwarmApi" Version="1.0.5" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="libc.hwid" Version="7.0.0" />
-    <PackageReference Include="LightInject" Version="6.6.4" />
-    <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.7.1" />
+    <PackageReference Include="LightInject" Version="7.0.1" />
+    <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
@@ -87,8 +87,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Data\Binner.Data\Binner.Data.csproj" />
-    <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj" />
     <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
     <ProjectReference Include="..\Binner.Legacy\Binner.Legacy.csproj" />

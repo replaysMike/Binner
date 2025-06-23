@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\Library\Binner.Common\Binner.Common.csproj" />
     <ProjectReference Include="..\..\Library\Binner.Model\Binner.Model.csproj" />
     <ProjectReference Include="..\..\Library\Binner.Services\Binner.Services.csproj" />
