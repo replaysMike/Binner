@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using System;
 using Binner.Model;
 using DataModel = Binner.Data.Model;
 
