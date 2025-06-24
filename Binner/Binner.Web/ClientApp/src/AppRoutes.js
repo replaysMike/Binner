@@ -66,8 +66,24 @@ const AppRoutes = [
     path: '*',
     element: <NotFound />
   },
-
-  /* Public routes */
+  /* Help routes */
+  {
+    path: 'help',
+    element: <Help />
+  },
+  {
+    path: 'help/scanning',
+    element: <Scanning />
+  },
+  {
+    path: 'help/api-integrations',
+    element: <ApiIntegrations />
+  },
+  {
+    path: 'help/bom',
+    element: <BOM />
+  },
+  /* Pages routes */
   {
     path: '/accessdenied',
     element: <AccessDenied />
@@ -175,22 +191,6 @@ const AppRoutes = [
   {
     path: 'settings',
     element: <Settings />
-  },
-  {
-    path: 'help',
-    element: <Help />
-  },
-  {
-    path: 'help/scanning',
-    element: <Scanning />
-  },
-  {
-    path: 'help/api-integrations',
-    element: <ApiIntegrations />
-  },
-  {
-    path: 'help/bom',
-    element: <BOM />
   },
 
   /* ADMIN ROUTES */

@@ -32,5 +32,11 @@ namespace Binner.Services
         /// <param name="customFields"></param>
         /// <returns></returns>
         Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields);
+
+        /// <summary>
+        /// Ping the database to ensure it is reachable and operational.
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> PingDatabaseAsync();
     }
 }

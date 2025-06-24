@@ -31,7 +31,7 @@ namespace Binner.Web
         private readonly CertificateUtility _certificateUtility;
         private readonly IConfigurationRoot _configurationRoot;
         private readonly WebHostServiceConfiguration _webHostConfig;
-
+        public bool IsPlainText { get; set; }
         public BinnerConsole(ILogger logger, string configFile, IConfigurationRoot configurationRoot, WebHostServiceConfiguration webHostConfig)
         {
             _logger = logger;

@@ -607,6 +607,11 @@ namespace Binner.Testing
             return _users.Count(x => x.Value.IsAdmin);
         }
 
+        public Task<bool> PingDatabaseAsync()
+        {
+            return Task.FromResult(true);
+        }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

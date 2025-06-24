@@ -56,11 +56,11 @@ namespace Binner.StorageProvider.EntityFrameworkCore
                 entity.ShortId = ShortIdGenerator.Generate();
                 exists = await context.Parts.AnyAsync(x => x.ShortId == entity.ShortId && x.OrganizationId == userContext.OrganizationId);
             } while (exists);
-            
+
             EnforceIntegrityCreate(entity, userContext);
 
             if (entity.PartParametrics?.Any() == true)
-                foreach(var partParametric in entity.PartParametrics)
+                foreach (var partParametric in entity.PartParametrics)
                     EnforceIntegrityCreate(partParametric, userContext);
             if (entity.PartModels?.Any() == true)
                 foreach (var partModel in entity.PartModels)
@@ -1287,7 +1287,7 @@ INNER JOIN (
             return model;
         }
 
-        private IQueryable<DataModel.Part> GetPartsQueryable(BinnerContext context, PaginatedRequest request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
+        private IQueryable<DataModel.Part> GetPartsQueryable(IBinnerContext context, PaginatedRequest request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             var stringCompare = StringComparison.InvariantCultureIgnoreCase;
@@ -1814,7 +1814,7 @@ INNER JOIN (
                 entity = _mapper.Map(project, entity);
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
-                
+
                 // also update custom fields
                 await AddOrUpdateCustomFieldValuesAsync(project.ProjectId, project.CustomFields, CustomFieldTypes.Project, userContext);
 
@@ -2221,6 +2221,24 @@ INNER JOIN (
                 .CountAsync();
 
             return count;
+        }
+
+        /// <summary>
+        /// Ping the database to ensure it is reachable and operational
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> PingDatabaseAsync()
+        {
+            try
+            {
+                await using var context = await _contextFactory.CreateDbContextAsync();
+                await context.UserLoginHistory.FirstOrDefaultAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public void EnforceIntegrityCreate<T>(T entity, IUserContext userContext)

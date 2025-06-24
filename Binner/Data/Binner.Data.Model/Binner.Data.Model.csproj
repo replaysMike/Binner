@@ -25,10 +25,4 @@
     <ProjectReference Include="..\..\Library\Binner.Model\Binner.Model.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </None>
-  </ItemGroup>
-
 </Project>

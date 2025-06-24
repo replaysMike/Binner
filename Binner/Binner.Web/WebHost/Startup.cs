@@ -175,13 +175,20 @@ namespace Binner.Web.WebHost
                     return Task.CompletedTask;
                 });
             });
+
+            // ensure build directory exists
+            var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp", "build");
+            Directory.CreateDirectory(uiFolder);
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp", "build")),
+                FileProvider = new PhysicalFileProvider(uiFolder),
                 RequestPath = ""
             });
             app.UseSpaStaticFiles();
             app.UseRouting();
+
+            // global error handler
+            app.UseMiddleware<GlobalErrorMiddleware>();
 
             // enable authorization
             app.UseAuthentication();

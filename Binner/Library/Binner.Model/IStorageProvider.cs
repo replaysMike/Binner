@@ -736,5 +736,11 @@ namespace Binner.Model
         /// </summary>
         /// <returns></returns>
         Task<int> GetUserAdminCountAsync();
+
+        /// <summary>
+        /// Ping the database to ensure it is reachable and operational
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> PingDatabaseAsync();
     }
 }

@@ -19,33 +19,16 @@
 	font-size: 0.6em;
 }
 
+.ui.icon.input>i.icon.clearIcon.disabled {
+  opacity: 0.25 !important;
+  cursor: not-allowed;
+}
+
+.ui.icon.input>i.icon.clearIcon.disabled:hover {
+  opacity: 0.25 !important;
+}
+
 .ui.icon.input>i.icon.clearIcon:hover {
-	opacity: 1 !important;
-	background-color: #fbfbfb;
+  opacity: 1 !important;
+  background-color: #fbfbfb;
 }
-
-/* experimental. 
-  This adds support for rendering labels inside .ui.input instead of outside 
-*/
-.ui.input:has(label) {
-  top: 1.6em;
-  margin-bottom: 15px;
-}
-
-.ui.input label {
-  font-weight: 700;
-  font-size: 1em;
-  line-height: 1em;
-  display: block !important;
-  width: 100%;
-  position: absolute;
-  top: -22px;
-}
-
-.ui.form .required.field .ui.input label::after {
-  margin: -.2em 0 0 .2em;
-  content: '*';
-  color: #db2828;
-}
-
-/* end experimental */

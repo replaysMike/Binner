@@ -3,6 +3,7 @@ using Binner.Common.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
 using Binner.Common.StorageProviders;
+using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
@@ -43,6 +44,9 @@ namespace Binner.Web.Configuration
             services.AddSingleton<IAuthorizationHandler, KiCadTokenAuthorizationHandler>();
             services.AddSingleton(container);
             container.RegisterInstance(container);
+
+            // register database factory for contexts
+            RegisterDbFactory(container);
 
             // register printer configuration
             RegisterPrinterService(container);
@@ -88,6 +92,11 @@ namespace Binner.Web.Configuration
 
             // the main server app
             container.Register<BinnerWebHostService>(new PerContainerLifetime());
+        }
+
+        private static void RegisterDbFactory(IServiceContainer container)
+        {
+            container.Register<IGenericDbContextFactory, GenericDbContextFactory<BinnerContext>>(new PerContainerLifetime());
         }
 
         private static void RegisterMappingProfiles(IServiceContainer container)

@@ -79,5 +79,11 @@ namespace Binner.Services
 
             return await _storageProvider.SaveCustomFieldsAsync(customFields, _requestContext.GetUserContext());
         }
+
+        public async Task<bool> PingDatabaseAsync()
+        {
+            if (_storageProvider == null) return false;
+            return await _storageProvider.PingDatabaseAsync();
+        }
     }
 }

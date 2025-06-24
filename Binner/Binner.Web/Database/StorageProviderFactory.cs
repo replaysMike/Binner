@@ -28,6 +28,7 @@ namespace Binner.Web.Database
             var provider = Providers[EntityFrameworkStorageProvider.ProviderName.ToLower()];
             // materialize the dependencies
             var contextFactory = container.GetInstance<IDbContextFactory<BinnerContext>>();
+            //var contextFactory = container.GetInstance<IGenericDbContextFactory>();
             var mapper = container.GetInstance<IMapper>();
             var partTypesCache = container.GetInstance<IPartTypesCache>();
             var licensedStorageProvider = container.GetInstance<ILicensedStorageProvider>();
