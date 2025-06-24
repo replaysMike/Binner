@@ -42,6 +42,7 @@ namespace Binner.Web.Configuration
             services.AddSingleton<IServiceContainer, ServiceContainer>();
             services.AddSingleton<IAuthorizationHandler, KiCadTokenAuthorizationHandler>();
             services.AddSingleton(container);
+            container.RegisterInstance(container);
 
             // register printer configuration
             RegisterPrinterService(container);

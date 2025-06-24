@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Binner.Data
 {
-    public class BinnerContext : DbContext, IBinnerContext
+    public class BinnerContext : DbContext
     {
         /// <summary>
         /// User-defined custom fields
@@ -159,6 +159,8 @@ namespace Binner.Data
         {
 
         }
+
+        //public BinnerContext(DbContextOptions<BinnerContext> options) : base(options) { }
 
         public BinnerContext(DbContextOptions options) : base(options)
         {

@@ -566,8 +566,9 @@ namespace Binner.Web
             var bypassArgs = new[] { "install", "uninstall", "start", "stop", "-username", "-password", "-instance", "--autostart", "--disabled", "--manual", "--delayed", "--localsystem", "--localservice", "--networkservice", "--interactive", "--sudo", "-servicename", "-description", "-displayname", "--applicationName", "-applicationName", "migrations" };
             foreach(var arg in args)
             {
-                if (arg.Equals("--applicationName", StringComparison.InvariantCultureIgnoreCase) || arg.Equals("migrations", StringComparison.InvariantCultureIgnoreCase))
+                if (bypassArgs.Contains(arg, StringComparer.InvariantCultureIgnoreCase))
                 {
+                    // exit immediately, don't process the arguments
                     return false;
                 }
             }
