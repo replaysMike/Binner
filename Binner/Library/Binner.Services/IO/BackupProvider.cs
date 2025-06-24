@@ -1,19 +1,16 @@
-﻿using Binner.Data;
+﻿using Binner.Common;
+using Binner.Data;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Binner.Common.IO
+namespace Binner.Services.IO
 {
     public partial class BackupProvider : IBackupProvider
     {

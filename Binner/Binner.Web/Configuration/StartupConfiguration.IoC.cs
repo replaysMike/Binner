@@ -17,6 +17,7 @@ using Binner.Services.Integrations.Barcode;
 using Binner.Services.Integrations.Categories;
 using Binner.Services.Integrations.ExternalOrder;
 using Binner.Services.Integrations.PartInformation;
+using Binner.Services.IO;
 using Binner.Services.MappingProfiles.ModelCommon;
 using Binner.Services.Printing;
 using Binner.StorageProvider.EntityFrameworkCore;

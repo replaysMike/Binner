@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Binner.Common.IO
+﻿namespace Binner.Model
 {
     public class UploadFile
     {

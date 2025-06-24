@@ -19,6 +19,7 @@ using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Binner.Common.Integrations;
+using Binner.Services.IO;
 
 namespace Binner.Web.Controllers
 {

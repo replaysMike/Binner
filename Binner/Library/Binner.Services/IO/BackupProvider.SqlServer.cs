@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace Binner.Common.IO
+namespace Binner.Services.IO
 {
     public partial class BackupProvider
     {

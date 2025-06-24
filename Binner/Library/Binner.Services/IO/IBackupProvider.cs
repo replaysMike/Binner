@@ -1,7 +1,6 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using Binner.Model;
 
-namespace Binner.Common.IO;
+namespace Binner.Services.IO;
 
 public interface IBackupProvider
 {

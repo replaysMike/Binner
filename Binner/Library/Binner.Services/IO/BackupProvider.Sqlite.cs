@@ -1,12 +1,9 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Binner.Common;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Binner.Common.IO
+namespace Binner.Services.IO
 {
     public partial class BackupProvider
     {
