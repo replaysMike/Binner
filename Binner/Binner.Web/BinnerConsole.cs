@@ -135,6 +135,8 @@ namespace Binner.Web
 
         public async Task PrintHeaderAsync(string[] args, WebHostServiceConfiguration webHostConfig)
         {
+            if (IsPlainText) return;
+
             // print the logo
             var version = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version();
             PrintVersionLogo(version);
@@ -568,7 +570,8 @@ namespace Binner.Web
             {
                 if (bypassArgs.Contains(arg, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    // exit immediately, don't process the arguments
+                    if (arg.Equals("--applicationName", StringComparison.InvariantCultureIgnoreCase) || arg.Equals("migrations", StringComparison.InvariantCultureIgnoreCase))
+                        IsPlainText = true;
                     return false;
                 }
             }
