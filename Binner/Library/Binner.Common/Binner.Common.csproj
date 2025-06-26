@@ -34,16 +34,6 @@
     <None Remove="Resources\**" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
-    <!-- Use the local licensedprovider project -->
-    <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
-    <!-- Use the licensedprovider package -->
-    <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="AnyBarcode" Version="2.0.0" />
     <PackageReference Include="AnyMapper" Version="1.0.34" />
@@ -68,10 +58,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nexar.Client.Token" Version="0.1.1" />
-    <PackageReference Include="NLog" Version="4.7.13" />
-    <PackageReference Include="NPOI" Version="2.6.0" />
+    <PackageReference Include="NLog" Version="5.2.8" />
+    <PackageReference Include="NPOI" Version="2.7.0" />
     <PackageReference Include="Octokit" Version="5.0.2" />
-    <PackageReference Include="QRCoder-ImageSharp" Version="0.9.0" />
+    <PackageReference Include="QRCoder-ImageSharp" Version="0.10.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.6" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
@@ -81,8 +71,14 @@
     <PackageReference Include="TypeSupport" Version="1.2.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Integrations\DigikeyClient\Core\" />
+  <ItemGroup Condition="Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
+    <!-- Use the local licensedprovider project -->
+    <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
+    <!-- Use the licensedprovider package -->
+    <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
   </ItemGroup>
 
   <ItemGroup Condition="!Exists('..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
@@ -91,8 +87,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Data\Binner.Data\Binner.Data.csproj" />
-    <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj" />
     <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
     <ProjectReference Include="..\Binner.Legacy\Binner.Legacy.csproj" />

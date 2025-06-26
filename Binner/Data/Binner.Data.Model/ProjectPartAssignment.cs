@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class ProjectPartAssignment : IEntity, IUserData
+    public class ProjectPartAssignment : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

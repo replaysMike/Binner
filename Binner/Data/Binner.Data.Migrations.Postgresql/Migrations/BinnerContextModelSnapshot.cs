@@ -455,10 +455,14 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrganizationId"));
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -618,6 +622,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<string>("ShortId")
                         .HasColumnType("text");
+
+                    b.Property<int?>("SwarmPartNumberManufacturerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("SymbolName")
                         .HasColumnType("text");
@@ -1480,6 +1487,8 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.HasIndex("Name");
 
+                    b.HasIndex("OrganizationId");
+
                     b.HasIndex("PhoneNumber");
 
                     b.ToTable("Users", "dbo");
@@ -1530,6 +1539,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Property<string>("DigiKeyOAuthPostbackUrl")
                         .HasColumnType("text");
+
+                    b.Property<int>("DigiKeySite")
+                        .HasColumnType("integer");
 
                     b.Property<string>("MouserApiUrl")
                         .HasColumnType("text");
@@ -1584,6 +1596,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("TmeEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("TmeResolveExternalLinks")
                         .HasColumnType("boolean");
 
                     b.Property<int?>("UserId")
@@ -1673,6 +1688,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("PartLabelSource")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PrintMode")
                         .HasColumnType("integer");
 
                     b.Property<string>("PrinterName")
@@ -2188,6 +2206,17 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.User", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
@@ -2259,6 +2288,11 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
             modelBuilder.Entity("Binner.Data.Model.OrderImportHistory", b =>
                 {
                     b.Navigation("OrderImportHistoryLineItems");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.Organization", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Binner.Global.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Model
 {

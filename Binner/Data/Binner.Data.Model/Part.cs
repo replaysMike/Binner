@@ -13,7 +13,7 @@ namespace Binner.Data.Model
 #else
         : IPartialEntity,
 #endif
-        IUserData
+        IOptionalUserData
     {
         /// <summary>
         /// Primary key
@@ -188,6 +188,11 @@ namespace Binner.Data.Model
         /// Extension value 2 (can be used to store custom information)
         /// </summary>
         public string? ExtensionValue2 { get; set; }
+
+        /// <summary>
+        /// Add a link to the part number manufacturer (Swarm)
+        /// </summary>
+        public int? SwarmPartNumberManufacturerId { get; set; }
 
         /// <summary>
         /// Part value. '1k', '4.7uf', or the model name of the chip.

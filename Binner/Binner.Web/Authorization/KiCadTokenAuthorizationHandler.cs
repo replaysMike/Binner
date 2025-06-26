@@ -1,5 +1,5 @@
 ﻿using Binner.Common.Extensions;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Data;
 using Binner.Global.Common;
 using Microsoft.AspNetCore.Authorization;

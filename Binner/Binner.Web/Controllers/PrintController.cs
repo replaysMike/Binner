@@ -1,6 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.IO.Printing;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Binner.Web.Controllers
 {
@@ -36,10 +37,10 @@ namespace Binner.Web.Controllers
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly ILabelGenerator _labelGenerator;
         private readonly FontManager _fontManager;
-        private readonly IUserService _userService;
+        private readonly IUserService<User> _userService;
         private readonly IPrintService _printService;
 
-        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, ILabelGenerator labelGenerator, FontManager fontManager, IUserService userService, IPrintService printService)
+        public PrintController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, ILabelPrinterHardware labelPrinter, ILabelGenerator labelGenerator, FontManager fontManager, IUserService<User> userService, IPrintService printService)
         {
             _logger = logger;
             _config = config;
@@ -271,7 +272,7 @@ namespace Binner.Web.Controllers
 
                 var stream = new MemoryStream();
 
-                Image image;
+                Image<Rgba32> image;
                 if (!request.Lines.Any())
                     image = new BlankImage(text: "No lines specified!", fontFamily: _fontManager.InstalledFonts.Families.First()).Image;
                 else

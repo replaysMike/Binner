@@ -1,4 +1,5 @@
-﻿using Binner.Model.Configuration.Integrations;
+﻿using Binner.Global.Common;
+using Binner.Model.Configuration.Integrations;
 
 namespace Binner.Model.Responses
 {
@@ -7,42 +8,42 @@ namespace Binner.Model.Responses
         /// <summary>
         /// Octopart config
         /// </summary>
-        public OctopartUserConfiguration Octopart { get; set; } = new();
+        public OctopartUserConfiguration Octopart { get; set; } = new ();
 
         /// <summary>
         /// Digikey config
         /// </summary>
-        public DigiKeyUserConfiguration Digikey { get; set; } = new();
+        public DigiKeyUserConfiguration Digikey { get; set; } = new ();
 
         /// <summary>
         /// Mouser config
         /// </summary>
-        public MouserUserConfiguration Mouser { get; set; } = new();
+        public MouserUserConfiguration Mouser { get; set; } = new ();
 
         /// <summary>
         /// Arrow config
         /// </summary>
-        public ArrowUserConfiguration Arrow { get; set; } = new();
+        public ArrowUserConfiguration Arrow { get; set; } = new ();
 
         /// <summary>
         /// TME config
         /// </summary>
-        public TmeUserConfiguration Tme { get; set; } = new();
+        public TmeUserConfiguration Tme { get; set; } = new ();
 
         /// <summary>
         /// Binner config
         /// </summary>
-        public SwarmUserConfiguration Binner { get; set; } = new();
+        public SwarmUserConfiguration Binner { get; set; } = new ();
 
         /// <summary>
         /// Printer config
         /// </summary>
-        public PrinterSettingsResponse Printer { get; set; } = new();
+        public PrinterSettingsResponse Printer { get; set; } = new ();
 
         /// <summary>
         /// Barcode config
         /// </summary>
-        public BarcodeSettingsResponse Barcode { get; set; } = new();
+        public BarcodeSettingsResponse Barcode { get; set; } = new ();
 
         /// <summary>
         /// List of defined custom fields

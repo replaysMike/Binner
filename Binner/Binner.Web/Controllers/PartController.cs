@@ -4,7 +4,7 @@ using Binner.Common;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Barcode;
@@ -49,11 +49,11 @@ namespace Binner.Web.Controllers
         private readonly IOrderImportHistoryService _orderImportHistoryService;
         private readonly ILabelPrinterHardware _labelPrinter;
         private readonly IBarcodeGenerator _barcodeGenerator;
-        private readonly IUserService _userService;
+        private readonly IUserService<User> _userService;
         private readonly IPrintService _printService;
         private readonly ILabelGenerator _labelGenerator;
 
-        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService userService, IPrintService printService, ILabelGenerator labelGenerator)
+        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService<User> userService, IPrintService printService, ILabelGenerator labelGenerator)
         {
             _logger = logger;
             _mapper = mapper;

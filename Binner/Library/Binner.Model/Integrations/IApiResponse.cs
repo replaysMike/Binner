@@ -1,4 +1,4 @@
-﻿namespace Binner.Common.Integrations.Models
+﻿namespace Binner.Model.Integrations
 {
     public interface IApiResponse
     {

@@ -1,9 +1,10 @@
-﻿using Binner.Common.Services;
-using Binner.Model;
+﻿using Binner.Model;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Binner.Services;
+using Binner.Web.Conventions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,13 +21,15 @@ namespace Binner.Web.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
-    public class AccountController : ControllerBase
+    [GenericControllerNameConvention]
+    public partial class AccountController<TAccount> : ControllerBase
+        where TAccount : Account, new()
     {
-        private readonly ILogger<AccountController> _logger;
+        private readonly ILogger<AccountController<TAccount>> _logger;
         private readonly WebHostServiceConfiguration _config;
-        private readonly IAccountService _accountService;
+        private readonly IAccountService<TAccount> _accountService;
 
-        public AccountController(ILogger<AccountController> logger, WebHostServiceConfiguration config, IAccountService accountService)
+        public AccountController(ILogger<AccountController<TAccount>> logger, WebHostServiceConfiguration config, IAccountService<TAccount> accountService)
         {
             _logger = logger;
             _config = config;
@@ -85,7 +88,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateAccountAsync(Account request)
+        public async Task<IActionResult> UpdateAccountAsync(TAccount request)
         {
             var user = await _accountService.UpdateAccountAsync(request);
             user.Account.IPAddress = Request.HttpContext.Connection?.RemoteIpAddress?.ToString();

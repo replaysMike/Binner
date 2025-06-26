@@ -1,4 +1,4 @@
-﻿using Binner.Common.Integrations.Models;
+﻿using Binner.Model.Integrations;
 using System;
 
 namespace Binner.Common.Integrations

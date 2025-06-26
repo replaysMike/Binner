@@ -13,6 +13,11 @@ import LicenseErrorModal from "./components/modals/LicenseErrorModal";
 import "./custom.css";
 import "./bootstrap.css"; /* needed for the carousel control */
 
+// help
+import { Help } from './pages/help/Home';
+import { Scanning } from './pages/help/Scanning';
+import { ApiIntegrations } from './pages/help/ApiIntegrations';
+
 // pages
 import { NotFound } from "./pages/NotFound";
 import { AccessDenied } from "./pages/AccessDenied";
@@ -41,9 +46,6 @@ import { SmdResistorCodeCalculator } from "./pages/tools/SmdResistorCodeCalculat
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
 import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { KeyboardDump } from "./pages/tools/KeyboardDump";
-import { Help } from "./pages/help/Home";
-import { Scanning } from "./pages/help/Scanning";
-import { ApiIntegrations } from "./pages/help/ApiIntegrations";
 import { BOM } from "./pages/help/BOM";
 
 // admin
@@ -64,8 +66,24 @@ const AppRoutes = [
     path: '*',
     element: <NotFound />
   },
-
-  /* Public routes */
+  /* Help routes */
+  {
+    path: 'help',
+    element: <Help />
+  },
+  {
+    path: 'help/scanning',
+    element: <Scanning />
+  },
+  {
+    path: 'help/api-integrations',
+    element: <ApiIntegrations />
+  },
+  {
+    path: 'help/bom',
+    element: <BOM />
+  },
+  /* Pages routes */
   {
     path: '/accessdenied',
     element: <AccessDenied />
@@ -173,22 +191,6 @@ const AppRoutes = [
   {
     path: 'settings',
     element: <Settings />
-  },
-  {
-    path: 'help',
-    element: <Help />
-  },
-  {
-    path: 'help/scanning',
-    element: <Scanning />
-  },
-  {
-    path: 'help/api-integrations',
-    element: <ApiIntegrations />
-  },
-  {
-    path: 'help/bom',
-    element: <BOM />
   },
 
   /* ADMIN ROUTES */

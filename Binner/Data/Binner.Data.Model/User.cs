@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Binner.Model;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
@@ -8,7 +9,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user context
     /// </summary>
-    public class User : IEntity
+    public class User : IEntity, IUserData
     {
         /// <summary>
         /// User Id
@@ -120,6 +121,9 @@ namespace Binner.Data.Model
         /// The user's preferred currency, used for APIs and display
         /// </summary>
         public string? LocaleCurrency { get; set; }
+
+        [ForeignKey(nameof(OrganizationId))]
+        public Organization? Organization { get; set; }
 
         public ICollection<CustomField>? CustomFields { get; set; }
         

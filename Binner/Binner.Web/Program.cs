@@ -3,8 +3,12 @@ using Binner.Common.Extensions;
 using Binner.Common.IO;
 using Binner.Model;
 using Binner.Model.Configuration;
+using Binner.Services;
+using Binner.Web;
 using Binner.Web.ServiceHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.IO;
 using Topshelf;
@@ -75,6 +79,16 @@ var serviceDescription = typeof(BinnerWebHostService).GetDescription();
 
 // create a service using TopShelf
 //Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
+if (EF.IsDesignTime)
+{
+    // if an EF migration is being created/run create a default builder and execute it so it can do it's thing
+    Console.WriteLine("Executing Entity Framework command.");
+    var host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder();
+    await host.RunConsoleAsync();
+    Console.WriteLine("External application completed.");
+    Environment.Exit(ExitCodes.ExternalApplicationRun);
+}
 
 var rc = HostFactory.Run(x =>
 {

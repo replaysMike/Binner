@@ -1,4 +1,4 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,7 +7,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user-defined custom field that can be associated with a record held in CustomFieldValues
     /// </summary>
-    public class CustomField : IEntity, IUserData
+    public class CustomField : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

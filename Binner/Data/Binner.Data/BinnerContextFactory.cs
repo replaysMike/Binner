@@ -2,6 +2,7 @@
 using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace Binner.Data
 {
@@ -27,7 +28,7 @@ namespace Binner.Data
         internal static string LoadConnectionString(string connectionStringName)
         {
             if (string.IsNullOrEmpty(connectionStringName))
-                throw new Exception($"No {nameof(connectionStringName)} was provided.");
+                throw new ArgumentNullException(nameof(connectionStringName));
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile(EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings))
                 .Build();

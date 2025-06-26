@@ -1,9 +1,10 @@
 ﻿using Binner.Common.Integrations;
-using Binner.Common.Services;
-using Binner.Common.Services.Authentication;
 using Binner.Model;
 using Binner.Model.Integrations.DigiKey;
 using Binner.Model.Responses;
+using Binner.Services;
+using Binner.Services.Authentication;
+using Binner.Services.Integrations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,15 +20,16 @@ namespace Binner.Web.Controllers
     [Route("[controller]/[action]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
-    public class AuthorizationController : ControllerBase
+    public class AuthorizationController<TUser> : ControllerBase
+        where TUser : User, new()
     {
-        private readonly ILogger<AuthorizationController> _logger;
+        private readonly ILogger<AuthorizationController<TUser>> _logger;
         private readonly ICredentialService _credentialService;
         private readonly JwtService _jwtService;
-        private readonly IUserService _userService;
+        private readonly IUserService<TUser> _userService;
         private readonly IIntegrationApiFactory _integrationApiFactory;
 
-        public AuthorizationController(ILogger<AuthorizationController> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory, IUserService userService, JwtService jwtService)
+        public AuthorizationController(ILogger<AuthorizationController<TUser>> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory, IUserService<TUser> userService, JwtService jwtService)
         {
             _logger = logger;
             _credentialService = credentialService;

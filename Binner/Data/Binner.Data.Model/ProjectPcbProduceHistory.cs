@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Tracks the history when a project/BOM is produced
     /// </summary>
-    public class ProjectPcbProduceHistory : IEntity, IUserData
+    public class ProjectPcbProduceHistory : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

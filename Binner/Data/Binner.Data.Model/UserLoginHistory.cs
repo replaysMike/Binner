@@ -7,7 +7,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user login entry
     /// </summary>
-    public class UserLoginHistory : IEntity
+    public class UserLoginHistory : IEntity, IOptionalUserData
     {
         /// <summary>
         /// User Id

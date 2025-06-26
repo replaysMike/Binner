@@ -23,7 +23,7 @@ export const Help = () => {
 
         <div className="helpcontainer">
           <ul>
-						<li onClick={() => navigate("/help/scanning")}>
+			<li onClick={() => navigate("/help/scanning")}>
               <h1><span>Barcode Scanning</span></h1>
               <p>Learn more about what types of features are available using a handheld barcode scanner.</p>
             </li>
@@ -39,9 +39,13 @@ export const Help = () => {
               <h1><span>Wiki</span></h1>
               <p>Get more help from the wiki on GitHub</p>
             </li>
-						<li onClick={() => window.open("https://github.com/replaysMike/Binner/issues", "_blank")}>
-							<h1><span>Report a Bug</span></h1>
-							<Icon name="bug" color="blue" size="large" />
+            <li onClick={() => navigate("/support")}>
+              <h1>Contact</h1>
+              <p>If you still can't resolve your issue you can contact support.</p>
+            </li>
+			<li onClick={() => window.open("https://github.com/replaysMike/Binner/issues", "_blank")}>
+			  <h1><span>Report a Bug</span></h1>
+				<Icon name="bug" color="blue" size="large" />
               <p>Help the community build a great free product by reporting bugs online.</p>
             </li>
           </ul>

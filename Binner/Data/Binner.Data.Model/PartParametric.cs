@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class PartParametric : IEntity, IUserData
+    public class PartParametric : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

@@ -39,5 +39,10 @@
         /// Is Admin
         /// </summary>
         public bool IsAdmin { get; set; }
+
+        /// <summary>
+        /// Custom properties for the user
+        /// </summary>
+        public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
     }
 }

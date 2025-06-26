@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Binner.Global.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Binner.Model
 {
@@ -143,6 +144,11 @@ namespace Binner.Model
         /// The manufacturer part number
         /// </summary>
         public string? ManufacturerPartNumber { get; set; }
+
+        /// <summary>
+        /// Add a link to the part number manufacturer (Swarm)
+        /// </summary>
+        public int? SwarmPartNumberManufacturerId { get; set; }
 
         /// <summary>
         /// Optional user id to associate

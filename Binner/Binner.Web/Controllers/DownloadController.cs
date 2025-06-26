@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Global.Common;
 using Binner.Model.KiCad;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,6 +11,7 @@ using Newtonsoft.Json.Serialization;
 using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using Binner.Model;
 
 namespace Binner.Web.Controllers
 {
@@ -27,9 +28,9 @@ namespace Binner.Web.Controllers
         private readonly ILogger<DownloadController> _logger;
         private readonly IRequestContextAccessor _requestContextAccessor;
         private readonly IMapper _mapper;
-        private readonly IAccountService _accountService;
+        private readonly IAccountService<Account> _accountService;
 
-        public DownloadController(ILogger<DownloadController> logger, IMapper mapper, IAccountService accountService, IRequestContextAccessor requestContextAccessor)
+        public DownloadController(ILogger<DownloadController> logger, IMapper mapper, IAccountService<Account> accountService, IRequestContextAccessor requestContextAccessor)
         {
             _logger = logger;
             _mapper = mapper;

@@ -5,11 +5,11 @@ namespace Binner.Data.Model
 {
     public class ProjectPcbAssignment 
 #if INITIALCREATE
-        : IEntity, 
+        : IEntity,
 #else
         : IPartialEntity, 
 #endif
-        IUserData
+        IOptionalUserData
     {
         /// <summary>
         /// Primary key

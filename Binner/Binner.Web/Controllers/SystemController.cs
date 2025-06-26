@@ -1,13 +1,13 @@
 ﻿using Binner.Common.Integrations;
-using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Common.Services;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Binner.Services;
+using Binner.Services.IO;
 using LightInject;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -61,8 +61,17 @@ namespace Binner.Web.Controllers
 
         [AllowAnonymous]
         [HttpGet("/api/ping")]
-        public IActionResult Get()
+        public async Task<IActionResult> GetAsync()
         {
+            try
+            {
+                var result = await _settingsService.PingDatabaseAsync();
+                if (!result) return StatusCode(500, "Failed to connect to database!");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to connect to database due to exception! {ex.GetBaseException().Message}");
+            }
             return Ok("pong");
         }
 
@@ -215,7 +224,6 @@ namespace Binner.Web.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Get version error! ", ex));
             }
-
         }
 
         /// <summary>

@@ -23,7 +23,13 @@ namespace Binner.Model.Responses
         /// <summary>
         /// Label paper source
         /// </summary>
-        public LabelSource PartLabelSource { get; set; }
+        public LabelSource? PartLabelSource { get; set; } = LabelSource.Auto;
+
+        /// <summary>
+        /// If using a remote printer, specify the url.
+        /// Requires Binner print spooler
+        /// </summary>
+        public string? RemoteAddressUrl { get; set; } = string.Empty;
 
         /// <summary>
         /// Printer part label template (main lines)

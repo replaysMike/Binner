@@ -1,4 +1,6 @@
-﻿namespace Binner.Model.Requests
+﻿using Binner.Global.Common;
+
+namespace Binner.Model.Requests
 {
     public class UpdateProjectRequest : ICustomFields
     {

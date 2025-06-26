@@ -455,10 +455,14 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("OrganizationId"));
 
                     b.Property<DateTime>("DateCreatedUtc")
-                        .HasColumnType("datetime(6)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<DateTime>("DateModifiedUtc")
-                        .HasColumnType("datetime(6)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
@@ -618,6 +622,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<string>("ShortId")
                         .HasColumnType("longtext");
+
+                    b.Property<int?>("SwarmPartNumberManufacturerId")
+                        .HasColumnType("int");
 
                     b.Property<string>("SymbolName")
                         .HasColumnType("longtext");
@@ -1480,6 +1487,8 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.HasIndex("Name");
 
+                    b.HasIndex("OrganizationId");
+
                     b.HasIndex("PhoneNumber");
 
                     b.ToTable("Users", "dbo");
@@ -1530,6 +1539,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<string>("DigiKeyOAuthPostbackUrl")
                         .HasColumnType("longtext");
+
+                    b.Property<int>("DigiKeySite")
+                        .HasColumnType("int");
 
                     b.Property<string>("MouserApiUrl")
                         .HasColumnType("longtext");
@@ -1584,6 +1596,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<bool>("TmeEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("TmeResolveExternalLinks")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<int?>("UserId")
@@ -1673,6 +1688,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<int>("PartLabelSource")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrintMode")
                         .HasColumnType("int");
 
                     b.Property<string>("PrinterName")
@@ -2188,6 +2206,17 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.User", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
@@ -2259,6 +2288,11 @@ namespace Binner.Data.Migrations.MySql.Migrations
             modelBuilder.Entity("Binner.Data.Model.OrderImportHistory", b =>
                 {
                     b.Navigation("OrderImportHistoryLineItems");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.Organization", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Part", b =>

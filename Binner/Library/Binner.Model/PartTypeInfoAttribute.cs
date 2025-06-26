@@ -1,6 +1,4 @@
-﻿using static Binner.Model.SystemDefaults;
-
-namespace Binner.Model
+﻿namespace Binner.Model
 {
     /// <summary>
     /// Indicates the parent of a part type

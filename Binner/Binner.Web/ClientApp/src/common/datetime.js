@@ -5,6 +5,7 @@ export const Format12HourTime = 'h:mm aaa';
 export const Format12HourTimeSeconds = 'h:mm:ss aaa';
 export const FormatFullDateTime = 'E, MMM dd h:mm:ss aaa';
 export const FormatShortDate = 'E, MMM dd';
+export const FormatShortDateTime = 'E, MMM dd h:mm aaa';
 export const FormatDateOnly = 'MMM dd, yyyy';
 export const FormatWeekNumber = 'w';
 

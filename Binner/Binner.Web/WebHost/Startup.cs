@@ -4,6 +4,7 @@ using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Binner.Web.Authorization;
 using Binner.Web.Configuration;
+using Binner.Web.Conventions;
 using Binner.Web.Middleware;
 using Binner.Web.ServiceHost;
 using LightInject;
@@ -62,7 +63,11 @@ namespace Binner.Web.WebHost
 
             var configuration = StartupConfiguration.Configure(Container, services);
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(config =>
+            {
+                // add support for registering api controllers with generic type arguments
+                config.Conventions.Add(new GenericControllerNameConvention());
+            });
 
             services.Configure<FormOptions>(options =>
             {
@@ -170,13 +175,20 @@ namespace Binner.Web.WebHost
                     return Task.CompletedTask;
                 });
             });
+
+            // ensure build directory exists
+            var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp", "build");
+            Directory.CreateDirectory(uiFolder);
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp", "build")),
+                FileProvider = new PhysicalFileProvider(uiFolder),
                 RequestPath = ""
             });
             app.UseSpaStaticFiles();
             app.UseRouting();
+
+            // global error handler
+            app.UseMiddleware<GlobalErrorMiddleware>();
 
             // enable authorization
             app.UseAuthentication();

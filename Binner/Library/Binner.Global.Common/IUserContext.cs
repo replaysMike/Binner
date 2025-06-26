@@ -36,5 +36,10 @@
         /// Is Admin
         /// </summary>
         bool IsAdmin { get; set; }
+
+        /// <summary>
+        /// Custom properties for the user
+        /// </summary>
+        IDictionary<string, object?> Properties { get; set; }
     }
 }

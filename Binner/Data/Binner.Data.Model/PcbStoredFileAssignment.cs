@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A stored file associated with a pcb
     /// </summary>
-    public class PcbStoredFileAssignment : IEntity, IUserData
+    public class PcbStoredFileAssignment : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

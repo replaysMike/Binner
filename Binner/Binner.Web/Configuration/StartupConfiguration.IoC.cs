@@ -1,12 +1,9 @@
 ﻿using AutoMapper.Internal;
-using Binner.Common.Database;
 using Binner.Common.Integrations;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Common.MappingProfiles.ModelCommon;
-using Binner.Common.Services;
-using Binner.Common.Services.Authentication;
 using Binner.Common.StorageProviders;
+using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
@@ -14,8 +11,19 @@ using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Responses;
+using Binner.Services;
+using Binner.Services.Authentication;
+using Binner.Services.Integrations;
+using Binner.Services.Integrations.Barcode;
+using Binner.Services.Integrations.Categories;
+using Binner.Services.Integrations.ExternalOrder;
+using Binner.Services.Integrations.PartInformation;
+using Binner.Services.IO;
+using Binner.Services.MappingProfiles.ModelCommon;
+using Binner.Services.Printing;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Web.Authorization;
+using Binner.Web.Database;
 using Binner.Web.ServiceHost;
 using LightInject;
 using Microsoft.AspNetCore.Authorization;
@@ -36,6 +44,9 @@ namespace Binner.Web.Configuration
             services.AddSingleton<IAuthorizationHandler, KiCadTokenAuthorizationHandler>();
             services.AddSingleton(container);
             container.RegisterInstance(container);
+
+            // register database factory for contexts
+            RegisterDbFactory(container);
 
             // register printer configuration
             RegisterPrinterService(container);
@@ -83,13 +94,13 @@ namespace Binner.Web.Configuration
             container.Register<BinnerWebHostService>(new PerContainerLifetime());
         }
 
+        private static void RegisterDbFactory(IServiceContainer container)
+        {
+            container.Register<IGenericDbContextFactory, GenericDbContextFactory<BinnerContext>>(new PerContainerLifetime());
+        }
+
         private static void RegisterMappingProfiles(IServiceContainer container)
         {
-            var profile = new BinnerMappingProfile();
-            AnyMapper.Mapper.Configure(config =>
-            {
-                config.AddProfile(profile);
-            });
             // register automapper
             container.Register<PartTypeMappingAction<DataModel.Part, PartResponse>>(new PerScopeLifetime());
             container.Register<PartTypeMappingAction<Part, Binner.Model.CommonPart>>(new PerScopeLifetime());
@@ -99,7 +110,7 @@ namespace Binner.Web.Configuration
                 // see: https://github.com/AutoMapper/AutoMapper/issues/3988
                 cfg.Internal().MethodMappingEnabled = false;
                 cfg.ConstructServicesUsing(t => container.GetInstance(t));  
-                cfg.AddMaps(Assembly.Load("Binner.Common"));
+                cfg.AddMaps(Assembly.Load("Binner.Services"));
             });
             
             config.AssertConfigurationIsValid();
@@ -123,11 +134,10 @@ namespace Binner.Web.Configuration
             container.Register<IPcbService, PcbService>(new PerScopeLifetime());
             container.Register<ICredentialService, CredentialService>(new PerScopeLifetime());
             container.Register<ISettingsService, SettingsService>(new PerScopeLifetime());
-            container.Register<ISwarmService, SwarmService>(new PerScopeLifetime());
             container.Register<IStoredFileService, StoredFileService>(new PerScopeLifetime());
-            container.Register<IUserService, UserService>(new PerScopeLifetime());
+            container.Register<IUserService<User>, UserService<User>>(new PerScopeLifetime());
             container.Register<IAuthenticationService, AuthenticationService>(new PerScopeLifetime());
-            container.Register<IAccountService, AccountService>(new PerScopeLifetime());
+            container.Register<IAccountService<Account>, AccountService<Account>>(new PerScopeLifetime());
             container.Register<IAdminService, AdminService>(new PerScopeLifetime());
             container.Register<IPrintService, PrintService>(new PerScopeLifetime());
             container.Register<IPartScanHistoryService, PartScanHistoryService>(new PerScopeLifetime());
@@ -136,6 +146,10 @@ namespace Binner.Web.Configuration
             container.Register<JwtService>(new PerScopeLifetime());
             container.Register<IntegrationService>(new PerScopeLifetime());
             container.Register<IVersionManagementService, VersionManagementService>(new PerScopeLifetime());
+            container.Register<IExternalOrderService, ExternalOrderService>(new PerScopeLifetime());
+            container.Register<IExternalPartInfoService, ExternalPartInfoService>(new PerScopeLifetime());
+            container.Register<IExternalBarcodeInfoService, ExternalBarcodeInfoService>(new PerScopeLifetime());
+            container.Register<IExternalCategoriesService, ExternalCategoriesService>(new PerScopeLifetime());
         }
 
         private static void RegisterLicensedServices(IServiceContainer container)
@@ -143,7 +157,7 @@ namespace Binner.Web.Configuration
             /* Register the licensed services, provided by PostSharp */
             var configLicenseKey = container.GetInstance<Binner.Model.Configuration.LicenseConfiguration>().LicenseKey;
             container.RegisterInstance<Binner.LicensedProvider.LicenseConfiguration>(new LicensedProvider.LicenseConfiguration { LicenseKey = configLicenseKey });
-            container.Register<ILicensedService, LicensedService>(new PerScopeLifetime());
+            container.Register<ILicensedService<User>, LicensedService<User>>(new PerScopeLifetime());
             container.Register<ILicensedStorageProvider, LicensedStorageProvider>(new PerScopeLifetime());
         }
 
@@ -153,6 +167,19 @@ namespace Binner.Web.Configuration
             container.Register<IApiHttpClientFactory, ApiHttpClientFactory>(new PerScopeLifetime());
             container.Register<IIntegrationApiFactory, IntegrationApiFactory>(new PerScopeLifetime());
             container.Register<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>(new PerScopeLifetime());
+            container.Register<IBaseIntegrationBehavior, BaseIntegrationBehavior>(new PerScopeLifetime());
+
+            // external order services
+            container.Register<IDigiKeyExternalOrderService, DigiKeyExternalOrderService>(new PerScopeLifetime());
+            container.Register<IMouserExternalOrderService, MouserExternalOrderService>(new PerScopeLifetime());
+            container.Register<IArrowExternalOrderService, ArrowExternalOrderService>(new PerScopeLifetime());
+            container.Register<ITmeExternalOrderService, TmeExternalOrderService>(new PerScopeLifetime());
+
+            // external barcode info services
+            container.Register<IDigiKeyBarcodeInfoService, DigiKeyBarcodeInfoService>(new PerScopeLifetime());
+
+            // external categories services
+            container.Register<IDigiKeyExternalCategoriesService, DigiKeyExternalCategoriesService>(new PerScopeLifetime());
         }
     }
 }

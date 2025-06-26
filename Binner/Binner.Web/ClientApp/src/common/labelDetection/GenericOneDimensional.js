@@ -19,7 +19,7 @@ export default function GenericOneDimensional(value) {
       reason: null
     };
     if (!value?.length > 0) return detectValue;
-    const knownIdentifiers = ['1P', '30P', '31P', 'N', '32P', '42P', '50P', '51P', 'C', 'T', 'Q', '2Q', '3Q', 'K', '4K', '13K', '16K', 'P', 'J', '1T', '9D', '16D', '17D', 'D', '4L', 'L', '10L', 'V', 'R', '11K', '3S', 'T', '31T', 'D', '20L', '21L', '22L', '23L', '2P', '4W', 'E', '3Z', 'L'];
+    const knownIdentifiers = ['1P', '30P', '31P', 'N', '32P', '42P', '50P', '51P', 'C', 'T', 'Q', '2Q', '3Q', 'K', '4K', '13K', '16K', 'P', 'J', '1T', '9D', '16D', '17D', 'D', '4L', '10L', 'V', 'R', '11K', '3S', '31T', 'D', '20L', '21L', '22L', '23L', '2P', '4W', 'E', '3Z', 'L'];
     let cleanValue = value.replaceAll('\r', '');
     for (let i = 0; i < knownIdentifiers.length; i++) {
       let valueStr;
@@ -245,17 +245,6 @@ export default function GenericOneDimensional(value) {
               lot: valueStr,
             };
             return detectValue;
-          case 'L':
-            // line number
-            valueStr = cleanValue.substring(2, cleanValue.length);
-            detectValue.success = true;
-            detectValue.type = 'code128';
-            detectValue.labelType = 'part';
-            detectValue.certainty = 0.75;
-            detectValue.parsedValue = {
-              lineNumber: valueStr,
-            };
-            return detectValue;
           case '10L':
             // manufacturer country
             valueStr = cleanValue.substring(2, cleanValue.length);
@@ -344,17 +333,17 @@ export default function GenericOneDimensional(value) {
               packageId: valueStr,
             };
             return detectValue;
-          case 'T':
-            // batch number, seen on Taiyo Yuden
-            valueStr = cleanValue.substring(1, cleanValue.length);
-            detectValue.success = true;
-            detectValue.type = 'code128';
-            detectValue.labelType = 'part';
-            detectValue.certainty = 0.9;
-            detectValue.parsedValue = {
-              batchNo: valueStr,
-            };
-            return detectValue;
+          /*case 'T':
+          // batch number, seen on Taiyo Yuden
+          valueStr = cleanValue.substring(1, cleanValue.length);
+          detectValue.success = true;
+          detectValue.type = 'code128';
+          detectValue.labelType = 'part';
+          detectValue.certainty = 0.9;
+          detectValue.parsedValue = {
+            batchNo: valueStr,
+          };
+          return detectValue;*/
           // https://www.ersaelectronics.com/blog/a-360-degree-view-of-ti-labels
           case '31T':
             // lot number, seen on Texas Instruments

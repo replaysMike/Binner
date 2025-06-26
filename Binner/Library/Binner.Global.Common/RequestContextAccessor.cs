@@ -16,6 +16,15 @@ namespace Binner.Global.Common
         }
 
         /// <summary>
+        /// For backend services that don't require a user context, this mocks a basic user context to allow
+        /// services to bypass user requirements.
+        /// </summary>
+        public static void MockUserContextForServices()
+        {
+            Thread.CurrentPrincipal = new ServiceMockPrincipal();
+        }
+
+        /// <summary>
         /// Get an item from the request context
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -122,6 +131,13 @@ namespace Binner.Global.Common
         /// <returns></returns>
         public string? GetIpAddress()
             => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+        /// <summary>
+        /// Get the current http request
+        /// </summary>
+        /// <returns></returns>
+        public HttpContext? GetHttpContext()
+            => _httpContextAccessor?.HttpContext;
 
         /// <summary>
         /// Get the current http request

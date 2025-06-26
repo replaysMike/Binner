@@ -2,7 +2,7 @@
 using Binner.Common;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Common.Services;
+using Binner.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
@@ -32,9 +32,9 @@ namespace Binner.Web.Controllers
         private readonly WebHostServiceConfiguration _config;
         private readonly IPartService _partService;
         private readonly IStoredFileService _storedFileService;
-        private readonly IUserService _userService;
+        private readonly IUserService<User> _userService;
 
-        public StoredFileController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, IStoredFileService storedFileService, IUserService userService)
+        public StoredFileController(ILogger<ProjectController> logger, WebHostServiceConfiguration config, IPartService partService, IStoredFileService storedFileService, IUserService<User> userService)
         {
             _logger = logger;
             _config = config;
@@ -230,7 +230,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> DeletePartAsync(DeleteStoredFileRequest request)
+        public async Task<IActionResult> DeleteStoredFileAsync(DeleteStoredFileRequest request)
         {
             var isDeleted = await _storedFileService.DeleteStoredFileAsync(new StoredFile
             {

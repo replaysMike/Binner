@@ -24,5 +24,10 @@ namespace Binner.Model.Requests
 
         [Required]
         public string ConfirmPassword { get; set; } = string.Empty;
+        
+		/// <summary>
+        /// ReCaptcha token
+        /// </summary>
+        public string? Token { get; set; }
     }
 }

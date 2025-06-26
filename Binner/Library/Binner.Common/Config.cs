@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Binner.Common
 {
-    public static class Config
+    public class Config
     {
         public static IConfigurationRoot GetConfiguration(string appSettingsJson, string? path = null)
         {

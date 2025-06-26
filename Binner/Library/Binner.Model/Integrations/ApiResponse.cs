@@ -1,4 +1,4 @@
-﻿namespace Binner.Common.Integrations.Models
+﻿namespace Binner.Model.Integrations
 {
     /// <summary>
     /// An api response

@@ -8,7 +8,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// Stores user defined printer template configurations
     /// </summary>
-    public class UserPrinterTemplateConfiguration : IEntity, IUserData
+    public class UserPrinterTemplateConfiguration : IEntity, IOptionalUserData
     {
         /// <summary>
         /// Primary key

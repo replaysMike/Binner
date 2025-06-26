@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.13</LibraryVersion>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <Nullable>enable</Nullable>
+    <DefineConstants>$(DefineConstants);INITIALCREATE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Binner.Common\Binner.Common.csproj" />
+    <ProjectReference Include="..\Binner.Global.Common\Binner.Global.Common.csproj" />
+    <ProjectReference Include="..\Binner.Model\Binner.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
+    <!-- Use the local licensedprovider project -->
+    <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
+    <!-- Use the licensedprovider package -->
+    <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Integrations\DigikeyClient\Core\" />
+  </ItemGroup>
+
+</Project>
