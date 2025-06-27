@@ -30,7 +30,7 @@ namespace Binner.Services.Integrations
         /// <param name="recordCount"></param>
         /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null);
+        Task<IApiResponse> SearchAsync(string partNumber, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null);
 
         /// <summary>
         /// Search for a part
@@ -40,7 +40,7 @@ namespace Binner.Services.Integrations
         /// <param name="recordCount"></param>
         /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> SearchAsync(string partNumber, string? partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null);
+        Task<IApiResponse> SearchAsync(string partNumber, string? partType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null);
         
         /// <summary>
         /// Search for a part
@@ -51,7 +51,7 @@ namespace Binner.Services.Integrations
         /// <param name="recordCount"></param>
         /// <param name="additionalOptions"></param>
         /// <returns></returns>
-        Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null);
+        Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null);
 
         /// <summary>
         /// Get an order by it's orderId

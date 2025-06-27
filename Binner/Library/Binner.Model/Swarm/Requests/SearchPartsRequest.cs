@@ -23,7 +23,7 @@
         /// <summary>
         /// Max number of records to return
         /// </summary>
-        public int MaxRecords { get; set; } = 25;
+        public int MaxRecords { get; set; }
 
         public SearchPartsRequest() { }
 

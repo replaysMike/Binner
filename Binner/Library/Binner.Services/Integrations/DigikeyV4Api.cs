@@ -87,7 +87,7 @@ namespace Binner.Services.Integrations
             }
         }
 
-        public async Task<IApiResponse> SearchAsync(OAuthAuthorization authenticationResponse, string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public async Task<IApiResponse> SearchAsync(OAuthAuthorization authenticationResponse, string partNumber, string? partType, string? mountingType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
         {
             /* important reminder - don't reference authResponse in here! */
             _logger.LogInformation($"[{nameof(SearchAsync)}] Called using accesstoken='{authenticationResponse.AccessToken.Sanitize()}'");
@@ -160,9 +160,9 @@ namespace Binner.Services.Integrations
                         // manufacturers must be referenced by numeric manufactuer id as string, not name.
                         //ManufacturerFilter = new List<FilterId>() { new FilterId("1882") },
                         // category's must be referenced by numeric category id as string, not name.
-                        CategoryFilter = taxonomies.Any() 
-                            ? taxonomies.Select(x => new FilterId() { Id = ((int)x).ToString() }).ToList() 
-                            : new List<FilterId>(),
+                        //CategoryFilter = taxonomies.Any() 
+                        //    ? taxonomies.Select(x => new FilterId() { Id = ((int)x).ToString() }).ToList() 
+                        //    : new List<FilterId>(),
                         // v4 parametric filters are much more complicated. They require an initial search first which returns a list of
                         // all the possible parametric filters available - more like how the DigiKey website works.
                         // The Category Id, subcategory Id, and parameter Id are all required to be passed in the request.

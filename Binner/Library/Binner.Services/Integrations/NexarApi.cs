@@ -63,13 +63,13 @@ namespace Binner.Services.Integrations
             _nexarToken = await httpClient.GetNexarTokenAsync(_configuration.ClientId, _configuration.ClientSecret);
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
             => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);
 
-        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
             => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
 
-        public async Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public async Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
         {
             var nexarClient = CreateNexarClient();
             // update the token
