@@ -73,17 +73,17 @@ namespace Binner.Services.Integrations
             _client.Dispose();
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public Task<IApiResponse> SearchAsync(string partNumber, string partType, string mountingType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();
         }

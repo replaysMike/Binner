@@ -45,7 +45,7 @@ namespace Binner.Services.Integrations.ExternalOrder
                 var lineItems = mouserOrderResponse.OrderLines;
                 var commonParts = new List<CommonPart>();
                 var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
-                var mouserApiMaxOrderLineItems = 25;
+                var mouserApiMaxOrderLineItems = ApiConstants.OrderFullPartInfoMaxRecords;
                 var isLargeOrder = lineItems.Count > mouserApiMaxOrderLineItems;
 
                 if (isLargeOrder)

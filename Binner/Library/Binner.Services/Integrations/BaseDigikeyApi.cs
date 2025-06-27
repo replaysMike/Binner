@@ -8,13 +8,8 @@ using Binner.Model.Integrations.DigiKey;
 using Binner.Model.Integrations.DigiKey.V3;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using TypeSupport.Extensions;
 
 namespace Binner.Services.Integrations

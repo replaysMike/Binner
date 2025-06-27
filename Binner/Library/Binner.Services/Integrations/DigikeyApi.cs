@@ -1,23 +1,18 @@
 ﻿using ApiClient.OAuth2;
+using Binner.Common;
 using Binner.Common.Extensions;
-using Binner.Services;
+using Binner.Common.Integrations;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations;
 using Binner.Model.Integrations.DigiKey;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
-using System.Security.Authentication;
-using System.Threading.Tasks;
 using System.Web;
-using Binner.Model.Integrations;
-using Binner.Common;
-using Binner.Common.Integrations;
 
 namespace Binner.Services.Integrations
 {
@@ -203,9 +198,9 @@ namespace Binner.Services.Integrations
             });
         }
 
-        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);
+        public Task<IApiResponse> SearchAsync(string partNumber, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, string.Empty, string.Empty, recordCount, additionalOptions);
 
-        public Task<IApiResponse> SearchAsync(string partNumber, string? partType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
+        public Task<IApiResponse> SearchAsync(string partNumber, string? partType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null) => SearchAsync(partNumber, partType, string.Empty, recordCount, additionalOptions);
 
         /// <summary>
         /// Search for a part by part number
@@ -218,7 +213,7 @@ namespace Binner.Services.Integrations
         /// <param name="additionalOptions"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public async Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = 25, Dictionary<string, string>? additionalOptions = null)
+        public async Task<IApiResponse> SearchAsync(string partNumber, string? partType, string? mountingType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
         {
             ValidateConfiguration();
 
