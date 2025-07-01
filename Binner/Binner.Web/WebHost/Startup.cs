@@ -66,8 +66,12 @@ namespace Binner.Web.WebHost
             services.AddControllersWithViews(config =>
             {
                 // add support for registering api controllers with generic type arguments
-                config.Conventions.Add(new GenericControllerNameConvention());
+                //config.Conventions.Add(new GenericControllerNameConvention());
             });
+            /*.ConfigureApplicationPartManager(apm =>
+            {
+                apm.FeatureProviders.Add(new GenericRestControllerFeatureProvider());
+            });*/
 
             services.Configure<FormOptions>(options =>
             {
@@ -75,7 +79,7 @@ namespace Binner.Web.WebHost
                 options.MultipartBodyLengthLimit = 64 * 1024 * 1024;
             });
 
-            // specify the path to our spa production build
+            // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/build";
@@ -179,12 +183,16 @@ namespace Binner.Web.WebHost
             // ensure build directory exists
             var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp", "build");
             Directory.CreateDirectory(uiFolder);
-            app.UseStaticFiles(new StaticFileOptions
+            /*app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(uiFolder),
                 RequestPath = ""
             });
-            app.UseSpaStaticFiles();
+            /* app.UseSpaStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(uiFolder),
+                RequestPath = ""
+            });*/
             app.UseRouting();
 
             // global error handler

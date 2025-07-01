@@ -20,16 +20,15 @@ namespace Binner.Web.Controllers
     [Route("[controller]/[action]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
-    public class AuthorizationController<TUser> : ControllerBase
-        where TUser : User, new()
+    public class AuthorizationController : ControllerBase
     {
-        private readonly ILogger<AuthorizationController<TUser>> _logger;
+        private readonly ILogger<AuthorizationController> _logger;
         private readonly ICredentialService _credentialService;
         private readonly JwtService _jwtService;
-        private readonly IUserService<TUser> _userService;
+        private readonly IUserService<User> _userService;
         private readonly IIntegrationApiFactory _integrationApiFactory;
 
-        public AuthorizationController(ILogger<AuthorizationController<TUser>> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory, IUserService<TUser> userService, JwtService jwtService)
+        public AuthorizationController(ILogger<AuthorizationController> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory, IUserService<User> userService, JwtService jwtService)
         {
             _logger = logger;
             _credentialService = credentialService;

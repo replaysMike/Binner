@@ -1,10 +1,8 @@
-﻿using AnyMapper;
-using AutoMapper;
+﻿using AutoMapper;
 using Binner.Common;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
 using Binner.Common.IO.Printing;
-using Binner.Services;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Barcode;
@@ -13,6 +11,7 @@ using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Binner.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +28,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static Binner.Model.Common.SystemDefaults;
+using static Binner.Model.SystemDefaults;
 
 namespace Binner.Web.Controllers
 {

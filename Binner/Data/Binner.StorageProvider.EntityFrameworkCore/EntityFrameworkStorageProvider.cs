@@ -565,6 +565,7 @@ INNER JOIN (
             if (entity != null)
             {
                 entity = _mapper.Map(authRequest, entity);
+                entity.Ip = _requestContext.GetIp();
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 return _mapper.Map<OAuthAuthorization>(entity);
@@ -1742,12 +1743,14 @@ INNER JOIN (
                 entity.DateCreatedUtc = credential.DateCreatedUtc;
                 entity.DateExpiresUtc = credential.DateExpiresUtc;
                 entity.ApiSettings = credential.ApiSettings;
+                entity.Ip = _requestContext.GetIp();
                 EnforceIntegrityModify(entity, userContext);
             }
             else
             {
                 // insert
                 entity = _mapper.Map<DataModel.OAuthCredential>(credential);
+                entity.Ip = _requestContext.GetIp();
                 EnforceIntegrityCreate(entity, userContext);
                 context.OAuthCredentials.Add(entity);
             }
