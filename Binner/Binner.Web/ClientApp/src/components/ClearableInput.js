@@ -36,6 +36,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     helpDisabled,
     helpHideOnScroll,
     helpOnOpen,
+    field,
     label, // remove the label prop and implement manually to get rid of semantic warning
     ...propsToReturn } = rest;
   const propsForChild = {};
@@ -62,8 +63,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     ? <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{ left: 'unset', right: '0.75em', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden' }} />
     : <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{ right: getClearIconPosition(), opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden' }} />;
 
-  let inputElement = ((<Input {...propsToReturn}>
-    {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
+  let inputElement = ((<Input {...propsToReturn} label={label}>
     <input />
     {propsForChild.icon && <Icon name={propsForChild.icon} />}
     {icons}
@@ -86,36 +86,37 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     });
     if (type === "Form.Input") {
       // use Form.Input component
-      inputElement = (<Form.Input {...propsToReturn}>
-        {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
+      inputElement = (<Form.Input {...propsToReturn} label={label}>
         {children}
         {icons}
       </Form.Input>);
+      if (field) inputElement = <div className="field">{inputElement}</div>
       if (help) inputElement = (<Popup {...popupOptions} content={<>{help}</>} trigger={inputElement} />);
       return inputElement;
     }
     // use Input component
-    inputElement = (<Input {...propsToReturn}>
-      {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
+    inputElement = (<Input {...propsToReturn} label={label}>
       {children}
       {icons}
     </Input>);
+    if (field) inputElement = <div className="field">{inputElement}</div>
     if (help) inputElement = (<Popup {...popupOptions} content={<>{help}</>} trigger={inputElement} />);
     return inputElement;
   }
 
   // no children, render directly
   if (type === "Form.Input") {
-    inputElement = (<Form.Input {...propsToReturn}>
-      {label && <div><label htmlFor={propsToReturn.name}>{label}</label></div>}
+    inputElement = (<Form.Input {...propsToReturn} label={label}>
       <input />
       {propsForChild.icon && <Icon name={propsForChild.icon} />}
       {icons}
     </Form.Input>);
+    if (field) inputElement = <div className="field">{inputElement}</div>
     if (help) inputElement = <Popup {...popupOptions} content={<>{help}</>} trigger={inputElement} />
     return inputElement;
   }
 
+  if (field) inputElement = <div className="field">{inputElement}</div>
   return inputElement;
 };
 
@@ -125,6 +126,7 @@ ClearableInput.propTypes = {
   /** !!! Note: All new props added must be excluded above. See propsToExclude */
   /** Event triggered when the clear button is clicked */
   onClear: PropTypes.func,
+  field: PropTypes.bool,
   help: PropTypes.any,
   helpWide: PropTypes.bool,
   helpWideVery: PropTypes.bool,

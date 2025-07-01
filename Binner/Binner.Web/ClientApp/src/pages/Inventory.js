@@ -1779,14 +1779,15 @@ export function Inventory({ partNumber = "", ...rest }) {
                         <input />
                       </Input>
                     </Form.Field>
-                    <ClearableInput
-                      label={t('label.manufacturer', "Manufacturer")}
-                      placeholder="Texas Instruments"
-                      value={part.manufacturer || ""}
-                      onChange={handleChange}
-                      name="manufacturer"
-                      width={5}
-                    />
+                    <Form.Field>
+                      <ClearableInput
+                        label={t('label.manufacturer', "Manufacturer")}
+                        placeholder="Texas Instruments"
+                        value={part.manufacturer || ""}
+                        onChange={handleChange}
+                        name="manufacturer"
+                      />
+                    </Form.Field>
                     <ClearableInput
                       label={t('label.manufacturerPart', "Manufacturer Part")}
                       placeholder="LM358"
@@ -1821,15 +1822,14 @@ export function Inventory({ partNumber = "", ...rest }) {
                     />
                   </Form.Field>
                   <Form.Group>
-                    <Form.Field width={6}>
-                      <label>{t('label.packageType', "Package Type")}</label>
-                      <ClearableInput
-                        placeholder="DIP8"
-                        value={part.packageType || ""}
-                        onChange={handleChange}
-                        name="packageType"
-                      />
-                    </Form.Field>
+                    <ClearableInput
+                      label={t('label.packageType', "Package Type")}
+                      placeholder="DIP8"
+                      value={part.packageType || ""}
+                      onChange={handleChange}
+                      name="packageType"
+                      width={6}
+                    />
                     <Form.Field width={10} className="part-metadata-buttons">
                       <label>&nbsp;</label>
                       <Popup
