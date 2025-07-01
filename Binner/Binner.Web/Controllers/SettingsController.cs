@@ -1,0 +1,163 @@
+﻿using Binner.Common.Integrations;
+using Binner.Global.Common;
+using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.Requests;
+using Binner.Model.Responses;
+using Binner.Services;
+using LightInject;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Net.Mime;
+using System.Threading.Tasks;
+
+namespace Binner.Web.Controllers
+{
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("api/[controller]")]
+    [ApiController]
+    [Consumes(MediaTypeNames.Application.Json)]
+    public class SettingsController : ControllerBase
+    {
+        private static readonly string _appSettingsFilename = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
+        private readonly ILogger<SettingsController> _logger;
+        private readonly WebHostServiceConfiguration _config;
+        private readonly ISettingsService _settingsService;
+        private readonly IntegrationService _integrationService;
+        private readonly AutoMapper.IMapper _mapper;
+        private readonly IServiceContainer _container;
+        private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
+        private readonly IRequestContextAccessor _requestContext;
+
+        public SettingsController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<SettingsController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, IRequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider)
+        {
+            _mapper = mapper;
+            _container = container;
+            _logger = logger;
+            _config = config;
+            _settingsService = settingsService;
+            _integrationService = integrationService;
+            _requestContext = requestContextAccessor;
+            _credentialProvider = credentialProvider;
+        }
+
+        /// <summary>
+        /// Save the system settings
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
+        public IActionResult SaveSettings(SettingsRequest request) 
+        {
+            try
+            {
+                // validate formats
+                if (string.IsNullOrEmpty(request.Binner.ApiUrl)) request.Binner.ApiUrl = "https://swarm.binner.io";
+                if (string.IsNullOrEmpty(request.Digikey.ApiUrl)) request.Digikey.ApiUrl = "https://api.digikey.com";
+                if (string.IsNullOrEmpty(request.Digikey.oAuthPostbackUrl)) request.Digikey.oAuthPostbackUrl = "https://localhost:8090/Authorization/Authorize";
+                if (string.IsNullOrEmpty(request.Mouser.ApiUrl)) request.Mouser.ApiUrl = "https://api.mouser.com";
+                if (string.IsNullOrEmpty(request.Arrow.ApiUrl)) request.Arrow.ApiUrl = "https://api.arrow.com";
+                if (string.IsNullOrEmpty(request.Tme.ApiUrl)) request.Tme.ApiUrl = "https://api.tme.eu";
+                request.Binner.ApiUrl = $"https://{request.Binner.ApiUrl.Replace("https://", "").Replace("http://", "")}";
+                request.Digikey.ApiUrl = $"https://{request.Digikey.ApiUrl.Replace("https://", "").Replace("http://", "")}";
+                request.Digikey.oAuthPostbackUrl = $"https://{request.Digikey.oAuthPostbackUrl.Replace("https://", "").Replace("http://", "")}";
+                request.Mouser.ApiUrl = $"https://{request.Mouser.ApiUrl.Replace("https://", "").Replace("http://", "")}";
+                request.Arrow.ApiUrl = $"https://{request.Arrow.ApiUrl.Replace("https://", "").Replace("http://", "")}";
+                request.Tme.ApiUrl = $"https://{request.Tme.ApiUrl.Replace("https://", "").Replace("http://", "")}";
+
+                // clear the credentials cache for the apis
+                var user = _requestContext.GetUserContext();
+                _credentialProvider.Cache.Clear(new ApiCredentialKey { UserId = user?.UserId ?? 0 });
+
+                var newConfiguration = _mapper.Map<SettingsRequest, WebHostServiceConfiguration>(request, _config);
+                _settingsService.SaveSettingsAsAsync(newConfiguration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true);
+
+                // also save the custom fields (add/update/remove)
+                _settingsService.SaveCustomFieldsAsync(request.CustomFields);
+
+                // register new configuration
+                _container.RegisterInstance(newConfiguration);
+                _container.RegisterInstance(newConfiguration.Locale);
+
+                return Ok(new OperationSuccessResponse());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
+
+        }
+
+        /// <summary>
+        /// Get the system settings
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> GetSettingsAsync()
+        {
+            try
+            {
+                var settingsResponse = _mapper.Map<SettingsResponse>(_config);
+                settingsResponse.CustomFields = await _settingsService.GetCustomFieldsAsync();
+                return Ok(settingsResponse);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
+
+        }
+
+        /// <summary>
+        /// Test api settings
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("testapi")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
+        public async Task<IActionResult> TestApiAsync(TestApiRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Name)) return BadRequest();
+
+                // test api
+                var result = await _integrationService.TestApiAsync(request);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
+
+        }
+
+        /// <summary>
+        /// Forget cached credentials
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("forgetcredentials")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
+        public async Task<IActionResult> ForgetCredentialsAsync(ForgetCachedCredentialsRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Name)) return BadRequest();
+
+                // test api
+                var result = await _integrationService.ForgetCachedCredentialsAsync(request);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
+
+        }
+    }
+}

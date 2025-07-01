@@ -14,14 +14,14 @@ namespace Binner.Services
     /// Manage users
     /// </summary>
     public class UserService<TUser> : IUserService<TUser>
-        where TUser : IUser, new()
+        where TUser : class, IUser
     {
         protected readonly IDbContextFactory<BinnerContext> _contextFactory;
         protected readonly IMapper _mapper;
         protected readonly IRequestContextAccessor _requestContext;
-        private readonly ILicensedService<TUser> _licensedService;
+        protected readonly ILicensedService<TUser, BinnerContext> _licensedService;
 
-        public UserService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, ILicensedService<TUser> licensedService)
+        public UserService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, ILicensedService<TUser, BinnerContext> licensedService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
@@ -35,6 +35,7 @@ namespace Binner.Services
                 .Include(x => x.OAuthRequests)
                 .Include(x => x.Projects).ThenInclude(x => x.ProjectPartAssignments)
                 .Include(x => x.Projects).ThenInclude(x => x.ProjectPcbAssignments)
+                .Include(x => x.CustomFields).ThenInclude(x => x.CustomFieldValues)
                 .Include(x => x.UserIntegrationConfigurations)
                 .Include(x => x.UserPrinterConfigurations)
                 .Include(x => x.UserPrinterTemplateConfigurations)

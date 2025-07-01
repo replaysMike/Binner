@@ -2,6 +2,7 @@
 using Binner.Model.Authentication;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Binner.Common
@@ -30,7 +31,8 @@ namespace Binner.Common
                 new (JwtClaimTypes.FullName, userContext.Name ?? string.Empty),
                 new (ClaimTypes.Name, userContext.EmailAddress ?? string.Empty),
                 new (ClaimTypes.HomePhone, string.IsNullOrEmpty(userContext.PhoneNumber) ? "" : userContext.PhoneNumber),
-                new (JwtClaimTypes.CanLogin, userContext.CanLogin.ToString())
+                new (JwtClaimTypes.CanLogin, userContext.CanLogin.ToString()),
+                new (JwtClaimTypes.SubscriptionLevel, userContext.Properties.Where(x => x.Key == JwtClaimTypes.SubscriptionLevel).FirstOrDefault().ToString())
             };
             return claims;
         }

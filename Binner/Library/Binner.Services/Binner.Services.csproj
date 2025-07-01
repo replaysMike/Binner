@@ -1,13 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.13</LibraryVersion>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
-    <DefineConstants>$(DefineConstants);INITIALCREATE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,5 +28,12 @@
   <ItemGroup>
     <Folder Include="Integrations\DigikeyClient\Core\" />
   </ItemGroup>
+
+  <!-- Import common solution/project settings -->
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or
+                     '$(SolutionDir)' == '*undefined*'">
+    <SolutionDir>..\..\</SolutionDir>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)CommonSettings.targets" />
 
 </Project>

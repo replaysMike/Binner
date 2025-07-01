@@ -5,7 +5,7 @@ namespace Binner.Model
     /// <summary>
     /// Account of User
     /// </summary>
-    public class Account
+    public class Account : IAccount
     {
         /// <summary>
         /// Name of user

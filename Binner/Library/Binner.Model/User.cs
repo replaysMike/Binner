@@ -5,7 +5,7 @@ namespace Binner.Model
     /// <summary>
     /// User account
     /// </summary>
-    public class User : IUser, ICustomFields
+    public class User : IUser
     {
         /// <summary>
         /// User Id

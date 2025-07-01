@@ -1,41 +1,26 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Flag, Table } from "semantic-ui-react";
+import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table } from "semantic-ui-react";
 import ClearableInput from "../components/ClearableInput";
-import LineTemplate from "../components/LineTemplate";
-import { DEFAULT_FONT, BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown, GetTypeName, GetTypeValue } from "../common/Types";
+import { BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown, GetTypeName } from "../common/Types";
 import { DigiKeySites } from "../common/digiKeySites";
 import { TmeCountries } from "../common/tmeCountries";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
-import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { setSystemSettings } from "../common/applicationSettings";
 import { toast } from "react-toastify";
 import { getCurrencySymbol } from "../common/Utils";
 import { CustomFieldTypes } from "../common/customFieldTypes";
+import { config } from "../common/config";
 import "./Settings.css";
 
-export const Settings = (props) => {
+export const Settings = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   
-  const getViewPreference = (preferenceName) => {
-    return getLocalData(preferenceName, { settingsName: 'settings' })
-  };
-
-  const setViewPreference = (preferenceName, value) => {
-    setLocalData(preferenceName, value, { settingsName: 'settings' });
-  };
-
-  const removeViewPreference = (preferenceName, value) => {
-    removeLocalData(preferenceName, value, { settingsName: 'settings' });
-  };
-
   const [loading, setLoading] = useState(true);
-  const [fonts, setFonts] = useState([]);
-  const [font, setFont] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
   const [testing, setTesting] = useState(false);
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
@@ -402,118 +387,6 @@ export const Settings = (props) => {
       printerName: "",
       partLabelSource: "",
       partLabelName: "",
-      lines: [
-        // line 1
-        {
-          label: 0,
-          content: "",
-          fontName: "",
-          fontSize: 8,
-          autoSize: false,
-          upperCase: false,
-          lowerCase: false,
-          barcode: false,
-          color: "",
-          rotate: 0,
-          position: 2,
-          margin: {
-            top: 0,
-            left: 0,
-          },
-        },
-        // line 2
-        {
-          label: 0,
-          content: "",
-          fontName: "",
-          fontSize: 8,
-          autoSize: false,
-          upperCase: false,
-          lowerCase: false,
-          barcode: false,
-          color: "",
-          rotate: 0,
-          position: 2,
-          margin: {
-            top: 0,
-            left: 0,
-          },
-        },
-        // line 3
-        {
-          label: 0,
-          content: "",
-          fontName: "",
-          fontSize: 8,
-          autoSize: false,
-          upperCase: false,
-          lowerCase: false,
-          barcode: false,
-          color: "",
-          rotate: 0,
-          position: 2,
-          margin: {
-            top: 0,
-            left: 0,
-          },
-        },
-        // line 4
-        {
-          label: 0,
-          content: "",
-          fontName: "",
-          fontSize: 8,
-          autoSize: false,
-          upperCase: false,
-          lowerCase: false,
-          barcode: false,
-          color: "",
-          rotate: 0,
-          position: 2,
-          margin: {
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-      identifiers: [
-        // identifier 1
-        {
-          label: 0,
-          content: "",
-          fontName: "",
-          fontSize: 8,
-          autoSize: false,
-          upperCase: false,
-          lowerCase: false,
-          barcode: false,
-          color: "",
-          rotate: 0,
-          position: 2,
-          margin: {
-            top: 0,
-            left: 0,
-          },
-        },
-        // identifier 2
-        {
-          label: 0,
-          content: "",
-          fontName: "",
-          fontSize: 8,
-          autoSize: false,
-          upperCase: false,
-          lowerCase: false,
-          barcode: false,
-          color: "",
-          rotate: 0,
-          position: 2,
-          margin: {
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
     }
   });
   const [barcodeSettings, setBarcodeSettings] = useState({
@@ -533,32 +406,8 @@ export const Settings = (props) => {
   const [apiTestResults, setApiTestResults] = useState([]);
 
   useEffect(() => {
-    const loadFonts = async () => {
-      await fetchApi("/api/print/fonts", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }).then((response) => {
-        const { data } = response;
-        const newFonts = data.map((l, k) => {
-          return {
-            key: k,
-            value: l,
-            text: l,
-          };
-        });
-        const selectedFont = _.find(
-          newFonts,
-          (x) => x && x.text === DEFAULT_FONT
-        );
-        setFonts(newFonts);
-        setFont(selectedFont.value);
-      });
-    };
-
     const loadSettings = async () => {
-      await fetchApi("/api/system/settings", {
+      await fetchApi("/api/settings", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -581,7 +430,6 @@ export const Settings = (props) => {
     };
 
     loadSettings();
-    loadFonts();
   }, []);
 
   /**
@@ -615,7 +463,7 @@ export const Settings = (props) => {
   };
 
   const saveSettings = async (e, newSettings) => {
-    return await fetchApi("/api/system/settings", {
+    return await fetchApi("/api/settings", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -665,23 +513,7 @@ export const Settings = (props) => {
   const handlePrinterSettingsChange = (e, control) => {
     const newSettings = { ...printerSettings };
     if (control.name.startsWith("printer")) {
-      if (control.name.startsWith("printerLine")) {
-        if (control.name.startsWith("printerLine1"))
-          setControlValue(newSettings.printer.lines[0], "printerLine1", control);
-        else if (control.name.startsWith("printerLine2"))
-          setControlValue(newSettings.printer.lines[1], "printerLine2", control);
-        else if (control.name.startsWith("printerLine3"))
-          setControlValue(newSettings.printer.lines[2], "printerLine3", control);
-        else if (control.name.startsWith("printerLine4"))
-          setControlValue(newSettings.printer.lines[3], "printerLine4", control);
-      } else if (control.name.startsWith("printerIdentifier")) {
-        if (control.name.startsWith("printerIdentifier1"))
-          setControlValue(newSettings.printer.identifiers[0], "printerIdentifier1", control);
-        else if (control.name.startsWith("printerIdentifier2"))
-          setControlValue(newSettings.printer.identifiers[1], "printerIdentifier2", control);
-      } else {
         setControlValue(newSettings.printer, "printer", control);
-      }
     }
     setPrinterSettings(newSettings);
   };
@@ -894,7 +726,17 @@ export const Settings = (props) => {
     }
 
     // save settings first, as the backend must be aware of things like DigiKey's clientId/clientSecret
-    await saveSettings(e);
+    const newSettings = {
+      ...globalSettings,
+      ...integrationSettings,
+      ...printerSettings,
+      customFields: [ ..._.filter(customFieldSettings.customFields, x => x.name?.length > 0).map((cf) => ({...cf, name: cf.name.trim()})) ],
+      barcode: {
+        ...barcodeSettings, 
+        bufferTime: parseInt(barcodeSettings.barcode.bufferTime), 
+        maxKeystrokeThresholdMs: parseInt(barcodeSettings.barcode.maxKeystrokeThresholdMs)
+      }};
+    await saveSettings(e, newSettings);
 
     const request = {
       name: apiName,
@@ -1123,7 +965,7 @@ export const Settings = (props) => {
       <p>
         <i>
           <Trans i18nKey="page.settings.integrationsDescription">
-            To integrate with DigiKey, Mouser, Arrow or Octopart/Nexar API's you must
+            To integrate with DigiKey, Mouser, Arrow or Octopart/Nexar API&apos;s you must
             obtain API keys for each service you wish to use.
             <br />
             Adding integrations will greatly enhance your experience.
@@ -1137,7 +979,7 @@ export const Settings = (props) => {
         </Header>
         <p>
           <Trans i18nKey="page.settings.swarmDescription">
-            Swarm is a free API service provided by <a href="https://binner.io" target="_blank" rel="noreferrer">Binner's cloud service</a> that
+            Swarm is a free API service provided by <a href="https://binner.io" target="_blank" rel="noreferrer">Binner&apos;s cloud service</a> that
             contains part metadata from many aggregate sources. It is the primary source of part, media and datasheet information.
             Registering for your own API Keys will give you higher request limits and can be obtained
             at <a href="https://binner.io/swarm" target="_blank" rel="noreferrer">https://binner.io/swarm</a>
@@ -1169,67 +1011,48 @@ export const Settings = (props) => {
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiKey', "Api Key")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.swarmApiKey', "Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.binner.apiKey || ""}
-                name="swarmApiKey"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.binner.apiKey || ""}
+            name="swarmApiKey"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.swarmApiKey', "Swarm api key is optional. By registering a free or paid api key you will receive higher request limits accordingly.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiUrl', "Api Url")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.swarmApiUrl', "Swarm's API Url")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder="swarm.binner.io"
-                value={(integrationSettings.binner.apiUrl || "")
-                  .replace("http://", "")
-                  .replace("https://", "")}
-                name="swarmApiUrl"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-                type="Input"
-              >
-                <Label>https://</Label>
-                <input />
-              </ClearableInput>
-            }
-          />
+          <ClearableInput
+            className="labeled"
+            placeholder="swarm.binner.io"
+            value={(integrationSettings.binner.apiUrl || "")
+              .replace("http://", "")
+              .replace("https://", "")}
+            name="swarmApiUrl"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            type="Input"
+            helpHoverable
+            help={<p>{t('page.settings.popup.swarmApiUrl', "Swarm's API Url")}</p>}
+            disabled={config.BINNERIO === "true"}
+          >
+            <Label>https://</Label>
+            <input />
+          </ClearableInput>
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.timeout', "Timeout")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={
-              <p>{t('page.settings.popup.swarmTimeout', "Swarm api request timeout. Default: '00:00:05' (5 seconds)")}</p>
-            }
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.binner.timeout || ""}
-                name="swarmTimeout"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
-          />
+            <ClearableInput
+              className="labeled"
+              placeholder=""
+              value={integrationSettings.binner.timeout || ""}
+              name="swarmTimeout"
+              onChange={(e, control) => handleChange(e, control, 'integration')}
+              helpWide
+              helpHoverable
+              help={<p>{t('page.settings.popup.swarmTimeout', "Swarm api request timeout. Default: '00:00:05' (5 seconds)")}</p>}
+            />
         </Form.Field>
         <Form.Field>
           <Button
@@ -1303,12 +1126,15 @@ export const Settings = (props) => {
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.clientId', "Client Id")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.digikey.clientId || ""}
+            name="digikeyClientId"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={
               <div>
                 <Trans i18nKey={"page.settings.popup.digikeyClientId"}>
                   Your DigiKey <b>Client ID</b>.
@@ -1322,25 +1148,19 @@ export const Settings = (props) => {
                 </Trans>
               </div>
             }
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.digikey.clientId || ""}
-                name="digikeyClientId"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.clientSecret', "Client Secret")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[95, 0]}
-            hoverable
-            content={
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.digikey.clientSecret || ""}
+            name="digikeyClientSecret"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={
               <div>
                 <Trans i18nKey={"page.settings.popup.digikeyClientSecret"}>
                   Your DigiKey <b>Client Secret</b>.
@@ -1354,62 +1174,53 @@ export const Settings = (props) => {
                 </Trans>
               </div>
             }
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.digikey.clientSecret || ""}
-                name="digikeyClientSecret"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiUrl', "Api Url")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={
+          <ClearableInput
+            className="labeled"
+            placeholder="sandbox-api.digikey.com"
+            value={(integrationSettings.digikey.apiUrl || "")
+              .replace("http://", "")
+              .replace("https://", "")}
+            name="digikeyApiUrl"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            type="Input"
+            helpWideVery
+            helpHoverable
+            help={
               <p>
                 <Trans i18nKey={"page.settings.popup.digikeyApiUrl"}>
-                  DigiKey's API Url. This will either be <i>api.digikey.com</i> (live) or <i>sandbox-api.digikey.com</i> (for testing only)
+                  DigiKey&apos;s API Url. This will either be <i>api.digikey.com</i> (live) or <i>sandbox-api.digikey.com</i> (for testing only)
                 </Trans>
               </p>
             }
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder="sandbox-api.digikey.com"
-                value={(integrationSettings.digikey.apiUrl || "")
-                  .replace("http://", "")
-                  .replace("https://", "")}
-                name="digikeyApiUrl"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-                type="Input"
-              >
-                <Label>https://</Label>
-                <input />
-              </ClearableInput>
-            }
-          />
+          >
+            <Label>https://</Label>
+            <input />
+          </ClearableInput>
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.postbackUrl', "Postback Url")}</label>
-          <Popup
-            wide="very"
-            position="top left"
-            offset={[95, 0]}
-            hoverable
-            content={
+          <ClearableInput
+            className="labeled"
+            placeholder={`${config.API_URL.replace('https://','')}/Authorization/Authorize`}
+            value={(integrationSettings.digikey.oAuthPostbackUrl || "")
+              .replace("http://", "")
+              .replace("https://", "")}
+            name="digikeyOAuthPostbackUrl"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            type="Input"
+            helpWideVery
+            helpHoverable
+            help={
               <div>
                 <Trans i18nKey={"page.settings.popup.digikeyOAuthPostbackUrl"}>
-                  Binner's postback url must be registered with DigiKey exactly as specified here, on DigiKey this is named <b>Callback URL</b>.
+                  Binner&apos;s postback url must be registered with DigiKey exactly as specified here, on DigiKey this is named <b>Callback URL</b>.
                   This should almost always be localhost, and no firewall settings are required as your web browser will be making the request.
                   <br /><br />
-                  <b>Example: </b><i>localhost:8090/Authorization/Authorize</i>
+                  <b>Example: </b><i>{config.API_URL.replace('https://','')}/Authorization/Authorize</i>
                   <br />
                   <div className="popupimage">
                     <img
@@ -1421,22 +1232,11 @@ export const Settings = (props) => {
                 </Trans>
               </div>
             }
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder="localhost:8090/Authorization/Authorize"
-                value={(integrationSettings.digikey.oAuthPostbackUrl || "")
-                  .replace("http://", "")
-                  .replace("https://", "")}
-                name="digikeyOAuthPostbackUrl"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-                type="Input"
-              >
-                <Label>https://</Label>
-                <input />
-              </ClearableInput>
-            }
-          />
+            disabled={config.BINNERIO === "true"}
+          >
+            <Label>https://</Label>
+            <input />
+          </ClearableInput>
         </Form.Field>
         <Form.Field>
           <Popup
@@ -1500,83 +1300,61 @@ export const Settings = (props) => {
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('page.settings.searchApiKey', "Search Api Key")}</label>
-          <Popup
-            position="top left"
-            offset={[110, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.mouserSearchApiKey', "Your api key for accessing the search api.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.mouser.searchApiKey || ""}
-                name="mouserSearchApiKey"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.mouser.searchApiKey || ""}
+            name="mouserSearchApiKey"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.mouserSearchApiKey', "Your api key for accessing the search api.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('page.settings.ordersApiKey', "Orders Api Key")}</label>
-          <Popup
-            position="top left"
-            offset={[110, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.mouserOrderApiKey', "Your api key for accessing the orders api.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.mouser.orderApiKey || ""}
-                name="mouserOrderApiKey"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.mouser.orderApiKey || ""}
+            name="mouserOrderApiKey"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.mouserOrderApiKey', "Your api key for accessing the orders api.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('page.settings.cartApiKey', "Cart Api Key")}</label>
-          <Popup
-            position="top left"
-            offset={[90, 0]}
-            hoverable
-            content={
-              <p>{t('page.settings.popup.mouserCartApiKey', "Your api key for accessing the shopping cart api.")}</p>
-            }
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.mouser.cartApiKey || ""}
-                name="mouserCartApiKey"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.mouser.cartApiKey || ""}
+            name="mouserCartApiKey"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.mouserCartApiKey', "Your api key for accessing the shopping cart api.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiUrl', "Api Url")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.mouserApiUrl', "Mouser's API Url. This will be api.mouser.com")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder="api.mouser.com"
-                value={(integrationSettings.mouser.apiUrl || "")
-                  .replace("http://", "")
-                  .replace("https://", "")}
-                name="mouserApiUrl"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-                type="Input"
-              >
-                <Label>https://</Label>
-                <input />
-              </ClearableInput>
-            }
-          />
+          <ClearableInput
+            className="labeled"
+            placeholder="api.mouser.com"
+            value={(integrationSettings.mouser.apiUrl || "")
+              .replace("http://", "")
+              .replace("https://", "")}
+            name="mouserApiUrl"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            type="Input"
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.mouserApiUrl', "Mouser's API Url. This will be api.mouser.com")}</p>}
+          >
+            <Label>https://</Label>
+            <input />
+          </ClearableInput>
         </Form.Field>
         <Form.Field>
           <Button
@@ -1625,64 +1403,48 @@ export const Settings = (props) => {
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.username', "Username")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.arrowUsername', "Your username/login for Arrow.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.arrow.username || ""}
-                name="arrowUsername"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.arrow.username || ""}
+            name="arrowUsername"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.arrowUsername', "Your username/login for Arrow.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiKey', "Api Key")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.arrowApiKey', "Your api key for Arrow.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.arrow.apiKey || ""}
-                name="arrowApiKey"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.arrow.apiKey || ""}
+            name="arrowApiKey"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.arrowApiKey', "Your api key for Arrow.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiUrl', "Api Url")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.arrowApiUrl', "Arrow's API Url. This will be api.arrow.com")}</p>}
-            trigger={
-              <ClearableInput
-                action
-                className="labeled"
-                placeholder="api.arrow.com"
-                value={(integrationSettings.arrow.apiUrl || "")
-                  .replace("http://", "")
-                  .replace("https://", "")}
-                name="arrowApiUrl"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-                type="Input"
-              >
-                <Label>https://</Label>
-                <input />
-              </ClearableInput>
-            }
-          />
+          <ClearableInput
+            className="labeled"
+            placeholder="api.arrow.com"
+            value={(integrationSettings.arrow.apiUrl || "")
+              .replace("http://", "")
+              .replace("https://", "")}
+            name="arrowApiUrl"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            type="Input"
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.arrowApiUrl', "Arrow's API Url. This will be api.arrow.com")}</p>}
+          >
+            <Label>https://</Label>
+            <input />
+          </ClearableInput>
         </Form.Field>
         <Form.Field>
           <Button
@@ -1730,39 +1492,29 @@ export const Settings = (props) => {
           />
         </Form.Field>
         <Form.Field width={10}>
-          <label>{t('label.clientId', "Client Id")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.octopartClientId', "Your Client Id for Octopart/Nexar.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.octopart.clientId || ""}
-                name="octopartClientId"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <label>{t('label.clientId', "Client Id")}</label>          
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.octopart.clientId || ""}
+            name="octopartClientId"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.octopartClientId', "Your Client Id for Octopart/Nexar.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.clientSecret', "Client Secret")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.octopartClientSecret', "Your Client Secret for Octopart/Nexar.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.octopart.clientSecret || ""}
-                name="octopartClientSecret"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.octopart.clientSecret || ""}
+            name="octopartClientSecret"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.octopartClientSecret', "Your Client Secret for Octopart/Nexar.")}</p>}
           />
         </Form.Field>
         <Form.Field>
@@ -1834,64 +1586,48 @@ export const Settings = (props) => {
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.applicationSecret', "Application Secret")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.tmeApplicationSecret', "Your application secret for TME.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.tme.applicationSecret || ""}
-                name="tmeApplicationSecret"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.tme.applicationSecret || ""}
+            name="tmeApplicationSecret"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.tmeApplicationSecret', "Your application secret for TME.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiKey', "Api Key")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.tmeApiKey', "Your api key for TME.")}</p>}
-            trigger={
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={integrationSettings.tme.apiKey || ""}
-                name="tmeApiKey"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-              />
-            }
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.tme.apiKey || ""}
+            name="tmeApiKey"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.tmeApiKey', "Your api key for TME.")}</p>}
           />
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.apiUrl', "Api Url")}</label>
-          <Popup
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<p>{t('page.settings.popup.tmeApiUrl', "TME's API Url. This will be api.tme.eu")}</p>}
-            trigger={
-              <ClearableInput
-                action
-                className="labeled"
-                placeholder="api.tme.eu"
-                value={(integrationSettings.tme.apiUrl || "")
-                  .replace("http://", "")
-                  .replace("https://", "")}
-                name="tmeApiUrl"
-                onChange={(e, control) => handleChange(e, control, 'integration')}
-                type="Input"
-              >
-                <Label>https://</Label>
-                <input />
-              </ClearableInput>
-            }
-          />
+          <ClearableInput
+            className="labeled"
+            placeholder="api.tme.eu"
+            value={(integrationSettings.tme.apiUrl || "")
+              .replace("http://", "")
+              .replace("https://", "")}
+            name="tmeApiUrl"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            type="Input"
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.tmeApiUrl', "TME's API Url. This will be api.tme.eu")}</p>}
+          >
+            <Label>https://</Label>
+            <input />
+          </ClearableInput>
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('page.settings.tmeResolveExternalLinks', "Resolve External Links")}</label>
@@ -2126,75 +1862,6 @@ export const Settings = (props) => {
         }
       />
 
-      <Segment loading={loading} color="green" stacked secondary>
-        <Header dividing as="h3">
-          {t('page.settings.partLabelTemplate', "Part Label Template")}
-        </Header>
-        <p>
-          <i>{t('page.settings.partLabelTemplateDescription', "Part labels are printed according to this template.")}</i>
-        </p>
-
-        <LineTemplate
-          name="printerLine1"
-          line={printerSettings.printer.lines[0]}
-          title={t('page.settings.lineX', "Line {{number}}", { number: 1 })}
-          color="red"
-          fonts={fonts}
-          font={font}
-          onChange={(e, control) => handleChange(e, control, 'printer')}
-          tertiary
-        />
-        <LineTemplate
-          name="printerLine2"
-          line={printerSettings.printer.lines[1]}
-          title={t('page.settings.lineX', "Line {{number}}", { number: 2 })}
-          color="red"
-          fonts={fonts}
-          font={font}
-          onChange={(e, control) => handleChange(e, control, 'printer')}
-          tertiary
-        />
-        <LineTemplate
-          name="printerLine3"
-          line={printerSettings.printer.lines[2]}
-          title={t('page.settings.lineX', "Line {{number}}", { number: 3 })}
-          color="red"
-          fonts={fonts}
-          font={font}
-          onChange={(e, control) => handleChange(e, control, 'printer')}
-          tertiary
-        />
-        <LineTemplate
-          name="printerLine4"
-          line={printerSettings.printer.lines[3]}
-          title={t('page.settings.lineX', "Line {{number}}", { number: 4 })}
-          color="red"
-          fonts={fonts}
-          font={font}
-          onChange={(e, control) => handleChange(e, control, 'printer')}
-          tertiary
-        />
-        <LineTemplate
-          name="printerIdentifier1"
-          line={printerSettings.printer.identifiers[0]}
-          title={t('page.settings.identifierX', "Identifier {{number}}", { number: 1 })}
-          color="red"
-          fonts={fonts}
-          font={font}
-          onChange={(e, control) => handleChange(e, control, 'printer')}
-          tertiary
-        />
-        <LineTemplate
-          name="printerIdentifier2"
-          line={printerSettings.printer.identifiers[1]}
-          title={t('page.settings.identifierX', "Identifier {{number}}", { number: 2 })}
-          color="red"
-          fonts={fonts}
-          font={font}
-          onChange={(e, control) => handleChange(e, control, 'printer')}
-          tertiary
-        />
-      </Segment>
     </Segment>);
   }, [printerSettings]);
 

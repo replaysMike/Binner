@@ -8,7 +8,8 @@ import AppRoutes from './AppRoutes';
 import registerServiceWorker from './registerServiceWorker';
 import { ToastContainer } from "react-toastify";
 // layouts
-import { Layout } from "./layouts/Layout";
+import { RootLayout } from "./layouts/RootLayout";
+import { BasicLayout } from "./layouts/BasicLayout";
 
 // import i18n
 import './i18n';
@@ -59,19 +60,28 @@ document.removeEventListener = (type, listener, options) => {
 };
 // end fix
 
+/**
+ * Apply a layout based on the route definition
+ */
+const routeWithLayout = (route) => {
+    if (route.requireAuth)
+        return <AuthorizeRoute {...route} />;
+    // apply a layout if specified in the route
+    if (route.layout)
+        return React.createElement(route.layout.type, null, route.element); 
+    return <BasicLayout>{route.element}</BasicLayout>;
+};
+
 const root = createRoot(rootElement);
 const routes = AppRoutes.map((route, index) => ({
   path: route.path || "/",
   requireAuth: route.requireAuth || false,
-  element: (route.requireAuth || false)
-    ? <AuthorizeRoute {...route} />
-    : route.element
-
+  element: routeWithLayout(route)
 }));
 const router = createBrowserRouter([
   {
     // apply a root layout
-    element: <Layout />,
+    element: <RootLayout />,
     // it's children are the routes
     children: routes
   }

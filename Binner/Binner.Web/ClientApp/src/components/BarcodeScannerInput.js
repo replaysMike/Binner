@@ -775,7 +775,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     };
 
     if (!config) {
-      fetchApi("/api/system/settings").then((response) => {
+      fetchApi("/api/settings").then((response) => {
         const { data } = response;
         const barcodeConfig = data.barcode;
         setBarcodeConfig(barcodeConfig);

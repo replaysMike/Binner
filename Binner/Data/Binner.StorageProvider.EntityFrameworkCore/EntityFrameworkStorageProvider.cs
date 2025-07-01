@@ -6,6 +6,7 @@ using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -24,6 +25,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         private readonly IPartTypesCache _partTypesCache;
         private readonly ILicensedStorageProvider _licensedStorageProvider;
         private readonly ILogger<EntityFrameworkStorageProvider>? _logger;
+        private readonly IRequestContextAccessor _requestContext;
 
         public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, string providerName, IDictionary<string, string> config)
         {
@@ -32,7 +34,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             _config = config;
         }
 
-        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider, ILogger<EntityFrameworkStorageProvider> logger)
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider, ILogger<EntityFrameworkStorageProvider> logger, IRequestContextAccessor requestContext)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
@@ -41,6 +43,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             _partTypesCache = partTypesCache;
             _licensedStorageProvider = licensedStorageProvider;
             _logger = logger;
+            _requestContext = requestContext;
         }
 
         public async Task<Part> AddPartAsync(Part part, IUserContext? userContext)
@@ -539,7 +542,8 @@ INNER JOIN (
                 ErrorDescription = authRequest.ErrorDescription,
                 Provider = authRequest.Provider,
                 RequestId = authRequest.Id,
-                ReturnToUrl = authRequest.ReturnToUrl
+                ReturnToUrl = authRequest.ReturnToUrl,
+                Ip = _requestContext.GetIp()
             };
             await using var context = await _contextFactory.CreateDbContextAsync();
             EnforceIntegrityCreate(entity, userContext);
@@ -1574,9 +1578,18 @@ INNER JOIN (
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
-            return (decimal)await context.Parts
+
+#if BINNERIO
+            // fix for below error.
+            var result = await context.Database.SqlQuery<double>($"SELECT COALESCE(SUM(p.Cost * CAST(p.Quantity AS float)), 0.0) as Value FROM dbo.Parts AS p WHERE p.OrganizationId = {userContext.OrganizationId}")
+                .FirstOrDefaultAsync();
+#else
+            // when using SqlServer it generates an error: Unable to cast object of type 'System.Double' to type 'System.Decimal'.
+            var result = await context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .SumAsync(x => x.Cost * x.Quantity);
+#endif
+            return (decimal)result;
         }
 
         public async Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext? userContext)
