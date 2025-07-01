@@ -22,14 +22,13 @@ namespace Binner.Web.Controllers
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     [GenericControllerNameConvention]
-    public partial class AccountController<TAccount> : ControllerBase
-        where TAccount : Account, new()
+    public partial class AccountController : ControllerBase
     {
-        private readonly ILogger<AccountController<TAccount>> _logger;
+        private readonly ILogger<AccountController> _logger;
         private readonly WebHostServiceConfiguration _config;
-        private readonly IAccountService<TAccount> _accountService;
+        private readonly IAccountService<Account> _accountService;
 
-        public AccountController(ILogger<AccountController<TAccount>> logger, WebHostServiceConfiguration config, IAccountService<TAccount> accountService)
+        public AccountController(ILogger<AccountController> logger, WebHostServiceConfiguration config, IAccountService<Account> accountService)
         {
             _logger = logger;
             _config = config;
@@ -88,7 +87,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateAccountAsync(TAccount request)
+        public async Task<IActionResult> UpdateAccountAsync(Account request)
         {
             var user = await _accountService.UpdateAccountAsync(request);
             user.Account.IPAddress = Request.HttpContext.Connection?.RemoteIpAddress?.ToString();

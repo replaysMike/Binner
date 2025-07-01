@@ -21,13 +21,12 @@ namespace Binner.Web.Controllers
     [Consumes(MediaTypeNames.Application.Json)]
     [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
     [GenericControllerNameConvention]
-    public partial class UserController<TUser> : ControllerBase
-        where TUser : User, new()
+    public partial class UserController : ControllerBase
     {
-        private readonly ILogger<UserController<TUser>> _logger;
-        private readonly IUserService<TUser> _userService;
+        private readonly ILogger<UserController> _logger;
+        private readonly IUserService<User> _userService;
 
-        public UserController(ILogger<UserController<TUser>> logger, IUserService<TUser> userService)
+        public UserController(ILogger<UserController> logger, IUserService<User> userService)
         {
             _logger = logger;
             _userService = userService;
@@ -64,7 +63,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetUserAsync([FromQuery] TUser request)
+        public async Task<IActionResult> GetUserAsync([FromQuery] User request)
         {
             try
             {
@@ -91,7 +90,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> CreateUserAsync(TUser request)
+        public async Task<IActionResult> CreateUserAsync(User request)
         {
             try
             {
@@ -117,7 +116,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateUserAsync(TUser request)
+        public async Task<IActionResult> UpdateUserAsync(User request)
         {
             try
             {

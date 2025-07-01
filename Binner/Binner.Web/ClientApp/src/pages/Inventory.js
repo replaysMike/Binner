@@ -136,7 +136,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     extensionValue1: "",
     extensionValue2: "",
     storedFiles: [],
-    customFields: []
+    customFields: [],
+    parametrics: [],
+    models: []
   };
 
   const [inputPartNumber, setInputPartNumber] = useState(rest.params.partNumberToAdd || "");
@@ -416,8 +418,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     entity.rohsStatus = mapIfValid("rohsStatus", entity, mappedPart, allowOverwrite);
     entity.series = mapIfValid("series", entity, mappedPart, allowOverwrite);
     entity.productStatus = mapIfValid("status", entity, mappedPart, allowOverwrite);
-    entity.models = mapIfValid("models", entity, mappedPart, allowOverwrite);
-    entity.parametrics = mapIfValid("parametrics", entity, mappedPart, allowOverwrite);
+    entity.models = mappedPart.models || [];
+    entity.parametrics = mappedPart.parametrics || [];
     if ((allowOverwrite || !entity.otherNames) && mappedPart.additionalPartNumbers.length > 0) {
       entity.otherNames = mappedPart.additionalPartNumbers.join(" ");
     }
