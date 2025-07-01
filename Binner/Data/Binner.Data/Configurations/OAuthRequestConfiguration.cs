@@ -17,7 +17,8 @@ namespace Binner.Data.Configurations
 #endif
 
             builder.Property(p => p.AuthorizationReceived)
-                .HasDefaultValue(false);
+                .HasDefaultValue(false)
+                .ValueGeneratedNever();
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");
             builder.Property(p => p.DateModifiedUtc)

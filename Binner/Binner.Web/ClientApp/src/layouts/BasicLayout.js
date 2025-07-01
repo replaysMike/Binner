@@ -9,7 +9,7 @@ import { Outlet } from "react-router-dom";
 import ErrorModal from "../components/modals/ErrorModal";
 import LicenseErrorModal from "../components/modals/LicenseErrorModal";
 
-export function Layout(props) {
+export function BasicLayout(props) {
   const { t } = useTranslation('en');
   const noop = t('noop', "-do-not-translate-");
   const [version, setVersion] = useState(null);
@@ -131,6 +131,7 @@ export function Layout(props) {
       <Container>
         <Header />
         <Outlet />
+        {props.children}
         <Footer />
       </Container>
       <div className={`promo ${window.avatar ? 'masked' : ''}`}>

@@ -1,13 +1,4 @@
-import React, { useState, useEffect } from "react";
-import PageWrapper from "./routes/PageWrapper";
 import AdminWrapper from "./routes/AdminWrapper";
-
-// layouts
-import { Layout } from "./layouts/Layout";
-
-// components
-import ErrorModal from "./components/modals/ErrorModal";
-import LicenseErrorModal from "./components/modals/LicenseErrorModal";
 
 // styles
 import "./custom.css";

@@ -4,7 +4,7 @@ using Binner.Model;
 namespace Binner.Services
 {
     public interface IUserService<TUser>
-        where TUser : IUser, new()
+        where TUser : class, IUser
     {
         /// <summary>
         /// Create a new user

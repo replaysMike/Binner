@@ -189,7 +189,9 @@ namespace Binner.Services
                 DateRevokedUtc = newRefreshToken.Revoked,
                 UserId = user.UserId,
                 OrganizationId = user.OrganizationId,
-                Ip = _requestContext.GetIp()
+                Ip = _requestContext.GetIp(),
+                DateCreatedUtc = DateTime.UtcNow,
+                DateModifiedUtc = DateTime.UtcNow,
             });
             context.UserTokens.Add(new Data.Model.UserToken
             {
@@ -199,7 +201,9 @@ namespace Binner.Services
                 DateRevokedUtc = newRefreshToken.Revoked,
                 UserId = user.UserId,
                 OrganizationId = user.OrganizationId,
-                Ip = _requestContext.GetIp()
+                Ip = _requestContext.GetIp(),
+                DateCreatedUtc = DateTime.UtcNow,
+                DateModifiedUtc = DateTime.UtcNow,
             });
 
             // remove old refresh tokens from user

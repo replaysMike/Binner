@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Binner.Common.StorageProviders;
 using Binner.Data;
+using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
@@ -33,7 +34,10 @@ namespace Binner.Web.Database
             var partTypesCache = container.GetInstance<IPartTypesCache>();
             var licensedStorageProvider = container.GetInstance<ILicensedStorageProvider>();
             var logger = container.GetInstance<ILogger<EntityFrameworkStorageProvider>>();
-            var instance = Activator.CreateInstance(provider, contextFactory, mapper, configuration.Provider, configuration.ProviderConfiguration, partTypesCache, licensedStorageProvider, logger) as IStorageProvider ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");
+            var requestContext = container.GetInstance<IRequestContextAccessor>();
+            var instance = Activator.CreateInstance(provider, contextFactory, mapper, configuration.Provider, configuration.ProviderConfiguration, 
+                partTypesCache, licensedStorageProvider, logger, requestContext) as IStorageProvider 
+                ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");
             return instance;
         }
 

@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.13</LibraryVersion>
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
-    <DefineConstants>$(DefineConstants);INITIALCREATE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
@@ -48,14 +46,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nexar.Client.Token" Version="0.1.1" />
     <PackageReference Include="NLog" Version="5.2.8" />
@@ -93,5 +91,12 @@
     <ProjectReference Include="..\Binner.Model\Binner.Model.csproj" />
     <ProjectReference Include="..\Nexar.Client\Nexar.Client.csproj" />
   </ItemGroup>
+
+  <!-- Import common solution/project settings -->
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or
+                     '$(SolutionDir)' == '*undefined*'">
+    <SolutionDir>..\..\</SolutionDir>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)CommonSettings.targets" />
 
 </Project>

@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LibraryVersion Condition="'$(LibraryVersion)'==''">1.0.13</LibraryVersion>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -12,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Codeuctivity.ImageSharpCompare" Version="4.0.241" />
     <PackageReference Include="ImageSharpCompare" Version="1.2.11" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="NUnit" Version="4.1.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
@@ -38,5 +37,12 @@
     <!-- Use the licensedprovider package -->
     <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
   </ItemGroup>
+
+  <!-- Import common solution/project settings -->
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or
+                     '$(SolutionDir)' == '*undefined*'">
+    <SolutionDir>..\..\</SolutionDir>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)CommonSettings.targets" />
 
 </Project>

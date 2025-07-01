@@ -51,7 +51,7 @@ namespace Binner.Global.Common
         {
             var context = _httpContextAccessor.HttpContext;
             ClaimsPrincipal? currentPrincipal = null;
-            if(context != null && context.User != null && context.User.Identities.Any(x => x.IsAuthenticated) == true)
+            if (context != null && context.User != null && context.User.Identities.Any(x => x.IsAuthenticated) == true)
                 currentPrincipal = context.User;
             // support using the current thread principal if user context is not available
             if (currentPrincipal == null)
@@ -60,13 +60,20 @@ namespace Binner.Global.Common
             if (currentPrincipal?.Identities.Any(x => x.IsAuthenticated) == true)
             {
                 var identity = currentPrincipal.Identities.FirstOrDefault(x => x.IsAuthenticated);
+                var userId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault() ?? "0");
+                var organizationId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "OrganizationId").Select(x => x.Value).FirstOrDefault() ?? "0");
+                if (userId <= 0 || organizationId <= 0) return null; // invalid claims
+                var properties = new Dictionary<string, object?>();
+                if (currentPrincipal.Claims.Any(x => x.Type == "SubscriptionLevel"))
+                    properties.Add("SubscriptionLevel", currentPrincipal.Claims.Where(x => x.Type == "SubscriptionLevel").Select(x => x.Value).FirstOrDefault() ?? string.Empty);
                 return new UserContext
                 {
-                    UserId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault() ?? "0"),
-                    OrganizationId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "OrganizationId").Select(x => x.Value).FirstOrDefault() ?? "0"),
+                    UserId = userId,
+                    OrganizationId = organizationId,
                     Name = currentPrincipal.Claims.Where(x => x.Type == "Name").Select(x => x.Value).FirstOrDefault(),
                     EmailAddress = identity?.Name ?? string.Empty,
-                    PhoneNumber = currentPrincipal.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault()
+                    PhoneNumber = currentPrincipal.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault(),
+                    Properties = properties,
                 };
             }
             // not authenticated
@@ -122,7 +129,7 @@ namespace Binner.Global.Common
         /// Get the remote user's IP address as a 64-bit integer
         /// </summary>
         /// <returns></returns>
-        public long GetIp() 
+        public long GetIp()
             => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToLong() ?? 0;
 
         /// <summary>
@@ -160,7 +167,7 @@ namespace Binner.Global.Common
         /// <returns></returns>
         public string? GetHeader(string headerName)
         {
-            if(_httpContextAccessor?.HttpContext?.Request?.Headers?.TryGetValue(headerName, out var value) == true)
+            if (_httpContextAccessor?.HttpContext?.Request?.Headers?.TryGetValue(headerName, out var value) == true)
                 return value;
             return null;
         }
