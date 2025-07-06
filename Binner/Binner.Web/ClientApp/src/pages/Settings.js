@@ -353,6 +353,7 @@ export const Settings = (props) => {
     maxCacheItems: 1024,
     cacheAbsoluteExpirationMinutes: 0,
     cacheSlidingExpirationMinutes: 30,
+    automaticSearch: true,
   });
   const [integrationSettings, setIntegrationSettings] = useState({
     binner: {
@@ -567,10 +568,10 @@ export const Settings = (props) => {
         const { data } = response;
         setLoading(false);
         // break out data into multiple state variables to optimize render performance
-        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes } = data;
+        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, automaticSearch } = data;
         const language = data.language.toLowerCase(); // to match lowercase option value
         const currency = data.currency.toUpperCase(); // to match uppercase option value
-        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes });
+        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, automaticSearch });
         const { binner, digikey, mouser, arrow, octopart, tme } = data;
         setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme });
         setPrinterSettings({ printer: data.printer });
@@ -718,7 +719,9 @@ export const Settings = (props) => {
   };
 
   const setControlValue = (setting, name, control) => {
-    if (control.name === `${name}Enabled` || control.name === `${name}IsDebug` || control.name === `${name}ResolveExternalLinks`) {
+    if (control.name === `${name}Enabled` || control.name === `${name}IsDebug` || 
+        control.name === `${name}ResolveExternalLinks` || control.name === `${name}automaticSearch`) 
+    {
       // for bool dropdowns, they don't advertise type!
       setting[getControlInstanceName(control, name)] = control.value > 0 ? true : false;
       return;
@@ -1105,6 +1108,29 @@ export const Settings = (props) => {
                 placeholder=""
                 value={globalSettings.cacheSlidingExpirationMinutes || 30}
                 name="cacheSlidingExpirationMinutes"
+                onChange={(e, control) => handleChange(e, control, 'global')}
+              />
+            }
+          />
+        </Form.Field>
+
+        <Form.Field width={10}>
+          <label>{t('label.automaticSearch', "Automatic Part Search")}</label>
+          <Popup
+            wide
+            position="top left"
+            offset={[120, 0]}
+            hoverable
+            content={
+              <p>{t('page.settings.popup.automaticSearch', "Choose if you would like to enable automatic part searching when typing in the \"Part\" input field")}</p>
+            }
+            trigger={
+              <Dropdown
+                name="automaticSearch"
+                placeholder="Enabled"
+                selection
+                value={globalSettings.automaticSearch ? 1 : 0}
+                options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
             }

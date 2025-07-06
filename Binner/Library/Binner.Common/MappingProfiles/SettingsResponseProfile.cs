@@ -27,6 +27,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.AutomaticSearch, options => options.MapFrom(x => x.AutomaticSearch))
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ReverseMap();
 
@@ -85,6 +86,7 @@ namespace Binner.Common.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.AutomaticSearch, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ReverseMap();
 

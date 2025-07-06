@@ -216,5 +216,10 @@
         /// Barcode configuration
         /// </summary>
         public BarcodeConfiguration Barcode { get; set; } = new();
+
+        /// <summary>
+        /// Flag if we should automatically search when the user is entering a partnumber
+        /// </summary>
+        public bool AutomaticSearch { get; set; } = true;
     }
 }

@@ -41,7 +41,8 @@ export function Login (props) {
           subscriptionLevel: data.subscriptionLevel,
           accessToken: data.jwtToken,
           imagesToken: data.imagesToken,
-          isAdmin: data.isAdmin
+          isAdmin: data.isAdmin,
+          automaticSearch: data.automaticSearch,
         });
 				localStorage.setItem("showWelcome", true);
         navigate("/", { replace: true, state: { } });

@@ -5,8 +5,9 @@ export const EmptyUserAccount = {
   isAuthenticated: false,
   name: "",
   accessToken: "",
-	imagesToken: "",
-	isAdmin: false,
+  imagesToken: "",
+  isAdmin: false,
+  automaticSearch: true,
 };
 
 /**
@@ -140,7 +141,16 @@ export const isAuthenticated = () => {
  * Check if the user is an admin
  * @returns {boolean} true if the user is an admin user
  */
- export const isAdmin = () => {
+export const isAdmin = () => {
   const user = getUserAccount();
   return user && user.isAdmin;
+};
+
+/**
+ * Checks if automatic search is enabled
+ * @returns 
+ */
+export const automaticSearch = () => {
+  const user = getUserAccount();
+  return user && user.automaticSearch;
 };

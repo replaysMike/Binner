@@ -31,7 +31,7 @@ import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { addMinutes } from "../common/datetime";
 import { formatNumber } from "../common/Utils";
 import { getPartTypeId } from "../common/partTypes";
-import { getImagesToken } from "../common/authentication";
+import { getImagesToken, automaticSearch } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
 import { CustomFieldTypes } from "../common/customFieldTypes";
 import { CustomFieldValues } from "../components/CustomFieldValues";
@@ -1197,11 +1197,23 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataErrors([]);
     let searchPartNumber = control.value || '';
+    const autoSearch = automaticSearch()
 
-    if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
-      searchPartNumber = control.value.replace("\t", "");
-      await searchDebounced(searchPartNumber, part, partTypes);
-      setIsDirty(true);
+    // check if automatic search is enabled. If it is not we ignore the HTMLInputElement event
+    if (autoSearch || ((e.target instanceof HTMLInputElement) == false)) {
+        if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
+            searchPartNumber = control.value.replace("\t", "");
+
+            // if autosearch is disabled we call the fetch without debounce
+            // as we dont have any user input to debounce
+            if (autoSearch) {
+                await searchDebounced(searchPartNumber, part, partTypes);
+            }
+            else {
+                await fetchPartMetadataAndInventory(searchPartNumber, part, partTypes);
+            }
+            setIsDirty(true);
+        }
     }
 
     setInputPartNumber(searchPartNumber);

@@ -70,7 +70,7 @@ namespace Binner.Common.Services
                     if (isLoginAllowed)
                     {
                         // authenticated
-                        var authenticationResponse = await CreateAuthenticationLoginAsync(context, user, userContext);
+                        var authenticationResponse = await CreateAuthenticationLoginAsync(context, user, userContext, _configuration.AutomaticSearch);
                         if (!authenticationResponse.IsAuthenticated)
                             _logger.LogWarning($"[{nameof(AuthenticateAsync)}] {authenticationResponse.Message}. Username: '{model.Username}' IP: {_requestContext.GetIpAddress()}");
 
@@ -112,7 +112,7 @@ namespace Binner.Common.Services
             }
         }
 
-        private async Task<AuthenticationResponse> CreateAuthenticationLoginAsync(BinnerContext context, Data.Model.User user, UserContext userContext)
+        private async Task<AuthenticationResponse> CreateAuthenticationLoginAsync(BinnerContext context, Data.Model.User user, UserContext userContext, bool autoSearch)
         {
             // are they allowed to login?
             if (!user.IsEmailConfirmed)
@@ -150,7 +150,7 @@ namespace Binner.Common.Services
 
             // remove old refresh tokens from user
             await RemoveOldUserTokensAsync(context, user);
-            return new AuthenticationResponse(userContext, authenticatedTokens);
+            return new AuthenticationResponse(userContext, authenticatedTokens, autoSearch);
         }
 
         public async Task<AuthenticationResponse> RefreshTokenAsync(string token)
@@ -226,7 +226,7 @@ namespace Binner.Common.Services
                 RefreshToken = newRefreshToken.Token,
                 DateCreated = newRefreshToken.Created,
                 DateExpires = newRefreshToken.Expires
-            });
+            }, _configuration.AutomaticSearch);
         }
 
         public async Task RevokeTokenAsync(string token)
@@ -481,7 +481,7 @@ namespace Binner.Common.Services
 
                 // login the user
                 var userContext = Map(user);
-                var authenticationResponse = await CreateAuthenticationLoginAsync(context, user, userContext);
+                var authenticationResponse = await CreateAuthenticationLoginAsync(context, user, userContext, _configuration.AutomaticSearch);
 
                 return authenticationResponse;
             }

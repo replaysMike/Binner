@@ -30,13 +30,19 @@ namespace Binner.Model.Responses
         /// </summary>
         public bool IsAdmin { get; set; }
 
+        /// <summary>
+        /// Flag if we should automatically search when the 
+        /// user is entering a partnumber
+        /// </summary>
+        public bool automaticSearch { get; set; }
+
         public AuthenticationResponse(bool isAuthenticated, string message)
         {
             IsAuthenticated = isAuthenticated;
             Message = message;
         }
 
-        public AuthenticationResponse(UserContext user, AuthenticatedTokens authenticatedTokens)
+        public AuthenticationResponse(UserContext user, AuthenticatedTokens authenticatedTokens, bool autoSearch)
         {
             Id = user.UserId;
             OrganizationId = user.OrganizationId;
@@ -47,6 +53,7 @@ namespace Binner.Model.Responses
             RefreshToken = authenticatedTokens.RefreshToken;
             CanLogin = authenticatedTokens.CanLogin;
             IsAdmin = user.IsAdmin;
+            automaticSearch = autoSearch;
         }
     }
 }
