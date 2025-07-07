@@ -18,7 +18,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -290,7 +290,6 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("AuthorizationReceived")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
@@ -1494,6 +1493,56 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.ToTable("Users", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+                {
+                    b.Property<int>("UserBarcodeConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserBarcodeConfigurationId"));
+
+                    b.Property<int>("BufferTime")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDebug")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxKeystrokeThresholdMs")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Prefix2D")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Profile")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserBarcodeConfigurationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserBarcodeConfigurations", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.Property<int>("UserIntegrationConfigurationId")
@@ -1609,6 +1658,43 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserIntegrationConfigurations", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
+                {
+                    b.Property<int>("UserLocaleConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserLocaleConfigurationId"));
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("Language")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserLocaleConfigurationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserLocaleConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -2217,10 +2303,30 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("UserBarcodeConfigurations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserIntegrationConfigurations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("UserLocaleConfigurations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -2387,7 +2493,11 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Navigation("StoredFiles");
 
+                    b.Navigation("UserBarcodeConfigurations");
+
                     b.Navigation("UserIntegrationConfigurations");
+
+                    b.Navigation("UserLocaleConfigurations");
 
                     b.Navigation("UserLoginHistory");
 

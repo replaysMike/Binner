@@ -14,19 +14,22 @@ namespace Binner.Services.Integrations.Categories
         protected readonly WebHostServiceConfiguration _configuration;
         protected readonly IIntegrationApiFactory _integrationApiFactory;
         protected readonly IMapper _mapper;
+        protected readonly IUserConfigurationService _userConfigurationService;
 
-        public DigiKeyExternalCategoriesService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IMapper mapper)
+        public DigiKeyExternalCategoriesService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IMapper mapper, IUserConfigurationService userConfigurationService)
             : base(storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
             _mapper = mapper;
+            _userConfigurationService = userConfigurationService;
         }
 
         public async Task<ServiceResult<CategoriesResponse?>> GetExternalCategoriesAsync(ExternalCategoriesRequest request)
         {
-            var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
+            var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId, integrationConfiguration);
             if (!digikeyApi.IsEnabled)
                 return ServiceResult<CategoriesResponse?>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 

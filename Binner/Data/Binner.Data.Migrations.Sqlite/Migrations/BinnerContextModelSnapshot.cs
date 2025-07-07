@@ -17,7 +17,7 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "8.0.4");
+                .HasAnnotation("ProductVersion", "9.0.6");
 
             modelBuilder.Entity("Binner.Data.Model.CustomField", b =>
                 {
@@ -274,7 +274,6 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("AuthorizationReceived")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
 
@@ -1442,6 +1441,54 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.ToTable("Users", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+                {
+                    b.Property<int>("UserBarcodeConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BufferTime")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDebug")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxKeystrokeThresholdMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Prefix2D")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Profile")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserBarcodeConfigurationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserBarcodeConfigurations", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.Property<int>("UserIntegrationConfigurationId")
@@ -1555,6 +1602,41 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserIntegrationConfigurations", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
+                {
+                    b.Property<int>("UserLocaleConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("Language")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserLocaleConfigurationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserLocaleConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -2155,10 +2237,30 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("UserBarcodeConfigurations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserIntegrationConfigurations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("UserLocaleConfigurations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -2325,7 +2427,11 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Navigation("StoredFiles");
 
+                    b.Navigation("UserBarcodeConfigurations");
+
                     b.Navigation("UserIntegrationConfigurations");
+
+                    b.Navigation("UserLocaleConfigurations");
 
                     b.Navigation("UserLoginHistory");
 

@@ -3,8 +3,6 @@ using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.IO.Printing;
 using Binner.Model.Responses;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Binner.Services.MappingProfiles
 {
@@ -21,13 +19,98 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Tme, options => options.MapFrom(x => x.Integrations.Tme))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
-                .ForMember(x => x.Language, options => options.MapFrom(x => x.Locale.Language))
-                .ForMember(x => x.Currency, options => options.MapFrom(x => x.Locale.Currency))
+                .ForMember(x => x.Locale, options => options.MapFrom(x => x.Locale))
                 .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
                 .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ReverseMap();
+
+            CreateMap<UserLocaleConfiguration, SettingsResponse>()
+                .ForMember(x => x.Binner, options => options.Ignore())
+                .ForMember(x => x.Digikey, options => options.Ignore())
+                .ForMember(x => x.Mouser, options => options.Ignore())
+                .ForMember(x => x.Arrow, options => options.Ignore())
+                .ForMember(x => x.Octopart, options => options.Ignore())
+                .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Barcode, options => options.Ignore())
+                .ForMember(x => x.LicenseKey, options => options.Ignore())
+                .ForMember(x => x.MaxCacheItems, options => options.Ignore())
+                .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ForMember(x => x.Printer, options => options.Ignore())
+                .ForMember(x => x.Locale, options => options.MapFrom(x => new LocaleSettingsResponse
+                {
+                    Language = x.Language,
+                    Currency = x.Currency
+                }))
+                .ReverseMap();
+
+            CreateMap<UserPrinterConfiguration, SettingsResponse>()
+                .ForMember(x => x.Binner, options => options.Ignore())
+                .ForMember(x => x.Digikey, options => options.Ignore())
+                .ForMember(x => x.Mouser, options => options.Ignore())
+                .ForMember(x => x.Arrow, options => options.Ignore())
+                .ForMember(x => x.Octopart, options => options.Ignore())
+                .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Barcode, options => options.Ignore())
+                .ForMember(x => x.Locale, options => options.Ignore())
+                .ForMember(x => x.LicenseKey, options => options.Ignore())
+                .ForMember(x => x.MaxCacheItems, options => options.Ignore())
+                .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ForMember(x => x.Printer, options => options.MapFrom(x => new PrinterSettingsResponse
+                {
+                    Identifiers = x.UserPrinterTemplateConfigurations.Select(y => new Model.IO.Printing.LineConfiguration
+                    {
+                        AutoSize = y.AutoSize,
+                        Barcode = y.Barcode,
+                        Color = y.Color,
+                        Content = y.Content,
+                        FontName = y.FontName,
+                        FontSize = y.FontSize,
+                        Label = y.Label,
+                        Line = y.Line,
+                        LowerCase = y.LowerCase,
+                        Margin = new Model.IO.Printing.Margin(y.MarginLeft, y.MarginRight, y.MarginTop, y.MarginBottom),
+                        Position = y.Position,
+                        Rotate = y.Rotate,
+                        UpperCase = y.UpperCase,
+                    }),
+                    PrintMode = x.PrintMode,
+                    PartLabelName = x.PartLabelName,
+                    PartLabelSource = x.PartLabelSource,
+                    PrinterName = x.PrinterName,
+                    RemoteAddressUrl = x.RemoteAddressUrl,
+                }))
+                .ReverseMap();
+
+            CreateMap<UserBarcodeConfiguration, SettingsResponse>()
+                .ForMember(x => x.Binner, options => options.Ignore())
+                .ForMember(x => x.Digikey, options => options.Ignore())
+                .ForMember(x => x.Mouser, options => options.Ignore())
+                .ForMember(x => x.Arrow, options => options.Ignore())
+                .ForMember(x => x.Octopart, options => options.Ignore())
+                .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.LicenseKey, options => options.Ignore())
+                .ForMember(x => x.MaxCacheItems, options => options.Ignore())
+                .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ForMember(x => x.Printer, options => options.Ignore())
+                .ForMember(x => x.Locale, options => options.Ignore())
+                .ForMember(x => x.Barcode, options => options.MapFrom(x => new BarcodeSettingsResponse
+                {
+                    BufferTime = x.BufferTime,
+                    Enabled = x.Enabled,
+                    IsDebug = x.IsDebug,
+                    MaxKeystrokeThresholdMs = x.MaxKeystrokeThresholdMs,
+                    Prefix2D = x.Prefix2D,
+                    Profile = x.Profile
+                }))
                 .ReverseMap();
 
             CreateMap<UserIntegrationConfiguration, SettingsResponse>()
@@ -79,8 +162,7 @@ namespace Binner.Services.MappingProfiles
                 }))
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
-                .ForMember(x => x.Language, options => options.Ignore())
-                .ForMember(x => x.Currency, options => options.Ignore())
+                .ForMember(x => x.Locale, options => options.Ignore())
                 .ForMember(x => x.LicenseKey, options => options.Ignore())
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())

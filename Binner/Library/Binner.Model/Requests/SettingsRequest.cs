@@ -53,14 +53,9 @@ namespace Binner.Model.Requests
         public BarcodeConfiguration Barcode { get; set; } = new();
 
         /// <summary>
-        /// Default language
+        /// Locale configuration
         /// </summary>
-        public string Language { get; set; } = "en";
-
-        /// <summary>
-        /// Default currency
-        /// </summary>
-        public string Currency { get; set; } = "USD";
+        public LocaleConfiguration Locale { get; set; } = new();
 
         /// <summary>
         /// License key

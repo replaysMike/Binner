@@ -27,14 +27,16 @@ namespace Binner.Web.Controllers
         private readonly JwtService _jwtService;
         private readonly IUserService<User> _userService;
         private readonly IIntegrationApiFactory _integrationApiFactory;
+        private readonly IUserConfigurationService _userConfigurationService;
 
-        public AuthorizationController(ILogger<AuthorizationController> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory, IUserService<User> userService, JwtService jwtService)
+        public AuthorizationController(ILogger<AuthorizationController> logger, ICredentialService credentialService, IIntegrationApiFactory integrationApiFactory, IUserService<User> userService, JwtService jwtService, IUserConfigurationService userConfigurationService)
         {
             _logger = logger;
             _credentialService = credentialService;
             _jwtService = jwtService;
             _integrationApiFactory = integrationApiFactory;
             _userService = userService;
+            _userConfigurationService = userConfigurationService;
         }
 
         /// <summary>
@@ -114,7 +116,8 @@ namespace Binner.Web.Controllers
         {
             // local binner does not require a valid userId
             var userId = authRequest.UserId ?? 0;
-            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(userId);
+            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(userId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(userId, integrationConfiguration);
             _logger.LogInformation($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Completing OAuth DigiKey authorization for user {userId}");
             var authResult = await digikeyApi.OAuth2Service.FinishAuthorization(code);
 

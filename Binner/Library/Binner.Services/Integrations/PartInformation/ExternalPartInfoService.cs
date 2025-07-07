@@ -12,14 +12,16 @@ namespace Binner.Services.Integrations.PartInformation
         protected readonly IIntegrationApiFactory _integrationApiFactory;
         protected readonly ILogger<ExternalPartInfoService> _logger;
         protected readonly IExternalBarcodeInfoService _externalBarcodeInfoService;
+        protected readonly IUserConfigurationService _userConfigurationService;
 
-        public ExternalPartInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<ExternalPartInfoService> logger, IExternalBarcodeInfoService externalBarcodeInfoService)
+        public ExternalPartInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<ExternalPartInfoService> logger, IExternalBarcodeInfoService externalBarcodeInfoService, IUserConfigurationService userConfigurationService)
             : base(storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
             _logger = logger;
             _externalBarcodeInfoService = externalBarcodeInfoService;
+            _userConfigurationService = userConfigurationService;
         }
 
         public virtual async Task<IServiceResult<PartResults?>> GetPartInformationAsync(Part? inventoryPart, string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "")
@@ -45,7 +47,7 @@ namespace Binner.Services.Integrations.PartInformation
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
 
             // fetch part information from enabled API's
-            var partInformationProvider = new PartInformationProvider(_integrationApiFactory, _logger, _configuration);
+            var partInformationProvider = new PartInformationProvider(_integrationApiFactory, _logger, _configuration, _userConfigurationService);
             PartInformationResults? partInfoResults;
             try
             {
@@ -126,7 +128,9 @@ namespace Binner.Services.Integrations.PartInformation
 
             async Task<string> DecodeBarcode(string partNumber, IUserContext? user)
             {
-                var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user?.UserId ?? 0);
+                if (user == null) throw new UserContextUnauthorizedException();
+                var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+                var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId, integrationConfiguration);
                 if (digikeyApi.Configuration.IsConfigured)
                 {
                     // 2d barcode scan requires decode first to get the partNumber being searched

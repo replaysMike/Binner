@@ -2,6 +2,7 @@
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services;
@@ -23,26 +24,21 @@ namespace Binner.Web.Controllers
     [Consumes(MediaTypeNames.Application.Json)]
     public class SettingsController : ControllerBase
     {
-        private static readonly string _appSettingsFilename = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
         private readonly ILogger<SettingsController> _logger;
         private readonly WebHostServiceConfiguration _config;
         private readonly ISettingsService _settingsService;
         private readonly IntegrationService _integrationService;
         private readonly AutoMapper.IMapper _mapper;
-        private readonly IServiceContainer _container;
-        private readonly IIntegrationCredentialsCacheProvider _credentialProvider;
-        private readonly IRequestContextAccessor _requestContext;
+        private readonly IUserConfigurationService _userConfigurationService;
 
-        public SettingsController(AutoMapper.IMapper mapper, IServiceContainer container, ILogger<SettingsController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, IRequestContextAccessor requestContextAccessor, IIntegrationCredentialsCacheProvider credentialProvider)
+        public SettingsController(AutoMapper.IMapper mapper, ILogger<SettingsController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, IUserConfigurationService userConfigurationService)
         {
             _mapper = mapper;
-            _container = container;
             _logger = logger;
             _config = config;
             _settingsService = settingsService;
             _integrationService = integrationService;
-            _requestContext = requestContextAccessor;
-            _credentialProvider = credentialProvider;
+            _userConfigurationService = userConfigurationService;
         }
 
         /// <summary>
@@ -51,7 +47,7 @@ namespace Binner.Web.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
-        public IActionResult SaveSettings(SettingsRequest request) 
+        public async Task<IActionResult> SaveSettingsAsync(SettingsRequest request) 
         {
             try
             {
@@ -69,19 +65,17 @@ namespace Binner.Web.Controllers
                 request.Arrow.ApiUrl = $"https://{request.Arrow.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Tme.ApiUrl = $"https://{request.Tme.ApiUrl.Replace("https://", "").Replace("http://", "")}";
 
-                // clear the credentials cache for the apis
-                var user = _requestContext.GetUserContext();
-                _credentialProvider.Cache.Clear(new ApiCredentialKey { UserId = user?.UserId ?? 0 });
-
-                var newConfiguration = _mapper.Map<SettingsRequest, WebHostServiceConfiguration>(request, _config);
-                _settingsService.SaveSettingsAsAsync(newConfiguration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true);
+                var integrationConfiguration = _mapper.Map<UserIntegrationConfiguration>(request);
+                var printerConfiguration = _mapper.Map<UserPrinterConfiguration>(request);
+                var localeConfiguration = _mapper.Map<UserLocaleConfiguration>(request);
+                var barcodeConfiguration = _mapper.Map<UserBarcodeConfiguration>(request);
+                integrationConfiguration = await _userConfigurationService.CreateOrUpdateIntegrationConfigurationAsync(integrationConfiguration);
+                printerConfiguration = await _userConfigurationService.CreateOrUpdatePrinterConfigurationAsync(printerConfiguration);
+                localeConfiguration = await _userConfigurationService.CreateOrUpdateLocaleConfigurationAsync(localeConfiguration);
+                barcodeConfiguration = await _userConfigurationService.CreateOrUpdateBarcodeConfigurationAsync(barcodeConfiguration);
 
                 // also save the custom fields (add/update/remove)
-                _settingsService.SaveCustomFieldsAsync(request.CustomFields);
-
-                // register new configuration
-                _container.RegisterInstance(newConfiguration);
-                _container.RegisterInstance(newConfiguration.Locale);
+                await _settingsService.SaveCustomFieldsAsync(request.CustomFields);
 
                 return Ok(new OperationSuccessResponse());
             }

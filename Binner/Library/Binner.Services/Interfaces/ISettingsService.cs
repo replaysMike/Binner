@@ -1,7 +1,4 @@
 ﻿using Binner.Global.Common;
-using Binner.Model;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Binner.Services
 {
@@ -17,8 +14,9 @@ namespace Binner.Services
         /// <param name="filename">The filename to save settings to</param>
         /// <param name="sectionName">The section name to replace</param>
         /// <param name="createBackup">True to create a backup before saving</param>
+        /// <param name="stripConfiguration">True to strip sections that have been moved to the database</param>
         /// <typeparam name="T"></typeparam>
-        Task SaveSettingsAsAsync<T>(T instance, string sectionName, string filename, bool createBackup);
+        Task SaveSettingsAsAsync<T>(T instance, string sectionName, string filename, bool createBackup, bool stripConfiguration);
 
         /// <summary>
         /// Get list of custom fields

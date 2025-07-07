@@ -10,13 +10,5 @@ namespace Binner.Common.Integrations
         /// Get the api credentials cache instance
         /// </summary>
         public IntegrationCredentialsCache Cache => _credentialsCache.Value;
-
-        /// <summary>
-        /// Provides an IntegrationCredentialsCache
-        /// </summary>
-        public IntegrationCredentialsCacheProvider()
-        {
-
-        }
     }
 }

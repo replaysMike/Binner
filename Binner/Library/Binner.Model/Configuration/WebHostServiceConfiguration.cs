@@ -7,6 +7,11 @@
     public class WebHostServiceConfiguration
     {
         /// <summary>
+        /// Returns true if the configuration has been migrated to the database
+        /// </summary>
+        public bool IsMigrated { get; set; }
+
+        /// <summary>
         /// The server name
         /// </summary>
         public string? Name { get; set; }

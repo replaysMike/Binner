@@ -1,11 +1,9 @@
-﻿using Binner.Common;
-using Binner.Common.Integrations;
+﻿using Binner.Common.Integrations;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Integrations;
 using Binner.Model.Integrations.DigiKey;
 using Microsoft.Extensions.Logging;
-using NPOI.SS.Formula.Functions;
 using System.Net;
 using System.Text.RegularExpressions;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
@@ -18,12 +16,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
         private readonly ILogger _logger;
         private readonly WebHostServiceConfiguration _configuration;
+        private readonly UserLocaleConfiguration _localeConfiguration;
         private readonly int _resultsRank;
 
-        public DigiKeyPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, int resultsRank)
+        public DigiKeyPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserLocaleConfiguration localeConfiguration, int resultsRank)
         {
             _logger = logger;
             _configuration = configuration;
+            _localeConfiguration = localeConfiguration;
             _resultsRank = resultsRank;
         }
 
@@ -322,7 +322,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 Enum.TryParse<MountingType>(mountingTypeParameter, out mountingTypeId);
                 var currency = response.SearchLocaleUsed.Currency;
                 if (string.IsNullOrEmpty(currency))
-                    currency = _configuration.Locale.Currency.ToString().ToUpper();
+                    currency = _localeConfiguration.Currency.ToString().ToUpper();
                 var packageType = part.Parameters
                     ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                     .Select(x => x.Value)
@@ -454,7 +454,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 Enum.TryParse<MountingType>(mountingTypeParameter, out mountingTypeId);
                 var currency = response.SearchLocaleUsed.Currency;
                 if (string.IsNullOrEmpty(currency))
-                    currency = _configuration.Locale.Currency.ToString().ToUpper();
+                    currency = _localeConfiguration.Currency.ToString().ToUpper();
                 var packageType = part.Parameters
                     ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
                     .Select(x => x.ValueText)

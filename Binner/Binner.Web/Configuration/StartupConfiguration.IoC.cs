@@ -150,6 +150,8 @@ namespace Binner.Web.Configuration
             container.Register<IExternalPartInfoService, ExternalPartInfoService>(new PerScopeLifetime());
             container.Register<IExternalBarcodeInfoService, ExternalBarcodeInfoService>(new PerScopeLifetime());
             container.Register<IExternalCategoriesService, ExternalCategoriesService>(new PerScopeLifetime());
+            container.Register<IUserConfigurationService, UserConfigurationService>(new PerScopeLifetime());
+            container.Register<ConfigFileMigrator>(new PerScopeLifetime());
         }
 
         private static void RegisterLicensedServices(IServiceContainer container)

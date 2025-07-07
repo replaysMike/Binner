@@ -3,10 +3,6 @@ using Binner.Model.Configuration;
 using Binner.Model.Integrations;
 using Binner.Model.Integrations.Arrow;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Binner.Services.Integrations.ResponseProcessors
 {
@@ -15,12 +11,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
         private readonly ILogger _logger;
         private readonly WebHostServiceConfiguration _configuration;
+        private readonly UserLocaleConfiguration _localeConfiguration;
         private readonly int _resultsRank;
 
-        public ArrowPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, int resultsRank)
+        public ArrowPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserLocaleConfiguration localeConfiguration, int resultsRank)
         {
             _logger = logger;
             _configuration = configuration;
+            _localeConfiguration = localeConfiguration;
             _resultsRank = resultsRank;
         }
 

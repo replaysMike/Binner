@@ -62,6 +62,8 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.CustomFieldValues, options => options.Ignore())
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
+                .ForMember(x => x.UserLocaleConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserBarcodeConfigurations, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.User, User>()

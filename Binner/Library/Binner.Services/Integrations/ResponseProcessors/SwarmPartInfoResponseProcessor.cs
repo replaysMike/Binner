@@ -12,12 +12,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
         private readonly ILogger _logger;
         private readonly WebHostServiceConfiguration _configuration;
+        private readonly UserLocaleConfiguration _localeConfiguration;
         private readonly int _resultsRank;
 
-        public SwarmPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, int resultsRank)
+        public SwarmPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserLocaleConfiguration localeConfiguration, int resultsRank)
         {
             _logger = logger;
             _configuration = configuration;
+            _localeConfiguration = localeConfiguration;
             _resultsRank = resultsRank;
         }
 

@@ -18,18 +18,21 @@ namespace Binner.Services.Integrations.ExternalOrder
     {
         protected readonly WebHostServiceConfiguration _configuration;
         protected readonly IIntegrationApiFactory _integrationApiFactory;
+        protected readonly IUserConfigurationService _userConfigurationService;
 
-        public MouserExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor)
+        public MouserExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService)
             : base(storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
+            _userConfigurationService = userConfigurationService;
         }
 
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
-            var user = _requestContext.GetUserContext();
-            var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user?.UserId ?? 0);
+            var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+            var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user.UserId, integrationConfiguration);
             if (!((MouserConfiguration)mouserApi.Configuration).IsOrdersConfigured)
                 return ServiceResult<ExternalOrderResponse?>.Create("Mouser Ordering Api is not enabled. Please configure your Mouser API settings and add an Ordering Api key.", nameof(Integrations.MouserApi));
 

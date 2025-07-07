@@ -1,13 +1,10 @@
-﻿using Binner.Services.Integrations;
+﻿using Binner.Common.Integrations;
 using Binner.Global.Common;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
+using Binner.Services.Integrations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Binner.Common.Integrations;
 
 namespace Binner.Services
 {
@@ -19,17 +16,15 @@ namespace Binner.Services
         private readonly IRequestContextAccessor _requestContext;
         private readonly ICredentialService _credentialService;
         private readonly IApiHttpClientFactory _httpClientFactory;
-        private readonly IntegrationConfiguration _integrationConfiguration;
         private readonly WebHostServiceConfiguration _webHostServiceConfiguration;
 
-        public IntegrationApiFactory(ILoggerFactory loggerFactory, IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, IntegrationConfiguration integrationConfiguration, WebHostServiceConfiguration webHostServiceConfiguration, IApiHttpClientFactory httpClientFactory)
+        public IntegrationApiFactory(ILoggerFactory loggerFactory, IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, WebHostServiceConfiguration webHostServiceConfiguration, IApiHttpClientFactory httpClientFactory)
         {
             _loggerFactory = loggerFactory;
             _credentialProvider = credentialProvider;
             _httpContextAccessor = httpContextAccessor;
             _requestContext = requestContext;
             _credentialService = credentialService;
-            _integrationConfiguration = integrationConfiguration;
             _webHostServiceConfiguration = webHostServiceConfiguration;
             _httpClientFactory = httpClientFactory;
         }
@@ -96,11 +91,14 @@ namespace Binner.Services
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="userId"></param>
+        /// <param name="userIntegrationConfiguration">The integration configuration for the user</param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<T> CreateAsync<T>(int userId)
+        public async Task<T> CreateAsync<T>(int userId, UserIntegrationConfiguration userIntegrationConfiguration)
             where T : class
         {
+            if (userId <= 0) throw new ArgumentOutOfRangeException(nameof(userId));
+            if (userIntegrationConfiguration == null) throw new ArgumentNullException(nameof(userIntegrationConfiguration));
 #pragma warning disable CS1998
             var getCredentialsMethod = async () =>
 #pragma warning restore CS1998
@@ -112,7 +110,7 @@ namespace Binner.Services
                     .FirstOrDefaultAsync()
                     ?? new Data.DataModel.UserIntegrationConfiguration();*/
                 // todo: temporary until we move integration configuration to the UI
-                var userIntegrationConfiguration = new UserIntegrationConfiguration
+                /*var userIntegrationConfiguration = new UserIntegrationConfiguration
                 {
                     SwarmEnabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
                     SwarmApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
@@ -146,7 +144,7 @@ namespace Binner.Services
                     TmeApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
                     TmeApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
                     TmeResolveExternalLinks = _webHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks,
-                };
+                };*/
 
                 // build the credentials list
                 var credentials = new List<ApiCredential>();
@@ -220,10 +218,13 @@ namespace Binner.Services
         /// </summary>
         /// <param name="apiType"></param>
         /// <param name="userId"></param>
+        /// <param name="userIntegrationConfiguration">The integration configuration for the specified user</param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<IIntegrationApi> CreateAsync(Type apiType, int userId)
+        public async Task<IIntegrationApi> CreateAsync(Type apiType, int userId, UserIntegrationConfiguration userIntegrationConfiguration)
         {
+            if (userId <= 0) throw new ArgumentOutOfRangeException(nameof(userId));
+            if (userIntegrationConfiguration == null) throw new ArgumentNullException(nameof(userIntegrationConfiguration));
 #pragma warning disable CS1998
             var getCredentialsMethod = async () =>
 #pragma warning restore CS1998
@@ -235,7 +236,7 @@ namespace Binner.Services
                     .FirstOrDefaultAsync()
                     ?? new Data.DataModel.UserIntegrationConfiguration();*/
                 // todo: temporary until we move integration configuration to the UI
-                var userIntegrationConfiguration = new UserIntegrationConfiguration
+                /*var userIntegrationConfiguration = new UserIntegrationConfiguration
                 {
                     SwarmEnabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
                     SwarmApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
@@ -269,7 +270,7 @@ namespace Binner.Services
                     TmeApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
                     TmeApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
                     TmeResolveExternalLinks = _webHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks,
-                };
+                };*/
 
                 // build the credentials list
                 var credentials = new List<ApiCredential>();
@@ -460,9 +461,9 @@ namespace Binner.Services
             var configuration = new SwarmConfiguration
             {
                 // system settings
-                Enabled = _integrationConfiguration.Swarm.Enabled,
-                ApiKey = _integrationConfiguration.Swarm.ApiKey,
-                ApiUrl = _integrationConfiguration.Swarm.ApiUrl,
+                Enabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
+                ApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
+                ApiUrl = _webHostServiceConfiguration.Integrations.Swarm.ApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<Integrations.SwarmApi>();
             var api = new Integrations.SwarmApi(logger, configuration);
@@ -493,12 +494,12 @@ namespace Binner.Services
             var configuration = new DigikeyConfiguration
             {
                 // system settings
-                Enabled = _integrationConfiguration.Digikey.Enabled,
-                Site = _integrationConfiguration.Digikey.Site,
-                ClientId = _integrationConfiguration.Digikey.ClientId,
-                ClientSecret = _integrationConfiguration.Digikey.ClientSecret,
-                ApiUrl = _integrationConfiguration.Digikey.ApiUrl,
-                oAuthPostbackUrl = _integrationConfiguration.Digikey.oAuthPostbackUrl,
+                Enabled = _webHostServiceConfiguration.Integrations.Digikey.Enabled,
+                Site = _webHostServiceConfiguration.Integrations.Digikey.Site,
+                ClientId = _webHostServiceConfiguration.Integrations.Digikey.ClientId,
+                ClientSecret = _webHostServiceConfiguration.Integrations.Digikey.ClientSecret,
+                ApiUrl = _webHostServiceConfiguration.Integrations.Digikey.ApiUrl,
+                oAuthPostbackUrl = _webHostServiceConfiguration.Integrations.Digikey.oAuthPostbackUrl,
             };
             var logger = _loggerFactory.CreateLogger<DigikeyApi>();
             var api = new DigikeyApi(logger, configuration, _webHostServiceConfiguration.Locale, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
@@ -531,14 +532,14 @@ namespace Binner.Services
             var configuration = new MouserConfiguration
             {
                 // system settings
-                Enabled = _integrationConfiguration.Mouser.Enabled,
+                Enabled = _webHostServiceConfiguration.Integrations.Mouser.Enabled,
                 ApiKeys = new MouserApiKeys
                 {
-                    OrderApiKey = _integrationConfiguration.Mouser.ApiKeys.OrderApiKey,
-                    CartApiKey = _integrationConfiguration.Mouser.ApiKeys.CartApiKey,
-                    SearchApiKey = _integrationConfiguration.Mouser.ApiKeys.SearchApiKey
+                    OrderApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.OrderApiKey,
+                    CartApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.CartApiKey,
+                    SearchApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.SearchApiKey
                 },
-                ApiUrl = _integrationConfiguration.Mouser.ApiUrl,
+                ApiUrl = _webHostServiceConfiguration.Integrations.Mouser.ApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<MouserApi>();
             var api = new MouserApi(logger, configuration, _httpClientFactory);
@@ -573,9 +574,9 @@ namespace Binner.Services
             var configuration = new OctopartConfiguration
             {
                 // system settings
-                Enabled = _integrationConfiguration.Nexar.Enabled,
-                ClientId = _integrationConfiguration.Nexar.ClientId,
-                ClientSecret = _integrationConfiguration.Nexar.ClientSecret,
+                Enabled = _webHostServiceConfiguration.Integrations.Nexar.Enabled,
+                ClientId = _webHostServiceConfiguration.Integrations.Nexar.ClientId,
+                ClientSecret = _webHostServiceConfiguration.Integrations.Nexar.ClientSecret,
             };
             var logger = _loggerFactory.CreateLogger<NexarApi>();
             var api = new NexarApi(logger, configuration, _webHostServiceConfiguration.Locale);
@@ -605,10 +606,10 @@ namespace Binner.Services
             var configuration = new ArrowConfiguration
             {
                 // system settings
-                Enabled = _integrationConfiguration.Arrow.Enabled,
-                Username = _integrationConfiguration.Arrow.Username,
-                ApiKey = _integrationConfiguration.Arrow.ApiKey,
-                ApiUrl = _integrationConfiguration.Arrow.ApiUrl,
+                Enabled = _webHostServiceConfiguration.Integrations.Arrow.Enabled,
+                Username = _webHostServiceConfiguration.Integrations.Arrow.Username,
+                ApiKey = _webHostServiceConfiguration.Integrations.Arrow.ApiKey,
+                ApiUrl = _webHostServiceConfiguration.Integrations.Arrow.ApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<ArrowApi>();
             var api = new ArrowApi(logger, configuration, _httpContextAccessor);
@@ -639,12 +640,12 @@ namespace Binner.Services
             var configuration = new TmeConfiguration
             {
                 // system settings
-                Enabled = _integrationConfiguration.Tme.Enabled,
-                Country = _integrationConfiguration.Tme.Country,
-                ApplicationSecret = _integrationConfiguration.Tme.ApplicationSecret,
-                ApiKey = _integrationConfiguration.Tme.ApiKey,
-                ApiUrl = _integrationConfiguration.Tme.ApiUrl,
-                ResolveExternalLinks = _integrationConfiguration.Tme.ResolveExternalLinks,
+                Enabled = _webHostServiceConfiguration.Integrations.Tme.Enabled,
+                Country = _webHostServiceConfiguration.Integrations.Tme.Country,
+                ApplicationSecret = _webHostServiceConfiguration.Integrations.Tme.ApplicationSecret,
+                ApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
+                ApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
+                ResolveExternalLinks = _webHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks,
             };
             var logger = _loggerFactory.CreateLogger<TmeApi>();
             var api = new TmeApi(logger, configuration, _webHostServiceConfiguration.Locale, _httpClientFactory);

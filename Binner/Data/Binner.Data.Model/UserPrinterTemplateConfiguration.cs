@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Binner.Model.IO.Printing;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Binner.Model.IO.Printing;
 
 namespace Binner.Data.Model
 {

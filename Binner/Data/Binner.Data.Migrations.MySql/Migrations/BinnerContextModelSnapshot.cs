@@ -18,7 +18,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("dbo")
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -290,7 +290,6 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<bool>("AuthorizationReceived")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
@@ -1494,6 +1493,56 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.ToTable("Users", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+                {
+                    b.Property<int>("UserBarcodeConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserBarcodeConfigurationId"));
+
+                    b.Property<int>("BufferTime")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDebug")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("MaxKeystrokeThresholdMs")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Prefix2D")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Profile")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserBarcodeConfigurationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserBarcodeConfigurations", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.Property<int>("UserIntegrationConfigurationId")
@@ -1609,6 +1658,43 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserIntegrationConfigurations", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
+                {
+                    b.Property<int>("UserLocaleConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserLocaleConfigurationId"));
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("Language")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserLocaleConfigurationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserLocaleConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -2217,10 +2303,30 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("UserBarcodeConfigurations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserIntegrationConfigurations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.User", "User")
+                        .WithMany("UserLocaleConfigurations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -2387,7 +2493,11 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Navigation("StoredFiles");
 
+                    b.Navigation("UserBarcodeConfigurations");
+
                     b.Navigation("UserIntegrationConfigurations");
+
+                    b.Navigation("UserLocaleConfigurations");
 
                     b.Navigation("UserLoginHistory");
 

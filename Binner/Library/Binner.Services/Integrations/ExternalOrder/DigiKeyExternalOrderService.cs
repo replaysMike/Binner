@@ -20,18 +20,21 @@ namespace Binner.Services.Integrations.ExternalOrder
     {
         protected readonly WebHostServiceConfiguration _configuration;
         protected readonly IIntegrationApiFactory _integrationApiFactory;
+        protected readonly IUserConfigurationService _userConfigurationService;
 
-        public DigiKeyExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor)
+        public DigiKeyExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService)
             : base(storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
+            _userConfigurationService = userConfigurationService;
         }
 
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
-            var user = _requestContext.GetUserContext();
-            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user?.UserId ?? 0);
+            var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user.UserId, integrationConfiguration);
             if (!digikeyApi.IsEnabled)
                 return ServiceResult<ExternalOrderResponse?>.Create("Api is not enabled.", nameof(DigikeyApi));
 

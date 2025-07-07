@@ -149,6 +149,16 @@ namespace Binner.Data
         public DbSet<UserPrinterTemplateConfiguration> UserPrinterTemplateConfigurations { get; set; } = null!;
 
         /// <summary>
+        /// User locale settings
+        /// </summary>
+        public DbSet<UserLocaleConfiguration> UserLocaleConfigurations { get; set; } = null!;
+
+        /// <summary>
+        /// User barcode settings
+        /// </summary>
+        public DbSet<UserBarcodeConfiguration> UserBarcodeConfigurations { get; set; } = null!;
+
+        /// <summary>
         /// User tokens
         /// </summary>
         public DbSet<UserToken> UserTokens { get; set; } = null!;
