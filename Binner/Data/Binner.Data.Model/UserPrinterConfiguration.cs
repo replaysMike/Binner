@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Binner.Model.Configuration;
+﻿using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {

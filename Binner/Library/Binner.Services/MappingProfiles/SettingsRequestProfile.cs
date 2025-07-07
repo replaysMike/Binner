@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using System.Linq;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.IO.Printing;
@@ -20,8 +19,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Tme, options => options.MapFrom(x => x.Integrations.Tme))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
-                .ForMember(x => x.Language, options => options.MapFrom(x => x.Locale.Language))
-                .ForMember(x => x.Currency, options => options.MapFrom(x => x.Locale.Currency))
+                .ForMember(x => x.Locale, options => options.MapFrom(x => x.Locale))
                 .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
@@ -58,6 +56,41 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.TmeApiKey, options => options.MapFrom(x => x.Tme.ApiKey))
                 .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
                 .ForMember(x => x.TmeResolveExternalLinks, options => options.MapFrom(x => x.Tme.ResolveExternalLinks))
+
+                .ForMember(x => x.UserId, options => options.Ignore())
+                .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
+                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+            ;
+
+            CreateMap<SettingsRequest, UserPrinterConfiguration>()
+                .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.Printer.PartLabelName))
+                .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.Printer.PartLabelSource))
+                .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.Printer.PrinterName))
+                .ForMember(x => x.RemoteAddressUrl, options => options.MapFrom(x => x.Printer.RemoteAddressUrl))
+                .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.Printer.PrintMode))
+                .ForMember(x => x.UserId, options => options.Ignore())
+                .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
+                .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
+                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+            ;
+
+            CreateMap<SettingsRequest, UserBarcodeConfiguration>(MemberList.None)
+                .ForMember(x => x.BufferTime, options => options.MapFrom(x => x.Barcode.BufferTime))
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Barcode.Enabled))
+                .ForMember(x => x.IsDebug, options => options.MapFrom(x => x.Barcode.IsDebug))
+                .ForMember(x => x.MaxKeystrokeThresholdMs, options => options.MapFrom(x => x.Barcode.MaxKeystrokeThresholdMs))
+                .ForMember(x => x.Prefix2D, options => options.MapFrom(x => x.Barcode.Prefix2D))
+                .ForMember(x => x.Profile, options => options.MapFrom(x => x.Barcode.Profile))
+
+                .ForMember(x => x.UserId, options => options.Ignore())
+                .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
+                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+                .ReverseMap()
+            ;
+
+            CreateMap<SettingsRequest, UserLocaleConfiguration>(MemberList.None)
+                .ForMember(x => x.Currency, options => options.MapFrom(x => x.Locale.Currency))
+                .ForMember(x => x.Language, options => options.MapFrom(x => x.Locale.Language))
 
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())

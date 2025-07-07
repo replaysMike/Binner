@@ -46,19 +46,14 @@ namespace Binner.Model.Responses
         public BarcodeSettingsResponse Barcode { get; set; } = new ();
 
         /// <summary>
+        /// Locale config
+        /// </summary>
+        public LocaleSettingsResponse Locale { get; set; } = new();
+
+        /// <summary>
         /// List of defined custom fields
         /// </summary>
         public ICollection<CustomField> CustomFields { get; set; } = new List<CustomField>();
-
-        /// <summary>
-        /// Default language
-        /// </summary>
-        public string Language { get; set; } = "en";
-
-        /// <summary>
-        /// Default currency
-        /// </summary>
-        public string Currency { get; set; } = "USD";
 
         /// <summary>
         /// License key

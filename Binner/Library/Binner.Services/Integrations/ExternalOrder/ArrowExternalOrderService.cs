@@ -16,18 +16,21 @@ namespace Binner.Services.Integrations.ExternalOrder
     {
         protected readonly WebHostServiceConfiguration _configuration;
         protected readonly IIntegrationApiFactory _integrationApiFactory;
+        protected readonly IUserConfigurationService _userConfigurationService;
 
-        public ArrowExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor)
+        public ArrowExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService)
             : base(storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
+            _userConfigurationService = userConfigurationService;
         }
 
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
-            var user = _requestContext.GetUserContext();
-            var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user?.UserId ?? 0);
+            var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+            var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user.UserId, integrationConfiguration);
             if (!((ArrowConfiguration)arrowApi.Configuration).IsConfigured)
                 return ServiceResult<ExternalOrderResponse?>.Create("Arrow Ordering Api is not enabled. Please configure your Arrow API settings and ensure a Username and Api key is set.", nameof(Integrations.ArrowApi));
             if (string.IsNullOrEmpty(request.Password))

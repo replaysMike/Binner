@@ -11,12 +11,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
         private readonly ILogger _logger;
         private readonly WebHostServiceConfiguration _configuration;
+        private readonly UserLocaleConfiguration _localeConfiguration;
         private readonly int _resultsRank;
 
-        public TmePartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, int resultsRank)
+        public TmePartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserLocaleConfiguration localeConfiguration, int resultsRank)
         {
             _logger = logger;
             _configuration = configuration;
+            _localeConfiguration = localeConfiguration;
             _resultsRank = resultsRank;
         }
 
@@ -228,7 +230,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     var partCost = part.Cost;
                     var minimumOrderQuantity = part.MinAmount;
                     var quantityAvailable = part.QuantityAvailable;
-                    var currency = string.IsNullOrEmpty(part.Currency) ? _configuration.Locale.Currency.ToString().ToUpper() : part.Currency;
+                    var currency = string.IsNullOrEmpty(part.Currency) ? _localeConfiguration.Currency.ToString().ToUpper() : part.Currency;
 
                     context.Results.Parts.Add(new CommonPart
                     {

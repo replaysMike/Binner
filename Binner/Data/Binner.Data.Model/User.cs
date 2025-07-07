@@ -175,6 +175,10 @@ namespace Binner.Data.Model
 
         public ICollection<UserPrinterTemplateConfiguration>? UserPrinterTemplateConfigurations { get; set; }
 
+        public ICollection<UserLocaleConfiguration>? UserLocaleConfigurations { get; set; }
+
+        public ICollection<UserBarcodeConfiguration>? UserBarcodeConfigurations { get; set; }
+
     }
 #endif
 }

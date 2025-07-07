@@ -29,7 +29,7 @@ namespace Binner.Services
             _requestContext = requestContextAccessor;
         }
 
-        public async Task SaveSettingsAsAsync<T>(T instance, string sectionName, string filename, bool createBackup)
+        public async Task SaveSettingsAsAsync<T>(T instance, string sectionName, string filename, bool createBackup, bool stripConfiguration)
         {
             if (createBackup)
             {
@@ -56,6 +56,20 @@ namespace Binner.Services
                 json[sectionName] = JToken.FromObject(instance);
             else
                 throw new BinnerConfigurationException($"There is no section named '{sectionName}' in the configuration file '{filename}'!");
+
+            if (stripConfiguration)
+            {
+                // remove all sections that have been migrated to the database
+                var sectionsToRemove = new List<string> { "Locale", "Barcode", "Integrations", "PrinterConfiguration" };
+                var properties = json.Properties().ToList();
+                foreach (var property in properties)
+                {
+                    if (sectionsToRemove.Contains(property.Name, StringComparer.InvariantCultureIgnoreCase))
+                    {
+                        property.Remove();
+                    }
+                }
+            }
 
             var jsonOutput = JsonConvert.SerializeObject(json, serializerSettings);
             using var file = File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.Read);
