@@ -48,7 +48,7 @@ namespace Binner.Services.Integrations
             };
 
             // for each configured provider, fetch results
-            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration();
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration();
             foreach (var provider in _providers)
             {
                 // fetch part info, merge data
@@ -68,42 +68,42 @@ namespace Binner.Services.Integrations
 
         private async Task<ProcessingContext> ProcessResponseAsync(Type provider, IIntegrationApi api, ProcessingContext context)
         {
-            var localeConfiguration = _userConfigurationService.GetCachedLocaleConfiguration();
+            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
             var providerImplementations = new Dictionary<Type, Func<Task>>()
             {
                 { typeof(SwarmApi), async () =>
                     {
-                        var processor = new SwarmPartInfoResponseProcessor(_logger, _configuration, localeConfiguration, 10);
+                        var processor = new SwarmPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 10);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(DigikeyApi), async () =>
                     {
-                        var processor = new DigiKeyPartInfoResponseProcessor(_logger, _configuration, localeConfiguration, 20);
+                        var processor = new DigiKeyPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 20);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(MouserApi), async () =>
                     {
-                        var processor = new MouserPartInfoResponseProcessor(_logger, _configuration, localeConfiguration, 30);
+                        var processor = new MouserPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 30);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(ArrowApi), async () =>
                     {
-                        var processor = new ArrowPartInfoResponseProcessor(_logger, _configuration, localeConfiguration, 40);
+                        var processor = new ArrowPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 40);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(NexarApi), async () =>
                     {
-                        var processor = new NexarPartInfoResponseProcessor(_logger, _configuration, localeConfiguration, 50);
+                        var processor = new NexarPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 50);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(TmeApi), async () =>
                     {
-                        var processor = new TmePartInfoResponseProcessor(_logger, _configuration, localeConfiguration, 60);
+                        var processor = new TmePartInfoResponseProcessor(_logger, _configuration, userConfiguration, 60);
                         await processor.ExecuteAsync(api, context);
                     }
                 },

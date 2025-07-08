@@ -16,7 +16,7 @@ namespace Binner.Services.Integrations
         public const string BaseAddress = "https://api.nexar.com/graphql";
         private readonly ILogger<NexarApi> _logger;
         private readonly OctopartConfiguration _configuration;
-        private readonly LocaleConfiguration _localeConfiguration;
+        private readonly UserConfiguration _userConfiguration;
         private static readonly TimeSpan TokenLifetime = TimeSpan.FromDays(1);
         private static DateTime _nexarTokenExpiresAt;
         private static string? _nexarToken;
@@ -25,11 +25,11 @@ namespace Binner.Services.Integrations
         
         public IApiConfiguration Configuration => _configuration;
 
-        public NexarApi(ILogger<NexarApi> logger, OctopartConfiguration configuration, LocaleConfiguration localeConfiguration)
+        public NexarApi(ILogger<NexarApi> logger, OctopartConfiguration configuration, UserConfiguration userConfiguration)
         {
             _logger = logger;
             _configuration = configuration;
-            _localeConfiguration = localeConfiguration;
+            _userConfiguration = userConfiguration;
         }
 
         private static NexarClient CreateNexarClient()
@@ -135,7 +135,7 @@ namespace Binner.Services.Integrations
                     ManufacturerUrl = it.Part.ManufacturerUrl,
                     MedianPrice1000 = new PriceValue
                     {
-                      Currency = it.Part.MedianPrice1000?.Currency ?? _localeConfiguration.Currency.ToString().ToUpper(),
+                      Currency = it.Part.MedianPrice1000?.Currency ?? _userConfiguration.Currency.ToString().ToUpper(),
                       Price = it.Part.MedianPrice1000?.Price ?? 0,
                       Quantity = it.Part.MedianPrice1000?.Quantity ?? 0
                     },

@@ -129,7 +129,7 @@ namespace Binner.Services.Integrations.PartInformation
             async Task<string> DecodeBarcode(string partNumber, IUserContext? user)
             {
                 if (user == null) throw new UserContextUnauthorizedException();
-                var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+                var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
                 var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId, integrationConfiguration);
                 if (digikeyApi.Configuration.IsConfigured)
                 {

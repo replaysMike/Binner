@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-#if INITIALCREATE
     /// <summary>
     /// Stores user defined printer template configurations
     /// </summary>
@@ -128,5 +127,4 @@ namespace Binner.Data.Model
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
     }
-#endif
 }

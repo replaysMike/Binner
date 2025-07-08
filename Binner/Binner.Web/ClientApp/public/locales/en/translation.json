@@ -151,7 +151,7 @@
     },
     "settings": {
       "title": "Settings",
-      "description": "Configure your integrations, printer configuration, as well as label part templates. <1 /> Additional help can be found on the <3>Wiki</3>",
+      "description": "Additional help on configuring Binner can be found on the <1>Wiki</1>",
       "confirm": {
         "mustAuthenticateHeader": "Must Authenticate",
         "mustAuthenticate": "External Api is requesting that you authenticate first. You will be redirected back after authenticating with the external provider."
@@ -200,11 +200,16 @@
       "noCustomFieldsDefined": "No custom fields defined.",
       "application": "Application",
       "global": "Global",
-      "language": "Language",
+      "language": "Api Language",
+      "currency": "Api Currency",
       "tmeelectronics": "TME Electronics",
       "tmeDescription": "TME API Keys can be obtained at <1>https://developers.tme.eu</1>",
       "printMode": "Print Mode",
       "globalDescription": "Global application settings are used across the entire application.",
+      "mySettings": "My Settings",
+      "orgSettings": "Organization Settings",
+      "mySettingsDescription": "Configure settings associated with your user account.",
+      "orgSettingsDescription": "Configure settings common to all users in your organization.",
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
         "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",

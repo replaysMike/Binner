@@ -9,11 +9,6 @@ namespace Binner.Model.IO.Printing.PrinterHardware
     public interface ILabelPrinterHardware
     {
         /// <summary>
-        /// Printer settings
-        /// </summary>
-        IPrinterSettings PrinterSettings { get; set; }
-
-        /// <summary>
         /// Print a label
         /// </summary>
         /// <param name="content"></param>

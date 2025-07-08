@@ -25,7 +25,7 @@ namespace Binner.Services.Integrations.Barcode
         public virtual async Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode, ScannedLabelType barcodeType)
         {
             var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
-            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.UserId);
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId, integrationConfiguration);
             if (!digikeyApi.IsEnabled)
                 return ServiceResult<PartResults>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
@@ -99,7 +99,8 @@ namespace Binner.Services.Integrations.Barcode
 
         protected virtual async Task<CommonPart> DigikeyV3ProductToCommonPartAsync(V3.Product part, ProductBarcodeResponse barcodeResponse)
         {
-            // todo: unify this
+            var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
+
             var additionalPartNumbers = new List<string>();
             var basePart = part.Parameters
                 .Where(x => x.Parameter.Equals("Base Part Number", ComparisonType))
@@ -113,7 +114,7 @@ namespace Binner.Services.Integrations.Barcode
                 .FirstOrDefault(), out var mountingTypeId);
             var currency = string.Empty;
             if (string.IsNullOrEmpty(currency))
-                currency = _configuration.Locale.Currency.ToString().ToUpper();
+                currency = localeConfiguration.Currency.ToString().ToUpper();
             var packageType = part.Parameters
                 ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                 .Select(x => x.Value)
@@ -155,7 +156,8 @@ namespace Binner.Services.Integrations.Barcode
 
         private CommonPart DigikeyV4ProductDetailsToCommonPart(V4.ProductDetails details, ProductBarcodeResponse barcodeResponse)
         {
-            // todo: unify this
+            var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
+
             var part = details.Product;
             var additionalPartNumbers = new List<string>();
             var basePart = part.Parameters
@@ -170,7 +172,7 @@ namespace Binner.Services.Integrations.Barcode
                 .FirstOrDefault(), out var mountingTypeId);
             var currency = string.Empty;
             if (string.IsNullOrEmpty(currency))
-                currency = _configuration.Locale.Currency.ToString().ToUpper();
+                currency = localeConfiguration.Currency.ToString().ToUpper();
             var packageType = part.Parameters
                 ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
                 .Select(x => x.ValueText)

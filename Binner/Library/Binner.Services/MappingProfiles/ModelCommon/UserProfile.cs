@@ -26,7 +26,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PhoneNumber, options => options.MapFrom(x => x.PhoneNumber))
                 .ForMember(x => x.LocaleLanguage, options => options.MapFrom(x => x.LocaleLanguage))
                 .ForMember(x => x.LocaleCurrency, options => options.MapFrom(x => x.LocaleCurrency))
-                .ForMember(x => x.UserIntegrationConfigurations, options => options.Ignore())
+                .ForMember(x => x.OrganizationIntegrationConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
                 .ForMember(x => x.ProfileImage, options => options.Ignore())
@@ -62,9 +62,12 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.CustomFieldValues, options => options.Ignore())
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
-                .ForMember(x => x.UserLocaleConfigurations, options => options.Ignore())
-                .ForMember(x => x.UserBarcodeConfigurations, options => options.Ignore())
-                ;
+                .ForMember(x => x.OrganizationIntegrationConfigurations, options => options.Ignore())
+                .ForMember(x => x.OrganizationConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserPrinterConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
+            ;
 
             CreateMap<DataModel.User, User>()
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))

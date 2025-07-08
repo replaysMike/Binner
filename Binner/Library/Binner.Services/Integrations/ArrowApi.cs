@@ -1,5 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.Extensions;
+using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations;
 using Binner.Model.Integrations.Arrow;
@@ -19,8 +20,8 @@ namespace Binner.Services.Integrations
         public string Name => "Arrow";
         private readonly ILogger<ArrowApi> _logger;
         private readonly ArrowConfiguration _configuration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly HttpClient _client;
-        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
@@ -33,10 +34,11 @@ namespace Binner.Services.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public ArrowApi(ILogger<ArrowApi> logger, ArrowConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public ArrowApi(ILogger<ArrowApi> logger, ArrowConfiguration configuration, UserConfiguration userConfiguration, IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _userConfiguration = userConfiguration;
             _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
         }

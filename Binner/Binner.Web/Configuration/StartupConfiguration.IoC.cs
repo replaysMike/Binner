@@ -1,7 +1,7 @@
 ﻿using AutoMapper.Internal;
+using Binner.Common.Cache;
 using Binner.Common.Integrations;
 using Binner.Common.IO;
-using Binner.Common.IO.Printing;
 using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.Global.Common;
@@ -19,6 +19,7 @@ using Binner.Services.Integrations.Categories;
 using Binner.Services.Integrations.ExternalOrder;
 using Binner.Services.Integrations.PartInformation;
 using Binner.Services.IO;
+using Binner.Services.IO.Printing;
 using Binner.Services.MappingProfiles.ModelCommon;
 using Binner.Services.Printing;
 using Binner.StorageProvider.EntityFrameworkCore;
@@ -151,6 +152,8 @@ namespace Binner.Web.Configuration
             container.Register<IExternalBarcodeInfoService, ExternalBarcodeInfoService>(new PerScopeLifetime());
             container.Register<IExternalCategoriesService, ExternalCategoriesService>(new PerScopeLifetime());
             container.Register<IUserConfigurationService, UserConfigurationService>(new PerScopeLifetime());
+            container.Register<IUserConfigurationCacheProvider, UserConfigurationCacheProvider>(new PerScopeLifetime());
+            container.Register<IOrganizationConfigurationCacheProvider, OrganizationConfigurationCacheProvider>(new PerScopeLifetime());
             container.Register<ConfigFileMigrator>(new PerScopeLifetime());
         }
 

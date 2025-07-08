@@ -33,7 +33,7 @@ namespace Binner.Services.Integrations.ExternalOrder
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
             var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
-            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
             var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user.UserId, integrationConfiguration);
             if (!digikeyApi.IsEnabled)
                 return ServiceResult<ExternalOrderResponse?>.Create("Api is not enabled.", nameof(DigikeyApi));
@@ -58,6 +58,8 @@ namespace Binner.Services.Integrations.ExternalOrder
             //var fakeObj = JsonConvert.DeserializeObject<ExternalOrderResponse>(fakeResultStr);
             //return ServiceResult<ExternalOrderResponse?>.Create(fakeObj);
 
+            var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
+
             var messages = new List<Message>();
             var digikeyOrderResponse = (V4.SalesOrder?)apiResponse.Response ?? new V4.SalesOrder();
 
@@ -70,7 +72,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             var currency = digikeyOrderResponse.Currency;
             // always use the currency of the order, as product details may be specified in the user's chosen currency in Binner
             if (string.IsNullOrEmpty(currency))
-                currency = _configuration.Locale.Currency.ToString().ToUpper();
+                currency = localeConfiguration.Currency.ToString().ToUpper();
 
             if (isLargeOrder)
             {
@@ -201,6 +203,7 @@ namespace Binner.Services.Integrations.ExternalOrder
 
         protected virtual async Task<IServiceResult<ExternalOrderResponse?>> ProcessDigiKeyV3OrderResponseAsync(DigikeyApi digikeyApi, IApiResponse apiResponse, OrderImportRequest request)
         {
+            var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
             var messages = new List<Message>();
             var digikeyResponse = (V3.OrderSearchResponse?)apiResponse.Response ?? new V3.OrderSearchResponse();
 
@@ -281,7 +284,7 @@ namespace Binner.Services.Integrations.ExternalOrder
                         .FirstOrDefault(), out var mountingTypeId);
                     var currency = digikeyResponse.Currency;
                     if (string.IsNullOrEmpty(currency))
-                        currency = _configuration.Locale.Currency.ToString().ToUpper();
+                        currency = localeConfiguration.Currency.ToString().ToUpper();
                     var packageType = part.Parameters
                             ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                             .Select(x => x.Value)

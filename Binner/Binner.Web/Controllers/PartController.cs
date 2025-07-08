@@ -2,7 +2,6 @@
 using Binner.Common;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
-using Binner.Common.IO.Printing;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Barcode;
@@ -12,6 +11,7 @@ using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services;
+using Binner.Services.IO.Printing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -51,8 +51,9 @@ namespace Binner.Web.Controllers
         private readonly IUserService<User> _userService;
         private readonly IPrintService _printService;
         private readonly ILabelGenerator _labelGenerator;
+        private readonly IUserConfigurationService _userConfigurationService;
 
-        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService<User> userService, IPrintService printService, ILabelGenerator labelGenerator)
+        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService<User> userService, IPrintService printService, ILabelGenerator labelGenerator, IUserConfigurationService userConfigurationService)
         {
             _logger = logger;
             _mapper = mapper;
@@ -67,6 +68,7 @@ namespace Binner.Web.Controllers
             _userService = userService;
             _printService = printService;
             _labelGenerator = labelGenerator;
+            _userConfigurationService = userConfigurationService;
         }
 
         /// <summary>
@@ -595,6 +597,8 @@ namespace Binner.Web.Controllers
                 var partsCost = await _partService.GetPartsValueAsync();
                 var lowStockCount = await _partService.GetLowStockAsync(new PaginatedRequest { Results = 999 });
                 var projectsCount = await _projectService.GetProjectsAsync(new PaginatedRequest { Results = 999 });
+
+                var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
                 return Ok(new
                 {
                     UniquePartsCount = uniquePartsCount,
@@ -602,7 +606,7 @@ namespace Binner.Web.Controllers
                     PartsCost = partsCost,
                     LowStockCount = lowStockCount.Items.Count(),
                     ProjectsCount = projectsCount.Count,
-                    Currency = _config.Locale.Currency.ToString().ToUpper()
+                    Currency = userConfiguration.Currency.ToString().ToUpper()
                 });
             }
             catch (Exception ex)

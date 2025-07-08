@@ -22,7 +22,7 @@ namespace Binner.Services.Integrations
         private static readonly TimeSpan CacheLifetime = TimeSpan.FromMinutes(30);
         private readonly ILogger<TmeApi> _logger;
         private readonly TmeConfiguration _configuration;
-        private readonly LocaleConfiguration _localeConfiguration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly IApiHttpClient _client;
         private readonly IApiHttpClientFactory _clientFactory;
         private readonly MemoryCache _cache = new MemoryCache("TMEStaticCache");
@@ -43,13 +43,13 @@ namespace Binner.Services.Integrations
         /// Documentation available at https://developers.tme.eu/documentation/download
         /// </summary>
         /// <param name="configuration"></param>
-        /// <param name="localeConfiguration"></param>
+        /// <param name="userConfiguration"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TmeApi(ILogger<TmeApi> logger, TmeConfiguration configuration, LocaleConfiguration localeConfiguration, IApiHttpClientFactory clientFactory)
+        public TmeApi(ILogger<TmeApi> logger, TmeConfiguration configuration, UserConfiguration userConfiguration, IApiHttpClientFactory clientFactory)
         {
             _logger = logger;
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _localeConfiguration = localeConfiguration ?? throw new ArgumentNullException(nameof(localeConfiguration));
+            _userConfiguration = userConfiguration ?? throw new ArgumentNullException(nameof(userConfiguration));
             _clientFactory = clientFactory;
             _client = clientFactory.Create();
             _client.AddHeader(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
@@ -102,7 +102,7 @@ namespace Binner.Services.Integrations
             // apiParams.Add("SearchOrder", "ACCURACY");
             // Parameter which determines direction of sorting (ASC or DESC) (optional)
             //apiParams.Add("SearchOrderType", "ASC");
-            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_userConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
@@ -151,7 +151,7 @@ namespace Binner.Services.Integrations
                 i++;
             }
 
-            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_userConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
@@ -187,7 +187,7 @@ namespace Binner.Services.Integrations
             // build the api params request
             // Text describing the searched product, may consist of multiple words. Example: "led diode","cover", "1N4007". (optional)
             var apiParams = new Dictionary<string, object>();
-            apiParams.Add("Currency", _localeConfiguration.Currency);
+            apiParams.Add("Currency", _userConfiguration.Currency);
             apiParams.Add("GrossPrices", false);
             var i = 0;
             foreach (var partNumber in partNumbers)
@@ -199,7 +199,7 @@ namespace Binner.Services.Integrations
                 i++;
             }
 
-            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_userConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
@@ -234,7 +234,7 @@ namespace Binner.Services.Integrations
             //apiParams.Add("CategoryId", 1);
             // Determines form of response. If true then tree will be returned. Param is optional, default - true.
             //apiParams.Add("Tree", false);
-            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_localeConfiguration.Language), apiParams);
+            var urlEncodedContent = await BuildApiParamsAsync(uri, _configuration.Country, TmeLanguages.MapLanguage(_userConfiguration.Language), apiParams);
 
             // create POST message
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);

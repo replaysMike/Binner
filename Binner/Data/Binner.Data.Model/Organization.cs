@@ -21,5 +21,9 @@ namespace Binner.Data.Model
         public DateTime DateModifiedUtc { get; set; }
 
         public ICollection<User>? Users { get; set; }
+
+        public ICollection<OrganizationConfiguration>? OrganizationConfigurations { get; set; }
+
+        public ICollection<OrganizationIntegrationConfiguration>? OrganizationIntegrationConfigurations { get; set; }
     }
 }

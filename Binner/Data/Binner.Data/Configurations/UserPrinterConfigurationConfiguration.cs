@@ -11,7 +11,7 @@ namespace Binner.Data.Configurations
         {
             builder.HasOne(p => p.User)
                 .WithMany(p => p.UserPrinterConfigurations)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");

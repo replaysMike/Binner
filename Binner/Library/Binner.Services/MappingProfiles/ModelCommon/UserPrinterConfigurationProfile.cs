@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using DataModel = Binner.Data.Model;
@@ -28,7 +29,6 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
                 .ForMember(x => x.RemoteAddressUrl, options => options.MapFrom(x => x.RemoteAddressUrl))
                 .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
-                //.ForMember(x => x.UserPrinterTemplateConfigurations, options => options.MapFrom(x => x.UserPrinterTemplateConfigurations))
 
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
@@ -36,8 +36,18 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ForMember(x => x.User, options => options.Ignore())
-                .ForMember(x => x.UserPrinterConfigurationId, options => options.Ignore());
-            //.AfterMap<UserPrinterConfigurationMappingAction>();
+                .ForMember(x => x.UserPrinterConfigurationId, options => options.Ignore())
+            ;
+
+            CreateMap<UserPrinterConfiguration, PrinterSettings>()
+                .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
+                .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
+                .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
+
+                .ForMember(x => x.LabelDefinitions, options => options.Ignore())
+                .ForMember(x => x.PartLabelTemplate, options => options.Ignore())
+            ;
 
             CreateMap<DataModel.UserPrinterTemplateConfiguration, UserPrinterTemplateConfiguration>()
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
@@ -88,6 +98,20 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UserPrinterConfigurationId, options => options.Ignore())
                 .ForMember(x => x.UserPrinterTemplateConfigurationId, options => options.Ignore())
                 ;
+
+            CreateMap<PrinterConfiguration, UserPrinterConfiguration>()
+                .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
+                .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
+                .ForMember(x => x.RemoteAddressUrl, options => options.MapFrom(x => x.RemoteAddressUrl))
+                .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
+
+                .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
+                .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
+                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+                .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserId, options => options.Ignore())
+            ;
         }
 
         public class UserPrinterConfigurationMappingAction : BaseCollectionMapperAction<UserPrinterConfiguration, DataModel.UserPrinterConfiguration>

@@ -35,17 +35,24 @@ namespace Binner.Web.Database
                 // [ ] load config file, look for sections we are going to migrate to the database
                 // [ ] save to database
                 // [ ] remove sections from config file
-                // todo: how do we handle this per user?
                 if (!_configuration.IsMigrated)
                 {
-                    var integrationConfiguration = _mapper.Map<UserIntegrationConfiguration>(_configuration.Integrations);
+                    const int defaultOrganizationId = 1;
+                    const int defaultUserId = 1;
+                    var integrationConfiguration = _mapper.Map<OrganizationIntegrationConfiguration>(_configuration.Integrations);
                     var printerConfiguration = _mapper.Map<UserPrinterConfiguration>(_configuration.PrinterConfiguration);
-                    var localeConfiguration = _mapper.Map<UserLocaleConfiguration>(_configuration.Locale);
-                    var barcodeConfiguration = _mapper.Map<UserBarcodeConfiguration>(_configuration.Barcode);
-                    integrationConfiguration = await _userConfigurationService.CreateOrUpdateIntegrationConfigurationAsync(integrationConfiguration);
-                    printerConfiguration = await _userConfigurationService.CreateOrUpdatePrinterConfigurationAsync(printerConfiguration);
-                    localeConfiguration = await _userConfigurationService.CreateOrUpdateLocaleConfigurationAsync(localeConfiguration);
-                    barcodeConfiguration = await _userConfigurationService.CreateOrUpdateBarcodeConfigurationAsync(barcodeConfiguration);
+                    var userConfiguration = _mapper.Map<UserConfiguration>(_configuration.Locale);
+                    userConfiguration = _mapper.Map<BarcodeConfiguration, UserConfiguration>(_configuration.Barcode, userConfiguration);
+                    
+                    var organizationConfiguration = await _userConfigurationService.CreateOrUpdateOrganizationConfigurationAsync(new OrganizationConfiguration
+                    {
+                        LicenseKey = _configuration.Licensing.LicenseKey ?? _configuration.LicenseKey,
+                    }, defaultOrganizationId);
+                    integrationConfiguration = await _userConfigurationService.CreateOrUpdateOrganizationIntegrationConfigurationAsync(integrationConfiguration, defaultOrganizationId);
+                    userConfiguration = await _userConfigurationService.CreateOrUpdateUserConfigurationAsync(userConfiguration, defaultUserId, defaultOrganizationId);
+                    printerConfiguration = await _userConfigurationService.CreateOrUpdatePrinterConfigurationAsync(printerConfiguration, defaultUserId, defaultOrganizationId);
+                    
+                    // mark it as migrated so we don't run it again
                     _configuration.IsMigrated = true;
                     await _settingsService.SaveSettingsAsAsync(_configuration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true, true);
                     return true;

@@ -31,7 +31,9 @@ namespace Binner.Web
         private readonly CertificateUtility _certificateUtility;
         private readonly IConfigurationRoot _configurationRoot;
         private readonly WebHostServiceConfiguration _webHostConfig;
+
         public bool IsPlainText { get; set; }
+
         public BinnerConsole(ILogger logger, string configFile, IConfigurationRoot configurationRoot, WebHostServiceConfiguration webHostConfig)
         {
             _logger = logger;
@@ -307,47 +309,6 @@ namespace Binner.Web
             PrintValue(_webHostConfig.SslCertificate);
             PrintLabel("   License Key");
             PrintValue(_webHostConfig.Licensing?.LicenseKey.Sanitize());
-
-            PrintLabel("Locale", ConsoleColor.White);
-            Console.WriteLine();
-
-            PrintLabel("   Language");
-            PrintValue(_webHostConfig.Locale.Language);
-            PrintLabel("   Currency");
-            PrintValue(_webHostConfig.Locale.Currency);
-
-            PrintLabel("Integrations", ConsoleColor.White);
-            Console.WriteLine();
-
-            PrintLabel("   Swarm");
-            Console.WriteLine();
-            PrintLabel("      Enabled");
-            PrintValue(_webHostConfig.Integrations.Swarm.Enabled);
-
-            PrintLabel("   DigiKey");
-            Console.WriteLine();
-            PrintLabel("      Enabled");
-            PrintValue(_webHostConfig.Integrations.Digikey.Enabled);
-
-            PrintLabel("   Mouser");
-            Console.WriteLine();
-            PrintLabel("      Enabled");
-            PrintValue(_webHostConfig.Integrations.Mouser.Enabled);
-
-            PrintLabel("   Octopart");
-            Console.WriteLine();
-            PrintLabel("      Enabled");
-            PrintValue(_webHostConfig.Integrations.Nexar.Enabled);
-
-            PrintLabel("   Arrow");
-            Console.WriteLine();
-            PrintLabel("      Enabled");
-            PrintValue(_webHostConfig.Integrations.Arrow.Enabled);
-
-            PrintLabel("   TME");
-            Console.WriteLine();
-            PrintLabel("      Enabled");
-            PrintValue(_webHostConfig.Integrations.Tme.Enabled);
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Environment.Exit(ExitCodes.Success);

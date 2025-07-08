@@ -16,6 +16,8 @@ namespace Binner.Data
         DbSet<OrderImportHistory> OrderImportHistories { get; set; }
         DbSet<OrderImportHistoryLineItem> OrderImportHistoryLineItems { get; set; }
         DbSet<Organization> Organizations { get; set; }
+        DbSet<OrganizationConfiguration> OrganizationConfigurations { get; set; }
+        DbSet<OrganizationIntegrationConfiguration> OrganizationIntegrationConfigurations { get; set; }
         DbSet<PartModel> PartModels { get; set; }
         DbSet<PartParametric> PartParametrics { get; set; }
         DbSet<Part> Parts { get; set; }
@@ -30,8 +32,8 @@ namespace Binner.Data
         DbSet<ProjectProduceHistory> ProjectProduceHistory { get; set; }
         DbSet<Project> Projects { get; set; }
         DbSet<StoredFile> StoredFiles { get; set; }
-        DbSet<UserIntegrationConfiguration> UserIntegrationConfigurations { get; set; }
         DbSet<UserLoginHistory> UserLoginHistory { get; set; }
+        DbSet<UserConfiguration> UserConfigurations { get; set; }
         DbSet<UserPrinterConfiguration> UserPrinterConfigurations { get; set; }
         DbSet<UserPrinterTemplateConfiguration> UserPrinterTemplateConfigurations { get; set; }
         DbSet<User> Users { get; set; }

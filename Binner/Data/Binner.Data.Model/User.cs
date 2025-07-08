@@ -1,4 +1,5 @@
 ﻿using Binner.Model;
+using Binner.Model.Configuration;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -169,15 +170,16 @@ namespace Binner.Data.Model
 
         public ICollection<ProjectPcbProduceHistory>? ProjectPcbProduceHistory { get; set; }
 
-        public ICollection<UserIntegrationConfiguration>? UserIntegrationConfigurations { get; set; }
+        public ICollection<OrganizationConfiguration>? OrganizationConfigurations { get; set; }
+
+        public ICollection<OrganizationIntegrationConfiguration>? OrganizationIntegrationConfigurations { get; set; }
+
+        public ICollection<UserConfiguration>? UserConfigurations { get; set; }
 
         public ICollection<UserPrinterConfiguration>? UserPrinterConfigurations { get; set; }
 
         public ICollection<UserPrinterTemplateConfiguration>? UserPrinterTemplateConfigurations { get; set; }
 
-        public ICollection<UserLocaleConfiguration>? UserLocaleConfigurations { get; set; }
-
-        public ICollection<UserBarcodeConfiguration>? UserBarcodeConfigurations { get; set; }
 
     }
 #endif

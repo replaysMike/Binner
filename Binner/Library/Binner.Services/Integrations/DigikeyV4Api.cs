@@ -48,8 +48,8 @@ namespace Binner.Services.Integrations
         };
         #endregion
 
-        public DigikeyV4Api(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, JsonSerializerSettings serializerSettings, IApiHttpClientFactory httpClientFactory)
-            : base(logger, configuration, localeConfiguration, serializerSettings, httpClientFactory)
+        public DigikeyV4Api(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, UserConfiguration userConfiguration, JsonSerializerSettings serializerSettings, IApiHttpClientFactory httpClientFactory)
+            : base(logger, configuration, userConfiguration, serializerSettings, httpClientFactory)
         {
             _logger = logger;
             _configuration = configuration;

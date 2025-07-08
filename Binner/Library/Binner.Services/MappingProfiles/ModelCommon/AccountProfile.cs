@@ -36,9 +36,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.EmailConfirmationToken, options => options.Ignore())
                 .ForMember(x => x.IsAdmin, options => options.Ignore())
                 .ForMember(x => x.Projects, options => options.Ignore())
-                .ForMember(x => x.UserIntegrationConfigurations, options => options.Ignore())
-                .ForMember(x => x.UserPrinterConfigurations, options => options.Ignore())
-                .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
+                .ForMember(x => x.OrganizationIntegrationConfigurations, options => options.Ignore())
                 .ForMember(x => x.Ip, options => options.Ignore())
                 .ForMember(x => x.EmailConfirmedIp, options => options.Ignore())
                 .ForMember(x => x.LastSetPasswordIp, options => options.Ignore())
@@ -59,9 +57,12 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.OrderImportHistoryLineItems, options => options.Ignore())
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
-                .ForMember(x => x.UserLocaleConfigurations, options => options.Ignore())
-                .ForMember(x => x.UserBarcodeConfigurations, options => options.Ignore())
-                ;
+                .ForMember(x => x.OrganizationIntegrationConfigurations, options => options.Ignore())
+                .ForMember(x => x.OrganizationConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserPrinterConfigurations, options => options.Ignore())
+                .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
+            ;
 
             CreateMap<DataModel.User, Account>()
                     .ForMember(x => x.EmailAddress, options => options.MapFrom(x => x.EmailAddress))

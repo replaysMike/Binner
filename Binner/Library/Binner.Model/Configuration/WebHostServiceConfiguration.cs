@@ -196,7 +196,7 @@
         /// <summary>
         /// Locale configuration
         /// </summary>
-        public LocaleConfiguration Locale { get; set; } = new();
+        public LocaleConfiguration? Locale { get; set; }
 
         /// <summary>
         /// Authentication configuration
@@ -206,12 +206,12 @@
         /// <summary>
         /// Digikey configuration
         /// </summary>
-        public IntegrationConfiguration Integrations { get; set; } = new();
+        public IntegrationConfiguration? Integrations { get; set; }
 
         /// <summary>
         /// Printer configuration
         /// </summary>
-        public PrinterConfiguration PrinterConfiguration { get; set; } = new();
+        public PrinterConfiguration? PrinterConfiguration { get; set; }
 
         /// <summary>
         /// Registered license configuration for activating paid features
@@ -221,6 +221,6 @@
         /// <summary>
         /// Barcode configuration
         /// </summary>
-        public BarcodeConfiguration Barcode { get; set; } = new();
+        public BarcodeConfiguration? Barcode { get; set; }
     }
 }

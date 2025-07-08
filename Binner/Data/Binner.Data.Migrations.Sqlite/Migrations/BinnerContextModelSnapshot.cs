@@ -452,6 +452,169 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.ToTable("Organizations", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrganizationConfiguration", b =>
+                {
+                    b.Property<int>("OrganizationConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CacheAbsoluteExpirationMinutes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CacheSlidingExpirationMinutes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("LicenseKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxCacheItems")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UseModule")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("OrganizationConfigurationId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrganizationConfigurations", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrganizationIntegrationConfiguration", b =>
+                {
+                    b.Property<int>("OrganizationIntegrationConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ArrowApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ArrowApiUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ArrowEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ArrowUsername")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("DigiKeyApiUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DigiKeyClientId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DigiKeyClientSecret")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("DigiKeyEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DigiKeyOAuthPostbackUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DigiKeySite")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MouserApiUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MouserCartApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("MouserEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MouserOrderApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MouserSearchApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NexarClientId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NexarClientSecret")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("NexarEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SwarmApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SwarmApiUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("SwarmEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<TimeSpan?>("SwarmTimeout")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("TmeResolveExternalLinks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("OrganizationIntegrationConfigurationId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrganizationIntegrationConfigurations", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.Property<long>("PartId")
@@ -1441,173 +1604,29 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.ToTable("Users", "dbo");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+            modelBuilder.Entity("Binner.Data.Model.UserConfiguration", b =>
                 {
-                    b.Property<int>("UserBarcodeConfigurationId")
+                    b.Property<int>("UserConfigurationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("BufferTime")
+                    b.Property<int>("BarcodeBufferTime")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<bool>("Enabled")
+                    b.Property<bool>("BarcodeEnabled")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsDebug")
+                    b.Property<bool>("BarcodeIsDebug")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("MaxKeystrokeThresholdMs")
+                    b.Property<int>("BarcodeMaxKeystrokeThresholdMs")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Prefix2D")
+                    b.Property<string>("BarcodePrefix2D")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Profile")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("UserBarcodeConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserBarcodeConfigurations", "dbo");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.Property<int>("UserIntegrationConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ArrowApiKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ArrowApiUrl")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("ArrowEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ArrowUsername")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("DigiKeyApiUrl")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DigiKeyClientId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DigiKeyClientSecret")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("DigiKeyEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("DigiKeyOAuthPostbackUrl")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("DigiKeySite")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("MouserApiUrl")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MouserCartApiKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("MouserEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("MouserOrderApiKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MouserSearchApiKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OctopartClientId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OctopartClientSecret")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("OctopartEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SwarmApiKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SwarmApiUrl")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("SwarmEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<TimeSpan?>("SwarmTimeout")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TmeApiKey")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TmeApiUrl")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TmeApplicationSecret")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TmeCountry")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("TmeEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("TmeResolveExternalLinks")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("UserIntegrationConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserIntegrationConfigurations", "dbo");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
-                {
-                    b.Property<int>("UserLocaleConfigurationId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("BarcodeProfile")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Currency")
@@ -1623,6 +1642,12 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<bool>("EnableAutoPartSearch")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("EnableDarkMode")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Language")
                         .HasColumnType("INTEGER");
 
@@ -1632,11 +1657,11 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("UserLocaleConfigurationId");
+                    b.HasKey("UserConfigurationId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLocaleConfigurations", "dbo");
+                    b.ToTable("UserConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -1957,6 +1982,34 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrganizationConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("OrganizationConfigurations")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Binner.Data.Model.User", null)
+                        .WithMany("OrganizationConfigurations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrganizationIntegrationConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("OrganizationIntegrationConfigurations")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Binner.Data.Model.User", null)
+                        .WithMany("OrganizationIntegrationConfigurations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.HasOne("Binner.Data.Model.PartType", "PartType")
@@ -2237,32 +2290,12 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Navigation("Organization");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+            modelBuilder.Entity("Binner.Data.Model.UserConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserBarcodeConfigurations")
+                        .WithMany("UserConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserIntegrationConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserLocaleConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -2282,7 +2315,7 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -2292,12 +2325,12 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserPrinterConfigurationId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -2332,6 +2365,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.Organization", b =>
                 {
+                    b.Navigation("OrganizationConfigurations");
+
+                    b.Navigation("OrganizationIntegrationConfigurations");
+
                     b.Navigation("Users");
                 });
 
@@ -2399,6 +2436,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Navigation("OrderImportHistoryLineItems");
 
+                    b.Navigation("OrganizationConfigurations");
+
+                    b.Navigation("OrganizationIntegrationConfigurations");
+
                     b.Navigation("PartModels");
 
                     b.Navigation("PartParametrics");
@@ -2427,11 +2468,7 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
 
                     b.Navigation("StoredFiles");
 
-                    b.Navigation("UserBarcodeConfigurations");
-
-                    b.Navigation("UserIntegrationConfigurations");
-
-                    b.Navigation("UserLocaleConfigurations");
+                    b.Navigation("UserConfigurations");
 
                     b.Navigation("UserLoginHistory");
 

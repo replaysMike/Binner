@@ -13,7 +13,7 @@ namespace Binner.Data.Migrations.MySql.Migrations
         {
             /* MySQL migration generator created a migration that doesn't work. Alternatively dropping the table as there is no data as of yet */
 
-            migrationBuilder.Sql("DROP TABLE dbo.\"UserBarcodeConfiguration\"");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS dbo.userbarcodeconfiguration");
 
             migrationBuilder.CreateTable(
                  name: "UserBarcodeConfigurations",

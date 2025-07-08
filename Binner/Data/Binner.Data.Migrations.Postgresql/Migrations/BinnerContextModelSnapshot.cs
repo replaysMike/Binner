@@ -474,6 +474,173 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.ToTable("Organizations", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrganizationConfiguration", b =>
+                {
+                    b.Property<int>("OrganizationConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrganizationConfigurationId"));
+
+                    b.Property<int>("CacheAbsoluteExpirationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CacheSlidingExpirationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("LicenseKey")
+                        .HasColumnType("text");
+
+                    b.Property<int>("MaxCacheItems")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UseModule")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("OrganizationConfigurationId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrganizationConfigurations", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrganizationIntegrationConfiguration", b =>
+                {
+                    b.Property<int>("OrganizationIntegrationConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrganizationIntegrationConfigurationId"));
+
+                    b.Property<string>("ArrowApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ArrowApiUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("ArrowEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ArrowUsername")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("DigiKeyApiUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DigiKeyClientId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DigiKeyClientSecret")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("DigiKeyEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("DigiKeyOAuthPostbackUrl")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DigiKeySite")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MouserApiUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MouserCartApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("MouserEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MouserOrderApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MouserSearchApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NexarClientId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NexarClientSecret")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("NexarEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SwarmApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SwarmApiUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("SwarmEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<TimeSpan?>("SwarmTimeout")
+                        .HasColumnType("interval");
+
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("TmeResolveExternalLinks")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("OrganizationIntegrationConfigurationId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrganizationIntegrationConfigurations", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.Property<long>("PartId")
@@ -1493,180 +1660,32 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.ToTable("Users", "dbo");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+            modelBuilder.Entity("Binner.Data.Model.UserConfiguration", b =>
                 {
-                    b.Property<int>("UserBarcodeConfigurationId")
+                    b.Property<int>("UserConfigurationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserBarcodeConfigurationId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserConfigurationId"));
 
-                    b.Property<int>("BufferTime")
+                    b.Property<int>("BarcodeBufferTime")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<bool>("Enabled")
+                    b.Property<bool>("BarcodeEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsDebug")
+                    b.Property<bool>("BarcodeIsDebug")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("MaxKeystrokeThresholdMs")
+                    b.Property<int>("BarcodeMaxKeystrokeThresholdMs")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Prefix2D")
+                    b.Property<string>("BarcodePrefix2D")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Profile")
+                    b.Property<int>("BarcodeProfile")
                         .HasColumnType("integer");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserBarcodeConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserBarcodeConfigurations", "dbo");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.Property<int>("UserIntegrationConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserIntegrationConfigurationId"));
-
-                    b.Property<string>("ArrowApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ArrowApiUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("ArrowEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ArrowUsername")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("DigiKeyApiUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DigiKeyClientId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DigiKeyClientSecret")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("DigiKeyEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("DigiKeyOAuthPostbackUrl")
-                        .HasColumnType("text");
-
-                    b.Property<int>("DigiKeySite")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MouserApiUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MouserCartApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("MouserEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("MouserOrderApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MouserSearchApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OctopartClientId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OctopartClientSecret")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("OctopartEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SwarmApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SwarmApiUrl")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("SwarmEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<TimeSpan?>("SwarmTimeout")
-                        .HasColumnType("interval");
-
-                    b.Property<string>("TmeApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TmeApiUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TmeApplicationSecret")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TmeCountry")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("TmeEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("TmeResolveExternalLinks")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserIntegrationConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserIntegrationConfigurations", "dbo");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
-                {
-                    b.Property<int>("UserLocaleConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserLocaleConfigurationId"));
 
                     b.Property<int>("Currency")
                         .HasColumnType("integer");
@@ -1681,6 +1700,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<bool>("EnableAutoPartSearch")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("EnableDarkMode")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("Language")
                         .HasColumnType("integer");
 
@@ -1690,11 +1715,11 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
-                    b.HasKey("UserLocaleConfigurationId");
+                    b.HasKey("UserConfigurationId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLocaleConfigurations", "dbo");
+                    b.ToTable("UserConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -2023,6 +2048,34 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrganizationConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("OrganizationConfigurations")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Binner.Data.Model.User", null)
+                        .WithMany("OrganizationConfigurations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrganizationIntegrationConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("OrganizationIntegrationConfigurations")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Binner.Data.Model.User", null)
+                        .WithMany("OrganizationIntegrationConfigurations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.HasOne("Binner.Data.Model.PartType", "PartType")
@@ -2303,32 +2356,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Navigation("Organization");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+            modelBuilder.Entity("Binner.Data.Model.UserConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserBarcodeConfigurations")
+                        .WithMany("UserConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserIntegrationConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserLocaleConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -2348,7 +2381,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -2358,12 +2391,12 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserPrinterConfigurationId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -2398,6 +2431,10 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.Organization", b =>
                 {
+                    b.Navigation("OrganizationConfigurations");
+
+                    b.Navigation("OrganizationIntegrationConfigurations");
+
                     b.Navigation("Users");
                 });
 
@@ -2465,6 +2502,10 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Navigation("OrderImportHistoryLineItems");
 
+                    b.Navigation("OrganizationConfigurations");
+
+                    b.Navigation("OrganizationIntegrationConfigurations");
+
                     b.Navigation("PartModels");
 
                     b.Navigation("PartParametrics");
@@ -2493,11 +2534,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     b.Navigation("StoredFiles");
 
-                    b.Navigation("UserBarcodeConfigurations");
-
-                    b.Navigation("UserIntegrationConfigurations");
-
-                    b.Navigation("UserLocaleConfigurations");
+                    b.Navigation("UserConfigurations");
 
                     b.Navigation("UserLoginHistory");
 

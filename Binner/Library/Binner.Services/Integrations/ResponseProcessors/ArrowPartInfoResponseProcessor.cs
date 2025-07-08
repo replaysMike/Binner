@@ -11,14 +11,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
         private readonly ILogger _logger;
         private readonly WebHostServiceConfiguration _configuration;
-        private readonly UserLocaleConfiguration _localeConfiguration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
 
-        public ArrowPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserLocaleConfiguration localeConfiguration, int resultsRank)
+        public ArrowPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank)
         {
             _logger = logger;
             _configuration = configuration;
-            _localeConfiguration = localeConfiguration;
+            _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
         }
 
@@ -126,7 +126,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     var partCost = 0d;
                     var minimumOrderQuantity = 1;
                     var quantityAvailable = 0;
-                    var currency = source?.Currency ?? _configuration.Locale.Currency.ToString().ToUpper();
+                    var currency = source?.Currency ?? _userConfiguration.Currency.ToString().ToUpper();
                     if (source != null)
                     {
                         var sourcePart = source.SourceParts

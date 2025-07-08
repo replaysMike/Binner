@@ -171,18 +171,6 @@ namespace Binner.Web.ServiceHost
                 }
             }
 
-            // migrate the Binner file configuration file to the database
-            var configFileMigrator = migrationHost.Services.GetRequiredService<ConfigFileMigrator>();
-            if (await configFileMigrator.MigrateConfigFileToDatabaseAsync())
-            {
-                _nlogLogger.Info("Binner configuration migrated to database!");
-                return;
-            }
-            else
-            {
-                _nlogLogger.Info("Binner configuration already migrated, skipping.");
-            }
-
             // ensure the creation of important paths
             var userFilesPath = SystemPaths.GetUserFilesPath(storageConfig);
             if (!Directory.Exists(userFilesPath))
@@ -249,6 +237,18 @@ namespace Binner.Web.ServiceHost
                     _logger.LogError(ex, $"Failed to migrate {storageConfig.Provider} database!");
                     return;
                 }
+            }
+
+            // migrate the Binner file configuration file to the database
+            var configFileMigrator = _webHost.Services.GetRequiredService<ConfigFileMigrator>();
+            var isMigrated = await configFileMigrator.MigrateConfigFileToDatabaseAsync();
+            if (isMigrated)
+            {
+                _nlogLogger.Info("Binner configuration migrated to database!");
+            }
+            else
+            {
+                _nlogLogger.Info("Binner configuration already migrated, skipping.");
             }
 
             await _webHost.RunAsync(_cancellationTokenSource.Token);

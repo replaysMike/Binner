@@ -29,15 +29,15 @@ namespace Binner.Services.Integrations
         private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
         protected readonly IApiHttpClient _client;
-        private readonly LocaleConfiguration _localeConfiguration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly JsonSerializerSettings _serializerSettings;
 
-        public BaseDigikeyApi(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, JsonSerializerSettings serializerSettings, IApiHttpClientFactory httpClientFactory)
+        public BaseDigikeyApi(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, UserConfiguration userConfiguration, JsonSerializerSettings serializerSettings, IApiHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _configuration = configuration;
             _client = httpClientFactory.Create();
-            _localeConfiguration = localeConfiguration;
+            _userConfiguration = userConfiguration;
             _serializerSettings = serializerSettings;
         }
 
@@ -148,8 +148,8 @@ namespace Binner.Services.Integrations
             message.Headers.Add("X-DIGIKEY-Client-Id", authResponse.ClientId);
             message.Headers.Add("Authorization", $"Bearer {authResponse.AccessToken}");
             message.Headers.Add("X-DIGIKEY-Locale-Site", _configuration.Site.ToString());
-            message.Headers.Add("X-DIGIKEY-Locale-Language", _localeConfiguration.Language.ToString().ToLower());
-            message.Headers.Add("X-DIGIKEY-Locale-Currency", _localeConfiguration.Currency.ToString().ToUpper());
+            message.Headers.Add("X-DIGIKEY-Locale-Language", _userConfiguration.Language.ToString().ToLower());
+            message.Headers.Add("X-DIGIKEY-Locale-Currency", _userConfiguration.Currency.ToString().ToUpper());
             return message;
         }
 
