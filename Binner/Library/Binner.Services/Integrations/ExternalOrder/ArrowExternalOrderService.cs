@@ -29,7 +29,7 @@ namespace Binner.Services.Integrations.ExternalOrder
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
             var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
-            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(user.UserId);
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
             var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user.UserId, integrationConfiguration);
             if (!((ArrowConfiguration)arrowApi.Configuration).IsConfigured)
                 return ServiceResult<ExternalOrderResponse?>.Create("Arrow Ordering Api is not enabled. Please configure your Arrow API settings and ensure a Username and Api key is set.", nameof(Integrations.ArrowApi));

@@ -474,6 +474,173 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.ToTable("Organizations", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrganizationConfiguration", b =>
+                {
+                    b.Property<int>("OrganizationConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrganizationConfigurationId"));
+
+                    b.Property<int>("CacheAbsoluteExpirationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CacheSlidingExpirationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("LicenseKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxCacheItems")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UseModule")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OrganizationConfigurationId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrganizationConfigurations", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrganizationIntegrationConfiguration", b =>
+                {
+                    b.Property<int>("OrganizationIntegrationConfigurationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrganizationIntegrationConfigurationId"));
+
+                    b.Property<string>("ArrowApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ArrowApiUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("ArrowEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ArrowUsername")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<DateTime>("DateModifiedUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("DigiKeyApiUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DigiKeyClientId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DigiKeyClientSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("DigiKeyEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DigiKeyOAuthPostbackUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DigiKeySite")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MouserApiUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MouserCartApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("MouserEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MouserOrderApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MouserSearchApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NexarClientId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NexarClientSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("NexarEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SwarmApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SwarmApiUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("SwarmEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan?>("SwarmTimeout")
+                        .HasColumnType("time");
+
+                    b.Property<string>("TmeApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeApiUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeApplicationSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TmeCountry")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TmeEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TmeResolveExternalLinks")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OrganizationIntegrationConfigurationId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrganizationIntegrationConfigurations", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.Property<long>("PartId")
@@ -1493,180 +1660,32 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.ToTable("Users", "dbo");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+            modelBuilder.Entity("Binner.Data.Model.UserConfiguration", b =>
                 {
-                    b.Property<int>("UserBarcodeConfigurationId")
+                    b.Property<int>("UserConfigurationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserBarcodeConfigurationId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserConfigurationId"));
 
-                    b.Property<int>("BufferTime")
+                    b.Property<int>("BarcodeBufferTime")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<bool>("Enabled")
+                    b.Property<bool>("BarcodeEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsDebug")
+                    b.Property<bool>("BarcodeIsDebug")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MaxKeystrokeThresholdMs")
+                    b.Property<int>("BarcodeMaxKeystrokeThresholdMs")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Prefix2D")
+                    b.Property<string>("BarcodePrefix2D")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Profile")
+                    b.Property<int>("BarcodeProfile")
                         .HasColumnType("int");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserBarcodeConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserBarcodeConfigurations", "dbo");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.Property<int>("UserIntegrationConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserIntegrationConfigurationId"));
-
-                    b.Property<string>("ArrowApiKey")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ArrowApiUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("ArrowEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ArrowUsername")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<DateTime>("DateModifiedUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("DigiKeyApiUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DigiKeyClientId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DigiKeyClientSecret")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("DigiKeyEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("DigiKeyOAuthPostbackUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DigiKeySite")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MouserApiUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MouserCartApiKey")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("MouserEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MouserOrderApiKey")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MouserSearchApiKey")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OctopartClientId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OctopartClientSecret")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("OctopartEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SwarmApiKey")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SwarmApiUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("SwarmEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<TimeSpan?>("SwarmTimeout")
-                        .HasColumnType("time");
-
-                    b.Property<string>("TmeApiKey")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TmeApiUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TmeApplicationSecret")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TmeCountry")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TmeEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("TmeResolveExternalLinks")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserIntegrationConfigurationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserIntegrationConfigurations", "dbo");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
-                {
-                    b.Property<int>("UserLocaleConfigurationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserLocaleConfigurationId"));
 
                     b.Property<int>("Currency")
                         .HasColumnType("int");
@@ -1681,6 +1700,12 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<bool>("EnableAutoPartSearch")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EnableDarkMode")
+                        .HasColumnType("bit");
+
                     b.Property<int>("Language")
                         .HasColumnType("int");
 
@@ -1690,11 +1715,11 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("UserLocaleConfigurationId");
+                    b.HasKey("UserConfigurationId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLocaleConfigurations", "dbo");
+                    b.ToTable("UserConfigurations", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.UserLoginHistory", b =>
@@ -2023,6 +2048,34 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.OrganizationConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("OrganizationConfigurations")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Binner.Data.Model.User", null)
+                        .WithMany("OrganizationConfigurations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.OrganizationIntegrationConfiguration", b =>
+                {
+                    b.HasOne("Binner.Data.Model.Organization", "Organization")
+                        .WithMany("OrganizationIntegrationConfigurations")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Binner.Data.Model.User", null)
+                        .WithMany("OrganizationIntegrationConfigurations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.Part", b =>
                 {
                     b.HasOne("Binner.Data.Model.PartType", "PartType")
@@ -2303,32 +2356,12 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Navigation("Organization");
                 });
 
-            modelBuilder.Entity("Binner.Data.Model.UserBarcodeConfiguration", b =>
+            modelBuilder.Entity("Binner.Data.Model.UserConfiguration", b =>
                 {
                     b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserBarcodeConfigurations")
+                        .WithMany("UserConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserIntegrationConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserIntegrationConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.UserLocaleConfiguration", b =>
-                {
-                    b.HasOne("Binner.Data.Model.User", "User")
-                        .WithMany("UserLocaleConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -2348,7 +2381,7 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -2358,12 +2391,12 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.HasOne("Binner.Data.Model.User", "User")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Binner.Data.Model.UserPrinterConfiguration", "UserPrinterConfiguration")
                         .WithMany("UserPrinterTemplateConfigurations")
                         .HasForeignKey("UserPrinterConfigurationId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -2398,6 +2431,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
             modelBuilder.Entity("Binner.Data.Model.Organization", b =>
                 {
+                    b.Navigation("OrganizationConfigurations");
+
+                    b.Navigation("OrganizationIntegrationConfigurations");
+
                     b.Navigation("Users");
                 });
 
@@ -2465,6 +2502,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Navigation("OrderImportHistoryLineItems");
 
+                    b.Navigation("OrganizationConfigurations");
+
+                    b.Navigation("OrganizationIntegrationConfigurations");
+
                     b.Navigation("PartModels");
 
                     b.Navigation("PartParametrics");
@@ -2493,11 +2534,7 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Navigation("StoredFiles");
 
-                    b.Navigation("UserBarcodeConfigurations");
-
-                    b.Navigation("UserIntegrationConfigurations");
-
-                    b.Navigation("UserLocaleConfigurations");
+                    b.Navigation("UserConfigurations");
 
                     b.Navigation("UserLoginHistory");
 

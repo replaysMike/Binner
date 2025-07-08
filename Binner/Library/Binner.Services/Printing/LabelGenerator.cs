@@ -1,10 +1,12 @@
-﻿using Barcoder.Renderer.Image;
+﻿using AutoMapper;
+using Barcoder.Renderer.Image;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
-using Binner.Common.IO.Printing;
+using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
+using Binner.Services.IO.Printing;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -33,23 +35,26 @@ namespace Binner.Services.Printing
         private readonly IPrinterEnvironment _printer;
         private Rectangle _paperRect;
         private readonly IPartTypeService _partTypeService;
-
-        /// <summary>
-        /// Printer settings
-        /// </summary>
-        public IPrinterSettings PrinterSettings { get; set; }
+        private readonly IMapper _mapper;
+        private readonly IUserConfigurationService _userConfigurationService;
+        private readonly IRequestContextAccessor _requestContextAccessor;
+        private readonly IPrinterSettings _printerSettings;
 
         static LabelGenerator()
         {
             LoadFonts();
         }
 
-        public LabelGenerator(ILoggerFactory loggerFactory, IPrinterSettings printerSettings, IBarcodeGenerator barcodeGenerator, IPartTypeService partTypeService)
+        public LabelGenerator(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPartTypeService partTypeService, IMapper mapper, IUserConfigurationService userConfigurationService, IRequestContextAccessor requestContextAccessor)
         {
-            PrinterSettings = printerSettings ?? throw new ArgumentNullException(nameof(printerSettings));
             _barcodeGenerator = barcodeGenerator;
             _partTypeService = partTypeService;
-            _printer = new PrinterFactory(loggerFactory).CreatePrinter(printerSettings);
+            _mapper = mapper;
+            _userConfigurationService = userConfigurationService;
+            _requestContextAccessor = requestContextAccessor;
+            var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
+            _printerSettings = _mapper.Map<PrinterSettings>(printerConfig);
+            _printer = new PrinterFactory(loggerFactory).CreatePrinter(_printerSettings);
         }
 
         public Image<Rgba32> CreateLabelImage(Label label, Part part)

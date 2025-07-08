@@ -1,9 +1,6 @@
-﻿using Binner.Common.Integrations;
-
-namespace Binner.Common.Cache
+﻿namespace Binner.Common.Cache
 {
-    public interface IUserConfigurationCacheProvider
+    public interface IUserConfigurationCacheProvider : IConfigurationCacheProvider<UserConfigurationCacheStore>
     {
-        UserConfigurationCache Cache { get; }
     }
 }

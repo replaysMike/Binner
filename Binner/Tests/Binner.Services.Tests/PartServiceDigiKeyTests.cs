@@ -66,6 +66,6 @@ namespace Binner.Services.Tests
         }
 
         private PartService ConstructPartService(Testing.TestContext testContext) => new PartService(testContext.WebHostServiceConfiguration, testContext.MockLogger<PartService>(), testContext.StorageProvider, testContext.Mapper.Object,
-                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object);
+                    testContext.IntegrationApiFactory, testContext.RequestContextAccessor.Object, testContext.PartTypesCache.Object, testContext.ExternalOrderService, testContext.ExternalBarcodeInfoService.Object, testContext.ExternalPartInfoService, testContext.ExternalCategoriesService.Object, testContext.BaseIntegrationBehavior.Object, testContext.UserConfigurationService.Object);
     }
 }

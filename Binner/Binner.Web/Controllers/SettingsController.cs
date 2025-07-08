@@ -30,8 +30,8 @@ namespace Binner.Web.Controllers
         private readonly IntegrationService _integrationService;
         private readonly AutoMapper.IMapper _mapper;
         private readonly IUserConfigurationService _userConfigurationService;
-
-        public SettingsController(AutoMapper.IMapper mapper, ILogger<SettingsController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, IUserConfigurationService userConfigurationService)
+        private readonly IRequestContextAccessor _requestContextAccessor;
+        public SettingsController(AutoMapper.IMapper mapper, ILogger<SettingsController> logger, WebHostServiceConfiguration config, ISettingsService settingsService, IntegrationService integrationService, IUserConfigurationService userConfigurationService, IRequestContextAccessor requestContextAccessor)
         {
             _mapper = mapper;
             _logger = logger;
@@ -39,6 +39,7 @@ namespace Binner.Web.Controllers
             _settingsService = settingsService;
             _integrationService = integrationService;
             _userConfigurationService = userConfigurationService;
+            _requestContextAccessor = requestContextAccessor;
         }
 
         /// <summary>
@@ -46,7 +47,6 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut]
-        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
         public async Task<IActionResult> SaveSettingsAsync(SettingsRequest request) 
         {
             try
@@ -65,14 +65,18 @@ namespace Binner.Web.Controllers
                 request.Arrow.ApiUrl = $"https://{request.Arrow.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Tme.ApiUrl = $"https://{request.Tme.ApiUrl.Replace("https://", "").Replace("http://", "")}";
 
-                var integrationConfiguration = _mapper.Map<UserIntegrationConfiguration>(request);
+                if (_requestContextAccessor.GetUserContext()?.IsAdmin == true)
+                {
+                    var organizationConfiguration = _mapper.Map<OrganizationConfiguration>(request);
+                    var integrationConfiguration = _mapper.Map<OrganizationIntegrationConfiguration>(request);
+                    organizationConfiguration = await _userConfigurationService.CreateOrUpdateOrganizationConfigurationAsync(organizationConfiguration);
+                    integrationConfiguration = await _userConfigurationService.CreateOrUpdateOrganizationIntegrationConfigurationAsync(integrationConfiguration);
+                }
+
+                var userConfiguration = _mapper.Map<UserConfiguration>(request);
                 var printerConfiguration = _mapper.Map<UserPrinterConfiguration>(request);
-                var localeConfiguration = _mapper.Map<UserLocaleConfiguration>(request);
-                var barcodeConfiguration = _mapper.Map<UserBarcodeConfiguration>(request);
-                integrationConfiguration = await _userConfigurationService.CreateOrUpdateIntegrationConfigurationAsync(integrationConfiguration);
+                userConfiguration = await _userConfigurationService.CreateOrUpdateUserConfigurationAsync(userConfiguration);
                 printerConfiguration = await _userConfigurationService.CreateOrUpdatePrinterConfigurationAsync(printerConfiguration);
-                localeConfiguration = await _userConfigurationService.CreateOrUpdateLocaleConfigurationAsync(localeConfiguration);
-                barcodeConfiguration = await _userConfigurationService.CreateOrUpdateBarcodeConfigurationAsync(barcodeConfiguration);
 
                 // also save the custom fields (add/update/remove)
                 await _settingsService.SaveCustomFieldsAsync(request.CustomFields);
@@ -95,8 +99,17 @@ namespace Binner.Web.Controllers
         {
             try
             {
-                var settingsResponse = _mapper.Map<SettingsResponse>(_config);
+                var organizationConfiguration = _userConfigurationService.GetCachedOrganizationConfiguration();
+                var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
+                var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration();
+                var printerConfiguration = _userConfigurationService.GetCachedPrinterConfiguration();
+
+                var settingsResponse = _mapper.Map<SettingsResponse>(organizationConfiguration);
+                settingsResponse = _mapper.Map<UserConfiguration, SettingsResponse>(userConfiguration, settingsResponse);
+                settingsResponse = _mapper.Map<OrganizationIntegrationConfiguration, SettingsResponse>(integrationConfiguration, settingsResponse);
+                settingsResponse = _mapper.Map<UserPrinterConfiguration, SettingsResponse>(printerConfiguration, settingsResponse);
                 settingsResponse.CustomFields = await _settingsService.GetCustomFieldsAsync();
+
                 return Ok(settingsResponse);
             }
             catch (Exception ex)

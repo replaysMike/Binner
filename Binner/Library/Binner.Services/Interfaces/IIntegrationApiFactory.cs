@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Integrations;
+using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Services.Integrations;
 
@@ -21,7 +22,7 @@ namespace Binner.Services
         /// <typeparam name="T"></typeparam>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<T> CreateAsync<T>(int userId, UserIntegrationConfiguration userIntegrationConfiguration) where T : class;
+        Task<T> CreateAsync<T>(int userId, OrganizationIntegrationConfiguration integrationConfiguration) where T : class;
 
         /// <summary>
         /// Create an integration Api for use by users
@@ -29,7 +30,7 @@ namespace Binner.Services
         /// <param name="apiType">Api type to create</param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<IIntegrationApi> CreateAsync(Type apiType, int userId, UserIntegrationConfiguration userIntegrationConfiguration);
+        Task<IIntegrationApi> CreateAsync(Type apiType, int userId, OrganizationIntegrationConfiguration integrationConfiguration);
 
         /// <summary>
         /// Create an integration Api for use by users

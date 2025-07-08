@@ -2,16 +2,18 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table } from "semantic-ui-react";
+import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table, Tab, TabPane } from "semantic-ui-react";
 import ClearableInput from "../components/ClearableInput";
 import { BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown, GetTypeName } from "../common/Types";
+import { isAdmin } from "../common/authentication";
 import { DigiKeySites } from "../common/digiKeySites";
 import { TmeCountries } from "../common/tmeCountries";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { setSystemSettings } from "../common/applicationSettings";
 import { toast } from "react-toastify";
-import { getCurrencySymbol } from "../common/Utils";
+import { Languages } from "../common/Languages";
+import { Currencies } from "../common/Currencies";
 import { CustomFieldTypes } from "../common/customFieldTypes";
 import { config } from "../common/config";
 import "./Settings.css";
@@ -73,253 +75,8 @@ export const Settings = () => {
       text: "Enabled",
     },
   ]);
-  const [languages] = useState([{
-    key: 1,
-    value: "en",
-    text: "English",
-  }, {
-    key: 2,
-    value: "br",
-    text: "Breton",
-  }, {
-    key: 3,
-    value: "cs",
-    text: "Czech",
-  }, {
-    key: 4,
-    value: "da",
-    text: "Danish",
-  }, {
-    key: 5,
-    value: "de",
-    text: "German",
-  }, {
-    key: 6,
-    value: "es",
-    text: "Spanish",
-  }, {
-    key: 7,
-    value: "fi",
-    text: "Finnish",
-  }, {
-    key: 8,
-    value: "fr",
-    text: "French",
-  }, {
-    key: 9,
-    value: "he",
-    text: "Hebrew",
-  }, {
-    key: 10,
-    value: "hu",
-    text: "Hungarian",
-  }, {
-    key: 11,
-    value: "it",
-    text: "Italian",
-  }, {
-    key: 12,
-    value: "ja",
-    text: "Japanese",
-  }, {
-    key: 13,
-    value: "ko",
-    text: "Korean",
-  }, {
-    key: 14,
-    value: "nl",
-    text: "Dutch",
-  }, {
-    key: 15,
-    value: "no",
-    text: "Norwegian",
-  }, {
-    key: 16,
-    value: "pl",
-    text: "Polish",
-  }, {
-    key: 17,
-    value: "pt",
-    text: "Portuguese",
-  }, {
-    key: 18,
-    value: "ro",
-    text: "Romanian",
-  }, {
-    key: 19,
-    value: "sv",
-    text: "Swedish",
-  }, {
-    key: 20,
-    value: "th",
-    text: "Thai",
-  }, {
-    key: 21,
-    value: "zhs",
-    text: "Chinese (Simplified)",
-  }, {
-    key: 22,
-    value: "zht",
-    text: "Chinese (Traditional)",
-  },
-  // languages below are compatible with TME, they don't use official language codes but rather country codes :P
-  {
-    key: 23,
-    value: "bg",
-    country: "BG",
-    text: "Bulgarian",
-  }, {
-    key: 24,
-    value: "rm",
-    country: "CH",
-    text: "Romansh",
-  }, {
-    key: 25,
-    value: "el",
-    country: "GR",
-    text: "Greek",
-  }, {
-    key: 26,
-    value: "hr",
-    country: "HR",
-    text: "Croatian",
-  }, {
-    key: 27,
-    value: "lt",
-    country: "LT",
-    text: "Lithuanian",
-  }, {
-    key: 28,
-    value: "lv",
-    country: "LV",
-    text: "Latvian",
-  }, {
-    key: 29,
-    value: "ru",
-    country: "RU",
-    text: "Russian",
-  }, {
-    key: 30,
-    value: "sk",
-    country: "SK",
-    text: "Slovak",
-  }, {
-    key: 31,
-    value: "tr",
-    country: "TR",
-    text: "Turkish",
-  }, {
-    key: 32,
-    value: "uk",
-    country: "UA",
-    text: "Ukraine",
-  },
-  ]);
-  const [currencies] = useState([{
-    key: 1,
-    value: "USD",
-    text: `${getCurrencySymbol("USD")} - US Dollar`,
-  },{
-    key: 2,
-    value: "CAD",
-    text: `${getCurrencySymbol("CAD")} - Canadian Dollar`,
-  },{
-    key: 3,
-    value: "JPY",
-    text: `${getCurrencySymbol("JPY")} - Japanese Yen`,
-  },{
-    key: 4,
-    value: "GBP",
-    text: `${getCurrencySymbol("GBP")} - Pound sterling`,
-  },{
-    key: 5,
-    value: "EUR",
-    text: `${getCurrencySymbol("EUR")} - Euro`,
-  },{
-    key: 6,
-    value: "HKD",
-    text: `${getCurrencySymbol("HKD")} - Hong Kong dollar`,
-  },{
-    key: 7,
-    value: "SGD",
-    text: `${getCurrencySymbol("SGD")} - Singapore dollar`,
-  },{
-    key: 8,
-    value: "TWD",
-    text: `${getCurrencySymbol("TWD")} - New Taiwan dollar`,
-  },{
-    key: 9,
-    value: "KRW",
-    text: `${getCurrencySymbol("KRW")} - South Korean won`,
-  },{
-    key: 10,
-    value: "AUD",
-    text: `${getCurrencySymbol("AUD")} - Australian dollar`,
-  },{
-    key: 11,
-    value: "NZD",
-    text: `${getCurrencySymbol("NZD")} - New Zealand dollar`,
-  },{
-    key: 12,
-    value: "INR",
-    text: `${getCurrencySymbol("INR")} - Indian Rupee`,
-  },{
-    key: 13,
-    value: "DKK",
-    text: `${getCurrencySymbol("DKK")} - Danish krone`,
-  },{
-    key: 14,
-    value: "NOK",
-    text: `${getCurrencySymbol("NOK")} - Norwegian krone`,
-  },{
-    key: 15,
-    value: "SEK",
-    text: `${getCurrencySymbol("SEK")} - Swedish krona`,
-  },{
-    key: 16,
-    value: "ILS",
-    text: `${getCurrencySymbol("ILS")} - Israeli new shekel`,
-  },{
-    key: 17,
-    value: "CNY",
-    text: `${getCurrencySymbol("CNY")} - Chinese Yuan (Renminbi)`,
-  },{
-    key: 18,
-    value: "PLN",
-    text: `${getCurrencySymbol("PLN")} - Polish Zloty`,
-  },{
-    key: 19,
-    value: "CHF",
-    text: `${getCurrencySymbol("CHF")} - Swiss Franc`,
-  },{
-    key: 20,
-    value: "CZK",
-    text: `${getCurrencySymbol("CZK")} - Czech Koruna`,
-  },{
-    key: 21,
-    value: "HUF",
-    text: `${getCurrencySymbol("HUF")} - Hungarian Forint`,
-  },{
-    key: 22,
-    value: "RON",
-    text: `${getCurrencySymbol("RON")} - Romanian Leu`,
-  },{
-    key: 23,
-    value: "ZAR",
-    text: `${getCurrencySymbol("ZAR")} - South African Rand`,
-  },{
-    key: 24,
-    value: "MYR",
-    text: `${getCurrencySymbol("MYR")} - Malaysian Ringgit`,
-  },{
-    key: 25,
-    value: "THB",
-    text: `${getCurrencySymbol("THB")} - Thai Baht`,
-  },{
-    key: 26,
-    value: "PHP",
-    text: `${getCurrencySymbol("PHP")} - Philippine peso`,
-  },]);
+  const languageOptions = Languages;
+  const currencyOptions = Currencies;
   const barcodeProfileOptions = GetTypeDropdown(BarcodeProfiles);
   const customFieldTypeOptions = GetAdvancedTypeDropdown(CustomFieldTypes);
   const digikeySites = GetAdvancedTypeDropdown(DigiKeySites);
@@ -417,8 +174,8 @@ export const Settings = () => {
         setLoading(false);
         // break out data into multiple state variables to optimize render performance
         const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes } = data;
-        const language = data.language.toLowerCase(); // to match lowercase option value
-        const currency = data.currency.toUpperCase(); // to match uppercase option value
+        const language = data.locale.language;
+        const currency = data.locale.currency;
         setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes });
         const { binner, digikey, mouser, arrow, octopart, tme } = data;
         setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme });
@@ -442,6 +199,10 @@ export const Settings = () => {
       ...globalSettings,
       ...integrationSettings,
       ...printerSettings,
+      locale: {
+        currency: globalSettings.currency,
+        language: globalSettings.language,
+      },
       customFields: [ ..._.filter(customFieldSettings.customFields, x => x.name?.length > 0).map((cf) => ({...cf, name: cf.name.trim()})) ],
       barcode: {
         ...barcodeSettings, 
@@ -803,7 +564,66 @@ export const Settings = () => {
     return <></>;
   };
 
-  const applicationSettingsMemoized = useMemo(() => {
+  const userSettingsMemoized = useMemo(() => {
+    return (<Segment loading={loading} color="blue" raised padded>
+      <Header dividing as="h3">
+        {t('page.settings.application', "Application")}
+      </Header>
+
+      <Form.Field width={10}>
+        <label>{t('page.settings.language', "Api Language")}</label>
+        <Popup
+          wide
+          position="top left"
+          offset={[120, 0]}
+          hoverable
+          content={
+            <p>
+              {t('page.settings.popup.language', "The language setting specified here is passed to external APIs as your preferred language. This does not indicate the language selected for the user interface.")}
+            </p>
+          }
+          trigger={
+            <Dropdown
+              name="language"
+              placeholder="English"
+              selection
+              value={globalSettings.language || 0}
+              options={languageOptions}
+              onChange={(e, control) => handleChange(e, control, 'global')}
+            />
+          }
+        />
+      </Form.Field>
+
+      <Form.Field width={10}>
+        <label>{t('page.settings.currency', "Api Currency")}</label>
+        <Popup
+          wide
+          position="top left"
+          offset={[120, 0]}
+          hoverable
+          content={
+            <p>
+              {t('page.settings.popup.currency', "The currency setting will be used as your default currency. It is passed to external APIs as your preferred currency.")}
+            </p>
+          }
+          trigger={
+            <Dropdown
+              name="currency"
+              placeholder="USD"
+              selection
+              value={globalSettings.currency || 0}
+              options={currencyOptions}
+              onChange={(e, control) => handleChange(e, control, 'global')}
+            />
+          }
+        />
+      </Form.Field>
+
+    </Segment>);
+  }, [globalSettings]);
+
+  const organizationSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>
       <Header dividing as="h3">
         {t('page.settings.application', "Application")}
@@ -837,56 +657,6 @@ export const Settings = () => {
                 placeholder=""
                 value={globalSettings.licenseKey || ""}
                 name="licenseKey"
-                onChange={(e, control) => handleChange(e, control, 'global')}
-              />
-            }
-          />
-        </Form.Field>
-
-        <Form.Field width={10}>
-          <label>{t('page.settings.language', "Language")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[120, 0]}
-            hoverable
-            content={
-              <p>
-                {t('page.settings.popup.language', "The language setting specified here is passed to external APIs as your preferred language. This does not indicate the language selected for the user interface.")}
-              </p>
-            }
-            trigger={
-              <Dropdown
-                name="language"
-                placeholder="English"
-                selection
-                value={globalSettings.language}
-                options={languages}
-                onChange={(e, control) => handleChange(e, control, 'global')}
-              />
-            }
-          />
-        </Form.Field>
-
-        <Form.Field width={10}>
-          <label>{t('label.currency', "Currency")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[120, 0]}
-            hoverable
-            content={
-              <p>
-                {t('page.settings.popup.currency', "The currency setting will be used as your default currency. It is passed to external APIs as your preferred currency.")}
-              </p>
-            }
-            trigger={
-              <Dropdown
-                name="currency"
-                placeholder="USD"
-                selection
-                value={globalSettings.currency}
-                options={currencies}
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
             }
@@ -2002,6 +1772,34 @@ export const Settings = () => {
     </Segment>);
   }, [barcodeSettings]);
 
+  const tabPanes = [
+    {
+      menuItem: t('page.settings.mySettings', "My Settings"), render: () => 
+        <TabPane style={{ padding: '20px' }}>
+          <Trans i18nKey="page.settings.mySettingsDescription">
+            Configure settings associated with your user account.
+          </Trans>
+          <hr />
+          {userSettingsMemoized}
+          {printerSettingsMemoized}
+          {barcodeSettingsMemoized}
+      </TabPane>
+    },
+    isAdmin() &&
+      { 
+      menuItem: t('page.settings.orgSettings', "Organization Settings"), render: () => 
+        <TabPane style={{ padding: '20px' }}>
+          <Trans i18nKey="page.settings.orgSettingsDescription">
+            Configure settings common to all users in your organization.
+          </Trans>
+          <hr />
+          {organizationSettingsMemoized}
+          {integrationSettingsMemoized}
+          {customFieldSettingsMemoized}
+        </TabPane> 
+      },
+  ];
+
   return (
     <div className="mask">
       <Breadcrumb>
@@ -2011,8 +1809,7 @@ export const Settings = () => {
       </Breadcrumb>
       <FormHeader name={t('page.settings.title', "Settings")} to="/">
         <Trans i18nKey="page.settings.description">
-          Configure your integrations, printer configuration, as well as label
-          part templates.<br />Additional help can be found on the <a href="https://github.com/replaysMike/Binner/wiki/Configuration" target="_blank" rel="noreferrer">Wiki</a>
+          Additional help on configuring Binner can be found on the <a href="https://github.com/replaysMike/Binner/wiki/Configuration" target="_blank" rel="noreferrer">Wiki</a>
         </Trans>
 			</FormHeader>
       <Confirm
@@ -2037,15 +1834,7 @@ export const Settings = () => {
         content={confirmDeleteCustomFieldContent}
       />
       <Form onSubmit={onSubmit}>
-        {applicationSettingsMemoized}
-
-        {integrationSettingsMemoized}
-
-        {customFieldSettingsMemoized}
-
-        {printerSettingsMemoized}
-
-        {barcodeSettingsMemoized}
+        <Tab panes={tabPanes} />
 
         <Form.Field inline>
           <Button type="submit" primary style={{ marginTop: "10px" }} disabled={!isDirty}>

@@ -33,8 +33,9 @@ namespace Binner.Services
         protected readonly IExternalPartInfoService _externalPartInfoService;
         protected readonly IExternalCategoriesService _externalCategoriesService;
         protected readonly IBaseIntegrationBehavior _baseIntegrationBehavior;
+        protected readonly IUserConfigurationService _userConfigurationService;
 
-        public PartService(WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IPartTypesCache partTypesCache, IExternalOrderService externalOrderService, IExternalBarcodeInfoService externalBarcodeInfoService, IExternalPartInfoService externalPartInfoService, IExternalCategoriesService externalCategoriesService, IBaseIntegrationBehavior baseIntegrationBehavior)
+        public PartService(WebHostServiceConfiguration configuration, ILogger<PartService> logger, IStorageProvider storageProvider, IMapper mapper, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IPartTypesCache partTypesCache, IExternalOrderService externalOrderService, IExternalBarcodeInfoService externalBarcodeInfoService, IExternalPartInfoService externalPartInfoService, IExternalCategoriesService externalCategoriesService, IBaseIntegrationBehavior baseIntegrationBehavior, IUserConfigurationService userConfigurationService)
         {
             _configuration = configuration;
             _logger = logger;
@@ -48,6 +49,7 @@ namespace Binner.Services
             _externalPartInfoService = externalPartInfoService;
             _externalCategoriesService = externalCategoriesService;
             _baseIntegrationBehavior = baseIntegrationBehavior;
+            _userConfigurationService = userConfigurationService;
         }
 
         public virtual async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords)
@@ -223,6 +225,7 @@ namespace Binner.Services
 
         public virtual async Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "")
         {
+            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
             var partResults = new PartResults();
 
             if (string.IsNullOrEmpty(partNumber))
@@ -250,7 +253,7 @@ namespace Binner.Services
                             BasePartNumber = inventoryPart.PartNumber,
                             TotalCost = supplier.Cost ?? 0,
                             Cost = supplier.Cost ?? 0,
-                            Currency = _configuration.Locale.Currency.ToString().ToUpper(),
+                            Currency = userConfiguration.Currency.ToString().ToUpper(),
                             ImageUrl = supplier.ImageUrl,
                             ProductUrl = supplier.ProductUrl,
                             QuantityAvailable = supplier.QuantityAvailable,

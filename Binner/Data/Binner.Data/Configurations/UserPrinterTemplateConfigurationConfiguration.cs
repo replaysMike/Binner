@@ -11,12 +11,12 @@ namespace Binner.Data.Configurations
         {
             builder.HasOne(p => p.User)
                 .WithMany(p => p.UserPrinterTemplateConfigurations)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.UserPrinterConfiguration)
                 .WithMany(p => p.UserPrinterTemplateConfigurations)
                 .HasForeignKey(p => p.UserPrinterConfigurationId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");

@@ -8,11 +8,11 @@ namespace Binner.Common.Cache
     /// </summary>
     public class UserConfigurationCacheProvider : IUserConfigurationCacheProvider
     {
-        private static readonly Lazy<UserConfigurationCache> _configurationCache = new Lazy<UserConfigurationCache>(() => new UserConfigurationCache());
+        private static readonly Lazy<ConfigurationCache<UserConfigurationCacheStore>> _configurationCache = new Lazy<ConfigurationCache<UserConfigurationCacheStore>>(() => new ConfigurationCache<UserConfigurationCacheStore>());
 
         /// <summary>
         /// Get the user config cache instance
         /// </summary>
-        public UserConfigurationCache Cache => _configurationCache.Value;
+        public ConfigurationCache<UserConfigurationCacheStore> Cache => _configurationCache.Value;
     }
 }

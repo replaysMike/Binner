@@ -1,5 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.Extensions;
+using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations;
 using Binner.Model.Integrations.Mouser;
@@ -16,6 +17,7 @@ namespace Binner.Services.Integrations
         public string Name => "Mouser";
         private readonly ILogger<MouserApi> _logger;
         private readonly MouserConfiguration _configuration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly IApiHttpClient _client;
         private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
@@ -28,10 +30,11 @@ namespace Binner.Services.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public MouserApi(ILogger<MouserApi> logger, MouserConfiguration configuration, IApiHttpClientFactory httpClientFactory)
+        public MouserApi(ILogger<MouserApi> logger, MouserConfiguration configuration, UserConfiguration userConfiguration, IApiHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _configuration = configuration;
+            _userConfiguration = userConfiguration;
             _client = httpClientFactory.Create();
         }
 

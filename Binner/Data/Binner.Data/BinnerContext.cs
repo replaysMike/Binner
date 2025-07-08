@@ -122,6 +122,16 @@ namespace Binner.Data
         /// </summary>
         public DbSet<Organization> Organizations { get; set; } = null!;
 
+        /// <summary>
+        /// Organization configurations
+        /// </summary>
+        public DbSet<OrganizationConfiguration> OrganizationConfigurations { get; set; } = null!;
+
+        /// <summary>
+        /// User integration settings
+        /// </summary>
+        public DbSet<OrganizationIntegrationConfiguration> OrganizationIntegrationConfigurations { get; set; } = null!;
+
 #if INITIALCREATE
         /// <summary>
         /// Users
@@ -129,14 +139,14 @@ namespace Binner.Data
         public DbSet<User> Users { get; set; } = null!;
 
         /// <summary>
+        /// User configurations
+        /// </summary>
+        public DbSet<UserConfiguration> UserConfigurations { get; set; } = null!;
+
+        /// <summary>
         /// User login history
         /// </summary>
         public DbSet<UserLoginHistory> UserLoginHistory { get; set; } = null!;
-
-        /// <summary>
-        /// User integration settings
-        /// </summary>
-        public DbSet<UserIntegrationConfiguration> UserIntegrationConfigurations { get; set; } = null!;
 
         /// <summary>
         /// User printer settings
@@ -147,16 +157,6 @@ namespace Binner.Data
         /// User printer template settings
         /// </summary>
         public DbSet<UserPrinterTemplateConfiguration> UserPrinterTemplateConfigurations { get; set; } = null!;
-
-        /// <summary>
-        /// User locale settings
-        /// </summary>
-        public DbSet<UserLocaleConfiguration> UserLocaleConfigurations { get; set; } = null!;
-
-        /// <summary>
-        /// User barcode settings
-        /// </summary>
-        public DbSet<UserBarcodeConfiguration> UserBarcodeConfigurations { get; set; } = null!;
 
         /// <summary>
         /// User tokens

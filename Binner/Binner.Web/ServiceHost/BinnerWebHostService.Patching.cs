@@ -24,7 +24,7 @@ namespace Binner.Web.ServiceHost
             await PatchTableAsync(context, x => x.ProjectPcbAssignments);
             await PatchTableAsync(context, x => x.Projects);
             await PatchTableAsync(context, x => x.StoredFiles);
-            await PatchTableAsync(context, x => x.UserIntegrationConfigurations);
+            //await PatchTableAsync(context, x => x.OrganizationIntegrationConfigurations); // skip, no longer has a UserId
             //await PatchTableAsync(context, x => x.UserLoginHistory); // skip this one, having an OrganizationId = null is valid if user didn't match
             await PatchTableAsync(context, x => x.UserPrinterConfigurations);
             await PatchTableAsync(context, x => x.UserPrinterTemplateConfigurations);

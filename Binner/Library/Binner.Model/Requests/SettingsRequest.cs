@@ -63,9 +63,24 @@ namespace Binner.Model.Requests
         public string LicenseKey { get; set; } = string.Empty;
 
         /// <summary>
+        /// True to enable searching for part information after typing
+        /// </summary>
+        public bool EnableAutoPartSearch { get; set; }
+
+        /// <summary>
+        /// True to enable dark mode UI
+        /// </summary>
+        public bool EnableDarkMode { get; set; }
+
+        /// <summary>
         /// Maximum number of items that can be cached
         /// </summary>
         public int MaxCacheItems { get; set; } = 1024;
+
+        /// <summary>
+        /// Use the Binner module to configure the UI
+        /// </summary>
+        public BinnerModules UseModule { get; set; }
 
         /// <summary>
         /// Sliding cache expiration in minutes

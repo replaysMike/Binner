@@ -28,24 +28,12 @@ namespace Binner.Web.Configuration
             if (configuration == null) throw new InvalidOperationException($"Could not load configuration from {configFile}");
             var serviceConfiguration = configuration.GetSection(nameof(WebHostServiceConfiguration)).Get<WebHostServiceConfiguration>();
             if (serviceConfiguration == null) throw new InvalidOperationException($"Could not load WebHostServiceConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
-            var integrationConfiguration = serviceConfiguration.Integrations;
             var authenticationConfiguration = serviceConfiguration.Authentication;
-            var localeConfiguration = serviceConfiguration.Locale;
             var storageProviderConfiguration = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>();
             if (storageProviderConfiguration == null) throw new InvalidOperationException($"Could not load StorageProviderConfiguration from {configFile}, configuration file may be invalid or lacking read permissions!");
             // inject configuration from environment variables (if set)
             EnvironmentVarConstants.SetConfigurationFromEnvironment(storageProviderConfiguration);
             var binnerConfig = new BinnerFileStorageConfiguration(storageProviderConfiguration.ProviderConfiguration);
-            var printerConfiguration = serviceConfiguration.PrinterConfiguration;
-            var printerSettings = new PrinterSettings
-            {
-                PrintMode = printerConfiguration.PrintMode,
-                PrinterName = printerConfiguration.PrinterName,
-                PartLabelName = printerConfiguration.PartLabelName,
-                PartLabelSource = printerConfiguration.PartLabelSource,
-                PartLabelTemplate = printerConfiguration.PartLabelTemplate,
-                LabelDefinitions = printerConfiguration.LabelDefinitions
-            };
 
             // support IOptions<> MS dependency injection
             services.Configure<WebHostServiceConfiguration>(options => configuration.GetSection(nameof(WebHostServiceConfiguration)).Bind(options));
@@ -56,19 +44,11 @@ namespace Binner.Web.Configuration
             var licenseConfig = new LicenseConfiguration { LicenseKey = serviceConfiguration.LicenseKey };
             container.RegisterInstance(licenseConfig);
             services.AddSingleton(licenseConfig);
-            container.RegisterInstance(localeConfiguration);
-            services.AddSingleton(localeConfiguration);
             container.RegisterInstance(configuration);
             services.AddSingleton(serviceConfiguration);
             container.RegisterInstance(serviceConfiguration);
             services.AddSingleton(authenticationConfiguration);
             container.RegisterInstance(authenticationConfiguration);
-            services.AddSingleton(printerConfiguration);
-            container.RegisterInstance(printerConfiguration);
-            services.AddSingleton<IPrinterSettings>(printerSettings);
-            container.RegisterInstance<IPrinterSettings>(printerSettings);
-            services.AddSingleton(integrationConfiguration);
-            container.RegisterInstance(integrationConfiguration);
             services.AddSingleton(storageProviderConfiguration);
             container.RegisterInstance(storageProviderConfiguration);
             services.AddSingleton(binnerConfig);

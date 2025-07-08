@@ -26,7 +26,7 @@ namespace Binner.Services.Integrations
 
         private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
-        private readonly LocaleConfiguration _localeConfiguration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly OAuth2Service _oAuth2Service;
         private readonly ICredentialService _credentialService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -52,18 +52,18 @@ namespace Binner.Services.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public DigikeyApi(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, IApiHttpClientFactory httpClientFactory)
-            : base(logger, configuration, localeConfiguration, _serializerSettings, httpClientFactory)
+        public DigikeyApi(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, UserConfiguration userConfiguration, ICredentialService credentialService, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, IApiHttpClientFactory httpClientFactory)
+            : base(logger, configuration, userConfiguration, _serializerSettings, httpClientFactory)
         {
             _logger = logger;
             _configuration = configuration;
-            _localeConfiguration = localeConfiguration;
+            _userConfiguration = userConfiguration;
             _oAuth2Service = new OAuth2Service(configuration, logger);
             _credentialService = credentialService;
             _httpContextAccessor = httpContextAccessor;
             _requestContext = requestContext;
-            _v3Api = new DigikeyV3Api(_logger, _configuration, _localeConfiguration, _serializerSettings, httpClientFactory);
-            _v4Api = new DigikeyV4Api(_logger, _configuration, _localeConfiguration, _serializerSettings, httpClientFactory);
+            _v3Api = new DigikeyV3Api(_logger, _configuration, _userConfiguration, _serializerSettings, httpClientFactory);
+            _v4Api = new DigikeyV4Api(_logger, _configuration, _userConfiguration, _serializerSettings, httpClientFactory);
         }
 
         private IDigikeyApi UseApi(DigiKeyApiVersion version)
@@ -367,6 +367,7 @@ namespace Binner.Services.Integrations
                     ExpiresUtc = DateTime.UtcNow.Add(TimeSpan.FromSeconds(refreshedTokens.ExpiresIn)),
                     AuthorizationReceived = true,
                     UserId = _requestContext.GetUserContext()?.UserId,
+                    OrganizationId = _requestContext.GetUserContext()?.OrganizationId,
                 };
                 if (refreshedTokenResponse.IsAuthorized) // IsAuthorized is a computed field based on the response
                 {
@@ -406,7 +407,7 @@ namespace Binner.Services.Integrations
 
             // user must authorize
             // request a token if we don't already have one
-            var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext()?.UserId);
+            var authRequest = await CreateOAuthAuthorizationRequestAsync(_requestContext.GetUserContext());
             _logger.LogInformation($"[{nameof(WrapApiRequestAsync)}] Refresh token failed, User must authorize");
             return ApiResponse.Create(true, authRequest.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
         }
@@ -429,12 +430,7 @@ namespace Binner.Services.Integrations
 
         private async Task<OAuthAuthorization> AuthorizeAsync()
         {
-            var user = _requestContext.GetUserContext();
-            if (user != null && user.UserId <= 0)
-            {
-                _logger.LogError($"[{nameof(AuthorizeAsync)}] User is not authenticated!");
-                throw new System.Security.Authentication.AuthenticationException("User is not authenticated!");
-            }
+            var user = _requestContext.GetUserContext() ?? throw new System.Security.Authentication.AuthenticationException("User is not authenticated!");
 
             // check if we have saved an existing auth credential in the database
             var (credential, apiSettings) = await GetOAuthCredentialAsync();
@@ -456,7 +452,8 @@ namespace Binner.Services.Integrations
                     CreatedUtc = credential.DateCreatedUtc,
                     ExpiresUtc = credential.DateExpiresUtc,
                     AuthorizationReceived = true,
-                    UserId = user?.UserId
+                    UserId = user?.UserId,
+                    OrganizationId = user?.OrganizationId
                 };
                 _logger.LogInformation($"[{nameof(AuthorizeAsync)}] Reusing a saved oAuth credential '{credential.AccessToken.Sanitize()}'!");
 
@@ -465,10 +462,10 @@ namespace Binner.Services.Integrations
 
             // user must authorize
             // request a token if we don't already have one
-            return await CreateOAuthAuthorizationRequestAsync(user?.UserId);
+            return await CreateOAuthAuthorizationRequestAsync(user);
         }
 
-        private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(int? userId)
+        private async Task<OAuthAuthorization> CreateOAuthAuthorizationRequestAsync(IUserContext userContext)
         {
             var referer = GetReferer();
             var uriBuilder = new UriBuilder(referer);
@@ -478,7 +475,8 @@ namespace Binner.Services.Integrations
             uriBuilder.Query = query.ToString();
             var authRequest = new OAuthAuthorization(nameof(DigikeyApi), _configuration.ClientId ?? string.Empty, uriBuilder.ToString())
             {
-                UserId = userId
+                UserId = userContext.UserId,
+                OrganizationId = userContext.OrganizationId
             };
             authRequest = await _credentialService.CreateOAuthRequestAsync(authRequest);
             // no scopes necessary

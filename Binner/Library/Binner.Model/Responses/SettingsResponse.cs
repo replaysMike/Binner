@@ -56,6 +56,11 @@ namespace Binner.Model.Responses
         public ICollection<CustomField> CustomFields { get; set; } = new List<CustomField>();
 
         /// <summary>
+        /// Use the Binner module to configure the UI
+        /// </summary>
+        public BinnerModules UseModule { get; set; }
+
+        /// <summary>
         /// License key
         /// </summary>
         public string LicenseKey { get; set; } = string.Empty;
@@ -74,5 +79,15 @@ namespace Binner.Model.Responses
         /// Absolute cache expiration in minutes (0 = never)
         /// </summary>
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
+
+        /// <summary>
+        /// Enables auto part search in the Inventory UI
+        /// </summary>
+        public bool EnableAutoPartSearch { get; set; }
+
+        /// <summary>
+        /// Enables dark mode in the UI
+        /// </summary>
+        public bool EnableDarkMode { get; set; }
     }
 }

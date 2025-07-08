@@ -36,7 +36,7 @@ namespace Binner.Services
                 .Include(x => x.Projects).ThenInclude(x => x.ProjectPartAssignments)
                 .Include(x => x.Projects).ThenInclude(x => x.ProjectPcbAssignments)
                 .Include(x => x.CustomFields).ThenInclude(x => x.CustomFieldValues)
-                .Include(x => x.UserIntegrationConfigurations)
+                .Include(x => x.OrganizationIntegrationConfigurations)
                 .Include(x => x.UserPrinterConfigurations)
                 .Include(x => x.UserPrinterTemplateConfigurations)
                 .Where(x => x.OrganizationId == userContext.OrganizationId)

@@ -1,12 +1,12 @@
 ﻿using Binner.Common;
-using Binner.Common.IO.Printing;
-using Binner.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Binner.Services;
+using Binner.Services.IO.Printing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,13 +15,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Binner.Web.Controllers
 {

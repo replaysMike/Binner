@@ -18,7 +18,7 @@ namespace Binner.Services.Integrations
         private const DigiKeyApiVersion ApiVersion = DigiKeyApiVersion.V3;
         private readonly ILogger<DigikeyApi> _logger;
         private readonly DigikeyConfiguration _configuration;
-        private readonly LocaleConfiguration _localeConfiguration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly JsonSerializerSettings _serializerSettings;
 
         #region Include Fields
@@ -45,12 +45,12 @@ namespace Binner.Services.Integrations
         };
         #endregion
 
-        public DigikeyV3Api(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, LocaleConfiguration localeConfiguration, JsonSerializerSettings serializerSettings, IApiHttpClientFactory httpClientFactory)
-            : base(logger, configuration, localeConfiguration, serializerSettings, httpClientFactory)
+        public DigikeyV3Api(ILogger<DigikeyApi> logger, DigikeyConfiguration configuration, UserConfiguration userConfiguration, JsonSerializerSettings serializerSettings, IApiHttpClientFactory httpClientFactory)
+            : base(logger, configuration, userConfiguration, serializerSettings, httpClientFactory)
         {
             _logger = logger;
             _configuration = configuration;
-            _localeConfiguration = localeConfiguration;
+            _userConfiguration = userConfiguration;
             _serializerSettings = serializerSettings;
         }
 

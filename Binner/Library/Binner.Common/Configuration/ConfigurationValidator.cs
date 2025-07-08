@@ -24,46 +24,49 @@ namespace Binner.Common.Configuration
                 ConfigAssert("Port", config.Port, "Defaulting to 8090.");
             }
             if (config.PublicUrl.SurroundedBy("@"))
-                ConfigAssert("PublicUrl", config.Integrations.Swarm.ApiKey);
+                ConfigAssert("PublicUrl", config.PublicUrl);
             if (config.Licensing.LicenseKey.SurroundedBy("@"))
                 ConfigAssert("Licensing.LicenseKey", config.Licensing.LicenseKey);
+        }
 
-            if (config.Integrations.Swarm.Enabled)
+        public void ValidateConfiguration(IntegrationConfiguration config)
+        {
+            if (config.Swarm.Enabled)
             {
-                if (config.Integrations.Swarm.ApiKey.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Swarm.ApiKey", config.Integrations.Swarm.ApiKey);
+                if (config.Swarm.ApiKey.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Swarm.ApiKey", config.Swarm.ApiKey);
             }
-            if (config.Integrations.Digikey.Enabled)
+            if (config.Digikey.Enabled)
             {
-                if (string.IsNullOrEmpty(config.Integrations.Digikey.ApiKey) || config.Integrations.Digikey.ApiKey.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Digikey.ClientId", config.Integrations.Digikey.ApiKey);
-                if (string.IsNullOrEmpty(config.Integrations.Digikey.ClientSecret) || config.Integrations.Digikey.ClientSecret.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Digikey.ClientSecret", config.Integrations.Digikey.ClientSecret);
-                if (string.IsNullOrEmpty(config.Integrations.Digikey.oAuthPostbackUrl) || config.Integrations.Digikey.oAuthPostbackUrl.Contains("@PUBLIC_URL@"))
-                    ConfigAssert("Integrations.Digikey.oAuthPostbackUrl", config.Integrations.Digikey.oAuthPostbackUrl);
+                if (string.IsNullOrEmpty(config.Digikey.ApiKey) || config.Digikey.ApiKey.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Digikey.ClientId", config.Digikey.ApiKey);
+                if (string.IsNullOrEmpty(config.Digikey.ClientSecret) || config.Digikey.ClientSecret.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Digikey.ClientSecret", config.Digikey.ClientSecret);
+                if (string.IsNullOrEmpty(config.Digikey.oAuthPostbackUrl) || config.Digikey.oAuthPostbackUrl.Contains("@PUBLIC_URL@"))
+                    ConfigAssert("Integrations.Digikey.oAuthPostbackUrl", config.Digikey.oAuthPostbackUrl);
             }
-            if (config.Integrations.Mouser.Enabled)
+            if (config.Mouser.Enabled)
             {
-                if (!string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.SearchApiKey) && config.Integrations.Mouser.ApiKeys.SearchApiKey.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Mouser.ApiKeys.SearchApiKey", config.Integrations.Mouser.ApiKeys.SearchApiKey);
-                if (!string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.OrderApiKey) && config.Integrations.Mouser.ApiKeys.OrderApiKey.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Mouser.ApiKeys.OrderApiKey", config.Integrations.Mouser.ApiKeys.OrderApiKey);
-                if (!string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.CartApiKey) && config.Integrations.Mouser.ApiKeys.CartApiKey.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Mouser.ApiKeys.CartApiKey", config.Integrations.Mouser.ApiKeys.CartApiKey);
+                if (!string.IsNullOrEmpty(config.Mouser.ApiKeys.SearchApiKey) && config.Mouser.ApiKeys.SearchApiKey.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Mouser.ApiKeys.SearchApiKey", config.Mouser.ApiKeys.SearchApiKey);
+                if (!string.IsNullOrEmpty(config.Mouser.ApiKeys.OrderApiKey) && config.Mouser.ApiKeys.OrderApiKey.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Mouser.ApiKeys.OrderApiKey", config.Mouser.ApiKeys.OrderApiKey);
+                if (!string.IsNullOrEmpty(config.Mouser.ApiKeys.CartApiKey) && config.Mouser.ApiKeys.CartApiKey.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Mouser.ApiKeys.CartApiKey", config.Mouser.ApiKeys.CartApiKey);
 
-                if (string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.SearchApiKey)
-                    && string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.OrderApiKey)
-                    && string.IsNullOrEmpty(config.Integrations.Mouser.ApiKeys.CartApiKey))
+                if (string.IsNullOrEmpty(config.Mouser.ApiKeys.SearchApiKey)
+                    && string.IsNullOrEmpty(config.Mouser.ApiKeys.OrderApiKey)
+                    && string.IsNullOrEmpty(config.Mouser.ApiKeys.CartApiKey))
                 {
-                    ConfigAssert("Integrations.Mouser.ApiKeys.SearchApiKey", config.Integrations.Mouser.ApiKeys.SearchApiKey, "At least one api key must be provided.");
+                    ConfigAssert("Integrations.Mouser.ApiKeys.SearchApiKey", config.Mouser.ApiKeys.SearchApiKey, "At least one api key must be provided.");
                 }
             }
-            if (config.Integrations.Arrow.Enabled)
+            if (config.Arrow.Enabled)
             {
-                if (string.IsNullOrEmpty(config.Integrations.Arrow.ApiKey) || config.Integrations.Arrow.ApiKey.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Arrow.ApiKey", config.Integrations.Arrow.ApiKey);
-                if (string.IsNullOrEmpty(config.Integrations.Arrow.Username) || config.Integrations.Arrow.Username.SurroundedBy("@"))
-                    ConfigAssert("Integrations.Arrow.Username", config.Integrations.Arrow.Username);
+                if (string.IsNullOrEmpty(config.Arrow.ApiKey) || config.Arrow.ApiKey.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Arrow.ApiKey", config.Arrow.ApiKey);
+                if (string.IsNullOrEmpty(config.Arrow.Username) || config.Arrow.Username.SurroundedBy("@"))
+                    ConfigAssert("Integrations.Arrow.Username", config.Arrow.Username);
             }
         }
 

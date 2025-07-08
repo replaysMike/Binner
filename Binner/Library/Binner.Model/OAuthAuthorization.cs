@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-
-namespace Binner.Model
+﻿namespace Binner.Model
 {
     public class OAuthAuthorization
     {
@@ -28,6 +26,11 @@ namespace Binner.Model
         /// The UserId associated with this authorization
         /// </summary>
         public int? UserId { get; set; }
+
+        /// <summary>
+        /// The OrganizationId associated with this authorization
+        /// </summary>
+        public int? OrganizationId { get; set; }
 
         /// <summary>
         /// True if an oAuth callback was received from Digikey

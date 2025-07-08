@@ -85,6 +85,12 @@ namespace Binner.Web.Controllers
                 throw new AuthenticationException($"Error - no user is associated with this oAuth request!");
             }
 
+            if (authRequest.OrganizationId == null)
+            {
+                _logger.LogError($"[{nameof(AuthorizeAsync)}] Error - no organization is associated with this oAuth request!");
+                throw new AuthenticationException($"Error - no organization is associated with this oAuth request!");
+            }
+
             switch (authRequest.Provider)
             {
                 case nameof(DigikeyApi):
@@ -116,16 +122,17 @@ namespace Binner.Web.Controllers
         {
             // local binner does not require a valid userId
             var userId = authRequest.UserId ?? 0;
-            var integrationConfiguration = _userConfigurationService.GetCachedIntegrationConfiguration(userId);
+            var organizationId = authRequest.OrganizationId ?? 0;
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(organizationId);
             var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(userId, integrationConfiguration);
-            _logger.LogInformation($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Completing OAuth DigiKey authorization for user {userId}");
+            _logger.LogInformation($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Completing OAuth DigiKey authorization for user {userId} / organization {organizationId}");
             var authResult = await digikeyApi.OAuth2Service.FinishAuthorization(code);
 
             if (authResult == null || authResult.IsError)
             {
                 var error = authResult?.ErrorMessage ?? "No auth result received";
                 var errorDescription = authResult?.ErrorDetails ?? string.Empty;
-                _logger.LogError($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Failed to complete OAuth with DigiKey for user {userId}.\n{error}\n{errorDescription}");
+                _logger.LogError($"[{nameof(FinishDigikeyApiAuthorizationAsync)}] Failed to complete OAuth with DigiKey for user {userId} / organization {organizationId}.\n{error}\n{errorDescription}");
                 throw new AuthenticationException($"Failed to authenticate with DigiKey api. {error} - {errorDescription}");
             }
             else

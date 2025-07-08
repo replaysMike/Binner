@@ -47,8 +47,8 @@ namespace Binner.Testing
         public IMouserExternalOrderService MouserExternalOrderService { get; set; }
         public IArrowExternalOrderService ArrowExternalOrderService { get; set; }
         public ITmeExternalOrderService TmeExternalOrderService { get; set; }
-        public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, IntegrationCredentialsCacheProvider.Object,
-        HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object, WebHostServiceConfiguration, ApiHttpClientFactory);
+        public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, Mapper.Object, IntegrationCredentialsCacheProvider.Object,
+        HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object, WebHostServiceConfiguration, ApiHttpClientFactory, UserConfigurationService.Object);
 
 
         private readonly OAuthCredential _digiKeyV3Credential = new OAuthCredential
@@ -167,7 +167,8 @@ namespace Binner.Testing
             var octopartCreds = apiCredentials.Where(x => x.ApiName == nameof(NexarApi)).First();
             var arrowCreds = apiCredentials.Where(x => x.ApiName == nameof(ArrowApi)).First();
             var tmeCreds = apiCredentials.Where(x => x.ApiName == nameof(TmeApi)).First();
-            WebHostServiceConfiguration.Integrations.Swarm.Enabled = swarmCreds.GetCredentialBool("Enabled");
+            // todo: move to user config service
+            /*WebHostServiceConfiguration.Integrations.Swarm.Enabled = swarmCreds.GetCredentialBool("Enabled");
             WebHostServiceConfiguration.Integrations.Swarm.ApiKey = swarmCreds.GetCredentialString("ApiKey");
             WebHostServiceConfiguration.Integrations.Swarm.ApiUrl = swarmCreds.GetCredentialString("ApiUrl");
 
@@ -197,7 +198,7 @@ namespace Binner.Testing
             WebHostServiceConfiguration.Integrations.Tme.ApiKey = tmeCreds.GetCredentialString("ApiKey");
             WebHostServiceConfiguration.Integrations.Tme.ApplicationSecret = tmeCreds.GetCredentialString("ApplicationSecret");
             WebHostServiceConfiguration.Integrations.Tme.ApiUrl = tmeCreds.GetCredentialString("ApiUrl");
-            WebHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks = tmeCreds.GetCredentialBool("ResolveExternalLinks");
+            WebHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks = tmeCreds.GetCredentialBool("ResolveExternalLinks");*/
         }
 
         public List<ApiCredential> CreateDefaultApiCredentials()

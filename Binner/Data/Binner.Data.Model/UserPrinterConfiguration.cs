@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-#if INITIALCREATE
     /// <summary>
     /// Stores user defined printer configurations
     /// </summary>
@@ -68,5 +67,4 @@ namespace Binner.Data.Model
 
         public ICollection<UserPrinterTemplateConfiguration>? UserPrinterTemplateConfigurations { get; set; }
     }
-#endif
 }

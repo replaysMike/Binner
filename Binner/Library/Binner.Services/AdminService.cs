@@ -21,8 +21,9 @@ namespace Binner.Services
         private readonly WebHostServiceConfiguration _configuration;
         private readonly StorageProviderConfiguration _storageProviderConfiguration;
         private readonly IVersionManagementService _versionManagementService;
+        private readonly IUserConfigurationService _userConfigurationService;
 
-        public AdminService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, WebHostServiceConfiguration configuration, StorageProviderConfiguration storageProviderConfiguration, IVersionManagementService versionManagementService)
+        public AdminService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, WebHostServiceConfiguration configuration, StorageProviderConfiguration storageProviderConfiguration, IVersionManagementService versionManagementService, IUserConfigurationService userConfigurationService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
@@ -30,6 +31,7 @@ namespace Binner.Services
             _configuration = configuration;
             _storageProviderConfiguration = storageProviderConfiguration;
             _versionManagementService = versionManagementService;
+            _userConfigurationService = userConfigurationService;
         }
 
         public virtual async Task<SystemInfoResponse> GetSystemInfoAsync()
@@ -129,27 +131,32 @@ namespace Binner.Services
             }
             model.Port = _configuration.Port.ToString();
             model.IP = _configuration.IP.ToString();
+
+            var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
+            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
             model.License = _configuration.Licensing?.LicenseKey;
-            model.Language = _configuration.Locale?.Language.ToString();
-            model.Currency = _configuration.Locale?.Currency.ToString();
+            model.Language = localeConfiguration.Language.ToString();
+            model.Currency = localeConfiguration.Currency.ToString();
             if (!string.IsNullOrEmpty(entryAssembly.Location))
                 model.InstallPath = Path.GetDirectoryName(entryAssembly.Location);
             var fileTarget = (FileTarget) LogManager.Configuration.FindTargetByName("file");
             model.LogPath = Path.GetDirectoryName(fileTarget.FileName.ToString().Replace("'", ""));
 
             var enabledIntegrations = new List<string>();
-            if (_configuration.Integrations.Swarm.Enabled)
+            if (integrationConfiguration.Swarm.Enabled)
                 enabledIntegrations.Add("Swarm");
-            if (_configuration.Integrations.Digikey.Enabled)
+            if (integrationConfiguration.Digikey.Enabled)
                 enabledIntegrations.Add("DigiKey");
-            if (_configuration.Integrations.Mouser.Enabled)
+            if (integrationConfiguration.Mouser.Enabled)
                 enabledIntegrations.Add("Mouser");
-            if (_configuration.Integrations.Arrow.Enabled)
+            if (integrationConfiguration.Arrow.Enabled)
                 enabledIntegrations.Add("Arrow");
-            if (_configuration.Integrations.Nexar.Enabled)
+            if (integrationConfiguration.Nexar.Enabled)
                 enabledIntegrations.Add("Octopart/Nexar");
-            if (_configuration.Integrations.AliExpress.Enabled)
+            if (integrationConfiguration.AliExpress.Enabled)
                 enabledIntegrations.Add("AliExpress");
+            if (integrationConfiguration.Tme.Enabled)
+                enabledIntegrations.Add("TME");
             model.EnabledIntegrations = string.Join(", ", enabledIntegrations);
 
             return model;

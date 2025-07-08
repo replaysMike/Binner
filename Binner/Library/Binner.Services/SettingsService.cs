@@ -2,6 +2,7 @@
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.Model;
+using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -57,17 +58,13 @@ namespace Binner.Services
             else
                 throw new BinnerConfigurationException($"There is no section named '{sectionName}' in the configuration file '{filename}'!");
 
-            if (stripConfiguration)
+            if (stripConfiguration && json.ContainsKey(nameof(WebHostServiceConfiguration)))
             {
                 // remove all sections that have been migrated to the database
-                var sectionsToRemove = new List<string> { "Locale", "Barcode", "Integrations", "PrinterConfiguration" };
-                var properties = json.Properties().ToList();
-                foreach (var property in properties)
+                var sectionsToRemove = new List<string> { "Locale", "Barcode", "Integrations", "PrinterConfiguration", "Licensing" };
+                foreach (var section in sectionsToRemove)
                 {
-                    if (sectionsToRemove.Contains(property.Name, StringComparer.InvariantCultureIgnoreCase))
-                    {
-                        property.Remove();
-                    }
+                    json[nameof(WebHostServiceConfiguration)]?.SelectToken(section)?.Parent?.Remove();
                 }
             }
 

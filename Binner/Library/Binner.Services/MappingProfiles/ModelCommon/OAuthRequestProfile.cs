@@ -29,6 +29,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 
             CreateMap<OAuthAuthorization, DataModel.OAuthRequest>()
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                .ForMember(x => x.OrganizationId, options => options.MapFrom(x => x.OrganizationId))
                 .ForMember(x => x.Provider, options => options.MapFrom(x => x.Provider))
                 .ForMember(x => x.Error, options => options.MapFrom(x => x.Error))
                 .ForMember(x => x.ErrorDescription, options => options.MapFrom(x => x.ErrorDescription))
@@ -43,7 +44,6 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.User, options => options.Ignore())
 #endif
                 .ForMember(x => x.Ip, options => options.Ignore())
-                .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ReverseMap();
         }
     }

@@ -24,7 +24,11 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+
+                .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
+                .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ReverseMap();
 
             CreateMap<SettingsRequest, UserIntegrationConfiguration>(MemberList.None)
@@ -60,7 +64,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
-            ;
+                .ReverseMap();
 
             CreateMap<SettingsRequest, UserPrinterConfiguration>()
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.Printer.PartLabelName))
@@ -68,11 +72,64 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.Printer.PrinterName))
                 .ForMember(x => x.RemoteAddressUrl, options => options.MapFrom(x => x.Printer.RemoteAddressUrl))
                 .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.Printer.PrintMode))
+
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
-            ;
+                .ReverseMap();
+
+            CreateMap<SettingsRequest, OrganizationIntegrationConfiguration>()
+                .ForMember(x => x.SwarmEnabled, options => options.MapFrom(x => x.Binner.Enabled))
+                .ForMember(x => x.SwarmApiKey, options => options.MapFrom(x => x.Binner.ApiKey))
+                .ForMember(x => x.SwarmApiUrl, options => options.MapFrom(x => x.Binner.ApiUrl))
+                .ForMember(x => x.SwarmTimeout, options => options.MapFrom(x => x.Binner.Timeout))
+                .ForMember(x => x.DigiKeyEnabled, options => options.MapFrom(x => x.Digikey.Enabled))
+                .ForMember(x => x.DigiKeySite, options => options.MapFrom(x => x.Digikey.Site))
+                .ForMember(x => x.DigiKeyClientId, options => options.MapFrom(x => x.Digikey.ClientId))
+                .ForMember(x => x.DigiKeyClientSecret, options => options.MapFrom(x => x.Digikey.ClientSecret))
+                .ForMember(x => x.DigiKeyOAuthPostbackUrl, options => options.MapFrom(x => x.Digikey.oAuthPostbackUrl))
+                .ForMember(x => x.DigiKeyApiUrl, options => options.MapFrom(x => x.Digikey.ApiUrl))
+                .ForMember(x => x.MouserEnabled, options => options.MapFrom(x => x.Mouser.Enabled))
+                .ForMember(x => x.MouserSearchApiKey, options => options.MapFrom(x => x.Mouser.SearchApiKey))
+                .ForMember(x => x.MouserCartApiKey, options => options.MapFrom(x => x.Mouser.CartApiKey))
+                .ForMember(x => x.MouserOrderApiKey, options => options.MapFrom(x => x.Mouser.OrderApiKey))
+                .ForMember(x => x.MouserApiUrl, options => options.MapFrom(x => x.Mouser.ApiUrl))
+                .ForMember(x => x.ArrowEnabled, options => options.MapFrom(x => x.Arrow.Enabled))
+                .ForMember(x => x.ArrowUsername, options => options.MapFrom(x => x.Arrow.Username))
+                .ForMember(x => x.ArrowApiKey, options => options.MapFrom(x => x.Arrow.ApiKey))
+                .ForMember(x => x.ArrowApiUrl, options => options.MapFrom(x => x.Arrow.ApiUrl))
+                .ForMember(x => x.NexarEnabled, options => options.MapFrom(x => x.Octopart.Enabled))
+                .ForMember(x => x.NexarClientId, options => options.MapFrom(x => x.Octopart.ClientId))
+                .ForMember(x => x.NexarClientSecret, options => options.MapFrom(x => x.Octopart.ClientSecret))
+                .ForMember(x => x.TmeEnabled, options => options.MapFrom(x => x.Tme.Enabled))
+                .ForMember(x => x.TmeCountry, options => options.MapFrom(x => x.Tme.Country))
+                .ForMember(x => x.TmeApplicationSecret, options => options.MapFrom(x => x.Tme.ApplicationSecret))
+                .ForMember(x => x.TmeApiKey, options => options.MapFrom(x => x.Tme.ApiKey))
+                .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
+                .ForMember(x => x.TmeResolveExternalLinks, options => options.MapFrom(x => x.Tme.ResolveExternalLinks))
+                .ReverseMap();
+
+            CreateMap<SettingsRequest, UserConfiguration>()
+                .ForMember(x => x.BarcodeBufferTime, options => options.MapFrom(x => x.Barcode.BufferTime))
+                .ForMember(x => x.BarcodeEnabled, options => options.MapFrom(x => x.Barcode.Enabled))
+                .ForMember(x => x.BarcodeIsDebug, options => options.MapFrom(x => x.Barcode.IsDebug))
+                .ForMember(x => x.BarcodeMaxKeystrokeThresholdMs, options => options.MapFrom(x => x.Barcode.MaxKeystrokeThresholdMs))
+                .ForMember(x => x.BarcodePrefix2D, options => options.MapFrom(x => x.Barcode.Prefix2D))
+                .ForMember(x => x.BarcodeProfile, options => options.MapFrom(x => x.Barcode.Profile))
+                .ForMember(x => x.Currency, options => options.MapFrom(x => x.Locale.Currency))
+                .ForMember(x => x.Language, options => options.MapFrom(x => x.Locale.Language))
+                .ForMember(x => x.EnableAutoPartSearch, options => options.MapFrom(x => x.EnableAutoPartSearch))
+                .ForMember(x => x.EnableDarkMode, options => options.MapFrom(x => x.EnableDarkMode))
+                .ReverseMap();
+
+            CreateMap<SettingsRequest, OrganizationConfiguration>()
+                .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
+                .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
+                .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
+                .ForMember(x => x.UseModule, options => options.MapFrom(x => x.UseModule))
+                .ReverseMap();
 
             CreateMap<SettingsRequest, UserBarcodeConfiguration>(MemberList.None)
                 .ForMember(x => x.BufferTime, options => options.MapFrom(x => x.Barcode.BufferTime))
@@ -85,8 +142,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
-                .ReverseMap()
-            ;
+                .ReverseMap();
 
             CreateMap<SettingsRequest, UserLocaleConfiguration>(MemberList.None)
                 .ForMember(x => x.Currency, options => options.MapFrom(x => x.Locale.Currency))
@@ -94,7 +150,8 @@ namespace Binner.Services.MappingProfiles
 
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
-                .ForMember(x => x.DateModifiedUtc, options => options.Ignore());
+                .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+                .ReverseMap();
 
             CreateMap<SettingsRequest, PrinterConfiguration>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.Printer.PartLabelName))
@@ -112,7 +169,8 @@ namespace Binner.Services.MappingProfiles
                         Identifier = x.Printer.Lines != null ? x.Printer.Lines.Skip(4).Select(z => new LineConfiguration(z, LabelLines.Identifier1)).First() : new LineConfiguration(),
                         Identifier2 = x.Printer.Lines != null ? x.Printer.Lines.Skip(5).Select(z => new LineConfiguration(z, LabelLines.Identifier2)).First() : new LineConfiguration(),
                     })
-                );
+                )
+                .ReverseMap();
         }
     }
 }

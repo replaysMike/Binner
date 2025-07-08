@@ -12,14 +12,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
         private readonly ILogger _logger;
         private readonly WebHostServiceConfiguration _configuration;
-        private readonly UserLocaleConfiguration _localeConfiguration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
 
-        public MouserPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserLocaleConfiguration localeConfiguration, int resultsRank)
+        public MouserPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank)
         {
             _logger = logger;
             _configuration = configuration;
-            _localeConfiguration = localeConfiguration;
+            _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
         }
 
@@ -87,7 +87,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
 
                     var currency = part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Currency;
                     if (string.IsNullOrEmpty(currency))
-                        currency = _localeConfiguration.Currency.ToString().ToUpper();
+                        currency = _userConfiguration.Currency.ToString().ToUpper();
                     int.TryParse(part.Min, out var minimumOrderQuantity);
                     int.TryParse(part.FactoryStock, out var factoryStockAvailable);
                     if (!string.IsNullOrEmpty(part.ImagePath)

@@ -1,4 +1,5 @@
-﻿using Binner.Model.Configuration.Integrations;
+﻿using Binner.Model.Configuration;
+using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations;
 using Binner.SwarmApi;
 using Binner.SwarmApi.Request;
@@ -12,16 +13,18 @@ namespace Binner.Services.Integrations
         public string Name => "Swarm";
         private readonly ILogger<SwarmApi> _logger;
         private readonly SwarmConfiguration _configuration;
+        private readonly UserConfiguration _userConfiguration;
         private readonly SwarmApiClient _client;
 
         public bool IsEnabled => _configuration.Enabled;
 
         public IApiConfiguration Configuration => _configuration;
 
-        public SwarmApi(ILogger<SwarmApi> logger, SwarmConfiguration configuration)
+        public SwarmApi(ILogger<SwarmApi> logger, SwarmConfiguration configuration, UserConfiguration userConfiguration)
         {
             _logger = logger;
             _configuration = configuration;
+            _userConfiguration = userConfiguration;
             var swarmApiConfiguration =
                 new SwarmApiConfiguration(_configuration.ApiKey ?? string.Empty, new Uri(_configuration.ApiUrl))
                 {
