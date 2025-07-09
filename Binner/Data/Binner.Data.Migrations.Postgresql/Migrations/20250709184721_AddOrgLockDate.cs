@@ -1,0 +1,31 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Binner.Data.Migrations.Postgresql.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddOrgLockDate : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<DateTime>(
+                name: "DateLockedUtc",
+                schema: "dbo",
+                table: "Organizations",
+                type: "timestamp with time zone",
+                nullable: true);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "DateLockedUtc",
+                schema: "dbo",
+                table: "Organizations");
+        }
+    }
+}

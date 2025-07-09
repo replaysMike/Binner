@@ -1,4 +1,4 @@
-﻿namespace Binner.Model.Authentication
+﻿namespace Binner.Global.Common
 {
     public static class JwtClaimTypes
     {

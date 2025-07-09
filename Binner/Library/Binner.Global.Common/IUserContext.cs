@@ -41,5 +41,19 @@
         /// Custom properties for the user
         /// </summary>
         IDictionary<string, object?> Properties { get; set; }
+
+        /// <summary>
+        /// Returns if Property exists and is not null
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        bool HasProperty(string key);
+
+        /// <summary>
+        /// Returns if boolean Property is true or not.
+        /// </summary>
+        /// <param name="key">Name of property</param>
+        /// <returns></returns>
+        bool IsPropertyTrue(string key);
     }
 }

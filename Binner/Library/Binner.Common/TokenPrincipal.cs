@@ -33,7 +33,7 @@ namespace Binner.Common
                 new (ClaimTypes.HomePhone, string.IsNullOrEmpty(userContext.PhoneNumber) ? "" : userContext.PhoneNumber),
                 new (JwtClaimTypes.CanLogin, userContext.CanLogin.ToString()),
                 new (JwtClaimTypes.SubscriptionLevel, userContext.Properties.Where(x => x.Key == JwtClaimTypes.SubscriptionLevel).FirstOrDefault().ToString()),
-                new (JwtClaimTypes.SuperAdmin, userContext.Properties.Where(x => x.Key == JwtClaimTypes.SuperAdmin).FirstOrDefault().ToString())
+                new (JwtClaimTypes.SuperAdmin, userContext.IsPropertyTrue(JwtClaimTypes.SuperAdmin).ToString())
             };
             return claims;
         }

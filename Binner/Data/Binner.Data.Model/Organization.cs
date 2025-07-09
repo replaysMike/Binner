@@ -12,9 +12,20 @@ namespace Binner.Data.Model
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrganizationId { get; set; }
 
+        /// <summary>
+        /// Organization name
+        /// </summary>
         public string? Name { get; set; }
 
+        /// <summary>
+        /// Organization description
+        /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// Set if the organization is locked and users cannot login
+        /// </summary>
+        public DateTime? DateLockedUtc { get; set; }
 
         public DateTime DateCreatedUtc { get; set; }
 
