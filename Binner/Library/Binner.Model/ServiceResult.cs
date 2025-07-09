@@ -1,6 +1,6 @@
 ﻿namespace Binner.Model
 {
-    public class ServiceResult<T> : IServiceResult<T?>
+    public class ServiceResult<T> : IServiceResult<T>
     {
         /// <summary>
         /// Response from the api

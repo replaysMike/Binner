@@ -382,7 +382,7 @@
 			"systemInfo": {
 				"title": "Informazioni di Sistema",
 				"baseDescription": "Ottenere informazioni sulla installazione di Binner.",
-				"description": "Informazioni sull'installazione di Binner. Queste impostazioni possono essere trovate nel file di configurazione del servizio 'appsettings.json'",
+				"description": "Informazioni sull'installazione di Binner.",
 				"version": "Versione",
 				"lastestVersion": "Ultima Versione di Binner",
 				"license": "Licenza",

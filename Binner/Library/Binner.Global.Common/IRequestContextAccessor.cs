@@ -20,6 +20,13 @@ namespace Binner.Global.Common
         IUserContext? GetUserContext();
 
         /// <summary>
+        /// Create a User Context object from a <see cref="ClaimsPrincipal"/>
+        /// </summary>
+        /// <param name="currentPrincipal"></param>
+        /// <returns></returns>
+        UserContext CreateUserContext(ClaimsPrincipal currentPrincipal);
+
+        /// <summary>
         /// Get the current user
         /// </summary>
         /// <returns></returns>

@@ -6,6 +6,8 @@ import { Clipboard } from "../../components/Clipboard";
 import { fetchApi } from "../../common/fetchApi";
 import { FormHeader } from "../../components/FormHeader";
 import { getCurrencySymbol } from "../../common/Utils";
+import { getUserAccount } from "../../common/authentication";
+import { getAccountTypesLabel } from "../../common/Types";
 
 export const SystemInformation = () => {
   const { t } = useTranslation();
@@ -29,6 +31,8 @@ export const SystemInformation = () => {
     }
   }, []);
 
+  const currentUser = getUserAccount();
+
   return (
     <div>
       <Breadcrumb>
@@ -39,7 +43,7 @@ export const SystemInformation = () => {
         <Breadcrumb.Section active>{t("bc.systemInfo", "System Information")}</Breadcrumb.Section>
       </Breadcrumb>
       <FormHeader name={t("page.admin.systemInfo.title", "System Information")} to={".."}>
-        {t("page.admin.systemInfo.description", "Information about your Binner installation. These settings can be found in the service configuration file 'appsettings.json'")}
+        {t("page.admin.systemInfo.description", "Information about your Binner installation.")}
       </FormHeader>
 
       <Segment loading={loading} raised>
@@ -56,6 +60,10 @@ export const SystemInformation = () => {
             <Form.Field>
               <label>{t("page.admin.systemInfo.license", "License")}</label>
               <div>{info.license || "Free"}</div>
+            </Form.Field>
+            <Form.Field>
+              <label>{t("page.admin.systemInfo.currentUser", "Current User")}</label>
+              <div>{currentUser.name} ({getAccountTypesLabel(currentUser)})</div>
             </Form.Field>
           </Form.Group>
 

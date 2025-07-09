@@ -1,5 +1,6 @@
 ﻿import _ from "underscore";
 import { ResistorIcon } from "./icons";
+import { Icon } from "semantic-ui-react";
 
 export const ProjectColors = [
   { name: '', value: 0 },
@@ -28,8 +29,24 @@ export const BarcodeProfiles = {
 export const DEFAULT_FONT = "Segoe UI";
 
 export const AccountTypes = {
-  Normal: false,
-  Admin: true
+  Normal: 0,
+  Admin: 1,
+  SuperAdmin: 2
+};
+
+export const getAccountTypesLabel = (user) => {
+  const accountTypes = [];
+  if (user.isSuperAdmin) accountTypes.push('Super Admin');
+  if (user.isAdmin) accountTypes.push('Admin');
+  if (accountTypes.length === 0)
+    accountTypes.push('Basic');
+  return accountTypes.join(', ');
+};
+
+export const getAccountTypeIcon = (user) => {
+  if (user.isSuperAdmin) return (<Icon name="user secret" title="Super Admin" color="red" size="large" />);
+  if (user.isAdmin) return (<Icon name="user secret" title="Admin" color="blue" size="large" />);
+  return (<Icon name="user" title="Basic Account" />);
 };
 
 export const BooleanTypes = {
