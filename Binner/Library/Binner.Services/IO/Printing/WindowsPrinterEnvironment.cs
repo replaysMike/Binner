@@ -1,4 +1,5 @@
-﻿using Binner.Model.IO.Printing;
+﻿using Binner.Common.Extensions;
+using Binner.Model.IO.Printing;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

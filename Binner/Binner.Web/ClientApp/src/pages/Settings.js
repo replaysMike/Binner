@@ -491,12 +491,17 @@ export const Settings = () => {
       ...globalSettings,
       ...integrationSettings,
       ...printerSettings,
-      customFields: [ ..._.filter(customFieldSettings.customFields, x => x.name?.length > 0).map((cf) => ({...cf, name: cf.name.trim()})) ],
+      locale: {
+        currency: globalSettings.currency,
+        language: globalSettings.language,
+      },
+      customFields: [..._.filter(customFieldSettings.customFields, x => x.name?.length > 0).map((cf) => ({ ...cf, name: cf.name.trim() }))],
       barcode: {
-        ...barcodeSettings, 
-        bufferTime: parseInt(barcodeSettings.barcode.bufferTime), 
+        ...barcodeSettings,
+        bufferTime: parseInt(barcodeSettings.barcode.bufferTime),
         maxKeystrokeThresholdMs: parseInt(barcodeSettings.barcode.maxKeystrokeThresholdMs)
-      }};
+      }
+    };
     await saveSettings(e, newSettings);
 
     const request = {

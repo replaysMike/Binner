@@ -26,7 +26,7 @@ namespace Binner.Services
         protected readonly IUserConfigurationCacheProvider _userConfigCache;
         protected readonly IOrganizationConfigurationCacheProvider _organizationConfigCache;
 
-        public UserConfigurationService(WebHostServiceConfiguration configuration, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider, IUserConfigurationCacheProvider configCache, IOrganizationConfigurationCacheProvider organizationConfigCache)
+        public UserConfigurationService(WebHostServiceConfiguration configuration, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider, IUserConfigurationCacheProvider userConfigCache, IOrganizationConfigurationCacheProvider organizationConfigCache)
         {
             _configuration = configuration;
                         _contextFactory = contextFactory;
@@ -34,7 +34,7 @@ namespace Binner.Services
             _requestContext = requestContextAccessor;
             _credentialService = credentialService;
             _credentialProvider = credentialProvider;
-            _userConfigCache = configCache;
+            _userConfigCache = userConfigCache;
             _organizationConfigCache = organizationConfigCache;
         }
 

@@ -725,7 +725,7 @@ export default function BomPartsGrid({
         <div className="header">
           <Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" />
           <div>
-            <span>Total records: {totalRecords}</span>
+            <span>{t("label.totalRecords", "Total records:")} {totalRecords}</span>
           </div>
           <div style={{display: 'flex', alignItems: 'center'}}>
             <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="labeled" onChange={handlePageSizeChange} style={{width: '75px', minWidth: '75px', marginRight: '10px'}} />

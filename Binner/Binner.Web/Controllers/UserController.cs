@@ -1,6 +1,7 @@
-﻿using Binner.Services;
+﻿using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Responses;
+using Binner.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,10 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Mime;
-using System.Threading.Tasks;
-using Binner.LicensedProvider;
 using System.Security;
-using Binner.Web.Conventions;
+using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
@@ -20,7 +19,6 @@ namespace Binner.Web.Controllers
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
     [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
-    [GenericControllerNameConvention]
     public partial class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;

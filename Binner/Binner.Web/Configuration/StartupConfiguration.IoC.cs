@@ -154,6 +154,8 @@ namespace Binner.Web.Configuration
             container.Register<IUserConfigurationService, UserConfigurationService>(new PerScopeLifetime());
             container.Register<IUserConfigurationCacheProvider, UserConfigurationCacheProvider>(new PerScopeLifetime());
             container.Register<IOrganizationConfigurationCacheProvider, OrganizationConfigurationCacheProvider>(new PerScopeLifetime());
+
+            // Binner only
             container.Register<ConfigFileMigrator>(new PerScopeLifetime());
         }
 

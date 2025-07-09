@@ -2,9 +2,10 @@
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Drawing;
+using System.IO;
 using System.Runtime.Versioning;
 
-namespace Binner.Services.IO.Printing
+namespace Binner.Common.Extensions
 {
     public static class ImageExtensions
     {

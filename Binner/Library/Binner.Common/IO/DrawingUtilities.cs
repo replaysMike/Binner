@@ -1,4 +1,4 @@
-﻿namespace Binner.Services.IO.Printing
+﻿namespace Binner.Common.IO
 {
     public static class DrawingUtilities
     {

@@ -4,7 +4,6 @@ using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services;
-using Binner.Web.Conventions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -21,8 +20,7 @@ namespace Binner.Web.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
-    [GenericControllerNameConvention]
-    public partial class AccountController : ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly ILogger<AccountController> _logger;
         private readonly WebHostServiceConfiguration _config;

@@ -27,6 +27,14 @@
         /// </summary>
         public const string CanLogin = "CanLogin";
 
+        /// <summary>
+        /// User has organization admin status
+        /// </summary>
         public const string Admin = "Admin";
+
+        /// <summary>
+        /// User's super admin status which can manage all users of the system
+        /// </summary>
+        public const string SuperAdmin = "SuperAdmin";
     }
 }

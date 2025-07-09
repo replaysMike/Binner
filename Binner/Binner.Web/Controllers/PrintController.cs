@@ -1,4 +1,5 @@
 ﻿using Binner.Common;
+using Binner.Common.IO;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;

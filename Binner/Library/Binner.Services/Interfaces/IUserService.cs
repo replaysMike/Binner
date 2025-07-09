@@ -1,5 +1,6 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
+using Binner.Model.Responses;
 
 namespace Binner.Services
 {
@@ -32,7 +33,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<ICollection<TUser>> GetUsersAsync(PaginatedRequest request);
+        Task<PaginatedResponse<TUser>> GetUsersAsync(PaginatedRequest request);
 
         /// <summary>
         /// Update existing user

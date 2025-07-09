@@ -18,6 +18,11 @@
         public const string Admin = "Admin";
 
         /// <summary>
+        /// Requires an SuperAdmin policy
+        /// </summary>
+        public const string SuperAdmin = "SuperAdmin";
+
+        /// <summary>
         /// Requires a login policy
         /// </summary>
         public const string CanLogin = "CanLogin";

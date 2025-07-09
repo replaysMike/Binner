@@ -36,7 +36,8 @@ namespace Binner.Services.Authentication
                 new (ClaimTypes.Name, user.EmailAddress ?? string.Empty),
                 new (ClaimTypes.HomePhone, string.IsNullOrEmpty(user.PhoneNumber) ? "" : user.PhoneNumber),
                 new (JwtClaimTypes.CanLogin, user.CanLogin.ToString()),
-                new (JwtClaimTypes.SubscriptionLevel, user.Properties.Where(x => x.Key == "SubscriptionLevel").Select(x => x.Value).FirstOrDefault()?.ToString() ?? string.Empty),
+                new (JwtClaimTypes.SubscriptionLevel, user.Properties.Where(x => x.Key == JwtClaimTypes.SubscriptionLevel).Select(x => x.Value).FirstOrDefault()?.ToString() ?? string.Empty),
+                new (JwtClaimTypes.SuperAdmin, user.Properties.Where(x => x.Key == JwtClaimTypes.SuperAdmin).Select(x => x.Value).FirstOrDefault()?.ToString() ?? string.Empty),
                 new (ClaimTypes.Expiration, DateTime.UtcNow.Add(_configuration.Authentication.JwtAccessTokenExpiryTime).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
             };
             if (user.IsAdmin)

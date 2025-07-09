@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
-using Binner.Services;
 using Binner.Global.Common;
+using Binner.Model;
 using Binner.Model.KiCad;
+using Binner.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,6 @@ using Newtonsoft.Json.Serialization;
 using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Binner.Model;
 
 namespace Binner.Web.Controllers
 {
