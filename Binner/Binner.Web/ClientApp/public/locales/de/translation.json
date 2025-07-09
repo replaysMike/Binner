@@ -383,7 +383,7 @@
       "systemInfo": {
         "title": "System Informationen",
         "baseDescription": "Erhalten Sie Informationen über Ihre Binner-Installation.",
-        "description": "Informationen zu Ihrer Binner-Installation. Diese Einstellungen finden Sie in der Konfigurationsdatei des Dienstes 'appsettings.json'.",
+        "description": "Informationen zu Ihrer Binner-Installation.",
         "version": "Version",
         "lastestVersion": "Binner Version",
         "license": "Lizenz",

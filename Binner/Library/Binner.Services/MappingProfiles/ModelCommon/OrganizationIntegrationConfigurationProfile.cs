@@ -105,6 +105,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.TmeCountry, options => options.MapFrom(x => x.Tme.Country))
                 .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
                 .ForMember(x => x.TmeResolveExternalLinks, options => options.MapFrom(x => x.Tme.ResolveExternalLinks))
+                .ReverseMap()
             ;
         }
     }

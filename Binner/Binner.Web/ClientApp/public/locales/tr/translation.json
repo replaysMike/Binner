@@ -382,7 +382,7 @@
       "systemInfo": {
         "title": "Sistem Bilgileri",
         "baseDescription": "Binner kurulumunuz hakkında bilgi alın.",
-        "description": "Binner kurulumunuz hakkında bilgi. Bu ayarlar 'appsettings.json' hizmet yapılandırma dosyasında bulunabilir",
+        "description": "Binner kurulumunuz hakkında bilgi.",
         "version": "Sürüm",
         "lastestVersion": "En Son Binner Sürümü",
         "license": "Lisans",

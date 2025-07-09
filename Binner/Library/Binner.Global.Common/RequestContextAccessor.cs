@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System.Security.Principal;
 
 namespace Binner.Global.Common
 {
@@ -59,27 +60,33 @@ namespace Binner.Global.Common
 
             if (currentPrincipal?.Identities.Any(x => x.IsAuthenticated) == true)
             {
-                var identity = currentPrincipal.Identities.FirstOrDefault(x => x.IsAuthenticated);
-                var userId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault() ?? "0");
-                var organizationId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "OrganizationId").Select(x => x.Value).FirstOrDefault() ?? "0");
-                if (userId <= 0 || organizationId <= 0) return null; // invalid claims
-                var properties = new Dictionary<string, object?>();
-                if (currentPrincipal.Claims.Any(x => x.Type == JwtClaimTypes.SubscriptionLevel))
-                    properties.Add(JwtClaimTypes.SubscriptionLevel, currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.SubscriptionLevel).Select(x => x.Value).FirstOrDefault() ?? string.Empty);
-                if (currentPrincipal.Claims.Any(x => x.Type == JwtClaimTypes.SuperAdmin))
-                    properties.Add(JwtClaimTypes.SuperAdmin, currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.SuperAdmin).Select(x => x.Value).FirstOrDefault() ?? string.Empty);
-                return new UserContext
-                {
-                    UserId = userId,
-                    OrganizationId = organizationId,
-                    Name = currentPrincipal.Claims.Where(x => x.Type == "FullName").Select(x => x.Value).FirstOrDefault(),
-                    EmailAddress = identity?.Name ?? string.Empty,
-                    PhoneNumber = currentPrincipal.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault(),
-                    Properties = properties,
-                };
+                return CreateUserContext(currentPrincipal);
             }
             // not authenticated
             return null;
+        }
+
+        public UserContext CreateUserContext(ClaimsPrincipal currentPrincipal)
+        {
+            var identity = currentPrincipal.Identities.FirstOrDefault(x => x.IsAuthenticated);
+            var userId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "UserId").Select(x => x.Value).FirstOrDefault() ?? "0");
+            var organizationId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "OrganizationId").Select(x => x.Value).FirstOrDefault() ?? "0");
+            if (userId <= 0 || organizationId <= 0) return null; // invalid claims
+            var properties = new Dictionary<string, object?>();
+            if (currentPrincipal.Claims.Any(x => x.Type == JwtClaimTypes.SubscriptionLevel))
+                properties.Add(JwtClaimTypes.SubscriptionLevel, currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.SubscriptionLevel).Select(x => x.Value).FirstOrDefault() ?? string.Empty);
+            if (currentPrincipal.Claims.Any(x => x.Type == JwtClaimTypes.SuperAdmin))
+                properties.Add(JwtClaimTypes.SuperAdmin, currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.SuperAdmin).Select(x => x.Value).FirstOrDefault() ?? string.Empty);
+            return new UserContext
+            {
+                UserId = userId,
+                OrganizationId = organizationId,
+                Name = currentPrincipal.Claims.Where(x => x.Type == "FullName").Select(x => x.Value).FirstOrDefault(),
+                EmailAddress = identity?.Name ?? string.Empty,
+                PhoneNumber = currentPrincipal.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault(),
+                Properties = properties,
+                IsAdmin = bool.Parse(currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.Admin).Select(x => x.Value).FirstOrDefault() ?? "false"),
+            };
         }
 
         /// <summary>
