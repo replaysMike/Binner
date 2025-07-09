@@ -44,5 +44,21 @@
         /// Custom properties for the user
         /// </summary>
         public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
+
+        /// <summary>
+        /// Returns if Property exists and is not null
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool HasProperty(string key)
+            => Properties.ContainsKey(key) && Properties[key] != null;
+
+        /// <summary>
+        /// Returns if boolean Property is true or not.
+        /// </summary>
+        /// <param name="key">Name of property</param>
+        /// <returns></returns>
+        public bool IsPropertyTrue(string key)
+            => Properties.ContainsKey(key) && bool.Parse(Properties[key]?.ToString() ?? "false");
     }
 }

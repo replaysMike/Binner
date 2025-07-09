@@ -458,6 +458,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<DateTime?>("DateLockedUtc")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")

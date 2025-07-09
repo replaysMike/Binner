@@ -5,6 +5,8 @@ using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using NLog;
 using System.Data;
 using System.Security;
 using DataModel = Binner.Data.Model;
@@ -17,14 +19,16 @@ namespace Binner.Services
     public class UserService<TUser> : IUserService<TUser>
         where TUser : class, IUser
     {
+        protected readonly ILogger<UserService<TUser>> _logger;
         protected readonly IDbContextFactory<BinnerContext> _contextFactory;
         protected readonly IMapper _mapper;
         protected readonly IRequestContextAccessor _requestContext;
         protected readonly ILicensedService<TUser, BinnerContext> _licensedService;
 
-        public UserService(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContext, ILicensedService<TUser, BinnerContext> licensedService)
+        public UserService(IDbContextFactory<BinnerContext> contextFactory, ILogger<UserService<TUser>> logger, IMapper mapper, IRequestContextAccessor requestContext, ILicensedService<TUser, BinnerContext> licensedService)
         {
             _contextFactory = contextFactory;
+            _logger = logger;
             _mapper = mapper;
             _requestContext = requestContext;
             _licensedService = licensedService;
@@ -75,6 +79,7 @@ namespace Binner.Services
 
             await context.UserTokens.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.UserLoginHistory.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
+            await context.UserConfigurations.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.UserPrinterTemplateConfigurations.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.UserPrinterConfigurations.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.OAuthRequests.Where(x => x.UserId == userId && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();

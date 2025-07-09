@@ -436,6 +436,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<DateTime?>("DateLockedUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("DateModifiedUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
