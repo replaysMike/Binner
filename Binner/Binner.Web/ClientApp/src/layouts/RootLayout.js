@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Outlet } from "react-router-dom";
 // components

@@ -32,7 +32,8 @@ namespace Binner.Common
                 new (ClaimTypes.Name, userContext.EmailAddress ?? string.Empty),
                 new (ClaimTypes.HomePhone, string.IsNullOrEmpty(userContext.PhoneNumber) ? "" : userContext.PhoneNumber),
                 new (JwtClaimTypes.CanLogin, userContext.CanLogin.ToString()),
-                new (JwtClaimTypes.SubscriptionLevel, userContext.Properties.Where(x => x.Key == JwtClaimTypes.SubscriptionLevel).FirstOrDefault().ToString())
+                new (JwtClaimTypes.SubscriptionLevel, userContext.Properties.Where(x => x.Key == JwtClaimTypes.SubscriptionLevel).FirstOrDefault().ToString()),
+                new (JwtClaimTypes.SuperAdmin, userContext.Properties.Where(x => x.Key == JwtClaimTypes.SuperAdmin).FirstOrDefault().ToString())
             };
             return claims;
         }

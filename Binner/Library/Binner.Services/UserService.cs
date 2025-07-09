@@ -3,6 +3,7 @@ using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
+using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Security;
@@ -46,7 +47,7 @@ namespace Binner.Services
 
         public virtual Task<TUser?> GetUserAsync(TUser user) => _licensedService.GetUserAsync(user);
 
-        public virtual Task<ICollection<TUser>> GetUsersAsync(PaginatedRequest request) => _licensedService.GetUsersAsync(request);
+        public virtual Task<PaginatedResponse<TUser>> GetUsersAsync(PaginatedRequest request) => _licensedService.GetUsersAsync(request);
 
         public virtual Task<TUser?> UpdateUserAsync(TUser user) => _licensedService.UpdateUserAsync(user);
 

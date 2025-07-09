@@ -1,11 +1,12 @@
-﻿using Binner.Common.IO;
-using SixLabors.Fonts;
+﻿using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System;
+using System.IO;
 
-namespace Binner.Services.IO.Printing
+namespace Binner.Common.IO
 {
     /// <summary>
     /// Generate a blank image with optional text

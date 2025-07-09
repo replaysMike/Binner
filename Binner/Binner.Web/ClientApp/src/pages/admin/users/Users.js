@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Table, Form, Segment, Button, Icon, Popup, Confirm, Breadcrumb } from "semantic-ui-react";
-import { fetchApi } from "../../../common/fetchApi";
-import { InifiniteScrollTable } from "../../../components/InfiniteScrollTable";
+import { Table, Form, Segment, Button, Icon, Popup, Confirm, Breadcrumb, Pagination } from "semantic-ui-react";
+import { fetchApi, getErrorsString } from "../../../common/fetchApi";
 import { generatePassword } from "../../../common/Utils";
-import { AccountTypes, BooleanTypes, GetTypeDropdown } from "../../../common/Types";
+import { AccountTypes, GetTypeDropdown } from "../../../common/Types";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
 import { FormHeader } from "../../../components/FormHeader";
 import ClearableInput from "../../../components/ClearableInput";
@@ -15,7 +14,7 @@ import { getSystemSettings } from "../../../common/applicationSettings";
 import { CustomFieldValues } from "../../../components/CustomFieldValues";
 import { toast } from "react-toastify";
 
-export function Users(props) {
+export function Users() {
   const { t } = useTranslation();
   const maxResults = 20;
   const defaultNewUser = {
@@ -35,40 +34,44 @@ export function Users(props) {
   const [direction, setDirection] = useState(null);
   const [hasMoreData, setHasMoreData] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [deleteSelectedItem, setDeleteSelectedItem] = useState(null);
   const accountTypes = GetTypeDropdown(AccountTypes);
-  const emailConfirmedTypes = GetTypeDropdown(BooleanTypes);
   const usersDataRef = useRef([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUsers = async (page = 1) => {
-      if (hasMoreData) {
-        setLoading(true);
-        await fetchApi(`/api/user/list?page=${page}&results=${maxResults}`).then((response) => {
-          const { data } = response;
-          if (data) {
-            // update the page of data, as long as its not already in the data
-            usersDataRef.current = data;
-            setLoading(false);
-          }
-          if (data.length < maxResults) {
-            // no more data, received back 0 or less than maxResults
-            setHasMoreData(false);
-          }
-        });
-      }
-    };
+  const fetchUsers = async (page = 1) => {
+    if (hasMoreData) {
+      setLoading(true);
+      await fetchApi(`/api/user/list?page=${page}&results=${maxResults}`).then((response) => {
+        const { data } = response;
+        if (data) {
+          // update the page of data, as long as its not already in the data
+          usersDataRef.current = data.items;
+          setTotalRecords(data.totalItems);
+          setTotalPages(data.totalPages);
+          setLoading(false);
+        }
+        if (data.length < maxResults) {
+          // no more data, received back 0 or less than maxResults
+          setHasMoreData(false);
+        }
+      });
+    }
+  };
 
+  useEffect(() => {
     getSystemSettings().then(async (systemSettings) => {
       setSystemSettings(systemSettings);
       // map defined custom fields to the new user object
       const newUser = { ...defaultNewUser, customFields: _.filter(systemSettings?.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.map((field) => ({ field: field.name, value: '' })) || [] };
       setNewUser(newUser);
-      await fetchUsers();
+      await fetchUsers(1);
     });
-  }, [hasMoreData]);
+  }, []);
+
 
   const deleteUser = async (e, user) => {
     e.preventDefault();
@@ -162,10 +165,6 @@ export function Users(props) {
     setConfirmDeleteIsOpen(false);
   };
 
-  const fetchNextPage = () => {
-    if (hasMoreData) setCurrentPage(currentPage + 1);
-  };
-
   const handleChange = useCallback((e, control) => {
     newUser[control.name] = control.value;
     setNewUser({ ...newUser });
@@ -190,32 +189,10 @@ export function Users(props) {
     setAddVisible(!addVisible);
   };
 
-  const headerRow = (
-    <Table.Row>
-      <Table.HeaderCell sorted={column === "userId" ? direction : null} onClick={handleSort("userId")}>
-        {t("label.id", "Id")}
-      </Table.HeaderCell>
-      <Table.HeaderCell sorted={column === "isAdmin" ? direction : null} onClick={handleSort("isAdmin")}>
-        {t("label.type", "Type")}
-      </Table.HeaderCell>
-      <Table.HeaderCell sorted={column === "dateLockedUtc" ? direction : null} onClick={handleSort("dateLockedUtc")}>
-        {t("label.allowLogin", "Allow Login")}
-      </Table.HeaderCell>
-      <Table.HeaderCell sorted={column === "name" ? direction : null} onClick={handleSort("name")}>
-        {t("label.name", "Name")}
-      </Table.HeaderCell>
-      <Table.HeaderCell style={{ maxWidth: "250px" }} sorted={column === "emailAddress" ? direction : null} onClick={handleSort("emailAddress")}>
-        {t("label.usernameEmail", "Username / Email")}
-      </Table.HeaderCell>
-      <Table.HeaderCell style={{ maxWidth: "130px" }} sorted={column === "dateLastActiveUtc" ? direction : null} onClick={handleSort("dateLastActiveUtc")}>
-        {t("label.lastActive", "Last Active")}
-      </Table.HeaderCell>
-      <Table.HeaderCell style={{ maxWidth: "130px" }} sorted={column === "dateAddedUtc" ? direction : null} onClick={handleSort("dateAddedUtc")}>
-        {t("label.dateAdded", "Date Added")}
-      </Table.HeaderCell>
-      <Table.HeaderCell></Table.HeaderCell>
-    </Table.Row>
-  );
+  const handleInternalPageChange = async (e, control) => {
+    setCurrentPage(control.activePage);
+    await fetchUsers(control.activePage);
+  };
 
   return (
     <div>
@@ -322,7 +299,34 @@ export function Users(props) {
       </Form>
 
       <Segment loading={loading} secondary>
-        <InifiniteScrollTable id="usersTable" compact celled sortable selectable striped unstackable size="small" headerRow={headerRow} nextPage={() => fetchNextPage()}>
+        <Table id="usersTable" compact celled sortable selectable striped unstackable size="small">
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell sorted={column === "userId" ? direction : null} onClick={handleSort("userId")}>
+                {t("label.id", "Id")}
+              </Table.HeaderCell>
+              <Table.HeaderCell sorted={column === "isAdmin" ? direction : null} onClick={handleSort("isAdmin")}>
+                {t("label.type", "Type")}
+              </Table.HeaderCell>
+              <Table.HeaderCell sorted={column === "dateLockedUtc" ? direction : null} onClick={handleSort("dateLockedUtc")}>
+                {t("label.allowLogin", "Allow Login")}
+              </Table.HeaderCell>
+              <Table.HeaderCell sorted={column === "name" ? direction : null} onClick={handleSort("name")}>
+                {t("label.name", "Name")}
+              </Table.HeaderCell>
+              <Table.HeaderCell style={{ maxWidth: "250px" }} sorted={column === "emailAddress" ? direction : null} onClick={handleSort("emailAddress")}>
+                {t("label.usernameEmail", "Username / Email")}
+              </Table.HeaderCell>
+              <Table.HeaderCell style={{ maxWidth: "130px" }} sorted={column === "dateLastActiveUtc" ? direction : null} onClick={handleSort("dateLastActiveUtc")}>
+                {t("label.lastActive", "Last Active")}
+              </Table.HeaderCell>
+              <Table.HeaderCell style={{ maxWidth: "130px" }} sorted={column === "dateAddedUtc" ? direction : null} onClick={handleSort("dateAddedUtc")}>
+                {t("label.dateAdded", "Date Added")}
+              </Table.HeaderCell>
+              <Table.HeaderCell></Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
           {usersDataRef.current.map((userRow, i) => (
             <Table.Row key={i} onClick={(e) => openUser(e, userRow)}>
               <Table.Cell>{userRow.userId}</Table.Cell>
@@ -344,7 +348,18 @@ export function Users(props) {
               </Table.Cell>
             </Table.Row>
           ))}
-        </InifiniteScrollTable>
+          </Table.Body>
+        </Table>
+        <div className="small" style={{ float: 'right' }}>{t("label.totalRecords", "Total records:")} {totalRecords}</div>
+        <Pagination
+          activePage={currentPage}
+          totalPages={totalPages}
+          firstItem={null}
+          lastItem={null}
+          onPageChange={handleInternalPageChange}
+          size="mini"
+          style={{ marginTop: '5px' }}
+        />
       </Segment>
     </div>
   );

@@ -920,7 +920,8 @@
     "valueNumber": "Number",
     "stock": "Stock",
     "newQuantityShort": "New Qty",
-    "viewProduct": "View Product"
+    "viewProduct": "View Product",
+    "totalRecords": "Total records:"
   },
   "message": {
     "noPartsAdded": "No parts added.",

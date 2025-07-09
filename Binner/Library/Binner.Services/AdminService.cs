@@ -133,7 +133,7 @@ namespace Binner.Services
             model.IP = _configuration.IP.ToString();
 
             var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
-            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration();
             model.License = _configuration.Licensing?.LicenseKey;
             model.Language = localeConfiguration.Language.ToString();
             model.Currency = localeConfiguration.Currency.ToString();
@@ -143,19 +143,19 @@ namespace Binner.Services
             model.LogPath = Path.GetDirectoryName(fileTarget.FileName.ToString().Replace("'", ""));
 
             var enabledIntegrations = new List<string>();
-            if (integrationConfiguration.Swarm.Enabled)
+            if (integrationConfiguration.SwarmEnabled)
                 enabledIntegrations.Add("Swarm");
-            if (integrationConfiguration.Digikey.Enabled)
+            if (integrationConfiguration.DigiKeyEnabled)
                 enabledIntegrations.Add("DigiKey");
-            if (integrationConfiguration.Mouser.Enabled)
+            if (integrationConfiguration.MouserEnabled)
                 enabledIntegrations.Add("Mouser");
-            if (integrationConfiguration.Arrow.Enabled)
+            if (integrationConfiguration.ArrowEnabled)
                 enabledIntegrations.Add("Arrow");
-            if (integrationConfiguration.Nexar.Enabled)
+            if (integrationConfiguration.NexarEnabled)
                 enabledIntegrations.Add("Octopart/Nexar");
-            if (integrationConfiguration.AliExpress.Enabled)
-                enabledIntegrations.Add("AliExpress");
-            if (integrationConfiguration.Tme.Enabled)
+            //if (integrationConfiguration.AliExpress.Enabled)
+            //    enabledIntegrations.Add("AliExpress");
+            if (integrationConfiguration.TmeEnabled)
                 enabledIntegrations.Add("TME");
             model.EnabledIntegrations = string.Join(", ", enabledIntegrations);
 

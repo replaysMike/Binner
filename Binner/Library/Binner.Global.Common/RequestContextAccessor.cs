@@ -66,6 +66,8 @@ namespace Binner.Global.Common
                 var properties = new Dictionary<string, object?>();
                 if (currentPrincipal.Claims.Any(x => x.Type == "SubscriptionLevel"))
                     properties.Add("SubscriptionLevel", currentPrincipal.Claims.Where(x => x.Type == "SubscriptionLevel").Select(x => x.Value).FirstOrDefault() ?? string.Empty);
+                if (currentPrincipal.Claims.Any(x => x.Type == "SuperAdmin"))
+                    properties.Add("SuperAdmin", currentPrincipal.Claims.Where(x => x.Type == "SuperAdmin").Select(x => x.Value).FirstOrDefault() ?? string.Empty);
                 return new UserContext
                 {
                     UserId = userId,
