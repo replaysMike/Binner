@@ -5,7 +5,7 @@ import _ from "underscore";
 import { Table, Form, Segment, Button, Icon, Popup, Confirm, Breadcrumb, Pagination } from "semantic-ui-react";
 import { fetchApi, getErrorsString } from "../../../common/fetchApi";
 import { generatePassword } from "../../../common/Utils";
-import { AccountTypes, GetTypeDropdown } from "../../../common/Types";
+import { AccountTypes, GetTypeDropdown, getAccountTypeIcon } from "../../../common/Types";
 import { getFriendlyElapsedTime, getTimeDifference, getFormattedTime } from "../../../common/datetime";
 import { FormHeader } from "../../../components/FormHeader";
 import ClearableInput from "../../../components/ClearableInput";
@@ -32,7 +32,6 @@ export function Users() {
   const [newUser, setNewUser] = useState(defaultNewUser);
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
-  const [hasMoreData, setHasMoreData] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,23 +42,17 @@ export function Users() {
   const navigate = useNavigate();
 
   const fetchUsers = async (page = 1) => {
-    if (hasMoreData) {
-      setLoading(true);
-      await fetchApi(`/api/user/list?page=${page}&results=${maxResults}`).then((response) => {
-        const { data } = response;
-        if (data) {
-          // update the page of data, as long as its not already in the data
-          usersDataRef.current = data.items;
-          setTotalRecords(data.totalItems);
-          setTotalPages(data.totalPages);
-          setLoading(false);
-        }
-        if (data.length < maxResults) {
-          // no more data, received back 0 or less than maxResults
-          setHasMoreData(false);
-        }
-      });
-    }
+    setLoading(true);
+    await fetchApi(`/api/user/list?page=${page}&results=${maxResults}`).then((response) => {
+      const { data } = response;
+      setLoading(false);
+      if (data) {
+        // update the page of data, as long as its not already in the data
+        usersDataRef.current = data.items;
+        setTotalPages(data.totalPages);
+        setTotalRecords(data.totalItems);
+      }
+    });
   };
 
   useEffect(() => {
@@ -125,13 +118,13 @@ export function Users() {
     });
   };
 
-  const refreshClean = () => {
+  const refreshClean = async () => {
     // refresh
     usersDataRef.current = [];
     // map defined custom fields to the new user object
     setNewUser({ ...defaultNewUser, customFields: _.filter(systemSettings?.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.map((field) => ({ field: field.name, value: '' })) || [] });
-    setHasMoreData(true);
     setCurrentPage(1);
+    await fetchUsers(1);
   };
 
   const openUser = (e, user) => {
@@ -176,7 +169,7 @@ export function Users() {
     if (field) {
       field.value = control.value;
       const otherCustomFields = _.filter(newUser.customFields, x => x.field !== control.name);
-      setNewUser({ ...newUser, customFields: [ ...otherCustomFields, field ] });
+      setNewUser({ ...newUser, customFields: [...otherCustomFields, field] });
       //setIsDirty(true);
     } else {
       console.error('field not found', control.name, newUser.customFields);
@@ -330,7 +323,7 @@ export function Users() {
             {usersDataRef.current.map((userRow, i) => (
               <Table.Row key={i} onClick={(e) => openUser(e, userRow)}>
                 <Table.Cell>{userRow.userId}</Table.Cell>
-                <Table.Cell style={{ textAlign: "center" }}>{userRow.isAdmin ? <Icon name="user secret" title="Admin" color="red" size="large" /> : <Icon name="user" title="Normal Account" />}</Table.Cell>
+                <Table.Cell style={{ textAlign: "center" }}>{getAccountTypeIcon(userRow)}</Table.Cell>
                 <Table.Cell style={{ textAlign: "center" }}>
                   {userRow.dateLockedUtc ? <Icon name="remove circle" color="red" title="Is Locked" /> : <Icon name="check circle" color="green" title="Not Locked" />}
                 </Table.Cell>
