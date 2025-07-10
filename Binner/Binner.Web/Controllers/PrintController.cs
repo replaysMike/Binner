@@ -150,6 +150,8 @@ namespace Binner.Web.Controllers
             try
             {
                 var model = await _printService.UpdateLabelTemplateAsync(request);
+                if (model == null)
+                    return NotFound();
 
                 return Ok(model);
             }
