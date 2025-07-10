@@ -695,7 +695,7 @@
       "createNewLabel": "Create a new label..."
     },
     "labelSetNameModal": {
-      "description": "Enter a name for your new label.",
+      "description": "Enter a name for your label.",
       "labelName": "Label Name",
       "makeDefault": "Make default part label?"
     },

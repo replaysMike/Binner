@@ -660,7 +660,7 @@
 			"createNewLabel": "Creare una nuova etichetta..."
 		},
 		"labelSetNameModal": {
-			"description": "Indicare un nome per la nuova etichetta.",
+			"description": "Indicare un nome per la etichetta.",
 			"labelName": "Nome etichetta",
 			"makeDefault": "Rendere questa l'etichetta di default?"
 		}

@@ -661,7 +661,7 @@
       "createNewLabel": "Yeni bir etiket oluştur..."
     },
     "labelSetNameModal": {
-      "description": "Yeni etiketiniz için bir ad girin.",
+      "description": "Etiketiniz için bir ad girin.",
       "labelName": "Etiket Adı",
       "makeDefault": "Varsayılan parça etiketi yapılsın mı?"
     }
