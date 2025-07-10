@@ -1,179 +1,180 @@
 .labelEditor {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .labelEditor .tools {
-	width: 18%;
-	background: rgb(249,249,249);
-	background: linear-gradient(180deg, rgba(249,249,249,1) 0%, rgba(233,233,233,1) 100%);
+  width: 18%;
+  background: rgb(249, 249, 249);
+  background: linear-gradient(180deg, rgba(249, 249, 249, 1) 0%, rgba(233, 233, 233, 1) 100%);
 }
 
 .labelEditor .tools.left {
-	border: 1px solid #ccc;
-	justify-content: start;
+  border: 1px solid #ccc;
+  justify-content: start;
 }
 
 .labelEditor .tools.right {
-	border: 1px solid #ccc;
-	justify-content: end;
+  border: 1px solid #ccc;
+  justify-content: end;
 }
 
 .labelEditor .layout {
-	flex: 1;
-	display: flex;
-	border-top: 1px solid #ccc;
-	border-bottom: 1px solid #ccc;
-	justify-content: center;
-	text-align: center;
-	background: rgb(255,255,255);
-	background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(233,233,233,1) 100%);
+  flex: 1;
+  display: flex;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  justify-content: center;
+  text-align: center;
+  background: rgb(255, 255, 255);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(233, 233, 233, 1) 100%);
 }
 
 .labelEditor .header {
-	width: 100%;
-	margin: 0;
-	padding: 2px;
-	text-align: center;
+  width: 100%;
+  margin: 0;
+  padding: 2px;
+  text-align: center;
 }
 
 .labelEditor .header label {
-	font-size: 0.8em;
-	margin: 0;
-	padding: 0;
-	font-weight: 600;
-	background-color: #dfdfdf;
-	width: 100%;
+  font-size: 0.8em;
+  margin: 0;
+  padding: 0;
+  font-weight: 600;
+  background-color: #dfdfdf;
+  width: 100%;
 }
 
 .labelEditor .layout .wrapper {
-	padding: 50px 0;
+  padding: 50px 0;
 }
 
 .labelEditor .header table {
-	font-size: 0.8em !important;
+  font-size: 0.8em !important;
 }
 
 .labelEditor .header table {
-	background-color: #f0f0f0 !important;
+  background-color: #f0f0f0 !important;
 }
 
 .labelEditor .header table input {
-	padding: 4px 5px !important;
+  padding: 4px 5px !important;
 }
 
 .labelEditor .header table .ui.selection.dropdown {
-	min-width: 90px !important;
+  min-width: 90px !important;
 }
 
 .labelEditor #container {
-	box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
-	margin: 0 auto;
+  box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+  margin: 0 auto;
 }
 
 .labelEditor .draggableBox {
-	transition-property: left, top, width, height;
-	transition-duration: 0.15s;
+  transition-property: left, top, width, height;
+  transition-duration: 0.15s;
 }
 
-.labelEditor .draggableBox, .labelEditor .draggableBox div {
-	outline-width: 0 !important;
+.labelEditor .draggableBox,
+.labelEditor .draggableBox div {
+  outline-width: 0 !important;
 }
 
 .labelEditor .tools .draggableBox div {
-	background-color: #fff;
-	margin: 4px 0;
+  background-color: #fff;
+  margin: 4px 0;
 }
 
 .labelEditor #container .draggableBox div {
-	padding: 0 0 !important;
-	line-height: 1em;
-	background-color: #f0f0f0;
-	overflow: hidden;
+  padding: 0 0 !important;
+  line-height: 1em;
+  background-color: #f0f0f0;
+  overflow: hidden;
 }
 
 .labelEditor #container .draggableBox.resizeBoth>.box>.MuiSvgIcon-root {
-	min-width: 100%;
-	min-height: 100%;	
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .labelEditor #container .draggableBox.square {
-	aspect-ratio: 1 / 1;
+  aspect-ratio: 1 / 1;
 }
 
-.labelEditor #container .draggableBox.resizeBoth {
+.labelEditor #container .draggableBox.resizeBoth {}
+
+.labelEditor #container .draggableBox.resizeBoth div {
+  resize: both !important;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.labelEditor #container .draggableBox.resizeBoth div  {
-	resize: both !important;
-	overflow: hidden;
-	white-space: nowrap;
+.labelEditor #container .draggableBox.resizeHorizontal div {
+  resize: horizontal !important;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.labelEditor #container .draggableBox.resizeHorizontal div  {
-	resize: horizontal !important;
-	overflow: hidden;
-	white-space: nowrap;
-}
-
-.labelEditor #container .draggableBox.resizeVertical div  {
-	resize: vertical !important;
-	overflow: hidden;
-	white-space: nowrap;
+.labelEditor #container .draggableBox.resizeVertical div {
+  resize: vertical !important;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .labelEditor #container .draggableBox div::-webkit-resizer {
-	background-color: transparent;
+  background-color: transparent;
 }
 
 .labelEditor .ui.table td:has(.itemProperties) {
-	padding: 0.2em;
-	font-size: 0.9em;
+  padding: 0.2em;
+  font-size: 0.9em;
 }
 
 .labelEditor .itemProperties span {
-	margin: 0 5px;
+  margin: 0 5px;
 }
 
 .zoomContainer {
-	transition-property: transform;
-	transition-duration: 0.2s;
+  transition-property: transform;
+  transition-duration: 0.2s;
 }
 
-.ui.celled.table tr td.alignTools, .ui.celled.table tr td.zoomTools {
-	text-align: center !important;
+.ui.celled.table tr td.alignTools,
+.ui.celled.table tr td.zoomTools {
+  text-align: center !important;
 }
 
 td.zoomTools div {
-	position: relative;
-	font-size: 0.7em;
-	line-height: 0em;
-	text-align: center;
-	top: 5px;
+  position: relative;
+  font-size: 0.7em;
+  line-height: 0em;
+  text-align: center;
+  top: 5px;
 }
 
 .alignTools .ui.button svg {
-	font-size: 1.0em;
+  font-size: 1.0em;
 }
 
 .zoomTools .ui.button .ui.icon {
-	font-size: 1.0em;
+  font-size: 1.0em;
 }
 
 .labelEditor .draggableBox .box {
-	outline-width: 1px !important;
-	outline-style: dotted;
-	outline-color: gray;
-	outline-offset: -1px;
-	overflow: hidden;
+  outline-width: 1px !important;
+  outline-style: dotted;
+  outline-color: gray;
+  outline-offset: -1px;
+  overflow: hidden;
 }
 
 .labelEditor .draggableBox .box.selected {
-	outline-width: 2px !important;
-	outline-style: dashed;
-	outline-color: #0478d1;
-	outline-offset: -1px;
+  outline-width: 2px !important;
+  outline-style: dashed;
+  outline-color: #0478d1;
+  outline-offset: -1px;
 }
 
 .example {
@@ -186,4 +187,19 @@ td.zoomTools div {
   color: #c00;
   font-size: 1.5em;
   margin: 0;
+}
+
+.label-option .default {
+  font-size: 0.8em;
+  color: rgb(64, 64, 64);
+  font-family: "Roboto", sans-serif;
+  font-weight: 700;
+}
+
+.label-option .readonly {
+  font-size: 0.8em;
+  color: rgba(0, 54, 204, 0.5);
+  text-transform: uppercase;
+  font-family: "Roboto", sans-serif;
+  font-weight: 300;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { Icon, Button, Form, Modal, Checkbox } from "semantic-ui-react";
 import PropTypes from "prop-types";
@@ -6,34 +6,36 @@ import PropTypes from "prop-types";
 /**
  * Set the label name
  */
-export function LabelSetNameModal({ isOpen = false, name = "", isDefaultPartLabel = false, ...rest }) {
+export function LabelSetNameModal({ ...rest }) {
   const { t } = useTranslation();
-  const defaultForm = { 
-    name: name || "", 
-    isDefaultPartLabel: isDefaultPartLabel || false 
+  const defaultForm = {
+    name: rest.name || "",
+    isDefaultPartLabel: rest.isDefaultPartLabel || false
   };
-  const [_isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
 
   useEffect(() => {
-    setIsOpen(_isOpen);
-  }, [_isOpen]);
+    setIsOpen(rest.isOpen);
+  }, [rest.isOpen]);
 
   useEffect(() => {
-    setForm({...form, name});
-  }, [name]);
+    setForm(prev => ({ ...prev, name: rest.name }));
+  }, [rest.name]);
 
   useEffect(() => {
-    setForm({ ...form, isDefaultPartLabel });
-  }, [isDefaultPartLabel]);
+    setForm(prev => ({ ...prev, isDefaultPartLabel: rest.isDefaultPartLabel }));
+  }, [rest.isDefaultPartLabel]);
 
   const handleModalClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsOpen(false);
     if (rest.onClose) rest.onClose();
   };
 
   const handleChange = (e, control) => {
-    switch(control.name) {
+    switch (control.name) {
       case "isDefaultPartLabel":
         form[control.name] = control.checked;
         break;
@@ -53,18 +55,18 @@ export function LabelSetNameModal({ isOpen = false, name = "", isDefaultPartLabe
       <Modal centered open={isOpen} onClose={handleModalClose}>
         <Modal.Header>{t('comp.labelSelectionModal.title', "Label Editor")}</Modal.Header>
         <Modal.Description style={{ width: "100%", padding: '5px 25px' }}>
-          <p>{t('comp.labelSetNameModal.description', "Enter a name for your new label.")}</p>
+          <p>{t('comp.labelSetNameModal.description', "Enter a name for your label.")}</p>
         </Modal.Description>
-        <Modal.Content style={{width: "100%"}}>
+        <Modal.Content style={{ width: "100%" }}>
           <Form style={{ marginBottom: "10px", marginLeft: '50px', width: '50%' }}>
             <Form.Field>
-							<label>{t('comp.labelSetNameModal.labelName', "Label Name")}</label>
-							<Form.Input name="name" placeholder="Parts Label" fluid required value={form.name} onChange={handleChange} />
-						</Form.Field>
+              <label>{t('comp.labelSetNameModal.labelName', "Label Name")}</label>
+              <Form.Input name="name" placeholder="Parts Label" fluid required value={form.name} onChange={handleChange} />
+            </Form.Field>
             <Form.Field>
-							<label>{t('comp.labelSetNameModal.makeDefault', "Make default part label?")}</label>
-							<Checkbox toggle name="isDefaultPartLabel" checked={form.isDefaultPartLabel} onChange={handleChange} />
-						</Form.Field>
+              <label>{t('comp.labelSetNameModal.makeDefault', "Make default part label?")}</label>
+              <Checkbox toggle name="isDefaultPartLabel" checked={form.isDefaultPartLabel} onChange={handleChange} />
+            </Form.Field>
           </Form>
         </Modal.Content>
         <Modal.Actions>

@@ -31,6 +31,10 @@ namespace Binner.Model
 
         public LabelTemplate? LabelTemplate { get; set; }
 
+        public int? OrganizationId { get; set; }
+
+        public bool IsEditable => OrganizationId != null;
+
         public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

@@ -1703,6 +1703,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<int?>("DefaultPartLabelId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("EnableAutoPartSearch")
                         .HasColumnType("tinyint(1)");
 

@@ -28,12 +28,12 @@ export const LabelDropContainer = ({ width = 500, height = 300, margin = "0 0 0 
 
   return (
     <div onClick={handleOnClick}>
-      <DropArea 
-        snapToGrid={snapToGridAfterDrop} 
-        width={width} 
-        height={height} 
+      <DropArea
+        snapToGrid={snapToGridAfterDrop}
+        width={width}
+        height={height}
         margin={margin}
-        onSelectedItemChanged={onSelectedItemChanged} 
+        onSelectedItemChanged={onSelectedItemChanged}
         onDrop={onDrop}
         onMove={onMove}
         onRemove={onRemove}

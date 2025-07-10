@@ -1703,6 +1703,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<int?>("DefaultPartLabelId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("EnableAutoPartSearch")
                         .HasColumnType("bit");
 

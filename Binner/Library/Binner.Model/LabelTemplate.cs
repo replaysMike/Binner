@@ -66,5 +66,9 @@
         /// The paper source (left or right, if applicable)
         /// </summary>
         public int LabelPaperSource { get; set; }
+
+        public int? OrganizationId { get; set; }
+
+        public bool IsEditable => OrganizationId != null;
     }
 }

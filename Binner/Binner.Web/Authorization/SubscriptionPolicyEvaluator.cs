@@ -1,4 +1,4 @@
-﻿using Binner.Model.Authentication;
+﻿using Binner.Global.Common;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;

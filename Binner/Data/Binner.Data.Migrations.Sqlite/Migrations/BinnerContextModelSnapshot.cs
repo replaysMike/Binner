@@ -1645,6 +1645,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<int?>("DefaultPartLabelId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("EnableAutoPartSearch")
                         .HasColumnType("INTEGER");
 

@@ -21,6 +21,8 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Height, options => options.MapFrom(x => x.Height))
                 .ForMember(x => x.Margin, options => options.MapFrom(x => x.Margin))
                 .ForMember(x => x.Dpi, options => options.MapFrom(x => x.Dpi))
+                .ForMember(x => x.OrganizationId, options => options.MapFrom(x => x.OrganizationId))
+
                 .ForMember(x => x.LabelTemplateId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
@@ -43,6 +45,9 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Height, options => options.MapFrom(x => x.Height))
                 .ForMember(x => x.Margin, options => options.MapFrom(x => x.Margin))
                 .ForMember(x => x.Dpi, options => options.MapFrom(x => x.Dpi))
+                .ForMember(x => x.OrganizationId, options => options.MapFrom(x => x.OrganizationId))
+
+                .ForMember(x => x.IsEditable, options => options.Ignore())
                 ;
         }
     }

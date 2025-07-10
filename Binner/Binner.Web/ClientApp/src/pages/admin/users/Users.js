@@ -280,12 +280,12 @@ export function Users() {
             </Form.Field>
             <Form.Group>
               {_.filter(systemSettings.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.length > 0 && <hr />}
-              <CustomFieldValues 
+              <CustomFieldValues
                 type={CustomFieldTypes.User}
                 header={t('label.customFields', "Custom Fields")}
                 headerElement="h3"
-                customFieldDefinitions={systemSettings.customFields} 
-                customFieldValues={newUser.customFields} 
+                customFieldDefinitions={systemSettings.customFields}
+                customFieldValues={newUser.customFields}
                 onChange={handleCustomFieldChange}
               />
             </Form.Group>
@@ -327,27 +327,27 @@ export function Users() {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-          {usersDataRef.current.map((userRow, i) => (
-            <Table.Row key={i} onClick={(e) => openUser(e, userRow)}>
-              <Table.Cell>{userRow.userId}</Table.Cell>
-              <Table.Cell style={{ textAlign: "center" }}>{userRow.isAdmin ? <Icon name="user secret" title="Admin" color="red" size="large" /> : <Icon name="user" title="Normal Account" />}</Table.Cell>
-              <Table.Cell style={{ textAlign: "center" }}>
-                {userRow.dateLockedUtc ? <Icon name="remove circle" color="red" title="Is Locked" /> : <Icon name="check circle" color="green" title="Not Locked" />}
-              </Table.Cell>
-              <Table.Cell>{userRow.name}</Table.Cell>
-              <Table.Cell>{userRow.emailAddress}</Table.Cell>
-              <Table.Cell>{userRow.dateLastActiveUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), Date.parse(userRow.dateLastActiveUtc)), true) : "(never)"}</Table.Cell>
-              <Table.Cell>{getFormattedTime(userRow.dateCreatedUtc)}</Table.Cell>
-              <Table.Cell textAlign="center">
-                <Button
-                  size="mini"
-                  icon="delete"
-                  onClick={(e) => confirmDeleteOpen(e, userRow)}
-                  title={t("button.delete", "Delete")}
-                />
-              </Table.Cell>
-            </Table.Row>
-          ))}
+            {usersDataRef.current.map((userRow, i) => (
+              <Table.Row key={i} onClick={(e) => openUser(e, userRow)}>
+                <Table.Cell>{userRow.userId}</Table.Cell>
+                <Table.Cell style={{ textAlign: "center" }}>{userRow.isAdmin ? <Icon name="user secret" title="Admin" color="red" size="large" /> : <Icon name="user" title="Normal Account" />}</Table.Cell>
+                <Table.Cell style={{ textAlign: "center" }}>
+                  {userRow.dateLockedUtc ? <Icon name="remove circle" color="red" title="Is Locked" /> : <Icon name="check circle" color="green" title="Not Locked" />}
+                </Table.Cell>
+                <Table.Cell>{userRow.name}</Table.Cell>
+                <Table.Cell>{userRow.emailAddress}</Table.Cell>
+                <Table.Cell>{userRow.dateLastActiveUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), Date.parse(userRow.dateLastActiveUtc)), true) : "(never)"}</Table.Cell>
+                <Table.Cell>{getFormattedTime(userRow.dateCreatedUtc)}</Table.Cell>
+                <Table.Cell textAlign="center">
+                  <Button
+                    size="mini"
+                    icon="delete"
+                    onClick={(e) => confirmDeleteOpen(e, userRow)}
+                    title={t("button.delete", "Delete")}
+                  />
+                </Table.Cell>
+              </Table.Row>
+            ))}
           </Table.Body>
         </Table>
         <div className="small" style={{ float: 'right' }}>{t("label.totalRecords", "Total records:")} {totalRecords}</div>
