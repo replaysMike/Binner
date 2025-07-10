@@ -661,7 +661,7 @@
       "createNewLabel": "Neues Etikett erstellen..."
     },
     "labelSetNameModal": {
-      "description": "Tragen Sie einen Namen für Ihr neues Etikett ein.",
+      "description": "Tragen Sie einen Namen für Ihr Etikett ein.",
       "labelName": "Etikettenname",
       "makeDefault": "Als Standard- Etikett festlegen?"
     }

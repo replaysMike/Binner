@@ -662,7 +662,7 @@
       "createNewLabel": "Créer une nouvelle étiquette..."
     },
     "labelSetNameModal": {
-      "description": "Entrez un nom pour votre nouvelle étiquette.",
+      "description": "Entrez un nom pour votre étiquette.",
       "labelName": "Nom de l'étiquette",
       "makeDefault": "Définir comme étiquette de pièce par défaut ?"
     }
