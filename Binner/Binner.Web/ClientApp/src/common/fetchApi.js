@@ -131,7 +131,19 @@ export const getErrors = (response) => {
 };
 
 /**
- * Get a list of errors as a single string
+ * Get a list of errors as a single string from an api errors response
+ * @param {*} response the response object
+ * @param {string} delimiter the delimiter to join the responses with. Default: {lf}
+ * @returns a string containing all the errors
+ */
+export const getExternalApiErrorsString = (response, delimiter = '\n') => {
+  if (!(response?.errors?.length > 0)) throw new Error("Provided response is not an error response!");
+  const errorString = response.errors.join(delimiter);
+  return errorString;
+};
+
+/**
+ * Get a list of exception errors as a single string
  * @param {*} response the response object
  * @returns a string containing all the errors
  */

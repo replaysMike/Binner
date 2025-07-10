@@ -121,6 +121,8 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Language, options => options.MapFrom(x => x.Locale.Language))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.MapFrom(x => x.EnableAutoPartSearch))
                 .ForMember(x => x.EnableDarkMode, options => options.MapFrom(x => x.EnableDarkMode))
+                
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ReverseMap();
 
             CreateMap<SettingsRequest, OrganizationConfiguration>()

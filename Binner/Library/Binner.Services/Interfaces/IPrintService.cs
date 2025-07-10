@@ -30,7 +30,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        Task<LabelTemplate> UpdateLabelTemplateAsync(LabelTemplate model);
+        Task<LabelTemplate?> UpdateLabelTemplateAsync(LabelTemplate model);
 
         /// <summary>
         /// Delete an existing label template

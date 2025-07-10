@@ -5,6 +5,7 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import customEvents from '../common/customEvents';
 import { Outlet } from "react-router-dom";
+import { toast } from "react-toastify";
 // components
 import ErrorModal from "../components/modals/ErrorModal";
 import LicenseErrorModal from "../components/modals/LicenseErrorModal";

@@ -49,6 +49,11 @@ namespace Binner.Data.Model
         /// </summary>
         public bool EnableDarkMode { get; set; }
 
+        /// <summary>
+        /// Sets the default label to use for printing part labels
+        /// </summary>
+        public int? DefaultPartLabelId { get; set; }
+
         #region Barcode
 
         /// <summary>

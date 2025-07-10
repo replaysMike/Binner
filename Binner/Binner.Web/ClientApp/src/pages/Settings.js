@@ -1440,7 +1440,7 @@ export const Settings = () => {
         </Form.Field>
       </Segment>
     </Segment>);
-  }, [integrationSettings]);
+  }, [integrationSettings, apiTestResults]);
 
   const customFieldSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>

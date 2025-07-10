@@ -121,7 +121,7 @@ export function LabelEditor(props) {
     zoomAdjust = 1;
 
     if (boxes.length > 0) {
-      if (!document.getElementById(boxes[0].id)){
+      if (!document.getElementById(boxes[0].id)) {
         // loaded boxes haven't been added to the canvas yet.
         // load preview in a little bit when the canvas items are added to the DOM
         setTimeout(async () => {
@@ -175,6 +175,7 @@ export function LabelEditor(props) {
     newValue.dpi = templateOption.dpi;
     newValue.margin = templateOption.margin;
     newValue.showBoundaries = templateOption.showBoundaries || false;
+    newValue.isEditable = templateOption.isEditable;
     if (templateOption.name === "Custom")
       newValue.name = "";
     else
@@ -487,7 +488,13 @@ export function LabelEditor(props) {
     setLabelSelectionModalIsOpen(false);
     if (label?.labelId > 0) {
       setLabel(label);
-      const template = JSON.parse(label.template);
+      let template = '';
+      try {
+        template = JSON.parse(label.template);
+      } catch (error) {
+        toast.error('Failed to parse label JSON template!');
+        console.error('Failed to parse label JSON template', error, label);
+      }
       setBoxes(template.boxes);
       const newLabelTemplate = { ...template.label, showBoundaries: false };
       setLabelTemplate(newLabelTemplate);
@@ -575,22 +582,22 @@ export function LabelEditor(props) {
   };
 
   const openDeleteLabel = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setConfirmDeleteLabelContent(
-        <p>
-          <Trans i18nKey="confirm.deleteLabel" name={label.name}>
-            Are you sure you want to delete label <b>{{ name: label.name }}</b>?
-          </Trans>
-          <br />
-          <br />
-          <Trans i18nKey="confirm.permanent">
-            This action is <i>permanent and cannot be recovered</i>.
-          </Trans>
-        </p>
-      );
-      setConfirmDeleteLabelIsOpen(true);
-    };
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteLabelContent(
+      <p>
+        <Trans i18nKey="confirm.deleteLabel" name={label.name}>
+          Are you sure you want to delete label <b>{{ name: label.name }}</b>?
+        </Trans>
+        <br />
+        <br />
+        <Trans i18nKey="confirm.permanent">
+          This action is <i>permanent and cannot be recovered</i>.
+        </Trans>
+      </p>
+    );
+    setConfirmDeleteLabelIsOpen(true);
+  };
 
   return (
     <div className="labelEditor">
@@ -656,21 +663,21 @@ export function LabelEditor(props) {
                     style={{ marginTop: "20px", border: '1px solid #000', backgroundColor: '#fff' }}
                   />} />
               )}
-              <div style={{textAlign: 'center', marginTop: '2px'}}>
+              <div style={{ textAlign: 'center', marginTop: '2px' }}>
                 <Popup
                   wide
                   position="bottom center"
                   content={<p>Manually refresh</p>}
                   trigger={<Button size="mini" style={{ padding: '6px 8px', width: '15%', margin: '1px' }} onClick={() => previewDebounced(boxes, labelTemplate)}><Icon name="refresh" color="blue" /></Button>}
                 />
-                <Popup 
+                <Popup
                   wide
                   position="bottom center"
                   content={<p>Open image in new tab</p>}
                   trigger={<Button size="mini" style={{ padding: '6px 8px', width: '15%' }} onClick={handleOpenPreviewImage}><Icon name="external" color="grey" /></Button>}
                 />
               </div>
-           </div>
+            </div>
           </div>
         </div>
         <div className="layout">
@@ -680,6 +687,7 @@ export function LabelEditor(props) {
             </div>
             <div className="wrapper" style={{ flex: "1" }} onClick={handleClearSelectedItem}>
               <div className="zoomContainer" style={{ transform: `scale(${zoomLevel})` }}>
+                <div style={{ fontSize: "0.7em", color: "#999" }}>{label.name}</div>
                 <LabelDropContainer
                   width={convertInchesToPixels(labelTemplate?.width || 0)}
                   height={convertInchesToPixels(labelTemplate?.height || 0)}
@@ -733,7 +741,7 @@ export function LabelEditor(props) {
                               wide
                               content="Delete this label design"
                               trigger={
-                                <Button size="mini" onClick={openDeleteLabel} disabled={labelTemplate.labelId === 0}>
+                                <Button size="mini" onClick={openDeleteLabel} disabled={label.isEditable === false || labelTemplate.labelId === 0}>
                                   <Icon name="trash" /> {t('button.delete', "Delete")}
                                 </Button>
                               }
@@ -751,7 +759,7 @@ export function LabelEditor(props) {
                               wide
                               content="Save your label design"
                               trigger={
-                                <Button size="mini" primary onClick={e => setLabelSetNameModalIsOpen(true)} disabled={!isDirty}>
+                                <Button size="mini" primary onClick={e => setLabelSetNameModalIsOpen(true)}>
                                   <Icon name="save" /> {t('button.save', "Save")}
                                 </Button>
                               }
@@ -936,7 +944,7 @@ export function LabelEditor(props) {
                             Website URLs are also permitted: https://localhost:8090/inventory/<i><b>&#123;</b>partNumber<b>&#125;</b>:<b>&#123;</b>partId<b>&#125;</b></i>
                             <br /><br />
                             2D Barcodes Default value:<br /><span className="example">&#91;&#41;&gt;<span className="separator">&#x241E;</span>9<span className="separator">&#x241D;</span>BV01<span className="separator">&#x241D;</span><b>&#123;</b>shortId<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>partNumber<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>location<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>binNumber<b>&#125;</b><span className="separator">&#x241D;</span><b>&#123;</b>binNumber2<b>&#125;</b><span className="separator">&#x241D;</span><span className="separator">&#x2404;</span></span>
-                            <br/>
+                            <br />
                             1D Barcodes Default value:<br /><span className="example"><b>&#123;</b>partNumber<b>&#125;</b></span>
                           </p>}
                           trigger={<Input

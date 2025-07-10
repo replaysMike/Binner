@@ -28,7 +28,7 @@ namespace Binner.Data.Model
         public string Template { get; set; } = null!;
 
         /// <summary>
-        /// If set to true, this record is used for the part label template
+        /// For system templates only, if set to true, this record is used for the part label template
         /// </summary>
         public bool IsPartLabelTemplate { get; set; }
 
