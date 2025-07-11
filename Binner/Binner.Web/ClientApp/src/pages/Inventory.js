@@ -1292,6 +1292,7 @@ export function Inventory({ partNumber = "", ...rest }) {
 
   const handleChooseAlternatePart = (e, part) => {
     setPartFromMetadata(metadataParts, part, true);
+    setIsDirty(true);
   };
 
   const handleBulkBarcodeScan = (e) => {
