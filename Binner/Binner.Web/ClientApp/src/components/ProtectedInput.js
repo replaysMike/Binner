@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo } from "react";
-import { Form, Icon } from "semantic-ui-react";
+import { Form, Icon, Popup } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { v4 as uuidv4 } from 'uuid';
 import { Events } from "../common/events";
@@ -9,7 +9,7 @@ import "./ProtectedInput.css";
  * A form text input that is protected against barcode input.
  * When barcode input is received, the control is masked out and content is replaced and cleared after a successful barcode scan.
  */
-export default function ProtectedInput({ clearOnScan = true, allowEnter = false, hideIcon = false, hideClearIcon = false, onClear, onIconClick, onBarcodeReadStarted, onBarcodeReadCancelled, onBarcodeReadReceived, ...rest }) {
+export default function ProtectedInput({ clearOnScan = true, allowEnter = false, hideIcon = false, hideClearIcon = false, iconText, onClear, onIconClick, onBarcodeReadStarted, onBarcodeReadCancelled, onBarcodeReadReceived, ...rest }) {
 	const IsDebug = true;
 	const ScanSuccessClassRemovalMs = 2100;
 	const DefaultProtectedClassName = "protectedInput";
@@ -166,7 +166,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 
 		return <Form.Input { ...propsToReturn } id={id}>
 			{children}
-			{!hideClearIcon && <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: propsToReturn.iconPosition !== "left" && getClearIconPosition(), left: 'unset', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />}
+      {!hideClearIcon && <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: propsToReturn.iconPosition !== "left" && getClearIconPosition(), left: 'unset', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />}
 			{!hideIcon && <Icon name="barcode" style={{right: propsToReturn.iconPosition !== "left" && propsForChild.icon ? '25px' : '0', left: 'unset'}} />}
 			</Form.Input>;
 	}
@@ -174,7 +174,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
   // no children, render directly
 	return <Form.Input { ...propsToReturn } id={id}>
 						<input ref={inputRef} className={DefaultProtectedClassName} />
-						{propsForChild.icon && <Icon name={propsForChild.icon} onClick={handleIconClick} style={{cursor: 'pointer', pointerEvents: 'all'}} />}
+    {propsForChild.icon && (iconText ? <Popup wide positionFixed hideOnScroll content={<p>{iconText}</p>} trigger={<Icon name={propsForChild.icon} onClick={handleIconClick} style={{ cursor: 'pointer', pointerEvents: 'all' }} />} /> : <Icon name={propsForChild.icon} onClick={handleIconClick} style={{cursor: 'pointer', pointerEvents: 'all'}} />)}
 						{!hideClearIcon && <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: propsToReturn.iconPosition !== "left" && getClearIconPosition(), left: 'unset', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />}
 						{!hideIcon && <Icon name="barcode" style={{right: propsToReturn.iconPosition !== "left" && propsForChild.icon ? '25px' : '0', left: 'unset'}} />}
 					</Form.Input>;
@@ -198,6 +198,8 @@ ProtectedInput.propTypes = {
 	/** Event triggered when barcode reading has completed */
 	onBarcodeReadReceived: PropTypes.func,
   /** Event triggered when the icon is clicked */
-  onIconClick: PropTypes.func
+  onIconClick: PropTypes.func,
+  /** Text to show when hovering icon */
+  iconText: PropTypes.object
 	/** !!! Note: All new props added must be excluded above. See propsToExclude */
 };

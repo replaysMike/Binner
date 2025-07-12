@@ -1268,7 +1268,8 @@ INNER JOIN (
                 .Include(x => x.PartSuppliers)
                 .Include(x => x.PartParametrics)
                 .Include(x => x.PartModels)
-                .FirstOrDefaultAsync(x => x.PartNumber == partNumber && x.OrganizationId == userContext.OrganizationId);
+                // Here we are leveraging LIKE to gain case insensitive equals, as providers such as Sqlite use case sensitive collation
+                .FirstOrDefaultAsync(x => EF.Functions.Like(x.PartNumber, $"{partNumber}") && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return null;
             var model = _mapper.Map<Part?>(entity);

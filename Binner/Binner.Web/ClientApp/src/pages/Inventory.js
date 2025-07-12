@@ -29,7 +29,7 @@ import { DuplicatePartModal } from "../components/modals/DuplicatePartModal";
 import { fetchApi } from "../common/fetchApi";
 import { getLocalData, setLocalData, removeLocalData } from "../common/storage";
 import { addMinutes } from "../common/datetime";
-import { formatNumber } from "../common/Utils";
+import { formatNumber, equals } from "../common/Utils";
 import { getPartTypeId } from "../common/partTypes";
 import { getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
@@ -142,6 +142,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const [inputPartNumber, setInputPartNumber] = useState(rest.params.partNumberToAdd || "");
+  const [suggestedPartNumber, setSuggestedPartNumber] = useState(null);
   const [infoResponse, setInfoResponse] = useState({});
   const [parts, setParts] = useState([]);
   const [part, setPart] = useState(defaultPart);
@@ -294,10 +295,16 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPartMetadataErrors([]);
     try {
       const includeInventorySearch = !pageHasParameters;
-      const { data, existsInInventory } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
-      if (existsInInventory) setPartExistsInInventory(true);
+      const { data, existsInInventory, inventoryPart } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
+      if (existsInInventory) {
+        setPartExistsInInventory(true);
+        setSuggestedPartNumber(inventoryPart);
+      } else {
+        setPartExistsInInventory(false);
+        setSuggestedPartNumber(null);
+      }
 
-      processPartMetadataResponse(data, localPart.storedFiles, !pageHasParameters, false);
+      processPartMetadataResponse(data, localPart.storedFiles, !pageHasParameters, true);
       setLoadingPartMetadata(false);
       return { part: localPart, exists: existsInInventory };
     } catch (ex) {
@@ -507,7 +514,6 @@ export function Inventory({ partNumber = "", ...rest }) {
       const response = await fetchApi(`/api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
         signal: Inventory.doFetchPartMetadataController.signal
       });
-
       const data = response.data;
       if (data.requiresAuthentication) {
         // notify and redirect for authentication
@@ -521,24 +527,26 @@ export function Inventory({ partNumber = "", ...rest }) {
           setAuthorizationApiName(data.apiName);
           setAuthorizationUrl(data.redirectUrl);
           setConfirmAuthIsOpen(true);
-          return { data: null, existsInInventory: false };
+          return { data: null, existsInInventory: false, inventoryPart: null };
         }
       }
 
       let existsInInventory = false;
+      let existingInventoryPartNumber = null;
       if (includeInventorySearch) {
         // also check inventory for this part
-        const { exists } = await doInventoryPartSearch(partNumber);
-        existsInInventory = exists;
+        const inventoryResponse = await doInventoryPartSearch(partNumber);
+        existsInInventory = inventoryResponse.exists;
+        existingInventoryPartNumber = inventoryResponse.data?.partNumber;
       }
 
       // let caller handle errors
-      return { data, existsInInventory };
+      return { data, existsInInventory, inventoryPart: existingInventoryPartNumber };
 
     } catch (ex) {
       if (ex?.name === "AbortError") {
         // Continuation logic has already been skipped, so return normally
-        return { data: null, existsInInventory: false };
+        return { data: null, existsInInventory: false, existingInventoryPart: null };
       } else {
         console.error("Exception", ex);
       }
@@ -610,7 +618,12 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
   };
 
-  const searchDebounced = useMemo(() => debounce(fetchPartMetadataAndInventory, SearchDebounceTimeMs), [pageHasParameters]);
+  const doSearchDebounced = (input, localPart) => {
+    // only autosearch if we are adding inventory
+    if (!isEditing && systemSettings.enableAutoPartSearch) fetchPartMetadataAndInventory(input, localPart);
+  };
+
+  const searchDebounced = useMemo(() => debounce(doSearchDebounced, SearchDebounceTimeMs), [pageHasParameters, isEditing]);
 
   const validateExistingBarcodeScan = async (input) => {
     Inventory.validateExistingBarcodeScanController?.abort();
@@ -715,9 +728,14 @@ export function Inventory({ partNumber = "", ...rest }) {
         cleanPartNumber = input.value?.partNumber || input.value?.mfgPartNumber;
       }
     } else {
+      console.debug(`processing ${input.type}`, cleanPartNumber);
       // code128 are 1-dimensional codes that only contain a single alphanumeric string, usually a part number
       cleanPartNumber = input.value?.partNumber || input.value?.mfgPartNumber || input.value;
-      console.debug(`processing ${input.type}`, cleanPartNumber);
+      if (typeof cleanPartNumber !== 'string') {
+        // some kind of object was detected, skip it
+        console.debug(`barcode was returned as object type but expected string, skipping!`, input, cleanPartNumber);
+        return;
+      }
     }
 
     // if we didn't receive a code we can understand, ignore it
@@ -844,7 +862,9 @@ export function Inventory({ partNumber = "", ...rest }) {
           if (cleanPartNumber) {
             setPartMetadataIsSubscribed(false);
             setPartMetadataErrors([]);
-            if (!isEditing) setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable }, true);
+            if (!isEditing) {
+              setPartFromMetadata(metadataParts, { ...partInfo, quantity: partInfo.quantityAvailable }, true);
+            }
             if (viewPreferences.rememberLast) updateViewPreferences({ lastQuantity: partInfo.quantityAvailable });
 
             // also run a search to get datasheets/images
@@ -1110,28 +1130,36 @@ export function Inventory({ partNumber = "", ...rest }) {
       lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? DefaultLowStockThreshold : viewPreferences.lowStockThreshold || DefaultLowStockThreshold,
       partTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultPartType : viewPreferences.lastPartTypeId || DefaultPartType,
       mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultMountingTypeId : viewPreferences.lastMountingTypeId || DefaultMountingTypeId,
-      packageType: "",
-      keywords: "",
+      location: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastLocation + "",
+      binNumber: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber + "",
+      binNumber2: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber2 + "",
+      // metadata
+      cost: "",
+      manufacturer: "",
+      manufacturerPartNumber: "",
       description: "",
+      keywords: "",
+      packageType: "",
       datasheetUrl: "",
+      productUrl: "",
+      imageUrl: "",
       digiKeyPartNumber: "",
       mouserPartNumber: "",
       arrowPartNumber: "",
       tmePartNumber: "",
-      location: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastLocation + "",
-      binNumber: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber + "",
-      binNumber2: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastBinNumber2 + "",
-      cost: "",
+      leadTime: "",
+      baseProductNumber: "",
+      series: "",
+      productStatus: "",
+      otherNames: "",
+      moistureSensitivityLevel: "",
       lowestCostSupplier: "",
       lowestCostSupplierUrl: "",
-      productUrl: "",
-      manufacturer: "",
-      manufacturerPartNumber: "",
-      imageUrl: "",
       supplier: "",
       supplierPartNumber: "",
       symbolName: "",
       footprintName: "",
+      // private part info
       extensionValue1: "",
       extensionValue2: "",
       customFields: _.filter(settings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Inventory.value)?.map((field) => ({ field: field.name, value: ''})) || []
@@ -1167,6 +1195,38 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
   };
 
+  const clearMetadata = () => {
+    const clearedPart = {
+      ...part,
+      cost: "",
+      manufacturer: "",
+      manufacturerPartNumber: "",
+      description: "",
+      keywords: "",
+      packageType: "",
+      datasheetUrl: "",
+      productUrl: "",
+      imageUrl: "",
+      digiKeyPartNumber: "",
+      mouserPartNumber: "",
+      arrowPartNumber: "",
+      tmePartNumber: "",
+      leadTime: "",
+      baseProductNumber: "",
+      series: "",
+      productStatus: "",
+      otherNames: "",
+      moistureSensitivityLevel: "",
+      lowestCostSupplier: "",
+      lowestCostSupplierUrl: "",
+      supplier: "",
+      supplierPartNumber: "",
+      symbolName: "",
+      footprintName: "",
+    };
+    setPart(clearedPart);
+  };
+
   const updateNumberPicker = (e) => {
     switch(e.name) {
       case 'quantity':
@@ -1199,10 +1259,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataErrors([]);
     let searchPartNumber = control.value || '';
-
     if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
       searchPartNumber = control.value.replace("\t", "");
-      await searchDebounced(searchPartNumber, part, partTypes);
+      await searchDebounced(searchPartNumber, part);
       setIsDirty(true);
     }
 
@@ -1210,6 +1269,18 @@ export function Inventory({ partNumber = "", ...rest }) {
 
     // wont work unless we update render
     //setRenderIsDirty(!renderIsDirty);
+  };
+
+  const doManualSearch = async (e, control) => {
+    // perform a manual search via a user interaction
+    setPartMetadataIsSubscribed(false);
+    setPartMetadataErrors([]);
+    let searchPartNumber = control.value || '';
+    if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
+      searchPartNumber = control.value.replace("\t", "");
+      fetchPartMetadataAndInventory(searchPartNumber, part);
+      setIsDirty(true);
+    }
   };
 
   const handlePartTypeChange = (e, partType, referencedPart) => {
@@ -1371,7 +1442,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     e.stopPropagation();
     setLoadingPartMetadata(true);
     setConfirmRefreshPartIsOpen(false);
-    const { data } = await doFetchPartMetadata(part.partNumber, part, false);
+    const { data } = await doFetchPartMetadata(inputPartNumber, part, false);
     processPartMetadataResponse(data, part.storedFiles, true, true);
     setLoadingPartMetadata(false);
     setIsDirty(true);
@@ -1516,17 +1587,18 @@ export function Inventory({ partNumber = "", ...rest }) {
                           value={inputPartNumber || ""}
                           name="inputPartNumber"
                           icon="search"
+                          iconText="Search for part"
                           id="inputPartNumber"
                           hideIcon
                           clearOnScan={false}
                           onChange={handleInputPartNumberChange}
-                          onIconClick={handleInputPartNumberChange}
+                          onIconClick={doManualSearch}
                           onClear={handleInputPartNumberClear}
                           onBarcodeReadStarted={(e) => { window.requestAnimationFrame(() => { disableRendering.current = true; }); searchDebounced.cancel(); }}
                           onBarcodeReadCancelled={(e) => { window.requestAnimationFrame(() => { disableRendering.current = false; }); searchDebounced.cancel(); }}
                           onBarcodeReadReceived={(e) => { window.requestAnimationFrame(() => { disableRendering.current = false; }); searchDebounced.cancel(); }}
                         />
-                        {!isEditing && !partExistsInInventory && part.partNumber && part.partNumber !== inputPartNumber &&
+                        {!isEditing && !partExistsInInventory && part.partNumber && !equals(part.partNumber, inputPartNumber, true) &&
                           <div className="suggested-part">
                             {<span>{t('page.inventory.suggestedPart')}: <button className="link-button" onClick={e => handleSetSuggestedPartNumber(e, part.partNumber)}>{part.partNumber}</button></span>}
                           </div>}
@@ -1534,7 +1606,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                           {!isEditing && partExistsInInventory &&
                             <span><Icon name="warning sign" color="yellow" />
                               <Trans i18nKey="page.inventory.partExists">
-                                This <Link to={`/inventory/${encodeURIComponent(inputPartNumber)}`}>part</Link> <span>already exists</span> in your inventory.
+                                This <Link to={`/inventory/${encodeURIComponent(suggestedPartNumber)}`}>part</Link> <span>already exists</span> in your inventory.
                               </Trans>
                             </span>}
                         </div>
@@ -1565,7 +1637,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                     </Form.Group>
 
                     {!disableRendering.current && <>
-                      <Form.Group style={{alignItems: 'start', flexDirection: 'row'}}>
+                      <Form.Group style={{alignItems: 'start', flexDirection: 'row', marginLeft: '0px'}}>
                         <div style={{position: 'relative', flex: '0 1' }}>
                           <Form.Field
                             control={NumberPicker}
@@ -1583,7 +1655,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                           />
                           <div className="quantityAdded">{quantityAdded > 0 ? <div className="suggested-part"><Icon name="plus" />{quantityAdded} <span>qty added</span></div> : (<></>)}</div>
                         </div>
-                        <div style={{ position: 'relative', flex: '0 1' }}>
+                        <div style={{ position: 'relative', flex: '0 1', marginLeft: '10px' }}>
                           <Form.Field
                             control={NumberPicker}
                             label={t('label.lowStock', "Low Stock")}
@@ -1602,7 +1674,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                           <ClearableInput
                             label={t('label.value', "Value")}
                             placeholder="4.7k"
-                            width={3}
+                            width={4}
                             value={part.value || ""}
                             onChange={handleChange}
                             name="value"
@@ -1660,7 +1732,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                     </Segment>}
                   </div>
 
-                  <Form.Field inline>
+                  <Form.Field inline style={{marginTop: '10px'}}>
                     {!isEditing &&
                       <Popup
                         wide="very"
@@ -1681,9 +1753,13 @@ export function Inventory({ partNumber = "", ...rest }) {
                       </Button>
                       <Button.Or text={t('button.or', "Or")} />
                       <Popup
+                        wide
                         position="right center"
                         content={t('page.inventory.popup.clear', "Clear the form to default values")}
-                        trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
+                        trigger={<Button type="button" style={{ width: "120px" }} onClick={clearForm}>
+                          <Icon name="erase" />
+                          {t('button.clear', "Clear")}
+                        </Button>}
                       />
                     </Button.Group>
                     {part && part.partId > 0 && (
@@ -1702,9 +1778,13 @@ export function Inventory({ partNumber = "", ...rest }) {
                       </Button>
                       <Button.Or text={t('button.or', "Or")} />
                       <Popup
+                        wide
                         position="right center"
                         content={t('page.inventory.popup.clear', "Clear the form to default values")}
-                        trigger={<Button type="button" style={{ width: "100px" }} onClick={clearForm}>{t('button.clear', "Clear")}</Button>}
+                        trigger={<Button type="button" style={{ width: "130px" }} onClick={clearForm}>
+                          <Icon name="erase" />
+                          {t('button.clear', "Clear")}
+                          </Button>}
                       />
                     </Button.Group>
                   </div>
@@ -1723,13 +1803,32 @@ export function Inventory({ partNumber = "", ...rest }) {
                       <div style={{position: 'absolute', right: '-10px', top: '-10px', width: '500px', textAlign: 'right'}}>
                         <Popup
                           hideOnScroll
+                          wide
+                          content={t('page.inventory.popup.clearMetadata', "Clear the metadata values for the part")}
+                          trigger={
+                            <Button 
+                              type="button" 
+                              style={{ fontSize: '0.9em', width: '100px', padding: '0.68em 1.5em', position: 'relative' }}
+                              disabled={!part.partNumber} 
+                              onClick={clearMetadata}>
+                                <Icon name="erase" color="blue" />
+                                {t('button.clear', "Clear")}
+                            </Button>
+                          }
+                        />
+                        <Popup
+                          hideOnScroll
                           disabled={viewPreferences.helpDisabled}
                           onOpen={disableHelp}
                           content={t('page.inventory.popup.apiRefresh', "Refresh the part information from external APIs. All API provided fields will be overwritten.")}
                           trigger={
-                            <Button type="button" style={{ fontSize: '0.9em', width: '115px', padding: '0.68em 1.5em', position: 'relative' }} disabled={!part.partNumber} onClick={openRefreshPart}>
-                              <Icon name="refresh" color="blue" />
-                              {t('page.inventory.refresh', "Refresh")}
+                            <Button 
+                              type="button" 
+                              style={{ fontSize: '0.9em', width: '115px', padding: '0.68em 1.5em', position: 'relative' }} 
+                              disabled={!part.partNumber} 
+                              onClick={openRefreshPart}>
+                                <Icon name="refresh" color="blue" />
+                                {t('page.inventory.refresh', "Refresh")}
                             </Button>
                           }
                         />                        
@@ -1837,15 +1936,15 @@ export function Inventory({ partNumber = "", ...rest }) {
                       <label>&nbsp;</label>
                       <Popup
                         content={<p>{t('page.inventory.popup.technicalSpecs', "View technical specs")}</p>}
-                        trigger={<Button type="button" secondary onClick={() => setPartParametricsModalIsOpen(true)} disabled={!(part?.parametrics?.length > 0)}><TextSnippet className="technical-specs" /> {t('button.specs', "Specs")}</Button>}
+                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartParametricsModalIsOpen(true)}><TextSnippet className="technical-specs" /> {t('button.specs', "Specs")} ({part?.parametrics?.length ?? 0})</Button>}
                       />
                       <Popup
                         content={<p>{t('page.inventory.popup.compliance', "View compliance information")}</p>}
-                        trigger={<Button type="button" secondary onClick={() => setPartComplianceModalIsOpen(true)}><BeenhereIcon className="compliance" /> {t('button.compliance', "Compliance")}</Button>}
+                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartComplianceModalIsOpen(true)}><BeenhereIcon className="compliance" /> {t('button.compliance', "Compliance")}</Button>}
                       />
                       <Popup
                         content={<p>{t('page.inventory.popup.cadModels', "View CAD Models available for this part")}</p>}
-                        trigger={<Button type="button" secondary onClick={() => setPartModelsModalIsOpen(true)} disabled={!(part?.models?.length > 0)}><ViewInArIcon className="cadModels" /> {t('button.cadModels', "CAD Models")}</Button>}
+                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartModelsModalIsOpen(true)}><ViewInArIcon className="cadModels" /> {t('button.cadModels', "CAD Models")} ({part?.models?.length ?? 0})</Button>}
                       />
                     </Form.Field>
                   </Form.Group>

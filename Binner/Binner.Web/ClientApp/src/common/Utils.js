@@ -139,3 +139,18 @@ export const generatePassword = () => {
 export const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+/**
+ * Returns true of strings are equal, with optional case insensitive support
+ * @param {string} a string a
+ * @param {string} b string b
+ * @param {boolean} caseInsensitive True to perform a case insensitive compare
+ * @returns true if strings are the same
+ */
+export const equals = (a, b, caseInsensitive = false) => {
+  if (caseInsensitive === true)
+    return typeof a === 'string' && typeof b === 'string'
+      ? a.localeCompare(b, undefined, { sensitivity: 'accent' }) === 0
+      : a === b;
+  return a === b;
+};
