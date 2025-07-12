@@ -17,6 +17,8 @@ import { FormatShortDate } from "../common/datetime";
 import { Clipboard } from "../components/Clipboard";
 import { UserTokenType } from "../common/UserTokenType";
 import { GetTypeName } from "../common/Types";
+import { getUserAccount, setUserAccount } from "../common/authentication";
+
 import _ from "underscore";
 
 export function Account(props) {
@@ -26,6 +28,7 @@ export function Account(props) {
   const [account, setAccount] = useState({
     name: "",
     emailAddress: "",
+    maxWidth: 50,
     partsInventoryCount: 0,
     partTypesCount: 0,
     subscriptions: [],
@@ -65,8 +68,18 @@ export function Account(props) {
     function fetchUser() {
       setLoading(true);
       fetchApi(`/api/account`).then((response) => {
-        const { data } = response;
+        let { data } = response;
         if (data) {
+          // add the maxWidth from the cookie, if it exists
+          const cookie = getUserAccount();
+          
+          if (cookie && cookie.maxWidth) {
+            data.maxWidth = cookie.maxWidth.replace('%', '');
+          }
+          else {
+            data.maxWidth = "50"; // default value
+          }          
+          
           setAccount(data);
           setLoading(false);
         }
@@ -75,6 +88,15 @@ export function Account(props) {
   }, []);
 
   const updateAccount = (e) => {
+    let userAccount = getUserAccount();
+    const percent = account.maxWidth + "%";
+
+    // only update the maxWidth if it has changed
+    if (userAccount.maxWidth !== percent) {
+        userAccount.maxWidth = percent;
+        setUserAccount(userAccount);
+    }
+
     if (acceptedFiles && acceptedFiles.length > 0) {
       const formData = new FormData();
       formData.append("file", acceptedFiles[0], acceptedFiles[0].name);
@@ -133,6 +155,16 @@ export function Account(props) {
     account[control.name] = control.value;
     setAccount({ ...account });
     setIsDirty(true);
+  };
+
+  const handleWidthChange = (e, control) => {
+    // limit the range to 0-100%
+    if (control.value < 0 || control.value > 100) {
+        e.preventDefault();
+    }
+    else {
+        handleChange(e, control);
+    }
   };
 
   const handlePasswordChange = (e, control) => {
@@ -341,6 +373,18 @@ export function Account(props) {
                   autoComplete="phone"
                 >
                   <Icon name="phone" />
+                  <input />
+                </Form.Input>
+                <Form.Input
+                    type="number" 
+                    label="Maximum page width (%)" 
+                    required 
+                    placeholder="50" 
+                    value={account.maxWidth || ""} 
+                    name="maxWidth" 
+                    onChange={handleWidthChange} 
+                    autoComplete="off"
+                >
                   <input />
                 </Form.Input>
               </Grid.Column>
