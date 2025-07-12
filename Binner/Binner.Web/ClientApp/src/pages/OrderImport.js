@@ -598,17 +598,15 @@ export function OrderImport(props) {
           <Form.Dropdown label="Supplier" selection value={order.supplier} options={supplierOptions} onChange={handleChange} name="supplier" />
           <Popup
             position="bottom left"
-            wide
+            wide="very"
             content={
               <div>
                 {t('page.orderImport.enterOrderNumber', "Enter your order number for the supplier.")}
 
                 <br />
                 <br />
-                <Trans i18nKey="page.orderImport.instructions">
-                  For <b>DigiKey</b> orders, this is the <i>Sales Order #</i>.<br />
-                  For <b>Mouser</b> orders, this is the <i>Web Order #</i>.<br />
-                  For <b>Arrow</b> orders, this is the <i>Order Number</i>.
+                <Trans i18nKey={`page.orderImport.instructions${order.supplier}`}>
+                  On your DigiKey order this will be called the Sales Order #
                 </Trans>
               </div>
             }
