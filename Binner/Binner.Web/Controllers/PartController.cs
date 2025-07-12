@@ -540,7 +540,16 @@ namespace Binner.Web.Controllers
         {
             try
             {
-                if (!string.IsNullOrEmpty(keywords))
+                if (!string.IsNullOrEmpty(keywords) && exactMatch)
+                {
+                    // search by exact part name match
+                    var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = keywords });
+                    if (part == null) return NotFound();
+
+                    var partsResponses = _mapper.Map<ICollection<Part>, ICollection<PartResponse>>(new List<Part> { part });
+                    // return only one result
+                    return Ok(partsResponses.First());
+                } else if (!string.IsNullOrEmpty(keywords))
                 {
                     // search by keyword, multiple results
                     var parts = await _partService.FindPartsAsync(keywords);
@@ -563,16 +572,7 @@ namespace Binner.Web.Controllers
                     var partsResponses = _mapper.Map<ICollection<Part>, ICollection<PartResponse>>(new List<Part> { part });
                     return Ok(partsResponses);
                 }
-                else if (exactMatch)
-                {
-                    // search by exact part name match
-                    var part = await _partService.GetPartAsync(new GetPartRequest { PartNumber = keywords });
-                    if (part == null) return NotFound();
-
-                    var partsResponses = _mapper.Map<ICollection<Part>, ICollection<PartResponse>>(new List<Part> { part });
-                    // return only one result
-                    return Ok(partsResponses.First());
-                }
+                
             }
             catch (UserContextUnauthorizedException ex)
             {

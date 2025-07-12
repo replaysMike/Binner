@@ -292,3 +292,7 @@
 .inventory .ui.secondary.segment.part-location {
   padding-top: 5px;
 }
+
+.inventory .search.icon:hover {
+  color: rgb(8, 114, 212);
+}

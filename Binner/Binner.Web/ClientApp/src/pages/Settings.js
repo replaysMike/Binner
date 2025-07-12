@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
-import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table, Tab, TabPane } from "semantic-ui-react";
+import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table, Tab, TabPane, Checkbox } from "semantic-ui-react";
 import ClearableInput from "../components/ClearableInput";
 import { BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown, GetTypeName } from "../common/Types";
 import { isAdmin } from "../common/authentication";
@@ -95,6 +95,8 @@ export const Settings = () => {
     maxCacheItems: 1024,
     cacheAbsoluteExpirationMinutes: 0,
     cacheSlidingExpirationMinutes: 30,
+    enableAutoPartSearch: true,
+    enableDarkMode: false
   });
   const [integrationSettings, setIntegrationSettings] = useState({
     binner: {
@@ -173,10 +175,10 @@ export const Settings = () => {
         const { data } = response;
         setLoading(false);
         // break out data into multiple state variables to optimize render performance
-        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes } = data;
+        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode } = data;
         const language = data.locale.language;
         const currency = data.locale.currency;
-        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes });
+        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode });
         const { binner, digikey, mouser, arrow, octopart, tme } = data;
         setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme });
         setPrinterSettings({ printer: data.printer });
@@ -311,15 +313,14 @@ export const Settings = () => {
   };
 
   const setControlValue = (setting, name, control) => {
-    if (control.name === `${name}Enabled` || control.name === `${name}IsDebug` || control.name === `${name}ResolveExternalLinks`) {
-      // for bool dropdowns, they don't advertise type!
-      setting[getControlInstanceName(control, name)] = control.value > 0 ? true : false;
-      return;
-    }
     switch (control.type) {
       case "checkbox":
         // type is a checkbox, we only care about the checked value
         setting[getControlInstanceName(control, name)] = control.checked;
+        break;
+      case "bool-dropdown":
+        // bool dropdowns
+        setting[getControlInstanceName(control, name)] = control.value > 0 ? true : false;
         break;
       default:
         // this is a text input or any other value type control
@@ -625,6 +626,50 @@ export const Settings = () => {
         />
       </Form.Field>
 
+      <Form.Group>
+        <Form.Field>
+          <label>{t('label.enableAutoSearch', "Enable Auto Search")}</label>
+          <Popup
+            wide
+            position="top left"
+            offset={[0, 20]}
+            hoverable
+            content={<Trans i18nKey="page.settings.popup.enableAutoPartSearch">
+              Select this option to enable auto searching of part details when adding a new part.
+            </Trans>}
+            trigger={
+              <Form.Checkbox 
+                name="enableAutoPartSearch"
+                type="checkbox"
+                toggle
+                checked={globalSettings.enableAutoPartSearch}
+                onChange={(e, control) => handleChange(e, control, 'global')}
+              />
+            }
+          />
+        </Form.Field>
+        <Form.Field>
+          <label>{t('label.enableDarkMode', "Enable Dark Mode")}</label>
+          <Popup
+            wide
+            position="top left"
+            offset={[0, 20]}
+            hoverable
+            content={<Trans i18nKey="page.settings.popup.enableDarkMode">
+              Select this option to enable dark mode across all sessions.
+            </Trans>}
+            trigger={
+              <Form.Checkbox
+                name="enableDarkMode"
+                type="checkbox"
+                toggle
+                checked={globalSettings.enableDarkMode}
+                onChange={(e, control) => handleChange(e, control, 'global')}
+              />
+            }
+          />
+        </Form.Field>
+      </Form.Group>
     </Segment>);
   }, [globalSettings]);
 
@@ -775,6 +820,7 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="swarmEnabled"
+                type="bool-dropdown"
                 placeholder="Enabled"
                 selection
                 value={integrationSettings.binner.enabled ? 1 : 0}
@@ -865,6 +911,7 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="digikeyEnabled"
+                type="bool-dropdown"
                 placeholder="Enabled"
                 selection
                 value={integrationSettings.digikey.enabled ? 1 : 0}
@@ -1064,6 +1111,7 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="mouserEnabled"
+                type="bool-dropdown"
                 placeholder="Enabled"
                 selection
                 value={integrationSettings.mouser.enabled ? 1 : 0}
@@ -1167,6 +1215,7 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="arrowEnabled"
+                type="bool-dropdown"
                 placeholder="Disabled"
                 selection
                 value={integrationSettings.arrow.enabled ? 1 : 0}
@@ -1257,6 +1306,7 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="octopartEnabled"
+                type="bool-dropdown"
                 placeholder="Disabled"
                 selection
                 value={integrationSettings.octopart.enabled ? 1 : 0}
@@ -1328,6 +1378,7 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="tmeEnabled"
+                type="bool-dropdown"
                 placeholder="Disabled"
                 selection
                 value={integrationSettings.tme.enabled ? 1 : 0}
@@ -1417,6 +1468,7 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="tmeResolveExternalLinks"
+                type="bool-dropdown"
                 placeholder="Disabled"
                 selection
                 value={integrationSettings.tme.resolveExternalLinks ? 1 : 0}
@@ -1682,6 +1734,7 @@ export const Settings = () => {
           trigger={
             <Dropdown
               name="barcodeIsDebug"
+              type="bool-dropdown"
               placeholder="Disabled"
               selection
               value={barcodeSettings.barcode.isDebug ? 1 : 0}
@@ -1779,7 +1832,8 @@ export const Settings = () => {
 
   const tabPanes = [
     {
-      menuItem: t('page.settings.mySettings', "My Settings"), render: () => 
+      menuItem: { key: 'mysettings', icon: 'user', content: t('page.settings.mySettings', "My Settings") },
+      render: () => 
         <TabPane style={{ padding: '20px' }}>
           <Trans i18nKey="page.settings.mySettingsDescription">
             Configure settings associated with your user account.
@@ -1792,17 +1846,18 @@ export const Settings = () => {
     },
     isAdmin() &&
       { 
-      menuItem: t('page.settings.orgSettings', "Organization Settings"), render: () => 
-        <TabPane style={{ padding: '20px' }}>
-          <Trans i18nKey="page.settings.orgSettingsDescription">
-            Configure settings common to all users in your organization.
-          </Trans>
-          <hr />
-          {organizationSettingsMemoized}
-          {integrationSettingsMemoized}
-          {customFieldSettingsMemoized}
-        </TabPane> 
-      },
+        menuItem: { key: 'orgSettings', icon: 'building', content: t('page.settings.orgSettings', "Organization Settings") },
+        render: () => 
+          <TabPane style={{ padding: '20px' }}>
+            <Trans i18nKey="page.settings.orgSettingsDescription">
+              Configure settings common to all users in your organization.
+            </Trans>
+            <hr />
+            {organizationSettingsMemoized}
+            {integrationSettingsMemoized}
+            {customFieldSettingsMemoized}
+          </TabPane> 
+        },
   ];
 
   return (
