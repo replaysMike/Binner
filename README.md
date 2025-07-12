@@ -31,6 +31,13 @@ Binner is a free open-source parts inventory tracking system you can run locally
 * KiCad HTTP Library support
 * Supports adding custom fields to your data
 
+## Limitations
+
+We try to include as many features as possible in the free open-source version. 
+In order to keep active development going additional features and limitations can be unlocked with a [paid license](https://binner.io/signup).
+
+* Max 3 Users (additional users can be unlocked with a subscription)
+
 ## Planned Upcoming Features for 2025
 - [x] Dedicated datasheet repository (Q1)
 - [x] Schematics repository for example circuits per part (Q1)

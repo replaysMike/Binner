@@ -163,8 +163,8 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       // normal character
       let char = key.isFake ? key.key : String.fromCharCode(96 <= key.keyCode && key.keyCode <= 105 ? key.keyCode - 48 : key.keyCode);
 
-      if (key.shiftKey) char = key.key;
-      if ((key.keyCode >= 186 && key.keyCode <= 192) || (key.keyCode >= 219 && key.keyCode <= 222)) char = key.key;
+      if (key.shiftKey) char = key.key; 
+      if ((key.keyCode >= 186 && key.keyCode <= 192) || (key.keyCode >= 219 && key.keyCode <= 222) || (key.keyCode === 173)) char = key.key;
       if (
         key.isFake ||
         key.keyCode === 13 ||
@@ -172,7 +172,8 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
         key.keyCode === 9 ||
         (key.keyCode >= 48 && key.keyCode <= 90) ||
         (key.keyCode >= 107 && key.keyCode <= 111) ||
-        (key.keyCode >= 186 && key.keyCode <= 222)
+        (key.keyCode >= 186 && key.keyCode <= 222) ||
+        key.keyCode === 173
       ) {
         str += char;
         if (!key.altKey && !key.ctrlKey && key.keyCode !== 13 && key.keyCode !== 10 && key.keyCode !== 9)

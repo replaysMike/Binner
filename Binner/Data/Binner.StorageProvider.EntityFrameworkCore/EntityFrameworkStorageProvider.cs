@@ -1228,7 +1228,10 @@ INNER JOIN (
                     ParentPartTypeId = partType.ParentPartTypeId,
                     PartTypeId = partType.PartTypeId,
                     UserId = userContext.UserId,
-                    OrganizationId = userContext.OrganizationId
+                    OrganizationId = userContext.OrganizationId,
+                    Description = partType.Description,
+                    SymbolId = partType.SymbolId,
+                    ReferenceDesignator = partType.ReferenceDesignator
                 };
                 context.PartTypes.Add(entity);
                 await context.SaveChangesAsync();
