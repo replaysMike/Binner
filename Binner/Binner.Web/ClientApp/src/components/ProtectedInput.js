@@ -166,7 +166,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 
 		return <Form.Input { ...propsToReturn } id={id}>
 			{children}
-      {!hideClearIcon && <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: propsToReturn.iconPosition !== "left" && getClearIconPosition(), left: 'unset', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />}
+      		{!hideClearIcon && <Icon name="times" circular link size="small" className="clearIcon" onClick={handleClear} style={{right: propsToReturn.iconPosition !== "left" && getClearIconPosition(), left: 'unset', opacity: rest.value?.length > 0 ? '0.5' : '0', visibility: rest.value?.length > 0 ? 'visible' : 'hidden'}} />}
 			{!hideIcon && <Icon name="barcode" style={{right: propsToReturn.iconPosition !== "left" && propsForChild.icon ? '25px' : '0', left: 'unset'}} />}
 			</Form.Input>;
 	}
@@ -183,23 +183,23 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 ProtectedInput.propTypes = {
 	/** True to clear the input after a scan has completed */
 	clearOnScan: PropTypes.bool,
-  /** True to block enter key */
-  allowEnter: PropTypes.bool,
+  	/** True to block enter key */
+  	allowEnter: PropTypes.bool,
 	/** True to hide barcode icon */
-  hideIcon: PropTypes.bool,
+  	hideIcon: PropTypes.bool,
 	/** True to hide clear icon */
 	hideClearIcon: PropTypes.bool,
-  /** Event triggered when the clear button is clicked */
-  onClear: PropTypes.func,
+  	/** Event triggered when the clear button is clicked */
+  	onClear: PropTypes.func,
 	/** Event triggered when barcode reading has started */
 	onBarcodeReadStarted: PropTypes.func,
 	/** Event triggered when barcode reading has been cancelled */
 	onBarcodeReadCancelled: PropTypes.func,
 	/** Event triggered when barcode reading has completed */
 	onBarcodeReadReceived: PropTypes.func,
-  /** Event triggered when the icon is clicked */
-  onIconClick: PropTypes.func,
-  /** Text to show when hovering icon */
-  iconText: PropTypes.object
+  	/** Event triggered when the icon is clicked */
+  	onIconClick: PropTypes.func,
+  	/** Text to show when hovering icon */
+  	iconText: PropTypes.object
 	/** !!! Note: All new props added must be excluded above. See propsToExclude */
 };
