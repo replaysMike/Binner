@@ -1,4 +1,6 @@
-﻿namespace Binner.Model.Configuration
+﻿using Binner.Model.Integrations;
+
+namespace Binner.Model.Configuration
 {
     public class OrganizationConfiguration
     {
@@ -26,5 +28,7 @@
         /// Absolute cache expiration in minutes (0 = never)
         /// </summary>
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
+
+        public KiCadSettings KiCad { get; set; } = new ();
     }
 }

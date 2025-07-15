@@ -89,6 +89,13 @@ namespace Binner.Services
         UserConfiguration GetCachedUserConfiguration(int? userId = null);
 
         /// <summary>
+        /// Clear all cached values
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="organizationId"></param>
+        void ClearCache(int? userId = null, int? organizationId = null);
+
+        /// <summary>
         /// Clear the cached configurations for a user
         /// </summary>
         /// <param name="userId"></param>

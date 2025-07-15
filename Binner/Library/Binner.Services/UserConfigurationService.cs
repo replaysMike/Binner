@@ -6,7 +6,6 @@ using Binner.Common.Integrations;
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.Model.Configuration;
-using Binner.Model.Configuration.Integrations;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services.Integrations;
@@ -189,6 +188,13 @@ namespace Binner.Services
             return _mapper.Map<OrganizationConfiguration>(organizationConfiguration);
         }
 
+        public virtual void ClearCache(int? userId = null, int? organizationId = null)
+        {
+            _credentialProvider.Cache.Clear(ApiCredentialKey.Create(userId ?? _requestContext.GetUserContext()?.UserId ?? 0));
+            ClearCachedUserConfigurations(userId);
+            ClearCachedOrganizationConfigurations(organizationId);
+        }
+
         public virtual void ClearCachedUserConfigurations(int? userId = null)
         {
             var uid = userId ?? _requestContext.GetUserContext()?.UserId;
@@ -257,7 +263,8 @@ namespace Binner.Services
             if (entity == null)
                 return GetDefaultOrganizationConfiguration();
 
-            return _mapper.Map<OrganizationConfiguration>(entity);
+            var model = _mapper.Map<OrganizationConfiguration>(entity);
+            return model;
         }
 
         public virtual OrganizationConfiguration GetCachedOrganizationConfiguration(int? organizationId = null)

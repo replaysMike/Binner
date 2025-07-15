@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Binner.Model.Configuration;
+using Binner.Model.Integrations;
+using Newtonsoft.Json;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Services.MappingProfiles
@@ -14,6 +16,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.KiCad, options => options.MapFrom(x => string.IsNullOrEmpty(x.KiCadSettingsJson) ? new KiCadSettings() : JsonConvert.DeserializeObject(x.KiCadSettingsJson)))
             ;
 
             CreateMap<OrganizationConfiguration, DataModel.OrganizationConfiguration>()
@@ -22,6 +25,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.KiCadSettingsJson, options => options.MapFrom(x => JsonConvert.SerializeObject(x.KiCad)))
 
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())

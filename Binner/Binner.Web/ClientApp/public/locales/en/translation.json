@@ -210,6 +210,20 @@
       "orgSettings": "Organization Settings",
       "mySettingsDescription": "Configure settings associated with your user account.",
       "orgSettingsDescription": "Configure settings common to all users in your organization.",
+      "enableAutoSearch": "Enable Auto Search",
+      "enableDarkMode": "Enable Dark Mode",
+      "kicadName": "KiCad",
+      "kicadDescription": "Customize KiCad Integration",
+      "kicadSupport": "KiCad HTTP Library Server Support",
+      "kicad": {
+        "exportFields": "Export Fields",
+        "exportFieldsDescription": "Choose the Inventory fields to export to KiCad. KiCad field names can be customized.",
+        "exportQuestionHelp": "Only selected fields will be exported to KiCad.",
+        "binnerInventoryField": "Binner Inventory Field",
+        "binnerInventoryFieldHelp": "Choose the Binner Inventory field to export to KiCad.",
+        "kicadField": "KiCad Field Name",
+        "kicadFieldHelp": "Choose the KiCad to export the field as. You can choose the preset option or add a customized value."
+      },
       "popup": {
         "forgetCredentials": "Forget any cached credentials and force reauthentication with DigiKey",
         "swarmEnabled": "Choose if you would like to enable Binner Swarm support.",
@@ -258,7 +272,8 @@
         "cacheAbsoluteExpirationMinutes": "Specify the total minutes in which a cache item will be expired (default: 0).",
         "cacheSlidingExpirationMinutes": "Specify the minutes in which a cache item will be kept if it's touched within the time period (default: 30).",
         "country": "Choose the country to pass the API.",
-        "printMode": "Choose if you would like to print directly to the printer (default) or using the web browser."
+        "printMode": "Choose if you would like to print directly to the printer (default) or using the web browser.",
+        "kicadSupportEnabled": "Choose if you would like to enable KiCad HTTP Library Server support."
       }
     },
     "datasheet": {
@@ -838,6 +853,7 @@
     "datasheet": "Datasheet",
     "package": "Package",
     "importQuestion": "Import?",
+    "exportQuestion": "Export?",
     "image": "Image",
     "customerId": "Customer Id",
     "orderAmount": "Order Amount",

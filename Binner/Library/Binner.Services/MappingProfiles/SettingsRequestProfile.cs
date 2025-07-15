@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations;
 using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
+using Newtonsoft.Json;
 
 namespace Binner.Services.MappingProfiles
 {
@@ -27,6 +29,7 @@ namespace Binner.Services.MappingProfiles
 
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ForMember(x => x.KiCad, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ReverseMap();
@@ -131,7 +134,30 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.UseModule, options => options.MapFrom(x => x.UseModule))
-                .ReverseMap();
+                .ForMember(x => x.KiCad, options => options.MapFrom(x => x.KiCad))
+            ;
+
+            CreateMap<OrganizationConfiguration, SettingsRequest>()
+                .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
+                .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
+                .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
+                .ForMember(x => x.UseModule, options => options.MapFrom(x => x.UseModule))
+                .ForMember(x => x.KiCad, options => options.MapFrom(x => x.KiCad))
+
+                .ForMember(x => x.Octopart, options => options.Ignore())
+                .ForMember(x => x.Digikey, options => options.Ignore())
+                .ForMember(x => x.Mouser, options => options.Ignore())
+                .ForMember(x => x.Arrow, options => options.Ignore())
+                .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Binner, options => options.Ignore())
+                .ForMember(x => x.CustomFields, options => options.Ignore())
+                .ForMember(x => x.Printer, options => options.Ignore())
+                .ForMember(x => x.Barcode, options => options.Ignore())
+                .ForMember(x => x.Locale, options => options.Ignore())
+                .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
+                .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+            ;
 
             CreateMap<SettingsRequest, UserBarcodeConfiguration>(MemberList.None)
                 .ForMember(x => x.BufferTime, options => options.MapFrom(x => x.Barcode.BufferTime))
@@ -153,6 +179,11 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
+                .ReverseMap();
+
+            CreateMap<SettingsRequest, KiCadSettings>(MemberList.None)
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.KiCad.Enabled))
+                .ForMember(x => x.ExportFields, options => options.MapFrom(x => x.KiCad.ExportFields))
                 .ReverseMap();
 
             CreateMap<SettingsRequest, PrinterConfiguration>(MemberList.None)

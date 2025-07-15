@@ -7,12 +7,13 @@ specify relationships, indexes and other special properties for each entity.
 
 ## Adding Migrations
 
+add a new migration for each of the supported providers:
 `dotnet ef migrations add InitialCreate --project Data\Binner.Data.Migrations.Sqlite --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Sqlite`
 `dotnet ef migrations add InitialCreate --project Data\Binner.Data.Migrations.SqlServer --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider SqlServer`
 `dotnet ef migrations add InitialCreate --project Data\Binner.Data.Migrations.Postgresql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Postgresql`
 `dotnet ef migrations add InitialCreate --project Data\Binner.Data.Migrations.MySql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider MySql`
 
-then, update the database:
+then, update the database for each of the supported providers:
 `dotnet ef database update --project Data\Binner.Data.Migrations.Sqlite --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Sqlite`
 `dotnet ef database update --project Data\Binner.Data.Migrations.SqlServer --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider SqlServer`
 `dotnet ef database update --project Data\Binner.Data.Migrations.Postgresql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Postgresql`
@@ -21,7 +22,10 @@ then, update the database:
 ## Removing Migrations
 
 To remove the last migration that was created (oops!):
-`dotnet ef migrations remove --project Data\Binner.Data --startup-project Binner.Web`
+`dotnet ef migrations remove --project Data\Binner.Data.Migrations.Sqlite --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Sqlite`
+`dotnet ef migrations remove --project Data\Binner.Data.Migrations.SqlServer --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider SqlServer`
+`dotnet ef migrations remove --project Data\Binner.Data.Migrations.Postgresql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider Postgresql`
+`dotnet ef migrations remove --project Data\Binner.Data.Migrations.MySql --startup-project Data\Binner.Data.Stub --context BinnerContext -v -- --provider MySql`
 
 ## Deploying Databases
 

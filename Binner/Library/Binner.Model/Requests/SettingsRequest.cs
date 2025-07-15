@@ -1,6 +1,7 @@
 ﻿using Binner.Global.Common;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations;
 using Binner.Model.Responses;
 
 namespace Binner.Model.Requests
@@ -41,6 +42,11 @@ namespace Binner.Model.Requests
         /// List of user designed custom fields
         /// </summary>
         public ICollection<CustomField> CustomFields { get; set; } = new List<CustomField>();
+
+        /// <summary>
+        /// KiCad integration settings
+        /// </summary>
+        public KiCadSettings KiCad { get; set; } = new KiCadSettings();
 
         /// <summary>
         /// Printer configuration

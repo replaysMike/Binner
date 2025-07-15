@@ -501,6 +501,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("KiCadSettingsJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("LicenseKey")
                         .HasColumnType("nvarchar(max)");
 

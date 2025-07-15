@@ -501,6 +501,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("KiCadSettingsJson")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("LicenseKey")
                         .HasColumnType("longtext");
 

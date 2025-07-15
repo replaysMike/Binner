@@ -14,6 +14,8 @@ import { setSystemSettings } from "../common/applicationSettings";
 import { toast } from "react-toastify";
 import { Languages } from "../common/Languages";
 import { Currencies } from "../common/Currencies";
+import { KiCadExportPartFields } from "../common/KiCadExportPartFields";
+import { ExportPartFields } from "../common/ExportPartFields";
 import { CustomFieldTypes } from "../common/customFieldTypes";
 import { config } from "../common/config";
 import "./Settings.css";
@@ -77,6 +79,8 @@ export const Settings = () => {
   ]);
   const languageOptions = Languages;
   const currencyOptions = Currencies;
+  const [kiCadExportFieldOptions, setKiCadExportFieldOptions] = useState(KiCadExportPartFields);
+  const exportFieldOptions = ExportPartFields;
   const barcodeProfileOptions = GetTypeDropdown(BarcodeProfiles);
   const customFieldTypeOptions = GetAdvancedTypeDropdown(CustomFieldTypes);
   const digikeySites = GetAdvancedTypeDropdown(DigiKeySites);
@@ -157,11 +161,16 @@ export const Settings = () => {
       profile: BarcodeProfiles.Default,
       prefix2D: "[)>",
     }
-
   });
   const [customFieldSettings, setCustomFieldSettings] = useState({
     customFields: []
-  })
+  });
+  const [kiCadSettings, setKiCadSettings] = useState({
+    kiCad: {
+      enabled: false,
+      exportFields: []
+    }
+  });
   const [apiTestResults, setApiTestResults] = useState([]);
 
   useEffect(() => {
@@ -184,6 +193,7 @@ export const Settings = () => {
         setPrinterSettings({ printer: data.printer });
         setBarcodeSettings({ barcode: data.barcode });
         setCustomFieldSettings({ customFields: data.customFields });
+        setKiCadSettings({ kiCad: data.kiCad })
         setSystemSettings(data);
       });
     };
@@ -201,6 +211,7 @@ export const Settings = () => {
       ...globalSettings,
       ...integrationSettings,
       ...printerSettings,
+      ...kiCadSettings,
       locale: {
         currency: globalSettings.currency,
         language: globalSettings.language,
@@ -288,6 +299,15 @@ export const Settings = () => {
     setCustomFieldSettings(newSettings);
   };
 
+  const handleKiCadSettingsChange = (e, control) => {
+    console.log('handleKiCadSettingsChange', control);
+    const newSettings = { ...kiCadSettings };
+    if (control.name.startsWith("kiCad")) {
+      setControlValue(newSettings.kiCad, "kiCad", control);
+    }
+    setKiCadSettings(newSettings);
+  };
+
   const handleChange = (e, control, settingsName, field) => {
     switch(settingsName) {
       case 'global':
@@ -298,6 +318,9 @@ export const Settings = () => {
         break;
       case 'customFields':
         handleCustomFieldSettingsChange(e, control, field);
+        break;
+      case 'kiCad':
+        handleKiCadSettingsChange(e, control, field);
         break;
       case 'printer':
         handlePrinterSettingsChange(e, control);
@@ -313,6 +336,7 @@ export const Settings = () => {
   };
 
   const setControlValue = (setting, name, control) => {
+    console.log('setcontrolvalue', control.name, control.type, name);
     switch (control.type) {
       case "checkbox":
         // type is a checkbox, we only care about the checked value
@@ -570,6 +594,37 @@ export const Settings = () => {
     return <></>;
   };
 
+  const handleKiCadFieldSettingsChange = (e, control, field) => {
+    const exportFields = kiCadSettings.kiCad.exportFields.map((f) => {
+      if (f.field === field.field && f.kiCadFieldName === field.kiCadFieldName) {
+        switch(control.name){
+          case 'enabled':
+            f.enabled = control.checked;
+            break;
+          case 'field':
+            f.field = control.value;
+            break;
+          case 'kiCadFieldName':
+            f.kiCadFieldName = control.value;
+            break;
+        }
+      }
+      return f;
+    });
+    setKiCadSettings({...kiCadSettings, kiCad: { ...kiCadSettings.kiCad, exportFields } });
+    setIsDirty(true);
+  };
+
+  const handleAddKiCadExportField = (e, { value }) => {
+    const newOption = {
+      key: _.max(kiCadExportFieldOptions, i=>i.key) + 1,
+      text: value,
+      value
+    };
+    setKiCadExportFieldOptions([...kiCadExportFieldOptions, newOption]);
+    setIsDirty(true);
+  };
+
   const userSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>
       <Header dividing as="h3">
@@ -628,7 +683,7 @@ export const Settings = () => {
 
       <Form.Group>
         <Form.Field>
-          <label>{t('label.enableAutoSearch', "Enable Auto Search")}</label>
+          <label>{t('page.settings.enableAutoSearch', "Enable Auto Search")}</label>
           <Popup
             wide
             position="top left"
@@ -649,7 +704,7 @@ export const Settings = () => {
           />
         </Form.Field>
         <Form.Field>
-          <label>{t('label.enableDarkMode', "Enable Dark Mode")}</label>
+          <label>{t('page.settings.enableDarkMode', "Enable Dark Mode")}</label>
           <Popup
             wide
             position="top left"
@@ -671,7 +726,7 @@ export const Settings = () => {
         </Form.Field>
       </Form.Group>
     </Segment>);
-  }, [globalSettings]);
+  }, [globalSettings, loading]);
 
   const organizationSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>
@@ -775,7 +830,7 @@ export const Settings = () => {
       </Segment>
 
     </Segment>);
-  }, [globalSettings]);
+  }, [globalSettings, loading]);
 
   const integrationSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>
@@ -824,6 +879,7 @@ export const Settings = () => {
                 placeholder="Enabled"
                 selection
                 value={integrationSettings.binner.enabled ? 1 : 0}
+                className={!integrationSettings.binner.enabled ? "bool-disabled" : ""}
                 options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'integration')}
               />
@@ -915,6 +971,7 @@ export const Settings = () => {
                 placeholder="Enabled"
                 selection
                 value={integrationSettings.digikey.enabled ? 1 : 0}
+                className={!integrationSettings.digikey.enabled ? "bool-disabled" : ""}
                 options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'integration')}
               />
@@ -1115,6 +1172,7 @@ export const Settings = () => {
                 placeholder="Enabled"
                 selection
                 value={integrationSettings.mouser.enabled ? 1 : 0}
+                className={!integrationSettings.mouser.enabled ? "bool-disabled" : ""}
                 options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'integration')}
               />
@@ -1219,6 +1277,7 @@ export const Settings = () => {
                 placeholder="Disabled"
                 selection
                 value={integrationSettings.arrow.enabled ? 1 : 0}
+                className={!integrationSettings.arrow.enabled ? "bool-disabled" : ""}
                 options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'integration')}
               />
@@ -1310,6 +1369,7 @@ export const Settings = () => {
                 placeholder="Disabled"
                 selection
                 value={integrationSettings.octopart.enabled ? 1 : 0}
+                className={!integrationSettings.octopart.enabled ? "bool-disabled" : ""}
                 options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'integration')}
               />
@@ -1382,6 +1442,7 @@ export const Settings = () => {
                 placeholder="Disabled"
                 selection
                 value={integrationSettings.tme.enabled ? 1 : 0}
+                className={!integrationSettings.tme.enabled ? "bool-disabled" : ""}
                 options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'integration')}
               />
@@ -1492,7 +1553,7 @@ export const Settings = () => {
         </Form.Field>
       </Segment>
     </Segment>);
-  }, [integrationSettings, apiTestResults]);
+  }, [integrationSettings, apiTestResults, loading]);
 
   const customFieldSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>
@@ -1600,7 +1661,90 @@ export const Settings = () => {
         </Table.Body>
       </Table>
     </Segment>);
-  }, [customFieldSettings]);
+  }, [customFieldSettings, loading]);
+
+  const kiCadSettingsMemoized = useMemo(() => {
+    return (<Segment loading={loading} color="blue" raised padded>
+      <Header dividing as="h3">
+        {t('page.settings.kicadName', "KiCad")}
+      </Header>
+      <p>
+        <i>
+          {t('page.settings.kicadDescription', "Customize KiCad Integration")}
+        </i>
+      </p>
+
+      <Form.Field width={10}>
+        <label>{t('page.settings.kicadSupport', "KiCad HTTP Library Server Support")}</label>
+        <Popup
+          wide
+          position="top left"
+          offset={[150, 0]}
+          hoverable
+          content={
+            <p>{t('page.settings.popup.kicadSupportEnabled', "Choose if you would like to enable KiCad HTTP Library Server support.")}</p>
+          }
+          trigger={
+            <Dropdown
+              name="kiCadEnabled"
+              type="bool-dropdown"
+              placeholder="Disabled"
+              selection
+              value={kiCadSettings.kiCad.enabled ? 1 : 0}
+              className={!kiCadSettings.kiCad.enabled ? "bool-disabled" : ""}
+              options={enabledSources}
+              onChange={(e, control) => handleChange(e, control, 'kiCad')}
+            />
+          }
+        />
+      </Form.Field>
+
+      <Header dividing as="h4">
+        {t('page.settings.kicad.exportFields', "Export Fields")}
+      </Header>
+      <p>
+        <i>
+          {t('page.settings.kicad.exportFieldsDescription', "Choose the Inventory fields to export to KiCad. KiCad field names can be customized.")}
+        </i>
+      </p>
+      <Table compact celled sortable selectable striped size='small'>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell width={1}>
+              <Popup
+                wide
+                content={<p>{t('page.settings.kicad.exportQuestionHelp', "Only selected fields will be exported to KiCad.")}</p>}
+                trigger={<span>{t('label.exportQuestion', "Export?")}</span>}
+              />
+            </Table.HeaderCell>
+            <Table.HeaderCell width={7}>
+              <Popup 
+                wide 
+                content={<p>{t('page.settings.kicad.binnerInventoryFieldHelp', "Choose the Binner Inventory field to export to KiCad.")}</p>} 
+                trigger={<span>{t('page.settings.kicad.binnerInventoryField', "Binner Inventory Field")}</span>}
+              />
+            </Table.HeaderCell>
+            <Table.HeaderCell width={7}>
+              <Popup 
+                wide 
+                content={<p>{t('page.settings.kicad.kicadFieldHelp', "Choose the KiCad to export the field as. You can choose the preset option or add a customized value.")}</p>} 
+                trigger={<span>{t('page.settings.kicad.kicadField', "KiCad Field Name")}</span>}
+              />
+            </Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {kiCadSettings.kiCad.exportFields.map((field, key) => (
+          <Table.Row key={key}>
+            <Table.Cell><Checkbox name="enabled" checked={field.enabled} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
+            <Table.Cell><Dropdown search selection name="field" value={field.field} options={exportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
+            <Table.Cell><Dropdown search selection allowAdditions name="kiCadFieldName" value={field.kiCadFieldName} options={kiCadExportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} onAddItem={handleAddKiCadExportField} /></Table.Cell>
+          </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
+    </Segment>);
+  }, [kiCadSettings, loading]);
 
   const printerSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>
@@ -1690,7 +1834,7 @@ export const Settings = () => {
       />
 
     </Segment>);
-  }, [printerSettings]);
+  }, [printerSettings, loading]);
 
   const barcodeSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>
@@ -1828,7 +1972,7 @@ export const Settings = () => {
       </Form.Field>
 
     </Segment>);
-  }, [barcodeSettings]);
+  }, [barcodeSettings, loading]);
 
   const tabPanes = [
     {
@@ -1856,9 +2000,12 @@ export const Settings = () => {
             {organizationSettingsMemoized}
             {integrationSettingsMemoized}
             {customFieldSettingsMemoized}
+            {kiCadSettingsMemoized}
           </TabPane> 
         },
   ];
+
+  console.log('kiCadSettings', kiCadSettings);
 
   return (
     <div className="mask">
