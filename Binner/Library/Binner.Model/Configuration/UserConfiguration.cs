@@ -17,12 +17,17 @@
         /// <summary>
         /// True to enable searching for part information after typing
         /// </summary>
-        public bool EnableAutoPartSearch { get; set; }
+        public bool EnableAutoPartSearch { get; set; } = true;
 
         /// <summary>
         /// True to enable dark mode UI
         /// </summary>
         public bool EnableDarkMode { get; set; }
+
+        /// <summary>
+        /// True to enable checking for new versions of Binner
+        /// </summary>
+        public bool EnableCheckNewVersion { get; set; } = true;
 
         /// <summary>
         /// Sets the default label to use for printing part labels

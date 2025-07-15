@@ -32,6 +32,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.KiCad, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ReverseMap();
 
             CreateMap<SettingsRequest, UserIntegrationConfiguration>(MemberList.None)
@@ -124,7 +125,8 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Language, options => options.MapFrom(x => x.Locale.Language))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.MapFrom(x => x.EnableAutoPartSearch))
                 .ForMember(x => x.EnableDarkMode, options => options.MapFrom(x => x.EnableDarkMode))
-                
+                .ForMember(x => x.EnableCheckNewVersion, options => options.MapFrom(x => x.EnableCheckNewVersion))
+
                 .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ReverseMap();
 
@@ -157,6 +159,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Locale, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
             ;
 
             CreateMap<SettingsRequest, UserBarcodeConfiguration>(MemberList.None)

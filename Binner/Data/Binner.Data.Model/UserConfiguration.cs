@@ -50,6 +50,11 @@ namespace Binner.Data.Model
         public bool EnableDarkMode { get; set; }
 
         /// <summary>
+        /// True to enable checking for new versions of Binner
+        /// </summary>
+        public bool EnableCheckNewVersion { get; set; }
+
+        /// <summary>
         /// Sets the default label to use for printing part labels
         /// </summary>
         public int? DefaultPartLabelId { get; set; }

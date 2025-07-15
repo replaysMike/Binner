@@ -27,6 +27,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.Locale, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())
@@ -52,6 +53,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.Locale, options => options.MapFrom(x => new LocaleSettingsResponse
                 {
                     Language = x.Language,
@@ -62,6 +64,7 @@ namespace Binner.Services.MappingProfiles
             CreateMap<UserConfiguration, SettingsResponse>()
                 .ForMember(x => x.EnableAutoPartSearch, options => options.MapFrom(x => x.EnableAutoPartSearch))
                 .ForMember(x => x.EnableDarkMode, options => options.MapFrom(x => x.EnableDarkMode))
+                .ForMember(x => x.EnableCheckNewVersion, options => options.MapFrom(x => x.EnableCheckNewVersion))
                 .ForMember(x => x.Barcode, options => options.MapFrom(x => new BarcodeConfiguration
                 {
                     BufferTime = x.BarcodeBufferTime,
@@ -103,6 +106,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
                 .ForMember(x => x.Locale, options => options.Ignore())
                 .ForMember(x => x.Binner, options => options.Ignore())
@@ -119,6 +123,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.Binner, options => options.Ignore())
                 .ForMember(x => x.Digikey, options => options.Ignore())
                 .ForMember(x => x.Mouser, options => options.Ignore())
@@ -164,6 +169,7 @@ namespace Binner.Services.MappingProfiles
             CreateMap<UserBarcodeConfiguration, SettingsResponse>()
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.Binner, options => options.Ignore())
                 .ForMember(x => x.Digikey, options => options.Ignore())
                 .ForMember(x => x.Mouser, options => options.Ignore())
@@ -240,6 +246,7 @@ namespace Binner.Services.MappingProfiles
                 }))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
                 .ForMember(x => x.Locale, options => options.Ignore())
@@ -301,6 +308,7 @@ namespace Binner.Services.MappingProfiles
                 }))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
                 .ForMember(x => x.Locale, options => options.Ignore())

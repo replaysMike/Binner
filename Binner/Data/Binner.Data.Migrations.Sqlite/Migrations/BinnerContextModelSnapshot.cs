@@ -1654,6 +1654,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<bool>("EnableAutoPartSearch")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("EnableCheckNewVersion")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("EnableDarkMode")
                         .HasColumnType("INTEGER");
 
