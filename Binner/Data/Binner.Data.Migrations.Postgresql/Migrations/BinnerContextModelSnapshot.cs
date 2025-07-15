@@ -501,6 +501,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("KiCadSettingsJson")
+                        .HasColumnType("text");
+
                     b.Property<string>("LicenseKey")
                         .HasColumnType("text");
 

@@ -690,8 +690,13 @@ INNER JOIN (
                 else
                     entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
             }
+            else
+            {
+                entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, "DateCreatedUtc"));
+            }
 
-            var entities = await entitiesQueryable.Skip(pageRecords)
+            var entities = await entitiesQueryable
+                .Skip(pageRecords)
                 .Take(request.Results)
                 .ToListAsync();
             return _mapper.Map<ICollection<StoredFile>>(entities);
@@ -911,6 +916,10 @@ INNER JOIN (
                     entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
                     entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+            }
+            else
+            {
+                entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, "DateCreatedUtc"));
             }
             var entities = await entitiesQueryable
                 .Skip(pageRecords)
@@ -1698,6 +1707,10 @@ INNER JOIN (
                     entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
                 else
                     entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+            }
+            else
+            {
+                entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, "DateCreatedUtc"));
             }
             var entities = await entitiesQueryable
                 .Skip(pageRecords)

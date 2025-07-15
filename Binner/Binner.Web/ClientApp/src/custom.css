@@ -1175,3 +1175,8 @@ ul.errors li.error:before {
 .ui.table td.disabled {
   background-color: #f6f6f6;
 }
+
+.ui.selection.dropdown.bool-disabled>div {
+  font-weight: 700;
+  color: #c00;
+}

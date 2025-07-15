@@ -116,7 +116,24 @@ namespace Binner.Web.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
             }
+        }
 
+        /// <summary>
+        /// Clear the cached system settings
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/api/settings/cache/clear")]
+        public IActionResult CacheClear()
+        {
+            try
+            {
+                _userConfigurationService.ClearCache();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Settings Error! ", ex));
+            }
         }
 
         /// <summary>

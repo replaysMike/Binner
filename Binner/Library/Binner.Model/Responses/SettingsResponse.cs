@@ -1,5 +1,6 @@
 ﻿using Binner.Global.Common;
 using Binner.Model.Configuration.Integrations;
+using Binner.Model.Integrations;
 
 namespace Binner.Model.Responses
 {
@@ -54,6 +55,11 @@ namespace Binner.Model.Responses
         /// List of defined custom fields
         /// </summary>
         public ICollection<CustomField> CustomFields { get; set; } = new List<CustomField>();
+
+        /// <summary>
+        /// KiCad integration settings
+        /// </summary>
+        public KiCadSettings KiCad { get; set; } = new KiCadSettings();
 
         /// <summary>
         /// Use the Binner module to configure the UI

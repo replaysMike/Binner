@@ -47,6 +47,11 @@ namespace Binner.Data.Model
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
 
         /// <summary>
+        /// KiCad settings serialized as JSON
+        /// </summary>
+        public string? KiCadSettingsJson { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

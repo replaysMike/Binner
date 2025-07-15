@@ -82,7 +82,8 @@ namespace Binner.Web.WebHost
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
-                configuration.RootPath = "ClientApp/build";
+                //configuration.RootPath = "ClientApp/build";
+                configuration.RootPath = "ClientApp";
             });
 
             // add custom Jwt authentication support
@@ -181,18 +182,19 @@ namespace Binner.Web.WebHost
             });
 
             // ensure build directory exists
-            var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp", "build");
+            //var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp", "build");
+            var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp");
             Directory.CreateDirectory(uiFolder);
-            /*app.UseStaticFiles(new StaticFileOptions
+            app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(uiFolder),
                 RequestPath = ""
             });
-            /* app.UseSpaStaticFiles(new StaticFileOptions
+             app.UseSpaStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(uiFolder),
                 RequestPath = ""
-            });*/
+            });
             app.UseRouting();
 
             // global error handler

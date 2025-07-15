@@ -34,9 +34,10 @@ namespace Binner.Web.Authorization
         {
             var headerValue = _requestContext.GetHeader(requirement.HeaderName);
             var parts = headerValue?.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+            var token = string.Empty;
             if (parts?.Length == 2 && parts[0] == requirement.TokenName)
             {
-                var token = parts[1];
+                token = parts[1];
                 _logger.LogDebug($"[{nameof(KiCadTokenAuthorizationHandler)}] Authorizing KiCad token '{token.Sanitize()}'...");
                 await using var dbContext = await _contextFactory.CreateDbContextAsync();
                 var tokenEntity = await dbContext.UserTokens.Where(x => x.Token == token && x.DateRevokedUtc == null && (x.DateExpiredUtc > DateTime.UtcNow || x.DateExpiredUtc == null))
@@ -57,8 +58,9 @@ namespace Binner.Web.Authorization
                 }
             }
             // not authorized
-            _logger.LogError($"KiCad token is invaliid.");
-            context.Fail(new AuthorizationFailureReason(this, "Specified KiCad token is invalid."));
+            var message = $"KiCad token '{token.Sanitize()}' is invalid. Please check that you have generated a KiCad token (Account Settings => User Tokens) and it is specified in your 'Binner.kicad_httplib' configuration file.";
+            _logger.LogError(message);
+            context.Fail(new AuthorizationFailureReason(this, message));
         }
     }
 }
