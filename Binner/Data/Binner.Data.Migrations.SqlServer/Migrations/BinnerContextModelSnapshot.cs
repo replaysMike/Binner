@@ -1712,6 +1712,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<bool>("EnableAutoPartSearch")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("EnableCheckNewVersion")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("EnableDarkMode")
                         .HasColumnType("bit");
 

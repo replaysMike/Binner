@@ -100,7 +100,8 @@ export const Settings = () => {
     cacheAbsoluteExpirationMinutes: 0,
     cacheSlidingExpirationMinutes: 30,
     enableAutoPartSearch: true,
-    enableDarkMode: false
+    enableDarkMode: false,
+    enableCheckNewVersion: true,
   });
   const [integrationSettings, setIntegrationSettings] = useState({
     binner: {
@@ -184,10 +185,10 @@ export const Settings = () => {
         const { data } = response;
         setLoading(false);
         // break out data into multiple state variables to optimize render performance
-        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode } = data;
+        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion } = data;
         const language = data.locale.language;
         const currency = data.locale.currency;
-        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode });
+        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion });
         const { binner, digikey, mouser, arrow, octopart, tme } = data;
         setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme });
         setPrinterSettings({ printer: data.printer });
@@ -719,6 +720,27 @@ export const Settings = () => {
                 type="checkbox"
                 toggle
                 checked={globalSettings.enableDarkMode}
+                onChange={(e, control) => handleChange(e, control, 'global')}
+              />
+            }
+          />
+        </Form.Field>
+        <Form.Field>
+          <label>{t('page.settings.enableCheckNewVersion', "Enable Check for new version")}</label>
+          <Popup
+            wide
+            position="top left"
+            offset={[0, 20]}
+            hoverable
+            content={<Trans i18nKey="page.settings.popup.enableCheckNewVersion">
+              Select this option to enable checking for a new version of Binner
+            </Trans>}
+            trigger={
+              <Form.Checkbox
+                name="enableCheckNewVersion"
+                type="checkbox"
+                toggle
+                checked={globalSettings.enableCheckNewVersion}
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
             }

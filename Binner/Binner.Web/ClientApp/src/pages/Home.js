@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Statistic, Segment, Icon, Dimmer, Loader } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
 import { formatCurrency } from "../common/Utils";
 import { VersionBanner } from "../components/VersionBanner";
+import { getSystemSettings } from "../common/applicationSettings";
 import semver from "semver";
 import customEvents from '../common/customEvents';
 import { isAuthenticated, isAdmin } from "../common/authentication";
 
-export function Home(props) {
+export function Home() {
   const { t } = useTranslation();
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
@@ -21,16 +22,21 @@ export function Home(props) {
    * Fetch the latest Binner version from GitHub
    */
   const getLatestVersion = useCallback(async (installedVersion) => {
-    const response = await fetchApi("/api/system/version");
-    if (response.responseObject.ok) {
-      const latestVersionData = response.data;
-      setVersionData(latestVersionData);
-      const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
-      if (semver.gt(latestVersionData.version, installedVersion) && semver.gt(latestVersionData.version, skipVersion)) {
-        // new version is available, and hasn't been skipped
-        setNewVersionBannerIsOpen(true);
+    getSystemSettings().then(async (systemSettings) => {
+      // only fetch latest version if we are configured to do so
+      if (systemSettings.enableCheckNewVersion) {
+        const response = await fetchApi("/api/system/version");
+        if (response.responseObject.ok) {
+          const latestVersionData = response.data;
+          setVersionData(latestVersionData);
+          const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
+          if (semver.gt(latestVersionData.version, installedVersion) && semver.gt(latestVersionData.version, skipVersion)) {
+            // new version is available, and hasn't been skipped
+            setNewVersionBannerIsOpen(true);
+          }
+        }
       }
-    }
+    });
   }, []);
 
   /**

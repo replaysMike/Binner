@@ -1712,6 +1712,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<bool>("EnableAutoPartSearch")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("EnableCheckNewVersion")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("EnableDarkMode")
                         .HasColumnType("boolean");
 

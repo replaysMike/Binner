@@ -89,11 +89,16 @@ namespace Binner.Model.Responses
         /// <summary>
         /// Enables auto part search in the Inventory UI
         /// </summary>
-        public bool EnableAutoPartSearch { get; set; }
+        public bool EnableAutoPartSearch { get; set; } = true;
 
         /// <summary>
         /// Enables dark mode in the UI
         /// </summary>
         public bool EnableDarkMode { get; set; }
+
+        /// <summary>
+        /// True to enable checking for new versions of Binner
+        /// </summary>
+        public bool EnableCheckNewVersion { get; set; } = true;
     }
 }

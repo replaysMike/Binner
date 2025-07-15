@@ -79,6 +79,11 @@ namespace Binner.Model.Requests
         public bool EnableDarkMode { get; set; }
 
         /// <summary>
+        /// True to enable checking for new versions of Binner
+        /// </summary>
+        public bool EnableCheckNewVersion { get; set; }
+
+        /// <summary>
         /// Maximum number of items that can be cached
         /// </summary>
         public int MaxCacheItems { get; set; } = 1024;

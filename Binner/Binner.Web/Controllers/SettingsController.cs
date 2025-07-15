@@ -105,9 +105,9 @@ namespace Binner.Web.Controllers
                 var printerConfiguration = _userConfigurationService.GetCachedPrinterConfiguration();
 
                 var settingsResponse = _mapper.Map<SettingsResponse>(organizationConfiguration);
-                settingsResponse = _mapper.Map<UserConfiguration, SettingsResponse>(userConfiguration, settingsResponse);
-                settingsResponse = _mapper.Map<OrganizationIntegrationConfiguration, SettingsResponse>(integrationConfiguration, settingsResponse);
-                settingsResponse = _mapper.Map<UserPrinterConfiguration, SettingsResponse>(printerConfiguration, settingsResponse);
+                settingsResponse = _mapper.Map(userConfiguration, settingsResponse);
+                settingsResponse = _mapper.Map(integrationConfiguration, settingsResponse);
+                settingsResponse = _mapper.Map(printerConfiguration, settingsResponse);
                 settingsResponse.CustomFields = await _settingsService.GetCustomFieldsAsync();
 
                 return Ok(settingsResponse);

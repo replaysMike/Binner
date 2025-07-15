@@ -21,6 +21,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Currency, options => options.MapFrom(x => x.Currency))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.MapFrom(x => x.EnableAutoPartSearch))
                 .ForMember(x => x.EnableDarkMode, options => options.MapFrom(x => x.EnableDarkMode))
+                .ForMember(x => x.EnableCheckNewVersion, options => options.MapFrom(x => x.EnableCheckNewVersion))
                 .ForMember(x => x.DefaultPartLabelId, options => options.MapFrom(x => x.DefaultPartLabelId))
             ;
 
@@ -71,6 +72,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.BarcodeProfile, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
             ;
 
@@ -85,6 +87,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.BarcodeProfile, options => options.MapFrom(x => x.Profile))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
+                .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
                 .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
             ;
         }
