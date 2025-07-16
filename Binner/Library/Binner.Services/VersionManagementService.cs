@@ -1,4 +1,12 @@
-﻿using Octokit;
+﻿using AutoMapper;
+using Binner.Data;
+using Binner.Global.Common;
+using Binner.Model;
+using Binner.Services.Integrations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Octokit;
 using System.Runtime.Caching;
 
 namespace Binner.Services
@@ -8,6 +16,18 @@ namespace Binner.Services
         private const string GitHubEndpoint = "https://github.com/replaysMike/Binner/releases";
         private static readonly Lazy<MemoryCache> _cache = new Lazy<MemoryCache>(() => new MemoryCache("VersionManagement"));
         private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(5);
+        protected readonly ILogger<VersionManagementService> _logger;
+        protected readonly IDbContextFactory<BinnerContext> _contextFactory;
+        protected readonly IRequestContextAccessor _requestContext;
+        protected readonly IMapper _mapper;
+
+        public VersionManagementService(ILogger<VersionManagementService> logger, IDbContextFactory<BinnerContext> contextFactory, IRequestContextAccessor requestContext, IMapper mapper)
+        {
+            _logger = logger;
+            _contextFactory = contextFactory;
+            _requestContext = requestContext;
+            _mapper = mapper;
+        }
 
         /// <summary>
         /// Get the latest version of Binner
@@ -51,6 +71,91 @@ namespace Binner.Services
             }
 
             return new BinnerVersion("v1.0", "Binner", GitHubEndpoint, false);
+        }
+
+        public virtual async Task<ICollection<MessageState>> GetSystemMessagesAsync()
+        {
+            try
+            {
+                var userContext = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+                await using var context = await _contextFactory.CreateDbContextAsync();
+                // fetch system messages from binner.io, then store any new ones.
+                var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(5);
+                var response = await client.GetStringAsync(ApiConstants.BinnerSystemMessageUrl);
+                if (!string.IsNullOrEmpty(response))
+                {
+                    var results = JsonConvert.DeserializeObject<ICollection<MessageState>>(response);
+                    if (results != null)
+                    {
+                        // take no more than X messages
+                        results = results.Take(ApiConstants.BinnerSystemMessagesCount).ToList();
+                        // filter out messages that are already read by the user
+                        foreach (var message in results)
+                        {
+                            var existingMessage = await context.MessageStates
+                                .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId
+                                    && x.MessageId == message.MessageId)
+                                .FirstOrDefaultAsync();
+                            if (existingMessage == null)
+                            {
+                                context.MessageStates.Add(new Data.Model.MessageState
+                                {
+                                    MessageId = message.MessageId,
+                                    DateCreatedUtc = DateTime.UtcNow,
+                                    UserId = userContext.UserId,
+                                    OrganizationId = userContext.OrganizationId,
+                                });
+                                message.ReadDateUtc = null; // mark as unread
+                            }
+                            else
+                            {
+                                // message already exists, return the existing read date status
+                                message.ReadDateUtc = existingMessage.ReadDateUtc;
+                            }
+                        }
+                        await context.SaveChangesAsync();
+                        return results;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // bad response or communication error
+                _logger.LogError(ex, $"Failed to retreive system messages!");
+            }
+
+            return new List<MessageState>()
+            {
+                new MessageState { MessageId = new Guid("420e046d-0b5c-4f4f-9a4d-fb456369edbd"), ReadDateUtc = null, Title = "Welcome to Binner", Message = "Welcome to Binner! This is where you will receive system message messages.", DateCreatedUtc = new DateTime(2025, 7, 3, 15, 0, 0, DateTimeKind.Utc) }
+            };
+
+        }
+
+        public async Task UpdateSystemMessagesReadAsync(UpdateSystemMessagesRequest request)
+        {
+            var userContext = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            foreach (var messageId in request.MessageIds)
+            {
+                var entity = await context.MessageStates
+                    .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId
+                        && x.MessageId == messageId)
+                    .FirstOrDefaultAsync();
+                if (entity == null)
+                    context.MessageStates.Add(new Data.Model.MessageState
+                    {
+                        MessageId = messageId,
+                        ReadDateUtc = DateTime.UtcNow,
+                        UserId = userContext.UserId,
+                        OrganizationId = userContext.OrganizationId,
+                        DateCreatedUtc = DateTime.UtcNow
+                    });
+                else
+                    entity.ReadDateUtc = DateTime.UtcNow;
+            }
+            await context.SaveChangesAsync();
         }
 
         public class BinnerVersion

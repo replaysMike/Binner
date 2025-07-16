@@ -92,6 +92,42 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Get the latest Binner system messages available
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("messages")]
+        public async Task<IActionResult> GetSystemMessagesAsync()
+        {
+            try
+            {
+                var result = await _versionManagementService.GetSystemMessagesAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Get System Messages error! ", ex));
+            }
+        }
+
+        /// <summary>
+        /// Update the latest Binner system messages read by the user
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("messages/read")]
+        public async Task<IActionResult> ReadSystemMessagesAsync(UpdateSystemMessagesRequest request)
+        {
+            try
+            {
+                await _versionManagementService.UpdateSystemMessagesReadAsync(request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Update System Messages error! ", ex));
+            }
+        }
+
+        /// <summary>
         /// Perform a complete backup of Binner
         /// </summary>
         /// <returns></returns>

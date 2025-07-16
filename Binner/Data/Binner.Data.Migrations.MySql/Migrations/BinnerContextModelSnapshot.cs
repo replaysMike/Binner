@@ -223,6 +223,34 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.ToTable("LabelTemplates", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.MessageState", b =>
+                {
+                    b.Property<int>("MessageStateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("MessageStateId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReadDateUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MessageStateId");
+
+                    b.ToTable("MessageStates", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
                     b.Property<int>("OAuthCredentialId")
