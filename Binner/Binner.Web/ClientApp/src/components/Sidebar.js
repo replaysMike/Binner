@@ -31,7 +31,6 @@ export function Sidebar({ children, onHide, onShow, visible = null, ...rest }) {
   }, []);
 
   useEffect(() => {
-    console.log('visible changed to', visible);
     setIsOpen(visible);
     setNewState(visible);
   }, [visible]);
