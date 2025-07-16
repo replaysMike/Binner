@@ -1,0 +1,129 @@
+/* SIDEBAR */
+
+.sidebar {
+  position: fixed;
+  opacity: 0.98;
+  border: 0 solid transparent;
+  font-size: 0.9em;
+  color: #f0f0f0;
+  padding: 1em;
+  background-color: rgb(27, 28, 29);
+  scroll-behavior: smooth;
+  width: 450px;
+  height: 100%;
+  z-index: 99999;
+  anchor-name: --sidebar;
+  transition-property: left;
+  transition-duration: 500ms;
+  transition-timing-function: ease;
+  left: -450px;
+}
+
+.sidebar .content {
+  anchor-name: --sidebar-content;
+}
+
+.sidebar .handle {
+  position: fixed;
+  position-anchor: --sidebar;
+  left: calc(anchor(right));
+  top: calc(48%);
+}
+
+.sidebar .handle>button {
+  height: 100px;
+  background: #c7c7c7;
+  background: linear-gradient(90deg, rgba(130, 130, 130, 0.98) 1%, rgba(255, 255, 255, 1) 100%);
+  border: 1px solid #eee;
+  -webkit-box-shadow: 3px 3px 4px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 3px 3px 4px -3px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  border-left: 0;
+}
+
+.sidebar .handle>button:hover {
+  background: #2185D0;
+    background: linear-gradient(90deg, rgba(33, 133, 208, 0.5) 40%, rgba(255, 255, 255, 1) 100%);
+}
+
+.sidebar .handle>button:active {
+  background: rgba(27, 28, 29, 0.98);
+  background: linear-gradient(90deg, rgba(27, 28, 29, 0.98) 0%, rgba(33, 133, 208, 1) 100%);
+}
+
+.sidebar.open .handle>button:hover {
+  background: rgba(27, 28, 29, 0.98);
+  background: linear-gradient(90deg, rgba(27, 28, 29, 0.98) 0%, rgba(33, 133, 208, 0.5) 100%);
+}
+
+.sidebar.open .handle>button {
+  border: 1px solid #ccc;
+  border-left: 0;
+  background: #c7c7c7;
+  background: linear-gradient(90deg, rgba(27, 28, 29, 0.98) 1%, rgba(210, 210, 210, 1) 100%);
+  color: #fff;
+}
+
+.sidebar h1 {
+  color: #f0f0f0;
+  font-size: 1.5em;
+}
+
+.sidebar a {
+  color: #2185d0;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar .emphasis {
+  color: #f0f0f0;
+  text-decoration: underline;
+  font-size: 0.9em;
+}
+
+.sidebar .emphasis:hover {
+  color: #31de79;
+  text-decoration: underline;
+}
+
+.sidebar .messages .date {
+  font-size: 0.8em;
+  color: #aaa;
+}
+
+.sidebar .messages {
+  background-color: #111;
+  padding: 8px 12px;
+  margin-top: 10px;
+}
+
+.sidebar .messages h2 {
+  margin: 0;
+  padding: 0;
+  color: #2185d0;
+  font-size: 1.0em;
+  font-weight: 600;
+}
+
+.sidebar .messages header {
+  font-size: 1.4em;
+}
+
+.sidebar a>i {
+  text-decoration: none;
+}
+
+.sidebar a:hover {
+  color: #31de79;
+}
+
+.sidebar a i.icon {
+  color: #2185d0;
+}

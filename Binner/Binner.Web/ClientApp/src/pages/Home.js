@@ -28,12 +28,18 @@ export function Home() {
         const response = await fetchApi("/api/system/version");
         if (response.responseObject.ok) {
           const latestVersionData = response.data;
+          customEvents.notifySubscribers("latestVersion", latestVersionData);
           setVersionData(latestVersionData);
           const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
           if (semver.gt(latestVersionData.version, installedVersion) && semver.gt(latestVersionData.version, skipVersion)) {
             // new version is available, and hasn't been skipped
             setNewVersionBannerIsOpen(true);
           }
+        }
+        // fetch system messages
+        const messages = await fetchApi("/api/system/messages");
+        if (messages.responseObject.ok) {
+          customEvents.notifySubscribers("systemMessages", messages.data);
         }
       }
     });

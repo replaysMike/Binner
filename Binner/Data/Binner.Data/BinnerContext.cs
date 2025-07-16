@@ -27,6 +27,11 @@ namespace Binner.Data
         public DbSet<LabelTemplate> LabelTemplates { get; set; } = null!;
 
         /// <summary>
+        /// Tracks the read state of system messages by user
+        /// </summary>
+        public DbSet<MessageState> MessageStates { get; set; } = null!;
+
+        /// <summary>
         /// OAuth credentials for integration providers
         /// </summary>
         public DbSet<OAuthCredential> OAuthCredentials { get; set; } = null!;

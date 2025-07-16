@@ -211,6 +211,32 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.ToTable("LabelTemplates", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.MessageState", b =>
+                {
+                    b.Property<int>("MessageStateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ReadDateUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("MessageStateId");
+
+                    b.ToTable("MessageStates", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
                     b.Property<int>("OAuthCredentialId")

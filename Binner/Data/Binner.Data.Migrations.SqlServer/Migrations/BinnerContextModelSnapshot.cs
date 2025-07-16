@@ -223,6 +223,34 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.ToTable("LabelTemplates", "dbo");
                 });
 
+            modelBuilder.Entity("Binner.Data.Model.MessageState", b =>
+                {
+                    b.Property<int>("MessageStateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageStateId"));
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReadDateUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MessageStateId");
+
+                    b.ToTable("MessageStates", "dbo");
+                });
+
             modelBuilder.Entity("Binner.Data.Model.OAuthCredential", b =>
                 {
                     b.Property<int>("OAuthCredentialId")

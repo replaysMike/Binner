@@ -1180,3 +1180,8 @@ ul.errors li.error:before {
   font-weight: 700;
   color: #c00;
 }
+
+.message-read {
+  transition-property: color;
+  transition-duration: 1s;
+}

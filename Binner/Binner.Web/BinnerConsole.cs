@@ -49,7 +49,7 @@ namespace Binner.Web
 
             try
             {
-                var versionService = new VersionManagementService();
+                var versionService = new VersionManagementService(null, null, null, null);
                 var latestVersionResponse = await versionService.GetLatestVersionAsync();
                 var latestVersion = new Version(latestVersionResponse.Version.Replace("v", "", StringComparison.InvariantCultureIgnoreCase));
                 if (latestVersionResponse.Version != null)
