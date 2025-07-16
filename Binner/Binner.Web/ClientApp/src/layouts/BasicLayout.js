@@ -64,7 +64,6 @@ export function BasicLayout(props) {
   };
 
   useEffect(() => {
-    console.log('route changed');
     updateView();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [window.location.href]);
@@ -127,7 +126,7 @@ export function BasicLayout(props) {
    * When we receive the latest version, update it.
    */
   const updateLatestVersion = useCallback((latestVersionData) => {
-    console.log('rx latest version', latestVersionData);
+    console.debug('rx latest version', latestVersionData);
     setLatestVersion(latestVersionData.version);
     setUrl(latestVersionData.url);
   }, []);
@@ -143,7 +142,7 @@ export function BasicLayout(props) {
    * When we receive system messages, update it.
    */
   const updateSystemMessages = useCallback((systemMessagesData) => {
-    console.log('rx latest messages', systemMessagesData, _.find(systemMessagesData, x => x.readDateUtc === null));
+    console.debug('rx latest messages', systemMessagesData, _.find(systemMessagesData, x => x.readDateUtc === null));
     setSystemMessages(systemMessagesData);
     
     if (_.find(systemMessagesData, x => x.readDateUtc === null)) {
@@ -216,14 +215,13 @@ export function BasicLayout(props) {
     return "";
   };
 
-  console.log('messages', systemMessages);
   return (
     <div className="centered" id="global" style={{marginBottom: '50px', position: 'relative', zIndex: '50', textAlign: 'left'}}>
       {/** Resource Sidebar */}
       <Sidebar
         // this will close the sidebar on click outside
-        onHide={() => { setSidebarVisible(false); console.log('hidden'); }}
-        onShow={() => { setSidebarVisible(true); console.log('shown'); }}
+        onHide={() => setSidebarVisible(false)}
+        onShow={() => setSidebarVisible(true)}
         visible={sidebarVisible}
       >
         <div>
