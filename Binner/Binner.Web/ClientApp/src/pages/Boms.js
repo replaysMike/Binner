@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Breadcrumb, Pagination, Dropdown, Confirm } from "semantic-ui-react";
+import { Icon, Input, Label, Button, TextArea, Form, Table, Segment, Breadcrumb, Pagination, Dropdown, Confirm, Popup } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import _ from 'underscore';
 import { toast } from "react-toastify";
@@ -362,8 +362,16 @@ export function Boms (props) {
 			</FormHeader>
 
       <div style={{ minHeight: '35px' }}>
-        <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="button.addBomProject">Add BOM Project</Trans></Button>
-        <Button secondary onClick={handleShowImport} icon size='mini' floated='right'><Icon name='cloud upload' /> <Trans i18nKey="button.importBomProject">Import BOM Project</Trans></Button>
+        <Popup 
+          wide
+          content={<p>Create a new BOM project</p>}
+          trigger={<Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="button.addBomProject">Add BOM Project</Trans></Button>}
+        />
+        <Popup
+          wide
+          content={<p>Import a BOM from external applications such as KiCad or EasyEDA</p>}
+          trigger={<Button secondary onClick={handleShowImport} icon size='mini' floated='right'><Icon name='cloud upload' /> <Trans i18nKey="button.importBomProject">Import BOM Project</Trans></Button>}
+        />
       </div>
       <div>
         {addVisible &&
@@ -457,7 +465,16 @@ export function Boms (props) {
                   <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
                   <Table.Cell>{p.partCount}</Table.Cell>
                   <Table.Cell>{p.pcbCount}</Table.Cell>
-                  <Table.Cell textAlign='center'><Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${encodeURIComponent(p.name)}`); }} title="Edit project" /> <Button icon='delete' size='tiny' onClick={e => confirmDeleteOpen(e, p)} title="Delete project" /></Table.Cell>
+                  <Table.Cell textAlign='center'>
+                    <Popup 
+                      content={<p>{t('label.editProject', "Edit Project")}</p>}
+                      trigger={<Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${encodeURIComponent(p.name)}`); }} />}
+                    />
+                    <Popup
+                      content={<p>{t('label.deleteProject', "Delete Project")}</p>}
+                      trigger={<Button icon='delete' size='tiny' onClick={e => confirmDeleteOpen(e, p)} />}
+                    />
+                  </Table.Cell>
                 </Table.Row>
               )}
             </Table.Body>
