@@ -46,7 +46,7 @@ namespace Binner.Common.IO
                 var rowNumber = 0;
                 foreach (var row in rows)
                 {
-                    var rowData = SplitBoundaries(row, new char[] { ',' }, true);
+                    var rowData = SplitBoundaries(row, [',', ';'], true);   // KiCad CSV format uses comma (Schematic BOM) or semicolon (PCB BOM) as a delimiter
                     IRow sheetRow = worksheet.CreateRow(rowNumber);
                     PopulateRow(sheetRow, rowData);
                     rowNumber++;

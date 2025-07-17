@@ -91,11 +91,11 @@ namespace Binner.Web.Controllers
         /// <summary>
         /// Import a new project
         /// </summary>
-        /// <param name="import"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("import")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> ImportProjectAsync([FromForm] ImportProjectRequest request)
+        public async Task<IActionResult> ImportProjectAsync([FromForm] ImportProjectRequest<IFormFile> request)
         {
           var project = await _projectService.ImportProjectAsync(request);
           return Ok(project);

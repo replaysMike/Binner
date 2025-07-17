@@ -72,6 +72,14 @@
   font-size: 1.5em;
 }
 
+.sidebar h3 {
+  margin: 0;
+  padding: 0;
+  color: #2185d0;
+  font-size: 1.0em;
+  font-weight: 600;
+}
+
 .sidebar a {
   color: #2185d0;
 }
