@@ -1352,6 +1352,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("FootprintName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
@@ -1380,6 +1383,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SchematicReferenceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SymbolName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UserId")

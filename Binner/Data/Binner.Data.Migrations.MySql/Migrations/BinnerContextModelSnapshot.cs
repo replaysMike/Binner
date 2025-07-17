@@ -1352,6 +1352,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("FootprintName")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Notes")
                         .HasColumnType("longtext");
 
@@ -1380,6 +1383,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("SchematicReferenceId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SymbolName")
                         .HasColumnType("longtext");
 
                     b.Property<int?>("UserId")

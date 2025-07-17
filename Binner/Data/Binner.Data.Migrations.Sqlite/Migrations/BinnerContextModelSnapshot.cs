@@ -1304,6 +1304,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<string>("FootprintName")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
@@ -1332,6 +1335,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SchematicReferenceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SymbolName")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("UserId")

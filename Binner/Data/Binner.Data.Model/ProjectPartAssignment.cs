@@ -71,6 +71,16 @@ namespace Binner.Data.Model
         public string? Currency { get; set; }
 
         /// <summary>
+        /// KiCad symbol name
+        /// </summary>
+        public string? SymbolName { get; set; }
+
+        /// <summary>
+        /// KiCad footprint name
+        /// </summary>
+        public string? FootprintName { get; set; }
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

@@ -24,6 +24,9 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Currency, options => options.MapFrom(x => x.Currency))
                 .ForMember(x => x.CustomDescription, options => options.MapFrom(x => x.CustomDescription))
                 .ForMember(x => x.SchematicReferenceId, options => options.MapFrom(x => x.SchematicReferenceId))
+                .ForMember(x => x.FootprintName, options => options.MapFrom(x => x.FootprintName))
+                .ForMember(x => x.SymbolName, options => options.MapFrom(x => x.SymbolName))
+
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.Part, options => options.Ignore())
                 .ForMember(x => x.Project, options => options.Ignore())
@@ -49,6 +52,8 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Currency, options => options.MapFrom(x => x.Currency))
                 .ForMember(x => x.CustomDescription, options => options.MapFrom(x => x.CustomDescription))
                 .ForMember(x => x.SchematicReferenceId, options => options.MapFrom(x => x.SchematicReferenceId))
+                .ForMember(x => x.FootprintName, options => options.MapFrom(x => x.FootprintName))
+                .ForMember(x => x.SymbolName, options => options.MapFrom(x => x.SymbolName))
                 //.ForMember(x => x.Part, options => options.MapFrom(x => x.Part))
                 ;
         }

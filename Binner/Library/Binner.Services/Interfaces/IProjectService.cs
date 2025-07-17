@@ -1,8 +1,7 @@
 ﻿using Binner.Model;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Binner.Services
 {
@@ -13,14 +12,14 @@ namespace Binner.Services
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        Task<Project> AddProjectAsync(Project project);
+        Task<Project?> AddProjectAsync(Project project);
 
         /// <summary>
         /// Import a project
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        Task<Project> ImportProjectAsync(ImportProjectRequest request);
+        Task<Project?> ImportProjectAsync(ImportProjectRequest<IFormFile> request);
 
         /// <summary>
         /// Update an existing project

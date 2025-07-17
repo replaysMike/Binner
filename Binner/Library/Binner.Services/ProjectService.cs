@@ -1,88 +1,97 @@
 ﻿using AutoMapper;
-using Binner.Data;
 using Binner.Common.IO;
+using Binner.Data;
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Mapper = AnyMapper.Mapper;
 
 namespace Binner.Services
 {
     public class ProjectService : IProjectService
     {
+        private readonly ILogger<ProjectService> _logger;
         private readonly IStorageProvider _storageProvider;
         private readonly IMapper _mapper;
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IRequestContextAccessor _requestContext;
 
-        public ProjectService(IMapper mapper, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory)
+        public ProjectService(ILogger<ProjectService> logger, IMapper mapper, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory)
         {
+            _logger = logger;
             _mapper = mapper;
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;
             _contextFactory = contextFactory;
         }
 
-        public async Task<Project> AddProjectAsync(Project project)
+        public async Task<Project?> AddProjectAsync(Project project)
         {
             return await _storageProvider.AddProjectAsync(project, _requestContext.GetUserContext());
         }
 
-        public async Task<Project?> ImportProjectAsync(ImportProjectRequest request)
+        public async Task<Project?> ImportProjectAsync(ImportProjectRequest<IFormFile> request)
         {
             var stream = new MemoryStream();
             await request.File.CopyToAsync(stream);
             stream.Position = 0;
 
             var userContext = _requestContext.GetUserContext();
-            string projectName = request.Name;
-            Project project = await _storageProvider.GetProjectAsync(projectName, userContext);
+            var projectName = request.Name ?? "Empty";
+            var project = await _storageProvider.GetProjectAsync(projectName, userContext);
             if (project == null)
             {
-                project = new Project();
-                project.Name = projectName;
-                project.Description = request.Description;
+                project = new Project
+                {
+                    Name = projectName,
+                    Description = request.Description
+                };
                 try
                 {
                     project = await _storageProvider.AddProjectAsync(project, userContext);
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, $"Failed to create project '{project?.Name}'");
                 }
 
             }
 
-            ImportResult result = null;
+            ImportResult? result = null;
             if (project != null)
             {
-                var extension = Path.GetExtension(request.File.FileName);
-                switch (extension.ToLower())
+                try
                 {
-                    case ".csv":
-                        var csvImporter = new CsvBOMImporter(_storageProvider);
-                        result = await csvImporter.ImportAsync(project, stream, userContext);
-                        break;
-                    case ".xls":
-                    case ".xlsx":
-                    case ".xlsm":
-                    case ".xlsb":
-                        var excelImporter = new ExcelBOMImporter(_storageProvider);
-                        result = await excelImporter.ImportAsync(project, stream, userContext);
-                        break;
+                    var extension = Path.GetExtension(request.File.FileName);
+                    switch (extension.ToLower())
+                    {
+                        case ".csv":
+                            var csvImporter = new CsvBOMImporter(_storageProvider);
+                            result = await csvImporter.ImportAsync(project, stream, userContext);
+                            break;
+                        case ".xls":
+                        case ".xlsx":
+                        case ".xlsm":
+                        case ".xlsb":
+                            var excelImporter = new ExcelBOMImporter(_storageProvider);
+                            result = await excelImporter.ImportAsync(project, stream, userContext);
+                            break;
+                    }
+                    if (result?.Errors.Any() == true)
+                    {
+                        _logger.LogError($"Failed to import project '{project.Name}': {string.Join(", ", result.Errors)}");
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to import project '{project?.Name}'");
                 }
 
-                if (result != null && !result.Success)
-                {
-                    DeleteProjectAsync(project);
-                    project = null;
-                }
             }
 
             return project;
@@ -271,7 +280,7 @@ namespace Binner.Services
                 }
 
                 await _storageProvider.UpdateProjectPartAssignmentAsync(assignment, user);
-                
+
                 // also update the part quantity and cost if it has changed
                 if (request.Part != null && part != null)
                 {
@@ -351,7 +360,7 @@ namespace Binner.Services
             {
                 var assignment = await _storageProvider.GetProjectPartAssignmentAsync(projectPartAssignmentId, user);
                 if (assignment == null) continue;
-                
+
                 if (request.PcbId > 0)
                     assignment.PcbId = request.PcbId;   // move to Pcb
                 else
@@ -404,7 +413,7 @@ namespace Binner.Services
             if (user == null) throw new ArgumentNullException(nameof(user));
 
             await using var context = await _contextFactory.CreateDbContextAsync();
-            
+
             var entity = await context.ProjectProduceHistory
                 .Include(x => x.ProjectPcbProduceHistory)
                 .ThenInclude(x => x.Pcb)
@@ -519,7 +528,7 @@ namespace Binner.Services
             foreach (var part in partsAssignedToPcb)
             {
                 var quantityRequired = part.Quantity * pcbQuantity * produceQuantity;
-                
+
                 // also update the parent history record parts consumed count
                 pcbHistory.ProjectProduceHistory.PartsConsumed -= quantityRequired;
 
@@ -601,7 +610,7 @@ namespace Binner.Services
                         var quantityToRemove = pcbPart.Quantity * numberOfPcbsProduced * (pcbEntity.Quantity > 0 ? pcbEntity.Quantity : 1);
                         if (quantityToRemove > quantityAvailable)
                             throw new InvalidOperationException($"There are not enough parts in inventory for part: {pcbPart.PartName}. In Stock: {pcbPart.Part?.Quantity ?? pcbPart.QuantityAvailable}, Quantity needed: {quantityToRemove}");
-                        
+
                         totalConsumed += quantityToRemove;
                         pcbConsumed += quantityToRemove;
 
@@ -675,14 +684,15 @@ namespace Binner.Services
 
                 // find the index of the last non-numeric character
                 var lastNonNumericIndex = 0;
-                for(var i = 0; i < nextSerialNumber.Length; i++) {
+                for (var i = 0; i < nextSerialNumber.Length; i++)
+                {
 
                     var charCode = (int)nextSerialNumber[i];
                     if (charCode < 48 || charCode > 57)
                         lastNonNumericIndex = i;
                 }
                 // parse the remainder as an integer
-                
+
                 var numericLabel = nextSerialNumber.Substring(lastNonNumericIndex + 1, nextSerialNumber.Length - (lastNonNumericIndex + 1));
                 if (int.TryParse(numericLabel, out var parsedNumber))
                 {

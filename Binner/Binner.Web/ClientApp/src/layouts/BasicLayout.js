@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Icon } from "semantic-ui-react";
+import { Icon, Grid, Button } from "semantic-ui-react";
 import { Container } from "reactstrap";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
@@ -195,7 +195,7 @@ export function BasicLayout(props) {
     }
   };
 
-  const toggleOpenSidebar = () => {
+  const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
   };
 
@@ -225,27 +225,42 @@ export function BasicLayout(props) {
         visible={sidebarVisible}
       >
         <div>
-          <h1>Binner</h1>
-          <header>
-            <div style={{ marginBottom: '10px' }}>{version ? <span>{t('footer.version', "Version")}: {version} ({latestVersion?.replace('v', '') === version ? 'latest' : <Link onClick={handleView}>update to {latestVersion}</Link>})</span> : ""}</div>
-            <Link size="medium" onClick={() => { }} style={{marginLeft: '5px'}}>
-              <Icon name="refresh" />
-            </Link>
-          </header>
+          { /** TOP */}
+          <div>
+            <h1>Binner</h1>
+            <header>
+              <div style={{ marginBottom: '10px' }}>{version ? <span>{t('footer.version', "Version")}: {version} ({latestVersion?.replace('v', '') === version ? 'latest' : <Link onClick={handleView}>update to {latestVersion}</Link>})</span> : ""}</div>
+              <Link size="medium" onClick={() => { }} style={{marginLeft: '5px'}}>
+                <Icon name="refresh" />
+              </Link>
+            </header>
 
-          <div className="messages">
-            <h2>System Messages</h2>
-            <ul className="">
-              {systemMessages.map((msg, key) => (
-                <li key={key}>
-                  <div>
-                    <header>{getReadIcon(msg.readDateUtc)}{msg.title}</header>
-                    <span className="date">{msg?.dateCreatedUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), parseJSON(msg.dateCreatedUtc)), true) : ''}</span>
-                    <p>{msg.message}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="messages">
+              <h2>System Messages</h2>
+              <ul className="">
+                {systemMessages.map((msg, key) => (
+                  <li key={key}>
+                    <div>
+                      <header>{getReadIcon(msg.readDateUtc)}{msg.title}</header>
+                      <span className="date">{msg?.dateCreatedUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), parseJSON(msg.dateCreatedUtc)), true) : ''}</span>
+                      <p>{msg.message}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          { /** BOTTOM */}
+          <div className="quicklinks">
+            <h3>Quick Links</h3>
+            <Grid columns={4}>
+                <Grid.Row>
+                <Grid.Column textAlign="center"><Button basic text="Inventory" icon="search" color="blue" /></Grid.Column>
+                <Grid.Column textAlign="center"><Button basic text="Tools" icon="wrench" color="green" /></Grid.Column>
+                <Grid.Column textAlign="center"><Button basic text="BOM" icon="list alternate outline" color="orange" /></Grid.Column>
+                <Grid.Column textAlign="center"><Button basic text="Settings" icon="cog" color="red" /></Grid.Column>
+                </Grid.Row>
+            </Grid>
           </div>
         </div>
       </Sidebar>

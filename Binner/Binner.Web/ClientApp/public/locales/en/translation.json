@@ -105,7 +105,9 @@
     "boms": {
       "header": {
         "description": "Bill of Materials, or BOM allows you to manage inventory quantities per project. You can reduce quantities for each PCB you produce, check which parts you need to buy more of and analyze costs.<1/><1/>Choose or create the project to manage BOM for.<1/>" 
-      }
+      },
+      "uploadFileDesc": "Binner supports KiCad, EasyEDA, and some custom file formats. See the <1>Wiki</1> for supported fields.",
+      "acceptedFileTypes": "Accepted file types: \"*.xls, *.xlsx, *.csv\""
     },
     "partTypes": {
       "title": "Part Types",
@@ -790,7 +792,8 @@
     "discard": "Discard",
     "noTakeMeBack": "No, take me back!",
     "resetPreferences": "Reset Preferences",
-    "viewPart": "View Part"
+    "viewPart": "View Part",
+    "importBomProject": "Import BOM Project"
   },
   "label": {
     "name": "Name",
@@ -939,7 +942,8 @@
     "stock": "Stock",
     "newQuantityShort": "New Qty",
     "viewProduct": "View Product",
-    "totalRecords": "Total records:"
+    "totalRecords": "Total records:",
+    "uploadFile": "Upload File"
   },
   "message": {
     "noPartsAdded": "No parts added.",

@@ -204,7 +204,7 @@ export function Boms (props) {
               setImportVisible(false);
               loadProjects(page, pageSize, true);
             } else {
-              toast.error(t("page.boms.import.failure", `Failed to import BOM!`), { autoClose: 10000 });
+              toast.error(t("page.boms.import.failure", `${response.status}: Failed to import BOM!`), { autoClose: 10000 });
             }
           });
       });
@@ -392,6 +392,14 @@ export function Boms (props) {
             <Form onSubmit={onImportProject}>
               <Form.Input width={6} label={t('label.name', 'Name')} required placeholder='555 Timer Project' focus value={project.name} onChange={handleChange} name='name' />
               <Form.Field width={10} control={TextArea} label={t('label.description', 'Description')} value={project.description} onChange={handleChange} name='description' style={{ height: '60px' }} />
+              <Form.Field required>
+                <label>{t('label.uploadFile', 'Upload File')}</label>
+                <div>
+                  <Trans i18nKey="page.boms.uploadFileDesc">
+                    Binner supports KiCad, EasyEDA, and some custom file formats. See the <a href="https://github.com/replaysMike/Binner/wiki/BOM-(Bill-of-Materials)" target="_blank">Wiki</a> for supported fields.
+                  </Trans>
+                </div>
+              </Form.Field>
               <div
                 style={{ border: "1px dashed #000", padding: "50px", marginBottom: "20px", backgroundColor: "#f5f5f5" }}
                 {...getRootProps({ className: "dropzone" })}
