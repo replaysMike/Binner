@@ -144,12 +144,14 @@ export function Boms (props) {
 
   const handleShowAdd = () => {
     setAddVisible(!addVisible);
+    setImportVisible(false);
     // map defined custom fields to the new project object
     setProject({ ...defaultProject, customFields: _.filter(systemSettings?.customFields, i => i.customFieldTypeId === CustomFieldTypes.Project.value)?.map((field) => ({ field: field.name, value: '' })) || [] });
   };
 
   const handleShowImport = () => {
     setImportVisible(!importVisible);
+    setAddVisible(false);
   };
 
   const handleLoadBom = (e, p) => {
@@ -361,7 +363,7 @@ export function Boms (props) {
 
       <div style={{ minHeight: '35px' }}>
         <Button primary onClick={handleShowAdd} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="button.addBomProject">Add BOM Project</Trans></Button>
-        <Button primary onClick={handleShowImport} icon size='mini' floated='right'><Icon name='plus' /> <Trans i18nKey="button.importBomProject">Import BOM Project</Trans></Button>
+        <Button secondary onClick={handleShowImport} icon size='mini' floated='right'><Icon name='cloud upload' /> <Trans i18nKey="button.importBomProject">Import BOM Project</Trans></Button>
       </div>
       <div>
         {addVisible &&
@@ -381,7 +383,7 @@ export function Boms (props) {
                 customFieldValues={project.customFields} 
                 onChange={handleCustomFieldChange}
               />
-              <Button primary type='submit' icon><Icon name='save' /> <Trans i18nKey="button.save">Save</Trans></Button>
+              <Button primary type='submit' icon><Icon name='save' /> {t('button.save', 'Save')}</Button>
             </Form>
           </Segment>
         }
@@ -416,7 +418,7 @@ export function Boms (props) {
                     </li>}
                 </ol>
               </aside>
-              <Button primary disabled={!acceptedFile}>{t('button.import', "Import")}</Button>
+              <Button primary disabled={!acceptedFile}><Icon name="cloud upload" /> {t('button.import', "Import")}</Button>
             </Form>
           </Segment>
         }
