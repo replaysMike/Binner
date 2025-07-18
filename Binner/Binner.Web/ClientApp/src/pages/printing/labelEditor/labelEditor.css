@@ -6,8 +6,7 @@
 
 .labelEditor .tools {
   width: 18%;
-  background: rgb(249, 249, 249);
-  background: linear-gradient(180deg, rgba(249, 249, 249, 1) 0%, rgba(233, 233, 233, 1) 100%);
+  background: var(--theme-segment-secondary-bg);
 }
 
 .labelEditor .tools.left {
@@ -27,8 +26,8 @@
   border-bottom: 1px solid #ccc;
   justify-content: center;
   text-align: center;
-  background: rgb(255, 255, 255);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(233, 233, 233, 1) 100%);
+  background: var(--theme-segment-secondary-bg);
+  
 }
 
 .labelEditor .header {
@@ -43,7 +42,7 @@
   margin: 0;
   padding: 0;
   font-weight: 600;
-  background-color: #dfdfdf;
+  background: var(--theme-segment-tertiary-bg);
   width: 100%;
 }
 
@@ -56,7 +55,7 @@
 }
 
 .labelEditor .header table {
-  background-color: #f0f0f0 !important;
+  background: var(--theme-table-bg) !important;
 }
 
 .labelEditor .header table input {
@@ -83,14 +82,14 @@
 }
 
 .labelEditor .tools .draggableBox div {
-  background-color: #fff;
+  background-color: var(--theme-input-bg);
   margin: 4px 0;
 }
 
 .labelEditor #container .draggableBox div {
   padding: 0 0 !important;
   line-height: 1em;
-  background-color: #f0f0f0;
+  background-color: var(--theme-form-control-bg);
   overflow: hidden;
 }
 
@@ -168,6 +167,7 @@ td.zoomTools div {
   outline-color: gray;
   outline-offset: -1px;
   overflow: hidden;
+  color: var(--theme-color);
 }
 
 .labelEditor .draggableBox .box.selected {
@@ -202,4 +202,47 @@ td.zoomTools div {
   text-transform: uppercase;
   font-family: "Roboto", sans-serif;
   font-weight: 300;
+}
+
+.label-boundary {
+  border: 2px solid var(--theme-labeleditor-border-color);
+}
+
+.ui-label {
+  font-size: 0.7em;
+  color: var(--theme-labeleditor-color);
+}
+
+.label-var {
+  font-size: 0.9em;
+  font-weight: 700;
+  color: var(--theme-labeleditor-label-color);
+}
+
+.colors-black {
+  color: var(--theme-labeleditor-colors-black) !important;
+}
+
+.colors-white {
+  color: var(--theme-labeleditor-colors-white) !important;
+}
+
+.colors-blue {
+  color: var(--theme-labeleditor-colors-blue) !important;
+}
+
+.colors-green {
+  color: var(--theme-labeleditor-colors-green) !important;
+}
+
+.colors-purple {
+  color: var(--theme-labeleditor-colors-purple) !important;
+}
+
+.colors-yellow {
+  color: var(--theme-labeleditor-colors-yellow) !important;
+}
+
+.colors-orange {
+  color: var(--theme-labeleditor-colors-orange) !important;
 }

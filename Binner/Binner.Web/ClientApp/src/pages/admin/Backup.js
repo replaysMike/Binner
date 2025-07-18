@@ -156,7 +156,6 @@ export const Backup = () => {
           <Grid.Column className="centered" style={{ padding: "50px" }}>
             <Form onSubmit={onImportSubmit}>
               <div
-                style={{ border: "1px dashed #000", padding: "50px", marginBottom: "20px", backgroundColor: "#f5f5f5" }}
                 {...getRootProps({ className: "dropzone" })}
               >
                 <span style={{ fontSize: "0.6em" }}>{t("page.exportData.uploadNote", "Drag a document to upload, or click to select files")}</span>

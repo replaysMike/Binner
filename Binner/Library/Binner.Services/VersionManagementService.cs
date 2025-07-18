@@ -127,7 +127,6 @@ namespace Binner.Services
 
             return new List<MessageState>()
             {
-                new MessageState { MessageId = new Guid("420e046d-0b5c-4f4f-9a4d-fb456369edbd"), ReadDateUtc = null, Title = "Welcome to Binner", Message = "Welcome to Binner! This is where you will receive system message messages.", DateCreatedUtc = new DateTime(2025, 7, 3, 15, 0, 0, DateTimeKind.Utc) }
             };
 
         }

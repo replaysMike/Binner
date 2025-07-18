@@ -54,7 +54,7 @@ export const DraggableBox = memo(function DraggableBox({ resize = 'horizontal', 
 	const boxStyleToApply = {...rest.style};
   return (
     <div ref={drag} id={id} name={rest.name} style={styleToApply} role="DraggableBox" onClick={handleClick} className={`draggableBox ${getResizeClass(rest.resize)}`} onKeyDown={rest.onKeyDown} tabIndex={-1}>
-      <Box style={boxStyleToApply} name={rest.name} selected={rest.selected} className="box">{rest.children}</Box>
+      <Box style={boxStyleToApply} name={rest.name} selected={rest.selected} className={`box ${rest.className}`}>{rest.children}</Box>
     </div>
   );
 });

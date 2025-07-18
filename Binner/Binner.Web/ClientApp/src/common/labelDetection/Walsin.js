@@ -33,7 +33,6 @@ export default function Walsin(value) {
       reason: null,
     };
     if (value.length === 39) {
-      console.log('checking walsin');
       // could be Walsin label, check the data to see if it looks right
       // qrcode is encoded as a simplistic 1D barcode ?!?
       
@@ -55,7 +54,6 @@ export default function Walsin(value) {
         } // loop 2 (start property cursor)
       } // loop 1 (cursor start)
       if (detectedValues.length > 0) {
-        console.log('walsin', detectedValues);
         detectValue.success = true;
         detectValue.type = 'qrcode';
         detectValue.labelType = 'part';

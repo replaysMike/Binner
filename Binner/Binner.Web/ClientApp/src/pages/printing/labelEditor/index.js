@@ -687,7 +687,7 @@ export function LabelEditor(props) {
             </div>
             <div className="wrapper" style={{ flex: "1" }} onClick={handleClearSelectedItem}>
               <div className="zoomContainer" style={{ transform: `scale(${zoomLevel})` }}>
-                <div style={{ fontSize: "0.7em", color: "#999" }}>{label.name}</div>
+                <div className="ui-label">{label.name}</div>
                 <LabelDropContainer
                   width={convertInchesToPixels(labelTemplate?.width || 0)}
                   height={convertInchesToPixels(labelTemplate?.height || 0)}
@@ -700,8 +700,8 @@ export function LabelEditor(props) {
                   onRemove={handleOnRemove}
                   boxes={boxes}
                 />
-                <div style={{ fontSize: "0.9em", fontWeight: "700", color: "#333" }}>{_.find(labelTemplateOptions, (i) => i.value === labelTemplate)?.text}</div>
-                <div style={{ fontSize: "0.7em", color: "#999" }}>Drag and drop components onto the label surface above</div>
+                <div className="ui-label-var">{_.find(labelTemplateOptions, (i) => i.value === labelTemplate)?.text}</div>
+                <div className="ui-label">Drag and drop components onto the label surface above</div>
               </div>
             </div>
             <div className="header" style={{ flex: "0" }}>

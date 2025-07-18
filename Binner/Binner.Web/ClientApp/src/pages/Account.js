@@ -204,7 +204,6 @@ export function Account(props) {
       method: "DELETE",
       body: JSON.stringify(request)
     }).then((response) => {
-      console.log('response', response);
       if (response.responseObject.ok) {
         account.tokens = _.filter(account.tokens, (item) => item.value !== request.value);
         setAccount(account);

@@ -28,12 +28,28 @@
 	margin-right: 10px;
 }
 
+.partTypeSelectorTreeView div.MuiTreeItem-content.Mui-focused,
+.partTypeSelectorTreeView div.MuiTreeItem-content.Mui-selected,
+.partTypeSelectorTreeView div.MuiTreeItem-content.Mui-selected.Mui-focused {
+  background-color: var(--theme-form-control-bg-highlight);
+  color: var(--theme-input-color);
+}
+
+.partTypeSelectorTreeView .MuiTreeItem-label span.MuiTypography-root.MuiTypography-caption {
+  color: var(--theme-a-color);
+}
+
+.partTypeSelectorTreeView .MuiTreeItem-label p.MuiTypography-root.MuiTypography-body2
+ {
+  color: var(--theme-input-color);
+}
+
 .partTypeSelector.ui.active.search.dropdown input.search:focus+.text {
-	color: rgba(0,0,0,1)!important;
+	color: var(--theme-color) !important;
 }
 
 .partTypeSelector.ui.default.dropdown:not(.button)>.text, .partTypeSelector.ui.dropdown:not(.button)>.default.text {
-	color: rgba(0,0,0,0.87);
+  color: rgba(var(--theme-color-rgb), .87);
 }
 
 .partTypeSelectorTreeView .MuiTreeItem-group {
@@ -50,13 +66,13 @@
 }
 
 .partTypeSelector-container svg.parttype {
-	color: #bbb;
+  color: rgba(var(--theme-color-rgb), .87);
 	margin-right: 5px;
 	vertical-align: baseline;
 }
 
 .partTypeSelector-container div.parttype:has(svg) {
-	color: #bbb;
+  color: rgba(var(--theme-color-rgb), .87);
 	margin-right: 5px;
 }
 
@@ -64,4 +80,13 @@
 	max-width: 24px;
 	max-height: 24px;
 	vertical-align: baseline;
+}
+
+.partTypeSelector-container .clearIconContainer {
+  position: absolute;
+  right: 10px;
+  top: 6px;
+  z-index: 2;
+  padding: 2px;
+  cursor: pointer;
 }

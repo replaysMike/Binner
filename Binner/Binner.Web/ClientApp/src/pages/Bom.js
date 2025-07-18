@@ -610,7 +610,6 @@ export function Bom(props) {
     //const updatedProject = { ...project, parts: [..._.filter(project.parts, i => i.partId !== part.partId), part] };
     setProject(updatedProject);
     const selectedParts = handleGetSelectedParts(updatedProject.parts);
-    console.log('selectedParts', updatedProject);
     if (selectedParts.length > 0) {
       if (selectedParts.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: selectedParts.length }));
       else setBtnDeleteText(t("button.removePart", "Remove Part"));
@@ -630,7 +629,6 @@ export function Bom(props) {
   };
 
   const handleSortChange = async (sortBy, sortDirection) => {
-    console.log('handleSortChange', sortBy, sortDirection);
     const newSortBy = sortBy || "DateCreatedUtc";
     const newSortDirection = sortDirection || "Descending";
     setSortBy(newSortBy);

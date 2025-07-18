@@ -1,6 +1,6 @@
 code {
-	background: #f4f4f4;
-	border: 1px solid #ddd;
+	background: var(--theme-form-control-bg);
+	border: var(--theme-menu-border);
 	border-left: 3px solid #f36d33;
 	color: #666;
 	page-break-inside: avoid;

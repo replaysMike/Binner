@@ -5,20 +5,22 @@
 
 .confirm-modal .ui.checkbox.left input,
 .confirm-modal .ui.toggle.checkbox.left label:before {
-  left: auto;
-  right: 0;
+  left: auto !important;
+  right: 0 !important;
 }
 
 .confirm-modal .ui.toggle.checkbox.left label:after {
-  left: auto;
-  right: 2.2em;
-  transition: background 0.3s ease 0s, right 0.3s ease 0s;
+  left: auto !important;
+  right: 1.9em !important;
+  top: .1em;
+  transition: background 0.3s ease 0s, right 0.3s ease 0s !important;
 }
 
 .confirm-modal .ui.toggle.checkbox.left input:checked+label:after {
-  left: auto;
-  right: 0;
-  transition: background 0.3s ease 0s, right 0.3s ease 0s;
+  left: auto !important;
+  right: .33em !important;
+  top: .1em;
+  transition: background 0.3s ease 0s, right 0.3s ease 0s !important;
 }
 
 .confirm-modal .ui.toggle.checkbox.small {

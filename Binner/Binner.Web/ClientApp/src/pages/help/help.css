@@ -113,14 +113,14 @@
   min-height: 200px;
   margin: 10px;
   text-align: center;
-  color: #666;
+  color: var(--theme-color);
   font-size: 0.9em;
   padding: 10px;
 	cursor: pointer;
 }
 
 .help .helpcontainer li:HOVER{
-  background-color: #f6f6f6;
+  background-color: var(--theme-form-menu-highlight-bg) !important;
   border-top: 5px solid #DF1461;
 }
 
@@ -131,7 +131,7 @@
 
 .help .helpcontainer li h1 {
   display: block;
-  color: #000;
+  color: var(--theme-color);
   font-weight: 800;
   font-size: 1.1em;
   min-height: 50px;
@@ -207,10 +207,10 @@
 }
 
 .help code {
-	background: #f4f4f4;
+	background: var(--theme-code-bg);
 	border: 1px solid #ddd;
-	border-left: 3px solid #f36d33;
-	color: #666;
+	border-left: 4px solid var(--theme-code-border-color);
+	color: var(--theme-code-color);
 	page-break-inside: avoid;
 	font-family: monospace;
 	font-size: 15px;
@@ -251,7 +251,7 @@
 }
 
 .help .bullet.highlight {
-	background-color: #eee;
+	background-color: var(--theme-segment-secondary-bg);
 }
 
 .help hr {

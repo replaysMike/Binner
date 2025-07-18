@@ -26,8 +26,8 @@
 }
 
 .inventory .render-disabled {
-	background-color: #f0f0f0 !important;
-	background-image: linear-gradient(#fff, #bbb);
+	background-color: var(--theme-bg) !important;
+	background-image: linear-gradient(var(--theme-bg), #bbb);
 }
 
 .inventory .inventory-container.render-disabled .row::before {
@@ -58,7 +58,7 @@
 	background-color: rgb(255,255,255,0.15);
 	border-radius: 80px;
 	padding: 5px;
-	color: #000;
+	color: var(--theme-color);
 	filter: none !important;
 	background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27%23fff%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath d=%27M5.25 0l-4 4 4 4 1.5-1.5L4.25 4l2.5-2.5L5.25 0z%27/%3e%3c/svg%3e") !important;   
 }
@@ -165,20 +165,22 @@
 
 .inventory .ui.checkbox.left input,
 .inventory .ui.toggle.checkbox.left label:before {
-	left: auto;
-	right: 0;
+	left: auto !important;
+	right: 0 !important;
 }
 
 .inventory .ui.toggle.checkbox.left label:after {
-	left: auto;
-	right: 2.2em;
-	transition: background 0.3s ease 0s, right 0.3s ease 0s;
+	left: auto !important;
+	right: 1.9em !important;
+  top: .1em;
+	transition: background 0.3s ease 0s, right 0.3s ease 0s !important;
 }
 
 .inventory .ui.toggle.checkbox.left input:checked + label:after {
-	left: auto;
-	right: 0;
-	transition: background 0.3s ease 0s, right 0.3s ease 0s;
+	left: auto !important;
+	right: .33em !important;
+  top: .1em;
+	transition: background 0.3s ease 0s, right 0.3s ease 0s !important;
 }
 
 .inventory .ui.toggle.checkbox.small {
@@ -236,6 +238,7 @@
 	font-size: 0.8em;
 	margin: 0;
 	padding-left: 10px;
+  padding-top: 10px;
 	float: none;
 	font-weight: normal;
 }
@@ -295,4 +298,12 @@
 
 .inventory .search.icon:hover {
   color: rgb(8, 114, 212);
+}
+
+.inventory .dropzone {
+  transition: outline-color 0.3s ease-in-out;
+  border: none;
+  padding: 0px;
+  margin-bottom: 0px;
+  background-color: unset;
 }

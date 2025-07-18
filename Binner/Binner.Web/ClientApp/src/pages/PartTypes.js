@@ -645,7 +645,7 @@ export function PartTypes(props) {
       </Modal>
 
       <Segment loading={loading}>
-        <div style={{ marginBottom: "10px", padding: "5px", backgroundColor: "#fafafa" }}>
+        <div style={{ marginBottom: "10px", padding: "5px" }}>
           {/** Tools Header */}
           <div style={{ float: "left", lineHeight: "2.25em" }}>
             <Popup

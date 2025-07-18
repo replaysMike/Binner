@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.css';
-import React from 'react';
+import React, { useState, useEffect } from "react";
 //import ReactDOM from "react-dom/client";
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -7,6 +7,7 @@ import App from './App';
 import AppRoutes from './AppRoutes';
 import registerServiceWorker from './registerServiceWorker';
 import { ToastContainer } from "react-toastify";
+import { getLocalData } from "./common/storage";
 // layouts
 import { RootLayout } from "./layouts/RootLayout";
 import { BasicLayout } from "./layouts/BasicLayout";
@@ -86,6 +87,16 @@ const router = createBrowserRouter([
     children: routes
   }
 ]);
+
+
+// check if the theme is set on app init, and set it appropriately
+const getHtmlEl = () => document.getElementsByTagName('html');
+const theme = getLocalData('isDarkMode', { settingsName: 'themeChangeToggle' });
+if (theme) {
+  const els = getHtmlEl();
+  if (els && els.length > 0)
+    els[0].dataset.colorMode = 'dark';
+}
 
 root.render(
 <>
