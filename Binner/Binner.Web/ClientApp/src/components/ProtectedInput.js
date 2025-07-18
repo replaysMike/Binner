@@ -21,7 +21,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	const id = useMemo(() => rest.id || uuidv4(), [rest.id]);
 
 	const barcodeReadStarted = (e) => {
-    console.log('ProtectedInput.barcodeReadStarted', e);
+    console.debug('ProtectedInput.barcodeReadStarted', e);
     rest.onChange(e, { value: '' });
     inputReceiving.current = true;
 		//window.requestAnimationFrame(() => { inputReceiving.current = true; });
@@ -33,7 +33,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const barcodeReadCancelled = (e) => {
-    console.log('ProtectedInput.barcodeReadCancelled', e);
+    console.debug('ProtectedInput.barcodeReadCancelled', e);
     inputReceiving.current = false;
     //window.requestAnimationFrame(() => { inputReceiving.current = false; });
 		if (IsDebug) console.debug(`PI: sending read cancelled id: ${id} dest: ${e.detail.destination.id}`);
@@ -44,7 +44,7 @@ export default function ProtectedInput({ clearOnScan = true, allowEnter = false,
 	};
 
 	const barcodeReadReceived = (e) => {
-    console.log('ProtectedInput.barcodeReadReceived', e.detail.destination, id);
+    console.debug('ProtectedInput.barcodeReadReceived', e.detail.destination, id);
     inputReceiving.current = false;
     //window.requestAnimationFrame(() => { inputReceiving.current = false; });
 		if (IsDebug) console.debug(`PI: sending read complete id: ${id} dest: ${e.detail.destination?.id}`);

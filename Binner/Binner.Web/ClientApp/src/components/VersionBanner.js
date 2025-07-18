@@ -4,6 +4,7 @@ import { Icon, Button, Modal } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { Converter } from "showdown";
 import "./VersionBanner.css";
+import { ReleaseNotesModal } from "./modals/ReleaseNotesModal";
 
 /**
  * Displays a top banner when a new Binner version is available
@@ -12,8 +13,8 @@ export function VersionBanner({ isOpen = false, version }) {
 	const { t } = useTranslation();
 	const [_isOpen, setIsOpen] = useState(false);
 	const [_version, setVersion] = useState('');
-	const [description, setDescription] = useState('');
-	const [descriptionObject, setDescriptionObject] = useState(null);
+	const [html, setHtml] = useState('');
+	//const [descriptionObject, setDescriptionObject] = useState(null);
 	const [url, setUrl] = useState('');
 	const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false);
 
@@ -23,12 +24,12 @@ export function VersionBanner({ isOpen = false, version }) {
 
 	useEffect(() => {
 		setVersion(version?.version);
-		setDescription(version?.description);
+		setHtml(version?.description);
 		setUrl(version?.url);
-		var converter = new Converter({optionKey: 'value', completeHTMLDocument: false, ghMentions: true, ghCompatibleHeaderId: true, ghCodeBlocks: true, tasklists: true, tables: true, strikethrough: true, emoji: true, openLinksInNewWindow: true, simplifiedAutoLink: true });
-		let desc = version?.description;
-		var html = converter.makeHtml(desc);
-		setDescriptionObject(html);
+		//var converter = new Converter({optionKey: 'value', completeHTMLDocument: false, ghMentions: true, ghCompatibleHeaderId: true, ghCodeBlocks: true, tasklists: true, tables: true, strikethrough: true, emoji: true, openLinksInNewWindow: true, simplifiedAutoLink: true });
+		//let desc = version?.description;
+		//var html = converter.makeHtml(desc);
+		//setDescriptionObject(html);
 	}, [version]);
 
 	const handleViewReleaseNotesModalOpen = (e) => {
@@ -65,17 +66,15 @@ export function VersionBanner({ isOpen = false, version }) {
         <Button primary onClick={handleView} size="tiny">{t('notification.versionBanner.view', "View")}</Button>
         <Button onClick={handleSkip} size="tiny">{t('notification.versionBanner.skip', "Skip")}</Button>
       </div>
-			<Modal centered open={isReleaseNotesOpen || false} onClose={handleReleaseNotesModalClose} className="release-notes">
-        <Modal.Header>{t('notification.versionBanner.releaseNotes', "Release Notes")}</Modal.Header>
-				<Modal.Description><p style={{padding: '0 10px', marginLeft: '10px'}}>{_version}</p></Modal.Description>
-        <Modal.Content scrolling>
-					<div dangerouslySetInnerHTML={{__html: descriptionObject}} />
-        </Modal.Content>
-        <Modal.Actions>
-					<Button primary onClick={handleView}>{t('notification.versionBanner.view', "View")} {_version}</Button>
-					<Button onClick={handleReleaseNotesModalClose}>{t('notification.versionBanner.close', "Close")}</Button>
-        </Modal.Actions>
-      </Modal>
+      <ReleaseNotesModal 
+        header={t('notification.versionBanner.releaseNotes', "Release Notes")}
+        description={_version}
+        text={html}
+        actionText={<span>{t('notification.versionBanner.view', "View")} {_version}</span>}
+        isOpen={isReleaseNotesOpen || false}
+        onClose={handleReleaseNotesModalClose}
+        onAction={handleView}
+      />
 		</div>
 		);
 };

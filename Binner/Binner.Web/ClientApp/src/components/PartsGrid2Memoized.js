@@ -174,7 +174,6 @@ export default function PartsGrid2Memoized({
     e.preventDefault();
     e.stopPropagation();
     setSelectedPart(part);
-    console.log('set selected part to ', part);
     setConfirmDeleteIsOpen(true);
     setConfirmPartDeleteContent(
       <p>

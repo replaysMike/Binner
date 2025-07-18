@@ -394,7 +394,10 @@ export const formatTime = (time) => {
  * @param {Date} date2 date 2
  * @returns number of days difference
  */
-export const getDifferenceInDays = (date1, date2) => {
+export const getDifferenceInDays = (date1, date2 = new Date()) => {
+  if (!date1 || !(date1 instanceof Date)) return 0;
+  if (!date2 || !(date2 instanceof Date)) return 0;
+
   const MillisecondsPerDay = 1000 * 60 * 60 * 24;
   const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
   const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
@@ -408,7 +411,10 @@ export const getDifferenceInDays = (date1, date2) => {
  * @param {Date} date2 date 2
  * @returns number of minutes difference
  */
-export const getDifferenceInMinutes = (date1, date2) => {
+export const getDifferenceInMinutes = (date1, date2 = new Date()) => {
+  if (!date1 || !(date1 instanceof Date)) return 0;
+  if (!date2 || !(date2 instanceof Date)) return 0;
+
   const MillisecondsPerMinute = 1000 * 60;
   const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate(), date1.getHours(), date1.getMinutes(), 0);
   const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate(), date2.getHours(), date2.getMinutes(), 0);
@@ -422,7 +428,10 @@ export const getDifferenceInMinutes = (date1, date2) => {
  * @param {Date} date2 date 2
  * @returns number of minutes difference
  */
-export const getDifferenceInSeconds = (date1, date2) => {
+export const getDifferenceInSeconds = (date1, date2 = new Date()) => {
+  if (!date1 || !(date1 instanceof Date)) return 0;
+  if (!date2 || !(date2 instanceof Date)) return 0;
+
   const MillisecondsPerSecond = 1000;
   const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate(), date1.getHours(), date1.getMinutes(), date1.getSeconds());
   const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate(), date2.getHours(), date2.getMinutes(), date2.getSeconds());

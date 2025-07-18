@@ -30,5 +30,5 @@
 
 .ui.icon.input>i.icon.clearIcon:hover {
   opacity: 1 !important;
-  background-color: #fbfbfb;
+  background-color: var(--theme-form-control-bg-highlight) !important;
 }

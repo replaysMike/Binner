@@ -61,7 +61,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       }));
       const keypressHistoryText = JSON.stringify(mapped);
       navigator.clipboard.writeText(keypressHistoryText);
-      console.log('onReceivedBarcodeInput keypress history copied to clipboard'/*, debugBuffer*/);
+      console.debug('onReceivedBarcodeInput keypress history copied to clipboard'/*, debugBuffer*/);
     }
     if (buffer.length < minInputLength && processKeyBuffer(buffer, barcodeConfig.prefix2D.length) !== barcodeConfig.prefix2D) {
       keyBufferRef.current.length = 0;
@@ -350,7 +350,7 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
     }
     if (gsLine.length > 0)
       gsLines.push(gsLine);
-    console.log('gsLines', gsLines);
+    console.debug('gsLines', gsLines);
 
     let invalidBarcodeDetected = false;
     // some older DigiKey barcodes are encoded incorrectly, and have a blank GSRS at the end. Filter them out.

@@ -734,6 +734,11 @@
       "title": "Part Parametrics",
       "description": "Listed below are all of the electrical characteristics (parametrics) for the part.",
       "noResults": "No parametrics available."
+    },
+    "sidebar": {
+      "systemMessages": "System Messages",
+      "quickLinks": "Quick Links",
+      "noMessages": "No messages available"
     }
   },
   "button": {
@@ -943,7 +948,9 @@
     "newQuantityShort": "New Qty",
     "viewProduct": "View Product",
     "totalRecords": "Total records:",
-    "uploadFile": "Upload File"
+    "uploadFile": "Upload File",
+    "updateTo": "update to",
+    "refresh": "Refresh"
   },
   "message": {
     "noPartsAdded": "No parts added.",

@@ -344,7 +344,6 @@ export function PrintLabels(props) {
         (label.defaults.isBarcodes[lines.length] || false)
     };
     lines.push(newLine);
-    console.log('newline', newLine, label.defaults.fonts, lines.length);
     setLines([...lines]);
   };
 

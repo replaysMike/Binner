@@ -33,11 +33,12 @@
 }
 
 #partsGrid td:has(a):hover { 
-	background-color: #ccc;
+	background-color: var(--theme-table-bg-highlight);
 }
 
 #partsGrid .footer {
 	padding: 5px;
+  background-color: var(--theme-table-bg) !important;
 }
 
 #partsGrid .text-highlight {

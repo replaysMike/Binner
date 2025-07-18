@@ -1770,7 +1770,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                     )}
                     {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
                   </Form.Field>
-                  <div className="sticky-target" style={{ padding: '10px 10px 20px 10%' }} data-bounds={"0.20,0.55"}>
+                  <div className="sticky-target" style={{ padding: '10px 10px 20px 10%' }} data-bounds={"0.2,0.7"}>
                     <Button.Group>
                       <Button type="submit" primary style={{ width: "200px" }} disabled={!isDirty}>
                         <Icon name="save" />
@@ -2228,7 +2228,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         cancelButton={t('button.noTakeMeBack', "No, take me back!")}
         content={
           <p style={{ padding: "20px", fontSize: '1.2em', textAlign: "center" }}>
-            <span style={{ color: '#666' }}>{t('confirm.unsaved', "You have unsaved changes.")}</span>
+            <span>{t('confirm.unsaved', "You have unsaved changes.")}</span>
             <br />
             <br />
             {t('confirm.confirmDiscard', "Are you sure you want to discard these changes?")}

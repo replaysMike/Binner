@@ -9,7 +9,6 @@ import { getChildrenByName } from './labelEditorComponents';
 import _ from 'underscore';
 
 const style = {
-  border: '1px solid black',
   position: 'relative',
 };
 
@@ -129,6 +128,15 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 		setSelectedItem(box);
 		setInternalBoxes([...internalBoxes]);
 	};
+
+  const getItemPropertyClasses = (name) => {
+    const classes = [];
+    // support class based styling for theme support
+    const style = getItemPropertyStyle(name);
+    classes.push(`colors-${style.color}`);
+
+    return classes;
+  };
 
 	const getItemPropertyStyle = (name) => {
 		const box = _.find(boxes, i => i.name === name);
@@ -342,7 +350,7 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 
 	const margins = getMargins(margin);
   return (
-    <div ref={drop} id="container" style={stylesToApply}>
+    <div ref={drop} id="container" style={stylesToApply} className="label-boundary">
 			{/* draw margin box */}
 			{(margins[0] > 0 || margins[1] > 0 || margins[2] > 0 || margins[3] > 0) 
 			? <div style={{
@@ -358,7 +366,8 @@ export const DropArea = ({ snapToGrid, onDrop, onMove, onRemove, width = 300, he
 					key={key} 
 					id={`${box.id}-${box.name}`}
 					{...getBox(box)} 
-					style={getItemPropertyStyle(box.name)} 
+					style={getItemPropertyStyle(box.name)}
+          className={getItemPropertyClasses(box.name)} 
 					absolute 
 					onClick={e => handleSelectedPart(e, box)} 
 					onKeyDown={handleKeyDown}

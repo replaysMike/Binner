@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
@@ -11,7 +11,7 @@ import Logo from "./logo-light.svg?react";
 /**
  * Top Navigation menu
  */
-export function NavMenu(props) {
+export function NavMenu() {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -93,7 +93,7 @@ export function NavMenu(props) {
                 </NavItem>
                 <NavItem>
                     <Menu stackable style={{ minHeight: "2.4em", marginTop: "5px" }}>
-                      <Dropdown direction="left" item trigger={<Icon name="user" style={{ color: "#042173" }} />}>
+                      <Dropdown direction="left" item trigger={<Icon name="user" />}>
                         <Dropdown.Menu>
                           <Dropdown.Item icon="edit" text="Account Settings" as={Link} to="/account" />
                           {isAdmin() && 

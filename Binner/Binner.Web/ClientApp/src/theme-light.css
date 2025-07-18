@@ -1,0 +1,91 @@
+:root {
+  --theme-bg: rgb(235, 235, 235);
+  --theme-bg-end: rgb(255, 255, 255);
+  --theme-bg-rgb: 255,255,255;
+  --theme-color: rgb(0, 0, 0);
+  --theme-color-rgb: 0, 0, 0;
+  --theme-color-opacity: 1;
+  --theme-color-inverted: rgb(220, 220, 220);
+  --theme-secondary-color: rgb(100, 100, 100);
+  --theme-color-highlight: rgb(255, 255, 255);
+  --theme-selection-bg: rgba(200, 200, 220, 0.95);
+  --theme-selection-color: rgb(0, 0, 0);
+  --theme-a-color: rgb(3, 102, 214);
+  --theme-a-color-hover: rgb(4, 112, 235);
+  --theme-binnerblue: rgb(3, 102, 214);
+  --theme-block-bg: rgb(26, 27, 28);
+  --theme-segment-bg: rgb(255, 255, 255);
+  --theme-segment-secondary-bg: rgb(243, 244, 245);
+  --theme-segment-tertiary-bg: rgb(218, 219, 219);
+  --theme-segment-inverted-bg: rgb(27, 28, 29);
+  --theme-statistic: rgb(27, 28, 29);
+  --theme-border-color: rgba(34, 36, 38, .15);
+  --theme-box-shadow: 0 1px 2px 0 rgba(34, 36, 38, .15);
+  --theme-disabled-color: rgb(204, 0, 0);
+  --theme-nav-box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+
+  /* FORM CONTROLS */
+  --theme-loading-bg: rgba(0, 0, 0, .85);
+  --theme-loading-inverted-bg: rgba(255, 255, 255, .85);
+  --theme-form-control-bg: rgb(250, 250, 250);
+  --theme-form-control-bg-focus: rgb(255, 255, 255);
+  --theme-form-control-bg-highlight: rgb(251, 251, 251);
+  --theme-input-color: rgba(0, 0, 0, .87);
+  --theme-input-color-highlight: rgb(4, 112, 235);
+  --theme-form-menu-bg: rgb(250, 250, 250);
+  --theme-form-menu-highlight-bg: rgb(240, 240, 240);
+  --theme-form-menu-highlight-color: rgba(0, 0, 0, .95);
+  --theme-menu-border: 1px solid rgba(34, 36, 38, .15);
+  --theme-menu-border-color: rgba(34, 36, 38, 0.15);
+  --theme-button-bg: rgb(224, 225, 226);
+  --theme-button-primary-bg: rgb(33, 133, 208);
+  --theme-button-primary-color: rgb(255, 255, 255);
+  --theme-button-secondary-bg: rgb(0, 0, 0);
+  --theme-button-secondary-color: rgb(255, 255, 255);
+  --theme-button-color: rgb(0, 0, 0);
+  --theme-table-bg: rgb(255, 255, 255);
+  --theme-table-border-color: rgb(222, 226, 230);
+  --theme-table-border-left: 1px solid rgba(34, 36, 38, .1);
+  --theme-table-color: rgb(0, 0, 0);
+  --theme-card-bg: rgb(255, 255, 255);
+  --theme-modal-bg: rgb(255, 255, 255);
+  --theme-modal-actions-bg: rgb(249, 250, 251);
+  --theme-tab-bg: rgb(235, 235, 235);
+  --theme-tab-color: rgb(20, 20, 20);
+  --theme-tab-active-bg: rgb(250, 250, 250);
+  --theme-tab-active-color: rgb(0, 0, 0);
+  --theme-tab-hover-bg: rgb(255, 255, 255);
+  --theme-tab-hover-color: rgb(3, 102, 214);
+  --theme-popup-bg: rgb(255, 255, 255);
+  --theme-popup-color: rgb(0, 0, 0);
+  --theme-popup-border-color: rgba(34, 36, 38, .15);
+  --theme-popup-shadow: 0 2px 4px 0 rgba(34, 36, 38, .12), 0 2px 10px 0 rgba(34, 36, 38, .15);
+  --theme-code-bg: rgb(220, 220, 220);
+  --theme-code-color: rgb(20, 20, 20);
+  --theme-code-border-color: rgb(243, 109, 51);
+
+  /* LABEL EDITOR */
+  --theme-labeleditor-border-color: rgb(0, 0, 0);
+  --theme-labeleditor-color: rgb(60, 60, 60);
+  --theme-labeleditor-label-color: rgb(20, 20, 20);
+  --theme-labeleditor-colors-black: rgb(0, 0, 0);
+  --theme-labeleditor-colors-white: rgb(128, 128, 128);
+  --theme-labeleditor-colors-blue: rgb(0, 0, 255);
+  --theme-labeleditor-colors-green: rgb(3, 197, 3);
+  --theme-labeleditor-colors-purple: rgb(160, 0, 255);
+  --theme-labeleditor-colors-yellow: rgb(187, 187, 8);
+  --theme-labeleditor-colors-orange: rgb(255, 128, 0);
+
+  /* SIDEBAR */
+  --theme-sidebar-bg: rgb(27, 28, 29);
+  --theme-sidebar-bg-rgb: 27, 28, 29;
+  --theme-sidebar-color: rgb(245, 245, 245);
+  --theme-sidebar-border-color: rgb(199, 199, 199);
+
+  --toastify-toast-width: 100%;
+  --toastify-toast-max-height: 300px;
+    --toastify-color-error: rgb(224, 42, 21);
+    --toastify-color-warning: rgb(245, 236, 118);
+    --toastify-color-info: rgb(27, 89, 221);
+    --toastify-text-color-warning: rgb(0, 0, 0);
+}

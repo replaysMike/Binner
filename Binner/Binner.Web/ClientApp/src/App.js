@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
 import { Route, Routes } from "react-router";
 import { useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify";
+
 
 // styles
+import "./theme-light.css";
+import "./theme-dark.css";
 import "./custom.css";
 import "./bootstrap.css"; /* needed for the carousel control */
 
@@ -13,9 +14,7 @@ function withSearchParams(Component) {
   return (props) => <Component {...props} searchParams={useSearchParams()} />;
 }
 
-export const App = (props) => {
-  
-
+export const App = () => {
   return (
     <div>
       <Routes>

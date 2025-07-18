@@ -25,6 +25,7 @@ export const Settings = () => {
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
+  const [currentTab, setCurrentTab] = useState(0);
   const [saveMessage, setSaveMessage] = useState("");
   const [testing, setTesting] = useState(false);
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
@@ -301,7 +302,6 @@ export const Settings = () => {
   };
 
   const handleKiCadSettingsChange = (e, control) => {
-    console.log('handleKiCadSettingsChange', control);
     const newSettings = { ...kiCadSettings };
     if (control.name.startsWith("kiCad")) {
       setControlValue(newSettings.kiCad, "kiCad", control);
@@ -337,7 +337,6 @@ export const Settings = () => {
   };
 
   const setControlValue = (setting, name, control) => {
-    console.log('setcontrolvalue', control.name, control.type, name);
     switch (control.type) {
       case "checkbox":
         // type is a checkbox, we only care about the checked value
@@ -704,7 +703,7 @@ export const Settings = () => {
             }
           />
         </Form.Field>
-        <Form.Field>
+        {/*<Form.Field>
           <label>{t('page.settings.enableDarkMode', "Enable Dark Mode")}</label>
           <Popup
             wide
@@ -724,7 +723,7 @@ export const Settings = () => {
               />
             }
           />
-        </Form.Field>
+        </Form.Field>*/}
         <Form.Field>
           <label>{t('page.settings.enableCheckNewVersion', "Enable Check for new version")}</label>
           <Popup
@@ -2027,10 +2026,12 @@ export const Settings = () => {
         },
   ];
 
-  console.log('kiCadSettings', kiCadSettings);
+  const handleTabChange = (e) => {
+    setCurrentTab(e.target.value);
+  };
 
   return (
-    <div className="mask">
+    <div>
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
@@ -2063,7 +2064,7 @@ export const Settings = () => {
         content={confirmDeleteCustomFieldContent}
       />
       <Form onSubmit={onSubmit}>
-        <Tab panes={tabPanes} />
+        <Tab panes={tabPanes} activeIndex={currentTab} onTabChange={handleTabChange} />
 
         <Form.Field inline>
           <Button type="submit" primary style={{ marginTop: "10px" }} disabled={!isDirty}>
@@ -2073,7 +2074,7 @@ export const Settings = () => {
           {saveMessage.length > 0 && <Label pointing="left">{saveMessage}</Label>}
         </Form.Field>
 
-        <div className="sticky-target" style={{ padding: '10px 10px 20px 10%' }} data-bounds={"0.05,0.8"}>
+        <div className="sticky-target" style={{ padding: '10px 10px 20px 10%' }} data-bounds={currentTab === 0 ? "0,0.4" : "0,0.82"}>
           <Form.Field inline>
             <Button type="submit" primary style={{ marginTop: "10px" }} disabled={!isDirty}>
               <Icon name="save" />

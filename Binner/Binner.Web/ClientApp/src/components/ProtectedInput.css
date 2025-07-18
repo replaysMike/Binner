@@ -10,7 +10,7 @@
 }
 
 i.barcode.icon:has(+ .protectedInput.isBarcodeScanning) {
-	color: #fff;
+	color: var(--theme-color);
 	z-index: 999999;
 	font-size: 1.5em;
 }

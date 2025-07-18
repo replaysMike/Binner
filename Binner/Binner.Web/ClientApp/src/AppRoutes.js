@@ -1,9 +1,5 @@
 import AdminWrapper from "./routes/AdminWrapper";
 
-// styles
-import "./custom.css";
-import "./bootstrap.css"; /* needed for the carousel control */
-
 // help
 import { Help } from './pages/help/Home';
 import { Scanning } from './pages/help/Scanning';
