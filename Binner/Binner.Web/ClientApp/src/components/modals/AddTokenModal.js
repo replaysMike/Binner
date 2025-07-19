@@ -15,7 +15,8 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
     tokenType: "",
     partsTimeout: 5,
     categoriesTimeout: 10,
-    location: ""
+    location: "",
+    binNumber: ""
   };
   const [_isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
@@ -53,10 +54,16 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
     switch (form.tokenType) {
         case UserTokenType.BinnerBinApiToken.value:
             {
+                // make sure we have all the required parameters
+                if (form.binNumber.length === 0 || form.location.length === 0) {
+                    return null;
+                }
+
                 const data = {
                     tokenType: form.tokenType,
                     tokenConfig: JSON.stringify({
-                        location: form.location
+                        location: form.location,
+                        binNumber: form.binNumber
                     })
                 }
                 onAdd(e, data);
@@ -120,8 +127,22 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
                 trigger={<Form.Input
                   label="Location"
                   placeholder=""
+                  required
                   value={form.location || ''}
                   name="location"
+                  onChange={handleChange}
+                />}
+              />
+            </Form.Field>
+            <Form.Field>
+              <Popup  
+                content={<p>Enter the bin number of the Binner Bin</p>}
+                trigger={<Form.Input
+                  label="Bin Number"
+                  placeholder=""
+                  required
+                  value={form.binNumber || ''}
+                  name="binNumber"
                   onChange={handleChange}
                 />}
               />

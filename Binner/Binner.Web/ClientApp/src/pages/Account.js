@@ -429,10 +429,10 @@ export function Account(props) {
                         {token.tokenType === UserTokenType.BinnerBinApiToken.value && 
                           <Popup 
                             wide
-                            content={<p>Binner Bin location</p>}
+                            content={<p>Binner bin location (bin number)</p>}
                             trigger={
                             <p style={{ cursor: "pointer", color: "#4183c4" }}>
-                                📌 {JSON.parse(token.tokenConfig)?.location}
+                                📌 {JSON.parse(token.tokenConfig)?.location} (📦 {JSON.parse(token.tokenConfig)?.binNumber})
                             </p>}
                           />
                         }
