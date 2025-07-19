@@ -69,16 +69,6 @@
     <PackageReference Include="TypeSupport" Version="1.2.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
-    <!-- Use the local licensedprovider project -->
-    <ProjectReference Include="..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
-    <!-- Use the licensedprovider package -->
-    <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
-  </ItemGroup>
-
   <ItemGroup Condition="!Exists('..\..\External\barcoder\Barcoder.Renderer.Image\Barcoder.Renderer.Image.csproj')">
     <!-- Use the Barcoder public package -->
     <PackageReference Include="Barcoder" Version="2.0.0" PrivateAssets="Compile" />
