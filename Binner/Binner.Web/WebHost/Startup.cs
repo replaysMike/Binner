@@ -73,17 +73,23 @@ namespace Binner.Web.WebHost
                 apm.FeatureProviders.Add(new GenericRestControllerFeatureProvider());
             });*/
 
+            services.AddOutputCache(options =>
+            {
+                options.AddBasePolicy(builder => builder.Cache());
+            });
+
             services.Configure<FormOptions>(options =>
             {
                 // limit files to 64MB
                 options.MultipartBodyLengthLimit = 64 * 1024 * 1024;
             });
 
-            // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
+            services.AddSpaStaticFiles(options =>
             {
-                //configuration.RootPath = "ClientApp/build";
-                configuration.RootPath = "ClientApp";
+                var uiFolder = Path.Combine("ClientApp", "build");
+                // ensure build directory exists
+                Directory.CreateDirectory(uiFolder);
+                options.RootPath = uiFolder;
             });
 
             // add custom Jwt authentication support
@@ -151,6 +157,7 @@ namespace Binner.Web.WebHost
             {
                 app.UseHttpsRedirection();
             }
+            app.UseOutputCache();
 
             app.UseExceptionHandler(appError =>
             {
@@ -181,20 +188,7 @@ namespace Binner.Web.WebHost
                 });
             });
 
-            // ensure build directory exists
-            //var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp", "build");
-            var uiFolder = Path.Combine(env.ContentRootPath, "ClientApp");
-            Directory.CreateDirectory(uiFolder);
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(uiFolder),
-                RequestPath = ""
-            });
-             app.UseSpaStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(uiFolder),
-                RequestPath = ""
-            });
+            app.UseSpaStaticFiles();
             app.UseRouting();
 
             // global error handler
@@ -203,11 +197,6 @@ namespace Binner.Web.WebHost
             // enable authorization
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseSpa((config) =>
-            {
-                config.Options.SourcePath = "ClientApp";
-            });
 
             app.UseEndpoints(endpoints =>
             {

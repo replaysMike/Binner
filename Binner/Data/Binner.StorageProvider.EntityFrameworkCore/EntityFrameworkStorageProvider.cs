@@ -1593,17 +1593,25 @@ INNER JOIN (
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
 
+            try
+            {
 #if BINNERIO
             // fix for below error.
             var result = await context.Database.SqlQuery<double>($"SELECT COALESCE(SUM(p.Cost * CAST(p.Quantity AS float)), 0.0) as Value FROM dbo.Parts AS p WHERE p.OrganizationId = {userContext.OrganizationId}")
                 .FirstOrDefaultAsync();
 #else
-            // when using SqlServer it generates an error: Unable to cast object of type 'System.Double' to type 'System.Decimal'.
-            var result = await context.Parts
-                .Where(x => x.OrganizationId == userContext.OrganizationId)
-                .SumAsync(x => x.Cost * x.Quantity);
+                // when using SqlServer it generates an error: Unable to cast object of type 'System.Double' to type 'System.Decimal'.
+                var result = await context.Parts
+                    .Where(x => x.OrganizationId == userContext.OrganizationId)
+                    .SumAsync(x => x.Cost * x.Quantity);
 #endif
-            return (decimal)result;
+                return (decimal)result;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting parts value!");
+                return 0;
+            }
         }
 
         public async Task<PartType?> GetPartTypeAsync(long partTypeId, IUserContext? userContext)

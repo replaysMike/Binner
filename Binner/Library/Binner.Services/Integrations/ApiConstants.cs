@@ -18,8 +18,18 @@
         public const int BinnerSystemMessagesCount = 10;
 
         /// <summary>
+        /// Binner user agent
+        /// </summary>
+        public const string BinnerAgent = "Binner/1.0 (https://binner.io)";
+
+        /// <summary>
         /// Endpoint for fetching system messages from the Binner API.
         /// </summary>
         public const string BinnerSystemMessageUrl = "https://binner.io/api/messages";
+
+        /// <summary>
+        /// Endpoint for fetching system messages from the Binner API when running in debug mode
+        /// </summary>
+        public const string BinnerLocalSystemMessageUrl = "https://localhost:9090/api/messages";
     }
 }
