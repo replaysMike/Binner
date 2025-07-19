@@ -6,6 +6,7 @@ import { fetchApi } from "../common/fetchApi";
 import { formatCurrency } from "../common/Utils";
 import { VersionBanner } from "../components/VersionBanner";
 import { getSystemSettings } from "../common/applicationSettings";
+import { config } from "../common/config";
 import semver from "semver";
 import customEvents from '../common/customEvents';
 import { isAuthenticated, isAdmin } from "../common/authentication";
@@ -33,7 +34,8 @@ export function Home() {
           const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
           if (semver.gt(latestVersionData.version, installedVersion) && semver.gt(latestVersionData.version, skipVersion)) {
             // new version is available, and hasn't been skipped
-            setNewVersionBannerIsOpen(true);
+            if (config.BINNERIO !== "true")
+              setNewVersionBannerIsOpen(true);
           }
         }
         // fetch system messages

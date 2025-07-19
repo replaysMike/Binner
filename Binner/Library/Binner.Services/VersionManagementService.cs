@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Octokit;
+using System.Net.Mime;
 using System.Runtime.Caching;
 
 namespace Binner.Services
@@ -81,8 +82,14 @@ namespace Binner.Services
                 await using var context = await _contextFactory.CreateDbContextAsync();
                 // fetch system messages from binner.io, then store any new ones.
                 var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Accept", MediaTypeNames.Application.Json);
+                client.DefaultRequestHeaders.Add("User-Agent", ApiConstants.BinnerAgent);
                 client.Timeout = TimeSpan.FromSeconds(5);
+#if BINNERIO
+                var response = await client.GetStringAsync(ApiConstants.BinnerLocalSystemMessageUrl);
+#else
                 var response = await client.GetStringAsync(ApiConstants.BinnerSystemMessageUrl);
+#endif
                 if (!string.IsNullOrEmpty(response))
                 {
                     var results = JsonConvert.DeserializeObject<ICollection<MessageState>>(response);

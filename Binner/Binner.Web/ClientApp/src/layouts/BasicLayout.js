@@ -9,6 +9,7 @@ import { Outlet } from "react-router-dom";
 import { toast } from "react-toastify";
 import { parseJSON } from "date-fns";
 import { getFriendlyElapsedTime, getTimeDifference, getDifferenceInMinutes } from "../common/datetime";
+import { config } from "../common/config";
 import customEvents from '../common/customEvents';
 import { fetchApi } from "../common/fetchApi";
 import { isAdmin } from "../common/authentication";
@@ -278,7 +279,7 @@ export function BasicLayout(props) {
               <div className="top-controls"><ThemeChangeToggle dark /></div>
               <h1><Logo width="18" height="18" /> <span>Binner</span></h1>
               <header>
-                <div className="version">{version ? <span>{t('footer.version', "Version")}: {version} ({latestVersion?.replace('v', '') === version ? 'latest' : <Link onClick={handleView}>{t('label.updateTo', "update to")} {latestVersion}</Link>})</span> : ""}</div>
+                <div className="version">{version ? <span>{t('footer.version', "Version")}: {version} ({latestVersion?.replace('v', '') === version || config.BINNERIO === "true" ? 'latest' : <Link onClick={handleView}>{t('label.updateTo', "update to")} {latestVersion}</Link>})</span> : ""}</div>
               </header>
             </div>
             { /** TOP */}
