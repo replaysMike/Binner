@@ -1168,10 +1168,6 @@ section.formHeader {
   transition: outline-color 0.3s ease-in-out;
   outline: 4px dashed transparent;
   outline-offset: 4px;
-  border: 1px dashed #000;
-  padding: 50px;
-  margin-bottom: 20px;
-  background-color: var(--theme-form-control-bg);
 }
 
 .dropzone:hover {
