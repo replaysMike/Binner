@@ -35,6 +35,17 @@ namespace Binner.Services
             => context.Users
                 .AsQueryable();
 
+        private bool IsUserTokenType(Model.Authentication.TokenTypes tokenType)
+        {
+            switch (tokenType) {
+                case Model.Authentication.TokenTypes.KiCadApiToken:
+                case Model.Authentication.TokenTypes.BinnerBinApiToken:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public virtual async Task<TAccount?> GetAccountAsync()
         {
             var userContext = _requestContext.GetUserContext();
@@ -48,7 +59,7 @@ namespace Binner.Services
             if (entity != null)
             {
                 // filter out tokens we want
-                entity.UserTokens = entity.UserTokens?.Where(x => x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken).ToList();
+                entity.UserTokens = entity.UserTokens?.Where(x => IsUserTokenType(x.TokenTypeId)).ToList();
                 var model = _mapper.Map<TAccount>(entity);
                 model.PartsInventoryCount = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
                 model.PartTypesCount = await context.PartTypes.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
@@ -159,21 +170,33 @@ namespace Binner.Services
             }
         }
 
-        public virtual async Task<Token?> CreateKiCadApiTokenAsync(string? tokenConfig)
+        public virtual async Task<Token?> CreateApiTokenAsync(Model.Authentication.TokenTypes tokenType, string? tokenConfig)
         {
+            switch (tokenType) {
+                case Model.Authentication.TokenTypes.KiCadApiToken:
+                case Model.Authentication.TokenTypes.BinnerBinApiToken:
+                    break;
+                default:
+                    throw new Exception($"Could not create token with type {tokenType}");
+            }
+
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var entity = await context.UserTokens
-                .Where(x => x.UserId == userContext.UserId
-                    && x.OrganizationId == userContext.OrganizationId
-                    && x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync();
 
-            // delete any existing api token. user can only have 1
-            if (entity != null)
-            {
-                context.UserTokens.Remove(entity);
+            // check for limits for the kicad token
+            if (tokenType == Model.Authentication.TokenTypes.KiCadApiToken) {
+                var entity = await context.UserTokens
+                    .Where(x => x.UserId == userContext.UserId
+                        && x.OrganizationId == userContext.OrganizationId
+                        && x.TokenTypeId == tokenType)
+                    .AsSplitQuery()
+                    .FirstOrDefaultAsync();
+
+                // delete any existing api token. user can only have 1
+                if (entity != null)
+                {
+                    context.UserTokens.Remove(entity);
+                }
             }
 
             var newToken = new DataModel.UserToken()
@@ -182,7 +205,7 @@ namespace Binner.Services
                 TokenConfig = tokenConfig,
                 DateCreatedUtc = DateTime.UtcNow,
                 DateExpiredUtc = null,
-                TokenTypeId = Model.Authentication.TokenTypes.KiCadApiToken,
+                TokenTypeId = tokenType,
                 UserId = userContext.UserId,
                 OrganizationId = userContext.OrganizationId,
                 Ip = _requestContext.GetIp()
@@ -193,14 +216,22 @@ namespace Binner.Services
             return _mapper.Map<DataModel.UserToken, Token>(newToken);
         }
 
-        public virtual async Task<bool> DeleteKiCadApiTokenAsync(string token)
+        public virtual async Task<bool> DeleteApiTokenAsync(Model.Authentication.TokenTypes tokenType, string token)
         {
+            switch (tokenType) {
+                case Model.Authentication.TokenTypes.KiCadApiToken:
+                case Model.Authentication.TokenTypes.BinnerBinApiToken:
+                    break;
+                default:
+                    throw new Exception($"Could not delete token with type {tokenType}");
+            }
+
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.UserTokens
                 .Where(x => x.UserId == userContext.UserId
                     && x.OrganizationId == userContext.OrganizationId
-                    && x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken
+                    && x.TokenTypeId == tokenType
                     && x.Token == token)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
@@ -230,12 +261,20 @@ namespace Binner.Services
             return null;
         }
 
-        public virtual async Task<bool> ValidateKiCadApiToken(string token)
+        public virtual async Task<bool> ValidateApiToken(Model.Authentication.TokenTypes tokenType, string token)
         {
+            switch (tokenType) {
+                case Model.Authentication.TokenTypes.KiCadApiToken:
+                case Model.Authentication.TokenTypes.BinnerBinApiToken:
+                    break;
+                default:
+                    throw new Exception($"Could not validate token with type {tokenType}");
+            }
+
             await using var context = await _contextFactory.CreateDbContextAsync();
             var apiToken = await context.UserTokens
                 .FirstOrDefaultAsync(x =>
-                    x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken
+                    x.TokenTypeId == tokenType
                     && x.DateRevokedUtc == null
                     && x.Token == token
                     && (x.DateExpiredUtc == null || x.DateExpiredUtc > DateTime.UtcNow));
