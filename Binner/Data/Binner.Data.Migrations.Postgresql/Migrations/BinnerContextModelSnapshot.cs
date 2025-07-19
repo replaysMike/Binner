@@ -605,6 +605,19 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("DigiKeySite")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Element14ApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Element14ApiUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Element14Country")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Element14Enabled")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("MouserApiUrl")
                         .HasColumnType("text");
 
@@ -724,6 +737,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("DigiKeyPartNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Element14PartNumber")
                         .HasColumnType("text");
 
                     b.Property<string>("ExportControlClassNumber")

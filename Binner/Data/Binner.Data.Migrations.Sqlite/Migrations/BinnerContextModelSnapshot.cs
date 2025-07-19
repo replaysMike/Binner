@@ -577,6 +577,19 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("DigiKeySite")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Element14ApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Element14ApiUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Element14Country")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Element14Enabled")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("MouserApiUrl")
                         .HasColumnType("TEXT");
 
@@ -694,6 +707,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DigiKeyPartNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Element14PartNumber")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ExportControlClassNumber")
