@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from "react";
+﻿import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { createMedia } from "@artsy/fresnel";
@@ -69,6 +69,11 @@ export default function PartsGrid2Memoized({
     return result;
   };
 
+  const [showPopup, setShowPopup] = useState(false); 
+  const [popupContent, setPopupContent] = useState(null);
+  const [partToLocate, setPartToLocate] = useState("");
+  let locationKeepaliveTimer = useRef(null);
+
   const [_parts, setParts] = useState(parts);
   const [_page, setPage] = useState(page);
   const [pageSize, setPageSize] = useState(getViewPreference('pageSize') || 25);
@@ -130,6 +135,7 @@ export default function PartsGrid2Memoized({
 
   useEffect(() => {
     setDisabledPartIds(disabledPartIds);
+    stopLocatingPart(); 
   }, [disabledPartIds]);
 
   const handlePageChange = (e, control) => {
@@ -142,6 +148,65 @@ export default function PartsGrid2Memoized({
     e.stopPropagation();
     window.open(url, "_blank");
   };
+
+  const locateKeepalive = async (part) => {
+    // update the location with our partnumber
+    return fetchApi(`/api/highlight/update?partNumber=${encodeURIComponent(part)}`, { method: "POST" });
+  }
+
+  const startLocatingPart = async (e, part) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // get the partnumber we can use to locate the part
+    const p = part.partNumber.trim();
+
+    // set the part to locate for the modal
+    setPartToLocate(p);
+
+    // clear any keepalives
+    if (locationKeepaliveTimer.current) {
+        clearInterval(locationKeepaliveTimer.current);
+    }
+
+    // do a keepalive straight away to check if we have a good 
+    // response and for the color
+    const res = await locateKeepalive(p);
+
+    // check for a 200 response
+    if (res?.responseObject?.status === 200 && res?.data?.color !== null) {
+        // send a locate to the server every second
+        locationKeepaliveTimer.current = setInterval(() => {
+            locateKeepalive(p);
+        }, 2500);
+
+        // get the color we need to show
+        const result = res.data.color;
+
+        // show the popup
+        setPopupContent({
+            title: "Part Location",
+            footerColor: result,
+            message: (
+                <>
+                <p>Part is now highlighted in <strong>{result}</strong>.</p>
+                <p>Press close to stop highlighting <strong>{part.partNumber}</strong></p>
+                </>
+            )
+        });
+        setShowPopup(true);
+    }
+  };
+
+  const stopLocatingPart = async () => {
+    if (locationKeepaliveTimer.current) {
+        clearInterval(locationKeepaliveTimer.current);
+        locationKeepaliveTimer.current = null;
+     
+        setShowPopup(false);
+        setPartToLocate("")
+    }
+  }
 
   const handlePrintLabel = async (e, part) => {
     e.preventDefault();
@@ -344,6 +409,7 @@ export default function PartsGrid2Memoized({
         case 'actions': 
           return {...def, Header: <i key={key}></i>, columnDefType: 'display', Cell: ({row}) => (
             <>
+              {<Button circular size='mini' icon='location arrow' title='Locate' onClick={e => startLocatingPart(e, row.original)} />}
               {columnsArray.includes('datasheetUrl') && columnsVisibleArray.includes('datasheetUrl') && <Button circular size='mini' icon='file pdf outline' title='View PDF' onClick={e => handleVisitLink(e, row.original.datasheetUrl)} />}
               {columnsArray.includes('print') && columnsVisibleArray.includes('print') && <Button circular size='mini' icon='print' title='Print Label' onClick={e => handlePrintLabel(e, row.original)} />}
               {columnsArray.includes('delete') && columnsVisibleArray.includes('delete') && <Button circular size='mini' icon='delete' title='Delete part' onClick={e => confirmDeleteOpen(e, row.original)} />}
@@ -487,6 +553,13 @@ export default function PartsGrid2Memoized({
         <Modal.Content>{modalContent}</Modal.Content>
         <Modal.Actions>
           <Button onClick={handleModalClose}>{"comp.partsGrid.ok"}</Button>
+        </Modal.Actions>
+      </Modal>
+      <Modal open={showPopup} onCancel={() => stopLocatingPart()} onClose={() => stopLocatingPart()}>
+        <Modal.Header>{popupContent?.title}</Modal.Header>
+        <Modal.Content>{popupContent?.message}</Modal.Content>
+        <Modal.Actions style={{ backgroundColor: popupContent?.footerColor }}>
+          <Button onClick={() => stopLocatingPart()}>{t('button.close', "Close")}</Button>
         </Modal.Actions>
       </Modal>
     </div>
