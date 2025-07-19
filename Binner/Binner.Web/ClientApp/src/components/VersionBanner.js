@@ -14,7 +14,6 @@ export function VersionBanner({ isOpen = false, version }) {
 	const [_isOpen, setIsOpen] = useState(false);
 	const [_version, setVersion] = useState('');
 	const [html, setHtml] = useState('');
-	//const [descriptionObject, setDescriptionObject] = useState(null);
 	const [url, setUrl] = useState('');
 	const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false);
 
@@ -26,10 +25,6 @@ export function VersionBanner({ isOpen = false, version }) {
 		setVersion(version?.version);
 		setHtml(version?.description);
 		setUrl(version?.url);
-		//var converter = new Converter({optionKey: 'value', completeHTMLDocument: false, ghMentions: true, ghCompatibleHeaderId: true, ghCodeBlocks: true, tasklists: true, tables: true, strikethrough: true, emoji: true, openLinksInNewWindow: true, simplifiedAutoLink: true });
-		//let desc = version?.description;
-		//var html = converter.makeHtml(desc);
-		//setDescriptionObject(html);
 	}, [version]);
 
 	const handleViewReleaseNotesModalOpen = (e) => {
