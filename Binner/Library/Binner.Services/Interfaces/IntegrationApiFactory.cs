@@ -486,9 +486,10 @@ namespace Binner.Services
             {
                 Enabled = credentials.GetCredentialBool("Enabled"),
                 ApiKey= credentials.GetCredentialString("ApiKey"),
-                ApiUrl = credentials.GetCredentialString("ApiUrl"),
-                Timeout = TimeSpan.Parse(credentials.GetCredentialString("Timeout"))
+                ApiUrl = credentials.GetCredentialString("ApiUrl")
             };
+            if (!string.IsNullOrEmpty(credentials.GetCredentialString("Timeout")) && TimeSpan.TryParse(credentials.GetCredentialString("Timeout"), out var timeout))
+                configuration.Timeout = timeout;
             var logger = _loggerFactory.CreateLogger<Integrations.SwarmApi>();
             var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
             var api = new Integrations.SwarmApi(logger, configuration, userConfiguration);
