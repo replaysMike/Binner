@@ -2,6 +2,7 @@
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.Model;
+using Binner.Model.Configuration;
 using Binner.Services.Integrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -85,10 +86,14 @@ namespace Binner.Services
                 client.DefaultRequestHeaders.Add("Accept", MediaTypeNames.Application.Json);
                 client.DefaultRequestHeaders.Add("User-Agent", ApiConstants.BinnerAgent);
                 client.Timeout = TimeSpan.FromSeconds(5);
+                string? response = null;
 #if BINNERIO
-                var response = await client.GetStringAsync(ApiConstants.BinnerLocalSystemMessageUrl);
+                if (Environment.GetEnvironmentVariable(EnvironmentVarConstants.Environment) == Microsoft.Extensions.Hosting.Environments.Development)
+                    response = await client.GetStringAsync(ApiConstants.BinnerLocalSystemMessageUrl); // use local system messages endpoint
+                else
+                    response = await client.GetStringAsync(ApiConstants.BinnerSystemMessageUrl);
 #else
-                var response = await client.GetStringAsync(ApiConstants.BinnerSystemMessageUrl);
+                response = await client.GetStringAsync(ApiConstants.BinnerSystemMessageUrl);
 #endif
                 if (!string.IsNullOrEmpty(response))
                 {
