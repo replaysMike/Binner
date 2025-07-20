@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation, Trans } from "react-i18next";
-import { Icon, Button, Modal } from "semantic-ui-react";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, Modal } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { Converter } from "showdown";
 import "./ReleaseNotesModal.css";
@@ -41,13 +41,19 @@ export function ReleaseNotesModal({ isOpen, text, description, header, actionTex
 };
 
 ReleaseNotesModal.propTypes = {
-  /** The content to display */
+  /** The message title to display */
+  title: PropTypes.string,
+  /** The message text/html to display */
   text: PropTypes.any,
+  /** The dialog description */
   description: PropTypes.string,
+  /** The dialog header */
   header: PropTypes.string,
+  /** Action button text */
   actionText: PropTypes.any,
   /** Event handler when closing modal */
   onClose: PropTypes.func,
+  /** Action button click handler */
   onAction: PropTypes.func,
   /** Set this to true to open model */
   isOpen: PropTypes.bool

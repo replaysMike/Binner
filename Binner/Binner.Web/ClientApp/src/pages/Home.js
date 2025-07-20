@@ -32,17 +32,22 @@ export function Home() {
           customEvents.notifySubscribers("latestVersion", latestVersionData);
           setVersionData(latestVersionData);
           const skipVersion = localStorage.getItem("skipVersion") || "1.0.0";
-          if (semver.gt(latestVersionData.version, installedVersion) && semver.gt(latestVersionData.version, skipVersion)) {
-            // new version is available, and hasn't been skipped
-            if (config.BINNERIO !== "true")
-              setNewVersionBannerIsOpen(true);
+          if (semver.gt(latestVersionData.version, installedVersion)) {
+            console.debug(`new version available: ${latestVersionData.version}, installed: ${installedVersion}`);
+            if (semver.gt(latestVersionData.version, skipVersion)) {
+              // new version is available, and hasn't been skipped
+              if (config.BINNERIO !== "true") setNewVersionBannerIsOpen(true);
+            } else {
+              console.debug(`user has requested to skip version ${skipVersion}.`);
+            }
           }
         }
-        // fetch system messages
-        const messages = await fetchApi("/api/system/messages");
-        if (messages.responseObject.ok) {
-          customEvents.notifySubscribers("systemMessages", messages.data);
-        }
+      }
+
+      // fetch system messages
+      const messages = await fetchApi("/api/system/messages");
+      if (messages.responseObject.ok) {
+        customEvents.notifySubscribers("systemMessages", messages.data);
       }
     });
   }, []);
@@ -220,6 +225,6 @@ export function Home() {
   if (isAuthenticated())
     return renderAuthenticatedHome();
   else
-    return (<div style={{minHeight: '400px'}}><Dimmer active inverted><Loader inverted content='Loading' /></Dimmer></div>);
+    return (<div style={{ minHeight: '400px' }}><Dimmer active inverted><Loader inverted content='Loading' /></Dimmer></div>);
 }
 Home.abortController = new AbortController();

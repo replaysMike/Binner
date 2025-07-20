@@ -3,7 +3,6 @@ import { NavMenu } from "./NavMenu";
 import { ThemeChangeToggle } from '../components/ThemeChangeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 
-
 /**
  * Global Header
  */

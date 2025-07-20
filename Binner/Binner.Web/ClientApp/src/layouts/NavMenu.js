@@ -6,7 +6,6 @@ import { Form, Menu, Dropdown, Icon, Popup } from "semantic-ui-react";
 import { isAuthenticated, isAdmin, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
 import ProtectedInput from "../components/ProtectedInput";
 import "./NavMenu.css";
-import Logo from "./logo-light.svg?react";
 
 /**
  * Top Navigation menu
@@ -48,7 +47,7 @@ export function NavMenu() {
     <header>
       <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
         <Container className={"binner-container"}>
-          <NavbarBrand tag={Link} to="/" className="svg"><Logo width="54" height="54" /><span>Binner</span></NavbarBrand>
+          <NavbarBrand tag={Link} to="/" className="svg"><div className="logo" /><span>Binner</span></NavbarBrand>
           <NavbarToggler onClick={toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>
             <Form onSubmit={onSubmit}>

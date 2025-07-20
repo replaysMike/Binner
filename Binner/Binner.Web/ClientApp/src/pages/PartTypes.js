@@ -14,7 +14,7 @@ import Box from "@mui/material/Box";
 import { TreeView } from "@mui/x-tree-view";
 import { TreeItem, treeItemClasses } from "@mui/x-tree-view";
 import Typography from "@mui/material/Typography";
-import { Memory as MemoryTwoTone } from "@mui/icons-material";
+import Memory from "@mui/icons-material/Memory";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import {
@@ -662,7 +662,7 @@ export function PartTypes(props) {
           </div>
           <div style={{ minHeight: "35px", marginTop: "2px" }}>
             <Button onClick={handleShowAdd} icon size="mini" floated="right" className="svg">
-              <MemoryTwoTone style={{color: "#2185d0"}} /> {t("button.addPartType", "Add Part Type")}
+              <Memory style={{color: "#2185d0"}} /> {t("button.addPartType", "Add Part Type")}
             </Button>
           </div>
         </div>

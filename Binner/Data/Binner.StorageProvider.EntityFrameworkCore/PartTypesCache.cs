@@ -104,6 +104,11 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         /// </summary>
         public List<CachedPartTypeResponse> Cache => LockedCacheInstance;
 
+        public PartTypesCache(IDbContextFactory<BinnerContext> contextFactory) : this(contextFactory, new WebHostServiceConfiguration())
+        {
+
+        }
+
         public PartTypesCache(IDbContextFactory<BinnerContext> contextFactory, WebHostServiceConfiguration configuration)
         {
             _contextFactory = contextFactory;

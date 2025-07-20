@@ -18,10 +18,9 @@ namespace Binner.Services
         private readonly IRequestContextAccessor _requestContext;
         private readonly ICredentialService _credentialService;
         private readonly IApiHttpClientFactory _httpClientFactory;
-        private readonly WebHostServiceConfiguration _webHostServiceConfiguration;
         private readonly IUserConfigurationService _userConfigurationService;
 
-        public IntegrationApiFactory(ILoggerFactory loggerFactory, IMapper mapper, IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, WebHostServiceConfiguration webHostServiceConfiguration, IApiHttpClientFactory httpClientFactory, IUserConfigurationService userConfigurationService)
+        public IntegrationApiFactory(ILoggerFactory loggerFactory, IMapper mapper, IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, IApiHttpClientFactory httpClientFactory, IUserConfigurationService userConfigurationService)
         {
             _loggerFactory = loggerFactory;
             _mapper = mapper;
@@ -29,7 +28,6 @@ namespace Binner.Services
             _httpContextAccessor = httpContextAccessor;
             _requestContext = requestContext;
             _credentialService = credentialService;
-            _webHostServiceConfiguration = webHostServiceConfiguration;
             _httpClientFactory = httpClientFactory;
             _userConfigurationService = userConfigurationService;
         }
@@ -463,12 +461,13 @@ namespace Binner.Services
 
         private Integrations.SwarmApi CreateGlobalSwarmApi()
         {
+            var integrationConfig = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration();
             var configuration = new SwarmConfiguration
             {
                 // system settings
-                Enabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
-                ApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
-                ApiUrl = _webHostServiceConfiguration.Integrations.Swarm.ApiUrl,
+                Enabled = integrationConfig.SwarmEnabled,
+                ApiKey = integrationConfig.SwarmApiKey,
+                ApiUrl = integrationConfig.SwarmApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<Integrations.SwarmApi>();
             var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
