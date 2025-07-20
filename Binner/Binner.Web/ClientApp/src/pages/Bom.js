@@ -659,9 +659,9 @@ export function Bom(props) {
     return {
       ...bomPart,
       // virtualized fields for sorting
-      sorted_cost: bomPart.cost || bomPart.part.cost,
+      sorted_cost: bomPart.cost || bomPart.part?.cost || 0,
       sorted_quantity: bomPart.quantity,
-      sorted_quantityAvailable: bomPart.quantityAvailable || bomPart.part.quantity,
+      sorted_quantityAvailable: bomPart.quantityAvailable || bomPart.part?.quantity || 0,
       sorted_pcb: bomPart.pcbId
     };
   };
