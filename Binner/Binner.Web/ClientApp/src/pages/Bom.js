@@ -675,7 +675,7 @@ export function Bom(props) {
     if (sortBy) {
       // some fields come from the root bom part, some from the part child object. Use virtualized fields when available
       const sortField = 'sorted_' + sortBy; // first look for sorted_*, then try the root property, then the root.part property
-      tabParts = _.sortBy(tabParts, bomPart => sortField in bomPart ? bomPart[sortField] : sortBy in bomPart ? bomPart[sortBy] : bomPart.part[sortBy]);
+      tabParts = _.sortBy(tabParts, bomPart => sortField in bomPart ? bomPart[sortField] : sortBy in bomPart ? bomPart[sortBy] : (bomPart.part && bomPart.part[sortBy]));
       if (sortDirection === 'Descending')
         tabParts.reverse();
     }
