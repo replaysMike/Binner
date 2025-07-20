@@ -48,7 +48,7 @@ namespace Binner.Testing
         public IArrowExternalOrderService ArrowExternalOrderService { get; set; }
         public ITmeExternalOrderService TmeExternalOrderService { get; set; }
         public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, Mapper.Object, IntegrationCredentialsCacheProvider.Object,
-        HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object, WebHostServiceConfiguration, ApiHttpClientFactory, UserConfigurationService.Object);
+        HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object, ApiHttpClientFactory, UserConfigurationService.Object);
 
 
         private readonly OAuthCredential _digiKeyV3Credential = new OAuthCredential
