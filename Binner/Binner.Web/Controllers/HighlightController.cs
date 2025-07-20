@@ -122,7 +122,7 @@ namespace Binner.Web.Controllers
             ).FirstOrDefaultAsync();
 
             // check if we have found a part
-            if (part == null) 
+            if (part == null || part.Location == string.Empty || part.BinNumber == string.Empty) 
             {
                 return BadRequest();
             }
