@@ -152,25 +152,6 @@ namespace Binner.Web.ServiceHost
 
             configValidator.ValidateConfiguration(storageConfig);
 
-            var migrationHostBuilder = HostBuilderFactory.Create(storageConfig);
-            var migrationHost = migrationHostBuilder.Build();
-
-            // create a custom migration handler to handle migrations for different database providers
-            var contextFactory = migrationHost.Services.GetRequiredService<IDbContextFactory<BinnerContext>>();
-            var migrationHandler = new MigrationHandler(_nlogLogger, storageConfig, contextFactory);
-            if (migrationHandler.TryDetectMigrateNeeded(out var db))
-            {
-                if (migrationHandler.MigrateDatabase(db))
-                {
-                    _nlogLogger.Info("Database was successfully migrated to Sqlite!");
-                }
-                else
-                {
-                    _nlogLogger.Error("Failed to migrate Binner Database!");
-                    return;
-                }
-            }
-
             // ensure the creation of important paths
             var userFilesPath = SystemPaths.GetUserFilesPath(storageConfig);
             if (!Directory.Exists(userFilesPath))
@@ -219,36 +200,71 @@ namespace Binner.Web.ServiceHost
             ApplicationLogging.LoggerFactory = _webHost.Services.GetRequiredService<ILoggerFactory>();
             _logger = _webHost.Services.GetRequiredService<ILogger<BinnerWebHostService>>();
 
-            await using (var context = migrationHost.Services.GetRequiredService<BinnerContext>())
+
+            var migrationHostBuilder = HostBuilderFactory.Create(storageConfig);
+            var migrationHost = migrationHostBuilder.Build();
+
+            // create a custom migration handler to handle migrations for different database providers
+            var contextFactory = migrationHost.Services.GetRequiredService<IDbContextFactory<BinnerContext>>();
+            var migrationHandler = new MigrationHandler(_nlogLogger, storageConfig, contextFactory);
+            if (migrationHandler.TryDetectMigrateNeeded(out var db))
             {
-                try
+                if (migrationHandler.MigrateDatabase(db))
                 {
-                    _logger.LogInformation($"Applying EF migrations to {storageConfig.Provider} database...");
-                    await context.Database.MigrateAsync();
-
-                    // apply a Users patch for any customers that were affected
-                    await ApplyOrganizationIdPatchAsync(context);
-                    // end patch
-
-                    _logger.LogInformation($"{storageConfig.Provider} EF migrations successfully applied!");
+                    _nlogLogger.Info("Legacy database was successfully migrated to Sqlite!");
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogError(ex, $"Failed to migrate {storageConfig.Provider} database!");
+                    _nlogLogger.Error("Failed to migrate Binner Database!");
                     return;
                 }
             }
-
-            // migrate the Binner file configuration file to the database
-            var configFileMigrator = _webHost.Services.GetRequiredService<ConfigFileMigrator>();
-            var isMigrated = await configFileMigrator.MigrateConfigFileToDatabaseAsync();
-            if (isMigrated)
+            // handle regular EF migrations
+            if (_webHostConfig.AllowDatabaseMigrations)
             {
-                _nlogLogger.Info("Binner configuration migrated to database!");
+
+                await using (var context = migrationHost.Services.GetRequiredService<BinnerContext>())
+                {
+                    try
+                    {
+                        _logger.LogInformation($"Applying EF migrations to {storageConfig.Provider} database...");
+                        await context.Database.MigrateAsync();
+
+                        // apply a Users patch for any customers that were affected
+                        await ApplyOrganizationIdPatchAsync(context);
+                        // end patch
+
+                        _logger.LogInformation($"{storageConfig.Provider} EF migrations successfully applied!");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to migrate {storageConfig.Provider} database!");
+                        return;
+                    }
+                }
             }
             else
             {
-                _nlogLogger.Info("Binner configuration already migrated, skipping.");
+                _logger.LogInformation($"Configuration specifies to skip EF migrations!");
+            }
+
+            if (_webHostConfig.AllowConfigFileMigrations)
+            {
+                // migrate the Binner file configuration file to the database
+                var configFileMigrator = _webHost.Services.GetRequiredService<ConfigFileMigrator>();
+                var isMigrated = await configFileMigrator.MigrateConfigFileToDatabaseAsync();
+                if (isMigrated)
+                {
+                    _nlogLogger.Info("Binner configuration migrated to database!");
+                }
+                else
+                {
+                    _nlogLogger.Info("Binner configuration already migrated, skipping.");
+                }
+            }
+            else
+            {
+                _logger.LogInformation($"Configuration specifies to skip config file migrations!");
             }
 
             await _webHost.RunAsync(_cancellationTokenSource.Token);

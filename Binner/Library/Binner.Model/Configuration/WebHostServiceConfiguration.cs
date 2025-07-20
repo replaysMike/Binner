@@ -194,6 +194,16 @@
         public bool AllowPasswordRecovery { get; set; } = true;
 
         /// <summary>
+        /// Allow database migrations to be run on startup
+        /// </summary>
+        public bool AllowDatabaseMigrations { get; set; } = true;
+
+        /// <summary>
+        /// Allow configuration file (appsettings.json) migrations to be run on startup
+        /// </summary>
+        public bool AllowConfigFileMigrations { get; set; } = true;
+
+        /// <summary>
         /// Locale configuration
         /// </summary>
         public LocaleConfiguration? Locale { get; set; }
