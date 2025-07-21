@@ -1319,9 +1319,10 @@ section.formHeader {
 
 .page-notice {
   font-size: 0.9em;
-  background-color: #fcf7c9;
+  color: var(--theme-page-banner-color);
+  background-color: var(--theme-page-banner-bg);
   padding: 2px 10px;
-  border: 1px dotted #bec07b;
+  border: var(--theme-page-banner-border);
   font-weight: 400;
   box-shadow: 0 2px 2px 0 rgb(34 36 38 / 15%);
   cursor: pointer;
@@ -1348,8 +1349,8 @@ section.formHeader {
 }
 
 .page-error {
-  background-color: #ce2727;
-  color: #fff;
+  background-color: var(--theme-page-error-bg);
+  color: var(--theme-page-error-color);
   padding: 2px 10px;
   border: 1px dotted #6d0a0a;
   font-weight: 400;

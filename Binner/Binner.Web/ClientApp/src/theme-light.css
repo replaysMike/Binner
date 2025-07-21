@@ -26,6 +26,11 @@
   --theme-admin-bg: rgb(255, 0, 0);
   --theme-admin-bg-gradient: linear-gradient(342deg, rgba(255, 0, 0, 1) 0%, var(--theme-bg) 79%);
   --theme-placeholder-color: rgba(0, 0, 0, 0.25);
+  --theme-page-banner-bg: rgb(252, 247, 201);
+  --theme-page-banner-border: 1px dotted rgb(190, 192, 123);
+  --theme-page-banner-color: rgb(30, 30, 30);
+  --theme-page-error-border: 1px dotted rgb(206, 39, 39);
+  --theme-page-error-color: rgb(255, 255, 255);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(0, 0, 0, .85);
