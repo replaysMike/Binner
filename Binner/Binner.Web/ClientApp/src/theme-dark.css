@@ -25,13 +25,17 @@ html[data-color-mode="dark"] {
   --theme-nav-box-shadow: 0.1rem 0.3em 1.5rem rgba(3, 102, 214, .1);
   --theme-admin-bg: rgb(255, 0, 0);
   --theme-admin-bg-gradient: linear-gradient(342deg, rgba(255, 0, 0, 1) 0%, var(--theme-bg) 79%);
+  --theme-placeholder-color: rgba(255, 255, 255, 0.25);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(16, 22, 31, 0.95);
   --theme-loading-inverted-bg: rgba(16, 22, 31, .95);
   --theme-form-control-bg: rgb(27, 36, 48);
-  --theme-form-control-bg-focus: rgb(32, 43, 58);
+  --theme-form-control-bg-focus: rgb(19, 55, 105);
+  --theme-form-control-color-focus: rgb(255, 255, 255);
   --theme-form-control-bg-highlight: rgb(37, 49, 65);
+  --theme-form-control-bg-autocomplete: rgb(61, 94, 138);
+  --theme-form-control-border-autocomplete: rgb(243, 178, 58);
   --theme-input-color: rgba(220, 220, 220, .87);
   --theme-input-color-highlight: rgb(4, 112, 235);
   --theme-form-menu-bg: rgb(21, 28, 36);

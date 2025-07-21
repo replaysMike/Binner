@@ -65,9 +65,26 @@ body {
   color: var(--theme-selection-color) !important;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgb(228, 12, 12) inset !important;
+}
+
+.ui.form input::placeholder, .ui.form .ui.input input::placeholder {
+  color: var(--theme-placeholder-color);
+}
+
 /**************************
  *    SEMANTIC STYLING    *
  **************************/
+
+.ui.form .field.field input:-webkit-autofill, .ui.form .field.field input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 100px var(--theme-form-control-bg-autocomplete) inset !important;
+  box-shadow: 0 0 0 100px var(--theme-form-control-bg-autocomplete) inset !important;
+  border-color: var(--theme-form-control-border-autocomplete) !important;
+}
 
 .ui.segment {
   background-color: var(--theme-segment-bg);
@@ -147,8 +164,8 @@ body {
 .ui.form input[type=text]:focus,
 .ui.form input[type=time]:focus,
 .ui.form input[type=url]:focus {
-  background-color: var(--theme-form-control-bg-focus);
-  color: var(--theme-color);
+  background-color: var(--theme-form-control-bg-focus) !important;
+  color: var(--theme-form-control-color-focus) !important;
 }
 
 .ui.input {
@@ -643,6 +660,17 @@ i.circular.icon {
 /**************************
  * MUI STYLING *
  **************************/
+
+.MuiTable-root,
+.MuiTableBody-root,
+.MuiTypography-root,
+.MuiTableBody-root,
+.MuiTypography-body1,
+.MuiTableContainer-root,
+.MuiToolbar-root,
+.MuiPaper-root {
+  color: var(--theme-color) !important;
+}
 
 .MuiToolbar-root.MuiToolbar-gutters {
   background-color: var(--theme-table-bg);
