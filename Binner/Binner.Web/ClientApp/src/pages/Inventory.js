@@ -623,7 +623,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (!isEditing && systemSettings.enableAutoPartSearch) fetchPartMetadataAndInventory(input, localPart);
   };
 
-  const searchDebounced = useMemo(() => debounce(doSearchDebounced, SearchDebounceTimeMs), [pageHasParameters, isEditing]);
+  const searchDebounced = useMemo(() => debounce(doSearchDebounced, SearchDebounceTimeMs), [pageHasParameters, isEditing, systemSettings]);
 
   const validateExistingBarcodeScan = async (input) => {
     Inventory.validateExistingBarcodeScanController?.abort();

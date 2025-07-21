@@ -62,7 +62,10 @@
   --theme-table-color: rgb(0, 0, 0);
   --theme-card-bg: rgb(255, 255, 255);
   --theme-modal-bg: rgb(255, 255, 255);
+  --theme-modal-header-bg: rgb(252, 252, 252);
+  --theme-modal-header-border: 1px solid rgba(34, 36, 38, .15);
   --theme-modal-actions-bg: rgb(249, 250, 251);
+  --theme-modal-actions-border: 1px solid rgba(34, 36, 38, .15);
   --theme-tab-bg: rgb(235, 235, 235);
   --theme-tab-color: rgb(20, 20, 20);
   --theme-tab-active-bg: rgb(250, 250, 250);

@@ -62,7 +62,10 @@ html[data-color-mode="dark"] {
   --theme-table-color: rgb(220,220,220);
   --theme-card-bg: rgb(20, 27, 36);
   --theme-modal-bg: rgb(20, 27, 36);
+  --theme-modal-header-bg: rgb(18, 25, 34);
+  --theme-modal-header-border: 1px solid rgba(101, 154, 211, 0.15);
   --theme-modal-actions-bg: rgb(13, 16, 22);
+  --theme-modal-actions-border: 1px solid rgba(101, 154, 211, 0.15);
   --theme-tab-bg: rgb(20, 27, 36);
   --theme-tab-color: rgb(120, 120, 120);
   --theme-tab-active-bg: rgb(65, 73, 87);

@@ -512,8 +512,9 @@ i.circular.icon {
 }
 
 .ui.modal>.header {
-  background-color: var(--theme-modal-bg);
+  background-color: var(--theme-modal-header-bg);
   color: var(--theme-color);
+  border-bottom: var(--theme-modal-header-border);
 }
 
 .ui.modal>.content {
@@ -524,6 +525,7 @@ i.circular.icon {
 .ui.modal>.actions {
   background-color: var(--theme-modal-actions-bg);
   color: var(--theme-color);
+  border-top: var(--theme-modal-actions-border);
 }
 
 .ui.modal .description p {
@@ -1225,7 +1227,7 @@ section.formHeader {
 .confirm p {
   text-align: center;
   padding: 40px 10px;
-  color: #000;
+  color: var(--theme-color);
   font-weight: normal;
 }
 
