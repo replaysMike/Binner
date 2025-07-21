@@ -15,68 +15,75 @@ export const FormatWeekNumber = 'w';
  * @returns 
  */
 export const getFriendlyElapsedTime = function (timestamp, includeRelative = false) {
-	// Convert to a positive integer
-	var time = Math.abs(timestamp);
+  // Convert to a positive integer
+  var time = Math.abs(timestamp);
 
-	// Define humanTime and units
-	var humanTime, units;
+  // Define humanTime and units
+  var humanTime, units;
 
-	// If there are years
-	if (time > (1000 * 60 * 60 * 24 * 365)) {
-		humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 365), 10);
-		units = 'years';
-	}
+  // If there are years
+  if (time > (1000 * 60 * 60 * 24 * 365)) {
+    humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 365), 10);
+    units = 'years';
+    if (humanTime <= 1) units = units.slice(0, -1);
+  }
 
-	// If there are months
-	else if (time > (1000 * 60 * 60 * 24 * 30)) {
-		humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 30), 10);
-		units = 'months';
-	}
+  // If there are months
+  else if (time > (1000 * 60 * 60 * 24 * 30)) {
+    humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 30), 10);
+    units = 'months';
+    if (humanTime <= 1) units = units.slice(0, -1);
+  }
 
-	// If there are weeks
-	else if (time > (1000 * 60 * 60 * 24 * 7)) {
-		humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 7), 10);
-		units = 'weeks';
-	}
+  // If there are weeks
+  else if (time > (1000 * 60 * 60 * 24 * 7)) {
+    humanTime = parseInt(time / (1000 * 60 * 60 * 24 * 7), 10);
+    units = 'weeks';
+    if (humanTime <= 1) units = units.slice(0, -1);
+  }
 
-	// If there are days
-	else if (time > (1000 * 60 * 60 * 24)) {
-		humanTime = parseInt(time / (1000 * 60 * 60 * 24), 10);
-		units = 'days';
-	}
+  // If there are days
+  else if (time > (1000 * 60 * 60 * 24)) {
+    humanTime = parseInt(time / (1000 * 60 * 60 * 24), 10);
+    units = 'days';
+    if (humanTime <= 1) units = units.slice(0, -1);
+  }
 
-	// If there are hours
-	else if (time > (1000 * 60 * 60)) {
-		humanTime = parseInt(time / (1000 * 60 * 60), 10);
-		units = 'hours';
-	}
+  // If there are hours
+  else if (time > (1000 * 60 * 60)) {
+    humanTime = parseInt(time / (1000 * 60 * 60), 10);
+    units = 'hours';
+    if (humanTime <= 1) units = units.slice(0, -1);
+  }
 
-	// If there are minutes
-	else if (time > (1000 * 60)) {
-		humanTime = parseInt(time / (1000 * 60), 10);
-		units = 'minutes';
-	}
+  // If there are minutes
+  else if (time > (1000 * 60)) {
+    humanTime = parseInt(time / (1000 * 60), 10);
+    units = 'minutes';
+    if (humanTime <= 1) units = units.slice(0, -1);
+  }
 
-	// Otherwise, use seconds
-	else {
-		humanTime = parseInt(time / (1000), 10);
-		units = 'seconds';
-	}
+  // Otherwise, use seconds
+  else {
+    humanTime = parseInt(time / (1000), 10);
+    units = 'seconds';
+    if (humanTime <= 1) units = units.slice(0, -1);
+  }
 
-		// Get the time and units
-	var timeUnits = humanTime + ' ' + units;
+  // Get the time and units
+  var timeUnits = humanTime + ' ' + units;
 
-	if (includeRelative) {
-		// If in the future
-		if (timestamp > 0) {
-			return 'in ' + timeUnits;
-		}
+  if (includeRelative) {
+    // If in the future
+    if (timestamp > 0) {
+      return 'in ' + timeUnits;
+    }
 
-		// If in the past
-		return timeUnits + ' ago';
-	}
+    // If in the past
+    return timeUnits + ' ago';
+  }
 
-	return timeUnits;
+  return timeUnits;
 };
 
 /**
@@ -85,11 +92,11 @@ export const getFriendlyElapsedTime = function (timestamp, includeRelative = fal
  * @returns ''
  */
 export const getFormattedTime = (time) => {
-	if (time === null)
-		return '';
-	const date = new Date(time);
-	const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour12: true };
-	return date.toLocaleString('en-US');
+  if (time === null)
+    return '';
+  const date = new Date(time);
+  const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour12: true };
+  return date.toLocaleString('en-US');
 };
 
 /**
@@ -99,7 +106,7 @@ export const getFormattedTime = (time) => {
  * @returns 
  */
 export const getTimeDifference = (time1, time2) => {
-	return time2 - time1;
+  return time2 - time1;
 };
 
 /**
@@ -108,10 +115,10 @@ export const getTimeDifference = (time1, time2) => {
  * @returns 
  */
 export const getBasicElapsed = (elapsed) => {
-	if (elapsed === null)
-		return null;
-	const msIndex = elapsed.indexOf('.');
-	return elapsed.substring(0, msIndex);
+  if (elapsed === null)
+    return null;
+  const msIndex = elapsed.indexOf('.');
+  return elapsed.substring(0, msIndex);
 };
 
 /**
@@ -120,11 +127,11 @@ export const getBasicElapsed = (elapsed) => {
  * @returns Date object
  */
 export const getDateWithoutTime = (dateStr) => {
-	var indexOfTime = dateStr.indexOf('T');
-	var dateOnly = dateStr.substring(0, indexOfTime);
-	var dateParts = dateOnly.split('-');
-	var date = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
-	return date;
+  var indexOfTime = dateStr.indexOf('T');
+  var dateOnly = dateStr.substring(0, indexOfTime);
+  var dateParts = dateOnly.split('-');
+  var date = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+  return date;
 };
 
 /**
@@ -133,44 +140,44 @@ export const getDateWithoutTime = (dateStr) => {
  * @param {Date} date2 second date
  */
 export const getElapsed = (date1, date2 = new Date()) => {
-	if (date1 === null || date2 === null)
-		return null;
+  if (date1 === null || date2 === null)
+    return null;
 
-	let timeDiff = date2.getTime() - date1.getTime();
+  let timeDiff = date2.getTime() - date1.getTime();
 
-	// Convert time difference from milliseconds to seconds
-	timeDiff = timeDiff / 1000;
+  // Convert time difference from milliseconds to seconds
+  timeDiff = timeDiff / 1000;
 
-	let seconds = Math.floor(timeDiff % 60); //ignoring uncomplete seconds (floor)
-	timeDiff = Math.floor(timeDiff / 60);
+  let seconds = Math.floor(timeDiff % 60); //ignoring uncomplete seconds (floor)
+  timeDiff = Math.floor(timeDiff / 60);
 
-	let minutes = timeDiff % 60;
-	timeDiff = Math.floor(timeDiff / 60);
+  let minutes = timeDiff % 60;
+  timeDiff = Math.floor(timeDiff / 60);
 
-	let hours = timeDiff % 24;
-	timeDiff = Math.floor(timeDiff / 24);
+  let hours = timeDiff % 24;
+  timeDiff = Math.floor(timeDiff / 24);
 
-	// The rest of timeDiff is number of days
-	let days = timeDiff;
+  // The rest of timeDiff is number of days
+  let days = timeDiff;
 
-	let totalHours = hours + (days * 24); // add days to hours
+  let totalHours = hours + (days * 24); // add days to hours
 
-	let totalHoursAsString = totalHours < 10 ? "0" + totalHours : totalHours + "";
-	let minutesAsString = (minutes < 10 && totalHours > 0) ? "0" + minutes : minutes + "";
-	let secondsAsString = seconds < 10 ? "0" + seconds : seconds + "";
+  let totalHoursAsString = totalHours < 10 ? "0" + totalHours : totalHours + "";
+  let minutesAsString = (minutes < 10 && totalHours > 0) ? "0" + minutes : minutes + "";
+  let secondsAsString = seconds < 10 ? "0" + seconds : seconds + "";
 
-	if (totalHoursAsString === "00") {
-			return minutesAsString + "m:" + secondsAsString + "s";
-	} else {
-			return totalHoursAsString + "h:" + minutesAsString + "m:" + secondsAsString + "s";
-	}
+  if (totalHoursAsString === "00") {
+    return minutesAsString + "m:" + secondsAsString + "s";
+  } else {
+    return totalHoursAsString + "h:" + minutesAsString + "m:" + secondsAsString + "s";
+  }
 };
 
 const dateRangeOverlaps = (a_start, a_end, b_start, b_end) => {
-	if (a_start < b_start && b_start < a_end) return true; // b starts in a
-	if (a_start < b_end   && b_end   < a_end) return true; // b ends in a
-	if (b_start <  a_start && a_end   <  b_end) return true; // a in b
-	return false;
+  if (a_start < b_start && b_start < a_end) return true; // b starts in a
+  if (a_start < b_end && b_end < a_end) return true; // b ends in a
+  if (b_start < a_start && a_end < b_end) return true; // a in b
+  return false;
 };
 
 /**
@@ -179,21 +186,21 @@ const dateRangeOverlaps = (a_start, a_end, b_start, b_end) => {
  * @returns true if date ranges overlap
  */
 export const multipleDateRangeOverlaps = (timeEntries = []) => {
-	let i = 0, j = 0;
-	let timeIntervals = timeEntries.filter(entry => entry.from != null && entry.to != null);
+  let i = 0, j = 0;
+  let timeIntervals = timeEntries.filter(entry => entry.from != null && entry.to != null);
 
-	if (timeIntervals != null && timeIntervals.length > 1)
-	for (i = 0; i < timeIntervals.length - 1; i += 1) {
-			for (j = i + 1; j < timeIntervals.length; j += 1) {
-							if (
-							dateRangeOverlaps(
-					timeIntervals[i].from.getTime(), timeIntervals[i].to.getTime(),
-					timeIntervals[j].from.getTime(), timeIntervals[j].to.getTime()
-									)
-							) return true;
-					}
-			}
- return false;
+  if (timeIntervals != null && timeIntervals.length > 1)
+    for (i = 0; i < timeIntervals.length - 1; i += 1) {
+      for (j = i + 1; j < timeIntervals.length; j += 1) {
+        if (
+          dateRangeOverlaps(
+            timeIntervals[i].from.getTime(), timeIntervals[i].to.getTime(),
+            timeIntervals[j].from.getTime(), timeIntervals[j].to.getTime()
+          )
+        ) return true;
+      }
+    }
+  return false;
 };
 
 /**
@@ -203,12 +210,12 @@ export const multipleDateRangeOverlaps = (timeEntries = []) => {
  */
 export const getStartOfCurrentWeek = (date) => {
   const inputDate = new Date(date); // ensure no mutating of the input
-	inputDate.setHours(0);
-	inputDate.setMinutes(0);
-	inputDate.setSeconds(0);
+  inputDate.setHours(0);
+  inputDate.setMinutes(0);
+  inputDate.setSeconds(0);
   var day = inputDate.getDay(),
-      diff = inputDate.getDate() - day + (day === 0 ? -6 : 1);
-	const startOfCurrentWeek = new Date(inputDate.setDate(diff));
+    diff = inputDate.getDate() - day + (day === 0 ? -6 : 1);
+  const startOfCurrentWeek = new Date(inputDate.setDate(diff));
   return startOfCurrentWeek;
 }
 
@@ -218,18 +225,18 @@ export const getStartOfCurrentWeek = (date) => {
  * @returns date of the start of the next week
  */
 export const getStartOfNextWeek = (date) => {
-	const inputDate = new Date(date); // ensure no mutating of the input
-	inputDate.setHours(0);
-	inputDate.setMinutes(0);
-	inputDate.setSeconds(0);
+  const inputDate = new Date(date); // ensure no mutating of the input
+  inputDate.setHours(0);
+  inputDate.setMinutes(0);
+  inputDate.setSeconds(0);
   const today = inputDate.getDate();
   let currentDay = inputDate.getDay();
-	if (currentDay === 0)
-		currentDay = 6;
-	else
-		currentDay -= 1;
+  if (currentDay === 0)
+    currentDay = 6;
+  else
+    currentDay -= 1;
   const newDate = inputDate.setDate(today - currentDay + 7);
-	const startOfNextWeek = new Date(newDate);
+  const startOfNextWeek = new Date(newDate);
   return startOfNextWeek;
 }
 
@@ -240,9 +247,9 @@ export const getStartOfNextWeek = (date) => {
  * @returns 
  */
 export const addSeconds = (date, seconds = 0) => {
-	const newDate = new Date(date);
-	newDate.setSeconds(newDate.getSeconds() + seconds);
-	return newDate;
+  const newDate = new Date(date);
+  newDate.setSeconds(newDate.getSeconds() + seconds);
+  return newDate;
 };
 
 /**
@@ -252,9 +259,9 @@ export const addSeconds = (date, seconds = 0) => {
  * @returns 
  */
 export const addMinutes = (date, minutes = 0) => {
-	const newDate = new Date(date);
-	newDate.setMinutes(newDate.getMinutes() + minutes);
-	return newDate;
+  const newDate = new Date(date);
+  newDate.setMinutes(newDate.getMinutes() + minutes);
+  return newDate;
 };
 
 /**
@@ -264,9 +271,9 @@ export const addMinutes = (date, minutes = 0) => {
  * @returns 
  */
 export const addHours = (date, hours = 0) => {
-	const newDate = new Date(date);
-	newDate.setHours(newDate.getHours() + hours);
-	return newDate;
+  const newDate = new Date(date);
+  newDate.setHours(newDate.getHours() + hours);
+  return newDate;
 };
 
 /**
@@ -276,9 +283,9 @@ export const addHours = (date, hours = 0) => {
  * @returns 
  */
 export const addDays = (date, days = 0) => {
-	const newDate = new Date(date);
-	newDate.setDate(newDate.getDate() + days);
-	return newDate;
+  const newDate = new Date(date);
+  newDate.setDate(newDate.getDate() + days);
+  return newDate;
 };
 
 /**
@@ -288,9 +295,9 @@ export const addDays = (date, days = 0) => {
  * @returns 
  */
 export const addWeeks = (date, weeks = 0) => {
-	const newDate = new Date(date);
-	newDate.setDate(newDate.getDate() + (weeks * 7));
-	return newDate;
+  const newDate = new Date(date);
+  newDate.setDate(newDate.getDate() + (weeks * 7));
+  return newDate;
 };
 
 /**
@@ -300,11 +307,11 @@ export const addWeeks = (date, weeks = 0) => {
  * @returns new Date
  */
 export const addTimeToDate = (date, time) => {
-	
-	var milliseconds = date.getTime();
-	var addMilliseconds = (time.getHours() * 60 * 60 * 1000) + (time.getMinutes() * 60 * 1000) + (time.getSeconds() * 1000) + time.getMilliseconds();
-	var newDate = new Date(milliseconds + addMilliseconds);
-	return newDate;
+
+  var milliseconds = date.getTime();
+  var addMilliseconds = (time.getHours() * 60 * 60 * 1000) + (time.getMinutes() * 60 * 1000) + (time.getSeconds() * 1000) + time.getMilliseconds();
+  var newDate = new Date(milliseconds + addMilliseconds);
+  return newDate;
 };
 
 
@@ -313,31 +320,31 @@ export const addTimeToDate = (date, time) => {
  * @param {string} timespan TimeSpan formatted time: 00:00:00.0000
  */
 export const parseTimeSpan = (timespan) => {
-	if (timespan === undefined || timespan.length === 0)
-		return { hours: 0, minutes: 0, seconds: 0, ms: 0, toMilliseconds: () => 0, toSeconds: () => 0, toMinutes: () => 0, toHours: () => 0 };
-	const parts = timespan.split(':');
-	const hours = parts.length > 0 && parseInt(parts[0]);
-	const minutes = parts.length > 1 && parseInt(parts[1]);
-	const secParts = parts.length > 2 && parts[2].split('.');
-	let seconds = 0;
-	let ms = 0;
-	if (secParts.length > 0) {
-		seconds = parseInt(secParts[0]);
-		if (secParts.length > 1)
-			ms = (parseInt(secParts[1]) / Math.pow(10, secParts[1].length - 2)) * 10;	
-	}
+  if (timespan === undefined || timespan.length === 0)
+    return { hours: 0, minutes: 0, seconds: 0, ms: 0, toMilliseconds: () => 0, toSeconds: () => 0, toMinutes: () => 0, toHours: () => 0 };
+  const parts = timespan.split(':');
+  const hours = parts.length > 0 && parseInt(parts[0]);
+  const minutes = parts.length > 1 && parseInt(parts[1]);
+  const secParts = parts.length > 2 && parts[2].split('.');
+  let seconds = 0;
+  let ms = 0;
+  if (secParts.length > 0) {
+    seconds = parseInt(secParts[0]);
+    if (secParts.length > 1)
+      ms = (parseInt(secParts[1]) / Math.pow(10, secParts[1].length - 2)) * 10;
+  }
 
-	const ts = {
-		hours,
-		minutes,
-		seconds,
-		ms,
-		toMilliseconds: () => (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000) + ms,
-		toSeconds: () => (hours * 60 * 60) + (minutes * 60) + (seconds) + ms,
-		toMinutes: () => (hours * 60) + (minutes),
-		toHours: () => hours,
-	};
-	return ts;
+  const ts = {
+    hours,
+    minutes,
+    seconds,
+    ms,
+    toMilliseconds: () => (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000) + ms,
+    toSeconds: () => (hours * 60 * 60) + (minutes * 60) + (seconds) + ms,
+    toMinutes: () => (hours * 60) + (minutes),
+    toHours: () => hours,
+  };
+  return ts;
 };
 
 /**
@@ -345,22 +352,22 @@ export const parseTimeSpan = (timespan) => {
  * @param {string} time TimeSpan string value 00:00 or 00:00:00
  */
 export const formatTimeSpan = (time, withSeconds = true, withLeadingZeros = true) => {
-	const parts = time.split(':');
-	const formattedParts = [];
-	const maxParts = withSeconds ? 3 : 2;
-	
-	for(var i = 0; i < maxParts; i++){
-		if (i < parts.length) {
-			if (withLeadingZeros || i > 0)
-				formattedParts.push(String(parseInt(parts[i])).padStart(2, "0"));
-			else
-				formattedParts.push(String(parseInt(parts[i])));
-		}
-		else
-			formattedParts.push('00');
-	}
-	const formattedTime = formattedParts.join(':');
-	return formattedTime;
+  const parts = time.split(':');
+  const formattedParts = [];
+  const maxParts = withSeconds ? 3 : 2;
+
+  for (var i = 0; i < maxParts; i++) {
+    if (i < parts.length) {
+      if (withLeadingZeros || i > 0)
+        formattedParts.push(String(parseInt(parts[i])).padStart(2, "0"));
+      else
+        formattedParts.push(String(parseInt(parts[i])));
+    }
+    else
+      formattedParts.push('00');
+  }
+  const formattedTime = formattedParts.join(':');
+  return formattedTime;
 };
 
 /**
@@ -368,14 +375,14 @@ export const formatTimeSpan = (time, withSeconds = true, withLeadingZeros = true
  * @param {string} time The time in milliseconds
  */
 export const timeSpanFromMilliseconds = (milliseconds) => {
-	
-	const ms = milliseconds % 1000;
-	const seconds = ((milliseconds % 60000) / 1000).toFixed(0);
-	const minutes = Math.floor(milliseconds / (1000 * 60)).toFixed(0);
-	const hours = Math.floor(milliseconds / (1000 * 60 * 60)).toFixed(0);
-	function pad(i) { return ('0'+i).slice(-2); }
-	const ts = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${ms}`;
-	return ts;
+
+  const ms = milliseconds % 1000;
+  const seconds = ((milliseconds % 60000) / 1000).toFixed(0);
+  const minutes = Math.floor(milliseconds / (1000 * 60)).toFixed(0);
+  const hours = Math.floor(milliseconds / (1000 * 60 * 60)).toFixed(0);
+  function pad(i) { return ('0' + i).slice(-2); }
+  const ts = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${ms}`;
+  return ts;
 };
 
 /**
@@ -383,9 +390,9 @@ export const timeSpanFromMilliseconds = (milliseconds) => {
  * @param {string} time TimeSpan string value 00:00 or 00:00:00
  */
 export const formatTime = (time) => {
-	var timeValue = parse(time, "HH:mm:ss", new Date());
+  var timeValue = parse(time, "HH:mm:ss", new Date());
 
-	return format(timeValue, 'h:mm aa').replace('AM', '');
+  return format(timeValue, 'h:mm aa').replace('AM', '');
 };
 
 /**

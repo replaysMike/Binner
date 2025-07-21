@@ -6,8 +6,12 @@
 .ui.modal.release-notes .description,
 .ui.modal.release-notes .content,
 .ui.modal.release-notes .actions {
-  background-color: #0D1117;
-  color: #e6edf3;
+  background-color: var(--theme-modal-bg);
+  color: var(--theme-color);
+}
+
+.ui.modal.release-notes .actions {
+  background-color: var(--theme-modal-actions-bg);
 }
 
 .ui.modal.release-notes .header {
@@ -20,17 +24,18 @@
 
 .ui.modal.release-notes .actions .ui.primary.button {
   background-color: #238636;
+  background-color: var(--theme-table-bg);
 }
 
-.ui.modal.release-notes .description p {
+.ui.modal.release-notes .description h1 {
   color: #0366d6;
-  font-size: 1.2em;
+  font-size: 1.75em !important;
   font-weight: 700;
 }
 
 .ui.modal.release-notes .content {
-  background-color: #0D1117;
-  color: #e6edf3;
+  background-color: var(--theme-modal-bg);
+  color: var(--theme-color)
 }
 
 .ui.modal.release-notes .content a {
@@ -43,7 +48,7 @@
 }
 
 .ui.modal.release-notes .content li {
-  color: #7d8590;
+  color: var(--theme-color);
   padding: 2px;
 }
 
@@ -72,9 +77,10 @@
 }
 
 .ui.modal.release-notes .content code {
-  background: var(--theme-segment-inverted-bg) !important;
+  background: var(--theme-code-bg) !important;
+  color: var(--theme-code-color) !important;
   border: none;
   display: inline-block;
-  padding: 0;
+  padding: 0 5px;
   margin: 0;
 }

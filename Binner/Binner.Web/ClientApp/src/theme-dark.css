@@ -23,6 +23,8 @@ html[data-color-mode="dark"] {
   --theme-box-shadow: 0 1px 2px 0 rgba(147, 156, 165, 0.5);
   --theme-disabled-color: rgb(164, 20, 20);
   --theme-nav-box-shadow: 0.1rem 0.3em 1.5rem rgba(3, 102, 214, .1);
+  --theme-admin-bg: rgb(255, 0, 0);
+  --theme-admin-bg-gradient: linear-gradient(342deg, rgba(255, 0, 0, 1) 0%, var(--theme-bg) 79%);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(16, 22, 31, 0.95);

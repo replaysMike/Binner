@@ -23,6 +23,8 @@
   --theme-box-shadow: 0 1px 2px 0 rgba(34, 36, 38, .15);
   --theme-disabled-color: rgb(204, 0, 0);
   --theme-nav-box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+  --theme-admin-bg: rgb(255, 0, 0);
+  --theme-admin-bg-gradient: linear-gradient(342deg, rgba(255, 0, 0, 1) 0%, var(--theme-bg) 79%);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(0, 0, 0, .85);

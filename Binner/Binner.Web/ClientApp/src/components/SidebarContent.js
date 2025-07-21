@@ -92,7 +92,7 @@ export function SidebarContent({ openSidebar, version, latestVersion, latestVers
     setIsViewMessageModalOpen(true);
     setViewMessage(msg.message);
     setViewMessageTitle(msg.title);
-    setViewMessageDescription(msg?.dateCreatedUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), parseJSON(msg.dateCreatedUtc)), true) : '');
+    setViewMessageDescription(msg?.dateCreatedUtc !== null ? getFriendlyElapsedTime(getTimeDifference(new Date(), parseJSON(msg.dateCreatedUtc)), true) : '');
   };
 
   const handleViewVersion = (e) => {
@@ -122,14 +122,15 @@ export function SidebarContent({ openSidebar, version, latestVersion, latestVers
   };
 
   const handleViewMessageModalClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsViewMessageModalOpen(false);
   };
 
   return (<div className="content-container">
     <ReleaseNotesModal
       header={t('comp.sidebar.systemMessages', "System Messages")}
-      title={viewMessageTitle}
-      description={viewMessageDescription}
+      description={<div><h1>{viewMessageTitle}</h1><span className="datetime relative">{viewMessageDescription}</span></div>}
       text={viewMessage}
       isOpen={isViewMessageModalOpen || false}
       onClose={handleViewMessageModalClose}
@@ -158,7 +159,7 @@ export function SidebarContent({ openSidebar, version, latestVersion, latestVers
               <li key={key} className="message">
                 <div>
                   <header>{getReadIcon(msg.readDateUtc)}{msg.title}</header>
-                  <span className="date">{msg?.dateCreatedUtc !== null ? getFriendlyElapsedTime(getTimeDifference(Date.now(), parseJSON(msg.dateCreatedUtc)), true) : ''}</span>
+                  <span className="date">{msg?.dateCreatedUtc !== null ? getFriendlyElapsedTime(getTimeDifference(new Date(), parseJSON(msg.dateCreatedUtc)), true) : ''}</span>
 
                   {msg.message.length > MAX_MESSAGE_LEN ? (<><p>{msg.message.substring(0, MAX_MESSAGE_LEN)}...</p><Link className="small" onClick={(e, control) => handleReadMessage(e, control, msg)}>Read more...</Link></>) : <p>{msg.message}</p>}
                 </div>

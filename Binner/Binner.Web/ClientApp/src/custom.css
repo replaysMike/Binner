@@ -632,6 +632,10 @@ i.circular.icon {
   box-shadow: 1px -1px 0 0 var(--theme-popup-border-color);
 }
 
+.ui.divider {
+  color: var(--theme-color);
+}
+
 /**************************
  *  END SEMANTIC STYLING  *
  **************************/
@@ -1016,7 +1020,7 @@ section.formHeader {
 }
 
 .contentwrapper {
-  background-color: #fff;
+  background-color: url(--theme-bg);
 }
 
 .selectable {
@@ -1644,4 +1648,13 @@ ul.errors li.error:before {
 .message-read {
   transition-property: color;
   transition-duration: 1s;
+}
+
+.datetime {
+  color: var(--theme-color);
+  font-size: 0.9em;
+}
+
+.datetime.relative {
+  font-style: italic;
 }
