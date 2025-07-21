@@ -65,20 +65,24 @@ body {
   color: var(--theme-selection-color) !important;
 }
 
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px rgb(228, 12, 12) inset !important;
-}
-
-.ui.form input::placeholder, .ui.form .ui.input input::placeholder {
-  color: var(--theme-placeholder-color);
-}
-
 /**************************
  *    SEMANTIC STYLING    *
  **************************/
+
+#printarea.ui.image {
+  background-color: var(--theme-print-bg);
+  border: var(--theme-print-border);
+  border-radius: 12px;
+  padding: 5px;
+  -webkit-box-shadow: inset 1px 1px 8px -1px rgba(0,0,0,.25);
+  box-shadow: inset 1px 1px 8px -1px rgba(0, 0, 0, .25);
+  margin-right: 15px;
+}
+
+ .ui.form input::placeholder,
+ .ui.form .ui.input input::placeholder {
+   color: var(--theme-placeholder-color);
+ }
 
 .ui.form .field.field input:-webkit-autofill, .ui.form .field.field input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 100px var(--theme-form-control-bg-autocomplete) inset !important;

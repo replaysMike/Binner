@@ -29,9 +29,17 @@ namespace Binner.Services
         {
             var user = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.UserConfigurations
-                .Where(x => x.UserId == user.UserId && x.OrganizationId == user.OrganizationId && x.DefaultPartLabelId != null)
+            var hasUserConfig = await context.UserConfigurations
+                .Where(x => x.UserId == user.UserId 
+                    && x.OrganizationId == user.OrganizationId 
+                    && x.DefaultPartLabelId != null)
                 .AnyAsync();
+            if (!hasUserConfig)
+            {
+                var hasDefaultSystemLabel = await context.Labels.Where(x => x.UserId == null && x.OrganizationId == null && x.IsPartLabelTemplate).AnyAsync();
+                return hasDefaultSystemLabel;
+            }
+            return hasUserConfig;
         }
 
         public async Task<Label> GetPartLabelTemplateAsync()
@@ -41,8 +49,7 @@ namespace Binner.Services
             var config = _userConfigurationService.GetCachedUserConfiguration();
             var defaultPartLabelId = config.DefaultPartLabelId;
             var entity = await context.Labels
-                .Where(x => x.LabelId == defaultPartLabelId && x.OrganizationId == user.OrganizationId)
-                .OrderBy(x => x.OrganizationId)
+                .Where(x => x.LabelId == defaultPartLabelId && x.UserId == user.UserId && x.OrganizationId == user.OrganizationId)
                 .FirstOrDefaultAsync();
             if (entity == null)
             {
@@ -50,7 +57,6 @@ namespace Binner.Services
                 entity = await context.Labels
                     // null organization ids indicate a system template
                     .Where(x => x.IsPartLabelTemplate && x.OrganizationId == null)
-                    .OrderBy(x => x.OrganizationId)
                     .FirstOrDefaultAsync();
             }
             return _mapper.Map<Label>(entity);

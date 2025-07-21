@@ -31,6 +31,8 @@
   --theme-page-banner-color: rgb(30, 30, 30);
   --theme-page-error-border: 1px dotted rgb(206, 39, 39);
   --theme-page-error-color: rgb(255, 255, 255);
+  --theme-print-bg: rgba(255, 255, 255, 1);
+  --theme-print-border: 2px solid rgb(90, 153, 226);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(0, 0, 0, .85);
