@@ -66,13 +66,13 @@
 }
 
 .partTypeSelector-container svg.parttype {
-  color: rgba(var(--theme-color-rgb), .87);
+  color: var(--theme-svg-color);
 	margin-right: 5px;
 	vertical-align: baseline;
 }
 
 .partTypeSelector-container div.parttype:has(svg) {
-  color: rgba(var(--theme-color-rgb), .87);
+  color: var(--theme-svg-color);
 	margin-right: 5px;
 }
 

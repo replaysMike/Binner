@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.Internal;
 using Binner.Common.Integrations;
 using Binner.Data;
 using Binner.Global.Common;
@@ -18,6 +19,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.ComponentModel;
+using System.Reflection;
 
 namespace Binner.Testing
 {
@@ -27,7 +30,7 @@ namespace Binner.Testing
         public StorageProviderConfiguration StorageProviderConfiguration { get; set; }
         public Mock<IDbContextFactory<BinnerContext>> DbFactory { get; set; }
         public IStorageProvider StorageProvider { get; set; }
-        public Mock<IMapper> Mapper { get; set; }
+        public IMapper Mapper { get; set; }
         public Mock<IHttpContextAccessor> HttpContextAccessor { get; set; }
         public Mock<IRequestContextAccessor> RequestContextAccessor { get; set; }
         public Mock<IPartTypesCache> PartTypesCache { get; set; }
@@ -47,7 +50,7 @@ namespace Binner.Testing
         public IMouserExternalOrderService MouserExternalOrderService { get; set; }
         public IArrowExternalOrderService ArrowExternalOrderService { get; set; }
         public ITmeExternalOrderService TmeExternalOrderService { get; set; }
-        public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, Mapper.Object, IntegrationCredentialsCacheProvider.Object,
+        public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, Mapper, IntegrationCredentialsCacheProvider.Object,
         HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object, ApiHttpClientFactory, UserConfigurationService.Object);
 
 
@@ -76,8 +79,25 @@ namespace Binner.Testing
             UserId = TestConstants.UserId,
         };
 
+        private IMapper InitMapper()
+        {
+            var config = new AutoMapper.MapperConfiguration(cfg =>
+            {
+                // see: https://github.com/AutoMapper/AutoMapper/issues/3988
+                cfg.Internal().MethodMappingEnabled = false;
+                //cfg.ConstructServicesUsing(t => container.GetInstance(t));
+                cfg.AddMaps(Assembly.Load("Binner.Services"));
+            });
+
+            config.AssertConfigurationIsValid();
+            var mapper = config.CreateMapper();
+            return mapper;
+        }
+
         public TestContext()
         {
+            // init AutoMapper
+            Mapper = InitMapper();
             WebHostServiceConfiguration = new WebHostServiceConfiguration();
             StorageProviderConfiguration = new StorageProviderConfiguration()
             {
@@ -97,7 +117,6 @@ namespace Binner.Testing
                     .Options));
 
             StorageProvider = new InMemoryStorageProvider();
-            Mapper = new Mock<IMapper>();
             HttpContextAccessor = new Mock<IHttpContextAccessor>();
             var httpContextMock = new Mock<HttpContext>();
             var requestMock = new Mock<HttpRequest>();
@@ -118,6 +137,14 @@ namespace Binner.Testing
             ExternalBarcodeInfoService = new Mock<IExternalBarcodeInfoService>();
             ExternalCategoriesService = new Mock<IExternalCategoriesService>();
             UserConfigurationService = new Mock<IUserConfigurationService>();
+            UserConfigurationService.Setup(x => x.GetCachedPrinterConfiguration(It.IsAny<int?>()))
+                .Returns(new UserPrinterConfiguration());
+            UserConfigurationService.Setup(x => x.GetCachedOrganizationConfiguration(It.IsAny<int?>()))
+                .Returns(new OrganizationConfiguration());
+            UserConfigurationService.Setup(x => x.GetCachedOrganizationIntegrationConfiguration(It.IsAny<int?>()))
+                .Returns(new OrganizationIntegrationConfiguration());
+            UserConfigurationService.Setup(x => x.GetCachedUserConfiguration(It.IsAny<int?>()))
+                .Returns(new UserConfiguration());
             BaseIntegrationBehavior = new Mock<IBaseIntegrationBehavior>();
             IntegrationCredentialsCacheProvider = new Mock<IIntegrationCredentialsCacheProvider>();
 

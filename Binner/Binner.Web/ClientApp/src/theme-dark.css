@@ -33,6 +33,7 @@ html[data-color-mode="dark"] {
   --theme-page-error-color: rgb(255, 255, 255);
   --theme-print-bg: rgb(178, 191, 209);
   --theme-print-border: 2px solid rgb(94, 142, 196);
+  --theme-svg-color: rgba(220, 220, 220, 1);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(16, 22, 31, 0.95);

@@ -636,6 +636,10 @@ i.circular.icon {
   box-shadow: var(--theme-popup-shadow);
 }
 
+.ui.popup p {
+  color: var(--theme-popup-color);
+}
+
 .ui.popup:before {
   -webkit-box-shadow: 1px 1px 0 0 var(--theme-popup-border-color);
     box-shadow: 1px 1px 0 0 var(--theme-popup-border-color);
@@ -674,7 +678,8 @@ i.circular.icon {
 .MuiTypography-body1,
 .MuiTableContainer-root,
 .MuiToolbar-root,
-.MuiPaper-root {
+.MuiPaper-root,
+.MuiSvgIcon-root {
   color: var(--theme-color) !important;
 }
 
@@ -1443,6 +1448,11 @@ section.formHeader {
 
 /* Icon hover colors */
 
+svg.parttype:hover,
+.icon-container svg.parttype:hover {
+  color: var(--theme-a-color-hover) !important;
+}
+
 svg.parttype-LED:hover,
 .icon-container svg.parttype-LED:hover {
   color: #f00 !important;
@@ -1458,19 +1468,14 @@ svg.parttype-Hardware:hover,
   color: #06a !important;
 }
 
-svg.parttype-Transistor:hover,
-.icon-container svg.parttype-Transistor:hover {
-  color: #000 !important;
-}
-
 svg.parttype-Capacitor:hover,
 .icon-container svg.parttype-Capacitor:hover {
-  color: #c0c !important;
+  color: rgb(7, 167, 216) !important;
 }
 
 svg.parttype-Resistor:hover,
 .icon-container svg.parttype-Resistor:hover {
-  color: rgb(248, 248, 149) !important;
+  color: rgb(117, 63, 0) !important;
 }
 
 svg.parttype-Relay:hover,
@@ -1478,19 +1483,19 @@ svg.parttype-Relay:hover,
   color: #08a !important;
 }
 
-svg.parttype-IC:hover,
-.icon-container svg.parttype-IC:hover {
-  color: #000 !important;
+svg.parttype-Transistor:hover,
+.icon-container svg.parttype-Relay:hover {
+  color: rgb(134, 134, 134) !important;
 }
 
 svg.parttype-Diode:hover,
-.icon-container svg.parttype-Diode:hover {
-  color: #000 !important;
+.icon-container svg.parttype-Relay:hover {
+  color: rgb(68, 68, 68) !important;
 }
 
-svg.parttype-Crystal:hover,
-.icon-container svg.parttype-Crystal:hover {
-  color: #ccc !important;
+svg.parttype-Cable:hover,
+.icon-container svg.parttype-Relay:hover {
+  color: rgb(68, 68, 68) !important;
 }
 
 .link-button {

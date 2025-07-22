@@ -79,6 +79,7 @@
   --theme-code-bg: rgb(220, 220, 220);
   --theme-code-color: rgb(20, 20, 20);
   --theme-code-border-color: rgb(243, 109, 51);
+  --theme-svg-color: rgba(0, 0, 0, .5);
 
   /* LABEL EDITOR */
   --theme-labeleditor-border-color: rgb(0, 0, 0);

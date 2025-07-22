@@ -36,8 +36,6 @@
     <None Remove="IO\_Data\Barcodes\ShouldGenerate30346LongBarcodeAsync.png" />
     <None Remove="IO\_Data\Barcodes\ShouldGenerate30346LongPartLabelAsync.png" />
     <None Remove="IO\_Data\Barcodes\ShouldGenerate30346PartLabelAsync.png" />
-    <None Remove="IO\_Data\Barcodes\ShouldGenerateBarcodeAsync.png" />
-    <None Remove="IO\_Data\Barcodes\ShouldGeneratePartLabelAsync.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -318,8 +316,7 @@
   </ItemGroup>
 
   <!-- Import common solution/project settings -->
-  <PropertyGroup Condition="'$(SolutionDir)' == '' or
-                     '$(SolutionDir)' == '*undefined*'">
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or&#xD;&#xA;                     '$(SolutionDir)' == '*undefined*'">
     <SolutionDir>..\..\</SolutionDir>
   </PropertyGroup>
   <Import Project="$(SolutionDir)CommonSettings.targets" />
