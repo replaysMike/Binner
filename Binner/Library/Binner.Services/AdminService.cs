@@ -3,6 +3,7 @@ using Binner.Common;
 using Binner.Common.IO;
 using Binner.Data;
 using Binner.Global.Common;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -160,6 +161,49 @@ namespace Binner.Services
             model.EnabledIntegrations = string.Join(", ", enabledIntegrations);
 
             return model;
+        }
+
+        public async Task<PaginatedResponse<SystemLogsResponse>> GetSystemLogsAsync(PaginatedRequest request)
+        {
+            var userContext = _requestContext.GetUserContext();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            
+            
+            var lines = new List<SystemLogsResponse>();
+            
+            string? filename = string.Empty;
+            switch(request.By?.ToLower())
+            {
+                case "binner":
+                    filename = LogManager.Configuration?.FindTargetByName<NLog.Targets.FileTarget>("file")?.FileName.ToString();
+                    break;
+                case "microsoft":
+                    filename = LogManager.Configuration?.FindTargetByName<NLog.Targets.FileTarget>("microsoftfile")?.FileName.ToString();
+                    break;
+                case "missinglocalekeys":
+                    filename = LogManager.Configuration?.FindTargetByName<NLog.Targets.FileTarget>("locale")?.FileName.ToString();
+                    break;
+                case "internal":
+                    filename = Path.Combine(Path.GetDirectoryName(LogManager.Configuration?.FindTargetByName<NLog.Targets.FileTarget>("file")?.FileName.ToString()) ?? string.Empty, "Binner-internal.log");
+                    break;
+                default:
+                    return new PaginatedResponse<SystemLogsResponse>(0, request.Results, request.Page, new List<SystemLogsResponse>());
+            }
+
+            if (string.IsNullOrEmpty(filename) || !File.Exists(filename)) return new PaginatedResponse<SystemLogsResponse>(0, request.Results, request.Page, new List<SystemLogsResponse>());
+
+            var logReader = new LogReader(filename);
+            var lineNum = 1;
+            var currentPage = 1;
+            foreach(var line in logReader)
+            {
+                currentPage = (int)Math.Ceiling((double)lineNum / request.Results);
+                if (currentPage == request.Page) 
+                    lines.Add(new SystemLogsResponse(line));
+                lineNum++;
+            }
+            
+            return new PaginatedResponse<SystemLogsResponse>(-1, request.Results, request.Page, lines);
         }
     }
 }

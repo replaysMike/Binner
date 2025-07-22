@@ -1,0 +1,43 @@
+table.log {
+
+}
+
+.message {
+  font-family: "Source Code Pro", monospace;
+  font-size: 0.9em;
+  /*https: //medium.com/weekly-webtips/easy-truncate-multi-line-ellipsis-with-pure-css-e0d24d68078e*/
+    -webkit-line-clamp: 3;
+    /* autoprefixer: off */
+    -webkit-box-orient: vertical;
+    /* autoprefixer: on */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    vertical-align: top;
+}
+
+table.log .level.ERROR {
+  color: #f00;
+  font-weight: 700;
+}
+
+[data-color-mode=dark] table.log .level.WARN {
+  color: rgb(190, 190, 2);
+  font-weight: 500;
+}
+
+[data-color-mode=light] table.log .level.WARN {
+  color: rgb(121, 121, 2);
+  font-weight: 500;
+}
+
+table.log .level.INFO {
+}
+
+[data-color-mode=dark] table.log .level.DEBUG {
+  color: #555;
+}
+
+[data-color-mode=light] table.log .level.DEBUG {
+  color: #ccc;
+}

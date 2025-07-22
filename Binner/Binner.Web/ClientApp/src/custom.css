@@ -227,7 +227,7 @@ body {
 
 .ui.menu .active.item:hover,
 .ui.vertical.menu .active.item:hover {
-  background-color: var(--theme-form-menu-highlight-bg);
+  background-color: var(--theme-form-menu-highlight-bg) !important;
   color: var(--theme-form-menu-highlight-color);
 }
 
@@ -299,7 +299,7 @@ body {
 }
 
 .ui.menu .active.item {
-  background-color: var(--theme-form-menu-bg);
+  background-color: var(--theme-form-menu-bg) !important;
   color: var(--theme-input-color);
 }
 

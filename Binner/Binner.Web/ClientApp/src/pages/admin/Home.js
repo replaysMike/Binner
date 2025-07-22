@@ -37,6 +37,10 @@ export const Admin = () => {
               <h1><span>{t('page.admin.systemInfo.title', "System Information")}</span></h1>
               <p>{t('page.admin.systemInfo.baseDescription', "Get information on your Binner installation.")}</p>
             </li>
+            <li onClick={() => navigate("/admin/logs")}>
+              <h1><span>{t('page.admin.systemLogs.title', "System Logs")}</span></h1>
+              <p>{t('page.admin.systemLogs.baseDescription', "Get the system logs.")}</p>
+            </li>
             <Popup
               hoverable
               content={<p>

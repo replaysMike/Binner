@@ -74,6 +74,25 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Get application logs
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("logs")]
+        [Authorize(Policy = Binner.Model.Authentication.AuthorizationPolicies.Admin)]
+        public async Task<IActionResult> GetSystemLogsAsync([FromQuery] PaginatedRequest request)
+        {
+            try
+            {
+                var result = await _adminService.GetSystemLogsAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Get system info error! ", ex));
+            }
+        }
+
+        /// <summary>
         /// Get the latest Binner version info available
         /// </summary>
         /// <returns></returns>

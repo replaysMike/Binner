@@ -43,6 +43,7 @@ import { Backup } from "./pages/admin/Backup";
 import { UpdateParts } from "./pages/admin/UpdateParts";
 import { ActivateLicense } from "./pages/admin/ActivateLicense";
 import { SystemInformation } from "./pages/admin/SystemInformation";
+import { SystemLogs } from "./pages/admin/SystemLogs";
 
 const AppRoutes = [
   {
@@ -200,6 +201,10 @@ const AppRoutes = [
   {
     path: 'admin/info',
     element: <AdminWrapper><SystemInformation /></AdminWrapper>
+  },
+  {
+    path: 'admin/logs',
+    element: <AdminWrapper><SystemLogs /></AdminWrapper>
   },
   {
     path: 'admin/updateParts',
