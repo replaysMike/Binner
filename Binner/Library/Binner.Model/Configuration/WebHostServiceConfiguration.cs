@@ -1,4 +1,6 @@
-﻿namespace Binner.Model.Configuration
+﻿using Newtonsoft.Json;
+
+namespace Binner.Model.Configuration
 {
     /// <summary>
     /// Service Configuration
@@ -145,24 +147,6 @@
             }
         }
 
-        private string? _licenseKey = string.Empty;
-        /// <summary>
-        /// License key
-        /// </summary>
-        public string? LicenseKey
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.LicenseKey)))
-                    return System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.LicenseKey);
-                return _licenseKey;
-            }
-            set
-            {
-                _licenseKey = value;
-            }
-        }
-
         /// <summary>
         /// Maximum number of items to cache
         /// </summary>
@@ -204,14 +188,14 @@
         public bool AllowConfigFileMigrations { get; set; } = true;
 
         /// <summary>
-        /// Locale configuration
-        /// </summary>
-        public LocaleConfiguration? Locale { get; set; }
-
-        /// <summary>
         /// Authentication configuration
         /// </summary>
         public AuthenticationConfiguration Authentication { get; set; } = new();
+
+        /// <summary>
+        /// Locale configuration
+        /// </summary>
+        public LocaleConfiguration? Locale { get; set; }
 
         /// <summary>
         /// Digikey configuration

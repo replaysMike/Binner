@@ -19,7 +19,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
                 .ForMember(x => x.Tme, options => options.MapFrom(x => x.Integrations.Tme))
-                .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
+                .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.Licensing != null ? x.Licensing.LicenseKey : ""))
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))

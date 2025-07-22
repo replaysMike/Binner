@@ -4,6 +4,7 @@ using Binner.Model.Configuration.Integrations;
 using Binner.Services;
 using Binner.Web.Controllers;
 using Microsoft.Extensions.Logging;
+using NPOI.HPSF;
 using System;
 using System.Threading.Tasks;
 
@@ -39,14 +40,14 @@ namespace Binner.Web.Database
                 {
                     const int defaultOrganizationId = 1;
                     const int defaultUserId = 1;
-                    var integrationConfiguration = _mapper.Map<OrganizationIntegrationConfiguration>(_configuration.Integrations);
-                    var printerConfiguration = _mapper.Map<UserPrinterConfiguration>(_configuration.PrinterConfiguration);
-                    var userConfiguration = _mapper.Map<UserConfiguration>(_configuration.Locale);
-                    userConfiguration = _mapper.Map<BarcodeConfiguration, UserConfiguration>(_configuration.Barcode, userConfiguration);
+                    var integrationConfiguration = _mapper.Map<OrganizationIntegrationConfiguration>(_configuration.Integrations ?? new IntegrationConfiguration());
+                    var printerConfiguration = _mapper.Map<UserPrinterConfiguration>(_configuration.PrinterConfiguration ?? new PrinterConfiguration());
+                    var userConfiguration = _mapper.Map<UserConfiguration>(_configuration.Locale ?? new LocaleConfiguration());
+                    userConfiguration =  _mapper.Map<BarcodeConfiguration, UserConfiguration>(_configuration.Barcode ?? new BarcodeConfiguration(), userConfiguration);
                     
                     var organizationConfiguration = await _userConfigurationService.CreateOrUpdateOrganizationConfigurationAsync(new OrganizationConfiguration
                     {
-                        LicenseKey = _configuration.Licensing.LicenseKey ?? _configuration.LicenseKey,
+                        LicenseKey = _configuration.Licensing.LicenseKey,
                     }, defaultOrganizationId);
                     integrationConfiguration = await _userConfigurationService.CreateOrUpdateOrganizationIntegrationConfigurationAsync(integrationConfiguration, defaultOrganizationId);
                     userConfiguration = await _userConfigurationService.CreateOrUpdateUserConfigurationAsync(userConfiguration, defaultUserId, defaultOrganizationId);
@@ -54,7 +55,8 @@ namespace Binner.Web.Database
                     
                     // mark it as migrated so we don't run it again
                     _configuration.IsMigrated = true;
-                    await _settingsService.SaveSettingsAsAsync(_configuration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true, true);
+                    var backupFilename = $"{_appSettingsFilename}_{DateTime.Now.Ticks}.preMigrate";
+                    await _settingsService.SaveSettingsAsAsync(_configuration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true, backupFilename);
                     return true;
                 }
 

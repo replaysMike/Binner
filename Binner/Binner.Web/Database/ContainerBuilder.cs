@@ -45,7 +45,7 @@ namespace Binner.Web.Database
             });
 
             container.RegisterInstance(_webHostServiceConfiguration);
-            container.RegisterInstance(new LicensedProvider.LicenseConfiguration { LicenseKey = _webHostServiceConfiguration.LicenseKey });
+            container.RegisterInstance(new LicensedProvider.LicenseConfiguration { LicenseKey = _webHostServiceConfiguration.Licensing?.LicenseKey });
             return container;
         }
     }

@@ -150,7 +150,7 @@ namespace Binner.Services.Authentication
                 signingKey = TokenGenerator.NewSecurityToken(40);
                 _configuration.Authentication.JwtSecretKey = signingKey;
                 // save to appsettings
-                _settingsService.SaveSettingsAsAsync(_configuration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true, false);
+                _settingsService.SaveSettingsAsAsync(_configuration, nameof(WebHostServiceConfiguration), _appSettingsFilename, true);
             }
 
             return GetSecurityKey(signingKey);

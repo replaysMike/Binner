@@ -1,4 +1,5 @@
-﻿using Binner.Common;
+﻿using AutoMapper;
+using Binner.Common;
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.Model;
@@ -30,11 +31,17 @@ namespace Binner.Services
             _requestContext = requestContextAccessor;
         }
 
-        public async Task SaveSettingsAsAsync<T>(T instance, string sectionName, string filename, bool createBackup, bool stripConfiguration)
+        public async Task SaveSettingsAsAsync(WebHostServiceConfiguration config, string sectionName, string filename, bool createBackup, string? backupFilename = null)
         {
             if (createBackup)
             {
-                File.Copy(filename, $"{filename}_{DateTime.Now.Ticks}{BackupFilenameExtension}", true);
+                var backupFile = $"{filename}_{DateTime.Now.Ticks}{BackupFilenameExtension}";
+                if (!string.IsNullOrEmpty(backupFilename))
+                {
+                    backupFile = $"{backupFilename}{BackupFilenameExtension}";
+                }
+                File.Copy(filename, backupFile, true);
+                _logger?.LogInformation($"Backed up '{filename}' to '{backupFile}'");
             }
 
             // serialize settings to disk
@@ -53,15 +60,16 @@ namespace Binner.Services
                 textReader.Close();
             }
 
-            if (json != null && json.ContainsKey(sectionName) && instance != null)
-                json[sectionName] = JToken.FromObject(instance);
+            // use the writable version of the configuration object so we don't serialize properties no longer stored in the file
+            if (json != null && json.ContainsKey(sectionName) && config != null)
+                json[sectionName] = JToken.FromObject(config);
             else
                 throw new BinnerConfigurationException($"There is no section named '{sectionName}' in the configuration file '{filename}'!");
 
-            if (stripConfiguration && json.ContainsKey(nameof(WebHostServiceConfiguration)))
+            if (json.ContainsKey(nameof(WebHostServiceConfiguration)))
             {
-                // remove all sections that have been migrated to the database
-                var sectionsToRemove = new List<string> { "Locale", "Barcode", "Integrations", "PrinterConfiguration", "Licensing" };
+                // remove all sections that have been migrated to the database. These should not be present in the config file anymore.
+                var sectionsToRemove = new List<string> { "Locale", "Barcode", "Integrations", "PrinterConfiguration", "Licensing", "MaxCacheItems", "CacheSlidingExpirationMinutes", "CacheAbsoluteExpirationMinutes" };
                 foreach (var section in sectionsToRemove)
                 {
                     json[nameof(WebHostServiceConfiguration)]?.SelectToken(section)?.Parent?.Remove();
@@ -71,8 +79,9 @@ namespace Binner.Services
             var jsonOutput = JsonConvert.SerializeObject(json, serializerSettings);
             using var file = File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.Read);
             var buffer = Encoding.Default.GetBytes(jsonOutput);
-            file.Write(buffer, 0, buffer.Length);
+            await file.WriteAsync(buffer, 0, buffer.Length);
             file.Close();
+            _logger?.LogInformation($"Wrote new configuration '{filename}' ({buffer.Length} bytes).");
         }
 
         public async Task<ICollection<CustomField>> GetCustomFieldsAsync()
