@@ -30,6 +30,9 @@ namespace Binner.Web.WebHost
 {
     public class Startup
     {
+        private readonly string _uiFolder = Path.Combine("ClientApp", "build");
+
+
         /// <summary>
         /// Web configuration
         /// </summary>
@@ -49,6 +52,8 @@ namespace Binner.Web.WebHost
                 DefaultServiceSelector = s => s.Last()
             };
             Container = new ServiceContainer(containerOptions);
+            // ensure UI build folder exists
+            Directory.CreateDirectory(_uiFolder);
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -84,12 +89,10 @@ namespace Binner.Web.WebHost
                 options.MultipartBodyLengthLimit = 64 * 1024 * 1024;
             });
 
+            // configure the location of SPA static files
             services.AddSpaStaticFiles(options =>
             {
-                var uiFolder = Path.Combine("ClientApp", "build");
-                // ensure build directory exists
-                Directory.CreateDirectory(uiFolder);
-                options.RootPath = uiFolder;
+                options.RootPath = _uiFolder;
             });
 
             // add custom Jwt authentication support
@@ -188,11 +191,25 @@ namespace Binner.Web.WebHost
                 });
             });
 
+            // required to serve SPA static files
             app.UseSpaStaticFiles();
             app.UseRouting();
 
             // global error handler
             app.UseMiddleware<GlobalErrorMiddleware>();
+
+            // required for running in production mode
+            app.UseSpa((spa) =>
+            {
+                spa.Options.SourcePath = _uiFolder;
+                if (env.IsProduction())
+                {
+                    spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), _uiFolder))
+                    };
+                }
+            });
 
             // enable authorization
             app.UseAuthentication();
