@@ -54,7 +54,7 @@
 
 .ui.modal.release-notes .content li::before {
   content: "\2022";
-  color: #0366d6;
+  color: var(--theme-a-color);
   font-weight: 700;
   display: inline-block;
   width: 1em;
@@ -62,16 +62,33 @@
 }
 
 .ui.modal.release-notes .content h2 {
-  display: inline-block;
+  font-size: 1.5em;
+  line-height: 1.5em;
+  font-weight: 700;
+  margin-bottom: 10px;
+  padding-bottom: 0;
+}
+
+.ui.modal.release-notes .content h3 {
   font-size: 1.2em;
   line-height: 1.2em;
   font-weight: 700;
   margin-bottom: 0;
   padding-bottom: 0;
+  color: var(--theme-secondary-color);
+}
+
+.ui.modal.release-notes .content h4 {
+  font-size: 1.1em;
+  line-height: 1.1em;
+  font-weight: 700;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  color: var(--theme-secondary-color);
 }
 
 .ui.modal.release-notes .content .bullet {
-  font-size: 1.25em;
+  font-size: 1.1em;
   font-weight: 700;
   margin-right: 10px;
 }

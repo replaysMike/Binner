@@ -2,7 +2,7 @@ table.log {
 
 }
 
-.message {
+table.log .message {
   font-family: "Source Code Pro", monospace;
   font-size: 0.9em;
   /*https: //medium.com/weekly-webtips/easy-truncate-multi-line-ellipsis-with-pure-css-e0d24d68078e*/
