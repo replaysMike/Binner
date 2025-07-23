@@ -778,6 +778,7 @@ export const Settings = () => {
               If you have a paid Binner license, enter the key here. License keys can be obtained at <a href="https://binner.io" target="_blank" rel="noreferrer">Binner.io</a>
             </Trans>}
             trigger={
+              <div>
               <ClearableInput
                 className="labeled"
                 placeholder=""
@@ -785,6 +786,7 @@ export const Settings = () => {
                 name="licenseKey"
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
+              </div>
             }
           />
         </Form.Field>
@@ -798,6 +800,7 @@ export const Settings = () => {
             hoverable
             content={<p>{t('page.settings.popup.maxCacheItems', "Specify the maximum number of items allowed in the cache.")}</p>}
             trigger={
+              <div>
               <ClearableInput
                 className="labeled"
                 placeholder=""
@@ -805,6 +808,7 @@ export const Settings = () => {
                 name="maxCacheItems"
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
+              </div>
             }
           />
         </Form.Field>
@@ -818,6 +822,7 @@ export const Settings = () => {
             hoverable
             content={<p>{t('page.settings.popup.cacheAbsoluteExpirationMinutes', "Specify the total minutes in which a cache item will be expired (default: 0).")}</p>}
             trigger={
+              <div>
               <ClearableInput
                 className="labeled"
                 placeholder=""
@@ -825,6 +830,7 @@ export const Settings = () => {
                 name="cacheAbsoluteExpirationMinutes"
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
+              </div>
             }
           />
         </Form.Field>
@@ -838,6 +844,7 @@ export const Settings = () => {
             hoverable
             content={<p>{t('page.settings.popup.cacheSlidingExpirationMinutes', "Specify the minutes in which a cache item will be kept if it's touched within the time period (default: 30).")}</p>}
             trigger={
+              <div>
               <ClearableInput
                 className="labeled"
                 placeholder=""
@@ -845,6 +852,7 @@ export const Settings = () => {
                 name="cacheSlidingExpirationMinutes"
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
+              </div>
             }
           />
         </Form.Field>
@@ -1657,8 +1665,6 @@ export const Settings = () => {
                       <label>{t('page.settings.fieldType', "Field Type")}</label>
                       <Popup
                         wide
-                        position="top left"
-                        offset={[130, 0]}
                         hoverable
                         content={
                           <p>{t('page.settings.popup.fieldType', "Choose the type of data you would like to add the custom field to.")}</p>
@@ -1918,6 +1924,7 @@ export const Settings = () => {
           hoverable
           content={<p>{t('page.settings.popup.barcodeBufferTime', "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80")}</p>}
           trigger={
+            <div>
             <ClearableInput
               icon="clock"
               className="labeled"
@@ -1926,6 +1933,7 @@ export const Settings = () => {
               name="barcodeBufferTime"
               onChange={(e, control) => handleChange(e, control, 'barcode')}
             />
+            </div>
           }
         />
       </Form.Field>
@@ -1938,6 +1946,7 @@ export const Settings = () => {
           hoverable
           content={<p>{t('page.settings.popup.maxKeystrokeThresholdMs', "The maximum amount of time in milliseconds to wait between keypresses.")}</p>}
           trigger={
+            <div>
             <ClearableInput
               icon="clock"
               className="labeled"
@@ -1946,6 +1955,7 @@ export const Settings = () => {
               name="barcodeMaxKeystrokeThresholdMs"
               onChange={(e, control) => handleChange(e, control, 'barcode')}
             />
+            </div>
           }
         />
       </Form.Field>
@@ -1958,6 +1968,7 @@ export const Settings = () => {
           hoverable
           content={<p>{t('page.settings.popup.prefix2d', "The prefix used for 2D barcodes, usually '[)>'.")}</p>}
           trigger={
+            <div>
             <ClearableInput
               className="labeled"
               placeholder=""
@@ -1965,6 +1976,7 @@ export const Settings = () => {
               name="barcodePrefix2D"
               onChange={(e, control) => handleChange(e, control, 'barcode')}
             />
+            </div>
           }
         />
       </Form.Field>
