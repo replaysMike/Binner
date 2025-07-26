@@ -65,6 +65,22 @@ namespace Binner.Web.Controllers
 
             return true;
         }
+
+        public bool remove(int userId)
+        {
+            // try to remove the user
+            try 
+            {
+                UserIds.Remove(userId);
+            }
+            catch (Exception ex)
+            {
+                // do nothing
+            }
+
+            // return if we can cleanup this highlight
+            return UserIds.Count > 0;
+        }
     };
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -74,6 +90,7 @@ namespace Binner.Web.Controllers
     public class HighlightController : ControllerBase
     {
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
+        private static readonly int highlightTimeout = 15;
         private static readonly Random rnd = new Random();
 
         private static Dictionary<BinnerBinConfig, highlight> highlights = new Dictionary<BinnerBinConfig, highlight>();
@@ -140,6 +157,55 @@ namespace Binner.Web.Controllers
                 m.ReleaseMutex();
             }
         }
+
+        [HttpPost("stop")]
+        public async Task<IActionResult> Stop([FromQuery] string partNumber)
+        {
+            var user = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int userId;
+
+            if (user == null || !Int32.TryParse(user, out userId))
+            {
+                return Unauthorized();
+            }
+
+            await using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            // check if any of the parts have the provided location 
+            var part = await dbContext.Parts.Where(x =>
+                x.PartNumber == partNumber
+            ).FirstOrDefaultAsync();
+
+            // check if we have found a part
+            if (part == null || part.Location == string.Empty || part.BinNumber == string.Empty) 
+            {
+                return BadRequest();
+            }
+
+            // get the bin we need to show for this part
+            BinnerBinConfig config = new BinnerBinConfig(part.Location, part.BinNumber, part.BinNumber2);
+
+            m.WaitOne();
+            try
+            {
+                if (highlights.ContainsKey(config)) {
+                    bool res = highlights[config].remove(userId);
+
+                    // if no more users are in this highlight remove it
+                    if (res)
+                    {
+                        highlights.Remove(config);
+                    }
+                }
+                
+                return Ok();
+            }
+            finally
+            {
+                m.ReleaseMutex();
+            }
+        }
+
 
         /// <summary>
         /// Get an the status for one of the bins. Note we use POST here to prevent caching
@@ -227,7 +293,7 @@ namespace Binner.Web.Controllers
                 // search for expired references
                 foreach (var r in highlights)
                 {
-                    if (r.Value.expired(time, 15))
+                    if (r.Value.expired(time, highlightTimeout))
                     {
                         highlights.Remove(r.Key);
                     }

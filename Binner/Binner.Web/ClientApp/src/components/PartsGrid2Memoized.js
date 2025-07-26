@@ -203,6 +203,11 @@ export default function PartsGrid2Memoized({
         clearInterval(locationKeepaliveTimer.current);
         locationKeepaliveTimer.current = null;
      
+        // stop the highlighting straight away when we cancel
+        if (partToLocate !== undefined) {
+            fetchApi(`/api/highlight/stop?partNumber=${encodeURIComponent(partToLocate)}`, { method: "POST" });
+        }
+
         setShowPopup(false);
         setPartToLocate("")
     }
