@@ -158,6 +158,8 @@ namespace Binner.Services
             //    enabledIntegrations.Add("AliExpress");
             if (integrationConfiguration.TmeEnabled)
                 enabledIntegrations.Add("TME");
+            if (integrationConfiguration.Element14Enabled)
+                enabledIntegrations.Add("Element14");
             model.EnabledIntegrations = string.Join(", ", enabledIntegrations);
 
             return model;

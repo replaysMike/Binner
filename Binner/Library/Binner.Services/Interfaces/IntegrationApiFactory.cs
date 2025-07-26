@@ -94,6 +94,13 @@ namespace Binner.Services
                 if (resultTyped != null)
                     return resultTyped;
             }
+            if (apiType == typeof(Element14Api))
+            {
+                var result = CreateGlobalElement14Api();
+                var resultTyped = result as T;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
             throw new NotImplementedException($"Unhandled type '{apiType.Name}'");
         }
 
@@ -230,6 +237,15 @@ namespace Binner.Services
                 };
                 credentials.Add(new ApiCredential(userId, tmeConfiguration, nameof(TmeApi)));
 
+                var Element14Configuration = new Dictionary<string, object>
+                {
+                    { "Enabled", integrationConfiguration.Element14Enabled },
+                    { "Country", integrationConfiguration.Element14Country ?? string.Empty },
+                    { "ApiKey", integrationConfiguration.Element14ApiKey ?? string.Empty },
+                    { "ApiUrl", integrationConfiguration.Element14ApiUrl },
+                };
+                credentials.Add(new ApiCredential(userId, Element14Configuration, nameof(Element14Api)));
+
                 return new ApiCredentialConfiguration(userId, credentials);
             };
             return await CreateAsync<T>(userId, getCredentialsMethod, true);
@@ -313,6 +329,15 @@ namespace Binner.Services
                 };
                 credentials.Add(new ApiCredential(userId, tmeConfiguration, nameof(TmeApi)));
 
+                var Element14Configuration = new Dictionary<string, object>
+                {
+                    { "Enabled", integrationConfiguration.Element14Enabled },
+                    { "Country", integrationConfiguration.Element14Country ?? string.Empty },
+                    { "ApiKey", integrationConfiguration.Element14ApiKey ?? string.Empty },
+                    { "ApiUrl", integrationConfiguration.Element14ApiUrl },
+                };
+                credentials.Add(new ApiCredential(userId, Element14Configuration, nameof(Element14Api)));
+
                 return new ApiCredentialConfiguration(userId, credentials);
             };
             return await CreateAsync(apiType, userId, getCredentialsMethod, true);
@@ -374,6 +399,13 @@ namespace Binner.Services
                 if (resultTyped != null)
                     return resultTyped;
             }
+            if (apiType == typeof(Element14Api))
+            {
+                var result = await CreateElement14ApiAsync(credentialKey, getCredentialsMethod, cache);
+                var resultTyped = result as T;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
             throw new NotImplementedException($"Unhandled type '{apiType.Name}'");
         }
 
@@ -428,6 +460,13 @@ namespace Binner.Services
             if (apiType == typeof(TmeApi))
             {
                 var result = await CreateTmeApiAsync(credentialKey, getCredentialsMethod, cache);
+                var resultTyped = result as IIntegrationApi;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(Element14Api))
+            {
+                var result = await CreateElement14ApiAsync(credentialKey, getCredentialsMethod, cache);
                 var resultTyped = result as IIntegrationApi;
                 if (resultTyped != null)
                     return resultTyped;
@@ -656,6 +695,43 @@ namespace Binner.Services
             var logger = _loggerFactory.CreateLogger<TmeApi>();
             var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
             var api = new TmeApi(logger, configuration, userConfiguration, _httpClientFactory);
+            return api;
+        }
+
+        private Element14Api CreateGlobalElement14Api()
+        {
+            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
+            var configuration = new Element14Configuration
+            {
+                // system settings
+                Enabled = integrationConfiguration.Element14.Enabled,
+                Country = integrationConfiguration.Element14.Country,
+                ApiKey = integrationConfiguration.Element14.ApiKey,
+                ApiUrl = integrationConfiguration.Element14.ApiUrl,
+            };
+            var logger = _loggerFactory.CreateLogger<Element14Api>();
+            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
+            var api = new Element14Api(logger, configuration, userConfiguration, _httpClientFactory);
+            return api;
+        }
+
+        private async Task<Element14Api> CreateElement14ApiAsync(ApiCredentialKey credentialKey, Func<Task<ApiCredentialConfiguration>> getCredentialsMethod, bool cache)
+        {
+            ApiCredential? credentials = null;
+            if (cache)
+                credentials = await _credentialProvider.Cache.GetOrAddCredentialAsync(credentialKey, nameof(Element14Api), getCredentialsMethod);
+            else
+                credentials = await _credentialProvider.Cache.FetchCredentialAsync(credentialKey, nameof(Element14Api), getCredentialsMethod);
+            var configuration = new Element14Configuration
+            {
+                Enabled = credentials.GetCredentialBool("Enabled"),
+                Country = credentials.GetCredentialString("Country"),
+                ApiKey = credentials.GetCredentialString("ApiKey"),
+                ApiUrl = credentials.GetCredentialString("ApiUrl"),
+            };
+            var logger = _loggerFactory.CreateLogger<Element14Api>();
+            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
+            var api = new Element14Api(logger, configuration, userConfiguration, _httpClientFactory);
             return api;
         }
     }
