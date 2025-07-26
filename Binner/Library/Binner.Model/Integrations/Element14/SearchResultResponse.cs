@@ -59,6 +59,9 @@ namespace Binner.Model.Integrations.Element14
         public string? commodityClassCode { get; set; }
         public string? orderMultiples { get; set; }
         public string? packageName { get; set; }
+
+        // not in the result but needed for converting to the common part
+        public string? currency { get; set; }
     }
 
     public class Image
