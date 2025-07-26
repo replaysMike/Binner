@@ -21,7 +21,8 @@ namespace Binner.Services.Integrations
             typeof(MouserApi),
             typeof(ArrowApi),
             typeof(NexarApi),
-            typeof(TmeApi)
+            typeof(TmeApi),
+            typeof(Element14Api)
         };
 
         public PartInformationProvider(IIntegrationApiFactory integrationApiFactory, ILogger logger, WebHostServiceConfiguration configuration, IUserConfigurationService userConfigurationService)
@@ -104,6 +105,12 @@ namespace Binner.Services.Integrations
                 { typeof(TmeApi), async () =>
                     {
                         var processor = new TmePartInfoResponseProcessor(_logger, _configuration, userConfiguration, 60);
+                        await processor.ExecuteAsync(api, context);
+                    }
+                },
+                { typeof(Element14Api), async () =>
+                    {
+                        var processor = new Element14PartInfoResponseProcessor(_logger, _configuration, 60);
                         await processor.ExecuteAsync(api, context);
                     }
                 },

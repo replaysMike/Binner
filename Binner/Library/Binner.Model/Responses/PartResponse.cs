@@ -150,6 +150,11 @@ namespace Binner.Model.Responses
         public string? TmePartNumber { get; set; }
 
         /// <summary>
+        /// The Element14 part number
+        /// </summary>
+        public string? Element14PartNumber { get; set; }
+
+        /// <summary>
         /// KiCad symbol name
         /// </summary>
         public string? SymbolName { get; set; }

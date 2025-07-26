@@ -10,6 +10,7 @@
         DigiKeyOrder,
         MouserOrder,
         ArrowOrder,
-        TmeOrder
+        TmeOrder,
+        Element14Order
     }
 }
