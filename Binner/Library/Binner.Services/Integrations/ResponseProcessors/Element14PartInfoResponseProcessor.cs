@@ -16,57 +16,6 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly WebHostServiceConfiguration _configuration;
         private readonly int _resultsRank;
 
-        private readonly Dictionary<string, string> uriToCurrency = new Dictionary<string, string>
-        {
-            { "au.element14.com", "AUD" },
-            { "cn.element14.com", "CNY" },
-            { "hk.element14.com", "HKD" },
-            { "in.element14.com", "INR" },
-            { "kr.element14.com", "KRW" },
-            { "my.element14.com", "MYR" },
-            { "nz.element14.com", "NZD" },
-            { "ph.element14.com", "PHP" },
-            { "sg.element14.com", "SGD" },
-            { "th.element14.com", "THB" },
-            { "tw.element14.com", "TWD" },
-            { "vn.element14.com", "VND" },
-            { "at.farnell.com", "EUR" },
-            { "be.farnell.com", "EUR" },
-            { "bg.farnell.com", "BGN" },
-            { "ch.farnell.com", "CHF" },
-            { "cz.farnell.com", "CZK" },
-            { "de.farnell.com", "EUR" },
-            { "dk.farnell.com", "DKK" },
-            { "ee.farnell.com", "EUR" },
-            { "es.farnell.com", "EUR" },
-            { "fi.farnell.com", "EUR" },
-            { "fr.farnell.com", "EUR" },
-            { "hu.farnell.com", "HUF" },
-            { "ie.farnell.com", "EUR" },
-            { "il.farnell.com", "ILS" },
-            { "it.farnell.com", "EUR" },
-            { "lt.farnell.com", "EUR" },
-            { "lv.farnell.com", "EUR" },
-            { "nl.farnell.com", "EUR" },
-            { "no.farnell.com", "NOK" },
-            { "pl.farnell.com", "PLN" },
-            { "pt.farnell.com", "EUR" },
-            { "ro.farnell.com", "RON" },
-            { "ru.farnell.com", "RUB" },
-            { "se.farnell.com", "SEK" },
-            { "si.farnell.com", "EUR" },
-            { "sk.farnell.com", "EUR" },
-            { "tr.farnell.com", "TRY" },
-            { "uk.farnell.com", "GBP" },
-            { "canada.newark.com", "CAD" },
-            { "mexico.newark.com", "MXN" },
-            { "cpc.farnell.com", "GBP" },
-            { "cpcireland.farnell.com", "EUR" },
-            { "export.farnell.com", "GBP" },
-            { "onecall.farnell.com", "GBP" },
-            { "www.newark.com", "USD" },
-        };
-
         public Element14PartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, int resultsRank)
         {
             _logger = logger;
@@ -163,15 +112,6 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 if (string.IsNullOrEmpty(basePart))
                     basePart = context.PartNumber;
 
-                var currency = string.Empty;
-                if (uriToCurrency.ContainsKey(_configuration.Integrations.Element14.Country))
-                {
-                    currency = uriToCurrency[_configuration.Integrations.Element14.Country].ToUpper();
-                }
-                else {
-                    currency = _configuration.Locale.Currency.ToString().ToUpper();
-                }
-
                 // Minimum order quantity & factory stock
                 var minimumOrderQuantity = part?.translatedMinimumOrderQuality ?? 0;
                 var factoryStockAvailable = part?.stock?.level ?? 0;
@@ -238,7 +178,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     Manufacturer = part?.brandName ?? string.Empty,
                     ManufacturerPartNumber = part?.translatedManufacturerPartNumber ?? string.Empty,
                     Cost = (double)(part?.prices?.OrderBy(x => x?.from).FirstOrDefault()?.cost ?? 0m),
-                    Currency = currency,
+                    Currency = part?.currency ?? "USD",
                     DatasheetUrls = datasheetUrls,
                     Description = part?.productOverview?.description ?? (part?.displayName ?? string.Empty),
                     ImageUrl = imageUrl,
