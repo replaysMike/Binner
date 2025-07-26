@@ -7,5 +7,6 @@
         Mouser,
         Arrow,
         Tme,
+        Element14,
     }
 }

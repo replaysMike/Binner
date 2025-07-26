@@ -58,6 +58,7 @@ namespace Binner.Common.IO
             CreateCell(allHeaderRow, "Mouser Part", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Arrow Part", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Tme Part", "header", styles, ref columnIndex);
+            CreateCell(allHeaderRow, "Element14 Part", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Footprint Name", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Symbol Name", "header", styles, ref columnIndex);
             CreateCell(allHeaderRow, "Keywords", "header", styles, ref columnIndex);
@@ -80,6 +81,7 @@ namespace Binner.Common.IO
                 "Mouser Part",
                 "Arrow Part",
                 "Tme Part",
+                "Element14 Part",
                 "Footprint Name",
                 "Symbol Name",
                 "Keywords",
@@ -127,6 +129,7 @@ namespace Binner.Common.IO
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.MouserPartNumber, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.ArrowPartNumber, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.TmePartNumber, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Element14PartNumber, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.FootprintName, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.SymbolName, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.Keywords, styles, rowStyle); columnIndex++;
@@ -239,6 +242,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mouser Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Arrow Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Tme Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Element14 Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Footprint Name", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Symbol Name", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Keywords", "header", styles, ref columnIndex);
@@ -283,6 +287,7 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.MouserPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ArrowPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.TmePartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Element14PartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.FootprintName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.SymbolName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Keywords, styles, rowStyle); columnIndex++;
@@ -339,6 +344,7 @@ namespace Binner.Common.IO
                 CreateCell(headerRow, "Mouser Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Arrow Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Tme Part", "header", styles, ref columnIndex);
+                CreateCell(headerRow, "Element14 Part", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Footprint Name", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Symbol Name", "header", styles, ref columnIndex);
                 CreateCell(headerRow, "Keywords", "header", styles, ref columnIndex);
@@ -382,6 +388,7 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.MouserPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ArrowPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.TmePartNumber, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Element14PartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.FootprintName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.SymbolName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Keywords, styles, rowStyle); columnIndex++;

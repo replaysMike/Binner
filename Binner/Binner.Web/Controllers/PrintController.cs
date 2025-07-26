@@ -94,6 +94,7 @@ namespace Binner.Web.Controllers
                     MouserPartNumber = "MS-7011",
                     ArrowPartNumber = "AR-7011",
                     TmePartNumber = "TM-7011",
+                    Element14PartNumber = "3117072",
                     FootprintName = "DIP-20",
                     SymbolName = "IC1",
                     ExtensionValue1 = "Custom Value 1",

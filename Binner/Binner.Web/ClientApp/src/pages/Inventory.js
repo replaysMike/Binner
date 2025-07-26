@@ -118,6 +118,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     mouserPartNumber: "",
     arrowPartNumber: "",
     tmePartNumber: "",
+    element14PartNumber: "",
     location: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastLocation) ? viewPreferences.lastLocation : "",
     binNumber: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber) ? viewPreferences.lastBinNumber : "",
     binNumber2: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastBinNumber2) ? viewPreferences.lastBinNumber2 : "",
@@ -445,6 +446,9 @@ export function Inventory({ partNumber = "", ...rest }) {
       case "TME":
         entity.tmePartNumber = mapIfValid("tmePartNumber", entity, mappedPart, allowOverwrite, "supplierPartNumber");
         break;
+      case "Element14":
+        entity.element14PartNumber = mapIfValid("element14PartNumber", entity, mappedPart, allowOverwrite, "supplierPartNumber");
+        break;
     }
 
     const lowestCostPart = _.first(
@@ -511,7 +515,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     Inventory.doFetchPartMetadataController?.abort();
     Inventory.doFetchPartMetadataController = new AbortController();
     try {
-      const response = await fetchApi(`/api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
+      const response = await fetchApi(`/api/part/info?partNumber=${encodeURIComponent(partNumber.trim())}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber},element14:${part.element14PartNumber}`, {
         signal: Inventory.doFetchPartMetadataController.signal
       });
       const data = response.data;
@@ -1147,6 +1151,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       mouserPartNumber: "",
       arrowPartNumber: "",
       tmePartNumber: "",
+      element14PartNumber: "",
       leadTime: "",
       baseProductNumber: "",
       series: "",
@@ -1980,6 +1985,10 @@ export function Inventory({ partNumber = "", ...rest }) {
                     <Form.Field width={4}>
                       <label>{t('label.tmePartNumber', "TME Part Number")}</label>
                       <ClearableInput placeholder='LM358PWR' value={part.tmePartNumber || ''} onChange={handleChange} name='tmePartNumber' />
+                    </Form.Field>
+                    <Form.Field width={4}>
+                      <label>{t('label.element14PartNumber', "Element14 Part Number")}</label>
+                      <ClearableInput placeholder='3117072' value={part.element14PartNumber || ''} onChange={handleChange} name='element14PartNumber' />
                     </Form.Field>
                   </Form.Group>
                   <Form.Group>

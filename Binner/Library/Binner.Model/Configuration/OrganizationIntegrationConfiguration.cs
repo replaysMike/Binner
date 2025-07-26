@@ -140,6 +140,26 @@ namespace Binner.Model.Configuration
         public string TmeApiUrl { get; set; } = "https://api.tme.eu";
 
         /// <summary>
+        /// Element14 api enabled
+        /// </summary>
+        public bool Element14Enabled { get; set; } = true;
+
+        /// <summary>
+        /// The user's Element14 country
+        /// </summary>
+        public string? Element14Country { get; set; } = "uk.farnell.com";
+
+        /// <summary>
+        /// The Api key
+        /// </summary>
+        public string? Element14ApiKey { get; set; }
+
+        /// <summary>
+        /// Element14 api url
+        /// </summary>
+        public string Element14ApiUrl { get; set; } = "https://api.element14.com";
+
+        /// <summary>
         /// True to resolve external (document) links. This can slow down responses
         /// </summary>
         public bool TmeResolveExternalLinks { get; set; } = true;

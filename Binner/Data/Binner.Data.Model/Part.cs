@@ -84,6 +84,11 @@ namespace Binner.Data.Model
         public string? TmePartNumber { get; set; }
 
         /// <summary>
+        /// The Element14 part number
+        /// </summary>
+        public string? Element14PartNumber { get; set; }
+
+        /// <summary>
         /// Description of part
         /// </summary>
         public string? Description { get; set; }

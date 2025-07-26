@@ -8,6 +8,7 @@ import { BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown, GetTypeName 
 import { isAdmin } from "../common/authentication";
 import { DigiKeySites } from "../common/digiKeySites";
 import { TmeCountries } from "../common/tmeCountries";
+import { Element14Countries } from "../common/element14Countries";
 import { FormHeader } from "../components/FormHeader";
 import { fetchApi } from "../common/fetchApi";
 import { setSystemSettings } from "../common/applicationSettings";
@@ -92,6 +93,12 @@ export const Settings = () => {
     text: i.name,
     flag: !noFlags.includes(i.iso2.toLowerCase()) ? i.iso2.toLowerCase() : ""
   }));
+  const element14Countries = Element14Countries.map((i, key) => ({
+    key,
+    value: i.name,
+    text: i.name,
+    flag: i.iso2 != null ? (!noFlags.includes(i.iso2.toLowerCase()) ? i.iso2.toLowerCase() : "") : ""
+  }));
   // breakup settings into multiple objects to improve render memoization
   const [globalSettings, setGlobalSettings] = useState({
     licenseKey: "",
@@ -145,6 +152,12 @@ export const Settings = () => {
       country: "us",
       resolveExternalLinks: true
     },
+    element14: {
+      enabled: false,
+      apiKey: "",
+      apiUrl: "",
+      country: "uk.farnell.com"
+    },
 });
   const [printerSettings, setPrinterSettings] = useState({
     printer: {
@@ -190,8 +203,8 @@ export const Settings = () => {
         const language = data.locale.language;
         const currency = data.locale.currency;
         setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion });
-        const { binner, digikey, mouser, arrow, octopart, tme } = data;
-        setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme });
+        const { binner, digikey, mouser, arrow, octopart, tme, element14 } = data;
+        setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme, element14 });
         setPrinterSettings({ printer: data.printer });
         setBarcodeSettings({ barcode: data.barcode });
         setCustomFieldSettings({ customFields: data.customFields });
@@ -268,6 +281,9 @@ export const Settings = () => {
     }
     else if (control.name.startsWith("tme")) {
       setControlValue(newSettings.tme, "tme", control);
+    }
+    else if (control.name.startsWith("element14")) {
+      setControlValue(newSettings.element14, "element14", control);
     }
     setIntegrationSettings(newSettings);
   };
@@ -506,6 +522,16 @@ export const Settings = () => {
         configuration.push({ key: "apiKey", value: integrationSettings.tme.apiKey });
         configuration.push({ key: "apiUrl", value: integrationSettings.tme.apiUrl });
         configuration.push({ key: "resolveExternalLinks", value: integrationSettings.tme.resolveExternalLinks + "" });
+        break;
+      case "element14":
+        if (!integrationSettings.element14.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
+        if (!integrationSettings.element14.apiKey) return toast.error(t('apiNoApiKey', "Api Key must be specified!"));
+        if (!integrationSettings.element14.apiUrl) return toast.error(t('apiNoApiUrl', "Api Url must be specified!"));
+        if (!integrationSettings.element14.country) return toast.error(t('apiNoCountry', "Country must be specified!"));
+        configuration.push({ key: "enabled", value: integrationSettings.element14.enabled + "" });
+        configuration.push({ key: "country", value: integrationSettings.element14.country });
+        configuration.push({ key: "apiKey", value: integrationSettings.element14.apiKey });
+        configuration.push({ key: "apiUrl", value: integrationSettings.element14.apiUrl });
         break;
       default:
         break;
@@ -1581,6 +1607,118 @@ export const Settings = () => {
           {getTestResultIcon("tme")}
         </Form.Field>
       </Segment>
+
+      <Segment loading={loading} color="green" secondary>
+        <Header dividing as="h3">
+          {t('page.settings.element14', "Farnell/Newark/Element14")}
+        </Header>
+        <p>
+          <Trans i18nKey="page.settings.element14Description">
+            Element14 API Keys can be obtained at <a href="https://partner.element14.com" target="_blank" rel="noreferrer">https://partner.element14.com</a>
+          </Trans>
+        </p>
+        <Form.Field width={10}>
+          <label>{t('page.settings.element14Support', "Element14 Support")}</label>
+          <Popup
+            wide
+            position="top left"
+            offset={[130, 0]}
+            hoverable
+            content={
+              <p>{t('page.settings.popup.element14Enabled', "Choose if you would like to enable Element14 support.")}</p>
+            }
+            trigger={
+              <Dropdown
+                name="element14Enabled"
+                placeholder="Disabled"
+                type="bool-dropdown"
+                selection
+                value={integrationSettings.element14.enabled ? 1 : 0}
+                options={enabledSources}
+                onChange={(e, control) => handleChange(e, control, 'integration')}
+              />
+            }
+          />
+        </Form.Field>
+        <Form.Field width={10}>
+          <label>{t('label.country', "Country")}</label>
+          <Popup
+            wide
+            position="top left"
+            offset={[130, 0]}
+            hoverable
+            content={
+              <p>{t('page.settings.popup.country', "Choose the country to pass the API.")}</p>
+            }
+            trigger={
+              <Dropdown
+                name="element14Country"
+                placeholder=""
+                selection
+                value={integrationSettings.element14.country || 'uk.farnell.com'}
+                options={element14Countries}
+                onChange={(e, control) => handleChange(e, control, 'integration')}
+              />
+            }
+          />
+        </Form.Field>
+        <Form.Field width={10}>
+          <label>{t('label.apiKey', "Api Key")}</label>
+          <Popup
+            position="top left"
+            offset={[65, 0]}
+            hoverable
+            content={<p>{t('page.settings.popup.element14ApiKey', "Your api key for Element14.")}</p>}
+            trigger={
+              <ClearableInput
+                className="labeled"
+                placeholder=""
+                value={integrationSettings.element14.apiKey || ""}
+                name="element14ApiKey"
+                onChange={(e, control) => handleChange(e, control, 'integration')}
+              />
+            }
+          />
+        </Form.Field>
+        <Form.Field width={10}>
+          <label>{t('label.apiUrl', "Api Url")}</label>
+          <Popup
+            position="top left"
+            offset={[65, 0]}
+            hoverable
+            content={<p>{t('page.settings.popup.element14ApiUrl', "Element14's API Url. This will be api.element14.com")}</p>}
+            trigger={
+              <ClearableInput
+                action
+                className="labeled"
+                placeholder="api.element14.com"
+                value={(integrationSettings.element14.apiUrl || "")
+                  .replace("http://", "")
+                  .replace("https://", "")}
+                name="element14ApiUrl"
+                onChange={(e, control) => handleChange(e, control, 'integration')}
+                type="Input"
+              >
+                <Label>https://</Label>
+                <input />
+              </ClearableInput>
+            }
+          />
+        </Form.Field>
+        <Form.Field>
+          <Button
+            primary
+            className="test"
+            type="button"
+            onClick={(e) => handleTestApi(e, "element14")}
+            disabled={testing}
+          >
+            {t('button.testApi', "Test Api")}
+          </Button>
+          {getTestResultIcon("element14")}
+        </Form.Field>
+      </Segment>
+
     </Segment>);
   }, [integrationSettings, apiTestResults, loading]);
 

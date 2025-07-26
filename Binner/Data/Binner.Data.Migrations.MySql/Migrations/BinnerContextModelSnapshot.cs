@@ -605,6 +605,19 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int>("DigiKeySite")
                         .HasColumnType("int");
 
+                    b.Property<string>("Element14ApiKey")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Element14ApiUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Element14Country")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("Element14Enabled")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("MouserApiUrl")
                         .HasColumnType("longtext");
 
@@ -725,6 +738,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Element14PartNumber")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("ExportControlClassNumber")
                         .HasColumnType("longtext");

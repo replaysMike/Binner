@@ -990,6 +990,7 @@ export function LabelEditor(props) {
               <DraggableBox name="mouserPartNumber">{getChildrenByName('mouserPartNumber')}</DraggableBox>
               <DraggableBox name="arrowPartNumber">{getChildrenByName('arrowPartNumber')}</DraggableBox>
               <DraggableBox name="tmePartNumber">{getChildrenByName('tmePartNumber')}</DraggableBox>
+              <DraggableBox name="element14PartNumber">{getChildrenByName('element14PartNumber')}</DraggableBox>
               <DraggableBox name="location">{getChildrenByName('location')}</DraggableBox>
               <DraggableBox name="binNumber">{getChildrenByName('binNumber')}</DraggableBox>
               <DraggableBox name="binNumber2">{getChildrenByName('binNumber2')}</DraggableBox>

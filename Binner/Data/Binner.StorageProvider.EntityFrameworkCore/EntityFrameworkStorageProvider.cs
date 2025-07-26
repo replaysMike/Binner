@@ -1392,6 +1392,7 @@ INNER JOIN (
                     || EF.Functions.Like(x.MouserPartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.ArrowPartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.TmePartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.Element14PartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Location, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.BinNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.BinNumber2, '%' + request.Keyword + '%')
@@ -1535,6 +1536,7 @@ INNER JOIN (
                 new (x => x.MouserPartNumber, x => x.MouserPartNumber),
                 new (x => x.ArrowPartNumber, x => x.ArrowPartNumber),
                 new (x => x.TmePartNumber, x => x.TmePartNumber),
+                new (x => x.Element14PartNumber, x => x.Element14PartNumber),
                 new (x => x.PackageType, x => x.PackageType),
                 new (x => x.PartId, x => x.PartId),
                 new (x => x.PartNumber, x => x.PartNumber),
