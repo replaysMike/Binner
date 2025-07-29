@@ -90,7 +90,7 @@ namespace Binner.Common.Extensions
         {
             try
             {
-                return new IPAddress(IPAddress.NetworkToHostOrder(ipAddress));
+                return new IPAddress((uint)IPAddress.NetworkToHostOrder(ipAddress));
             }
             catch (Exception)
             {
@@ -107,7 +107,7 @@ namespace Binner.Common.Extensions
         {
             try
             {
-                return new IPAddress(IPAddress.NetworkToHostOrder(ipAddress));
+                return new IPAddress((uint)IPAddress.NetworkToHostOrder(ipAddress));
             }
             catch (Exception)
             {
@@ -124,7 +124,7 @@ namespace Binner.Common.Extensions
         {
             try
             {
-                return new IPAddress(IPAddress.NetworkToHostOrder((int)ipAddress));
+                return new IPAddress((uint)IPAddress.NetworkToHostOrder((int)ipAddress));
             }
             catch (Exception)
             {
@@ -141,7 +141,7 @@ namespace Binner.Common.Extensions
         {
             try
             {
-                return new IPAddress(IPAddress.NetworkToHostOrder(ipAddress));
+                return new IPAddress((uint)IPAddress.NetworkToHostOrder((int)ipAddress));
             }
             catch (Exception)
             {
@@ -158,7 +158,7 @@ namespace Binner.Common.Extensions
         {
             try
             {
-                return new IPAddress(IPAddress.NetworkToHostOrder((long)ipAddress));
+                return new IPAddress((uint)IPAddress.NetworkToHostOrder((int)ipAddress));
             }
             catch (Exception)
             {
