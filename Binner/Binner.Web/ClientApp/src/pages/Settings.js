@@ -1777,7 +1777,7 @@ export const Settings = () => {
           {kiCadSettings.kiCad.exportFields.map((field, key) => (
           <Table.Row key={key}>
             <Table.Cell><Checkbox name="enabled" checked={field.enabled} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
-            <Table.Cell></Table.Cell>
+            <Table.Cell><Dropdown search selection name="field" value={field.field} options={exportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
             <Table.Cell><Dropdown search selection allowAdditions name="kiCadFieldName" value={field.kiCadFieldName} options={kiCadExportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} onAddItem={handleAddKiCadExportField} /></Table.Cell>
           </Table.Row>
           ))}
