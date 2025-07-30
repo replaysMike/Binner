@@ -26,7 +26,6 @@ using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Web.Authorization;
 using Binner.Web.Database;
 using Binner.Web.ServiceHost;
-using LightInject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -36,158 +35,157 @@ namespace Binner.Web.Configuration
 {
     public partial class StartupConfiguration
     {
-        public static void ConfigureIoC(IServiceContainer container, IServiceCollection services)
+        public static void ConfigureIoC(IServiceCollection services)
         {
             // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.1#service-lifetimes
             // Transient = created each time requested, Scoped = once per http/scope request, Singleton = first time requested only
             // allow the container to be injected
-            services.AddSingleton<IServiceContainer, ServiceContainer>();
             services.AddSingleton<IAuthorizationHandler, KiCadTokenAuthorizationHandler>();
-            services.AddSingleton(container);
-            container.RegisterInstance(container);
 
             // register database factory for contexts
-            RegisterDbFactory(container);
+            RegisterDbFactory(services);
 
             // register printer configuration
-            RegisterPrinterService(container);
+            RegisterPrinterService(services);
 
             // register Api integrations
-            RegisterApiIntegrations(container);
+            RegisterApiIntegrations(services);
 
             // register services
-            RegisterServices(container);
+            RegisterServices(services);
 
             // register licensed services
-            RegisterLicensedServices(container);
+            RegisterLicensedServices(services);
 
-            // configure mapping
-            RegisterMappingProfiles(container);
-
-            // register storage provider
-            var storageProviderConfig = container.GetInstance<StorageProviderConfiguration>();
+            // register storage provider factory
+            services.AddSingleton<IStorageProviderFactory, StorageProviderFactory>();
             
+            // register storage provider
+            var sp = services.BuildServiceProvider(); // intermediate service provider to access config
+            var storageProviderConfig = sp.GetRequiredService<StorageProviderConfiguration>();
             // inject configuration from environment variables (if set)
             EnvironmentVarConstants.SetConfigurationFromEnvironment(storageProviderConfig);
-
-            container.Register<IStorageProviderFactory, StorageProviderFactory>(new PerContainerLifetime());
-            var providerFactory = container.GetInstance<IStorageProviderFactory>();
-
             // register db context
             HostBuilderFactory.RegisterDbContext(services, storageProviderConfig);
-
-            container.RegisterSingleton<IStorageProvider>((factory) =>
+            services.AddSingleton<IStorageProvider>((factory) =>
             {
-                var storageProvider = providerFactory.Create(container, storageProviderConfig);
+                var providerFactory = factory.GetRequiredService<IStorageProviderFactory>();
+                var storageProvider = providerFactory.Create(factory, storageProviderConfig);
                 return storageProvider;
             });
 
             // register the font manager
-            container.Register<FontManager>(new PerContainerLifetime());
+            services.AddTransient<FontManager>();
 
             // register an http client factory
-            container.Register<HttpClientFactory>(new PerContainerLifetime());
+            services.AddTransient<HttpClientFactory>();
 
             // request context
-            container.Register<IRequestContextAccessor, RequestContextAccessor>(new PerContainerLifetime());
+            services.AddTransient<IRequestContextAccessor, RequestContextAccessor>();
 
             // the main server app
-            container.Register<BinnerWebHostService>(new PerContainerLifetime());
+            services.AddSingleton<BinnerWebHostService>();
+
+            // configure mapping (do this last, it depends on all other services)
+            RegisterMappingProfiles(services);
         }
 
-        private static void RegisterDbFactory(IServiceContainer container)
+        private static void RegisterDbFactory(IServiceCollection services)
         {
-            container.Register<IGenericDbContextFactory, GenericDbContextFactory<BinnerContext>>(new PerContainerLifetime());
+            services.AddTransient<IGenericDbContextFactory, GenericDbContextFactory<BinnerContext>>();
         }
 
-        private static void RegisterMappingProfiles(IServiceContainer container)
+        private static void RegisterMappingProfiles(IServiceCollection services)
         {
             // register automapper
-            container.Register<PartTypeMappingAction<DataModel.Part, PartResponse>>(new PerScopeLifetime());
-            container.Register<PartTypeMappingAction<Part, Binner.Model.CommonPart>>(new PerScopeLifetime());
-            container.Register<PartTypeMappingAction<Part, PartResponse>>(new PerScopeLifetime());
+            services.AddTransient<PartTypeMappingAction<DataModel.Part, PartResponse>>();
+            services.AddTransient<PartTypeMappingAction<Part, Binner.Model.CommonPart>>();
+            services.AddTransient<PartTypeMappingAction<Part, PartResponse>>();
             var config = new AutoMapper.MapperConfiguration(cfg =>
             {
                 // see: https://github.com/AutoMapper/AutoMapper/issues/3988
                 cfg.Internal().MethodMappingEnabled = false;
-                cfg.ConstructServicesUsing(t => container.GetInstance(t));  
+                // enable DI in AutoMapper mapping profiles, specifically the PartTypeMappingAction which requires IPartTypesCache, IRequestContextAccessor
+                var sp = services.BuildServiceProvider();
+                cfg.ConstructServicesUsing(t => sp.GetRequiredService(t));
                 cfg.AddMaps(Assembly.Load("Binner.Services"));
             });
             
             config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
-            container.RegisterInstance(mapper);
+            services.AddSingleton(mapper);
         }
 
-        private static void RegisterPrinterService(IServiceContainer container)
+        private static void RegisterPrinterService(IServiceCollection services)
         {
-            container.Register<IBarcodeGenerator, BarcodeGenerator>(new PerScopeLifetime());
-            container.Register<ILabelGenerator, LabelGenerator>(new PerScopeLifetime());
-            container.Register<ILabelPrinterHardware, DymoLabelPrinterHardware>(new PerScopeLifetime());
+            services.AddTransient<IBarcodeGenerator, BarcodeGenerator>();
+            services.AddTransient<ILabelGenerator, LabelGenerator>();
+            services.AddTransient<ILabelPrinterHardware, DymoLabelPrinterHardware>();
         }
 
-        private static void RegisterServices(IServiceContainer container)
+        private static void RegisterServices(IServiceCollection services)
         {
-            container.Register<IPartTypesCache, PartTypesCache>(new PerContainerLifetime());
-            container.Register<IPartService, PartService>(new PerScopeLifetime());
-            container.Register<IPartTypeService, PartTypeService>(new PerScopeLifetime());
-            container.Register<IProjectService, ProjectService>(new PerScopeLifetime());
-            container.Register<IPcbService, PcbService>(new PerScopeLifetime());
-            container.Register<ICredentialService, CredentialService>(new PerScopeLifetime());
-            container.Register<ISettingsService, SettingsService>(new PerScopeLifetime());
-            container.Register<IStoredFileService, StoredFileService>(new PerScopeLifetime());
-            container.Register<IUserService<User>, UserService<User>>(new PerScopeLifetime());
-            container.Register<IOrganizationService<Organization>, OrganizationService<Organization>>(new PerScopeLifetime());
-            container.Register<IAuthenticationService, AuthenticationService>(new PerScopeLifetime());
-            container.Register<IAccountService<Account>, AccountService<Account>>(new PerScopeLifetime());
-            container.Register<IAdminService, AdminService>(new PerScopeLifetime());
-            container.Register<IPrintService, PrintService>(new PerScopeLifetime());
-            container.Register<IPartScanHistoryService, PartScanHistoryService>(new PerScopeLifetime());
-            container.Register<IOrderImportHistoryService, OrderImportHistoryService>(new PerScopeLifetime());
-            container.Register<IBackupProvider, BackupProvider>(new PerScopeLifetime());
-            container.Register<JwtService>(new PerScopeLifetime());
-            container.Register<IntegrationService>(new PerScopeLifetime());
-            container.Register<IVersionManagementService, VersionManagementService>(new PerScopeLifetime());
-            container.Register<IExternalOrderService, ExternalOrderService>(new PerScopeLifetime());
-            container.Register<IExternalPartInfoService, ExternalPartInfoService>(new PerScopeLifetime());
-            container.Register<IExternalBarcodeInfoService, ExternalBarcodeInfoService>(new PerScopeLifetime());
-            container.Register<IExternalCategoriesService, ExternalCategoriesService>(new PerScopeLifetime());
-            container.Register<IUserConfigurationService, UserConfigurationService>(new PerScopeLifetime());
-            container.Register<IUserConfigurationCacheProvider, UserConfigurationCacheProvider>(new PerScopeLifetime());
-            container.Register<IOrganizationConfigurationCacheProvider, OrganizationConfigurationCacheProvider>(new PerScopeLifetime());
+            services.AddSingleton<IPartTypesCache, PartTypesCache>();
+            services.AddTransient<IPartService, PartService>();
+            services.AddTransient<IPartTypeService, PartTypeService>();
+            services.AddTransient<IProjectService, ProjectService>();
+            services.AddTransient<IPcbService, PcbService>();
+            services.AddTransient<ICredentialService, CredentialService>();
+            services.AddTransient<ISettingsService, SettingsService>();
+            services.AddTransient<IStoredFileService, StoredFileService>();
+            services.AddTransient<IUserService<User>, UserService<User>>();
+            services.AddTransient<IOrganizationService<Organization>, OrganizationService<Organization>>();
+            services.AddTransient<IAuthenticationService, AuthenticationService>();
+            services.AddTransient<IAccountService<Account>, AccountService<Account>>();
+            services.AddTransient<IAdminService, AdminService>();
+            services.AddTransient<IPrintService, PrintService>();
+            services.AddTransient<IPartScanHistoryService, PartScanHistoryService>();
+            services.AddTransient<IOrderImportHistoryService, OrderImportHistoryService>();
+            services.AddTransient<IBackupProvider, BackupProvider>();
+            services.AddTransient<JwtService>();
+            services.AddTransient<IntegrationService>();
+            services.AddTransient<IVersionManagementService, VersionManagementService>();
+            services.AddTransient<IExternalOrderService, ExternalOrderService>();
+            services.AddTransient<IExternalPartInfoService, ExternalPartInfoService>();
+            services.AddTransient<IExternalBarcodeInfoService, ExternalBarcodeInfoService>();
+            services.AddTransient<IExternalCategoriesService, ExternalCategoriesService>();
+            services.AddTransient<IUserConfigurationService, UserConfigurationService>();
+            services.AddTransient<IUserConfigurationCacheProvider, UserConfigurationCacheProvider>();
+            services.AddTransient<IOrganizationConfigurationCacheProvider, OrganizationConfigurationCacheProvider>();
 
             // Binner only
-            container.Register<ConfigFileMigrator>(new PerScopeLifetime());
+            services.AddTransient<ConfigFileMigrator>();
         }
 
-        private static void RegisterLicensedServices(IServiceContainer container)
+        private static void RegisterLicensedServices(IServiceCollection services)
         {
             /* Register the licensed services, provided by PostSharp */
-            var configLicenseKey = container.GetInstance<Binner.Model.Configuration.LicenseConfiguration>().LicenseKey;
-            container.RegisterInstance<Binner.LicensedProvider.LicenseConfiguration>(new LicensedProvider.LicenseConfiguration { LicenseKey = configLicenseKey });
-            container.Register<ILicensedService<User, BinnerContext>, LicensedService<User, BinnerContext>>(new PerScopeLifetime());
-            container.Register<ILicensedStorageProvider, LicensedStorageProvider>(new PerScopeLifetime());
+            var sp = services.BuildServiceProvider(); // intermediate service provider to access config
+            var configLicenseKey = sp.GetRequiredService<Binner.Model.Configuration.LicenseConfiguration>().LicenseKey;
+            services.AddSingleton<Binner.LicensedProvider.LicenseConfiguration>(new LicensedProvider.LicenseConfiguration { LicenseKey = configLicenseKey });
+            services.AddTransient<ILicensedService<User, BinnerContext>, LicensedService<User, BinnerContext>>();
+            services.AddTransient<ILicensedStorageProvider, LicensedStorageProvider>();
         }
 
-        private static void RegisterApiIntegrations(IServiceContainer container)
+        private static void RegisterApiIntegrations(IServiceCollection services)
         {
             // register integration apis
-            container.Register<IApiHttpClientFactory, ApiHttpClientFactory>(new PerScopeLifetime());
-            container.Register<IIntegrationApiFactory, IntegrationApiFactory>(new PerScopeLifetime());
-            container.Register<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>(new PerScopeLifetime());
-            container.Register<IBaseIntegrationBehavior, BaseIntegrationBehavior>(new PerScopeLifetime());
+            services.AddTransient<IApiHttpClientFactory, ApiHttpClientFactory>();
+            services.AddTransient<IIntegrationApiFactory, IntegrationApiFactory>();
+            services.AddTransient<IIntegrationCredentialsCacheProvider, IntegrationCredentialsCacheProvider>();
+            services.AddTransient<IBaseIntegrationBehavior, BaseIntegrationBehavior>();
 
             // external order services
-            container.Register<IDigiKeyExternalOrderService, DigiKeyExternalOrderService>(new PerScopeLifetime());
-            container.Register<IMouserExternalOrderService, MouserExternalOrderService>(new PerScopeLifetime());
-            container.Register<IArrowExternalOrderService, ArrowExternalOrderService>(new PerScopeLifetime());
-            container.Register<ITmeExternalOrderService, TmeExternalOrderService>(new PerScopeLifetime());
+            services.AddTransient<IDigiKeyExternalOrderService, DigiKeyExternalOrderService>();
+            services.AddTransient<IMouserExternalOrderService, MouserExternalOrderService>();
+            services.AddTransient<IArrowExternalOrderService, ArrowExternalOrderService>();
+            services.AddTransient<ITmeExternalOrderService, TmeExternalOrderService>();
 
             // external barcode info services
-            container.Register<IDigiKeyBarcodeInfoService, DigiKeyBarcodeInfoService>(new PerScopeLifetime());
+            services.AddTransient<IDigiKeyBarcodeInfoService, DigiKeyBarcodeInfoService>();
 
             // external categories services
-            container.Register<IDigiKeyExternalCategoriesService, DigiKeyExternalCategoriesService>(new PerScopeLifetime());
+            services.AddTransient<IDigiKeyExternalCategoriesService, DigiKeyExternalCategoriesService>();
         }
     }
 }

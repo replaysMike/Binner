@@ -4,11 +4,8 @@ using Binner.Model.Authentication;
 using Binner.Model.Configuration;
 using Binner.Web.Authorization;
 using Binner.Web.Configuration;
-using Binner.Web.Conventions;
 using Binner.Web.Middleware;
 using Binner.Web.ServiceHost;
-using LightInject;
-using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +20,6 @@ using Microsoft.Extensions.Logging;
 using NLog.Web;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Binner.Web.WebHost
@@ -32,33 +28,21 @@ namespace Binner.Web.WebHost
     {
         private readonly string _uiFolder = Path.Combine("ClientApp", "build");
 
-
         /// <summary>
         /// Web configuration
         /// </summary>
         public IConfiguration Configuration { get; }
 
-        /// <summary>
-        /// Service container for web application
-        /// </summary>
-        public IServiceContainer Container { get; set; }
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            var containerOptions = new ContainerOptions
-            {
-                EnablePropertyInjection = false,
-                DefaultServiceSelector = s => s.Last()
-            };
-            Container = new ServiceContainer(containerOptions);
             // ensure UI build folder exists
             Directory.CreateDirectory(_uiFolder);
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -66,7 +50,7 @@ namespace Binner.Web.WebHost
                     ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             });
 
-            var configuration = StartupConfiguration.Configure(Container, services);
+            var configuration = StartupConfiguration.Configure(services);
 
             services.AddControllersWithViews(config =>
             {
@@ -129,12 +113,7 @@ namespace Binner.Web.WebHost
                 logging.AddNLogWeb();
             });
 
-            StartupConfiguration.ConfigureIoC(Container, services);
-            var provider = Container.CreateServiceProvider(services);
-
-            Container.ScopeManagerProvider = new PerLogicalCallContextScopeManagerProvider();
-            Container.BeginScope();
-            return provider;
+            StartupConfiguration.ConfigureIoC(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -169,7 +148,7 @@ namespace Binner.Web.WebHost
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (contextFeature != null)
                     {
-                        var logger = Container.GetInstance<ILogger<Startup>>();
+                        var logger = app.ApplicationServices.GetRequiredService<ILogger<Startup>>();
                         if (contextFeature.Error is UserContextUnauthorizedException)
                         {
                             // user is not logged in, or access denied

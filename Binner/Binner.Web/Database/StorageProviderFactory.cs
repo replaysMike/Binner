@@ -6,7 +6,6 @@ using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.StorageProvider.EntityFrameworkCore;
-using LightInject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -24,21 +23,6 @@ namespace Binner.Web.Database
             Providers.Add(EntityFrameworkStorageProvider.ProviderName.ToLower(), typeof(EntityFrameworkStorageProvider));
         }
 
-        public IStorageProvider Create(LightInject.IServiceContainer container, StorageProviderConfiguration storageProviderConfiguration)
-        {
-            var provider = Providers[EntityFrameworkStorageProvider.ProviderName.ToLower()];
-            // materialize the dependencies
-            var contextFactory = container.GetInstance<IDbContextFactory<BinnerContext>>();
-            //var contextFactory = container.GetInstance<IGenericDbContextFactory>();
-            var mapper = container.GetInstance<IMapper>();
-            var partTypesCache = container.GetInstance<IPartTypesCache>();
-            var licensedStorageProvider = container.GetInstance<ILicensedStorageProvider>();
-            var logger = container.GetInstance<ILogger<EntityFrameworkStorageProvider>>();
-            var requestContext = container.GetInstance<IRequestContextAccessor>();
-            var instance = CreateInstance(provider, contextFactory, mapper, storageProviderConfiguration, partTypesCache, licensedStorageProvider, logger, requestContext);
-            return instance;
-        }
-
         public IStorageProvider Create(IServiceProvider serviceProvider, StorageProviderConfiguration storageProviderConfiguration)
         {
             var provider = Providers[EntityFrameworkStorageProvider.ProviderName.ToLower()];
@@ -53,12 +37,12 @@ namespace Binner.Web.Database
             return instance;
         }
 
-        public IStorageProvider CreateLimited(LightInject.IServiceContainer container, StorageProviderConfiguration storageProviderConfiguration)
+        public IStorageProvider CreateLimited(IServiceProvider serviceProvider, StorageProviderConfiguration storageProviderConfiguration)
         {
             // override: all providers now redirect to the EF provider
             var provider = Providers[EntityFrameworkStorageProvider.ProviderName.ToLower()];
             // materialize the dependencies
-            var contextFactory = container.GetInstance<IDbContextFactory<BinnerContext>>();
+            var contextFactory = serviceProvider.GetRequiredService<IDbContextFactory<BinnerContext>>();
             // call the alternate constructor
             var instance = Activator.CreateInstance(provider, contextFactory, storageProviderConfiguration.Provider, storageProviderConfiguration.ProviderConfiguration) as IStorageProvider 
                 ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");

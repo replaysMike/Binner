@@ -9,14 +9,6 @@ namespace Binner.Common.StorageProviders
         /// <summary>
         /// Create an instance of IStorageProvider
         /// </summary>
-        /// <param name="container">The service container</param>
-        /// <param name="storageProviderConfiguration">The storage provider configuration section from <see cref="WebHostServiceConfiguration"/></param>
-        /// <returns></returns>
-        IStorageProvider Create(LightInject.IServiceContainer container, StorageProviderConfiguration storageProviderConfiguration);
-
-        /// <summary>
-        /// Create an instance of IStorageProvider
-        /// </summary>
         /// <param name="serviceProvider">The service provider</param>
         /// <param name="storageProviderConfiguration">The storage provider configuration section from <see cref="WebHostServiceConfiguration"/></param>
         /// <returns></returns>
@@ -25,9 +17,9 @@ namespace Binner.Common.StorageProviders
         /// <summary>
         /// Create a limited instance of IStorageProvider
         /// </summary>
-        /// <param name="container">The service container</param>
+        /// <param name="serviceProvider">The service container</param>
         /// <param name="storageProviderConfiguration">The storage provider configuration section from <see cref="WebHostServiceConfiguration"/></param>
         /// <returns></returns>
-        IStorageProvider CreateLimited(LightInject.IServiceContainer container, StorageProviderConfiguration storageProviderConfiguration);
+        IStorageProvider CreateLimited(IServiceProvider serviceProvider, StorageProviderConfiguration storageProviderConfiguration);
     }
 }

@@ -1,12 +1,8 @@
-﻿using Binner.Common.Integrations;
-using Binner.Global.Common;
-using Binner.Model;
+﻿using Binner.Global.Common;
 using Binner.Model.Configuration;
-using Binner.Model.Configuration.Integrations;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services;
-using LightInject;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
