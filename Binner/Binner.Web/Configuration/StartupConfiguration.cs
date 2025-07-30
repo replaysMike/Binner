@@ -41,6 +41,7 @@ namespace Binner.Web.Configuration
             // register traditional configuration with LightInject
             var licenseConfig = new LicenseConfiguration { LicenseKey = serviceConfiguration.Licensing?.LicenseKey };
             services.AddSingleton(licenseConfig);
+            services.AddSingleton(configuration);
             services.AddSingleton(serviceConfiguration);
             services.AddSingleton(authenticationConfiguration);
             services.AddSingleton(storageProviderConfiguration);
