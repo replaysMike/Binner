@@ -170,7 +170,7 @@ export const ExportPartFields = [
     text: "MountingType",
   },
   {
-    key: 34,
+    key: 35,
     value: "PartType",
     text: "PartType",
   },
