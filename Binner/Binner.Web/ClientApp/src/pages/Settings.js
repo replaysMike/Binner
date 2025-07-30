@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table, Tab, TabPane, Checkbox } from "semantic-ui-react";
@@ -23,6 +23,7 @@ import "./Settings.css";
 export const Settings = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   const [loading, setLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState(0);
@@ -202,6 +203,18 @@ export const Settings = () => {
 
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    var isReturningFromApi = searchParams.get("api-authenticate");
+    if (isReturningFromApi === 'true') {
+      var apiName = searchParams.get("api");
+      setCurrentTab(1);
+      setTimeout(() => {
+        const element = document.getElementById(`api-${apiName.toLowerCase()}`);
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, [100]);
+    }
+  }, [searchParams]);
 
   /**
    * Save the system settings
@@ -877,7 +890,7 @@ export const Settings = () => {
         </i>
       </p>
 
-      <Segment loading={loading} color="green" secondary>
+      <Segment loading={loading} color="green" secondary id="api-swarm">
         <Header dividing as="h3">
           {t('page.settings.swarm', "Swarm")}
         </Header>
@@ -974,7 +987,7 @@ export const Settings = () => {
         </Form.Field>
       </Segment>
 
-      <Segment loading={loading} color="green" secondary>
+      <Segment loading={loading} color="green" secondary id="api-digikey">
         <Header dividing as="h3">
           {t('page.settings.digikey', "DigiKey")}
         </Header>
@@ -1175,7 +1188,7 @@ export const Settings = () => {
         </Form.Field>
       </Segment>
 
-      <Segment loading={loading} color="green" secondary>
+      <Segment loading={loading} color="green" secondary id="api-mouser">
         <Header dividing as="h3">
           {t('page.settings.mouser', "Mouser")}
         </Header>
@@ -1280,7 +1293,7 @@ export const Settings = () => {
         </Form.Field>
       </Segment>
 
-      <Segment loading={loading} color="green" secondary>
+      <Segment loading={loading} color="green" secondary id="api-arrow">
         <Header dividing as="h3">
           {t('page.settings.arrow', "Arrow")}
         </Header>
@@ -1372,7 +1385,7 @@ export const Settings = () => {
         </Form.Field>
       </Segment>
 
-      <Segment loading={loading} color="green" secondary>
+      <Segment loading={loading} color="green" secondary id="api-nexar">
         <Header dividing as="h3">
           {t('page.settings.octopartNexar', "Octopart/Nexar")}
         </Header>
@@ -1445,7 +1458,7 @@ export const Settings = () => {
         </Form.Field>
       </Segment>
 
-      <Segment loading={loading} color="green" secondary>
+      <Segment loading={loading} color="green" secondary id="api-tme">
         <Header dividing as="h3">
           {t('page.settings.tmeelectronics', "TME Electronics")}
         </Header>
@@ -1764,7 +1777,7 @@ export const Settings = () => {
           {kiCadSettings.kiCad.exportFields.map((field, key) => (
           <Table.Row key={key}>
             <Table.Cell><Checkbox name="enabled" checked={field.enabled} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
-            <Table.Cell><Dropdown search selection name="field" value={field.field} options={exportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
+            <Table.Cell></Table.Cell>
             <Table.Cell><Dropdown search selection allowAdditions name="kiCadFieldName" value={field.kiCadFieldName} options={kiCadExportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} onAddItem={handleAddKiCadExportField} /></Table.Cell>
           </Table.Row>
           ))}
