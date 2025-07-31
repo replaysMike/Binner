@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
