@@ -1,0 +1,31 @@
+.layout-container {
+  max-width: 95% !important;
+  margin: 0 auto;
+}
+
+.header-container {
+  max-width: 100%;
+}
+
+@media only screen and (max-width: 768px) {
+
+  /* For mobile phones: */
+  i.icon,
+  i.icons {
+    font-size: 0.8em !important;
+  }
+
+  .ui.statistic>.label {
+    font-size: 0.8em !important;
+  }
+}
+
+.ui.segment.dashboard .dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ui.segment.dashboard-stats .dashboard-stats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}

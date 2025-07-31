@@ -106,116 +106,120 @@ export function Home() {
         <h1>{t('page.home.title', "Dashboard")}</h1>
         <p>{t('page.home.description', "Binner is an inventory management app for makers, hobbyists and professionals.")}</p>
         <Segment className="dashboard">
-          <Statistic.Group widths="four">
-            <Statistic onClick={(e) => route(e, "/inventory/add")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="plus" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.addInventory', "Add Inventory")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/inventory")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="search" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.searchInventory', "Search Inventory")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/bom")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="list alternate outline" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.bom', "BOM")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/datasheets")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="file alternate" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.datasheets', "Datasheets")}</Statistic.Label>
-            </Statistic>
-          </Statistic.Group>
-          <Statistic.Group widths="four" size="tiny" style={{ marginTop: "50px" }}>
-            <Statistic onClick={(e) => route(e, "/lowstock")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="battery low" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.viewLowStock', "View Low Stock")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/partTypes")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="sitemap" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.partTypes', "Part Types")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/exportData")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="cloud download" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.importExport', "Import/Export")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/printing")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="print" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.printLabels', "Print Labels")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/tools")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="wrench" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.tools', "Tools")}</Statistic.Label>
-            </Statistic>
-            <Statistic onClick={(e) => route(e, "/settings")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="cog" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.settings', "Settings")}</Statistic.Label>
-            </Statistic>
-            {isAdmin() && <Statistic onClick={(e) => route(e, "/admin")} style={{ cursor: "pointer" }}>
-              <Statistic.Value>
-                <Icon name="user secret" />
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.admin', "Admin")}</Statistic.Label>
-            </Statistic>}
-          </Statistic.Group>
+          <div className="dashboard-container">
+            <Statistic.Group widths="four">
+              <Statistic onClick={(e) => route(e, "/inventory/add")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="plus" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.addInventory', "Add Inventory")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/inventory")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="search" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.searchInventory', "Search Inventory")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/bom")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="list alternate outline" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.bom', "BOM")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/datasheets")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="file alternate" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.datasheets', "Datasheets")}</Statistic.Label>
+              </Statistic>
+            </Statistic.Group>
+            <Statistic.Group widths="four" size="tiny" style={{ marginTop: "50px" }}>
+              <Statistic onClick={(e) => route(e, "/lowstock")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="battery low" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.viewLowStock', "View Low Stock")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/partTypes")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="sitemap" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.partTypes', "Part Types")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/exportData")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="cloud download" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.importExport', "Import/Export")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/printing")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="print" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.printLabels', "Print Labels")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/tools")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="wrench" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.tools', "Tools")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/settings")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="cog" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.settings', "Settings")}</Statistic.Label>
+              </Statistic>
+              {isAdmin() && <Statistic onClick={(e) => route(e, "/admin")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="user secret" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.admin', "Admin")}</Statistic.Label>
+              </Statistic>}
+            </Statistic.Group>
+          </div>
         </Segment>
 
         <h2>{t('page.home.yourOverview', "Your Overview")}</h2>
-        <Segment inverted loading={loading} textAlign="center">
-          <Statistic.Group widths="five">
-            <Statistic color="red" inverted>
-              <Statistic.Value>
-                <Icon name="battery low" />
-                {summary.lowStockCount}
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.lowStock', "Low Stock")}</Statistic.Label>
-            </Statistic>
-            <Statistic color="orange" inverted>
-              <Statistic.Value>
-                <Icon name="microchip" />
-                {summary.partsCount}
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.parts', "Parts")}</Statistic.Label>
-            </Statistic>
-            <Statistic color="orange" inverted>
-              <Statistic.Value>
-                <Icon name="microchip" />
-                {summary.uniquePartsCount}
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.uniqueParts', "Unique Parts")}</Statistic.Label>
-            </Statistic>
-            <Statistic color="green" inverted>
-              <Statistic.Value>
-                {formatCurrency(summary.partsCost, summary.currency, 2)}
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.value', "Value")}</Statistic.Label>
-            </Statistic>
-            <Statistic color="blue" inverted>
-              <Statistic.Value>
-                <Icon name="folder open" />
-                {summary.projectsCount}
-              </Statistic.Value>
-              <Statistic.Label>{t('page.home.projects', "BOM Projects")}</Statistic.Label>
-            </Statistic>
-          </Statistic.Group>
+        <Segment inverted loading={loading} textAlign="center" className="dashboard-stats">
+          <div className="dashboard-stats-container">
+            <Statistic.Group widths="five">
+              <Statistic color="red" inverted>
+                <Statistic.Value>
+                  <Icon name="battery low" />
+                  {summary.lowStockCount}
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.lowStock', "Low Stock")}</Statistic.Label>
+              </Statistic>
+              <Statistic color="orange" inverted>
+                <Statistic.Value>
+                  <Icon name="microchip" />
+                  {summary.partsCount}
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.parts', "Parts")}</Statistic.Label>
+              </Statistic>
+              <Statistic color="orange" inverted>
+                <Statistic.Value>
+                  <Icon name="microchip" />
+                  {summary.uniquePartsCount}
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.uniqueParts', "Unique Parts")}</Statistic.Label>
+              </Statistic>
+              <Statistic color="green" inverted>
+                <Statistic.Value>
+                  {formatCurrency(summary.partsCost, summary.currency, 2)}
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.value', "Value")}</Statistic.Label>
+              </Statistic>
+              <Statistic color="blue" inverted>
+                <Statistic.Value>
+                  <Icon name="folder open" />
+                  {summary.projectsCount}
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.projects', "BOM Projects")}</Statistic.Label>
+              </Statistic>
+            </Statistic.Group>
+          </div>
         </Segment>
         <VersionBanner isOpen={newVersionBannerIsOpen} version={versionData}></VersionBanner>
       </div>
