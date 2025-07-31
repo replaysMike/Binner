@@ -153,7 +153,7 @@ namespace Binner.Services.Integrations
                 {
                     //Keywords = string.Join(" ", filteredKeywords),
                     Keywords = string.Join(" ", keywords),
-                    Limit = Math.Max(recordCount, DigiKeyConstants.MaxResults),
+                    Limit = Math.Min(recordCount, DigiKeyConstants.MaxResults),
                     Offset = 0,
                     FilterOptionsRequest = new FilterOptionsRequest
                     {
@@ -195,7 +195,7 @@ namespace Binner.Services.Integrations
                     request = new KeywordSearchRequest
                     {
                         Keywords = string.Join(" ", keywords),
-                        Limit = Math.Max(recordCount, DigiKeyConstants.MaxResults),
+                        Limit = Math.Min(recordCount, DigiKeyConstants.MaxResults),
                         Offset = 0,
                         // no filter options specified
                         FilterOptionsRequest = new FilterOptionsRequest { },
