@@ -232,6 +232,11 @@ namespace Binner.Model
         public string? HtsusCode { get; set; }
 
         /// <summary>
+        /// The packaging the part is available in
+        /// </summary>
+        public string? Packaging { get; set; }
+
+        /// <summary>
         /// A comma delimited list of other names for the product
         /// </summary>
         public string? OtherNames { get; set; }

@@ -27,13 +27,44 @@
         /// </summary>
         public ParametricUnits? Units { get; set; }
 
-        public double? ValueAsDouble { get; set; }
-        public string? ValueAsString { get; set; }
-        public bool? ValueAsBool { get; set; }
+        /// <summary>
+        /// Value as a number
+        /// </summary>
+        public double? ValueNumber { get; set; }
 
         /// <summary>
-        /// The value of the field
+        /// Value as a string
         /// </summary>
-        public object? Value => ValueAsDouble ?? (object?)ValueAsString ?? ValueAsBool;
+        public string? Value { get; set; }
+
+        /// <summary>
+        /// Value as a bool
+        /// </summary>
+        public bool? ValueBool { get; set; }
+
+        /// <summary>
+        /// Original DigiKey parameter id
+        /// </summary>
+        public int DigiKeyParameterId { get; set; }
+
+        /// <summary>
+        /// Original DigiKey parameter text
+        /// </summary>
+        public string? DigiKeyParameterText { get; set; }
+
+        /// <summary>
+        /// Original DigiKey parameter type name
+        /// </summary>
+        public string? DigiKeyParameterType { get; set; }
+
+        /// <summary>
+        /// Original DigiKey value id
+        /// </summary>
+        public string? DigiKeyValueId { get; set; }
+
+        /// <summary>
+        /// Original DigiKey value text
+        /// </summary>
+        public string? DigiKeyValueText { get; set; }
     }
 }

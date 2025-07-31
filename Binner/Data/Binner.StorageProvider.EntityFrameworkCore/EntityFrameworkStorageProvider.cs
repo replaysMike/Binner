@@ -1618,7 +1618,10 @@ INNER JOIN (
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _partTypesCache.Cache
-                .FirstOrDefault(x => x.PartTypeId == partTypeId && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
+                .WhereIf(userContext != null, x => x.OrganizationId == null || x.OrganizationId == userContext!.OrganizationId)
+                .WhereIf(userContext == null, x => x.OrganizationId == null)
+                .Where(x => x.PartTypeId == partTypeId)
+                .FirstOrDefault();
             if (entity == null)
                 return null;
             return _mapper.Map<PartType?>(entity);
@@ -1626,10 +1629,11 @@ INNER JOIN (
 
         public async Task<PartType?> GetPartTypeAsync(string name, IUserContext? userContext)
         {
-            if (userContext == null) throw new UserContextUnauthorizedException();
-            await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = _partTypesCache.Cache
-                .FirstOrDefault(x => x.Name != null && x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && (x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null));
+                .WhereIf(userContext != null, x => x.OrganizationId == null || x.OrganizationId == userContext!.OrganizationId)
+                .WhereIf(userContext == null, x => x.OrganizationId == null)
+                .Where(x => x.Name != null && x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                .FirstOrDefault();
             if (entity == null)
                 return null;
             return _mapper.Map<PartType?>(entity);
@@ -1637,10 +1641,9 @@ INNER JOIN (
 
         public Task<ICollection<PartType>> GetPartTypesAsync(IUserContext? userContext)
         {
-            if (userContext == null) throw new UserContextUnauthorizedException();
-
             var entities = _partTypesCache.Cache
-                .Where(x => x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null)
+                .WhereIf(userContext != null, x => x.OrganizationId == null || x.OrganizationId == userContext!.OrganizationId)
+                .WhereIf(userContext == null, x => x.OrganizationId == null)
                 .OrderBy(x => x.OrganizationId == null)
                 .ThenBy(x => x.ParentPartType?.Name)
                 .ThenBy(x => x.Name)
@@ -1651,15 +1654,14 @@ INNER JOIN (
 
         public async Task<ICollection<PartType>> GetPartTypesAsync(bool filterEmpty, IUserContext? userContext)
         {
-            if (userContext == null) throw new UserContextUnauthorizedException();
-
             if (filterEmpty)
             {
                 await using var context = await _contextFactory.CreateDbContextAsync();
                 var partTypes = context.PartTypes
                     .Include(x => x.ParentPartType)
                     .Include(x => x.Parts)
-                    .Where(x => x.OrganizationId == userContext.OrganizationId || x.OrganizationId == null)
+                    .WhereIf(userContext != null, x => x.OrganizationId == null || x.OrganizationId == userContext!.OrganizationId)
+                    .WhereIf(userContext == null, x => x.OrganizationId == null)
                     .Where(x => x.Parts.Any())
                     .OrderBy(x => x.OrganizationId == null)
                     .ThenBy(x => x.ParentPartType != null ? x.ParentPartType.Name : x.Name)

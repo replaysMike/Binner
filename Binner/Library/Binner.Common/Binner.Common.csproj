@@ -38,7 +38,7 @@
     <PackageReference Include="AnySerializer" Version="1.2.5" />
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="Barcoder" Version="2.0.0" />
-    <PackageReference Include="Binner.SwarmApi" Version="1.0.5" />
+    <PackageReference Include="Binner.SwarmApi" Version="1.0.10" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="libc.hwid" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />

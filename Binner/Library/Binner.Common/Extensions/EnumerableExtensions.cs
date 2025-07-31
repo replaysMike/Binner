@@ -39,5 +39,24 @@ namespace Binner.Common.Extensions
 
             return source.OrderBy(i => Regex.Replace(selector(i), @"\d+", m => m.Value.PadLeft(max, '0')));
         }
+
+        /// <summary>
+        /// Recursively select a property
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> SelectRecursive<T>(this IEnumerable<T> source, Func<T, IEnumerable<T>> selector)
+        {
+            foreach (var parent in source)
+            {
+                yield return parent;
+
+                var children = selector(parent);
+                foreach (var child in SelectRecursive(children, selector))
+                    yield return child;
+            }
+        }
     }
 }

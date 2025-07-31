@@ -8,6 +8,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Binner.Common\Binner.Common.csproj" />

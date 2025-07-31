@@ -19,6 +19,14 @@ namespace Binner.Services
         private readonly ICredentialService _credentialService;
         private readonly IApiHttpClientFactory _httpClientFactory;
         private readonly IUserConfigurationService _userConfigurationService;
+        /// <summary>
+        /// Default user configuration used for global/system integration APIs
+        /// </summary>
+        private readonly UserConfiguration _defaultUserConfiguration = new UserConfiguration
+        {
+            Language = Model.Languages.En,
+            Currency = Model.Currencies.USD,
+        };
 
         public IntegrationApiFactory(ILoggerFactory loggerFactory, IMapper mapper, IIntegrationCredentialsCacheProvider credentialProvider, IHttpContextAccessor httpContextAccessor, IRequestContextAccessor requestContext, ICredentialService credentialService, IApiHttpClientFactory httpClientFactory, IUserConfigurationService userConfigurationService)
         {
@@ -39,50 +47,104 @@ namespace Binner.Services
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public T CreateGlobal<T>()
+        public T CreateGlobal<T>(IntegrationConfiguration integrationConfiguration)
             where T : class
         {
             var apiType = typeof(T);
 
             if (apiType == typeof(Integrations.SwarmApi))
             {
-                var result = CreateGlobalSwarmApi();
+                var result = CreateGlobalSwarmApi(integrationConfiguration);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(DigikeyApi))
             {
-                var result = CreateGlobalDigikeyApi();
+                var result = CreateGlobalDigikeyApi(integrationConfiguration);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(MouserApi))
             {
-                var result = CreateGlobalMouserApi();
+                var result = CreateGlobalMouserApi(integrationConfiguration);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(NexarApi))
             {
-                var result = CreateGlobalNexarApi();
+                var result = CreateGlobalNexarApi(integrationConfiguration);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(ArrowApi))
             {
-                var result = CreateGlobalArrowApi();
+                var result = CreateGlobalArrowApi(integrationConfiguration);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
             }
             if (apiType == typeof(TmeApi))
             {
-                var result = CreateGlobalTmeApi();
+                var result = CreateGlobalTmeApi(integrationConfiguration);
                 var resultTyped = result as T;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            throw new NotImplementedException($"Unhandled type '{apiType.Name}'");
+        }
+
+        /// <summary>
+        /// Create an integration Api for system use
+        /// Only for global system usage as no user api keys will be available
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public IIntegrationApi CreateGlobal(Type apiType, IntegrationConfiguration integrationConfiguration)
+        {
+            if (apiType == typeof(Integrations.SwarmApi))
+            {
+                var result = CreateGlobalSwarmApi(integrationConfiguration);
+                var resultTyped = result;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(DigikeyApi))
+            {
+                var result = CreateGlobalDigikeyApi(integrationConfiguration);
+                var resultTyped = result;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(MouserApi))
+            {
+                var result = CreateGlobalMouserApi(integrationConfiguration);
+                var resultTyped = result;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(NexarApi))
+            {
+                var result = CreateGlobalNexarApi(integrationConfiguration);
+                var resultTyped = result;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(ArrowApi))
+            {
+                var result = CreateGlobalArrowApi(integrationConfiguration);
+                var resultTyped = result;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(TmeApi))
+            {
+                var result = CreateGlobalTmeApi(integrationConfiguration);
+                var resultTyped = result;
                 if (resultTyped != null)
                     return resultTyped;
             }
@@ -106,49 +168,6 @@ namespace Binner.Services
             var getCredentialsMethod = async () =>
 #pragma warning restore CS1998
             {
-                // create a db context
-                //await using var context = await _contextFactory.CreateDbContextAsync();
-                /*var userIntegrationConfiguration = await context.UserIntegrationConfigurations
-                    .Where(x => x.UserId.Equals(userId))
-                    .FirstOrDefaultAsync()
-                    ?? new Data.DataModel.UserIntegrationConfiguration();*/
-                // todo: temporary until we move integration configuration to the UI
-                /*var userIntegrationConfiguration = new UserIntegrationConfiguration
-                {
-                    SwarmEnabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
-                    SwarmApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
-                    SwarmApiUrl = _webHostServiceConfiguration.Integrations.Swarm.ApiUrl,
-                    SwarmTimeout = _webHostServiceConfiguration.Integrations.Swarm.Timeout,
-
-                    DigiKeyEnabled = _webHostServiceConfiguration.Integrations.Digikey.Enabled,
-                    DigiKeySite = _webHostServiceConfiguration.Integrations.Digikey.Site,
-                    DigiKeyClientId = _webHostServiceConfiguration.Integrations.Digikey.ClientId,
-                    DigiKeyClientSecret = _webHostServiceConfiguration.Integrations.Digikey.ClientSecret,
-                    DigiKeyOAuthPostbackUrl = _webHostServiceConfiguration.Integrations.Digikey.oAuthPostbackUrl,
-                    DigiKeyApiUrl = _webHostServiceConfiguration.Integrations.Digikey.ApiUrl,
-                    
-                    MouserEnabled = _webHostServiceConfiguration.Integrations.Mouser.Enabled,
-                    MouserSearchApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.SearchApiKey,
-                    MouserCartApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.CartApiKey,
-                    MouserOrderApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.OrderApiKey,
-                    MouserApiUrl = _webHostServiceConfiguration.Integrations.Mouser.ApiUrl,
-
-                    ArrowEnabled = _webHostServiceConfiguration.Integrations.Arrow.Enabled,
-                    ArrowUsername = _webHostServiceConfiguration.Integrations.Arrow.Username,
-                    ArrowApiKey = _webHostServiceConfiguration.Integrations.Arrow.ApiKey,
-                    ArrowApiUrl = _webHostServiceConfiguration.Integrations.Arrow.ApiUrl,
-                    
-                    NexarEnabled = _webHostServiceConfiguration.Integrations.Nexar.Enabled,
-                    NexarClientId = _webHostServiceConfiguration.Integrations.Nexar.ClientId,
-                    NexarClientSecret = _webHostServiceConfiguration.Integrations.Nexar.ClientSecret,
-
-                    TmeEnabled = _webHostServiceConfiguration.Integrations.Tme.Enabled,
-                    TmeApplicationSecret = _webHostServiceConfiguration.Integrations.Tme.ApplicationSecret,
-                    TmeApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
-                    TmeApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
-                    TmeResolveExternalLinks = _webHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks,
-                };*/
-
                 // build the credentials list
                 var credentials = new List<ApiCredential>();
 
@@ -232,49 +251,6 @@ namespace Binner.Services
             var getCredentialsMethod = async () =>
 #pragma warning restore CS1998
             {
-                // create a db context
-                //await using var context = await _contextFactory.CreateDbContextAsync();
-                /*var userIntegrationConfiguration = await context.UserIntegrationConfigurations
-                    .Where(x => x.UserId.Equals(userId))
-                    .FirstOrDefaultAsync()
-                    ?? new Data.DataModel.UserIntegrationConfiguration();*/
-                // todo: temporary until we move integration configuration to the UI
-                /*var userIntegrationConfiguration = new UserIntegrationConfiguration
-                {
-                    SwarmEnabled = _webHostServiceConfiguration.Integrations.Swarm.Enabled,
-                    SwarmApiKey = _webHostServiceConfiguration.Integrations.Swarm.ApiKey,
-                    SwarmApiUrl = _webHostServiceConfiguration.Integrations.Swarm.ApiUrl,
-                    SwarmTimeout = _webHostServiceConfiguration.Integrations.Swarm.Timeout,
-
-                    DigiKeyEnabled = _webHostServiceConfiguration.Integrations.Digikey.Enabled,
-                    DigiKeySite = _webHostServiceConfiguration.Integrations.Digikey.Site,
-                    DigiKeyClientId = _webHostServiceConfiguration.Integrations.Digikey.ClientId,
-                    DigiKeyClientSecret = _webHostServiceConfiguration.Integrations.Digikey.ClientSecret,
-                    DigiKeyOAuthPostbackUrl = _webHostServiceConfiguration.Integrations.Digikey.oAuthPostbackUrl,
-                    DigiKeyApiUrl = _webHostServiceConfiguration.Integrations.Digikey.ApiUrl,
-
-                    MouserEnabled = _webHostServiceConfiguration.Integrations.Mouser.Enabled,
-                    MouserSearchApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.SearchApiKey,
-                    MouserCartApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.CartApiKey,
-                    MouserOrderApiKey = _webHostServiceConfiguration.Integrations.Mouser.ApiKeys.OrderApiKey,
-                    MouserApiUrl = _webHostServiceConfiguration.Integrations.Mouser.ApiUrl,
-
-                    ArrowEnabled = _webHostServiceConfiguration.Integrations.Arrow.Enabled,
-                    ArrowUsername = _webHostServiceConfiguration.Integrations.Arrow.Username,
-                    ArrowApiKey = _webHostServiceConfiguration.Integrations.Arrow.ApiKey,
-                    ArrowApiUrl = _webHostServiceConfiguration.Integrations.Arrow.ApiUrl,
-
-                    NexarEnabled = _webHostServiceConfiguration.Integrations.Nexar.Enabled,
-                    NexarClientId = _webHostServiceConfiguration.Integrations.Nexar.ClientId,
-                    NexarClientSecret = _webHostServiceConfiguration.Integrations.Nexar.ClientSecret,
-
-                    TmeEnabled = _webHostServiceConfiguration.Integrations.Tme.Enabled,
-                    TmeApplicationSecret = _webHostServiceConfiguration.Integrations.Tme.ApplicationSecret,
-                    TmeApiKey = _webHostServiceConfiguration.Integrations.Tme.ApiKey,
-                    TmeApiUrl = _webHostServiceConfiguration.Integrations.Tme.ApiUrl,
-                    TmeResolveExternalLinks = _webHostServiceConfiguration.Integrations.Tme.ResolveExternalLinks,
-                };*/
-
                 // build the credentials list
                 var credentials = new List<ApiCredential>();
 
@@ -459,19 +435,17 @@ namespace Binner.Services
             throw new NotImplementedException($"Unhandled type '{apiType.Name}'");
         }
 
-        private Integrations.SwarmApi CreateGlobalSwarmApi()
+        private Integrations.SwarmApi CreateGlobalSwarmApi(IntegrationConfiguration integrationConfig)
         {
-            var integrationConfig = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration();
             var configuration = new SwarmConfiguration
             {
                 // system settings
-                Enabled = integrationConfig.SwarmEnabled,
-                ApiKey = integrationConfig.SwarmApiKey,
-                ApiUrl = integrationConfig.SwarmApiUrl,
+                Enabled = integrationConfig.Swarm.Enabled,
+                ApiKey = integrationConfig.Swarm.ApiKey,
+                ApiUrl = integrationConfig.Swarm.ApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<Integrations.SwarmApi>();
-            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
-            var api = new Integrations.SwarmApi(logger, configuration, userConfiguration);
+            var api = new Integrations.SwarmApi(logger, configuration, _defaultUserConfiguration);
             return api;
         }
 
@@ -496,22 +470,20 @@ namespace Binner.Services
             return api;
         }
 
-        private DigikeyApi CreateGlobalDigikeyApi()
+        private DigikeyApi CreateGlobalDigikeyApi(IntegrationConfiguration integrationConfig)
         {
-            var integrationConfig = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration();
             var configuration = new DigikeyConfiguration
             {
                 // system settings
-                Enabled = integrationConfig.DigiKeyEnabled,
-                Site = integrationConfig.DigiKeySite,
-                ClientId = integrationConfig.DigiKeyClientId,
-                ClientSecret = integrationConfig.DigiKeyClientSecret,
-                ApiUrl = integrationConfig.DigiKeyApiUrl,
-                oAuthPostbackUrl = integrationConfig.DigiKeyOAuthPostbackUrl,
+                Enabled = integrationConfig.Digikey.Enabled,
+                Site = integrationConfig.Digikey.Site,
+                ClientId = integrationConfig.Digikey.ClientId,
+                ClientSecret = integrationConfig.Digikey.ClientSecret,
+                ApiUrl = integrationConfig.Digikey.ApiUrl,
+                oAuthPostbackUrl = integrationConfig.Digikey.oAuthPostbackUrl,
             };
             var logger = _loggerFactory.CreateLogger<DigikeyApi>();
-            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
-            var api = new DigikeyApi(logger, configuration, userConfiguration, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
+            var api = new DigikeyApi(logger, configuration, _defaultUserConfiguration, _credentialService, _httpContextAccessor, _requestContext, _httpClientFactory);
             return api;
         }
 
@@ -537,24 +509,22 @@ namespace Binner.Services
             return api;
         }
 
-        private MouserApi CreateGlobalMouserApi()
+        private MouserApi CreateGlobalMouserApi(IntegrationConfiguration integrationConfig)
         {
-            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
             var configuration = new MouserConfiguration
             {
                 // system settings
-                Enabled = integrationConfiguration.Mouser.Enabled,
+                Enabled = integrationConfig.Mouser.Enabled,
                 ApiKeys = new MouserApiKeys
                 {
-                    OrderApiKey = integrationConfiguration.Mouser.ApiKeys.OrderApiKey,
-                    CartApiKey = integrationConfiguration.Mouser.ApiKeys.CartApiKey,
-                    SearchApiKey = integrationConfiguration.Mouser.ApiKeys.SearchApiKey
+                    OrderApiKey = integrationConfig.Mouser.ApiKeys.OrderApiKey,
+                    CartApiKey = integrationConfig.Mouser.ApiKeys.CartApiKey,
+                    SearchApiKey = integrationConfig.Mouser.ApiKeys.SearchApiKey
                 },
-                ApiUrl = integrationConfiguration.Mouser.ApiUrl,
+                ApiUrl = integrationConfig.Mouser.ApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<MouserApi>();
-            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
-            var api = new MouserApi(logger, configuration, userConfiguration, _httpClientFactory);
+            var api = new MouserApi(logger, configuration, _defaultUserConfiguration, _httpClientFactory);
             return api;
         }
 
@@ -582,19 +552,17 @@ namespace Binner.Services
             return api;
         }
 
-        private NexarApi CreateGlobalNexarApi()
+        private NexarApi CreateGlobalNexarApi(IntegrationConfiguration integrationConfig)
         {
-            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
             var configuration = new OctopartConfiguration
             {
                 // system settings
-                Enabled = integrationConfiguration.Nexar.Enabled,
-                ClientId = integrationConfiguration.Nexar.ClientId,
-                ClientSecret = integrationConfiguration.Nexar.ClientSecret,
+                Enabled = integrationConfig.Nexar.Enabled,
+                ClientId = integrationConfig.Nexar.ClientId,
+                ClientSecret = integrationConfig.Nexar.ClientSecret,
             };
             var logger = _loggerFactory.CreateLogger<NexarApi>();
-            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
-            var api = new NexarApi(logger, configuration, userConfiguration);
+            var api = new NexarApi(logger, configuration, _defaultUserConfiguration);
             return api;
         }
 
@@ -617,20 +585,18 @@ namespace Binner.Services
             return api;
         }
 
-        private ArrowApi CreateGlobalArrowApi()
+        private ArrowApi CreateGlobalArrowApi(IntegrationConfiguration integrationConfig)
         {
-            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
             var configuration = new ArrowConfiguration
             {
                 // system settings
-                Enabled = integrationConfiguration.Arrow.Enabled,
-                Username = integrationConfiguration.Arrow.Username,
-                ApiKey = integrationConfiguration.Arrow.ApiKey,
-                ApiUrl = integrationConfiguration.Arrow.ApiUrl,
+                Enabled = integrationConfig.Arrow.Enabled,
+                Username = integrationConfig.Arrow.Username,
+                ApiKey = integrationConfig.Arrow.ApiKey,
+                ApiUrl = integrationConfig.Arrow.ApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<ArrowApi>();
-            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
-            var api = new ArrowApi(logger, configuration, userConfiguration, _httpContextAccessor);
+            var api = new ArrowApi(logger, configuration, _defaultUserConfiguration, _httpContextAccessor);
             return api;
         }
 
@@ -654,22 +620,20 @@ namespace Binner.Services
             return api;
         }
 
-        private TmeApi CreateGlobalTmeApi()
+        private TmeApi CreateGlobalTmeApi(IntegrationConfiguration integrationConfig)
         {
-            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
             var configuration = new TmeConfiguration
             {
                 // system settings
-                Enabled = integrationConfiguration.Tme.Enabled,
-                Country = integrationConfiguration.Tme.Country,
-                ApplicationSecret = integrationConfiguration.Tme.ApplicationSecret,
-                ApiKey = integrationConfiguration.Tme.ApiKey,
-                ApiUrl = integrationConfiguration.Tme.ApiUrl,
-                ResolveExternalLinks = integrationConfiguration.Tme.ResolveExternalLinks,
+                Enabled = integrationConfig.Tme.Enabled,
+                Country = integrationConfig.Tme.Country,
+                ApplicationSecret = integrationConfig.Tme.ApplicationSecret,
+                ApiKey = integrationConfig.Tme.ApiKey,
+                ApiUrl = integrationConfig.Tme.ApiUrl,
+                ResolveExternalLinks = integrationConfig.Tme.ResolveExternalLinks,
             };
             var logger = _loggerFactory.CreateLogger<TmeApi>();
-            var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
-            var api = new TmeApi(logger, configuration, userConfiguration, _httpClientFactory);
+            var api = new TmeApi(logger, configuration, _defaultUserConfiguration, _httpClientFactory);
             return api;
         }
 

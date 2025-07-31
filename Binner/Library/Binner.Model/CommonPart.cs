@@ -186,13 +186,23 @@
         public string? HtsusCode { get; set; }
 
         /// <summary>
+        /// The packaging the part is available in
+        /// </summary>
+        public string? Packaging { get; set; }
+
+        /// <summary>
         /// List of all parametrics for part
         /// </summary>
-        public ICollection<PartParametric>? Parametrics { get; set; }
+        public ICollection<PartParametric> Parametrics { get; set; } = new List<PartParametric>();
 
         /// <summary>
         /// List of all cad models for part
         /// </summary>
-        public ICollection<PartModel>? Models { get; set; }
+        public ICollection<PartModel> Models { get; set; } = new List<PartModel>();
+
+        /// <summary>
+        /// List of categories associated with the part
+        /// </summary>
+        public ICollection<CommonCategory> Categories { get; set; } = new List<CommonCategory>();
     }
 }

@@ -15,7 +15,7 @@
         /// </summary>
         public enum DefaultPartTypes
         {
-            [PartTypeInfo("A resistor is an electronic component that opposes the flow of electric current in a circuit.", "R", "Device:R")]
+            [PartTypeInfo("A resistor is an electronic component that opposes the flow of electric current in a circuit.", "R", "Device:R", keywords: "res,resistors")]
             Resistor = 1,
             [PartTypeInfo("A capacitor is a passive electronic component that stores electrical energy in an electric field.", "C", "Device:C")]
             Capacitor,
@@ -50,7 +50,7 @@
             [PartTypeInfo("Hardware encapsulates different kinds of parts related to the physical assembly of a PCB. It may contain screws, stand-offs, bolts or nuts or any other type of physical object.")]
             Hardware,
             Other,
-            [PartTypeInfo("An operational amplifier (op-amp) is a DC-coupled electronic voltage amplifier with a high gain, typically with a differential input and a single-ended output.", "U", "Amplifier_Operational")]
+            [PartTypeInfo("An operational amplifier (op-amp) is a DC-coupled electronic voltage amplifier with a high gain, typically with a differential input and a single-ended output.", "U", "Amplifier_Operational", keywords: "opamp,operational amplifier,op-amp,op amp,operational amp")]
             [ParentPartType(DefaultPartTypes.IC)]
             OpAmp,
             [PartTypeInfo("An electronic amplifier is a device that increases the magnitude of a signal, whether it's voltage, current, or power.", "U", "Amplifier")]
@@ -455,7 +455,7 @@
             Robotics,
 
             // added out of order (don't change order or keys will change)
-            [PartTypeInfo("A flip-flop, also known as a bistable multivibrator, is a digital electronic circuit with two stable states, representing 0 or 1, that can be used to store a single bit of information.", "U")]
+            [PartTypeInfo("A flip-flop, also known as a bistable multivibrator, is a digital electronic circuit with two stable states, representing 0 or 1, that can be used to store a single bit of information.", "U", null, keywords: "flipflop,flip flop,flip-flop")]
             [ParentPartType(DefaultPartTypes.IC)]
             FlipFlopIc,
             [PartTypeInfo("An adjustable inductor is a type of inductor with a movable core, allowing its inductance to be changed by adjusting the position of the core within the coil.", "L")]

@@ -14,13 +14,15 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly WebHostServiceConfiguration _configuration;
         private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
+        private readonly int _maxResults;
 
-        public NexarPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank)
+        public NexarPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank, int maxResults = ApiConstants.MaxRecords)
         {
             _logger = logger;
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
+            _maxResults = maxResults;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)
@@ -37,7 +39,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
             IApiResponse? apiResponse = null;
             try
             {
-                apiResponse = await api.SearchAsync(context.PartNumber, context.PartType, context.MountingType);
+                apiResponse = await api.SearchAsync(context.PartNumber, context.PartType, context.MountingType, _maxResults);
             }
             catch (Exception ex)
             {

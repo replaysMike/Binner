@@ -14,13 +14,15 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly WebHostServiceConfiguration _configuration;
         private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
+        private readonly int _maxResults;
 
-        public SwarmPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank)
+        public SwarmPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank, int maxResults = ApiConstants.MaxRecords)
         {
             _logger = logger;
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
+            _maxResults = maxResults;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)
@@ -37,7 +39,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
             IApiResponse? apiResponse = null;
             try
             {
-                apiResponse = await api.SearchAsync(context.PartNumber);
+                apiResponse = await api.SearchAsync(context.PartNumber, _maxResults);
             }
             catch (Exception ex)
             {
@@ -108,7 +110,15 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         DateCreatedUtc = x.DateCreatedUtc,
                         DatePrunedUtc = x.DatePrunedUtc,
                         DefaultPartNumberManufacturerImageMetadataId = x.DefaultPartNumberManufacturerImageMetadataId,
-                        //Description = x.Description,
+                        //Description = x.Description, // prefer custom description, will be set if missing
+                        ExportControlClassNumber = x.ExportControlClassNumber,
+                        FactoryLeadTime = x.FactoryLeadTime,
+                        FactoryStockAvailable = x.FactoryStockAvailable,
+                        HtsusCode = x.HtsusCode,
+                        MoistureSensitivityLevel = x.MoistureSensitivityLevel,
+                        ReachStatus = x.ReachStatus,
+                        RohsStatus = x.RohsStatus,
+                        Series = x.Series,
                         ImageMetadata = x.ImageMetadata.Select(i => new PartNumberManufacturerImageMetadata
                         {
                             CreatedFromSupplierId = i.CreatedFromSupplierId,
@@ -139,6 +149,16 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             SizeHeightMm = p.SizeHeightMm,
                             SizeWidthMm = p.SizeWidthMm
                         }).ToList(),
+                        Models = x.Models.Select(p => new PartNumberManufacturerModel
+                        {
+                            Name = p.Name,
+                            Filename = p.Filename,
+                            ModelType = (PartModelTypes)(int)p.ModelType,
+                            PartNumberManufacturerId = p.PartNumberManufacturerId,
+                            PartNumberManufacturerModelId = p.PartNumberManufacturerModelId,
+                            Source = (PartModelSources)(int)p.Source,
+                            Url = p.Url
+                        }).ToList(),
                         Parametrics = x.Parametrics.Select(p => new PartNumberManufacturerParametric
                         {
                             Name = p.Name,
@@ -146,9 +166,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             PartNumberManufacturerId = p.PartNumberManufacturerId,
                             PartNumberManufacturerParametricId = p.PartNumberManufacturerParametricId,
                             Units = (ParametricUnits?)(int?)p.Units,
-                            ValueAsBool = p.ValueAsBool,
-                            ValueAsDouble = p.ValueAsDouble,
-                            ValueAsString = p.ValueAsString
+                            ValueBool = p.ValueBool,
+                            ValueNumber = p.ValueNumber,
+                            Value = p.Value,
+                            DigiKeyParameterId = p.DigiKeyParameterId,
+                            DigiKeyParameterText = p.DigiKeyParameterText,
+                            DigiKeyParameterType = p.DigiKeyParameterType,
+                            DigiKeyValueId = p.DigiKeyValueId,
+                            DigiKeyValueText = p.DigiKeyValueText
                         }).ToList(),
                         PartNumberId = x.PartNumberId,
                         PartNumberManufacturerId = x.PartNumberManufacturerId,
@@ -160,8 +185,8 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             Cost = s.Cost,
                             Currency = s.Currency,
                             DateCreatedUtc = s.DateCreatedUtc,
-                            FactoryLeadTime = s.FactoryLeadTime,
-                            FactoryStockAvailable = s.FactoryStockAvailable,
+                            FactoryLeadTime = s.LeadTime,
+                            FactoryStockAvailable = s.StockAvailable,
                             MinimumOrderQuantity = s.MinimumOrderQuantity,
                             Packaging = s.Packaging,
                             PartNumberManufacturerId = s.PartNumberManufacturerId,
@@ -219,7 +244,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
 
                         var mountingType = manufacturerPart.Parametrics
                             .Where(x => x.Name.Equals("Mounting Type", ComparisonType))
-                            .Select(x => x.ValueAsString)
+                            .Select(x => x.Value)
                             .FirstOrDefault();
                         var mountingTypeId = MountingType.None;
                         Enum.TryParse<MountingType>(mountingType, out mountingTypeId);

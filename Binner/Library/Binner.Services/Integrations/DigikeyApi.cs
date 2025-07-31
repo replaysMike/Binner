@@ -492,7 +492,7 @@ namespace Binner.Services.Integrations
         {
             var uri = new Uri(_configuration.oAuthPostbackUrl);
             var referer = $"{uri.Scheme}://{uri.Host}{(uri.Port > 0 ? ":" + uri.Port : "")}";
-            if (_httpContextAccessor.HttpContext.Request.Headers?.ContainsKey("Referer") == true)
+            if (_httpContextAccessor.HttpContext?.Request?.Headers?.ContainsKey("Referer") == true)
                 referer = _httpContextAccessor.HttpContext.Request.Headers["Referer"].ToString();
             return referer;
         }
