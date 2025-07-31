@@ -1687,3 +1687,19 @@ ul.errors li.error:before {
 .datetime.relative {
   font-style: italic;
 }
+
+.recordsize {
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+}
+
+.recordsize.float-right {
+  float: right;
+}
+
+.recordsize>.ui.dropdown {
+  width: 75px;
+  min-width: 75px;
+  margin-right: 10px;
+}

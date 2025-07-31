@@ -14,6 +14,7 @@ import { formatCurrency } from "../common/Utils";
 import { getIcon } from "../common/partTypes";
 import "./PartsGrid2.css";
 import { toast } from "react-toastify";
+import { RecordSize } from "./RecordSize";
 
 const AppMedia = createMedia({
   breakpoints: {
@@ -90,14 +91,6 @@ export default function PartsGrid2Memoized({
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
   const [sorting, setSorting] = useState([]);
   const [_disabledPartIds, setDisabledPartIds] = useState(disabledPartIds);
-  const itemsPerPageOptions = [
-    { key: 1, text: "10", value: 10 },
-    { key: 2, text: "25", value: 25 },
-    { key: 3, text: "50", value: 50 },
-    { key: 4, text: "100", value: 100 },
-    { key: 5, text: "200", value: 200 },
-    { key: 6, text: "500", value: 500 },
-  ];
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setIsLoading(true);
@@ -418,12 +411,7 @@ export default function PartsGrid2Memoized({
           <div>
             <span>{t("label.totalRecords", "Total records:")} {totalRecords}</span>
           </div>
-          <div style={{display: 'flex', alignItems: 'center'}}>
-            <Dropdown selection options={itemsPerPageOptions} value={pageSize} className="labeled" onChange={handlePageSizeChange} style={{width: '75px', minWidth: '75px', marginRight: '10px'}} />
-            <div>
-              <span>{t("comp.partsGrid.recordsPerPage", "records per page")}</span>
-            </div>
-          </div>
+          <RecordSize value={pageSize} onChange={handlePageSizeChange} />
         </div>
 
         <div style={{marginTop: '5px'}}>

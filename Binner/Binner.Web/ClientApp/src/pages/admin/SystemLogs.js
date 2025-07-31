@@ -7,6 +7,7 @@ import { fetchApi } from "../../common/fetchApi";
 import { FormHeader } from "../../components/FormHeader";
 import { format, parse } from "date-fns";
 import "./SystemLogs.css";
+import { RecordSize } from "../../components/RecordSize";
 
 export const SystemLogs = () => {
   const { t } = useTranslation();
@@ -205,13 +206,7 @@ export const SystemLogs = () => {
 
       <Segment loading={loading} raised color="green">
         <Form>
-          <div style={{ display: 'flex', alignItems: 'center', float: 'right' }}>
-            <Dropdown selection options={itemsPerPageOptions} value={results} className="labeled" onChange={handlePageSizeChange} style={{ width: '75px', minWidth: '75px', marginRight: '10px' }} />
-            <div>
-              <span>{t("comp.partsGrid.recordsPerPage", "records per page")}</span>
-            </div>
-          </div>
-          
+          <RecordSize options={itemsPerPageOptions} value={results} onChange={handlePageSizeChange} float="right" />          
           <Tab panes={tabPanes} activeIndex={currentTab} onTabChange={handleTabChange} />
 
         </Form>

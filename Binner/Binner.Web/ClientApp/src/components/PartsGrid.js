@@ -11,6 +11,7 @@ import { AppEvents, Events } from "../common/events";
 import { formatCurrency } from "../common/Utils";
 import { getIcon } from "../common/partTypes";
 import "./PartsGrid.css";
+import { RecordSize } from './RecordSize';
 
 const AppMedia = createMedia({
   breakpoints: {
@@ -63,12 +64,6 @@ export default function PartsGrid({
   const [partTypes, setPartTypes] = useState();
   const loadPage = loadPage;
   const onPartClick = onPartClick;
-  const itemsPerPageOptions = [
-    { key: 1, text: '10', value: 10 },
-    { key: 2, text: '25', value: 25 },
-    { key: 3, text: '50', value: 50 },
-    { key: 4, text: '100', value: 100 },
-  ];
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     if (parentPartType === undefined || parentPartType === null) parentPartType = "";
@@ -258,16 +253,7 @@ export default function PartsGrid({
       <div>
         <style>{mediaStyles}</style>
         <MediaContextProvider>
-          <div style={{float: 'right', verticalAlign: 'middle', fontSize: '0.9em'}}>
-            <Dropdown 
-              selection
-              options={itemsPerPageOptions}
-              value={pageSize}
-              className='small labeled'
-              onChange={handlePageSizeChange}
-            />
-            <span>{t('comp.partsGrid.recordsPerPage', "records per page")}</span>
-          </div>
+          <RecordSize value={pageSize} onChange={handlePageSizeChange} />
           <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
 
           <Dimmer.Dimmable as={Table} dimmed={loading} id="partsGrid" compact celled sortable selectable striped unstackable size='small' className="partsGrid">

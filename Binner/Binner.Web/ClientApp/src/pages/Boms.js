@@ -14,6 +14,7 @@ import { CustomFieldValues } from "../components/CustomFieldValues";
 import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
 import axios from "axios";
+import { RecordSize } from '../components/RecordSize';
 
 /** BOM Project listing
  * Description: List BOM projects and create new ones.
@@ -55,14 +56,6 @@ export function Boms (props) {
       label: { ...(c.name !== '' && { color: c.name }), circular: true, empty: true, size: 'tiny' }
     }
   }));
-
-  const itemsPerPageOptions = [
-    { key: 1, text: '5', value: 5 },
-    { key: 2, text: '10', value: 10 },
-    { key: 3, text: '25', value: 25 },
-    { key: 4, text: '50', value: 50 },
-    { key: 5, text: '100', value: 100 },
-  ];
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
@@ -431,16 +424,7 @@ export function Boms (props) {
         }
       </div>
       <Segment style={{marginTop: '0'}}>
-        <div style={{float: 'right', verticalAlign: 'middle', fontSize: '0.9em'}}>
-          <Dropdown 
-            selection
-            options={itemsPerPageOptions}
-            value={pageSize}
-            className='small labeled'
-            onChange={handlePageSizeChange}
-          />
-          <span>records per page</span>
-        </div>
+        <RecordSize value={pageSize} onChange={handlePageSizeChange} float="right" />
         <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
         <Segment loading={loading}>
           <Table compact celled sortable selectable striped size='small'>
