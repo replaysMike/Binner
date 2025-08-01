@@ -29,7 +29,7 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function BomPartsGrid({
   loading = true,
-  columns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,imageUrl,reference,currency,manufacturer,supplierPartNumber,packageType,mountingType,datasheetUrl,productUrl,selected,location,binNumber,binNumber2,extensionValue1,extensionValue2,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,footprintName,symbolName,keywords,customFields",
+  columns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,imageUrl,reference,currency,manufacturer,supplierPartNumber,packageType,mountingType,datasheetUrl,productUrl,selected,location,binNumber,binNumber2,extensionValue1,extensionValue2,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,element14PartNumber,footprintName,symbolName,keywords,customFields",
   defaultVisibleColumns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,datasheetUrl,productUrl,selected,location,binNumber,binNumber2",
   page = 1,
   totalPages = 1,
@@ -366,6 +366,8 @@ export default function BomPartsGrid({
         case 'arrowPartNumber':
           return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.part && row.original.part[columnName]} /> {row.original.part && row.original.part[columnName]}</span>) };
         case 'tmePartNumber':
+          return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.part && row.original.part[columnName]} /> {row.original.part && row.original.part[columnName]}</span>) };
+        case 'element14PartNumber':
           return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.part && row.original.part[columnName]} /> {row.original.part && row.original.part[columnName]}</span>) };
         case 'leadTime':
           return { ...def, Cell: ({ row }) => (<span>{row.original.part && row.original.part[columnName]}</span>) };

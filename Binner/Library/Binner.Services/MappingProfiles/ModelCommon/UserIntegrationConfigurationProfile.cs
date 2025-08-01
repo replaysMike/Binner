@@ -111,6 +111,10 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.TmeCountry, options => options.MapFrom(x => x.Tme.Country))
                 .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
                 .ForMember(x => x.TmeResolveExternalLinks, options => options.MapFrom(x => x.Tme.ResolveExternalLinks))
+                .ForMember(x => x.Element14Enabled, options => options.MapFrom(x => x.Element14.Enabled))
+                .ForMember(x => x.Element14ApiKey, options => options.MapFrom(x => x.Element14.ApiKey))
+                .ForMember(x => x.Element14Country, options => options.MapFrom(x => x.Element14.Country))
+                .ForMember(x => x.Element14ApiUrl, options => options.MapFrom(x => x.Element14.ApiUrl))
 
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())

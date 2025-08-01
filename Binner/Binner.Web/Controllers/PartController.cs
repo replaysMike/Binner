@@ -383,6 +383,8 @@ namespace Binner.Web.Controllers
                             existingPart.ArrowPartNumber = mappedPart.ArrowPartNumber;
                         if (string.IsNullOrEmpty(existingPart.TmePartNumber))
                             existingPart.TmePartNumber = mappedPart.TmePartNumber;
+                        if (string.IsNullOrEmpty(existingPart.Element14PartNumber))
+                            existingPart.Element14PartNumber = mappedPart.Element14PartNumber;
                         var updatedPart = await _partService.UpdatePartAsync(existingPart);
                         if (updatedPart != null)
                             updatedParts.Add(updatedPart);
@@ -743,6 +745,8 @@ namespace Binner.Web.Controllers
                                 existingPart.ArrowPartNumber = importedPart.SupplierPartNumber;
                             if (string.IsNullOrEmpty(existingPart.TmePartNumber) && importedPart.Supplier?.Equals("tme", StringComparison.InvariantCultureIgnoreCase) == true)
                                 existingPart.TmePartNumber = importedPart.SupplierPartNumber;
+                            if (string.IsNullOrEmpty(existingPart.Element14PartNumber) && importedPart.Supplier?.Equals("element14", StringComparison.InvariantCultureIgnoreCase) == true)
+                                existingPart.Element14PartNumber = importedPart.SupplierPartNumber;
                             if (string.IsNullOrEmpty(existingPart.DatasheetUrl))
                                 existingPart.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
                             if (string.IsNullOrEmpty(existingPart.ProductUrl))
@@ -781,6 +785,8 @@ namespace Binner.Web.Controllers
                                 part.ArrowPartNumber = importedPart.SupplierPartNumber;
                             if (importedPart.Supplier?.Equals("tme", StringComparison.InvariantCultureIgnoreCase) == true)
                                 part.TmePartNumber = importedPart.SupplierPartNumber;
+                            if (importedPart.Supplier?.Equals("element14", StringComparison.InvariantCultureIgnoreCase) == true)
+                                part.Element14PartNumber = importedPart.SupplierPartNumber;
                             part.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
                             part.ProductUrl = importedPart.ProductUrl;
                             part.Manufacturer = importedPart.Manufacturer;

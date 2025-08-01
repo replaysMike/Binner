@@ -133,6 +133,7 @@ namespace Binner.Common.IO
                     MouserPartNumber = values.GetValue("MouserPartNumber").As<string?>(),
                     ArrowPartNumber = values.GetValue("ArrowPartNumber").As<string?>(),
                     TmePartNumber = values.GetValue("TmePartNumber").As<string?>(),
+                    Element14PartNumber = values.GetValue("Element14PartNumber").As<string?>(),
                     ImageUrl = values.GetValue("ImageUrl").As<string?>(),
                     //Keywords = !string.IsNullOrEmpty(values.GetValue("Keywords").As<string?>()) ? values.GetValue("Keywords").As<string>().Split([","," "], StringSplitOptions.RemoveEmptyEntries) : null,
                     Keywords = values.GetValue("Keywords").As<ICollection<string>>(),
