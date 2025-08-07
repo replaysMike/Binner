@@ -383,5 +383,19 @@ namespace Binner.Common.Extensions
             var len = (int)(text.Length * percentage);
             return text.Substring(0, len).PadRight(text.Length, '*');
         }
+
+        /// <summary>
+        /// Limit/constrain the length of a string to a given length
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="length">Max length the string can have</param>
+        /// <returns></returns>
+        public static string? Limit(this string? text, int length)
+        {
+            if (text == null) return null;
+            if (length < 0) length = 0;
+            if (text.Length <= length) return text;
+            return text.Substring(0, length);
+        }
     }
 }
