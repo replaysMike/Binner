@@ -547,6 +547,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("enableAutomaticMetadataFetchingForExistingParts")
+                        .HasColumnType("bit");
+
                     b.HasKey("OrganizationConfigurationId");
 
                     b.HasIndex("OrganizationId");
