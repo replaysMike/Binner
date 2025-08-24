@@ -96,6 +96,11 @@ namespace Binner.Services.Integrations
             var typeOfEnum = partTypeEnum.GetType();
             var fi = typeOfEnum.GetField(partTypeEnum.ToString());
 
+            if (fi == null)
+            {
+                return null;
+            }
+
             //get the attribute from the field
             return fi.GetCustomAttributes(typeof(PartTypeInfoAttribute), false).
                 FirstOrDefault()
