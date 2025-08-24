@@ -52,6 +52,11 @@ namespace Binner.Data.Model
         public string? KiCadSettingsJson { get; set; }
 
         /// <summary>
+        /// If true, allows fetching part metadata for parts that already exist in inventory
+        /// </summary>
+        public bool AllowPartMetadataFetchForExistingParts { get; set; } = true;
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

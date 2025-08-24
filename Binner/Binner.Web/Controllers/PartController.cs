@@ -637,8 +637,18 @@ namespace Binner.Web.Controllers
         /// <param name="supplierPartNumbers">List of supplier part numbers if known, in the format: 'suppliername:partnumber,suppliername2:partnumber'</param>
         /// <returns></returns>
         [HttpGet("info")]
-        public async Task<IActionResult> GetPartInfoAsync([FromQuery] string partNumber, [FromQuery] string partTypeId = "", [FromQuery] string mountingTypeId = "", [FromQuery] string supplierPartNumbers = "")
+        public async Task<IActionResult> GetPartInfoAsync([FromQuery] string partNumber, [FromQuery] string partTypeId = "", [FromQuery] string mountingTypeId = "", [FromQuery] string supplierPartNumbers = "", [FromQuery] bool? newPart = true)
         {
+            // get the organization configuration
+            var organisationConfig = await _userConfigurationService.GetOrganizationConfigurationAsync();
+
+            // check the settings if we need to skip non new part search requests
+            if (newPart != null && newPart == false && organisationConfig.AllowPartMetadataFetchForExistingParts == false) 
+            {
+                // check if we should skip this request
+                return StatusCode(StatusCodes.Status204NoContent);
+            }
+
             try
             {
                 var partType = partTypeId;
