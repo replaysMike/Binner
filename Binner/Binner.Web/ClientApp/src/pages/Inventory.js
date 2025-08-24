@@ -193,7 +193,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [confirmReImportAction, setConfirmReImportAction] = useState(null);
 
   // check if we are on the add page
-  const isAddPage = location.pathname === "/inventory/add";
+  const onAddPage = location.pathname === "/inventory/add";
 
   let blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -245,7 +245,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         setLoadingPartMetadata(false);
       } else if (rest.params.partNumberToAdd) {
         // a part number to add is specified in the URL path
-        const { data, responseCode } = await doFetchPartMetadata(rest.params.partNumberToAdd, partToSearch, false);
+        const { data, responseCode } = await doFetchPartMetadata(rest.params.partNumberToAdd, partToSearch, false, onAddPage);
         processPartMetadataResponse(data, partToSearch.storedFiles, true, true, responseCode);
         setLoadingPartMetadata(false);
         setIsDirty(true);
@@ -256,7 +256,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         } else {
           // fetch part metadata, don't allow overwriting of fields that have already been entered
           setLoadingPartMetadata(true);
-          const { data, responseCode } = await doFetchPartMetadata(targetPart.partNumber, partToSearch, false);
+          const { data, responseCode } = await doFetchPartMetadata(targetPart.partNumber, partToSearch, false, onAddPage);
           processPartMetadataResponse(data, partToSearch.storedFiles, true, false, responseCode); // false, don't overwrite entered fields
           setLoadingPartMetadata(false);
           setIsDirty(true);
@@ -298,7 +298,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPartMetadataErrors([]);
     try {
       const includeInventorySearch = !pageHasParameters;
-      const { data, existsInInventory, inventoryPart, responseCode } = await doFetchPartMetadata(input, localPart, includeInventorySearch);
+      const { data, existsInInventory, inventoryPart, responseCode } = await doFetchPartMetadata(input, localPart, includeInventorySearch, onAddPage);
       if (existsInInventory) {
         setPartExistsInInventory(true);
         setSuggestedPartNumber(inventoryPart);
@@ -508,13 +508,13 @@ export function Inventory({ partNumber = "", ...rest }) {
    * @param {bool} includeInventorySearch true to also check local inventory for the part
    * @returns part information
    */
-  const doFetchPartMetadata = async (partNumber, part, includeInventorySearch = true) => {
+  const doFetchPartMetadata = async (partNumber, part, includeInventorySearch = true, newPart = true) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
     Inventory.doFetchPartMetadataController?.abort();
     Inventory.doFetchPartMetadataController = new AbortController();
     try {
-      const response = await fetchApi(`/api/part/info?newPart=${isAddPage}&partNumber=${encodeURIComponent(partNumber.trim())}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
+      const response = await fetchApi(`/api/part/info?newPart=${newPart}&partNumber=${encodeURIComponent(partNumber.trim())}&partTypeId=${part.partTypeId}&mountingTypeId=${part.mountingTypeId}&supplierPartNumbers=digikey:${part.digiKeyPartNumber || ""},mouser:${part.mouserPartNumber || ""},arrow:${part.arrowPartNumber},tme:${part.tmePartNumber}`, {
         signal: Inventory.doFetchPartMetadataController.signal
       });
       const data = response.data;
@@ -835,7 +835,7 @@ export function Inventory({ partNumber = "", ...rest }) {
 
           // part is not in inventory, add it as new
           setLoadingPartMetadata(true);
-          const { data, responseCode} = await doFetchPartMetadata(cleanPartNumber, part, false);
+          const { data, responseCode} = await doFetchPartMetadata(cleanPartNumber, part, false, onAddPage);
           const metaResult = processPartMetadataResponse(data, part.storedFiles, true, true, responseCode);
           setLoadingPartMetadata(false);
           setIsDirty(true);
@@ -1445,7 +1445,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     e.stopPropagation();
     setLoadingPartMetadata(true);
     setConfirmRefreshPartIsOpen(false);
-    const { data, responseCode } = await doFetchPartMetadata(inputPartNumber, part, false);
+    const { data, responseCode } = await doFetchPartMetadata(inputPartNumber, part, false, true);
     processPartMetadataResponse(data, part.storedFiles, true, true, responseCode);
     setLoadingPartMetadata(false);
     setIsDirty(true);
