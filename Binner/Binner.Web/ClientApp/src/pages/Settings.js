@@ -104,7 +104,7 @@ export const Settings = () => {
     enableAutoPartSearch: true,
     enableDarkMode: false,
     enableCheckNewVersion: true,
-    allowPartMetadataFetchForExistingParts: true,
+    enableAutomaticMetadataFetchingForExistingParts: true,
   });
   const [integrationSettings, setIntegrationSettings] = useState({
     binner: {
@@ -188,10 +188,10 @@ export const Settings = () => {
         const { data } = response;
         setLoading(false);
         // break out data into multiple state variables to optimize render performance
-        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion, allowPartMetadataFetchForExistingParts } = data;
+        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion, enableAutomaticMetadataFetchingForExistingParts } = data;
         const language = data.locale.language;
         const currency = data.locale.currency;
-        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion, allowPartMetadataFetchForExistingParts });
+        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion, enableAutomaticMetadataFetchingForExistingParts });
         const { binner, digikey, mouser, arrow, octopart, tme } = data;
         setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme });
         setPrinterSettings({ printer: data.printer });
@@ -872,21 +872,21 @@ export const Settings = () => {
         </Form.Field>
 
         <Form.Field>
-          <label>{t('page.settings.allowPartMetadataFetchForExistingParts', "Allow searching using the APIs for existing parts")}</label>
+          <label>{t('page.settings.enableAutomaticMetadataFetchingForExistingParts', "Enable automatic updating of metadata using the APIs for existing parts")}</label>
           <Popup
             wide
             position="top left"
             offset={[0, 20]}
             hoverable
-            content={<Trans i18nKey="page.settings.popup.allowPartMetadataFetchForExistingParts">
-              Select this option to allow using the part search APIs to fetch metadata for existing parts in your inventory.
+            content={<Trans i18nKey="page.settings.popup.enableAutomaticMetadataFetchingForExistingParts">
+              Select this option to enable automatic updating using the part search APIs to fetch metadata for existing parts in your inventory when opening them in the inventory.
             </Trans>}
             trigger={
               <Form.Checkbox 
-                name="allowPartMetadataFetchForExistingParts"
+                name="enableAutomaticMetadataFetchingForExistingParts"
                 type="checkbox"
                 toggle
-                checked={globalSettings.allowPartMetadataFetchForExistingParts}
+                checked={globalSettings.enableAutomaticMetadataFetchingForExistingParts}
                 onChange={(e, control) => handleChange(e, control, 'global')}
               />
             }

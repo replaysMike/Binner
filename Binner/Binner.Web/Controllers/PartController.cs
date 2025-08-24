@@ -643,7 +643,7 @@ namespace Binner.Web.Controllers
             var organisationConfig = await _userConfigurationService.GetOrganizationConfigurationAsync();
 
             // check the settings if we need to skip non new part search requests
-            if (newPart != null && newPart == false && organisationConfig.AllowPartMetadataFetchForExistingParts == false) 
+            if (newPart != null && newPart == false && organisationConfig.enableAutomaticMetadataFetchingForExistingParts == false) 
             {
                 // check if we should skip this request
                 return StatusCode(StatusCodes.Status204NoContent);

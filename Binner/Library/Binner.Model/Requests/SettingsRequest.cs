@@ -106,6 +106,6 @@ namespace Binner.Model.Requests
         /// <summary>
         /// If true, allows fetching part metadata for parts that already exist in inventory
         /// </summary>
-        public bool AllowPartMetadataFetchForExistingParts { get; set; } = true;
+        public bool enableAutomaticMetadataFetchingForExistingParts { get; set; } = true;
     }
 }
