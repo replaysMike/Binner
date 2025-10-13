@@ -859,6 +859,12 @@ export function Inventory({ partNumber = "", ...rest }) {
         await doBarcodeLookup(scannedPart, async (partInfo) => {
           console.debug("doBarcodeLookup success, getting metadata", cleanPartNumber);
           // barcode found
+
+          if (partInfo.basePartNumber) {
+            cleanPartNumber = partInfo.basePartNumber;
+            setInputPartNumber(partInfo.basePartNumber);
+          }
+
           if (cleanPartNumber) {
             setPartMetadataIsSubscribed(false);
             setPartMetadataErrors([]);
