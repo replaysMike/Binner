@@ -19,6 +19,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
                 .ForMember(x => x.Tme, options => options.MapFrom(x => x.Integrations.Tme))
+                .ForMember(x => x.Element14, options => options.MapFrom(x => x.Integrations.Element14))
                 .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.Licensing != null ? x.Licensing.LicenseKey : ""))
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
@@ -43,6 +44,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.Ignore())
                 .ForMember(x => x.Octopart, options => options.Ignore())
                 .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Element14, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
                 .ForMember(x => x.KiCad, options => options.Ignore())
                 .ForMember(x => x.enableAutomaticMetadataFetchingForExistingParts, options => options.Ignore())
@@ -90,6 +92,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.Ignore())
                 .ForMember(x => x.Octopart, options => options.Ignore())
                 .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Element14, options => options.Ignore())
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
@@ -119,6 +122,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.Ignore())
                 .ForMember(x => x.Octopart, options => options.Ignore())
                 .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Element14, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ReverseMap();
@@ -134,6 +138,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.Ignore())
                 .ForMember(x => x.Octopart, options => options.Ignore())
                 .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Element14, options => options.Ignore())
                 .ForMember(x => x.Barcode, options => options.Ignore())
                 .ForMember(x => x.Locale, options => options.Ignore())
                 .ForMember(x => x.UseModule, options => options.Ignore())
@@ -181,6 +186,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.Ignore())
                 .ForMember(x => x.Octopart, options => options.Ignore())
                 .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Element14, options => options.Ignore())
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.LicenseKey, options => options.Ignore())
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
@@ -250,6 +256,13 @@ namespace Binner.Services.MappingProfiles
                     ApiKey = x.TmeApiKey,
                     ResolveExternalLinks = x.TmeResolveExternalLinks
                 }))
+                .ForMember(x => x.Element14, options => options.MapFrom(x => new Element14UserConfiguration
+                {
+                    Enabled = x.Element14Enabled,
+                    Country = x.Element14Country,
+                    ApiUrl = x.Element14ApiUrl,
+                    ApiKey = x.Element14ApiKey,
+                }))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
@@ -312,6 +325,13 @@ namespace Binner.Services.MappingProfiles
                     ApiUrl = x.TmeApiUrl,
                     ApiKey = x.TmeApiKey,
                     ResolveExternalLinks = x.TmeResolveExternalLinks
+                }))
+                .ForMember(x => x.Element14, options => options.MapFrom(x => new Element14UserConfiguration
+                {
+                    Enabled = x.Element14Enabled,
+                    Country = x.Element14Country,
+                    ApiUrl = x.Element14ApiUrl,
+                    ApiKey = x.Element14ApiKey,
                 }))
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
@@ -424,6 +444,12 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
                 .ForMember(x => x.ResolveExternalLinks, options => options.MapFrom(x => x.ResolveExternalLinks))
                 .ReverseMap();
+            CreateMap<Element14Configuration, Element14UserConfiguration>()
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Enabled))
+                .ForMember(x => x.Country, options => options.MapFrom(x => x.Country))
+                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.ApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.ApiUrl))
+                .ReverseMap();
             CreateMap<UserIntegrationConfiguration, SwarmUserConfiguration>()
                 .ForMember(x => x.Enabled, options => options.MapFrom(x => x.SwarmEnabled))
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.SwarmApiKey))
@@ -468,6 +494,13 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.TmeApiKey))
                 .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.TmeApiUrl))
                 .ForMember(x => x.ResolveExternalLinks, options => options.MapFrom(x => x.TmeResolveExternalLinks))
+                .ReverseMap();
+
+            CreateMap<UserIntegrationConfiguration, Element14UserConfiguration>()
+                .ForMember(x => x.Enabled, options => options.MapFrom(x => x.Element14Enabled))
+                .ForMember(x => x.Country, options => options.MapFrom(x => x.Element14Country))
+                .ForMember(x => x.ApiKey, options => options.MapFrom(x => x.Element14ApiKey))
+                .ForMember(x => x.ApiUrl, options => options.MapFrom(x => x.Element14ApiUrl))
                 .ReverseMap();
         }
     }

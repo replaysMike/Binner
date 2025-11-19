@@ -19,6 +19,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Arrow, options => options.MapFrom(x => x.Integrations.Arrow))
                 .ForMember(x => x.Octopart, options => options.MapFrom(x => x.Integrations.Nexar))
                 .ForMember(x => x.Tme, options => options.MapFrom(x => x.Integrations.Tme))
+                .ForMember(x => x.Element14, options => options.MapFrom(x => x.Integrations.Element14))
                 .ForMember(x => x.Printer, options => options.MapFrom(x => x.PrinterConfiguration))
                 .ForMember(x => x.Barcode, options => options.MapFrom(x => x.Barcode))
                 .ForMember(x => x.Locale, options => options.MapFrom(x => x.Locale))
@@ -65,6 +66,10 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.TmeApiKey, options => options.MapFrom(x => x.Tme.ApiKey))
                 .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
                 .ForMember(x => x.TmeResolveExternalLinks, options => options.MapFrom(x => x.Tme.ResolveExternalLinks))
+                .ForMember(x => x.Element14Enabled, options => options.MapFrom(x => x.Element14.Enabled))
+                .ForMember(x => x.Element14Country, options => options.MapFrom(x => x.Element14.Country))
+                .ForMember(x => x.Element14ApiKey, options => options.MapFrom(x => x.Element14.ApiKey))
+                .ForMember(x => x.Element14ApiUrl, options => options.MapFrom(x => x.Element14.ApiUrl))
 
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
@@ -113,6 +118,11 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.TmeApiKey, options => options.MapFrom(x => x.Tme.ApiKey))
                 .ForMember(x => x.TmeApiUrl, options => options.MapFrom(x => x.Tme.ApiUrl))
                 .ForMember(x => x.TmeResolveExternalLinks, options => options.MapFrom(x => x.Tme.ResolveExternalLinks))
+                .ForMember(x => x.Element14Enabled, options => options.MapFrom(x => x.Element14.Enabled))
+                .ForMember(x => x.Element14Country, options => options.MapFrom(x => x.Element14.Country))
+                .ForMember(x => x.Element14ApiKey, options => options.MapFrom(x => x.Element14.ApiKey))
+                .ForMember(x => x.Element14ApiUrl, options => options.MapFrom(x => x.Element14.ApiUrl))
+
                 .ReverseMap();
 
             CreateMap<SettingsRequest, UserConfiguration>()
@@ -155,6 +165,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Mouser, options => options.Ignore())
                 .ForMember(x => x.Arrow, options => options.Ignore())
                 .ForMember(x => x.Tme, options => options.Ignore())
+                .ForMember(x => x.Element14, options => options.Ignore())
                 .ForMember(x => x.Binner, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())

@@ -156,6 +156,26 @@
         public bool TmeResolveExternalLinks { get; set; } = true;
 
         /// <summary>
+        /// Element14 api enabled
+        /// </summary>
+        public bool Element14Enabled { get; set; } = true;
+
+        /// <summary>
+        /// Element14 api Country
+        /// </summary>
+        public string Element14Country { get; set; } = "uk.farnell.com";
+
+        /// <summary>
+        /// The Api key
+        /// </summary>
+        public string? Element14ApiKey { get; set; }
+
+        /// <summary>
+        /// Element14 api url
+        /// </summary>
+        public string Element14ApiUrl { get; set; } = "https://api.element14.com";
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

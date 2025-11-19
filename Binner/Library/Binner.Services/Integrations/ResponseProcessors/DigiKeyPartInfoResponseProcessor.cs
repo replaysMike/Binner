@@ -427,7 +427,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
             // add all matches that aren't already added
             foreach (var part in response.Products)
             {
-                MapV4PartToResponse(api, response, part, context, _resultsRank - 1, ref imagesAdded);
+                MapV4PartToResponse(api, response, part, context, _resultsRank + 1, ref imagesAdded);
             }
             return Task.CompletedTask;
         }
