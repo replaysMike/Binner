@@ -127,7 +127,7 @@ var host = Host.CreateDefaultBuilder(args)
                         return connectionString;
                     return $"Data Source={filename}";
                 }
-            });
+            }, contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Singleton);
         });
     });
 

@@ -49,6 +49,8 @@ export const getChildrenByName = (name) => {
       return "Arrow P/N";
     case 'tmePartNumber':
       return "TME P/N";
+    case 'element14PartNumber':
+      return "Element14 P/N";
     case 'location':
       return "Location";
     case 'binNumber':

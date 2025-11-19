@@ -60,12 +60,12 @@
         /// <summary>
         /// The stock currently available by the manufacturer/factory according to this supplier
         /// </summary>
-        public int? FactoryStockAvailable { get; set; }
+        public int? StockAvailable { get; set; }
 
         /// <summary>
         /// Manufacturer/factory lead time
         /// </summary>
-        public string? FactoryLeadTime { get; set; }
+        public string? LeadTime { get; set; }
 
         /// <summary>
         /// Creation time

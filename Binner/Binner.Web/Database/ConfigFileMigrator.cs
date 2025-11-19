@@ -1,10 +1,7 @@
 ﻿using Binner.Model;
 using Binner.Model.Configuration;
-using Binner.Model.Configuration.Integrations;
 using Binner.Services;
-using Binner.Web.Controllers;
 using Microsoft.Extensions.Logging;
-using NPOI.HPSF;
 using System;
 using System.Threading.Tasks;
 

@@ -46,7 +46,7 @@ export function NavMenu() {
   return (
     <header>
       <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
-        <Container className={"binner-container"}>
+        <Container className={"header-container"}>
           <NavbarBrand tag={Link} to="/" className="svg"><div className="logo" /><span>Binner</span></NavbarBrand>
           <NavbarToggler onClick={toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>

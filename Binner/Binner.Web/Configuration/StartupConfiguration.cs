@@ -2,8 +2,6 @@
 using Binner.Legacy.StorageProviders;
 using Binner.Model;
 using Binner.Model.Configuration;
-using Binner.Model.IO.Printing;
-using LightInject;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,7 +14,7 @@ namespace Binner.Web.Configuration
     {
         private static readonly string _configFile = EnvironmentVarConstants.GetEnvOrDefault(EnvironmentVarConstants.Config, AppConstants.AppSettings);
 
-        public static IConfigurationRoot Configure(IServiceContainer container, IServiceCollection services)
+        public static IConfigurationRoot Configure(IServiceCollection services)
         {
             //var configPath = AppDomain.CurrentDomain.BaseDirectory;
             //var configPath = Environment.CurrentDirectory;
@@ -42,19 +40,12 @@ namespace Binner.Web.Configuration
 
             // register traditional configuration with LightInject
             var licenseConfig = new LicenseConfiguration { LicenseKey = serviceConfiguration.Licensing?.LicenseKey };
-            container.RegisterInstance(licenseConfig);
             services.AddSingleton(licenseConfig);
-            container.RegisterInstance(configuration);
+            services.AddSingleton(configuration);
             services.AddSingleton(serviceConfiguration);
-            container.RegisterInstance(serviceConfiguration);
             services.AddSingleton(authenticationConfiguration);
-            container.RegisterInstance(authenticationConfiguration);
             services.AddSingleton(storageProviderConfiguration);
-            container.RegisterInstance(storageProviderConfiguration);
             services.AddSingleton(binnerConfig);
-            container.RegisterInstance(binnerConfig);
-            services.AddSingleton(serviceConfiguration.Licensing);
-            container.RegisterInstance(serviceConfiguration.Licensing);
             services.AddHostedService<Controllers.RefCleanupService>();
 
             return configuration;

@@ -12,9 +12,9 @@ using Binner.Services.Security;
 using Binner.Web.Database;
 using CommandLine;
 using CommandLine.Text;
-using LightInject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using System;
 using System.Linq;
@@ -164,8 +164,8 @@ namespace Binner.Web
         public async Task<bool> PrintDbInfoAsync()
         {
             var storageProviderConfiguration = LoadStorageConfiguration();
-            var builder = new ContainerBuilder(_webHostConfig, storageProviderConfiguration);
-            var container = builder.Build();
+            var builder = new ServiceProviderBuilder(_webHostConfig, storageProviderConfiguration);
+            var serviceProvider = builder.Build();
 
             PrintBox("   Binner database information   ", ConsoleColor.Blue, ConsoleColor.Yellow);
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -230,7 +230,7 @@ namespace Binner.Web
 
                         try
                         {
-                            await RunDiagnosticsAsync(container);
+                            await RunDiagnosticsAsync(_configurationRoot);
                         }
                         catch (Exception ex)
                         {
@@ -247,7 +247,7 @@ namespace Binner.Web
 
                 if (!isLegacy)
                 {
-                    var storageProvider = container.GetInstance<IStorageProvider>();
+                    var storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
 
                     var response = storageProvider.TestConnectionAsync().GetAwaiter().GetResult();
                     PrintLabel("   Connection");
@@ -284,7 +284,7 @@ namespace Binner.Web
 
                         try
                         {
-                            await RunDiagnosticsAsync(container);
+                            await RunDiagnosticsAsync(_configurationRoot);
                         }
                         catch (Exception ex)
                         {
@@ -316,13 +316,17 @@ namespace Binner.Web
             return false;
         }
 
-        private static async Task RunDiagnosticsAsync(IServiceContainer container)
+        private static async Task RunDiagnosticsAsync(IConfigurationRoot configuration)
         {
             PrintLabel("Diagnostics", ConsoleColor.White);
             Console.WriteLine();
 
-            var context = container.GetInstance<BinnerContext>();
-            //await using var context = await _contextFactory.CreateDbContextAsync();
+            var storageConfig = configuration.GetSection(nameof(StorageProviderConfiguration)).Get<StorageProviderConfiguration>() ?? throw new InvalidOperationException($"Could not load StorageProviderConfiguration, configuration file may be invalid or lacking read permissions!");
+            var hostBuilder = HostBuilderFactory.Create(storageConfig);
+            var host = hostBuilder.Build();
+            var contextFactory = host.Services.GetRequiredService<IDbContextFactory<BinnerContext>>();
+            await using var context = await contextFactory.CreateDbContextAsync();
+
             PrintLabel("   Checking users");
             var hasError = false;
             if (await context.Users.Where(x => x.OrganizationId == 0).AnyAsync())
@@ -603,10 +607,10 @@ namespace Binner.Web
 
                             // reset password for user
                             var storageProviderConfiguration = LoadStorageConfiguration();
-                            var builder = new ContainerBuilder(_webHostConfig, storageProviderConfiguration);
-                            var container = builder.Build();
+                            var builder = new ServiceProviderBuilder(_webHostConfig, storageProviderConfiguration);
+                            var serviceProvider = builder.Build();
 
-                            var storageProvider = container.GetInstance<IStorageProvider>();
+                            var storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
                             var isSuccess = await storageProvider.ResetUserCredentialsAsync(o.Username);
                             if (isSuccess)
                             {

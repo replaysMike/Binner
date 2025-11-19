@@ -21,7 +21,8 @@ namespace Binner.Services.Integrations
             typeof(MouserApi),
             typeof(ArrowApi),
             typeof(NexarApi),
-            typeof(TmeApi)
+            typeof(TmeApi),
+            typeof(Element14Api)
         };
 
         public PartInformationProvider(IIntegrationApiFactory integrationApiFactory, ILogger logger, WebHostServiceConfiguration configuration, IUserConfigurationService userConfigurationService)
@@ -32,7 +33,39 @@ namespace Binner.Services.Integrations
             _userConfigurationService = userConfigurationService;
         }
 
-        public async Task<PartInformationResults> FetchPartInformationAsync(string partNumber, string partType, string mountingType, string supplierPartNumbers, int userId, ICollection<PartType> partTypes, Part? inventoryPart)
+        public async Task<PartInformationResults> FetchPartInformationAsync(IntegrationConfiguration integrationConfiguration, string partNumber, string partType, string mountingType, string supplierPartNumbers, ICollection<PartType> partTypes, Part? inventoryPart, int maxResults = ApiConstants.MaxRecords)
+        {
+            var context = new ProcessingContext
+            {
+                PartNumber = partNumber,
+                PartType = partType,
+                MountingType = mountingType,
+                SupplierPartNumbers = supplierPartNumbers,
+                InventoryPart = inventoryPart,
+                ApiResponses = new Dictionary<string, Model.Integrations.ApiResponseState>(),
+                Results = new PartResults(),
+                PartTypes = partTypes
+            };
+
+            // for each configured provider, fetch results
+            foreach (var provider in _providers)
+            {
+                // fetch part info, merge data
+                var api = _integrationApiFactory.CreateGlobal(provider, integrationConfiguration);
+                if (api == null) throw new NotSupportedException($"Unknown provider type '{provider.Name}'");
+
+                if (api.Configuration.IsConfigured)
+                {
+                    // Process the api call, store results in context
+                    await ProcessResponseAsync(provider, api, context, maxResults);
+                }
+            }
+
+            var results = new PartInformationResults(context.ApiResponses, context.Results);
+            return results;
+        }
+
+        public async Task<PartInformationResults> FetchPartInformationAsync(string partNumber, string partType, string mountingType, string supplierPartNumbers, int userId, ICollection<PartType> partTypes, Part? inventoryPart, int maxResults = ApiConstants.MaxRecords)
         {
             var context = new ProcessingContext
             {
@@ -58,7 +91,7 @@ namespace Binner.Services.Integrations
                 if (api.Configuration.IsConfigured)
                 {
                     // Process the api call, store results in context
-                    await ProcessResponseAsync(provider, api, context);
+                    await ProcessResponseAsync(provider, api, context, maxResults);
                 }
             }
 
@@ -66,44 +99,50 @@ namespace Binner.Services.Integrations
             return results;
         }
 
-        private async Task<ProcessingContext> ProcessResponseAsync(Type provider, IIntegrationApi api, ProcessingContext context)
+        private async Task<ProcessingContext> ProcessResponseAsync(Type provider, IIntegrationApi api, ProcessingContext context, int maxResults)
         {
             var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
             var providerImplementations = new Dictionary<Type, Func<Task>>()
             {
                 { typeof(SwarmApi), async () =>
                     {
-                        var processor = new SwarmPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 10);
+                        var processor = new SwarmPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 10, maxResults);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(DigikeyApi), async () =>
                     {
-                        var processor = new DigiKeyPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 20);
+                        var processor = new DigiKeyPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 20, maxResults);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(MouserApi), async () =>
                     {
-                        var processor = new MouserPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 30);
+                        var processor = new MouserPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 30, maxResults);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(ArrowApi), async () =>
                     {
-                        var processor = new ArrowPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 40);
+                        var processor = new ArrowPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 40, maxResults);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(NexarApi), async () =>
                     {
-                        var processor = new NexarPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 50);
+                        var processor = new NexarPartInfoResponseProcessor(_logger, _configuration, userConfiguration, 50, maxResults);
                         await processor.ExecuteAsync(api, context);
                     }
                 },
                 { typeof(TmeApi), async () =>
                     {
-                        var processor = new TmePartInfoResponseProcessor(_logger, _configuration, userConfiguration, 60);
+                        var processor = new TmePartInfoResponseProcessor(_logger, _configuration, userConfiguration, 60, maxResults);
+                        await processor.ExecuteAsync(api, context);
+                    }
+                },
+                { typeof(Element14Api), async () =>
+                    {
+                        var processor = new Element14PartInfoResponseProcessor(_logger, _configuration, 60);
                         await processor.ExecuteAsync(api, context);
                     }
                 },

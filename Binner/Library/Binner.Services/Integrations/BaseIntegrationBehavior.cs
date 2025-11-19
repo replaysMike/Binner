@@ -1,5 +1,9 @@
-﻿using Binner.Global.Common;
+﻿using Binner.Common.Extensions;
+using Binner.Global.Common;
 using Binner.Model;
+using System;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Binner.Services.Integrations
 {
@@ -80,34 +84,99 @@ namespace Binner.Services.Integrations
             // note: partTypes call is cached
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
             var possiblePartTypes = GetMatchingPartTypes(part, partTypes);
-            return possiblePartTypes
+            var bestGuessPartType = possiblePartTypes
                 .OrderByDescending(x => x.Value)
                 .Select(x => x.Key)
                 .FirstOrDefault();
+            return bestGuessPartType;
+        }
+
+        public PartTypeInfoAttribute? GetPartTypeInfo(SystemDefaults.DefaultPartTypes partTypeEnum)
+        {
+            var typeOfEnum = partTypeEnum.GetType();
+            var fi = typeOfEnum.GetField(partTypeEnum.ToString());
+
+            //get the attribute from the field
+            return fi.GetCustomAttributes(typeof(PartTypeInfoAttribute), false).
+                FirstOrDefault()
+                as PartTypeInfoAttribute;
         }
 
         public virtual IDictionary<PartType, int> GetMatchingPartTypes(CommonPart part, ICollection<PartType> partTypes)
         {
             // load all part types
             var possiblePartTypes = new Dictionary<PartType, int>();
+            var depth = 0;
+            var categories = part.Categories.SelectRecursive(x => x.ChildCategories)
+                .Select(x =>
+                {
+                    depth++;
+                    return new { x.Name, x.Description, Priority = depth };
+                }).ToList();
             foreach (var partType in partTypes)
             {
+                var defaultPriority = 1;
                 if (string.IsNullOrEmpty(partType.Name))
                     continue;
                 var addPart = false;
-                if (part.Description?.IndexOf(partType.Name, ComparisonType) >= 0)
+
+                // check the categories on the part. if it matches on category, base the priority on the deepest category as highest
+                var nameResult = categories.Where(x => x.Name.Contains(partType.Name, ComparisonType)).FirstOrDefault();
+                if(nameResult != null)
+                {
                     addPart = true;
+                    defaultPriority += nameResult.Priority + 2;
+                }
+                var descriptionResult = categories.Where(x => x.Description?.Contains(partType.Name, ComparisonType) == true).FirstOrDefault();
+                if (descriptionResult != null)
+                {
+                    addPart = true;
+                    defaultPriority += descriptionResult.Priority + 1;
+                }
+
+                // check the keywords on the part type
+                var keywords = partType.Keywords?.Split([',']).ToList() ?? new List<string>();
+                var defaultPartType = (SystemDefaults.DefaultPartTypes)partType.PartTypeId;
+                var info = GetPartTypeInfo(defaultPartType);
+                if (info != null && !string.IsNullOrEmpty(info.Keywords))
+                    keywords.AddRange(info.Keywords.Split([',']));
+                keywords = keywords.Distinct().ToList();
+                foreach (var keyword in keywords)
+                {
+                    if (part.Description?.Contains(keyword, ComparisonType) == true)
+                    {
+                        addPart = true;
+                        defaultPriority += 1;
+                    }
+                    // also check the keyword in the categories
+                    var nameKeywordResult = categories.Where(x => x.Name.Contains(keyword, ComparisonType)).FirstOrDefault();
+                    if (nameKeywordResult != null)
+                    {
+                        addPart = true;
+                        defaultPriority += nameKeywordResult.Priority + 1;
+                    }
+                    var descriptionKeywordResult = categories.Where(x => x.Description?.Contains(keyword, ComparisonType) == true).FirstOrDefault();
+                    if (descriptionKeywordResult != null)
+                    {
+                        addPart = true;
+                        defaultPriority += descriptionKeywordResult.Priority;
+                    }
+                }
+
                 if (part.ManufacturerPartNumber?.IndexOf(partType.Name, ComparisonType) >= 0)
                     addPart = true;
                 foreach (var datasheet in part.DatasheetUrls)
                     if (datasheet.IndexOf(partType.Name, ComparisonType) >= 0)
+                    {
                         addPart = true;
+                        defaultPriority = 0;
+                    }
                 if (addPart)
                 {
                     if (possiblePartTypes.ContainsKey(partType))
                         possiblePartTypes[partType]++;
                     else
-                        possiblePartTypes.Add(partType, 1);
+                        possiblePartTypes.Add(partType, defaultPriority);
                 }
 
             }

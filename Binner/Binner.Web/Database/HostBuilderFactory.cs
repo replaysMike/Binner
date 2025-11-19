@@ -57,8 +57,8 @@ namespace Binner.Web.Database
                     x.SchemaBehavior(Pomelo.EntityFrameworkCore.MySql.Infrastructure.MySqlSchemaBehavior.Ignore);
                 }).ReplaceService<IMigrationsSqlGenerator, MySqlCustomMigrationsSqlGenerator>(),
                 _ => throw new NotSupportedException($"Unsupported provider: {configuration.Provider}")
-            });
-            services.AddDbContextFactory<BinnerContext>(lifetime: ServiceLifetime.Scoped);
+            }, contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Singleton);
+            services.AddDbContextFactory<BinnerContext>(lifetime: ServiceLifetime.Singleton);
             return services;
         }
     }

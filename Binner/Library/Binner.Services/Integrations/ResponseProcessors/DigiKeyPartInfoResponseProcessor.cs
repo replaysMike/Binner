@@ -18,13 +18,15 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly WebHostServiceConfiguration _configuration;
         private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
+        private readonly int _maxResults;
 
-        public DigiKeyPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank)
+        public DigiKeyPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank, int maxResults = ApiConstants.MaxRecords)
         {
             _logger = logger;
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
+            _maxResults = maxResults;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)
@@ -38,7 +40,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
             IApiResponse? apiResponse = null;
             try
             {
-                apiResponse = await api.SearchAsync(context.PartNumber, context.PartType, context.MountingType);
+                apiResponse = await api.SearchAsync(context.PartNumber, context.PartType, context.MountingType, _maxResults);
             }
             catch (Exception ex)
             {
@@ -357,6 +359,20 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     AdditionalPartNumbers = additionalPartNumbers,
                     Manufacturer = part.Manufacturer?.Value ?? string.Empty,
                     ManufacturerPartNumber = part.ManufacturerPartNumber,
+                    Categories = new List<CommonCategory> { 
+                        new CommonCategory { 
+                            Name = part.Category?.Value ?? string.Empty, 
+                            Description = string.Empty,
+                            ChildCategories = new List<CommonCategory>
+                            {
+                                new CommonCategory
+                                {
+                                    Name = part.Family?.Value ?? string.Empty,
+                                    Description = string.Empty
+                                }
+                            }
+                        } 
+                    },
                     Cost = (double)part.UnitPrice,
                     Currency = currency,
                     DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
@@ -411,7 +427,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
             // add all matches that aren't already added
             foreach (var part in response.Products)
             {
-                MapV4PartToResponse(api, response, part, context, _resultsRank - 1, ref imagesAdded);
+                MapV4PartToResponse(api, response, part, context, _resultsRank + 1, ref imagesAdded);
             }
             return Task.CompletedTask;
         }
@@ -496,6 +512,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     AdditionalPartNumbers = additionalPartNumbers,
                     Manufacturer = part.Manufacturer?.Name ?? string.Empty,
                     ManufacturerPartNumber = part.ManufacturerProductNumber ?? string.Empty,
+                    Categories = RecursiveMapCategories(part),
                     Cost = (double)part.UnitPrice,
                     Currency = currency,
                     DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
@@ -535,6 +552,36 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     Models = new List<PartModel>()
                 });
             }
+        }
+
+        private List<CommonCategory> RecursiveMapCategories(V4.Product part)
+        {
+            var categories = DoRecursive(part.Category);
+            return categories;
+        }
+
+        private List<CommonCategory> DoRecursive(V4.CategoryNode categoryNode)
+        {
+            var categories = new List<CommonCategory>();
+            var category = new CommonCategory
+            {
+                Name = categoryNode.Name,
+                Description = categoryNode.SeoDescription
+            };
+            if (categoryNode.ChildCategories.Any())
+            {
+                foreach(var node in categoryNode.ChildCategories)
+                {
+                    var childCategories = DoRecursive(node);
+                    if (childCategories.Any())
+                    {
+                        foreach(var childCategory in childCategories)
+                            category.ChildCategories.Add(childCategory);
+                    }
+                }
+            }
+            categories.Add(category);
+            return categories;
         }
 
         private async Task<IServiceResult<V3.Product?>> GetBarcodeInfoProductAsync(IIntegrationApi api, string barcode, ScannedLabelType barcodeType)

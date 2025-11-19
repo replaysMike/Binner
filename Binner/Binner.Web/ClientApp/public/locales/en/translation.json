@@ -206,6 +206,8 @@
       "currency": "Api Currency",
       "tmeelectronics": "TME Electronics",
       "tmeDescription": "TME API Keys can be obtained at <1>https://developers.tme.eu</1>",
+      "element14": "Element14/Newark/Farnell",
+      "element14Description": "API Keys can be optained at <1>https://partner.element14.com</1>",
       "printMode": "Print Mode",
       "globalDescription": "Global application settings are used across the entire application.",
       "mySettings": "My Settings",

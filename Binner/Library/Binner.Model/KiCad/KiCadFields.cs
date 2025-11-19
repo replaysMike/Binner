@@ -15,6 +15,7 @@
         public KiCadValueVisibleItem Mouser { get; set; } = new();
         public KiCadValueVisibleItem Arrow { get; set; } = new();
         public KiCadValueVisibleItem Tme { get; set; } = new();
+        public KiCadValueVisibleItem Element14 { get; set; } = new();
         public KiCadValueVisibleItem ExtensionValue1 { get; set; } = new();
         public KiCadValueVisibleItem ExtensionValue2 { get; set; } = new();
     }

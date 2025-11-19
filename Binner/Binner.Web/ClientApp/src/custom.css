@@ -1,14 +1,3 @@
-@media only screen and (max-width: 768px) {
-  /* For mobile phones: */
-  i.icon,
-  i.icons {
-    font-size: 0.8em !important;
-  }
-  .ui.statistic > .label {
-    font-size: 0.8em !important;
-  }
-}
-
 /* EXPERIMENTAL */
 
 .sticky-target {
@@ -817,10 +806,6 @@ i.circular.icon {
 h1 > a,
 h1 > a:hover {
   text-decoration: none !important;
-}
-
-.binner-container {
-  max-width: 1500px;
 }
 
 /* Provide sufficient contrast against white background */

@@ -29,6 +29,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+                .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
@@ -86,6 +87,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+                .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
@@ -153,6 +155,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+                .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
@@ -185,6 +188,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.PartModels))
 
                 .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
+                .ForMember(x => x.Packaging, options => options.Ignore())
                 ;
 
             CreateMap<Part, DataModel.Part>()
@@ -208,6 +212,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+                .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
@@ -296,16 +301,19 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.OtherNames, options => options.MapFrom(x => x.OtherNames))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+                .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
                 .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
+
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.PartId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
+                .ForMember(x => x.Packaging, options => options.Ignore())
                 ;
 
             CreateMap<Binner.Model.Requests.UpdatePartRequest, Part>()
@@ -350,6 +358,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.OtherNames, options => options.MapFrom(x => x.OtherNames))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+                .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
@@ -361,6 +370,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
+                .ForMember(x => x.Packaging, options => options.Ignore())
                 ;
 
             CreateMap<Binner.Model.Requests.BulkPart, Part>()
@@ -405,6 +415,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.OtherNames, options => options.MapFrom(x => x.OtherNames))
                 .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                 .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+                .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.Parametrics))
                 .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
@@ -416,6 +427,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartId, options => options.Ignore())
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
+                .ForMember(x => x.Packaging, options => options.Ignore())
                 ;
 
             CreateMap<Part, Binner.Model.CommonPart>()
@@ -448,7 +460,9 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.Models))
                 .ForMember(x => x.AdditionalPartNumbers, options => options.MapFrom(x => x.OtherNames != null ? x.OtherNames.Split(" ", System.StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>()))
                 .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.MapFrom(x => x.SwarmPartNumberManufacturerId))
+                .ForMember(x => x.Packaging, options => options.MapFrom(x => x.Packaging))
 
+                .ForMember(x => x.Categories, options => options.Ignore())
                 .ForMember(x => x.FactoryStockAvailable, options => options.Ignore())
                 .ForMember(x => x.MinimumOrderQuantity, options => options.Ignore())
                 .ForMember(x => x.PartSupplierId, options => options.Ignore())
@@ -482,6 +496,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+               .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
@@ -537,6 +552,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                .ForMember(x => x.ArrowPartNumber, options => options.MapFrom(x => x.ArrowPartNumber))
                .ForMember(x => x.TmePartNumber, options => options.MapFrom(x => x.TmePartNumber))
+               .ForMember(x => x.Element14PartNumber, options => options.MapFrom(x => x.Element14PartNumber))
                .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))

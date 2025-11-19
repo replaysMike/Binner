@@ -605,6 +605,19 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<int>("DigiKeySite")
                         .HasColumnType("int");
 
+                    b.Property<string>("Element14ApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Element14ApiUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Element14Country")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Element14Enabled")
+                        .HasColumnType("bit");
+
                     b.Property<string>("MouserApiUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -725,6 +738,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("DigiKeyPartNumber")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Element14PartNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExportControlClassNumber")
                         .HasColumnType("nvarchar(max)");

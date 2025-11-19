@@ -180,12 +180,12 @@ export function BasicLayout(props) {
             version={version} />
         </Sidebar>
         <div id="banner" />
-        <Container>
+        <div className="layout-container">
           <Header />
           <Outlet />
           {props.children}
           <Footer />
-        </Container>
+        </div>
         <div className={`promo ${window.avatar ? 'masked' : ''}`}>
           <div style={{ marginBottom: '10px' }}>{version ? <span>{t('footer.version', "Version")}: {version}</span> : ""}</div>
           <span>

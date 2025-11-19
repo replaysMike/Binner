@@ -47,12 +47,17 @@ namespace Binner.Common.IO
         /// <summary>
         /// Load an embedded resource stream
         /// </summary>
-        /// <param name="assembly"></param>
-        /// <param name="name"></param>
+        /// <param name="assembly">Assembly in which the resource is located</param>
+        /// <param name="name">Name of the resource (full namespace without assembly name)</param>
+        /// <param name="assemblyName">Optional assembly namespace name, if different from the assembly's name</param>
         /// <returns></returns>
-        public static Stream LoadResourceStream(Assembly assembly, string name)
+        public static Stream LoadResourceStream(Assembly assembly, string name, string? assemblyName = null)
         {
-            var resourceName = GetResourceName(assembly, name);
+            var resourceName = string.Empty;
+            if (string.IsNullOrEmpty(assemblyName))
+                resourceName = GetResourceName(assembly, name);
+            else
+                resourceName = GetResourceName(assemblyName, name);
             return assembly.GetManifestResourceStream(resourceName) ?? throw new FileNotFoundException($"Resource named '{name}' not found.", nameof(name));
         }
 
@@ -83,5 +88,6 @@ namespace Binner.Common.IO
         }
 
         private static string GetResourceName(Assembly assembly, string resourceName) => $"{assembly.GetName().Name}.{resourceName}";
+        private static string GetResourceName(string assemblyName, string resourceName) => $"{assemblyName}.{resourceName}";
     }
 }

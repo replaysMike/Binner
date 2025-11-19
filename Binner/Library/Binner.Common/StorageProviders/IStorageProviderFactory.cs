@@ -1,5 +1,6 @@
 ﻿using Binner.Model;
 using Binner.Model.Configuration;
+using System;
 
 namespace Binner.Common.StorageProviders
 {
@@ -8,17 +9,17 @@ namespace Binner.Common.StorageProviders
         /// <summary>
         /// Create an instance of IStorageProvider
         /// </summary>
-        /// <param name="container">The service container</param>
+        /// <param name="serviceProvider">The service provider</param>
         /// <param name="storageProviderConfiguration">The storage provider configuration section from <see cref="WebHostServiceConfiguration"/></param>
         /// <returns></returns>
-        IStorageProvider Create(LightInject.IServiceContainer container, StorageProviderConfiguration storageProviderConfiguration);
+        IStorageProvider Create(IServiceProvider serviceProvider, StorageProviderConfiguration storageProviderConfiguration);
 
         /// <summary>
         /// Create a limited instance of IStorageProvider
         /// </summary>
-        /// <param name="container"></param>
-        /// <param name="configuration"></param>
+        /// <param name="serviceProvider">The service container</param>
+        /// <param name="storageProviderConfiguration">The storage provider configuration section from <see cref="WebHostServiceConfiguration"/></param>
         /// <returns></returns>
-        IStorageProvider CreateLimited(LightInject.IServiceContainer container, StorageProviderConfiguration configuration);
+        IStorageProvider CreateLimited(IServiceProvider serviceProvider, StorageProviderConfiguration storageProviderConfiguration);
     }
 }

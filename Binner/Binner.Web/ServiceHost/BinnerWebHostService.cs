@@ -222,7 +222,6 @@ namespace Binner.Web.ServiceHost
             // handle regular EF migrations
             if (_webHostConfig.AllowDatabaseMigrations)
             {
-
                 await using (var context = migrationHost.Services.GetRequiredService<BinnerContext>())
                 {
                     try
@@ -250,16 +249,20 @@ namespace Binner.Web.ServiceHost
 
             if (_webHostConfig.AllowConfigFileMigrations)
             {
-                // migrate the Binner file configuration file to the database
-                var configFileMigrator = _webHost.Services.GetRequiredService<ConfigFileMigrator>();
-                var isMigrated = await configFileMigrator.MigrateConfigFileToDatabaseAsync();
-                if (isMigrated)
+                var factory = _webHost.Services.GetService<IServiceScopeFactory>();
+                using (var scope = factory.CreateScope())
                 {
-                    _nlogLogger.Info("Binner configuration migrated to database!");
-                }
-                else
-                {
-                    _nlogLogger.Info("Binner configuration already migrated, skipping.");
+                    // migrate the Binner file configuration file to the database
+                    var configFileMigrator = scope.ServiceProvider.GetRequiredService<ConfigFileMigrator>();
+                    var isMigrated = await configFileMigrator.MigrateConfigFileToDatabaseAsync();
+                    if (isMigrated)
+                    {
+                        _nlogLogger.Info("Binner configuration migrated to database!");
+                    }
+                    else
+                    {
+                        _nlogLogger.Info("Binner configuration already migrated, skipping.");
+                    }
                 }
             }
             else

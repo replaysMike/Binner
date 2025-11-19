@@ -1,12 +1,8 @@
-﻿using Binner.Common.Integrations;
-using Binner.Global.Common;
-using Binner.Model;
+﻿using Binner.Global.Common;
 using Binner.Model.Configuration;
-using Binner.Model.Configuration.Integrations;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services;
-using LightInject;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -58,12 +54,14 @@ namespace Binner.Web.Controllers
                 if (string.IsNullOrEmpty(request.Mouser.ApiUrl)) request.Mouser.ApiUrl = "https://api.mouser.com";
                 if (string.IsNullOrEmpty(request.Arrow.ApiUrl)) request.Arrow.ApiUrl = "https://api.arrow.com";
                 if (string.IsNullOrEmpty(request.Tme.ApiUrl)) request.Tme.ApiUrl = "https://api.tme.eu";
+                if (string.IsNullOrEmpty(request.Element14.ApiUrl)) request.Element14.ApiUrl = "https://api.element14.com";
                 request.Binner.ApiUrl = $"https://{request.Binner.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Digikey.ApiUrl = $"https://{request.Digikey.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Digikey.oAuthPostbackUrl = $"https://{request.Digikey.oAuthPostbackUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Mouser.ApiUrl = $"https://{request.Mouser.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Arrow.ApiUrl = $"https://{request.Arrow.ApiUrl.Replace("https://", "").Replace("http://", "")}";
                 request.Tme.ApiUrl = $"https://{request.Tme.ApiUrl.Replace("https://", "").Replace("http://", "")}";
+                request.Element14.ApiUrl = $"https://{request.Element14.ApiUrl.Replace("https://", "").Replace("http://", "")}";
 
                 if (_requestContextAccessor.GetUserContext()?.IsAdmin == true)
                 {

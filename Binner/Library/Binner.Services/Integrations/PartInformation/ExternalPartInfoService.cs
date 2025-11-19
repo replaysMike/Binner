@@ -24,7 +24,91 @@ namespace Binner.Services.Integrations.PartInformation
             _userConfigurationService = userConfigurationService;
         }
 
-        public virtual async Task<IServiceResult<PartResults?>> GetPartInformationAsync(Part? inventoryPart, string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "")
+        public virtual async Task<IServiceResult<PartResults?>> GetGlobalPartInformationAsync(IntegrationConfiguration integrationConfiguration, Part? inventoryPart, string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "", int maxResults = ApiConstants.MaxRecords)
+        {
+            var response = new PartResults();
+
+            if (string.IsNullOrEmpty(partNumber))
+            {
+                // return empty result, invalid request
+                return ServiceResult<PartResults>.Create("No part number requested!", "Multiple");
+            }
+
+            // fetch all part types
+            var partTypes = await _storageProvider.GetPartTypesAsync(null);
+
+            // fetch part information from enabled API's
+            var partInformationProvider = new PartInformationProvider(_integrationApiFactory, _logger, _configuration, _userConfigurationService);
+            PartInformationResults? partInfoResults;
+            try
+            {
+                partInfoResults = await partInformationProvider.FetchPartInformationAsync(integrationConfiguration, partNumber, partType, mountingType, supplierPartNumbers, partTypes, inventoryPart, maxResults);
+                if (partInfoResults.PartResults.Parts.Any())
+                    response.Parts.AddRange(partInfoResults.PartResults.Parts);
+            }
+            catch (ApiErrorException ex)
+            {
+                // fatal error with executing api request
+                return ServiceResult<PartResults>.Create(ex.ApiResponse.Errors, ex.ApiResponse.ApiName);
+            }
+            catch (ApiRequiresAuthenticationException ex)
+            {
+                // additional authentication is required from an API (oAuth)
+                return ServiceResult<PartResults>.Create(true, ex.ApiResponse.RedirectUrl ?? string.Empty, ex.ApiResponse.Errors, ex.ApiResponse.ApiName);
+            }
+
+            // if any enabled API's encountered an error, return the error
+            if (!partInfoResults.ApiResponses.Any(x => x.Value.IsSuccess))
+            {
+                if (partInfoResults.ApiResponses.Any(x => x.Value.Response?.Errors.Any() == true))
+                {
+                    // there are errors, and no successful responses
+                    var errors = partInfoResults.ApiResponses
+                        .Where(x => x.Value.Response != null && x.Value.Response.Errors.Any())
+                        .SelectMany(x => x.Value.Response!.Errors.Select(errorMessage => $"[{x.Value.Response.ApiName}] {errorMessage}")).ToList();
+                    var apiNames = partInfoResults.ApiResponses.Where(x => x.Value.Response?.Errors.Any() == true).GroupBy(x => x.Key);
+                    var apiName = "Multiple";
+                    if (apiNames.Count() == 1) apiName = apiNames.First().Key;
+                    return ServiceResult<PartResults>.Create(errors, apiName);
+                }
+            }
+
+            // If we have the part in inventory, insert any datasheets from the inventory part
+            if (inventoryPart != null && !string.IsNullOrEmpty(inventoryPart.DatasheetUrl))
+                response.Datasheets.Add(new NameValuePair<DatasheetSource>(inventoryPart.ManufacturerPartNumber ?? string.Empty, new DatasheetSource($"https://{_configuration.ResourceSource}/{MissingDatasheetCoverName}", inventoryPart.DatasheetUrl, inventoryPart.ManufacturerPartNumber ?? string.Empty, inventoryPart.Description ?? string.Empty, inventoryPart.Manufacturer ?? string.Empty)));
+
+            // Apply ranking to order responses by API.
+            // Rank order is specified in the PartInformationProvider
+            response.Parts = response.Parts
+                // return unique results
+                .DistinctBy(x => new { Supplier = x.Supplier ?? string.Empty, SupplierPartNumber = x.SupplierPartNumber ?? string.Empty })
+                // order by source
+                .OrderBy(x => x.Rank)
+                .ThenByDescending(x => x.QuantityAvailable)
+                .ThenBy(x => x.BasePartNumber)
+                .ThenBy(x => x.Status)
+                .ToList();
+
+            // map PartIds for local inventory
+            if (_requestContext.GetUserContext() != null)
+                response.Parts = await MapCommonPartIdsAsync(response.Parts);
+
+            // Combine all the product images and datasheets into the root response and remove duplicates
+            response.ProductImages = partInfoResults.PartResults.ProductImages.DistinctBy(x => x.Value).ToList();
+            response.Datasheets = partInfoResults.PartResults.Datasheets.DistinctBy(x => x.Value).ToList();
+
+            // iterate through the responses and inject PartType objects and keywords
+            await InjectPartTypesAndKeywordsAsync(response, partTypes);
+
+            var serviceResult = ServiceResult<PartResults>.Create(response);
+            if (partInfoResults.ApiResponses.Any(x => x.Value.Response != null && x.Value.Response.Errors.Any()))
+                serviceResult.Errors = partInfoResults.ApiResponses
+                    .Where(x => x.Value.Response != null && x.Value.Response.Errors.Any())
+                    .SelectMany(x => x.Value.Response!.Errors.Select(errorMessage => $"[{x.Value.Response.ApiName}] {errorMessage}"));
+            return serviceResult;
+        }
+
+        public virtual async Task<IServiceResult<PartResults?>> GetPartInformationAsync(Part? inventoryPart, string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "", int maxResults = ApiConstants.MaxRecords)
         {
             var response = new PartResults();
             var user = _requestContext.GetUserContext();
@@ -51,7 +135,7 @@ namespace Binner.Services.Integrations.PartInformation
             PartInformationResults? partInfoResults;
             try
             {
-                partInfoResults = await partInformationProvider.FetchPartInformationAsync(partNumber, partType, mountingType, supplierPartNumbers, user?.UserId ?? 0, partTypes, inventoryPart);
+                partInfoResults = await partInformationProvider.FetchPartInformationAsync(partNumber, partType, mountingType, supplierPartNumbers, user?.UserId ?? 0, partTypes, inventoryPart, maxResults);
                 if (partInfoResults.PartResults.Parts.Any())
                     response.Parts.AddRange(partInfoResults.PartResults.Parts);
             }
@@ -113,40 +197,40 @@ namespace Binner.Services.Integrations.PartInformation
                 serviceResult.Errors = partInfoResults.ApiResponses
                     .Where(x => x.Value.Response != null && x.Value.Response.Errors.Any())
                     .SelectMany(x => x.Value.Response!.Errors.Select(errorMessage => $"[{x.Value.Response.ApiName}] {errorMessage}"));
-            return serviceResult;
+            return serviceResult;            
+        }
 
-            async Task InjectPartTypesAndKeywordsAsync(PartResults response, ICollection<PartType> partTypes)
+        protected virtual async Task InjectPartTypesAndKeywordsAsync(PartResults response, ICollection<PartType> partTypes)
+        {
+            foreach (var part in response.Parts)
             {
-                foreach (var part in response.Parts)
+                var partType = await DeterminePartTypeAsync(part);
+                part.PartType = partType?.Name ?? string.Empty;
+                part.PartTypeId = partType?.PartTypeId ?? 0;
+                part.Keywords = DetermineKeywordsFromPart(part, partTypes);
+            }
+        }
+
+        protected virtual async Task<string> DecodeBarcode(string partNumber, IUserContext? user)
+        {
+            if (user == null) throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId, integrationConfiguration);
+            if (digikeyApi.Configuration.IsConfigured)
+            {
+                // 2d barcode scan requires decode first to get the partNumber being searched
+                var barcodeInfo = await _externalBarcodeInfoService.GetBarcodeInfoAsync(partNumber, ScannedLabelType.Product);
+                if (barcodeInfo.Response?.Parts.Any() == true)
                 {
-                    var partType = await DeterminePartTypeAsync(part);
-                    part.PartType = partType?.Name ?? string.Empty;
-                    part.PartTypeId = partType?.PartTypeId ?? 0;
-                    part.Keywords = DetermineKeywordsFromPart(part, partTypes);
+                    var firstPartMatch = barcodeInfo.Response.Parts.First();
+                    if (!string.IsNullOrEmpty(firstPartMatch.ManufacturerPartNumber))
+                        partNumber = firstPartMatch.ManufacturerPartNumber;
+                    else if (!string.IsNullOrEmpty(firstPartMatch.BasePartNumber))
+                        partNumber = firstPartMatch.BasePartNumber;
                 }
             }
 
-            async Task<string> DecodeBarcode(string partNumber, IUserContext? user)
-            {
-                if (user == null) throw new UserContextUnauthorizedException();
-                var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
-                var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId, integrationConfiguration);
-                if (digikeyApi.Configuration.IsConfigured)
-                {
-                    // 2d barcode scan requires decode first to get the partNumber being searched
-                    var barcodeInfo = await _externalBarcodeInfoService.GetBarcodeInfoAsync(partNumber, ScannedLabelType.Product);
-                    if (barcodeInfo.Response?.Parts.Any() == true)
-                    {
-                        var firstPartMatch = barcodeInfo.Response.Parts.First();
-                        if (!string.IsNullOrEmpty(firstPartMatch.ManufacturerPartNumber))
-                            partNumber = firstPartMatch.ManufacturerPartNumber;
-                        else if (!string.IsNullOrEmpty(firstPartMatch.BasePartNumber))
-                            partNumber = firstPartMatch.BasePartNumber;
-                    }
-                }
-
-                return partNumber;
-            }
+            return partNumber;
         }
 
         private bool IsBarcodeScan(string partNumber) => !string.IsNullOrEmpty(partNumber) && partNumber.StartsWith("[)>");

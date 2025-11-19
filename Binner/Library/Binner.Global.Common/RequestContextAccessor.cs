@@ -139,14 +139,14 @@ namespace Binner.Global.Common
         /// </summary>
         /// <returns></returns>
         public long GetIp()
-            => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToLong() ?? 0;
+            => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.MapToIPv4().ToLong() ?? 0;
 
         /// <summary>
         /// Get the remote user's IP address as a string
         /// </summary>
         /// <returns></returns>
         public string? GetIpAddress()
-            => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.MapToIPv4().ToString();
 
         /// <summary>
         /// Get the current http request

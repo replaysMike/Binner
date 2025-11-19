@@ -11,10 +11,19 @@ namespace Binner.Services
         /// Create an integration Api for system use
         /// Only for global system usage as no user api keys will be available
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="integrationConfiguration">Integration configuration to use for the apis</param>
+        /// <typeparam name="T">Type of api class</typeparam>
         /// <returns></returns>
-        T CreateGlobal<T>() where T : class;
+        T CreateGlobal<T>(IntegrationConfiguration integrationConfiguration) where T : class;
 
+        /// <summary>
+        /// Create an integration Api for system use
+        /// Only for global system usage as no user api keys will be available
+        /// </summary>
+        /// <param name="apiType">Type of api class</param>
+        /// <param name="integrationConfiguration">Integration configuration to use for the apis</param>
+        /// <returns></returns>
+        IIntegrationApi CreateGlobal(Type apiType, IntegrationConfiguration integrationConfiguration);
 
         /// <summary>
         /// Create an integration Api for use by users

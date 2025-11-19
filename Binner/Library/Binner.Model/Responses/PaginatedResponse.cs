@@ -16,6 +16,9 @@
         /// </summary>
         public int PageSize { get; }
 
+        /// <summary>
+        /// Total number of pages of data available
+        /// </summary>
         public int TotalPages => (int)Math.Ceiling(TotalItems / (double)PageSize);
 
         /// <summary>
