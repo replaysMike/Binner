@@ -392,10 +392,30 @@ namespace Binner.Common.Extensions
         /// <returns></returns>
         public static string? Limit(this string? text, int length)
         {
-            if (text == null) return null;
+            if (string.IsNullOrEmpty(text)) return text;
             if (length < 0) length = 0;
             if (text.Length <= length) return text;
             return text.Substring(0, length);
+        }
+
+        /// <summary>
+        /// True if text contains all capital letters
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static bool IsAllUpper(this string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return false;
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                // only check letter if it's a letter, let numbers and punctuation follow through
+                var isLetter = Char.IsAsciiLetter(input[i]);
+                if (isLetter && !Char.IsUpper(input[i]))
+                    return false;
+            }
+
+            return true;
         }
     }
 }

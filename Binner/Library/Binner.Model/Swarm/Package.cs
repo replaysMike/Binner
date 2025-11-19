@@ -18,6 +18,11 @@
         public int PinCount { get; set; }
 
         /// <summary>
+        /// The associated part number
+        /// </summary>
+        public int? PartNumberId { get; set; }
+
+        /// <summary>
         /// Width in millimeters
         /// </summary>
         public double SizeWidthMm { get; set; }
