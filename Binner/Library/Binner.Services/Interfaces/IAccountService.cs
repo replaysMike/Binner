@@ -30,17 +30,17 @@ namespace Binner.Services
         Task UploadProfileImageAsync(MemoryStream stream, string originalFilename, string contentType, long length);
 
         /// <summary>
-        /// Create a KiCad api token
+        /// Create a api token
         /// </summary>
         /// <returns></returns>
-        Task<Token?> CreateKiCadApiTokenAsync(string? tokenConfig);
+        Task<Token?> CreateApiTokenAsync(Model.Authentication.TokenTypes tokenType, string? tokenConfig);
 
         /// <summary>
-        /// Delete a KiCad api token
+        /// Delete a api token
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        Task<bool> DeleteKiCadApiTokenAsync(string token);
+        Task<bool> DeleteApiTokenAsync(Model.Authentication.TokenTypes tokenType, string token);
 
         /// <summary>
         /// Get a user token
@@ -50,10 +50,10 @@ namespace Binner.Services
         Task<Token?> GetTokenAsync(string token, Model.Authentication.TokenTypes? tokenType = null);
 
         /// <summary>
-        /// Validate a KiCad api token.
+        /// Validate a api token.
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        Task<bool> ValidateKiCadApiToken(string token);
+        Task<bool> ValidateApiToken(Model.Authentication.TokenTypes tokenType, string token);
     }
 }
