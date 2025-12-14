@@ -105,5 +105,10 @@ namespace Binner.Model.Responses
         /// True to enable checking for new versions of Binner
         /// </summary>
         public bool EnableCheckNewVersion { get; set; } = true;
+
+        /// <summary>
+        /// If true, allows fetching part metadata for parts that already exist in inventory
+        /// </summary>
+        public bool enableAutomaticMetadataFetchingForExistingParts { get; set; } = true;
     }
 }

@@ -107,5 +107,10 @@ namespace Binner.Model.Requests
         /// Absolute cache expiration in minutes (0 = never)
         /// </summary>
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
+
+        /// <summary>
+        /// If true, allows fetching part metadata for parts that already exist in inventory
+        /// </summary>
+        public bool enableAutomaticMetadataFetchingForExistingParts { get; set; } = true;
     }
 }
