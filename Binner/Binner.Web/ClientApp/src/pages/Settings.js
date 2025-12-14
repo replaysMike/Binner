@@ -1702,7 +1702,6 @@ export const Settings = () => {
             content={<p>{t('page.settings.popup.element14ApiUrl', "Element14's API Url. This will be api.element14.com")}</p>}
             trigger={
               <ClearableInput
-                action
                 className="labeled"
                 placeholder="api.element14.com"
                 value={(integrationSettings.element14.apiUrl || "")
@@ -1711,6 +1710,9 @@ export const Settings = () => {
                 name="element14ApiUrl"
                 onChange={(e, control) => handleChange(e, control, 'integration')}
                 type="Input"
+                helpWide
+                helpHoverable
+                help={<p>{t('page.settings.popup.element14ApiUrl', "Element14's API Url. This will be api.element14.com")}</p>}
               >
                 <Label>https://</Label>
                 <input />
