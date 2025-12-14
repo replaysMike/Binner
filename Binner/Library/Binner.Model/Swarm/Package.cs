@@ -8,6 +8,11 @@
         public int PackageId { get; set; }
 
         /// <summary>
+        /// Associated part number
+        /// </summary>
+        public int? PartNumberId { get; set; }
+
+        /// <summary>
         /// Package name
         /// </summary>
         public string Name { get; set; } = null!;

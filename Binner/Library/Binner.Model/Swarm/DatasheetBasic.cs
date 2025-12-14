@@ -37,6 +37,35 @@ namespace Binner.Model.Swarm
         public string? ShortDescription { get; set; }
 
         /// <summary>
+        /// The public description/synopsis of datasheet
+        /// </summary>
+        [MaxLength(4096)]
+        public string? Description { get; set; }
+
+        /// <summary>
+        ///  List of applications indicated by the original PDF
+        /// </summary>
+        [MaxLength(2048)]
+        public string? Applications { get; set; }
+
+        /// <summary>
+        /// List of features indicated by the original PDF
+        /// </summary>
+        [MaxLength(4096)]
+        public string? Features { get; set; }
+
+        /// <summary>
+        /// Absolute maximum ratings (JSON or text)
+        /// </summary>
+        [MaxLength(2048)]
+        public string? AbsoluteMaximumRatings { get; set; }
+
+        /// <summary>
+        /// Comma delimited list of available packages
+        /// </summary>
+        public string? Packages { get; set; }
+
+        /// <summary>
         /// Title indicated by the original PDF
         /// </summary>
         public string? Title { get; set; }
