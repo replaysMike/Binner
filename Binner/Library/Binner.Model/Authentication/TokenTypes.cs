@@ -28,6 +28,10 @@
         /// <summary>
         /// KiCad api access token
         /// </summary>
-        KiCadApiToken
+        KiCadApiToken,
+        /// <summary>
+        /// Binner Bin api access token
+        /// </summary>
+        BinnerBinApiToken,
     }
 }
