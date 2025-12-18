@@ -23,6 +23,23 @@
         public int PinCount { get; set; }
 
         /// <summary>
+        /// Identifies the number of pin rows
+        /// Quad packages = 4, DIP/SOP/SOIC = 2, TO packages = 1, > 4 = BGA/LGA
+        /// </summary>
+        public int PinRows { get; set; }
+
+        /// <summary>
+        /// Identifies the number of pin rows
+        /// > 1 = BGA/LGA. Normally pins only go in 1 direction.
+        /// </summary>
+        public int PinColumns { get; set; }
+
+        /// <summary>
+        /// The pin spacing in mm
+        /// </summary>
+        public double PinSpacingMm { get; set; }
+
+        /// <summary>
         /// Width in millimeters
         /// </summary>
         public double SizeWidthMm { get; set; }

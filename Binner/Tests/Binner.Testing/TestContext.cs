@@ -8,22 +8,22 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
-using Binner.Model.Requests;
 using Binner.Services;
 using Binner.Services.Integrations;
 using Binner.Services.Integrations.ExternalOrder;
 using Binner.Services.Integrations.PartInformation;
 using Binner.StorageProvider.EntityFrameworkCore;
-using Binner.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace Binner.Testing
 {
+    /// <summary>
+    /// Binner test context
+    /// </summary>
     public class TestContext
     {
         public WebHostServiceConfiguration WebHostServiceConfiguration { get; set; }
