@@ -30,5 +30,10 @@ namespace Binner.Model.Configuration
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
 
         public KiCadSettings KiCad { get; set; } = new ();
+
+        /// <summary>
+        /// If true, allows fetching part metadata for parts that already exist in inventory
+        /// </summary>
+        public bool enableAutomaticMetadataFetchingForExistingParts { get; set; } = true;
     }
 }

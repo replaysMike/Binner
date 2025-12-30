@@ -547,6 +547,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("enableAutomaticMetadataFetchingForExistingParts")
+                        .HasColumnType("boolean");
+
                     b.HasKey("OrganizationConfigurationId");
 
                     b.HasIndex("OrganizationId");

@@ -547,6 +547,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("enableAutomaticMetadataFetchingForExistingParts")
+                        .HasColumnType("tinyint(1)");
+
                     b.HasKey("OrganizationConfigurationId");
 
                     b.HasIndex("OrganizationId");

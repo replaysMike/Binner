@@ -34,6 +34,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
+                .ForMember(x => x.enableAutomaticMetadataFetchingForExistingParts, options => options.Ignore())
                 .ReverseMap();
 
             CreateMap<SettingsRequest, UserIntegrationConfiguration>(MemberList.None)
@@ -147,6 +148,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.UseModule, options => options.MapFrom(x => x.UseModule))
                 .ForMember(x => x.KiCad, options => options.MapFrom(x => x.KiCad))
+                .ForMember(x => x.enableAutomaticMetadataFetchingForExistingParts, options => options.MapFrom(x => x.enableAutomaticMetadataFetchingForExistingParts))
             ;
 
             CreateMap<OrganizationConfiguration, SettingsRequest>()
@@ -156,6 +158,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.UseModule, options => options.MapFrom(x => x.UseModule))
                 .ForMember(x => x.KiCad, options => options.MapFrom(x => x.KiCad))
+                .ForMember(x => x.enableAutomaticMetadataFetchingForExistingParts, options => options.MapFrom(x => x.enableAutomaticMetadataFetchingForExistingParts))
 
                 .ForMember(x => x.Octopart, options => options.Ignore())
                 .ForMember(x => x.Digikey, options => options.Ignore())

@@ -521,6 +521,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("enableAutomaticMetadataFetchingForExistingParts")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("OrganizationConfigurationId");
 
                     b.HasIndex("OrganizationId");
