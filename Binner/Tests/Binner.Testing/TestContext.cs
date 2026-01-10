@@ -8,22 +8,22 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
-using Binner.Model.Requests;
 using Binner.Services;
 using Binner.Services.Integrations;
 using Binner.Services.Integrations.ExternalOrder;
 using Binner.Services.Integrations.PartInformation;
 using Binner.StorageProvider.EntityFrameworkCore;
-using Binner.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace Binner.Testing
 {
+    /// <summary>
+    /// Binner test context
+    /// </summary>
     public class TestContext
     {
         public WebHostServiceConfiguration WebHostServiceConfiguration { get; set; }
@@ -230,10 +230,10 @@ namespace Binner.Testing
 
         public List<ApiCredential> CreateDefaultApiCredentials()
         {
-            return CreateApiCredentials(enableSwarm: true, enableDigiKey: true, enableMouser: true, enableOctopart: true, enableArrow: true, enableTme: true);
+            return CreateApiCredentials(enableSwarm: true, enableDigiKey: true, enableMouser: true, enableOctopart: true, enableArrow: true, enableTme: true, enableElement14: true);
         }
 
-        public List<ApiCredential> CreateApiCredentials(bool enableSwarm = false, bool enableDigiKey = false, bool enableMouser = false, bool enableOctopart = false, bool enableArrow = false, bool enableTme = false)
+        public List<ApiCredential> CreateApiCredentials(bool enableSwarm = false, bool enableDigiKey = false, bool enableMouser = false, bool enableOctopart = false, bool enableArrow = false, bool enableTme = false, bool enableElement14 = false)
         {
             var apiCredentials = new List<ApiCredential>
             {
@@ -282,7 +282,14 @@ namespace Binner.Testing
                     { "ApplicationSecret", "test" },
                     { "ApiUrl", "https://api.tme.eu/" },
                     { "ResolveExternalLinks", false }, // for tests, don't make extra http calls for external links
-                }, nameof(TmeApi))
+                }, nameof(TmeApi)),
+                new ApiCredential(TestConstants.UserId, new Dictionary<string, object>()
+                {
+                    { "Enabled", enableElement14 },
+                    { "Country", "us" },
+                    { "ApiKey", "test" },
+                    { "ApiUrl", "https://api.element14.com/" },
+                }, nameof(Element14Api))
             };
             return apiCredentials;
         }

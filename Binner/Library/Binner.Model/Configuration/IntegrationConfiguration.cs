@@ -35,6 +35,11 @@ namespace Binner.Model.Configuration
         public TmeConfiguration Tme { get; set; } = new();
 
         /// <summary>
+        /// Element14 config
+        /// </summary>
+        public Element14Configuration Element14 { get; set; } = new();
+
+        /// <summary>
         /// AliExpress config
         /// </summary>
         public AliExpressConfiguration AliExpress { get; set; } = new ();

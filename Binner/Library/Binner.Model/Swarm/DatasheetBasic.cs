@@ -37,7 +37,7 @@ namespace Binner.Model.Swarm
         public string? ShortDescription { get; set; }
 
         /// <summary>
-        /// The short one-line description of the datasheet
+        /// The public description/synopsis of datasheet
         /// </summary>
         [MaxLength(4096)]
         public string? Description { get; set; }

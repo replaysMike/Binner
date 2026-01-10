@@ -5,6 +5,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,8 +23,7 @@
   </ItemGroup>
 
   <!-- Import common solution/project settings -->
-  <PropertyGroup Condition="'$(SolutionDir)' == '' or
-                     '$(SolutionDir)' == '*undefined*'">
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or '$(SolutionDir)' == '*undefined*'">
     <SolutionDir>..\..\</SolutionDir>
   </PropertyGroup>
   <Import Project="$(SolutionDir)CommonSettings.targets" />

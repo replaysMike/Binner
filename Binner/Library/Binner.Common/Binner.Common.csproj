@@ -5,6 +5,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win-x64;linux-arm;linux-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
@@ -81,7 +82,7 @@
   </ItemGroup>
 
   <!-- Import common solution/project settings -->
-  <PropertyGroup Condition="'$(SolutionDir)' == '' or&#xD;&#xA;                     '$(SolutionDir)' == '*undefined*'">
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or '$(SolutionDir)' == '*undefined*'">
     <SolutionDir>..\..\</SolutionDir>
   </PropertyGroup>
   <Import Project="$(SolutionDir)CommonSettings.targets" />

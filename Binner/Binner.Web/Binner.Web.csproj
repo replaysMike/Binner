@@ -22,15 +22,16 @@
     <FileVersion>2.6.0.0</FileVersion>
     <Version>2.6.0</Version>
     <ApplicationIcon>binner128x128.ico</ApplicationIcon>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') And '$(Configuration)' == 'Debug'">
-    <!-- Use the local licensedprovider project -->
+     <!--Use the local licensedprovider project--> 
     <ProjectReference Include="..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="!Exists('..\..\..\..\Binner.LicensedProvider\LicensedProvider\Binner.LicensedProvider.csproj') Or '$(Configuration)' == 'Release'">
-    <!-- Use the licensedprovider package -->
+     <!--Use the licensedprovider package--> 
     <PackageReference Include="Binner.LicensedProvider" Version="$(LibraryVersion)" PrivateAssets="Compile" />
   </ItemGroup>
 

@@ -4,13 +4,14 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Data\Binner.StorageProvider.EntityFrameworkCore\Binner.StorageProvider.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\Library\Binner.Model\Binner.Model.csproj" />
     <ProjectReference Include="..\..\Library\Binner.Services\Binner.Services.csproj" />
-    <ProjectReference Include="..\Binner.Testing\Binner.Testing.csproj" />
+    <ProjectReference Include="$(SolutionDir)\Tests\Binner.Testing\Binner.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -94,8 +95,7 @@
   </ItemGroup>
 
   <!-- Import common solution/project settings -->
-  <PropertyGroup Condition="'$(SolutionDir)' == '' or
-                     '$(SolutionDir)' == '*undefined*'">
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or '$(SolutionDir)' == '*undefined*'">
     <SolutionDir>..\..\</SolutionDir>
   </PropertyGroup>
   <Import Project="$(SolutionDir)CommonSettings.targets" />

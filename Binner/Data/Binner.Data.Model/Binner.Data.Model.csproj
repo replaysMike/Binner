@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,8 +26,7 @@
   </ItemGroup>
 
   <!-- Import common solution/project settings -->
-  <PropertyGroup Condition="'$(SolutionDir)' == '' or
-                     '$(SolutionDir)' == '*undefined*'">
+  <PropertyGroup Condition="'$(SolutionDir)' == '' or '$(SolutionDir)' == '*undefined*'">
     <SolutionDir>..\..\</SolutionDir>
   </PropertyGroup>
   <Import Project="$(SolutionDir)CommonSettings.targets" />

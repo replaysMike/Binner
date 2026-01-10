@@ -34,6 +34,11 @@ namespace Binner.Model.Requests
         public TmeUserConfiguration Tme { get; set; } = new ();
 
         /// <summary>
+        /// Element14 config
+        /// </summary>
+        public Element14UserConfiguration Element14 { get; set; } = new();
+
+        /// <summary>
         /// Binner swarm config
         /// </summary>
         public SwarmUserConfiguration Binner { get; set; } = new ();
