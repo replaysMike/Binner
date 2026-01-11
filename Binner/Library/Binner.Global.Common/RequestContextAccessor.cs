@@ -73,8 +73,12 @@ namespace Binner.Global.Common
             var organizationId = int.Parse(currentPrincipal.Claims.Where(x => x.Type == "OrganizationId").Select(x => x.Value).FirstOrDefault() ?? "0");
             if (userId <= 0 || organizationId <= 0) return null; // invalid claims
             var properties = new Dictionary<string, object?>();
+            var subscriptionLevel = SubscriptionLevel.Free;
             if (currentPrincipal.Claims.Any(x => x.Type == JwtClaimTypes.SubscriptionLevel))
+            {
                 properties.Add(JwtClaimTypes.SubscriptionLevel, currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.SubscriptionLevel).Select(x => x.Value).FirstOrDefault() ?? string.Empty);
+                Enum.TryParse<SubscriptionLevel>(currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.SubscriptionLevel).Select(x => x.Value).FirstOrDefault(), out subscriptionLevel);
+            }
             if (currentPrincipal.Claims.Any(x => x.Type == JwtClaimTypes.SuperAdmin))
                 properties.Add(JwtClaimTypes.SuperAdmin, currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.SuperAdmin).Select(x => x.Value).FirstOrDefault() ?? string.Empty);
             return new UserContext
@@ -86,6 +90,7 @@ namespace Binner.Global.Common
                 PhoneNumber = currentPrincipal.Claims.Where(x => x.Type == "PhoneNumber").Select(x => x.Value).FirstOrDefault(),
                 Properties = properties,
                 IsAdmin = bool.Parse(currentPrincipal.Claims.Where(x => x.Type == JwtClaimTypes.Admin).Select(x => x.Value).FirstOrDefault() ?? "false"),
+                SubscriptionLevel = subscriptionLevel
             };
         }
 

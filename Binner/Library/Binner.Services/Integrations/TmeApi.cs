@@ -1,5 +1,5 @@
-﻿using Binner.Common;
-using Binner.Common.Extensions;
+﻿using Binner.Common.Extensions;
+using Binner.Global.Common;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations;

@@ -13,19 +13,15 @@
 
 using ApiClient.Constants;
 using ApiClient.OAuth2.Models;
-using Binner.Common;
-using Binner.Services.Integrations;
+using Binner.Common.Integrations;
+using Binner.Global.Common;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Services.Integrations;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
-using Binner.Common.Integrations;
 
 namespace ApiClient.OAuth2
 {

@@ -30,6 +30,11 @@ namespace Binner.Model.Responses
         /// </summary>
         public bool IsAdmin { get; set; }
 
+        /// <summary>
+        /// The subscription level of the user
+        /// </summary>
+        public SubscriptionLevel SubscriptionLevel { get; }
+
         public AuthenticationResponse(bool isAuthenticated, string message)
         {
             IsAuthenticated = isAuthenticated;
@@ -47,6 +52,7 @@ namespace Binner.Model.Responses
             RefreshToken = authenticatedTokens.RefreshToken;
             CanLogin = authenticatedTokens.CanLogin;
             IsAdmin = user.IsAdmin;
+            SubscriptionLevel = user.SubscriptionLevel;
         }
     }
 }

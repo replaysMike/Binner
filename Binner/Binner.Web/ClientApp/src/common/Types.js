@@ -34,6 +34,13 @@ export const AccountTypes = {
   SuperAdmin: 2
 };
 
+export const SubscriptionLevels = {
+  Free: 0,
+  Maker: 1,
+  Professional: 2,
+  Commercial: 3
+};
+
 export const getAccountTypesLabel = (user) => {
   const accountTypes = [];
   if (user.isSuperAdmin) accountTypes.push('Super Admin');

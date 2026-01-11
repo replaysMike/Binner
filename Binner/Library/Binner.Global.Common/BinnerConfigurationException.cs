@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Binner.Common
+namespace Binner.Global.Common
 {
     /// <summary>
     /// Binner configuration exception

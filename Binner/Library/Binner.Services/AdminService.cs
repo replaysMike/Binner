@@ -135,7 +135,7 @@ namespace Binner.Services
 
             var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
             var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration();
-            model.License = _configuration.Licensing?.LicenseKey;
+            model.License = userContext?.SubscriptionLevel.ToString();
             model.Language = localeConfiguration.Language.ToString();
             model.Currency = localeConfiguration.Currency.ToString();
             if (!string.IsNullOrEmpty(entryAssembly.Location))

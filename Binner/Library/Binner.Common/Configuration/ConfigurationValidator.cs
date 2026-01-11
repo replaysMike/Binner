@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Extensions;
+using Binner.Global.Common;
 using Binner.Model.Configuration;
 using NLog;
 
