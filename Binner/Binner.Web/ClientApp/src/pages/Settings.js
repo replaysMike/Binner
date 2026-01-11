@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
+import debounce from "lodash.debounce";
 import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table, Tab, TabPane, Checkbox } from "semantic-ui-react";
 import ClearableInput from "../components/ClearableInput";
 import { BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown, GetTypeName } from "../common/Types";
@@ -22,6 +23,7 @@ import { config } from "../common/config";
 import "./Settings.css";
 
 export const Settings = () => {
+  const DebounceTimeMs = 750;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -83,6 +85,7 @@ export const Settings = () => {
   const languageOptions = Languages;
   const currencyOptions = Currencies;
   const [kiCadExportFieldOptions, setKiCadExportFieldOptions] = useState(KiCadExportPartFields);
+  const [licenseIsValidated, setLicenseIsValidated] = useState(null);
   const exportFieldOptions = ExportPartFields;
   const barcodeProfileOptions = GetTypeDropdown(BarcodeProfiles);
   const customFieldTypeOptions = GetAdvancedTypeDropdown(CustomFieldTypes);
@@ -301,10 +304,33 @@ export const Settings = () => {
     setIntegrationSettings(newSettings);
   };
 
+  const validateLicenseKey = async (licenseKey, deviceId) => {
+    await fetchApi(`/api/license/validate?licenseKey=${licenseKey}&deviceId=${deviceId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then((response) => {
+      const { data } = response;
+      if (data.isValidated) {
+        setLicenseIsValidated(true);
+      } else {
+        toast.error(data.message);
+        setLicenseIsValidated(false);
+      }
+    });
+  };
+
+  const validateLicenseKeyDebounced = useMemo(() => debounce(validateLicenseKey, DebounceTimeMs), [licenseIsValidated]);
+
   const handleGlobalSettingsChange = (e, control) => {
     const newSettings = { ...globalSettings };
     setControlValue(newSettings, "", control);
     setGlobalSettings(newSettings);
+    if (control.name.startsWith("licenseKey")) {
+      // try and validate the license key
+      validateLicenseKeyDebounced(control.value, null);
+    }
   };
 
   const handleBarcodeSettingsChange = (e, control) => {
@@ -817,18 +843,26 @@ export const Settings = () => {
               If you have a paid Binner license, enter the key here. License keys can be obtained at <a href="https://binner.io" target="_blank" rel="noreferrer">Binner.io</a>
             </Trans>}
             trigger={
-              <div>
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={globalSettings.licenseKey || ""}
-                name="licenseKey"
-                onChange={(e, control) => handleChange(e, control, 'global')}
-              />
+              <div style={{display: 'flex'}}>
+                <ClearableInput
+                  className="labeled flex"
+                  placeholder=""
+                  value={globalSettings.licenseKey || ""}
+                  name="licenseKey"
+                  onChange={(e, control) => handleChange(e, control, 'global')}
+                />
+                {(licenseIsValidated === true || licenseIsValidated === false) &&
+                <Icon
+                  style={{ marginLeft: "5px", marginTop: "15px" }}
+                  name={`${licenseIsValidated ? 'check' : 'times'} circle`}
+                  color={licenseIsValidated ? "green" : "red"}
+                  size="large"
+                />}
               </div>
             }
           />
         </Form.Field>
+        
 
         <Form.Field width={10}>
           <label>{t('label.maxCacheItems', "Max Cache Items")}</label>
@@ -898,7 +932,7 @@ export const Settings = () => {
       </Segment>
 
     </Segment>);
-  }, [globalSettings, loading]);
+  }, [globalSettings, loading, licenseIsValidated]);
 
   const integrationSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>

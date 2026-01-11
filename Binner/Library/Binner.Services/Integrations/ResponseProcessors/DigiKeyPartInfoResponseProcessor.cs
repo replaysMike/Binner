@@ -1,4 +1,5 @@
-﻿using Binner.Common.Integrations;
+﻿using ApiClient.Constants;
+using Binner.Common.Integrations;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Integrations;

@@ -1,10 +1,9 @@
-﻿using Binner.Common;
-using Binner.Common.Extensions;
+﻿using Binner.Common.Extensions;
+using Binner.Global.Common;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations;
 using Binner.Model.Integrations.Element14;
-using Binner.Services.Integrations;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

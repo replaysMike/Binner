@@ -501,7 +501,7 @@ UPDATE Users SET OrganizationId = 1;
             }
             catch (Exception ex)
             {
-                throw new BinnerConfigurationException($"Failed to load Binner file database!", ex);
+                throw new Global.Common.BinnerConfigurationException($"Failed to load Binner file database!", ex);
             }
         }
 

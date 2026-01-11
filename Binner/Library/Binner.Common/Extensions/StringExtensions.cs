@@ -383,5 +383,39 @@ namespace Binner.Common.Extensions
             var len = (int)(text.Length * percentage);
             return text.Substring(0, len).PadRight(text.Length, '*');
         }
+
+        /// <summary>
+        /// Limit/constrain the length of a string to a given length
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="length">Max length the string can have</param>
+        /// <returns></returns>
+        public static string? Limit(this string? text, int length)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            if (length < 0) length = 0;
+            if (text.Length <= length) return text;
+            return text.Substring(0, length);
+        }
+
+        /// <summary>
+        /// True if text contains all capital letters
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static bool IsAllUpper(this string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return false;
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                // only check letter if it's a letter, let numbers and punctuation follow through
+                var isLetter = Char.IsAsciiLetter(input[i]);
+                if (isLetter && !Char.IsUpper(input[i]))
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

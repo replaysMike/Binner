@@ -2,6 +2,7 @@
 using Binner.Common.Configuration;
 using Binner.Common.Extensions;
 using Binner.Data;
+using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Services.Security;

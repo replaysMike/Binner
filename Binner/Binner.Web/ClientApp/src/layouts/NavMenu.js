@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Form, Menu, Dropdown, Icon, Popup } from "semantic-ui-react";
-import { isAuthenticated, isAdmin, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
+import { isAuthenticated, isAdmin, getSubscriptionTag, logoutUserAccountAsync, deAuthenticateUserAccount } from "../common/authentication";
 import ProtectedInput from "../components/ProtectedInput";
 import "./NavMenu.css";
 
@@ -47,7 +47,7 @@ export function NavMenu() {
     <header>
       <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
         <Container className={"header-container"}>
-          <NavbarBrand tag={Link} to="/" className="svg"><div className="logo" /><span>Binner</span></NavbarBrand>
+          <NavbarBrand tag={Link} to="/" className="svg"><div className="logo" /><span className={getSubscriptionTag()}>Binner</span></NavbarBrand>
           <NavbarToggler onClick={toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!collapsed} navbar>
             <Form onSubmit={onSubmit}>

@@ -127,7 +127,7 @@ namespace Binner.Services.Integrations
                 var request = new KeywordSearchRequest
                 {
                     Keywords = string.Join(" ", filteredKeywords),
-                    RecordCount = recordCount,
+                    RecordCount = Math.Min(recordCount, DigiKeyConstants.MaxResults),
                     Filters = new Filters
                     {
                         TaxonomyIds = taxonomies.Select(x => (int)x).ToList(),
@@ -144,7 +144,7 @@ namespace Binner.Services.Integrations
                     request = new KeywordSearchRequest
                     {
                         Keywords = string.Join(" ", keywords),
-                        RecordCount = recordCount,
+                        RecordCount = Math.Min(recordCount, DigiKeyConstants.MaxResults),
                         Filters = new Filters
                         {
                             TaxonomyIds = taxonomies.Select(x => (int)x).ToList(),

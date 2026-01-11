@@ -1,5 +1,5 @@
-﻿using Binner.Common;
-using Binner.Common.Integrations;
+﻿using Binner.Common.Integrations;
+using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Services.Integrations.ResponseProcessors;

@@ -144,3 +144,44 @@ export const isAuthenticated = () => {
   const user = getUserAccount();
   return user && user.isAdmin;
 };
+
+/**
+ * Get the subscription level of the user
+ * @returns {number} subscription level
+ */
+export const getSubscriptionLevel = () => {
+  const user = getUserAccount();
+  return user && user.subscriptionLevel;
+};
+
+/**
+ * Get the subscription tag name of the user's subscription
+ * @returns {string} free, maker, pro
+ */
+export const getSubscriptionTag = (includeFree = false) => {
+  const user = getUserAccount();
+  if (user) {
+    switch(user.subscriptionLevel) {
+      case 0:
+        if (includeFree) return 'free';
+        return '';
+      case 1:
+        return 'maker';
+      case 2:
+        return 'pro';
+    }
+  }
+  return '';
+};
+
+/**
+ * Handle navigating a link requiring a given subscription level
+ * @param {number} requiredSubscriptionLevel The subscription level required to visit link
+ * @param {function} navigateFunc navigate function call
+ */
+export const handleSubscriptionLink = (e, requiredSubscriptionLevel, navigateFunc) => {
+  const subscriptionLevel = getSubscriptionLevel();
+  if (subscriptionLevel >= requiredSubscriptionLevel) {
+    navigateFunc();
+  }
+};

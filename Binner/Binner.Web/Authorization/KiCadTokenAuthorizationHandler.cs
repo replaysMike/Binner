@@ -1,7 +1,7 @@
 ﻿using Binner.Common.Extensions;
-using Binner.Services;
 using Binner.Data;
 using Binner.Global.Common;
+using Binner.LicensedProvider;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

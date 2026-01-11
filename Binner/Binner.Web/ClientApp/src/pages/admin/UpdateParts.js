@@ -3,10 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { Segment, Breadcrumb, Icon } from "semantic-ui-react";
 import { FormHeader } from "../../components/FormHeader";
+import { getSubscriptionLevel, handleSubscriptionLink } from "../../common/authentication";
+import { SubscriptionLevels } from "../../common/Types";
 
 export const UpdateParts = () => {
   const { t } = useTranslation();
 	const navigate = useNavigate();
+  const subscriptionLevel = getSubscriptionLevel();
   return (
     <div>
       <Breadcrumb>

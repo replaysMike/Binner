@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using Binner.LicensedProvider;
 
 namespace Binner.Web.Controllers
 {

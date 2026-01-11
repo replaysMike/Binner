@@ -1,9 +1,9 @@
 ﻿using Binner.Common.Integrations;
+using Binner.LicensedProvider.Services;
 using Binner.Model;
 using Binner.Model.Integrations.DigiKey;
 using Binner.Model.Responses;
 using Binner.Services;
-using Binner.Services.Authentication;
 using Binner.Services.Integrations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

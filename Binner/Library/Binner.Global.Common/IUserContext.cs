@@ -38,6 +38,11 @@
         bool IsAdmin { get; set; }
 
         /// <summary>
+        /// Get the subscription level of the user
+        /// </summary>
+        public SubscriptionLevel SubscriptionLevel { get; }
+
+        /// <summary>
         /// Custom properties for the user
         /// </summary>
         IDictionary<string, object?> Properties { get; set; }
