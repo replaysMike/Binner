@@ -4,6 +4,7 @@ using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider;
 using Binner.Model;
+using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -1864,6 +1865,55 @@ INNER JOIN (
 
                 project = _mapper.Map(entity, project);
                 return project;
+            }
+            return null;
+        }
+
+        public async Task<Part?> IncrementQuantityAsync(PartQuantityRequest request, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            if (request.Quantity <= 0) throw new ArgumentOutOfRangeException("Quantity");
+            if (request.PartId == null && string.IsNullOrEmpty(request.PartNumber)) throw new ArgumentException("Either PartId or PartNumber must be specified.");
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Parts
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .WhereIf(request.PartId > 0, x => x.PartId == request.PartId)
+                .WhereIf(request.PartId > 0, x => x.PartNumber == request.PartNumber)
+                .FirstOrDefaultAsync();
+            if (entity != null)
+            {
+                entity.Quantity += request.Quantity;
+                EnforceIntegrityModify(entity, userContext);
+
+                await context.SaveChangesAsync();
+                return _mapper.Map<Part>(entity);
+            }
+            return null;
+        }
+
+        public async Task<Part?> DecrementQuantityAsync(PartQuantityRequest request, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            if (request.Quantity <= 0) throw new ArgumentOutOfRangeException("Quantity");
+            if (request.PartId == null && string.IsNullOrEmpty(request.PartNumber)) throw new ArgumentException("Either PartId or PartNumber must be specified.");
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Parts
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .WhereIf(request.PartId > 0, x => x.PartId == request.PartId)
+                .WhereIf(request.PartId > 0, x => x.PartNumber == request.PartNumber)
+                .FirstOrDefaultAsync();
+            if (entity != null)
+            {
+                if (entity.Quantity - request.Quantity < 0) throw new ArgumentException($"Not enough quantity to fulfill request. Existing quantity: {entity.Quantity}, Requested deduction: {entity.Quantity}");
+                entity.Quantity -= request.Quantity;
+                EnforceIntegrityModify(entity, userContext);
+
+                await context.SaveChangesAsync();
+                return _mapper.Map<Part>(entity);
             }
             return null;
         }

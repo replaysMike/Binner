@@ -1,6 +1,7 @@
-﻿using System.Linq.Expressions;
-using Binner.Global.Common;
+﻿using Binner.Global.Common;
+using Binner.Model.Requests;
 using Binner.Model.Responses;
+using System.Linq.Expressions;
 
 namespace Binner.Model
 {
@@ -245,6 +246,22 @@ namespace Binner.Model
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
         Task<bool> DeleteProjectAsync(Project project, IUserContext? userContext);
+
+        /// <summary>
+        /// Increment the quantity of a part by a specified amount
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<Part?> IncrementQuantityAsync(PartQuantityRequest request, IUserContext? userContext);
+
+        /// <summary>
+        /// Decrement the quantity of a part by a specified amount
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<Part?> DecrementQuantityAsync(PartQuantityRequest request, IUserContext? userContext);
 
         /// <summary>
         /// Get total parts count including quantities

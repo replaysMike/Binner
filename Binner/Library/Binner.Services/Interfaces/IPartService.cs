@@ -207,6 +207,20 @@ namespace Binner.Services
         /// <param name="partSupplier"></param>
         /// <returns></returns>
         Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier);
+
+        /// <summary>
+        /// Increment the quantity of a part by a given amount
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Part?> IncrementQuantityAsync(PartQuantityRequest request);
+
+        /// <summary>
+        /// Decrement the quantity of a part by a given amount
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Part?> DecrementQuantityAsync(PartQuantityRequest request);
     }
 }
  

@@ -285,5 +285,15 @@ namespace Binner.Services
         {
             return await _externalBarcodeInfoService.GetBarcodeInfoAsync(barcode, barcodeType);
         }
+
+        public async Task<Part?> IncrementQuantityAsync(PartQuantityRequest request)
+        {
+            return await _storageProvider.IncrementQuantityAsync(request, _requestContext.GetUserContext());
+        }
+
+        public async Task<Part?> DecrementQuantity(PartQuantityRequest request)
+        {
+            return await _storageProvider.DecrementQuantityAsync(request, _requestContext.GetUserContext());
+        }
     }
 }
