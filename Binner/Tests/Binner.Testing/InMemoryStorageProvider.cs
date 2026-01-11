@@ -1,6 +1,7 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Model.Requests;
 using Binner.Model.Responses;
 using System.Linq.Expressions;
 
@@ -610,6 +611,21 @@ namespace Binner.Testing
         public Task<bool> PingDatabaseAsync()
         {
             return Task.FromResult(true);
+        }
+
+        public Task<Part?> UpdateQuantityAsync(PartQuantityRequest request, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Part?> IncrementQuantityAsync(PartQuantityRequest request, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Part?> DecrementQuantityAsync(PartQuantityRequest request, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
         }
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

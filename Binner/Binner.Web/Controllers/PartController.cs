@@ -115,6 +115,60 @@ namespace Binner.Web.Controllers
             }
         }
 
+        [HttpPost("quantity")]
+        public async Task<IActionResult> UpdateQuantity(PartQuantityRequest request)
+        {
+            try
+            {
+                var part = await _partService.UpdateQuantityAsync(request);
+                if (part != null)
+                {
+                    return Ok(part);
+                }
+                return NotFound();
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
+        [HttpPost("quantity/increment")]
+        public async Task<IActionResult> IncrementQuantity(PartQuantityRequest request)
+        {
+            try
+            {
+                var part = await _partService.IncrementQuantityAsync(request);
+                if (part != null)
+                {
+                    return Ok(part);
+                }
+                return NotFound();
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
+        [HttpPost("quantity/decrement")]
+        public async Task<IActionResult> DecrementQuantity(PartQuantityRequest request)
+        {
+            try
+            {
+                var part = await _partService.DecrementQuantityAsync(request);
+                if (part != null)
+                {
+                    return Ok(part);
+                }
+                return NotFound();
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
         /// <summary>
         /// Create a new part
         /// </summary>

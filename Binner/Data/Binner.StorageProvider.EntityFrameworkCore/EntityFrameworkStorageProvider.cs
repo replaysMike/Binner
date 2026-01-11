@@ -1869,6 +1869,31 @@ INNER JOIN (
             return null;
         }
 
+        public async Task<Part?> UpdateQuantityAsync(PartQuantityRequest request, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            if (request.PartId == null && string.IsNullOrEmpty(request.PartNumber)) throw new ArgumentException("Either PartId or PartNumber must be specified.");
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Parts
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .WhereIf(request.PartId > 0, x => x.PartId == request.PartId)
+                .WhereIf(request.PartId > 0, x => x.PartNumber == request.PartNumber)
+                .FirstOrDefaultAsync();
+            if (entity != null)
+            {
+                // can be negative value so make sure we can't have negative stock
+                if (entity.Quantity + request.Quantity < 0) throw new ArgumentException($"Not enough quantity to fulfill request. Existing quantity: {entity.Quantity}, Requested deduction: {entity.Quantity}");
+                entity.Quantity += request.Quantity;
+                EnforceIntegrityModify(entity, userContext);
+
+                await context.SaveChangesAsync();
+                return _mapper.Map<Part>(entity);
+            }
+            return null;
+        }
+
         public async Task<Part?> IncrementQuantityAsync(PartQuantityRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();

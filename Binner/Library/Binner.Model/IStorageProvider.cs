@@ -248,6 +248,14 @@ namespace Binner.Model
         Task<bool> DeleteProjectAsync(Project project, IUserContext? userContext);
 
         /// <summary>
+        /// Update the quantity of a part by a specified amount (negative values ok)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<Part?> UpdateQuantityAsync(PartQuantityRequest request, IUserContext? userContext);
+
+        /// <summary>
         /// Increment the quantity of a part by a specified amount
         /// </summary>
         /// <param name="request"></param>

@@ -209,6 +209,13 @@ namespace Binner.Services
         Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier);
 
         /// <summary>
+        /// Update the quantity of a part by a given amount
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Part?> UpdateQuantityAsync(PartQuantityRequest request);
+
+        /// <summary>
         /// Increment the quantity of a part by a given amount
         /// </summary>
         /// <param name="request"></param>
