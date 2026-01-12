@@ -24,6 +24,10 @@ cache:
 - C:\projects\binner\Binner\Binner.Web\ClientApp\node_modules
 - '%APPDATA%\npm-cache'
 - packages -> **\packages.config
+- '%userprofile%\.nuget\packages -> appveyor.yml, **\*.csproj'
+- node_modules -> package.json
+- '%LocalAppData%\\npm-cache'
+- '%AppData%\npm\node_modules'
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #on_finish:
