@@ -135,7 +135,7 @@ more text', 'location', 1, '2022-01-01 00:00:00', '2022-01-01 00:00:00');");
             Assert.That(result.RowsImportedByTable["Projects"], Is.EqualTo(5));
             Assert.That(result.RowsImportedByTable["PartTypes"], Is.EqualTo(2));
             Assert.That(db.Projects.Count, Is.EqualTo(5));
-            Assert.That(db.PartTypes.Count, Is.EqualTo(6));
+            Assert.That(db.PartTypes.Count, Is.EqualTo(9));
         }
 
         [Test]

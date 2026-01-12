@@ -1,5 +1,4 @@
 ﻿using Binner.Services;
-using Binner.Testing;
 using NUnit.Framework;
 
 namespace Binner.Common.Tests.Services
@@ -40,7 +39,7 @@ namespace Binner.Common.Tests.Services
             Assert.That(part.Keywords.Count, Is.EqualTo(6));
             Assert.That(part.Cost, Is.EqualTo(0.477));
             Assert.That(part.Currency, Is.EqualTo("USD"));
-            Assert.That(part.PartType, Is.EqualTo("IC"));
+            Assert.That(part.PartType, Is.EqualTo("ComparatorIc"));
             Assert.That(part.QuantityAvailable, Is.EqualTo(6052));
         }
 

@@ -205,8 +205,11 @@ namespace Binner.Services.Integrations.PartInformation
             foreach (var part in response.Parts)
             {
                 var partType = await DeterminePartTypeAsync(part);
-                part.PartType = partType?.Name ?? string.Empty;
-                part.PartTypeId = partType?.PartTypeId ?? 0;
+                if (partType != null)
+                {
+                    part.PartType = partType.Name ?? string.Empty;
+                    part.PartTypeId = partType.PartTypeId;
+                }
                 part.Keywords = DetermineKeywordsFromPart(part, partTypes);
             }
         }

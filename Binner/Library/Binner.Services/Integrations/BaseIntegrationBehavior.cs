@@ -120,6 +120,13 @@ namespace Binner.Services.Integrations
                     continue;
                 var addPart = false;
 
+                // do we already have an exact name match?
+                if (!string.IsNullOrEmpty(part.PartType) && part.PartType.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    addPart = true;
+                    defaultPriority += 3;
+                }
+
                 // check the categories on the part. if it matches on category, base the priority on the deepest category as highest
                 var nameResult = categories.Where(x => x.Name.Contains(partType.Name, ComparisonType)).FirstOrDefault();
                 if(nameResult != null)
@@ -141,6 +148,7 @@ namespace Binner.Services.Integrations
                 if (info != null && !string.IsNullOrEmpty(info.Keywords))
                     keywords.AddRange(info.Keywords.Split([',']));
                 keywords = keywords.Distinct().ToList();
+
                 foreach (var keyword in keywords)
                 {
                     if (part.Description?.Contains(keyword, ComparisonType) == true)

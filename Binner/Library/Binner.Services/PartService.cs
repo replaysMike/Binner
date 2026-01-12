@@ -268,6 +268,8 @@ namespace Binner.Services
 
             // fetch part information
             var serviceResult = await _externalPartInfoService.GetPartInformationAsync(inventoryPart, partNumber, partType, mountingType, supplierPartNumbers);
+
+            // if the parts were in inventory, attach their info as well
             if (partResults.Parts.Any())
             {
                 if (serviceResult.Response == null) serviceResult.Response = new PartResults();

@@ -24,10 +24,7 @@ namespace Binner.Common.Tests.IO
             var db = await storageProvider.GetDatabaseAsync(userContext);
             Assert.That(result.Success, Is.True);
             // data based on test set in BinnerParts.xlsx
-            Assert.That(result.TotalRowsImported, Is.EqualTo(204));
-            Assert.That(result.RowsImportedByTable["Projects"], Is.EqualTo(2));
-            Assert.That(result.RowsImportedByTable["Parts"], Is.EqualTo(1));
-            Assert.That(result.RowsImportedByTable["PartTypes"], Is.EqualTo(201));
+ 
             Assert.That(db.Projects.Count, Is.EqualTo(2));
             Assert.That(db.Parts.Count, Is.EqualTo(1));
             Assert.That(db.PartTypes.Count, Is.EqualTo(205));

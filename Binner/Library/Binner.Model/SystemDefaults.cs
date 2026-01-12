@@ -89,7 +89,7 @@
             [PartTypeInfo("A comparator IC is a type of integrated circuit (IC) that compares two analog voltage or current signals and produces a digital output indicating which signal is larger.", "U", "Comparator")]
             [ParentPartType(DefaultPartTypes.IC)]
             ComparatorIc,
-            [PartTypeInfo("A counter IC is a digital integrated circuit that increments or decrements a value based on a clock signal or external events.", "U", "Comparator")]
+            [PartTypeInfo("A counter IC is a digital integrated circuit that increments or decrements a value based on a clock signal or external events.", "U", "Counter")]
             [ParentPartType(DefaultPartTypes.IC)]
             CounterIc,
             [PartTypeInfo("An electronics divider IC is a digital logic integrated circuit that divides an input signal's frequency or count by a specific ratio.", "U", "")]

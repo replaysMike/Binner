@@ -251,7 +251,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
                         PackageType = packageType,
                         MountingTypeId = (int)mountingTypeId,
-                        PartType = "",
+                        PartType = DetectPartType(part),
                         ProductUrl = productUrl,
                         Status = productStatus,
                         QuantityAvailable = quantityAvailable,
@@ -264,6 +264,31 @@ namespace Binner.Services.Integrations.ResponseProcessors
 
 
             return Task.CompletedTask;
+        }
+
+        private string DetectPartType(TmeProduct part)
+        {
+            if (string.IsNullOrEmpty(part.Description)) return string.Empty;
+            var comparison = StringComparison.InvariantCultureIgnoreCase;
+
+            // todo: write tests and fill
+            if (part.Description.Contains("Sensor: humidity;", comparison))
+            {
+                return "HumiditySensor";
+            }
+            if (part.Description.Contains("IC: comparator;", comparison))
+            {
+                return "ComparatorIc";
+            }
+            if (part.Description.Contains("IC: voltage regulator;", comparison))
+            {
+                return "VoltageRegulatorIc";
+            }
+            if (part.Description.Contains("IC:", comparison))
+            {
+                return "IC";
+            }
+            return string.Empty;
         }
     }
 }

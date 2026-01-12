@@ -55,10 +55,13 @@ namespace Binner.Testing
                 });
                 _projects.Add(1, new Project { Name = "Test Project", ProjectId = 1 });
             }
-            _partTypes.Add(1, new PartType { Name = "IC", PartTypeId = 1 });
+            _partTypes.Add(1, new PartType { Name = "IC", PartTypeId = 14 });
             _partTypes.Add(2, new PartType { Name = "Resistor", PartTypeId = 2 });
             _partTypes.Add(3, new PartType { Name = "Capacitor", PartTypeId = 3 });
             _partTypes.Add(4, new PartType { Name = "Inductor", PartTypeId = 4 });
+            _partTypes.Add(5, new PartType { Name = "ComparatorIc", PartTypeId = 31 });
+            _partTypes.Add(6, new PartType { Name = "CounterIc", PartTypeId = 32 });
+            _partTypes.Add(7, new PartType { Name = "OpAmp", PartTypeId = 19 });
 
             if (_parts.Any())
             {
