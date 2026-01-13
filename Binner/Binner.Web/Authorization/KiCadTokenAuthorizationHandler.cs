@@ -20,9 +20,9 @@ namespace Binner.Web.Authorization
         private readonly ILogger<KiCadTokenAuthorizationHandler> _logger;
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IRequestContextAccessor _requestContext;
-        private readonly IAuthenticationService _authenticationService;
+        private readonly IAuthenticationService<BinnerContext> _authenticationService;
 
-        public KiCadTokenAuthorizationHandler(ILogger<KiCadTokenAuthorizationHandler> logger, IDbContextFactory<BinnerContext> contextFactory, IRequestContextAccessor requestContext, IAuthenticationService authenticationService)
+        public KiCadTokenAuthorizationHandler(ILogger<KiCadTokenAuthorizationHandler> logger, IDbContextFactory<BinnerContext> contextFactory, IRequestContextAccessor requestContext, IAuthenticationService<BinnerContext> authenticationService)
         {
             _logger = logger;
             _contextFactory = contextFactory;

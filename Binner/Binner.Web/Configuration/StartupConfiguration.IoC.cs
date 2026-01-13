@@ -136,7 +136,7 @@ namespace Binner.Web.Configuration
             services.AddTransient<IStoredFileService, StoredFileService>();
             services.AddTransient<IUserService<User>, UserService<User>>();
             services.AddTransient<IOrganizationService<Organization>, OrganizationService<Organization>>();
-            services.AddTransient<IAuthenticationService, AuthenticationService>();
+            services.AddTransient<IAuthenticationService<BinnerContext>, AuthenticationService<BinnerContext>>();
             services.AddTransient<IAccountService<Account>, AccountService<Account>>();
             services.AddTransient<IAdminService, AdminService>();
             services.AddTransient<IPrintService, PrintService>();

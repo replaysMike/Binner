@@ -1,8 +1,10 @@
-﻿using Binner.Services;
+﻿using Binner.Data;
 using Binner.Global.Common;
+using Binner.LicensedProvider;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Binner.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +14,6 @@ using System;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Binner.LicensedProvider;
 
 namespace Binner.Web.Controllers
 {
@@ -23,11 +24,11 @@ namespace Binner.Web.Controllers
     public partial class AuthenticationController : ControllerBase
     {
         private readonly ILogger<AuthenticationController> _logger;
-        private readonly IAuthenticationService _authenticationService;
+        private readonly IAuthenticationService<BinnerContext> _authenticationService;
         private readonly AuthenticationConfiguration _configuration;
         private readonly IRequestContextAccessor _requestContextAccessor;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, AuthenticationConfiguration configuration, IRequestContextAccessor requestContextAccessor)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService<BinnerContext> authenticationService, AuthenticationConfiguration configuration, IRequestContextAccessor requestContextAccessor)
         {
             _logger = logger;
             _authenticationService = authenticationService;
