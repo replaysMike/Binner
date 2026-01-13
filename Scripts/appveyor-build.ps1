@@ -224,10 +224,10 @@ $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds,
 $sw = [Diagnostics.Stopwatch]::StartNew()
   Write-Host "Uploading Artifacts" -ForegroundColor green
   if ($env:BUILDTARGETS.Contains("#win-x64#")) {
-    Get-ChildItem .\Binner\BinnerInstaller\*.exe | % { Push-AppveyorArtifact $_.FullName -DeploymentName "Binner" }
+    Get-ChildItem .\Binner\BinnerInstaller\*.exe | % { Push-AppveyorArtifact $_.FullName }
   }
 
   # rename these artifacts to include the build version number
-  Get-ChildItem .\*.targz -recurse | % { Push-AppveyorArtifact $_.FullName -FileName "$($_.Basename)-$env:APPVEYOR_BUILD_VERSION.tar.gz" -DeploymentName "Binner" }
+  Get-ChildItem .\*.targz -recurse | % { Push-AppveyorArtifact $_.FullName -FileName "$($_.Basename)-$env:APPVEYOR_BUILD_VERSION.tar.gz" }
 $sw.Stop()
 $sw.Elapsed | Select-Object @{n = "Elapsed"; e = { $_.Minutes, "m ", $_.Seconds, "s ", $_.Milliseconds, "ms " -join "" } }
