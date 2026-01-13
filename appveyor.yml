@@ -37,7 +37,7 @@ build_script:
     .\Scripts\appveyor-build.ps1
 test: off
 artifacts:
-  - path: **\*.gz
+  - path: '**\*.tar.gz'
     name: Installers
   - path: .\Binner\BinnerInstaller\*.exe
     name: WindowsInstaller
