@@ -1,5 +1,6 @@
 ﻿using Binner.Common;
 using Binner.Common.Security;
+using Binner.LicensedProvider.Services;
 using Binner.Model.Configuration;
 using NLog;
 using System.Security.Cryptography.X509Certificates;
@@ -95,7 +96,7 @@ namespace Binner.Services.Security
                 if (string.IsNullOrEmpty(webHostConfig.SslCertificate))
                 {
                     webHostConfig.SslCertificate = certificateFilename;
-                    var settingsService = new SettingsService();
+                    var settingsService = new SettingsHandlerService();
                     settingsService.SaveSettingsAsAsync(webHostConfig, nameof(WebHostServiceConfiguration), _configFile, true);
                 }
 

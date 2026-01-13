@@ -1,29 +1,20 @@
-﻿using AutoMapper;
-using Binner.Common;
-using Binner.Data;
+﻿using Binner.Data;
 using Binner.Global.Common;
 using Binner.LicensedProvider.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Text;
 
 namespace Binner.Services
 {
     public class SettingsService : ISettingsService
     {
-        private const string BackupFilenameExtension = ".bak";
-
         private readonly ILogger<SettingsService>? _logger;
         private readonly IStorageProvider? _storageProvider;
         private readonly IDbContextFactory<BinnerContext>? _contextFactory;
         private readonly IRequestContextAccessor? _requestContext;
         private readonly ISettingsHandlerService _settingsHandlerService;
-
-        public SettingsService() { }
 
         public SettingsService(ILogger<SettingsService> logger, IStorageProvider storageProvider, IDbContextFactory<BinnerContext> contextFactory, IRequestContextAccessor requestContextAccessor, ISettingsHandlerService settingsHandlerService)
         {
