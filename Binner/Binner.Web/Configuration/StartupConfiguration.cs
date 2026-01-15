@@ -46,6 +46,7 @@ namespace Binner.Web.Configuration
             services.AddSingleton(authenticationConfiguration);
             services.AddSingleton(storageProviderConfiguration);
             services.AddSingleton(binnerConfig);
+            services.AddHostedService<Controllers.RefCleanupService>();
 
             return configuration;
         }
