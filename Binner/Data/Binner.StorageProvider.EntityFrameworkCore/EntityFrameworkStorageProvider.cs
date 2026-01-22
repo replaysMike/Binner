@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using AngleSharp.Common;
+using AngleSharp.Dom;
 using AutoMapper;
 using Binner.Data;
 using Binner.Global.Common;
@@ -6,9 +7,12 @@ using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Binner.Model.Swarm;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System.Linq.Expressions;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using TypeSupport.Extensions;
 using DataModel = Binner.Data.Model;
@@ -1420,7 +1424,200 @@ INNER JOIN (
             return entitiesQueryable;
         }
 
+        private IQueryable<DataModel.Part> GetPartsQueryable(IBinnerContext context, PaginatedFilteredRequest request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            var stringCompare = StringComparison.InvariantCultureIgnoreCase;
+            var partNames = request.PartNames?.Split(',').ToList() ?? new List<string>();
+            var manufacturers = request.Manufacturers?.Split(',').ToList() ?? new List<string>();
+            var mountingTypes = request.MountingTypes?.Split(',').ToList() ?? new List<string>();
+            var partTypes = request.PartTypes?.Split(',').ToList() ?? new List<string>();
+            var locations = request.Locations?.Split(',').ToList() ?? new List<string>();
+            var binNumbers = request.BinNumbers?.Split(',').ToList() ?? new List<string>();
+            var binNumbers2 = request.BinNumbers2?.Split(',').ToList() ?? new List<string>();
+            var keywords = request.Keywords?.Split(',').ToList() ?? new List<string>();
+
+            var entitiesQueryable = context.Parts
+                .Include(x => x.PartType)
+                .Include(x => x.PartSuppliers)
+                .Where(x => x.OrganizationId == userContext.OrganizationId);
+            var orderingApplied = false;
+
+            // by default, exclude all values not included by a filter
+            var predicate = PredicateBuilder.False<DataModel.Part>();
+
+            // if no filters are specified, show all parts by default
+            if (!request.PartNames.SafeAny()
+                && !request.BinNumbers.SafeAny()
+                && !request.BinNumbers2.SafeAny()
+                && !request.Keywords.SafeAny()
+                && !request.Locations.SafeAny()
+                && !request.Manufacturers.SafeAny()
+                && !request.MountingTypes.SafeAny()
+                && !request.PartTypes.SafeAny())
+            {
+                predicate = PredicateBuilder.True<DataModel.Part>();
+            }
+                
+
+            var matchingPartTypes = new List<CachedPartTypeResponse>();
+            if (partTypes.Any())
+            {
+                foreach (var partTypeId in partTypes)
+                    if(IsNumeric(partTypeId)) matchingPartTypes.AddRange(GetPartTypesFromId(int.Parse(partTypeId), userContext));
+
+                foreach (var childPartType in matchingPartTypes)
+                {
+                    predicate = predicate.OR(x => x.PartTypeId == childPartType.PartTypeId);
+                }
+                // apply the predicate
+                entitiesQueryable = entitiesQueryable.Where(predicate);
+            }
+
+            if (partNames.Any())
+            {
+                foreach(var partName in partNames)
+                {
+                    //entitiesQueryable = entitiesQueryable.Where(x => EF.Functions.Like(x.PartNumber, '%' + partName + '%'));
+                    predicate = predicate.OR(x => EF.Functions.Like(x.PartNumber, '%' + partName + '%'));
+                }
+            }
+
+            if (manufacturers.Any())
+            {
+                foreach (var manufacturer in manufacturers)
+                {
+                    //entitiesQueryable = entitiesQueryable.Where(x => EF.Functions.Like(x.Manufacturer, '%' + manufacturer + '%'));
+                    predicate = predicate.OR(x => EF.Functions.Like(x.Manufacturer, '%' + manufacturer + '%'));
+                }
+            }
+
+            if (mountingTypes.Any())
+            {
+                foreach (var mountingType in mountingTypes)
+                {
+                    if (Enum.TryParse<MountingType>(mountingType, out var mountingTypeId))
+                    {
+                        //entitiesQueryable = entitiesQueryable.Where(x => x.MountingTypeId == (int)mountingTypeId);
+                        predicate = predicate.OR(x => x.MountingTypeId == (int)mountingTypeId);
+                    }
+                }
+            }
+
+            if (locations.Any())
+            {
+                foreach (var location in locations)
+                {
+                    predicate = predicate.OR(x => EF.Functions.Like(x.Location, '%' + location + '%'));
+                }
+            }
+
+            if (binNumbers.Any())
+            {
+                foreach (var binNumber in binNumbers)
+                {
+                    predicate = predicate.OR(x => x.BinNumber == binNumber);
+                }
+            }
+
+            if (binNumbers2.Any())
+            {
+                foreach (var binNumber2 in binNumbers2)
+                {
+                    predicate = predicate.OR(x => x.BinNumber2 == binNumber2);
+                }
+            }
+
+
+            // finally, do any keyword filtering
+            if (keywords.Any())
+            {
+                foreach (var keyword in keywords)
+                {
+                    predicate = predicate.OR(x =>
+                        x.ShortId == keyword
+                        || EF.Functions.Like(x.PartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.ManufacturerPartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.Description, '%' + keyword + '%')
+                        || EF.Functions.Like(x.Manufacturer, '%' + keyword + '%')
+                        || EF.Functions.Like(x.Keywords, '%' + keyword + '%')
+                        || EF.Functions.Like(x.DigiKeyPartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.MouserPartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.ArrowPartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.TmePartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.Element14PartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.Location, '%' + keyword + '%')
+                        || EF.Functions.Like(x.BinNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.BinNumber2, '%' + keyword + '%')
+                        || EF.Functions.Like(x.PartType.Name, '%' + keyword + '%')
+                        || EF.Functions.Like(x.SymbolName, '%' + keyword + '%')
+                        || EF.Functions.Like(x.FootprintName, '%' + keyword + '%')
+                        || EF.Functions.Like(x.ExtensionValue1, '%' + keyword + '%')
+                        || EF.Functions.Like(x.ExtensionValue2, '%' + keyword + '%')
+                        || x.PartSuppliers.Any(y => EF.Functions.Like(y.SupplierPartNumber, '%' + keyword + '%'))
+                    );
+                }
+            }
+
+            // apply the predicate
+            entitiesQueryable = entitiesQueryable.Where(predicate);
+
+            if (additionalPredicate != null)
+                entitiesQueryable = entitiesQueryable.Where(additionalPredicate);
+
+            // apply specified sorting
+            if (!orderingApplied)
+            {
+                if (request.Direction == SortDirection.Descending)
+                    entitiesQueryable = entitiesQueryable.OrderByDescending(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+                else
+                    entitiesQueryable = entitiesQueryable.OrderBy(p => EF.Property<object>(p, request.OrderBy ?? "DateCreatedUtc"));
+            }
+
+            return entitiesQueryable;
+        }
+
         public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedRequest request, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            if (!string.IsNullOrEmpty(request.OrderBy))
+            {
+                // ensure camel case names, EF properties are case sensitive
+                request.OrderBy = request.OrderBy.UcFirst();
+            }
+
+            var entitiesQueryable = GetPartsQueryable(context, request, userContext);
+
+            var pageRecords = (request.Page - 1) * request.Results;
+            var totalParts = await entitiesQueryable.CountAsync();
+
+            List<DataModel.Part> entities;
+            try
+            {
+                entities = await entitiesQueryable
+                    .Skip(pageRecords)
+                    .Take(request.Results)
+                    .ToListAsync();
+                var parts = _mapper.Map<ICollection<Part>>(entities);
+                if (parts.Any())
+                {
+                    foreach (var part in parts)
+                    {
+                        part.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Inventory, part.PartId, userContext);
+                    }
+                }
+                return new PaginatedResponse<Part>(totalParts, request.Results, request.Page, parts);
+            }
+            catch (InvalidOperationException)
+            {
+                // return empty result set, unknown sort by column
+                return new PaginatedResponse<Part>(totalParts, request.Results, request.Page, new List<Part>());
+            }
+        }
+
+        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             if (request == null) throw new ArgumentNullException(nameof(request));
@@ -1598,9 +1795,9 @@ INNER JOIN (
             try
             {
 #if BINNERIO
-            // fix for below error.
-            var result = await context.Database.SqlQuery<double>($"SELECT COALESCE(SUM(p.Cost * CAST(p.Quantity AS float)), 0.0) as Value FROM dbo.Parts AS p WHERE p.OrganizationId = {userContext.OrganizationId}")
-                .FirstOrDefaultAsync();
+                // fix for below error.
+                var result = await context.Database.SqlQuery<double>($"SELECT COALESCE(SUM(p.Cost * CAST(p.Quantity AS float)), 0.0) as Value FROM dbo.Parts AS p WHERE p.OrganizationId = {userContext.OrganizationId}")
+                    .FirstOrDefaultAsync();
 #else
                 // when using SqlServer it generates an error: Unable to cast object of type 'System.Double' to type 'System.Decimal'.
                 var result = await context.Parts
@@ -2391,6 +2588,17 @@ INNER JOIN (
                 ((DataModel.IOptionalUserData)entity).OrganizationId = userContext.OrganizationId;
             }
             entity.DateModifiedUtc = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Returns true if string is all digits
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        private bool IsNumeric(string str)
+        {
+            if (string.IsNullOrEmpty(str)) return false;
+            return str.All(x => Char.IsDigit(x));
         }
 
         public void Dispose()

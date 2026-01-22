@@ -2,6 +2,7 @@
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Integrations.DigiKey;
+using Microsoft.Extensions.Logging;
 using System.Data;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
 using V4 = Binner.Model.Integrations.DigiKey.V4;
@@ -14,8 +15,8 @@ namespace Binner.Services.Integrations.Barcode
         protected readonly IIntegrationApiFactory _integrationApiFactory;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public DigiKeyBarcodeInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService)
-            : base(storageProvider, requestContextAccessor)
+        public DigiKeyBarcodeInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;

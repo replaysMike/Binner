@@ -4,6 +4,7 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Integrations.DigiKey;
 using Binner.Model.Requests;
+using Microsoft.Extensions.Logging;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
 using V4 = Binner.Model.Integrations.DigiKey.V4;
 
@@ -16,8 +17,8 @@ namespace Binner.Services.Integrations.Categories
         protected readonly IMapper _mapper;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public DigiKeyExternalCategoriesService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IMapper mapper, IUserConfigurationService userConfigurationService)
-            : base(storageProvider, requestContextAccessor)
+        public DigiKeyExternalCategoriesService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IMapper mapper, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;

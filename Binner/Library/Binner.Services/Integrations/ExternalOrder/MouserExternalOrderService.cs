@@ -7,6 +7,7 @@ using Binner.Model.Integrations;
 using Binner.Model.Integrations.Mouser;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Microsoft.Extensions.Logging;
 
 namespace Binner.Services.Integrations.ExternalOrder
 {
@@ -20,8 +21,8 @@ namespace Binner.Services.Integrations.ExternalOrder
         protected readonly IIntegrationApiFactory _integrationApiFactory;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public MouserExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService)
-            : base(storageProvider, requestContextAccessor)
+        public MouserExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;

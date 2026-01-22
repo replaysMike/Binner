@@ -1,12 +1,13 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
+using Microsoft.Extensions.Logging;
 
 namespace Binner.Services.Integrations.Categories
 {
     public class ApiExternalCategoriesServiceBase : BaseIntegrationBehavior
     {
-        public ApiExternalCategoriesServiceBase(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
-            : base(storageProvider, requestContextAccessor)
+        public ApiExternalCategoriesServiceBase(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
+            : base(logger, storageProvider, requestContextAccessor)
         {
         }
     }

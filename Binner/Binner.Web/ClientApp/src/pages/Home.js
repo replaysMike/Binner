@@ -164,7 +164,13 @@ export function Home() {
                 </Statistic.Value>
                 <Statistic.Label>{t('page.home.tools', "Tools")}</Statistic.Label>
               </Statistic>
-              <Statistic onClick={(e) => route(e, "/settings")} style={{ cursor: "pointer" }}>
+              <Statistic onClick={(e) => route(e, "/manage")} style={{ cursor: "pointer" }}>
+                <Statistic.Value>
+                  <Icon name="edit" />
+                </Statistic.Value>
+                <Statistic.Label>{t('page.home.manage', "Manage")}</Statistic.Label>
+              </Statistic>
+              <Statistic onClick={(e) => route(e, "/manage")} style={{ cursor: "pointer" }}>
                 <Statistic.Value>
                   <Icon name="cog" />
                 </Statistic.Value>
