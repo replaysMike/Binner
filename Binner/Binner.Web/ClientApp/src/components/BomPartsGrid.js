@@ -4,7 +4,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { createMedia } from "@artsy/fresnel";
 import { Button, Checkbox, Dropdown, Pagination, Popup, Image, Icon, Form, TextArea } from "semantic-ui-react";
 import { Clipboard } from "./Clipboard";
-import MaterialReactTable from "material-react-table";
+import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import _ from "underscore";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -30,8 +30,8 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function BomPartsGrid({
   loading = true,
-  columns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,imageUrl,reference,currency,manufacturer,supplierPartNumber,packageType,mountingType,datasheetUrl,productUrl,selected,location,binNumber,binNumber2,extensionValue1,extensionValue2,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,element14PartNumber,footprintName,symbolName,keywords,customFields",
-  defaultVisibleColumns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,datasheetUrl,productUrl,selected,location,binNumber,binNumber2",
+  columns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,imageUrl,reference,currency,manufacturer,supplierPartNumber,packageType,mountingType,datasheetUrl,productUrl,location,binNumber,binNumber2,extensionValue1,extensionValue2,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,footprintName,symbolName,keywords,customFields",
+  defaultVisibleColumns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,datasheetUrl,productUrl,location,binNumber,binNumber2",
   page = 1,
   totalPages = 1,
   totalRecords = 0,
@@ -74,6 +74,7 @@ export default function BomPartsGrid({
   const [columnsVisibleArray, setColumnsVisibleArray] = useState(defaultVisibleColumns.split(','));
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
   const [sorting, setSorting] = useState([]);
+  const [rowSelection, setRowSelection] = useState({});
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setIsLoading(true);
@@ -122,10 +123,12 @@ export default function BomPartsGrid({
     }
   };
 
-  const handleChecked = (e, part) => {
-    part.selected = !part.selected;
-    if (rest.onCheckedChange) rest.onCheckedChange(e, part);
-  };
+  useEffect(() => {
+    // fire events when selected rows changes
+    var partIds = Object.keys(rowSelection).map(i => parseInt(i));
+    const parts = _parts.filter(p => partIds.includes(p.projectPartAssignmentId)); // important, use projectPartAssignmentId as the same part could be added multiple times
+    if (rest.onSelectedPartsChange) rest.onSelectedPartsChange(null, parts);
+  }, [rowSelection]);
 
   const handlePageSizeChange = (e, control) => {
     updatePageSize(e, control.value);
@@ -191,22 +194,10 @@ export default function BomPartsGrid({
       case "customFields":
         return 280;
       case "actions":
-        return 180;
+        return 120;
       default:
         return 180;
     }
-  };
-
-  const handleSelectAll = (e, control) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (rest.onSelectAll) rest.onSelectAll(e, control);
-  };
-
-  const handleSelectNone = (e, control) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (rest.onSelectNone) rest.onSelectNone(e, control);
   };
 
   const handleSaveColumn = async (e, control, part) => {
@@ -359,8 +350,6 @@ export default function BomPartsGrid({
         case 'arrowPartNumber':
           return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.part && row.original.part[columnName]} /> {row.original.part && row.original.part[columnName]}</span>) };
         case 'tmePartNumber':
-          return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.part && row.original.part[columnName]} /> {row.original.part && row.original.part[columnName]}</span>) };
-        case 'element14PartNumber':
           return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.part && row.original.part[columnName]} /> {row.original.part && row.original.part[columnName]}</span>) };
         case 'leadTime':
           return { ...def, Cell: ({ row }) => (<span>{row.original.part && row.original.part[columnName]}</span>) };
@@ -647,7 +636,7 @@ export default function BomPartsGrid({
           };
         case 'actions':
           return {
-            ...def, Header: <i key={key}>Select <Link onClick={handleSelectAll}>all</Link> <Link onClick={handleSelectNone}>none</Link></i>, columnDefType: 'display', Cell: ({ row }) => (
+            ...def, columnDefType: 'display', Cell: ({ row }) => (
               <>
                 {row.original.partId > 0 &&
                   <Popup
@@ -664,13 +653,6 @@ export default function BomPartsGrid({
                     content={<p>{t('button.viewProduct', "View Product")}</p>}
                     trigger={<Button circular size='mini' icon='file outline' onClick={e => handleVisitLink(e, row.original.part?.productUrl)} />}
                   />}
-                <div style={{ float: 'right', marginTop: '4px' }}>
-                  {columnsArray.includes('selected') && columnsVisibleArray.includes('selected') &&
-                    <Popup
-                      content={<p>{t('label.select', "Select")}</p>}
-                      trigger={<Checkbox toggle checked={row.original.selected} onChange={(e) => handleChecked(e, row.original)} data={row.original} />}
-                    />}
-                </div>
               </>
             )
           };
@@ -679,10 +661,10 @@ export default function BomPartsGrid({
       }
     };
 
-    const filterColumns = ['productUrl', 'datasheetUrl', 'selected'];
+    const filterColumns = ['productUrl', 'datasheetUrl'];
     const columnNames = _.filter(columnsArray, i => !filterColumns.includes(i));
     if ((columnsArray.includes('datasheetUrl') || columnsArray.includes('productUrl'))
-      && (columnsVisibleArray.includes('datasheetUrl') || columnsVisibleArray.includes('productUrl') || columnsVisibleArray.includes('selected')))
+      && (columnsVisibleArray.includes('datasheetUrl') || columnsVisibleArray.includes('productUrl')))
       columnNames.push('actions');
     const headers = columnNames.map((columnName, key) => getColumnDefinition(columnName, key));
 
@@ -734,6 +716,49 @@ export default function BomPartsGrid({
     if (rest.onPartClick) rest.onPartClick(row, row.original);
   };
 
+  const table = useMaterialReactTable({
+    columns: tableColumns,
+    data: _parts,
+    enableRowSelection: true,
+    enableMultiRowSelection: true,
+    enableBatchRowSelection: true,
+    enableGlobalFilter: false,
+    enableFilters: false,
+    enablePagination: false,
+    enableColumnOrdering: true,
+    enableColumnResizing: true,
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    enableDensityToggle: true,
+    enableHiding: true,
+    enableColumnPinning: true,
+    manualSorting: true, // enable server side sorting
+    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onColumnOrderChange: handleColumnOrderChange,
+    onSortingChange: handleSortChange,
+    getRowId: (row) => row.projectPartAssignmentId,
+    /*muiTableBodyRowProps: ({ row }) => ({
+      onClick: () => handleRowClick(row),
+      hover: false, // important for proper row highlighting on hover
+      sx: {
+        cursor: 'pointer'
+      }
+    }),*/
+    state: {
+      showProgressBars: isLoading,
+      columnVisibility,
+      columnOrder,
+      sorting,
+      rowSelection
+    },
+    initialState: {
+      density: "compact",
+      columnPinning: { left: ['mrt-row-select', 'partName'], right: ['actions'] }
+    },
+    renderBottomToolbar: (<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)
+  });
+
   return (
     <div id="partsGrid">
       <style>{mediaStyles}</style>
@@ -747,43 +772,7 @@ export default function BomPartsGrid({
         </div>
 
         <div style={{ marginTop: '5px' }}>
-          <MaterialReactTable
-            columns={tableColumns}
-            data={_parts}
-            //enableRowSelection /** disabled until I can figure out how to pin it */
-            enableGlobalFilter={false}
-            enableFilters={false}
-            enablePagination={false}
-            enableColumnOrdering
-            enableColumnResizing
-            enablePinning
-            enableStickyHeader
-            enableStickyFooter
-            enableDensityToggle
-            enableHiding
-            manualSorting
-            onColumnVisibilityChange={handleColumnVisibilityChange}
-            onColumnOrderChange={handleColumnOrderChange}
-            onSortingChange={handleSortChange}
-            state={{
-              showProgressBars: isLoading,
-              columnVisibility,
-              columnOrder,
-              sorting
-            }}
-            initialState={{
-              density: "compact",
-              columnPinning: { left: ['actions'] }
-            }}
-            renderBottomToolbar={(<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)}
-            muiTableBodyRowProps={({ row }) => ({
-              onClick: () => handleRowClick(row),
-              hover: false, // important for proper row highlighting on hover
-              sx: {
-                cursor: 'pointer'
-              }
-            })}
-          />
+          <MaterialReactTable table={table} />
         </div>
       </MediaContextProvider>
     </div>
@@ -819,9 +808,8 @@ BomPartsGrid.propTypes = {
   settingsName: PropTypes.string,
   /** Provides a function to get the default state */
   onInit: PropTypes.func,
-  onCheckedChange: PropTypes.func,
-  onSelectAll: PropTypes.func,
-  onSelectNone: PropTypes.func,
+  onSelectedPartsChange: PropTypes.func,
   onRowEditChange: PropTypes.func,
-  onSaveInlineChange: PropTypes.func
+  onSaveInlineChange: PropTypes.func,
+  defaultVisibleColumns: PropTypes.string
 };

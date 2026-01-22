@@ -599,19 +599,22 @@ export function Bom(props) {
   };
 
   /** Fired when the checkbox/toggle for a part is changed */
-  const handleSelectPartChanged = (e, part) => {
+  const handleSelectPartChanged = (e, selectedParts) => {
     // get all the parts
+    // todo: migrate away from .selected property
     const updatedProject = { ...project, parts: project.parts.map(p => {
-      if (p.projectPartAssignmentId === part.projectPartAssignmentId) {
-        return part;
+      const selectedPart = selectedParts.find(i => i.projectPartAssignmentId === p.projectPartAssignmentId);
+      if (selectedPart) {
+        selectedPart.selected = true;
+        return selectedPart;
       }
+      p.selected = false;
       return p;
     })};
-    //const updatedProject = { ...project, parts: [..._.filter(project.parts, i => i.partId !== part.partId), part] };
     setProject(updatedProject);
-    const selectedParts = handleGetSelectedParts(updatedProject.parts);
-    if (selectedParts.length > 0) {
-      if (selectedParts.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: selectedParts.length }));
+    const selected = handleGetSelectedParts(updatedProject.parts);
+    if (selected.length > 0) {
+      if (selected.length > 1) setBtnDeleteText(t("button.removeXParts", "Remove ({{checkboxesChecked}}) Parts", { checkboxesChecked: selected.length }));
       else setBtnDeleteText(t("button.removePart", "Remove Part"));
       setBtnSelectToolsDisabled(false);
     } else {
@@ -688,7 +691,7 @@ export function Bom(props) {
         <BomPartsGrid
           project={project}
           parts={_.chain(tabParts).drop((page-1) * pageSize).take(pageSize).value()}
-          onCheckedChange={handleSelectPartChanged}
+          onSelectedPartsChange={handleSelectPartChanged}
           page={page}
           totalPages={totalPagesForTab}
           totalRecords={project.parts.length}
@@ -698,8 +701,6 @@ export function Bom(props) {
           onPageSizeChange={handlePageSizeChange}
           onSortChange={handleSortChange}
           onInit={handleInit}
-          onSelectAll={handleSelectAll}
-          onSelectNone={handleSelectNone}
           onRowEditChange={handlePartsInlineChange}
           onSaveInlineChange={handleSaveInlineChange}
           name="partsGrid">

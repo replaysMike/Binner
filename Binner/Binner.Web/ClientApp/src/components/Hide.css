@@ -1,5 +1,39 @@
+.hidden.multiline {
+  overflow: hidden;  
+  height: 60px !important;
+}
+
 .hidden {
   -webkit-text-security: disc !important;
+}
+
+.token {
+  position: relative;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  line-height: 15px;
+  height: auto;
+  max-height: 100%;
+  transition: height 500ms ease-in-out;
+}
+
+.token.hidden::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  /* Height of the fade effect */
+  background-image: linear-gradient(to top,
+      /* Transparent towards the content */
+      rgba(255, 255, 255, 0.85) 0%,
+      /* Opaque at the bottom edge */
+      rgba(255, 255, 255, 0.25) 100%
+    );
+  pointer-events: none;
+  /* Allows interaction with text beneath the gradient */
 }
 
 .hider {

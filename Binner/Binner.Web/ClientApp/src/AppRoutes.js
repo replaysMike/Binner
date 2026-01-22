@@ -33,9 +33,11 @@ import { SmdResistorCodeCalculator } from "./pages/tools/SmdResistorCodeCalculat
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
 import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { KeyboardDump } from "./pages/tools/KeyboardDump";
-import { Manage } from "./pages/manage/Home";
 import { BOM } from "./pages/help/BOM";
 
+// manage
+import { Manage } from "./pages/manage/Home";
+import { BulkEditParts } from "./pages/manage/BulkEditParts";
 
 // admin
 import { Users } from "./pages/admin/users/Users";
@@ -187,6 +189,10 @@ const AppRoutes = [
   {
     path: 'manage',
     element: <Manage />
+  },
+  {
+    path: 'manage/bulkedit/parts',
+    element: <BulkEditParts />
   },
 
   /* ADMIN ROUTES */

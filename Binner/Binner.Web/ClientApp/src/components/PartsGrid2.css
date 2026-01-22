@@ -107,7 +107,7 @@
   padding-right: 2px;
 }
 
-.disabled-highlight {
-  background-color: rgb(250, 242, 242) !important;
-  border-top: 2px solid #f00 !important;
+#partsGrid tr.disabled-highlight td {
+  background-color: rgb(235, 235, 235) !important;
+  color: #666 !important;
 }

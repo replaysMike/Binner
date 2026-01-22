@@ -11,7 +11,7 @@ import { FormHeader } from "../components/FormHeader";
 import { getIcon } from "../common/partTypes";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import { TreeView } from "@mui/x-tree-view";
+import { SimpleTreeView } from "@mui/x-tree-view";
 import { TreeItem, treeItemClasses } from "@mui/x-tree-view";
 import Typography from "@mui/material/Typography";
 import Memory from "@mui/icons-material/Memory";
@@ -454,7 +454,8 @@ export function PartTypes(props) {
     if (children && children.length > 0) {
       for (let i = 0; i < children.length; i++) {
         const key = `${children[i].name}-${i}`;
-        const nodeId = `${children[i].name}`;
+        const nodeId = children[i].name;
+        const itemId = children[i].partTypeId;
         const childs = recursiveTreeItem(partTypes, children[i].partTypeId);
         if (chkHideEmptyTypes && children[i].parts === 0) {
           // don't display empty types
@@ -466,6 +467,7 @@ export function PartTypes(props) {
             <StyledTreeItem
               nodeId={nodeId}
               key={key}
+              itemId={itemId}
               data={children[i]}
               labelText={partTypeName}
               labelIcon={() => getIcon(partTypeName, children[i].parentPartTypeId && basePartTypeName, partTypeIcon)({className: `parttype parttype-${basePartTypeName || partTypeName}`})}
@@ -534,7 +536,7 @@ export function PartTypes(props) {
 
   const renderTreeView = useMemo(() => {
     return (
-      <TreeView
+      <SimpleTreeView
         className="partTypesTreeView"
         defaultCollapseIcon={<ArrowDropDownIcon />}
         defaultExpandIcon={<ArrowRightIcon />}
@@ -543,9 +545,10 @@ export function PartTypes(props) {
         onNodeToggle={handleOnNodeToggle}
         expanded={expandedNodeIds}
         sx={{ height: 650, flexGrow: 1, maxWidth: "100%", overflowY: "auto" }}
+        getItemId={(item) => item.partTypeId || -1}
       >
         {recursiveTreeItem(partTypesFiltered).map((x) => x)}
-      </TreeView>);
+      </SimpleTreeView>);
   }, [updateTreeView, expandedNodeIds, partTypesFiltered, chkHideEmptyTypes]);
 
   const GetIsSvgValidIcon = () => {

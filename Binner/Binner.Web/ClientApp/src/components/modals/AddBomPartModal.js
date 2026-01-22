@@ -28,7 +28,7 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
   const [addPartSearchResults, setAddPartSearchResults] = useState([]);
   const [projectPartIds, setProjectPartIds] = useState(_.filter(rest.parts, i => form.pcbId > 0 ? i.pcbId === form.pcbId : true).map(i => (i.partId)) || []);
   const [pcbs, setPcbs] = useState([]);
-  const [selectedPart, setSelectedPart] = useState(null);
+  const [selectedParts, setSelectedParts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -128,13 +128,6 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
     await loadParts(page, true, filterBy, filterByValue, pageSize, sortBy, sortDirection, form.keyword || "");
   };
 
-  const handleAddPartSelectPart = (e, part) => {
-    if (selectedPart === part)
-      setSelectedPart(null);
-    else
-      setSelectedPart(part);
-  };
-
   const handlePageSizeChange = async (e, pageSize) => {
     setPage(1);
     setPageSize(pageSize);
@@ -167,20 +160,27 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
     setForm({ ...form });
   };
 
+  const handleSelectedPartsChange = (e, selectedParts) => {
+    setSelectedParts(selectedParts);
+  };
+
   const handleAddPart = (e) => {
     confirmAddPartClose();
     if (rest.onAdd) {
-      rest.onAdd(e, {
-        part: { ...selectedPart },
-        pcbId: form.pcbId,
-        quantity: form.quantity,
-        notes: form.notes,
-        referenceId: form.referenceId,
-        partName: selectedPart?.partNumber || form.keyword,
-        schematicReferenceId: form.schematicReferenceId,
-        customDescription: form.customDescription
-      });
-      setSelectedPart(null);
+      for(var i = 0; i < selectedParts.length; i++) {
+        const selectedPart = selectedParts[i];
+        rest.onAdd(e, {
+          part: { ...selectedPart },
+          pcbId: form.pcbId,
+          quantity: form.quantity,
+          notes: form.notes,
+          referenceId: form.referenceId,
+          partName: selectedPart?.partNumber || form.keyword,
+          schematicReferenceId: form.schematicReferenceId,
+          customDescription: form.customDescription
+        });
+      }
+      setSelectedParts([]);
     } else {
       console.error("No onAdd handler defined!");
     }
@@ -189,7 +189,7 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
   const handleConfirmPartSelection = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!selectedPart) {
+    if (selectedParts.length === 0) {
       setConfirmAddPartIsOpen(true);
     } else {
       handleAddPart(e);
@@ -308,11 +308,11 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
             totalPages={totalPages}
             loading={loading}
             loadPage={handleAddPartsNextPage}
-            onPartClick={handleAddPartSelectPart}
             onPageSizeChange={handlePageSizeChange}
-            selectedPart={selectedPart}
+            onSelectedPartsChange={handleSelectedPartsChange}
             defaultVisibleColumns="partNumber,quantity,manufacturerPartNumber,description,cost"
             editable={false}
+            enableMultiSelect={true}
             visitable={false}
             disabledPartIds={projectPartIds || []}
             settingsName="bomAddPartModal"

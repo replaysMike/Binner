@@ -13,7 +13,7 @@ import { getIcon } from "../common/partTypes";
 import { fetchApi } from '../common/fetchApi';
 import { getLocalData, setLocalData } from "../common/storage";
 import { Clipboard } from "../components/Clipboard";
-import MaterialReactTable from "material-react-table";
+import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import "./Datasheets.css";
 
 export function Datasheets (props) {
@@ -133,14 +133,6 @@ export function Datasheets (props) {
 
   const handleHighlightAndVisit = (e, url) => {
     handleVisitLink(e, url);
-    // this handles highlighting of parent row
-    const parentTable = ReactDOM.findDOMNode(e.target).parentNode.parentNode.parentNode;
-    const targetNode = ReactDOM.findDOMNode(e.target).parentNode.parentNode;
-    for (let i = 0; i < parentTable.rows.length; i++) {
-      const row = parentTable.rows[i];
-      if (row.classList.contains('positive')) row.classList.remove('positive');
-    }
-    targetNode.classList.toggle('positive');
   };
 
   const getHostnameFromRegex = (url) => {
@@ -273,68 +265,37 @@ export function Datasheets (props) {
     window.location.href = authorizationUrl;
   };
 
-  const renderParts = (parts, column, direction) => {
-    const partsWithDatasheets = _.filter(parts, function (x) { return x.datasheetUrls.length > 0 && _.first(x.datasheetUrls).length > 0; });
-    return (
-      <div id="datasheets">
-        <Form>
-          <Form.Group>
-            <ClearableInput width={5} label={t('label.part', "Part")} required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={handleChange} name='partNumber' />
-            <Form.Field width={6}>
-              <PartTypeSelectorMemoized 
-                label={t('label.partType', "Part Type")}
-                name="partTypeId"
-                value={part.partTypeId || ""}
-                partTypes={allPartTypes} 
-                onSelect={handlePartTypeChange}
-                loadingPartTypes={loadingPartTypes}
-              />
-            </Form.Field>
-            <Form.Dropdown
-              width={4}
-              label={t('label.mountingType', "Mounting Type")}
-              placeholder={t('label.mountingType', "Mounting Type")}
-              search
-              selection
-              value={(part.mountingType || "")}
-              options={mountingTypeOptions}
-              onChange={handleChange}
-              name="mountingType"
-            />
-          </Form.Group>
-        </Form>
-        <Segment loading={loading}>
-          <MaterialReactTable
-              columns={tableColumns}
-              data={partsWithDatasheets}
-              //enableRowSelection /** disabled until I can figure out how to pin it */
-              enableGlobalFilter={false}
-              enableColumnOrdering
-              enableColumnResizing
-              enablePinning
-              enableStickyHeader
-              enableStickyFooter
-              enableDensityToggle
-              enableHiding
-              onColumnVisibilityChange={handleColumnVisibilityChange}
-              onColumnOrderChange={handleColumnOrderChange}
-              state={{ 
-                columnVisibility, 
-                columnOrder
-              }}
-              initialState={{ 
-                density: "compact", 
-                columnPinning: { left: ['manufacturerPartNumber'], right: ['actions'] },
-                pagination: { pageSize: 25 }
-              }}
-              labelRowsPerPage={t('label.rowsPerPage', "Rows per page")}
-            />
-        </Segment>
-      </div>
-    );
-  };
-
-  const contents = renderParts(parts, column, direction);
+  const partsWithDatasheets = _.filter(parts, function (x) { return x.datasheetUrls.length > 0 && _.first(x.datasheetUrls).length > 0; });
+  const table = useMaterialReactTable({
+    columns: tableColumns,
+    data: partsWithDatasheets,
+    enableGlobalFilter: false,
+    enableFilters: false,
+    enablePagination: false,
+    enableColumnOrdering: true,
+    enableColumnResizing: true,
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    enableDensityToggle: true,
+    enableHiding: true,
+    manualSorting: true, // enable server side sorting
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onColumnOrderChange: handleColumnOrderChange,
+    //onEditingCellChange={({cell, column, row, table}) => { if (onChange) onChange(cell, column, row, table); }}
+    //onEditingRowSave: handleSaveColumn,
+    getRowId: (row) => row.manufacturerPartNumber,
+    state: {
+      showProgressBars: loading,
+      columnVisibility,
+      columnOrder,
+    },
+    initialState: {
+      density: "compact",
+      columnPinning: { left: ['manufacturerPartNumber'], right: ['actions'] },
+      pagination: { pageSize: 25 }
+    },
+    labelRowsPerPage: t('label.rowsPerPage', "Rows per page")
+  });
 
   return (
     <div>
@@ -359,7 +320,37 @@ export function Datasheets (props) {
         </p>
         }
       />
-      {contents}
+      <div id="datasheets">
+        <Form>
+          <Form.Group>
+            <ClearableInput width={5} label={t('label.part', "Part")} required placeholder='LM358' icon='search' focus value={part.partNumber} onChange={handleChange} name='partNumber' />
+            <Form.Field width={6}>
+              <PartTypeSelectorMemoized
+                label={t('label.partType', "Part Type")}
+                name="partTypeId"
+                value={part.partTypeId || ""}
+                partTypes={allPartTypes}
+                onSelect={handlePartTypeChange}
+                loadingPartTypes={loadingPartTypes}
+              />
+            </Form.Field>
+            <Form.Dropdown
+              width={4}
+              label={t('label.mountingType', "Mounting Type")}
+              placeholder={t('label.mountingType', "Mounting Type")}
+              search
+              selection
+              value={(part.mountingType || "")}
+              options={mountingTypeOptions}
+              onChange={handleChange}
+              name="mountingType"
+            />
+          </Form.Group>
+        </Form>
+        <Segment loading={loading}>
+          <MaterialReactTable table={table} />
+        </Segment>
+      </div>
     </div>
   );
 }

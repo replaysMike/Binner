@@ -4,7 +4,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { createMedia } from "@artsy/fresnel";
 import { Button, Confirm, Modal, Header, Dropdown, Pagination, Popup } from "semantic-ui-react";
 import { Clipboard } from "./Clipboard";
-import MaterialReactTable from "material-react-table";
+import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import _ from "underscore";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -45,6 +45,7 @@ export default function PartsGrid2Memoized({
     byValue = [],
     parts = [],
     disabledPartIds = [],
+    enableMultiSelect = false,
     ...rest
   }) {
   const { t } = useTranslation();
@@ -91,6 +92,7 @@ export default function PartsGrid2Memoized({
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
   const [sorting, setSorting] = useState([]);
   const [_disabledPartIds, setDisabledPartIds] = useState(disabledPartIds);
+  const [rowSelection, setRowSelection] = useState({});
 
   const loadPartTypes = useCallback((parentPartType = "") => {
     setIsLoading(true);
@@ -193,6 +195,13 @@ export default function PartsGrid2Memoized({
     setModalIsOpen(false);
   };
 
+  useEffect(() => {
+    // fire events when selected rows changes
+    var partIds = Object.keys(rowSelection).map(i => parseInt(i));
+    const parts = _parts.filter(p => partIds.includes(p.partId));
+    if (rest.onSelectedPartsChange) rest.onSelectedPartsChange(null, parts);
+  }, [rowSelection]);
+
   const handlePageSizeChange = (e, control) => {
     setPageSize(control.value);
     setPage(1);
@@ -289,7 +298,7 @@ export default function PartsGrid2Memoized({
       const def = {
         accessorKey: columnName,
         header: translatedColumnName,
-        Header: <i key={key}>{translatedColumnName}</i>,
+        Header: <Popup content={<p>{translatedColumnName}</p>} trigger={<i key={key}>{translatedColumnName}</i>} />,
         size: getColumnSize(columnName)
       };
       
@@ -402,6 +411,73 @@ export default function PartsGrid2Memoized({
     if (rest.onPartClick) rest.onPartClick(row, row.original);
   };
 
+  const table = useMaterialReactTable({
+    columns: tableColumns,
+    data: _parts,
+    enableRowSelection: (row) => {
+      // disable selection of parts that are in the disabled list
+      const canSelect = enableMultiSelect && !_disabledPartIds.includes(row.original.partId);
+      return canSelect;
+    },
+    enableBatchRowSelection: enableMultiSelect,
+    enableMultiRowSelection: enableMultiSelect,
+    //rowPinningDisplayMode: "select-top",
+    enableGlobalFilter: false,
+    enableFilters: false,
+    enablePagination: false,
+    enableColumnOrdering: true,
+    enableColumnResizing: true,
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    enableDensityToggle: true,
+    enableHiding: true,
+    //enableEditing: _enableEditing,
+    //editDisplayMode: 'table',
+    manualSorting: true, // enable server side sorting
+    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onColumnOrderChange: handleColumnOrderChange,
+    onSortingChange: handleSortChange,
+    //onEditingCellChange={({cell, column, row, table}) => { if (onChange) onChange(cell, column, row, table); }}
+    //onEditingRowSave: handleSaveColumn,
+    getRowId: (row) => row.partId,
+    muiTableBodyRowProps: ({ row }) => ({
+      onClick: () => handleRowClick(row),
+      title: _disabledPartIds.includes(row.original.partId) ? t("comp.partsGrid.alreadyInBom", 'Already in your BOM') : '',
+      className: _disabledPartIds.includes(row.original.partId) ? 'disabled-highlight' : '',
+      //selected: _selectedPart === row.original,
+      hover: false, // important for proper row highlighting on hover
+      sx: {
+        cursor: 'pointer',
+      }
+    }),
+    muiTableBodyCellProps: ({ cell, column, row, table }) => ({
+      onClick: () => {
+        // enable edit on single click
+        //console.log('click', cell, row, table);
+        //table.setEditingCell(cell);
+        //table.setEditingRow(row);
+        //setEnableEditing(true);
+        //if (rest.onEnableEditingChange) rest.onEnableEditingChange(true);
+      },
+      sx: {
+        className: _disabledPartIds.includes(row.original.partId) ? 'disabled' : '',
+      },
+    }),
+    state: {
+      showProgressBars: isLoading,
+      columnVisibility,
+      columnOrder,
+      sorting,
+      rowSelection
+    },
+    initialState: {
+      density: "compact",
+        columnPinning: { left: ['mrt-row-select', 'partNumber'], right: ['actions'] }
+    },
+    renderBottomToolbar: (<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)
+  });
+
   return (
     <div id="partsGrid">
       <style>{mediaStyles}</style>
@@ -415,52 +491,8 @@ export default function PartsGrid2Memoized({
         </div>
 
         <div style={{marginTop: '5px'}}>
-          <MaterialReactTable
-            columns={tableColumns}
-            data={_parts}
-            //enableRowSelection /** disabled until I can figure out how to pin it */
-            enableGlobalFilter={false}
-            enableFilters={false}
-            enablePagination={false}
-            enableColumnOrdering
-            enableColumnResizing
-            enablePinning
-            enableStickyHeader
-            enableStickyFooter
-            enableDensityToggle
-            enableHiding
-            manualSorting
-            onColumnVisibilityChange={handleColumnVisibilityChange}
-            onColumnOrderChange={handleColumnOrderChange}
-            onSortingChange={handleSortChange}
-            muiTableBodyCellProps={({row}) => ({
-              sx: {
-                borderBottom: _disabledPartIds.includes(row.original.partId) ? '2px solid #c66' : 'none',
-              },
-            })}
-            state={{ 
-              showProgressBars: isLoading,
-              columnVisibility, 
-              columnOrder,
-              sorting
-            }}
-            initialState={{ 
-              density: "compact", 
-              columnPinning: { left: ['partNumber'], right: ['actions'] }
-            }}
-            renderBottomToolbar={(<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)}
-            muiTableBodyRowProps={({row}) => ({
-              onClick: () => handleRowClick(row),
-              title: _disabledPartIds.includes(row.original.partId) ? t("comp.partsGrid.alreadyInBom", 'Already in your BOM') : '',
-              className: _disabledPartIds.includes(row.original.partId) ? 'disabled-highlight' : '',
-              selected: _selectedPart === row.original,
-              hover: false, // important for proper row highlighting on hover
-              sx: {
-                cursor: 'pointer',
-              }
-            })}
-          />
-        </div>        
+          <MaterialReactTable table={table} />
+        </div>
       </MediaContextProvider>
       <Confirm 
         className="confirm"
@@ -517,5 +549,9 @@ PartsGrid2Memoized.propTypes = {
   keyword: PropTypes.string,
   by: PropTypes.array,
   byValue: PropTypes.array,
-  disabledPartIds: PropTypes.array
+  disabledPartIds: PropTypes.array,
+  /** Enable multiple selection options */
+  enableMultiSelect: PropTypes.bool,
+  /** Event handler when selected parts changed */
+  onSelectedPartsChange: PropTypes.func,
 };

@@ -1,9 +1,11 @@
 import { fetchApi } from "./fetchApi";
+import { SubscriptionLevels } from "./Types";
 
 export const EmptyUserAccount = {
   userId: 0,
   isAuthenticated: false,
   name: "",
+  subscriptionLevel: SubscriptionLevels.Free,
   accessToken: "",
 	imagesToken: "",
 	isAdmin: false,
@@ -161,7 +163,7 @@ export const getSubscriptionLevel = () => {
 export const getSubscriptionTag = (includeFree = false) => {
   const user = getUserAccount();
   if (user) {
-    switch(user.subscriptionLevel) {
+    switch (user.subscriptionLevel) {
       case 0:
         if (includeFree) return 'free';
         return '';
@@ -185,3 +187,39 @@ export const handleSubscriptionLink = (e, requiredSubscriptionLevel, navigateFun
     navigateFunc();
   }
 };
+
+Object.defineProperty(Object.prototype, "HasFreeSubscription", {
+	value: function IsAuthenticated() {
+		const user = getUserAccount();
+		return user && user.isAuthenticated && user.subscriptionLevel === SubscriptionLevels.Free;
+	},
+	writable: true,
+	configurable: true
+});
+
+Object.defineProperty(Object.prototype, "HasMakerSubscription", {
+	value: function IsAuthenticated() {
+		const user = getUserAccount();
+		return user && user.isAuthenticated && user.subscriptionLevel === SubscriptionLevels.Maker;
+	},
+	writable: true,
+	configurable: true
+});
+
+Object.defineProperty(Object.prototype, "HasProfessionalSubscription", {
+	value: function IsAuthenticated() {
+		const user = getUserAccount();
+		return user && user.isAuthenticated && user.subscriptionLevel === SubscriptionLevels.Professional;
+	},
+	writable: true,
+	configurable: true
+});
+
+Object.defineProperty(Object.prototype, "IsAuthenticated", {
+	value: function IsAuthenticated() {
+		const user = getUserAccount();
+		return user && user.isAuthenticated;
+	},
+	writable: true,
+	configurable: true
+});

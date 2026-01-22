@@ -6,7 +6,7 @@ import _ from "underscore";
 import { getIcon } from "../common/partTypes";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import { TreeView } from "@mui/x-tree-view";
+import { SimpleTreeView } from "@mui/x-tree-view";
 import { TreeItem, treeItemClasses } from "@mui/x-tree-view";
 import Typography from "@mui/material/Typography";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -19,13 +19,15 @@ import "./PartTypeSelector.css";
  */
 export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, label, name, value, onSelect, onBlur, onFocus }) {
   const { t } = useTranslation();
+  const ChildIndentPx = 20; // controls the number of pixels to shift right each child partType
   PartTypeSelectorMemoized.abortController = new AbortController();
   const [internalPartTypes, setInternalPartTypes] = useState(partTypes);
   const [internalPartTypesFiltered, setInternalPartTypesFiltered] = useState([]);
   const [partTypeId, setPartTypeId] = useState(0);
   const [partType, setPartType] = useState();
   const [filter, setFilter] = useState('');
-  const [expandedNodeIds, setExpandedNodeIds] = useState([]);
+  const [selectedItemId, setSelectedItemId] = useState('');
+  const [expandedItemIds, setExpandedItemIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -62,6 +64,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
     if (newPartTypeId !== 0) {
       setPartTypeId(newPartTypeId);
       setPartType(newPartType);
+      setSelectedItemId(newPartTypeId + '');
     }
   }, [value, partTypes, getPartTypeFromId]);
 
@@ -133,7 +136,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
     setPartType();
     setSearchQuery('');
     setFilter('');
-    setExpandedNodeIds([]);
+    setExpandedItemIds([]);
     setInternalPartTypesFiltered([...internalPartTypes]);
   };
 
@@ -141,6 +144,11 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
     const getPartTypeFromName = (name) => {
       const lcName = name.toLowerCase();
       return _.find(internalPartTypes, (i) => i.name.toLowerCase() === lcName)
+    };
+
+    const getPartTypeFromId = (partTypeId) => {
+      if (typeof partTypeId === 'string') partTypeId = parseInt(partTypeId);
+      return _.find(internalPartTypes, (i) => i.partTypeId === partTypeId);
     };
 
     const recursivePreFilter = (allPartTypes, parentPartTypeId, filterBy) => {
@@ -171,7 +179,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
       return childrenComponents;
     };
 
-    const recursiveTreeItem = (allPartTypes, parentPartTypeId = null) => {
+    const recursiveTreeItem = (allPartTypes, recursiveLevel, parentPartTypeId = null) => {
       // build a tree graph
 
       let children = _.filter(allPartTypes, (i) => i.parentPartTypeId === parentPartTypeId);
@@ -180,15 +188,17 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
       if (children && children.length > 0) {
         for (let i = 0; i < children.length; i++) {
           const key = `${children[i].name}-${i}`;
-          const nodeId = `${children[i].name}`;
-          const childs = recursiveTreeItem(allPartTypes, children[i].partTypeId);
+          //const nodeId = children[i].name;
+          const itemId = children[i].partTypeId + '';
+          const childs = recursiveTreeItem(allPartTypes, recursiveLevel + 1, children[i].partTypeId);
           const basePartTypeName = _.find(allPartTypes, x => x.partTypeId === children[i].parentPartTypeId)?.name;
           const partTypeName = children[i].name;
           const partTypeIcon = children[i].icon;
           childrenComponents.push(
             <StyledTreeItem
-              nodeId={nodeId}
+              //nodeId={nodeId}
               key={key}
+              itemId={itemId || ''}
               data={children[i]}
               labelText={partTypeName}
               labelIcon={() => getIcon(partTypeName, basePartTypeName, partTypeIcon)({ className: `parttype parttype-${basePartTypeName || partTypeName}` })}
@@ -197,6 +207,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
               labelFontWeight={children[i].parts > 0 ? "700" : "inherit"}
               color="#1a73e8"
               bgColor="#e8f0fe"
+              style={{ marginLeft: (recursiveLevel * ChildIndentPx) + 'px'}}
             >
               {childs}
             </StyledTreeItem>
@@ -217,30 +228,37 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
       const newPartTypesFilteredOrdered = _.sortBy(newPartTypesFiltered, x => x.exactMatch ? 0 : 1);
       setInternalPartTypesFiltered(newPartTypesFilteredOrdered);
       if (control.searchQuery.length > 1) {
-        setExpandedNodeIds(_.map(newPartTypesFiltered, (i) => (i.name)));
+        const items = _.map(newPartTypesFiltered, (i) => (i.itemId));
+        setExpandedItemIds(items);
       } else {
-        setExpandedNodeIds([]);
+        setExpandedItemIds([]);
       }
     };
 
-    const handleOnNodeSelect = (e, selectedPartTypeName) => {
-      const selectedPartType = getPartTypeFromName(selectedPartTypeName);
+    const handleSelect = (e, partTypeId) => {
+      const selectedPartType = getPartTypeFromId(partTypeId);
       if (selectedPartType) {
         setPartType(selectedPartType);
-        setSearchQuery(selectedPartTypeName);
+        setSelectedItemId(partTypeId + '');
+        setSearchQuery(selectedPartType.name);
         // fire event
         if (onSelect) onSelect(e, selectedPartType);
       }
     };
 
-    const handleOnNodeToggle = (e, node) => {
+    const handleOnItemExpansionToggle = (e, itemId, isExpanded) => {
       //e.preventDefault();
       //e.stopPropagation();
       // preventing event propagation leads to ui weirdness unfortunately
-      if (expandedNodeIds.includes(node))
-        setExpandedNodeIds(_.filter(expandedNodeIds, i => i !== node));
-      else
-        setExpandedNodeIds(node);
+      if (expandedItemIds.find(i => i == itemId)) {
+        // remove it
+        setExpandedItemIds(expandedItemIds.filter(i => i != itemId));
+      }
+      else {
+        // add it
+        const newItemIds = [...expandedItemIds, itemId];
+        setExpandedItemIds(newItemIds);
+      }
     };
 
     const handleOnBlur = (e, control) => {
@@ -248,7 +266,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
       if (onBlur) onBlur(e, control);
       // reset the search filtering
       setFilter(null);
-      setExpandedNodeIds([]);
+      //setExpandedItemIds([]);
       setInternalPartTypesFiltered([...internalPartTypes]);
     };
 
@@ -257,14 +275,15 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
       if (onFocus) onFocus(e, control);
     };
 
-    const handleInternalOnBlur = (e, control) => {
+    // no longer supported by SimpleTreeView
+    /*const handleInternalOnBlur = (e, control) => {
       if (onBlur) onBlur(e, control);
     };
 
     const handleInternalOnFocus = (e, control) => {
       document.getElementById("partTypeDropdown").firstChild.focus();
       if (onFocus) onFocus(e, control);
-    };
+    };*/
 
     const getSelectedIcon = (partType) => {
       if (partType) {
@@ -299,21 +318,18 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
           <Dropdown.Menu>
             <Dropdown.Item>
               {/** https://mui.com/material-ui/react-tree-view/ */}
-              <TreeView
+              <SimpleTreeView
+                slots={{ collapseIcon: ArrowDropDownIcon, expandIcon: ArrowRightIcon, endIcon: () => <div style={{width: '24px', height: '12px'}} />}}
                 className="partTypeSelectorTreeView"
-                defaultCollapseIcon={<ArrowDropDownIcon />}
-                defaultExpandIcon={<ArrowRightIcon />}
-                defaultEndIcon={<div style={{ width: 24 }} />}
-                onNodeSelect={handleOnNodeSelect}
-                onNodeToggle={handleOnNodeToggle}
-                onBlur={handleInternalOnBlur}
-                onFocus={handleInternalOnFocus}
-                expanded={expandedNodeIds}
-                selected={partType?.name || ""}
+                onSelectedItemsChange={handleSelect}
+                onItemExpansionToggle={handleOnItemExpansionToggle}
+                expandedItems={expandedItemIds}
+                selectedItems={selectedItemId}
+                multiSelect={false}
                 sx={{ flexGrow: 1, maxWidth: "100%" }}
               >
-                {recursiveTreeItem(internalPartTypesFiltered).map((x) => x)}
-              </TreeView>
+                {recursiveTreeItem(internalPartTypesFiltered, 0).map((x) => x)}
+              </SimpleTreeView>
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
@@ -321,7 +337,7 @@ export default function PartTypeSelectorMemoized({ partTypes, loadingPartTypes, 
           <Icon name="times" circular link size="small" className="clearIcon" style={{ opacity: '0.5', padding: '0', margin: '0', lineHeight: '1em', fontSize: '0.6em' }} />
         </div>}
       </div>);
-  }, [partType, internalPartTypes, internalPartTypesFiltered, expandedNodeIds, loading]);
+  }, [partType, internalPartTypes, internalPartTypesFiltered, expandedItemIds, loading]);
 
   return (
     <>

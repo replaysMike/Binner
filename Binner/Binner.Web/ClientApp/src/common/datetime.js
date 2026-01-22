@@ -15,6 +15,12 @@ export const FormatWeekNumber = 'w';
  * @returns 
  */
 export const getFriendlyElapsedTime = function (timestamp, includeRelative = false) {
+  if (typeof timestamp === 'string') {
+    // parse string into relative timestamp
+    const result = parse(timestamp.substring(0, 12), 'HH:mm:ss.SSS', new Date());
+    timestamp = (result.getHours() * 60 * 60 * 1000) + (result.getMinutes() * 60 * 1000) + (result.getSeconds() * 1000) + result.getMilliseconds();
+  }
+
   // Convert to a positive integer
   var time = Math.abs(timestamp);
 
@@ -132,6 +138,25 @@ export const getDateWithoutTime = (dateStr) => {
   var dateParts = dateOnly.split('-');
   var date = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
   return date;
+};
+
+/**
+ * Get the friendly elapsed time from a timespan string
+ */
+export const getFriendlyElapsed = (elapsed = '00:00:00.000') => {
+  // parse string into relative timestamp
+  const result = parse(elapsed.substring(0, 12), 'HH:mm:ss.SSS', new Date());
+  if (result.getHours() > 24) {
+    return `${result.getHours() * 24} days, ${result.getHours()} hours, ${result.getMinutes()} minutes`;
+  }
+  if (result.getHours() > 0) {
+    return `${result.getHours()} hours, ${result.getMinutes()} min`;
+  } else if (result.getMinutes() > 0) {
+    return `${result.getMinutes()} min, ${result.getSeconds()} seconds`;
+  } else if (result.getSeconds() > 0) {
+    return `${result.getSeconds()} seconds`;
+  }
+  return `${result.getMilliseconds()} ms`;
 };
 
 /**

@@ -175,6 +175,7 @@ export function OrderImport(props) {
     OrderImport.getPartsToImport = new AbortController();
     setError(null);
     setOrderImportSearchResult(null);
+    setImportResult(null);
 
     if (validateExistingOrder) {
       const validateResult = await validateExistingOrderImport(order);
@@ -351,9 +352,22 @@ export function OrderImport(props) {
     window.open(url, "_blank");
   };
 
-  const handleChecked = (e, p) => {
-    p.selected = !p.selected;
-    setOrderImportSearchResult({ ...orderImportSearchResult });
+  /** Fired when the checkbox/toggle for a part is changed */
+  const handleSelectPartChanged = (e, selectedParts) => {
+    // get all the parts
+    // todo: migrate away from .selected property
+    const newOrderImportSearchResult = {
+      ...orderImportSearchResult, parts: orderImportSearchResult.parts.map(p => {
+        const selectedPart = selectedParts.find(i => i.supplierPartNumber === p.supplierPartNumber);
+        if (selectedPart) {
+          selectedPart.selected = true;
+          return selectedPart;
+        }
+        p.selected = false;
+        return p;
+      })
+    };
+    setOrderImportSearchResult({ ...newOrderImportSearchResult });
   };
 
   const handleToggleRequestProductInfo = () => {
@@ -412,27 +426,10 @@ export function OrderImport(props) {
     setTotalPages(Math.ceil(totalRecords / pageSize));
   };
 
-  const handleSortChange = async (sortBy, sortDirection) => {
-    const newSortBy = sortBy || "DateCreatedUtc";
-    const newSortDirection = sortDirection || "Descending";
-    setSortBy(newSortBy);
-    setSortDirection(newSortDirection);
-  };
-
   const handleInit = (config) => {
     setPageSize(config.pageSize);
     setInitComplete(true);
   };
-
-  const handleSelectAll = useCallback((e, control) => {
-    const newParts = orderImportSearchResult.parts.map(i => { i.selected = true; return i; });
-    setOrderImportSearchResult({ ...orderImportSearchResult, parts: [...newParts] });
-  }, [orderImportSearchResult]);
-
-  const handleSelectNone = useCallback((e, control) => {
-    const newParts = orderImportSearchResult.parts.map(i => { i.selected = false; return i; });
-    setOrderImportSearchResult({ ...orderImportSearchResult, parts: [...newParts] });
-  }, [orderImportSearchResult]);
 
   const renderAllMatchingParts = (order) => {
     return (
@@ -477,8 +474,8 @@ export function OrderImport(props) {
             </Table.Header>
           </Table>
           <OrderPartsGrid
-            parts={_.chain(order.parts).drop((page-1) * pageSize).take(pageSize).value()}
-            onCheckedChange={handleChecked}
+            parts={order.parts}
+            onSelectedPartsChange={handleSelectPartChanged}
             page={page}
             totalPages={totalPages}
             totalRecords={totalRecords}
@@ -486,10 +483,7 @@ export function OrderImport(props) {
             loadPage={handleSetPage}
             onPartClick={handlePartClick}
             onPageSizeChange={handlePageSizeChange}
-            onSortChange={handleSortChange}
             onInit={handleInit}
-            onSelectAll={handleSelectAll}
-            onSelectNone={handleSelectNone}
             name="partsGrid">
             {t('message.noMatchingResults', "No matching results.")}
           </OrderPartsGrid>

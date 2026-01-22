@@ -4,7 +4,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { createMedia } from "@artsy/fresnel";
 import { Button, Checkbox, Dropdown, Pagination, Popup, Image, Icon } from "semantic-ui-react";
 import { Clipboard } from "./Clipboard";
-import MaterialReactTable from "material-react-table";
+import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import _ from "underscore";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -30,8 +30,8 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function OrderPartsGrid({
     loading = true,
-    columns = "partId,imageUrl,description,reference,quantity,cost,totalCost,currency,manufacturerPartNumber,manufacturer,supplierPartNumber,partType,packageType,mountingType,datasheetUrl,productUrl,selected",
-    defaultVisibleColumns = "partId,imageUrl,description,reference,quantity,cost,totalCost,currency,manufacturerPartNumber,manufacturer,supplierPartNumber,partType,datasheetUrl,productUrl,selected",
+    columns = "partId,imageUrl,description,reference,quantity,cost,totalCost,currency,manufacturerPartNumber,manufacturer,supplierPartNumber,partType,packageType,mountingType,datasheetUrl,productUrl",
+    defaultVisibleColumns = "partId,imageUrl,description,reference,quantity,cost,totalCost,currency,manufacturerPartNumber,manufacturer,supplierPartNumber,partType,datasheetUrl,productUrl",
     page = 1,
     totalPages = 1,
     totalRecords = 0,
@@ -71,7 +71,8 @@ export default function OrderPartsGrid({
   const [columnVisibility, setColumnVisibility] = useState(getViewPreference('columnVisibility') || createDefaultVisibleColumns(columns, defaultVisibleColumns));
   const [columnsVisibleArray, setColumnsVisibleArray] = useState(defaultVisibleColumns.split(','));
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState([{ desc: false, id: "manufacturerPartNumber" }]);
+  const [rowSelection, setRowSelection] = useState([]);
   
   const loadPartTypes = useCallback((parentPartType = "") => {
     setIsLoading(true);
@@ -120,9 +121,12 @@ export default function OrderPartsGrid({
     }
   };
 
-  const handleChecked = (e, p) => {
-    if (rest.onCheckedChange) rest.onCheckedChange(e, p);
-  };
+  useEffect(() => {
+    // fire events when selected rows changes
+    var supplierPartNumbers = Object.keys(rowSelection).map(i => i);
+    const parts = _parts.filter(p => supplierPartNumbers.includes(p.supplierPartNumber)); // supplierPartNumber should be unique per order
+    if (rest.onSelectedPartsChange) rest.onSelectedPartsChange(null, parts);
+  }, [rowSelection]);
 
   const handlePageSizeChange = (e, control) => {
     updatePageSize(e, control.value);
@@ -140,7 +144,7 @@ export default function OrderPartsGrid({
       case "description":
         return 220;
       case "reference":
-        return 180;
+        return 220;
       case "quantity":
         return 140;
       case "manufacturerPartNumber":
@@ -152,7 +156,7 @@ export default function OrderPartsGrid({
       case "cost":
         return 100;
       case "totalCost":
-        return 100;
+        return 140;
       case "currency":
         return 100;
       case "supplierPartNumber":
@@ -160,24 +164,12 @@ export default function OrderPartsGrid({
       case "imageUrl":
         return 40;
       case "partId":
-        return 40;
+        return 25;
       case "actions":
-        return 180;
+        return 120;
       default:
         return 180;
     }
-  };
-
-  const handleSelectAll = (e, control) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (rest.onSelectAll) rest.onSelectAll(e, control);
-  };
-
-  const handleSelectNone = (e, control) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (rest.onSelectNone) rest.onSelectNone(e, control);
   };
 
   const tableColumns = useMemo(() => {
@@ -200,15 +192,15 @@ export default function OrderPartsGrid({
       const def = {
         accessorKey: columnName,
         header: translatedColumnName,
-        Header: <i key={key}>{translatedColumnName}</i>,
+        Header: <Popup content={<p>{translatedColumnName}</p>} trigger={<i key={key}>{translatedColumnName}</i>} />,
         size: getColumnSize(columnName)
       };
       
       switch(columnName){
         case 'description':
-          return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.description} /> <span>{row.original.description}</span></span>)};
+          return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.description} /> <Popup content={<p>{row.original.description}</p>} trigger={<span>{row.original.description}</span>} /></span>)};
         case 'reference':
-          return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.reference} /> <span className="text-highlight">{row.original.reference}</span></span>) };
+          return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.reference} /> <Popup content={<p>{row.original.reference}</p>} trigger={<span className="text-highlight">{row.original.reference}</span>} /></span>) };
         case 'manufacturerPartNumber':
           return {...def, Cell: ({row}) => (<span><Clipboard text={row.original[columnName]} /> {row.original[columnName]}</span>)};
         case 'manufacturer':
@@ -255,7 +247,7 @@ export default function OrderPartsGrid({
               : <Popup content={<p>{t('page.orderImport.popup.newPart', "New part does not exist in your inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="large" />} />) };
         case 'actions': 
           return {
-            ...def, Header: <i key={key}>Select <Link onClick={handleSelectAll}>all</Link> <Link onClick={handleSelectNone}>none</Link></i>, columnDefType: 'display', Cell: ({row}) => (
+            ...def, columnDefType: 'display', Cell: ({row}) => (
             <>
               {columnsArray.includes('partId') && columnsVisibleArray.includes('partId') && row.original.partId > 0 && 
                 <Popup
@@ -273,13 +265,6 @@ export default function OrderPartsGrid({
                   content={<p>{t('button.viewProduct', "View Product")}</p>}
                 trigger={<Button circular size='mini' icon='file outline' onClick={e => handleVisitLink(e, row.original.productUrl)} />}
                 />}
-              <div style={{ float: 'right', marginTop: '4px' }}>
-                {columnsArray.includes('selected') && columnsVisibleArray.includes('selected') && 
-                <Popup 
-                  content={<p>{t('label.importQuestion', "Import?")}</p>}
-                  trigger={<Checkbox toggle checked={row.original.selected} onChange={(e) => handleChecked(e, row.original)} data={row.original} />}
-                  />}
-              </div>
             </>
           )};
         default:
@@ -287,10 +272,10 @@ export default function OrderPartsGrid({
       }
     };
 
-    const filterColumns = ['productUrl', 'datasheetUrl', 'selected'];
+    const filterColumns = ['productUrl', 'datasheetUrl'];
     const columnNames = _.filter(columnsArray, i => !filterColumns.includes(i));
     if ((columnsArray.includes('datasheetUrl') || columnsArray.includes('productUrl'))
-      && (columnsVisibleArray.includes('datasheetUrl') || columnsVisibleArray.includes('productUrl') || columnsVisibleArray.includes('selected')))
+      && (columnsVisibleArray.includes('datasheetUrl') || columnsVisibleArray.includes('productUrl')))
       columnNames.push('actions');
     const headers = columnNames.map((columnName, key) => getColumnDefinition(columnName, key));
     
@@ -342,6 +327,48 @@ export default function OrderPartsGrid({
     if (rest.onPartClick) rest.onPartClick(row, row.original);
   };
 
+  const table = useMaterialReactTable({
+    columns: tableColumns,
+    data: _parts,
+    enableRowSelection: true,
+    enableMultiRowSelection: true,
+    enableBatchRowSelection: true,
+    enableGlobalFilter: false,
+    enableFilters: false,
+    enablePagination: false,
+    enableColumnOrdering: true,
+    enableColumnResizing: true,
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    enableDensityToggle: true,
+    enableHiding: true,
+    enableColumnPinning: true,
+    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onColumnOrderChange: handleColumnOrderChange,
+    onSortingChange: handleSortChange,
+    getRowId: (row) => row.supplierPartNumber,
+    muiTableBodyRowProps: ({ row }) => ({
+      onClick: () => handleRowClick(row),
+      hover: false, // important for proper row highlighting on hover
+      sx: {
+        cursor: 'pointer'
+      }
+    }),
+    state: {
+      showProgressBars: isLoading,
+      columnVisibility,
+      columnOrder,
+      sorting,
+      rowSelection
+    },
+    initialState: {
+      density: "compact",
+      columnPinning: { left: ['mrt-row-select', 'manufacturerPartNumber'], right: ['actions'] }
+    },
+    renderBottomToolbar: (<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)
+  });
+
   return (
     <div id="partsGrid">
       <style>{mediaStyles}</style>
@@ -355,43 +382,7 @@ export default function OrderPartsGrid({
         </div>
 
         <div style={{marginTop: '5px'}}>
-          <MaterialReactTable
-            columns={tableColumns}
-            data={_parts}
-            //enableRowSelection /** disabled until I can figure out how to pin it */
-            enableGlobalFilter={false}
-            enableFilters={false}
-            enablePagination={false}
-            enableColumnOrdering
-            enableColumnResizing
-            enablePinning
-            enableStickyHeader
-            enableStickyFooter
-            enableDensityToggle
-            enableHiding
-            manualSorting
-            onColumnVisibilityChange={handleColumnVisibilityChange}
-            onColumnOrderChange={handleColumnOrderChange}
-            onSortingChange={handleSortChange}
-            state={{ 
-              showProgressBars: isLoading,
-              columnVisibility, 
-              columnOrder,
-              sorting
-            }}
-            initialState={{ 
-              density: "compact", 
-              columnPinning: { left: ['actions'] }
-            }}
-            renderBottomToolbar={(<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)}
-            muiTableBodyRowProps={({row}) => ({
-              onClick: () => handleRowClick(row),
-              hover: false, // important for proper row highlighting on hover
-              sx: {
-                cursor: 'pointer'
-              }
-            })}
-          />
+          <MaterialReactTable table={table} />
         </div>
       </MediaContextProvider>
     </div>
@@ -417,15 +408,12 @@ OrderPartsGrid.propTypes = {
   onPartClick: PropTypes.func,
   /** Event handler when page size is changed */
   onPageSizeChange: PropTypes.func,
-  /** Event handler when sort is changed */
-  onSortChange: PropTypes.func,
   /** Highlight the selected part if provided */
   selectedPart: PropTypes.object,
   /** The name to save localized settings as */
   settingsName: PropTypes.string,
   /** Provides a function to get the default state */
   onInit: PropTypes.func,
-  onCheckedChange: PropTypes.func,
-  onSelectAll: PropTypes.func,
-  onSelectNone: PropTypes.func,
+  onSelectedPartsChange: PropTypes.func,
+  defaultVisibleColumns: PropTypes.array
 };

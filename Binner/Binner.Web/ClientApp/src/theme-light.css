@@ -33,12 +33,17 @@
   --theme-page-error-color: rgb(255, 255, 255);
   --theme-print-bg: rgba(255, 255, 255, 1);
   --theme-print-border: 2px solid rgb(90, 153, 226);
+  --theme-svg-color: rgba(0, 0, 0, .5);
+  --theme-edited: rgb(3, 102, 214);
+  --theme-edited-bg: rgb(228, 241, 255);
+  --theme-treeview-hover-bg: rgba(0, 0, 0, 0.04);
+  --theme-parttype-icon-color: rgba(96, 96, 96, 1);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(0, 0, 0, .85);
   --theme-loading-inverted-bg: rgba(255, 255, 255, .85);
   --theme-form-control-bg: rgb(250, 250, 250);
-  --theme-form-control-bg-focus: rgb(8, 124, 248);
+  --theme-form-control-bg-focus: rgb(255, 255, 255);
   --theme-form-control-color-focus: rgb(0, 0, 0);
   --theme-form-control-bg-highlight: rgb(251, 251, 251);
   --theme-form-control-bg-autocomplete: rgb(247, 248, 196);
@@ -79,7 +84,6 @@
   --theme-code-bg: rgb(220, 220, 220);
   --theme-code-color: rgb(20, 20, 20);
   --theme-code-border-color: rgb(243, 109, 51);
-  --theme-svg-color: rgba(0, 0, 0, .5);
 
   /* LABEL EDITOR */
   --theme-labeleditor-border-color: rgb(0, 0, 0);
