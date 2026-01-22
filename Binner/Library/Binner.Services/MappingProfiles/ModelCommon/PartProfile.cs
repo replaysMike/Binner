@@ -474,6 +474,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.TotalCost, options => options.Ignore())
                 .ForMember(x => x.Key, options => options.Ignore())
                 .AfterMap<PartTypeMappingAction<Part, Binner.Model.CommonPart>>()
+                .ReverseMap()   // required for order imports
                 ;
 
             CreateMap<Part, PartResponse>()

@@ -1,5 +1,6 @@
 ﻿using Binner.Global.Common;
 using Binner.Model;
+using Microsoft.Extensions.Logging;
 
 namespace Binner.Services.Integrations.PartInformation
 {
@@ -7,8 +8,8 @@ namespace Binner.Services.Integrations.PartInformation
     {
         protected const string MissingDatasheetCoverName = "datasheetcover.png";
 
-        public PartInfoServiceBase(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
-            : base(storageProvider, requestContextAccessor)
+        public PartInfoServiceBase(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
+            : base(logger, storageProvider, requestContextAccessor)
         {
         }
     }

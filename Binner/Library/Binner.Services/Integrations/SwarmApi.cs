@@ -23,6 +23,10 @@ namespace Binner.Services.Integrations
         public SwarmApi(ILogger<SwarmApi> logger, SwarmConfiguration configuration, UserConfiguration userConfiguration)
         {
             _logger = logger;
+            
+            // fixes an old data bug of unknown origin
+            if (configuration.ApiUrl == "https://swarm") configuration.ApiUrl = "https://swarm.binner.io";
+
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             var swarmApiConfiguration =

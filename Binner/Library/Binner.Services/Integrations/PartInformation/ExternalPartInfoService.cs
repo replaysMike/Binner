@@ -14,8 +14,8 @@ namespace Binner.Services.Integrations.PartInformation
         protected readonly IExternalBarcodeInfoService _externalBarcodeInfoService;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public ExternalPartInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<ExternalPartInfoService> logger, IExternalBarcodeInfoService externalBarcodeInfoService, IUserConfigurationService userConfigurationService)
-            : base(storageProvider, requestContextAccessor)
+        public ExternalPartInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<ExternalPartInfoService> logger, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IExternalBarcodeInfoService externalBarcodeInfoService, IUserConfigurationService userConfigurationService)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;

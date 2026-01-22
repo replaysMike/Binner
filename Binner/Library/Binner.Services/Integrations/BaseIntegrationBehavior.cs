@@ -1,6 +1,7 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Global.Common;
 using Binner.Model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -10,11 +11,13 @@ namespace Binner.Services.Integrations
     public class BaseIntegrationBehavior : IBaseIntegrationBehavior
     {
         protected const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
+        private readonly ILogger<BaseIntegrationBehavior> _logger;
         protected readonly IStorageProvider _storageProvider;
         protected readonly IRequestContextAccessor _requestContext;
 
-        public BaseIntegrationBehavior(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
+        public BaseIntegrationBehavior(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
         {
+            _logger = logger;
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;
         }
@@ -91,15 +94,20 @@ namespace Binner.Services.Integrations
             return bestGuessPartType;
         }
 
-        public PartTypeInfoAttribute? GetPartTypeInfo(SystemDefaults.DefaultPartTypes partTypeEnum)
+        public PartTypeInfoAttribute? GetPartTypeInfo(SystemDefaults.DefaultPartTypes? partTypeEnum)
         {
-            var typeOfEnum = partTypeEnum.GetType();
-            var fi = typeOfEnum.GetField(partTypeEnum.ToString());
+            if (partTypeEnum != null)
+            {
+                var typeOfEnum = partTypeEnum.GetType();
+                var fieldName = partTypeEnum.ToString() ?? string.Empty;
+                var fi = typeOfEnum.GetField(fieldName);
 
-            //get the attribute from the field
-            return fi.GetCustomAttributes(typeof(PartTypeInfoAttribute), false).
-                FirstOrDefault()
-                as PartTypeInfoAttribute;
+                //get the attribute from the field
+                return fi?.GetCustomAttributes(typeof(PartTypeInfoAttribute), false).
+                    FirstOrDefault()
+                    as PartTypeInfoAttribute;
+            }
+            return null;
         }
 
         public virtual IDictionary<PartType, int> GetMatchingPartTypes(CommonPart part, ICollection<PartType> partTypes)
@@ -129,7 +137,7 @@ namespace Binner.Services.Integrations
 
                 // check the categories on the part. if it matches on category, base the priority on the deepest category as highest
                 var nameResult = categories.Where(x => x.Name.Contains(partType.Name, ComparisonType)).FirstOrDefault();
-                if(nameResult != null)
+                if (nameResult != null)
                 {
                     addPart = true;
                     defaultPriority += nameResult.Priority + 2;
@@ -143,10 +151,17 @@ namespace Binner.Services.Integrations
 
                 // check the keywords on the part type
                 var keywords = partType.Keywords?.Split([',']).ToList() ?? new List<string>();
-                var defaultPartType = (SystemDefaults.DefaultPartTypes)partType.PartTypeId;
-                var info = GetPartTypeInfo(defaultPartType);
-                if (info != null && !string.IsNullOrEmpty(info.Keywords))
-                    keywords.AddRange(info.Keywords.Split([',']));
+                var defaultPartType = (SystemDefaults.DefaultPartTypes?)partType.PartTypeId;
+                if (defaultPartType != null)
+                {
+                    var info = GetPartTypeInfo(defaultPartType);
+                    if (info != null && !string.IsNullOrEmpty(info.Keywords))
+                        keywords.AddRange(info.Keywords.Split([',']));
+                }
+                else
+                {
+                    _logger.LogWarning($"PartTypeId '{partType.PartTypeId}' does not have a defined value in SystemDefaults.DefaultPartTypes!");
+                }
                 keywords = keywords.Distinct().ToList();
 
                 foreach (var keyword in keywords)

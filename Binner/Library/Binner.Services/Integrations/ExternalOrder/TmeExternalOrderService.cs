@@ -3,6 +3,7 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
+using Microsoft.Extensions.Logging;
 
 namespace Binner.Services.Integrations.ExternalOrder
 {
@@ -15,8 +16,8 @@ namespace Binner.Services.Integrations.ExternalOrder
         protected readonly WebHostServiceConfiguration _configuration;
         protected readonly IIntegrationApiFactory _integrationApiFactory;
 
-        public TmeExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor)
-            : base(storageProvider, requestContextAccessor)
+        public TmeExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
