@@ -1,3 +1,7 @@
+:root {
+  interpolate-size: allow-keywords;
+}
+
 /* EXPERIMENTAL */
 
 .sticky-target {
@@ -427,6 +431,10 @@ i.circular.icon {
   color: var(--theme-color);
 }
 
+.ui.circular.button:focus {
+  outline: 1px solid var(--theme-a-color);
+}
+
 .ui.toggle.checkbox .box,
 .ui.toggle.checkbox label,
 .ui.toggle.checkbox input:focus:checked~.box,
@@ -661,6 +669,10 @@ i.circular.icon {
   color: var(--theme-color);
 }
 
+.ui.breadcrumb {
+  background-color: var(--theme-segment-secondary-bg);
+}
+
 /**************************
  *  END SEMANTIC STYLING  *
  **************************/
@@ -696,24 +708,55 @@ i.circular.icon {
 }
 
 .MuiSvgIcon-root.compliance {
-  color: rgb(3, 175, 3);
+  color: rgb(3, 175, 3) !important;
 }
 
 .MuiSvgIcon-root.technical-specs {
-  color: rgb(8, 114, 212);
+  color: rgb(8, 114, 212) !important;
 }
 
 .MuiSvgIcon-root.cadModels {
-  color: rgb(231, 66, 231);
+  color: rgb(231, 66, 231) !important;
 }
 
 .MuiPaper-root {
-  min-height: 415px;
+  /*min-height: 415px;*/
   background-color: var(--theme-form-menu-bg) !important;
+}
+
+.MuiAlert-message {
+  font-size: 0.8em;
 }
 
 .MuiFormControlLabel-label {
   color: var(--theme-form-menu-highlight-color);
+}
+
+.MuiInput-input {
+  padding: 3px 6px !important;
+}
+
+.MuiPaper-root.MuiPaper-elevation .MuiBox-root {
+  background-color: var(--theme-segment-bg) !important;
+}
+
+.MuiTableCell-root {
+  border-bottom-color: var(--theme-border-color) !important;
+}
+
+.MuiTableRow-root.edited-row,
+.MuiTableRow-root.edited-row .MuiTableCell-root {
+  background-color: var(--theme-edited-bg) !important;
+}
+
+.ui.form .MuiTableCell-body.edited {
+  color: var(--theme-edited) !important;
+  font-weight: 700 !important;
+}
+
+.ui.form .MuiTableCell-body.edited input[type=text] {
+  color: var(--theme-edited) !important;
+  font-weight: 700 !important;
 }
 
  /**************************
@@ -724,7 +767,7 @@ i.circular.icon {
   width: 100%;
  }
 
-.sticky {
+ .sticky-container>.sticky {
   --var-offset: calc(100vh - 200px);
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
@@ -748,7 +791,7 @@ i.circular.icon {
   animation-delay: var(--animation-time);
   animation-delay: -5s;
 }
-.sticky.active {
+ .sticky-container>.sticky.active {
   background-image: url("/image/reveal/avatars.png");
   color: white;
 }
@@ -761,20 +804,20 @@ i.circular.icon {
   }
 }
 
-.sticky.active > div:first-child {
+.sticky-container>.sticky.active > div:first-child {
   margin-top: 5px;
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 8px;
   padding: 4px 15px;
 }
 
-.sticky a,
-.sticky a:hover {
+.sticky-container>.sticky a,
+.sticky-container>.sticky a:hover {
   color: var(--theme-a-color-hover);
 }
 
-.sticky.active a,
-.sticky.active a:hover {
+.sticky-container>.sticky.active a,
+.sticky-container>.sticky.active a:hover {
   color: var(--theme-a-color-hover);
 }
 
@@ -1442,6 +1485,10 @@ section.formHeader {
 
 /* Icon hover colors */
 
+svg.MuiSvgIcon-root.parttype {
+  color: var(--theme-parttype-icon-color) !important;
+}
+
 svg.parttype:hover,
 .icon-container svg.parttype:hover {
   color: var(--theme-a-color-hover) !important;
@@ -1647,51 +1694,6 @@ h1.pro::after {
   letter-spacing: 0.2em;
   text-align: center;
   margin-left: 2px;
-}
-
-span.free::after {
-  content: "FREE";
-  background-color: rgb(0, 100, 230);
-  color: #fff;
-  font-size: 0.5em;
-  vertical-align: super;
-  text-decoration: none !important;
-  padding: 1px 2px;
-  letter-spacing: 0.2em;
-  text-align: center;
-  margin-left: 10px;
-  top: -4px !important;
-  position: relative;
-}
-
-span.maker::after {
-  content: "MAKER";
-  background-color: rgb(0, 100, 230);
-  color: #fff;
-  font-size: 0.5em;
-  vertical-align: super;
-  text-decoration: none !important;
-  padding: 1px 2px;
-  letter-spacing: 0.2em;
-  text-align: center;
-  margin-left: 10px;
-  top: -4px !important;
-  position: relative;
-}
-
-span.pro::after {
-  content: "PRO";
-  background-color: rgb(0, 100, 230);
-  color: #fff;
-  font-size: 8px;
-  vertical-align: super;
-  text-decoration: none !important;
-  padding: 1px 2px;
-  letter-spacing: 0.2em;
-  text-align: center;
-  margin-left: 10px;
-  top: -4px !important;
-  position: relative;
 }
 
 ul.errors {

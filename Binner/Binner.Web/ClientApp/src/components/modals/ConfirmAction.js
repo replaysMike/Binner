@@ -7,7 +7,6 @@ import "./ConfirmAction.css";
 
 export default function ConfirmAction(props) {
   const { t } = useTranslation();
-  const [context, setContext] = useState(null);
   const [isOpen, setIsOpen] = useState(props.open);
   const [doNotAskAgain, setDoNotAskAgain] = useState(false);
 
@@ -73,5 +72,8 @@ ConfirmAction.propTypes = {
   /** True to offer choice to not show again */
   dontAskAgain: PropTypes.bool,
   /** True to enable sounds */
-  enableSound: PropTypes.bool
+  enableSound: PropTypes.bool,
+  header: PropTypes.any,
+  content: PropTypes.any,
+  name: PropTypes.string,
 };

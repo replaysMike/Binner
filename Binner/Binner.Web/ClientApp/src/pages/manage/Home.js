@@ -30,7 +30,7 @@ export const Manage = () => {
               requiredSubscriptionLevel={SubscriptionLevels.Maker}
               title="Bulk Edit Parts"
               description="Edit many parts at once."
-              url="/manage/bulkedit"
+              url="/manage/bulkedit/parts"
              />
           </ul>
         </div>

@@ -1,31 +1,35 @@
 .partTypeSelector-container {
-	position: relative;
+  position: relative;
 }
 
 /*.partTypeSelector-container div.icon:has(+ .partTypeSelector) { (no support in firefox yet) */
-	.partTypeSelector-container div.icon {
-	position: absolute;
-	top: 8px;
-	left: 10px;
-	z-index: 999;
+.partTypeSelector-container div.icon {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 999;
 }
 
 .ui.selection.dropdown.partTypeSelector {
-	padding-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 .ui.selection.dropdown.partTypeSelector input.search {
-	padding-left: 3.5em;
+  padding-left: 3.5em;
 }
 
 .ui.selection.dropdown.partTypeSelector .text {
-	top: 0.75em;
-	left: 2.5em;
+  top: 0.75em;
+  left: 2.5em;
 }
 
 .ui.selection.dropdown.partTypeSelector .text svg {
-	margin-top: -1px;
-	margin-right: 10px;
+  margin-top: -1px;
+  margin-right: 10px;
+}
+
+.partTypeSelectorTreeView .MuiTreeItem-content:hover {
+  background-color: var(--theme-treeview-hover-bg) !important;
 }
 
 .partTypeSelectorTreeView div.MuiTreeItem-content.Mui-focused,
@@ -35,51 +39,60 @@
   color: var(--theme-input-color);
 }
 
+.partTypeSelectorTreeView div.MuiTreeItem-content.Mui-focused:hover,
+.partTypeSelectorTreeView div.MuiTreeItem-content.Mui-selected:hover,
+.partTypeSelectorTreeView div.MuiTreeItem-content.Mui-selected.Mui-focused:hover {
+  background-color: var(--theme-selection-bg) !important;
+}
+
 .partTypeSelectorTreeView .MuiTreeItem-label span.MuiTypography-root.MuiTypography-caption {
   color: var(--theme-a-color);
 }
 
-.partTypeSelectorTreeView .MuiTreeItem-label p.MuiTypography-root.MuiTypography-body2
- {
+.partTypeSelectorTreeView .MuiTreeItem-label p.MuiTypography-root.MuiTypography-body2 {
   color: var(--theme-input-color);
 }
 
 .partTypeSelector.ui.active.search.dropdown input.search:focus+.text {
-	color: var(--theme-color) !important;
+  color: var(--theme-color) !important;
 }
 
-.partTypeSelector.ui.default.dropdown:not(.button)>.text, .partTypeSelector.ui.dropdown:not(.button)>.default.text {
+.partTypeSelector.ui.default.dropdown:not(.button)>.text,
+.partTypeSelector.ui.dropdown:not(.button)>.default.text {
   color: rgba(var(--theme-color-rgb), .87);
 }
 
 .partTypeSelectorTreeView .MuiTreeItem-group {
-	margin-left: 10px !important;
+  margin-left: 10px !important;
 }
+
 .partTypeSelectorTreeView li.MuiTreeItem-root {
-	margin-left: 0px;
+  margin-left: 0px;
 }
+
 .partTypeSelectorTreeView .MuiTreeItem-content {
-	padding-left: 0;
+  padding-left: 0;
 }
+
 .partTypeSelectorTreeView .MuiTreeItem-group .MuiTreeItem-content {
-	padding-left: 0 !important;
+  padding-left: 0 !important;
 }
 
 .partTypeSelector-container svg.parttype {
   color: var(--theme-svg-color);
-	margin-right: 5px;
-	vertical-align: baseline;
+  margin-right: 5px;
+  vertical-align: baseline;
 }
 
 .partTypeSelector-container div.parttype:has(svg) {
   color: var(--theme-svg-color);
-	margin-right: 5px;
+  margin-right: 5px;
 }
 
 .partTypeSelector-container div.parttype>svg {
-	max-width: 24px;
-	max-height: 24px;
-	vertical-align: baseline;
+  max-width: 24px;
+  max-height: 24px;
+  vertical-align: baseline;
 }
 
 .partTypeSelector-container .clearIconContainer {
@@ -89,4 +102,8 @@
   z-index: 2;
   padding: 2px;
   cursor: pointer;
+}
+
+.partTypeSelector.ui.dropdown .menu>.item:hover {
+  background: unset !important;
 }
