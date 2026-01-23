@@ -1670,32 +1670,6 @@ div:has(.Toastify > *) {
   opacity: 0.5;
 }
 
-h1.maker::after {
-  content: "MAKER";
-  background-color: rgb(0, 100, 230);
-  color: #fff;
-  font-size: 0.5em;
-  vertical-align: super;
-  text-decoration: none !important;
-  padding: 1px 2px;
-  letter-spacing: 0.2em;
-  text-align: center;
-  margin-left: 2px;
-}
-
-h1.pro::after {
-  content: "PRO";
-  background-color: rgb(0, 100, 230);
-  color: #fff;
-  font-size: 0.5em;
-  vertical-align: super;
-  text-decoration: none !important;
-  padding: 1px 2px;
-  letter-spacing: 0.2em;
-  text-align: center;
-  margin-left: 2px;
-}
-
 ul.errors {
   list-style-type: none;
   padding: 0;
@@ -1754,4 +1728,75 @@ ul.errors li.error:before {
   width: 75px;
   min-width: 75px;
   margin-right: 10px;
+}
+
+h1.maker::after {
+  content: "MAKER";
+  background-color: rgb(0, 100, 230);
+  color: #fff;
+  font-size: 0.5em;
+  vertical-align: super;
+  text-decoration: none !important;
+  padding: 1px 2px;
+  letter-spacing: 0.2em;
+  text-align: center;
+  margin-left: 2px;
+}
+
+h1.pro::after {
+  content: "PRO";
+  background-color: rgb(0, 100, 230);
+  color: #fff;
+  font-size: 0.5em;
+  vertical-align: super;
+  text-decoration: none !important;
+  padding: 1px 2px;
+  letter-spacing: 0.2em;
+  text-align: center;
+  margin-left: 2px;
+}
+
+span.free::after {
+  content: "FREE";
+  background-color: rgb(0, 100, 230);
+  color: #fff;
+  font-size: 0.5em;
+  vertical-align: super;
+  text-decoration: none !important;
+  padding: 1px 2px;
+  letter-spacing: 0.2em;
+  text-align: center;
+  margin-left: 10px;
+  top: -4px !important;
+  position: relative;
+}
+
+span.maker::after {
+  content: "MAKER";
+  background-color: rgb(0, 100, 230);
+  color: #fff;
+  font-size: 0.5em;
+  vertical-align: super;
+  text-decoration: none !important;
+  padding: 1px 2px;
+  letter-spacing: 0.2em;
+  text-align: center;
+  margin-left: 10px;
+  top: -4px !important;
+  position: relative;
+}
+
+span.pro::after {
+  content: "PRO";
+  background-color: rgb(0, 100, 230);
+  color: #fff;
+  font-size: 8px;
+  vertical-align: super;
+  text-decoration: none !important;
+  padding: 1px 2px;
+  letter-spacing: 0.2em;
+  text-align: center;
+  margin-left: 10px;
+  top: -4px !important;
+  position: relative;
 }

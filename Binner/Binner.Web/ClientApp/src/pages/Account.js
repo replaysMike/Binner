@@ -10,13 +10,13 @@ import { MD5 } from "../common/Utils";
 import { fetchApi, getErrorsString } from "../common/fetchApi";
 import { Hide } from "../components/Hide";
 import { FormHeader } from "../components/FormHeader";
-import { getAuthToken } from "../common/authentication";
+import { getAuthToken, isAdmin, getSubscriptionLevel } from "../common/authentication";
 import { AddTokenModal } from "../components/modals/AddTokenModal";
 import { format, parseJSON } from "date-fns";
 import { FormatShortDate } from "../common/datetime";
 import { Clipboard } from "../components/Clipboard";
 import { UserTokenType } from "../common/UserTokenType";
-import { GetTypeName } from "../common/Types";
+import { GetTypeName, SubscriptionLevels } from "../common/Types";
 import _ from "underscore";
 
 export function Account(props) {
@@ -38,6 +38,7 @@ export function Account(props) {
   const [passwordErrorMessage, setPasswordErrorMessage] = useState(null);
   const [confirmDeleteTokenIsOpen, setConfirmDeleteTokenIsOpen] = useState(false);
   const [deleteTokenSelectedItem, setDeleteTokenSelectedItem] = useState(null);
+  const [licenseKeys, setLicenseKeys] = useState([]);
   const navigate = useNavigate();
   const { acceptedFiles, isDragAccept, isDragReject, getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
@@ -60,8 +61,6 @@ export function Account(props) {
   });
 
   useEffect(() => {
-    fetchUser();
-
     function fetchUser() {
       setLoading(true);
       fetchApi(`/api/account`).then((response) => {
@@ -69,9 +68,21 @@ export function Account(props) {
         if (data) {
           setAccount(data);
           setLoading(false);
+          if (isAdmin()) fetchLicenseKeys();
         }
       });
     }
+
+    const fetchLicenseKeys = () => {
+      fetchApi(`/api/license`).then((response) => {
+        const { data } = response;
+        if (data) {
+          setLicenseKeys(data);
+        }
+      });
+    };
+
+    fetchUser();
   }, []);
 
   const updateAccount = (e) => {
@@ -342,6 +353,37 @@ export function Account(props) {
                   <Icon name="phone" />
                   <input />
                 </Form.Input>
+                  <div className="field">
+                    <label>License Keys</label>
+                    <Table compact celled striped size="small">
+                      <Table.Body>
+                      {licenseKeys.length > 0 && isAdmin()
+                        ? licenseKeys.map((license, lkey) => (
+                          <Table.Row key={lkey}>
+                            <Table.Cell>{license.name}</Table.Cell>
+                            <Table.Cell style={{ overflowWrap: 'anywhere' }}>
+                              <Popup
+                                wide
+                                hoverable
+                                content={<div>This is your Binner license key. You can use this key to gain features on your local installation. See <Link to='https://github.com/replaysMike/Binner/wiki/License-Keys' target="_blank">using your license key.</Link></div>}
+                                trigger={<div className="token multiline" name={`licensekey-${license.name}`}>{license.key}</div>}
+                              />
+                              <div style={{ float: 'right' }}>
+                                <Clipboard text={license.key} style={{ marginRight: '10px' }} />
+                                <Hide element={`licensekey-${license.name}`} />
+                              </div>
+                            </Table.Cell>
+                          </Table.Row>))
+                        : (isAdmin() 
+                          ? <Table.Row>
+                              <Table.Cell colSpan={2} textAlign="center">You have no license keys entered. Subscriptions can be added at <Link href="https://binner.io">Binner.io</Link></Table.Cell>
+                            </Table.Row>
+                          : <Table.Row>
+                            <Table.Cell colSpan={2} textAlign="center">Your subscription level: {GetTypeName(SubscriptionLevels, getSubscriptionLevel())}</Table.Cell>
+                          </Table.Row>)}
+                      </Table.Body>
+                    </Table>
+                  </div>
               </Grid.Column>
             </Grid.Row>
           </Grid>

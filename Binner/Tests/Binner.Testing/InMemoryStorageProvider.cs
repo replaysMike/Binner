@@ -631,6 +631,11 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
+        public Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredRequest request, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }
