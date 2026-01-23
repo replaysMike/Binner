@@ -1,11 +1,16 @@
 ﻿using AutoMapper;
+using Binner.Data;
 using Binner.Global.Common;
+using Binner.LicensedProvider;
+using Binner.Model;
 using Binner.Model.Responses;
+using Binner.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Net.Mime;
@@ -23,12 +28,30 @@ namespace Binner.Web.Controllers
         private readonly ILogger<LicenseController> _logger;
         private readonly IRequestContextAccessor _requestContextAccessor;
         private readonly IMapper _mapper;
+        private readonly IUserConfigurationService _userConfigurationService;
+        private readonly IAuthenticationService<BinnerContext> _authenticationService;
 
-        public LicenseController(ILogger<LicenseController> logger, IMapper mapper, IRequestContextAccessor requestContextAccessor)
+        public LicenseController(ILogger<LicenseController> logger, IMapper mapper, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, IAuthenticationService<BinnerContext> authenticationService)
         {
             _logger = logger;
             _mapper = mapper;
             _requestContextAccessor = requestContextAccessor;
+            _userConfigurationService = userConfigurationService;
+            _authenticationService = authenticationService;
+        }
+
+        /// <summary>
+        /// Get the current user's license key
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> GetLicenseKeysAsync()
+        {
+            var licenseKeys = new List<LicenseKey>();
+            // license key will be blank if user is not admin
+            var licenseKey = await _authenticationService.ValidateLicenseAsync();
+            licenseKeys.Add(licenseKey);
+            return Ok(licenseKeys);
         }
 
         [HttpGet("validate")]

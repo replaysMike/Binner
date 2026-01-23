@@ -7,8 +7,6 @@ using Binner.Model.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,6 +56,7 @@ namespace Binner.Web.Controllers
         public async Task<IActionResult> GetPartTypesAsync([FromQuery] string? parent)
         {
             var partTypes = await _partService.GetPartTypesAsync();
+            ICollection<PartType> partTypesFiltered = partTypes;
 
             PartType? parentPartType = null;
             if (!string.IsNullOrEmpty(parent))
@@ -65,11 +64,11 @@ namespace Binner.Web.Controllers
                 parentPartType = partTypes.FirstOrDefault(x => x.Name?.Equals(parent, StringComparison.InvariantCultureIgnoreCase) == true);
                 if (parentPartType == null)
                     return NotFound();
-            }
 
-            var partTypesFiltered = partTypes
-                .Where(x => x.ParentPartTypeId == parentPartType?.PartTypeId)
-                .ToList();
+                partTypesFiltered = partTypes
+                    .Where(x => x.ParentPartTypeId == parentPartType?.PartTypeId)
+                    .ToList();
+            }
 
             var partTypesResponse = Mapper.Map<ICollection<PartType>, ICollection<PartTypeResponse>>(partTypesFiltered);
             foreach (var partType in partTypesResponse)

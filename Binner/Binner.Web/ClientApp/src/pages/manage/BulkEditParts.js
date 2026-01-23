@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Header, Form, Segment, Breadcrumb } from "semantic-ui-react";
+import { Segment, Breadcrumb } from "semantic-ui-react";
 import { FormHeader } from "../../components/FormHeader";
-import { BulkEditPartsComponent } from "../../../extern/Binner.Licensed/lib/BulkEditPartsComponent";
+import { BulkEditPartsComponent } from "@binner/binner-licensed";
 
-export function BulkEditParts(props) {
+export function BulkEditParts() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   return (<div>

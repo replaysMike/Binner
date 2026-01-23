@@ -2,8 +2,11 @@
 using Binner.Common;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
+using Binner.Data;
 using Binner.Global.Common;
+using Binner.LicensedProvider;
 using Binner.Model;
+using Binner.Model.Authentication;
 using Binner.Model.Barcode;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
@@ -52,8 +55,9 @@ namespace Binner.Web.Controllers
         private readonly IPrintService _printService;
         private readonly ILabelGenerator _labelGenerator;
         private readonly IUserConfigurationService _userConfigurationService;
+        private readonly ILicensedService<User, BinnerContext> _licensedService;
 
-        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService<User> userService, IPrintService printService, ILabelGenerator labelGenerator, IUserConfigurationService userConfigurationService)
+        public PartController(ILogger<PartController> logger, IMapper mapper, WebHostServiceConfiguration config, IPartService partService, IPartTypeService partTypeService, IProjectService projectService, IPartScanHistoryService partScanHistoryService, IOrderImportHistoryService orderImportHistoryService, ILabelPrinterHardware labelPrinter, IBarcodeGenerator barcodeGenerator, IUserService<User> userService, IPrintService printService, ILabelGenerator labelGenerator, IUserConfigurationService userConfigurationService, ILicensedService<User, BinnerContext> licensedService)
         {
             _logger = logger;
             _mapper = mapper;
@@ -69,6 +73,7 @@ namespace Binner.Web.Controllers
             _printService = printService;
             _labelGenerator = labelGenerator;
             _userConfigurationService = userConfigurationService;
+            _licensedService = licensedService;
         }
 
         /// <summary>
@@ -102,6 +107,26 @@ namespace Binner.Web.Controllers
         /// <returns></returns>
         [HttpGet("list")]
         public async Task<IActionResult> GetPartsAsync([FromQuery] PaginatedRequest request)
+        {
+            try
+            {
+                var partsPage = await _partService.GetPartsAsync(request);
+                var partsResponse = _mapper.Map<ICollection<PartResponse>>(partsPage.Items);
+                return Ok(new PaginatedResponse<PartResponse>(partsPage.TotalItems, partsPage.PageSize, partsPage.PageNumber, partsResponse));
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Get an existing part with advanced filtering
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetFilteredPartsAsync([FromQuery] PaginatedFilteredRequest request)
         {
             try
             {
@@ -366,6 +391,30 @@ namespace Binner.Web.Controllers
             }
         }
 
+        /// <summary>
+        /// Bulk update a list of parts
+        /// </summary>
+        /// <remarks>Maker subscription required</remarks>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("bulkupdate")]
+        [Authorize(Policy = AuthorizationPolicies.MakerSubscription)]
+        public async Task<IActionResult> BulkUpdatePartAsync(UpdatePartsRequest request)
+        {
+            try
+            {
+                if (!request.Parts.Any())
+                    return BadRequest($"No parts specified to update!");
+
+                var response = await _licensedService.BulkUpdatePartsAsync(request.Parts);
+                return Ok(response);
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
         [HttpGet("barcode/info")]
         public async Task<IActionResult> GetBarcodeInfoAsync([FromQuery] string barcode)
         {
@@ -605,7 +654,8 @@ namespace Binner.Web.Controllers
                     var partsResponses = _mapper.Map<ICollection<Part>, ICollection<PartResponse>>(new List<Part> { part });
                     // return only one result
                     return Ok(partsResponses.First());
-                } else if (!string.IsNullOrEmpty(keywords))
+                }
+                else if (!string.IsNullOrEmpty(keywords))
                 {
                     // search by keyword, multiple results
                     var parts = await _partService.FindPartsAsync(keywords);
@@ -628,7 +678,7 @@ namespace Binner.Web.Controllers
                     var partsResponses = _mapper.Map<ICollection<Part>, ICollection<PartResponse>>(new List<Part> { part });
                     return Ok(partsResponses);
                 }
-                
+
             }
             catch (UserContextUnauthorizedException ex)
             {
@@ -791,16 +841,9 @@ namespace Binner.Web.Controllers
                                 existingPart.Description = importedPart.Description;
                             if (string.IsNullOrEmpty(existingPart.ManufacturerPartNumber))
                                 existingPart.ManufacturerPartNumber = importedPart.ManufacturerPartNumber;
-                            if (string.IsNullOrEmpty(existingPart.DigiKeyPartNumber) && importedPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
-                                existingPart.DigiKeyPartNumber = importedPart.SupplierPartNumber;
-                            if (string.IsNullOrEmpty(existingPart.MouserPartNumber) && importedPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
-                                existingPart.MouserPartNumber = importedPart.SupplierPartNumber;
-                            if (string.IsNullOrEmpty(existingPart.ArrowPartNumber) && importedPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
-                                existingPart.ArrowPartNumber = importedPart.SupplierPartNumber;
-                            if (string.IsNullOrEmpty(existingPart.TmePartNumber) && importedPart.Supplier?.Equals("tme", StringComparison.InvariantCultureIgnoreCase) == true)
-                                existingPart.TmePartNumber = importedPart.SupplierPartNumber;
-                            if (string.IsNullOrEmpty(existingPart.Element14PartNumber) && importedPart.Supplier?.Equals("element14", StringComparison.InvariantCultureIgnoreCase) == true)
-                                existingPart.Element14PartNumber = importedPart.SupplierPartNumber;
+
+                            existingPart = GetSupplierPartNumber(importedPart, existingPart);
+
                             if (string.IsNullOrEmpty(existingPart.DatasheetUrl))
                                 existingPart.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
                             if (string.IsNullOrEmpty(existingPart.ProductUrl))
@@ -828,19 +871,7 @@ namespace Binner.Web.Controllers
                         {
                             // create new part
                             var part = _mapper.Map<CommonPart, Part>(importedPart);
-                            part.Quantity += importedPart.QuantityAvailable;
-                            part.Cost = importedPart.Cost;
-                            part.Currency = importedPart.Currency;
-                            if (importedPart.Supplier?.Equals("digikey", StringComparison.InvariantCultureIgnoreCase) == true)
-                                part.DigiKeyPartNumber = importedPart.SupplierPartNumber;
-                            if (importedPart.Supplier?.Equals("mouser", StringComparison.InvariantCultureIgnoreCase) == true)
-                                part.MouserPartNumber = importedPart.SupplierPartNumber;
-                            if (importedPart.Supplier?.Equals("arrow", StringComparison.InvariantCultureIgnoreCase) == true)
-                                part.ArrowPartNumber = importedPart.SupplierPartNumber;
-                            if (importedPart.Supplier?.Equals("tme", StringComparison.InvariantCultureIgnoreCase) == true)
-                                part.TmePartNumber = importedPart.SupplierPartNumber;
-                            if (importedPart.Supplier?.Equals("element14", StringComparison.InvariantCultureIgnoreCase) == true)
-                                part.Element14PartNumber = importedPart.SupplierPartNumber;
+                            part = GetSupplierPartNumber(importedPart, part);
                             part.DatasheetUrl = importedPart.DatasheetUrls.FirstOrDefault();
                             part.ProductUrl = importedPart.ProductUrl;
                             part.Manufacturer = importedPart.Manufacturer;
@@ -906,6 +937,30 @@ namespace Binner.Web.Controllers
             {
                 return Unauthorized(ex.Message);
             }
+        }
+
+        private Part GetSupplierPartNumber(CommonPart? commonPart, Part part)
+        {
+            if (commonPart == null) return part;
+            switch (commonPart.Supplier?.ToLowerInvariant())
+            {
+                case "digikey":
+                    part.DigiKeyPartNumber = commonPart.SupplierPartNumber;
+                    break;
+                case "mouser":
+                    part.MouserPartNumber = commonPart.SupplierPartNumber;
+                    break;
+                case "arrow":
+                    part.ArrowPartNumber = commonPart.SupplierPartNumber;
+                    break;
+                case "tme":
+                    part.TmePartNumber = commonPart.SupplierPartNumber;
+                    break;
+                case "element14":
+                    part.Element14PartNumber = commonPart.SupplierPartNumber;
+                	break;
+            }
+            return part;
         }
 
         /// <summary>
