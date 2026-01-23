@@ -67,5 +67,17 @@ namespace Binner.Data
         void UpdateRange(IEnumerable<object> entities);
         void RemoveRange(IEnumerable<object> entities);
         IQueryable<TResult> FromExpression<TResult>(Expression<Func<IQueryable<TResult>>> expression);
+
+        /// <summary>
+        /// Retrieve the license key for the current organization
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetLicenseKeyAsync(int organizationId);
+
+        /// <summary>
+        /// Retrieve the license key for the current organization
+        /// </summary>
+        /// <returns></returns>
+        string GetLicenseKey(int organizationId);
     }
 }

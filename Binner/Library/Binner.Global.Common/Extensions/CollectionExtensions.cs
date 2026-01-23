@@ -1,4 +1,4 @@
-﻿namespace Binner.Global.Common
+﻿namespace Binner.Global.Common.Extensions
 {
     public static class CollectionExtensions
     {

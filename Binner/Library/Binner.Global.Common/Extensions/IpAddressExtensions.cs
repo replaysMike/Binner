@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Binner.Global.Common
+namespace Binner.Global.Common.Extensions
 {
     internal static class IpAddressExtensions
     {
