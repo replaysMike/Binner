@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@artsy/fresnel": "^6.1.0",
-    "@binner/binner-licensed": "^1.0.5",
+    "@binner/binner-licensed": "^1.0.6",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@eslint/js": "^9.24.0",

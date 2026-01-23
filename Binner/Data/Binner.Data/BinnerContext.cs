@@ -200,5 +200,21 @@ namespace Binner.Data
             {
             }
         }
+
+        public virtual async Task<string> GetLicenseKeyAsync(int organizationId)
+        {
+            return await OrganizationConfigurations
+                .Where(x => x.OrganizationId == organizationId)
+                .Select(x => x.LicenseKey)
+                .FirstOrDefaultAsync() ?? string.Empty;
+        }
+
+        public virtual string GetLicenseKey(int organizationId)
+        {
+            return OrganizationConfigurations
+                .Where(x => x.OrganizationId == organizationId)
+                .Select(x => x.LicenseKey)
+                .FirstOrDefault() ?? string.Empty;
+        }
     }
 }

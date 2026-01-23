@@ -1735,6 +1735,7 @@ h1.maker::after {
   background-color: rgb(0, 100, 230);
   color: #fff;
   font-size: 0.5em;
+  font-weight: 700;
   vertical-align: super;
   text-decoration: none !important;
   padding: 1px 2px;
@@ -1748,6 +1749,7 @@ h1.pro::after {
   background-color: rgb(0, 100, 230);
   color: #fff;
   font-size: 0.5em;
+  font-weight: 700;
   vertical-align: super;
   text-decoration: none !important;
   padding: 1px 2px;
@@ -1760,7 +1762,8 @@ span.free::after {
   content: "FREE";
   background-color: rgb(0, 100, 230);
   color: #fff;
-  font-size: 0.5em;
+  font-size: 8px;
+  font-weight: 700;
   vertical-align: super;
   text-decoration: none !important;
   padding: 1px 2px;
@@ -1775,7 +1778,8 @@ span.maker::after {
   content: "MAKER";
   background-color: rgb(0, 100, 230);
   color: #fff;
-  font-size: 0.5em;
+  font-size: 8px;
+  font-weight: 700;
   vertical-align: super;
   text-decoration: none !important;
   padding: 1px 2px;
@@ -1791,6 +1795,7 @@ span.pro::after {
   background-color: rgb(0, 100, 230);
   color: #fff;
   font-size: 8px;
+  font-weight: 700;
   vertical-align: super;
   text-decoration: none !important;
   padding: 1px 2px;

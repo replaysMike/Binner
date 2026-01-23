@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Binner.Global.Common.Extensions;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Security.Principal;
 
