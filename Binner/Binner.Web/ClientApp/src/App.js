@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 // styles
 import "./theme-light.css";
 import "./theme-dark.css";
+import "./layout.css";
 import "./custom.css";
 import "./bootstrap.css"; /* needed for the carousel control */
 
