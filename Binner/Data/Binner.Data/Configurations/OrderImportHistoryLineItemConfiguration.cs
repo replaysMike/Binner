@@ -17,6 +17,8 @@ namespace Binner.Data.Configurations
                 .WithMany(b => b.OrderImportHistoryLineItems)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Property(p => p.Cost)
+                .HasColumnType("decimal(18,4)");
             builder.Property(p => p.DateCreatedUtc)
                 .HasDefaultValueSql("getutcdate()");
             builder.Property(p => p.DateModifiedUtc)

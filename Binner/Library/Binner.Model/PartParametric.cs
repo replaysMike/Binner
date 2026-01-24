@@ -25,7 +25,7 @@
         /// <summary>
         /// Value as a number if numeric
         /// </summary>
-        public double ValueNumber { get; set; }
+        public decimal ValueNumber { get; set; }
 
         /// <summary>
         /// The measurement units of the value

@@ -418,8 +418,8 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("OrderImportHistoryLineItemId"));
 
-                    b.Property<double>("Cost")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("CustomerReference")
                         .HasColumnType("text");
@@ -708,7 +708,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<string>("BinNumber2")
                         .HasColumnType("text");
 
-                    b.Property<double>("Cost")
+                    b.Property<decimal>("Cost")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Currency")
@@ -990,7 +990,7 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double>("ValueNumber")
+                    b.Property<decimal>("ValueNumber")
                         .HasColumnType("decimal(18,4)");
 
                     b.HasKey("PartParametricId");

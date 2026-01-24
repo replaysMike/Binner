@@ -244,7 +244,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         AdditionalPartNumbers = additionalPartNumbers,
                         Manufacturer = part.Producer,
                         ManufacturerPartNumber = manufacturerPartNumber,
-                        Cost = partCost,
+                        Cost = (decimal)partCost,
                         Currency = currency,
                         DatasheetUrls = datasheetUrls.ToList(),
                         Description = part.Description,

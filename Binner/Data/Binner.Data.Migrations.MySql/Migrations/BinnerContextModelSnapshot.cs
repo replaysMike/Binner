@@ -418,8 +418,8 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("OrderImportHistoryLineItemId"));
 
-                    b.Property<double>("Cost")
-                        .HasColumnType("double");
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("CustomerReference")
                         .HasColumnType("longtext");

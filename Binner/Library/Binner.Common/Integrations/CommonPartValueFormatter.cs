@@ -9,14 +9,14 @@ namespace Binner.Common.Integrations
 {
     public static class CommonPartValueFormatter
     {
-        public static double DetectValueFromText(string? value)
+        public static decimal DetectValueFromText(string? value)
         {
             if (string.IsNullOrEmpty(value))
-                return 0d;
+                return 0;
             var resultString = Regex.Match(value, @"-?[0-9]\d*(\.\d+)?").Value; // detect negative numbers, digits with decimals
-            if (double.TryParse(resultString, out var result))
+            if (decimal.TryParse(resultString, out var result))
                 return result;
-            return 0d;
+            return 0;
         }
 
         public static ParametricUnits DetectUnitsFromText(string? value)

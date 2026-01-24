@@ -105,8 +105,8 @@ namespace Binner.Common.IO
                 SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
-                SetCellValue(row.CreateCell(columnIndex), part.Quantity * (part.Part?.Cost ?? part.Cost), styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? (decimal)part.Cost, styles, rowStyle); columnIndex++;
+                SetCellValue(row.CreateCell(columnIndex), part.Quantity * (part.Part?.Cost ?? (decimal)part.Cost), styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                 SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
@@ -184,8 +184,8 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? (decimal)part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? (decimal)part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
@@ -263,8 +263,8 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? (decimal)part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? (decimal)part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;
@@ -364,8 +364,8 @@ namespace Binner.Common.IO
                     SetCellValue(row.CreateCell(columnIndex), part.PartName, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.ManufacturerPartNumber, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.PartType, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? part.Cost, styles, rowStyle); columnIndex++;
-                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), part.Part?.Cost ?? (decimal)part.Cost, styles, rowStyle); columnIndex++;
+                    SetCellValue(row.CreateCell(columnIndex), (part.Part?.Cost ?? (decimal)part.Cost) * part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Currency ?? part.Currency, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Quantity, styles, rowStyle); columnIndex++;
                     SetCellValue(row.CreateCell(columnIndex), part.Part?.Quantity ?? part.QuantityAvailable, styles, rowStyle); columnIndex++;

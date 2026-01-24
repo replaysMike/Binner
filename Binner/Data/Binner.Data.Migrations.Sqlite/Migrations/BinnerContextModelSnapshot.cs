@@ -396,8 +396,8 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Cost")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("CustomerReference")
                         .HasColumnType("TEXT");
@@ -678,7 +678,7 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("BinNumber2")
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("Cost")
+                    b.Property<decimal>("Cost")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Currency")
@@ -956,7 +956,7 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("ValueNumber")
+                    b.Property<decimal>("ValueNumber")
                         .HasColumnType("decimal(18,4)");
 
                     b.HasKey("PartParametricId");

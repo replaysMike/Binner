@@ -374,7 +374,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             }
                         } 
                     },
-                    Cost = (double)part.UnitPrice,
+                    Cost = (decimal)part.UnitPrice,
                     Currency = currency,
                     DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
                     Description = part.ProductDescription + Environment.NewLine + part.DetailedDescription,
@@ -514,7 +514,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     Manufacturer = part.Manufacturer?.Name ?? string.Empty,
                     ManufacturerPartNumber = part.ManufacturerProductNumber ?? string.Empty,
                     Categories = RecursiveMapCategories(part),
-                    Cost = (double)part.UnitPrice,
+                    Cost = (decimal)part.UnitPrice,
                     Currency = currency,
                     DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
                     Description = part.Description.ProductDescription + Environment.NewLine + part.Description.DetailedDescription,

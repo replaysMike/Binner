@@ -159,7 +159,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         AdditionalPartNumbers = additionalPartNumbers,
                         Manufacturer = part.Manufacturer?.MfrName,
                         ManufacturerPartNumber = manufacturerPartNumber,
-                        Cost = partCost,
+                        Cost = (decimal)partCost,
                         Currency = currency,
                         DatasheetUrls = arrowDatasheets,
                         Description = part.Desc,

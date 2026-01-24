@@ -126,7 +126,7 @@ namespace Binner.Common.IO
                     Value = values.GetValue("Value").As<string?>(),
                     BinNumber = values.GetValue("BinNumber").As<string?>(),
                     BinNumber2 = values.GetValue("BinNumber2").As<string?>(),
-                    Cost = values.GetValue("Cost").As<double>(),
+                    Cost = values.GetValue("Cost").As<decimal>(),
                     DatasheetUrl = values.GetValue("DatasheetUrl").As<string?>(),
                     Description = values.GetValue("Description").As<string?>(),
                     DigiKeyPartNumber = values.GetValue("DigiKeyPartNumber").As<string?>(),

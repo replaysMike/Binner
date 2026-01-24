@@ -84,7 +84,7 @@ namespace Binner.Web.Controllers
                     Location = "Home",
                     BinNumber = "11",
                     BinNumber2 = "21",
-                    Cost = 0.99,
+                    Cost = 0.99M,
                     MountingTypeId = 1,
                     PartTypeId = 18,
                     PackageType = "DIP8",

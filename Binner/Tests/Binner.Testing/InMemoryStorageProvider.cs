@@ -43,7 +43,7 @@ namespace Binner.Testing
                     Location = "Vancouver",
                     BinNumber = "1",
                     BinNumber2 = "1",
-                    Cost = 1.39,
+                    Cost = 1.39M,
                     Currency = "CAD",
                     Description = "OP AMP",
                     Keywords = new List<string> { "ic", "op amp" },
