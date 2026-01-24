@@ -1,4 +1,5 @@
-﻿using Binner.Data.Model;
+﻿using Binner.Data.Converters;
+using Binner.Data.Model;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -193,6 +194,11 @@ namespace Binner.Data
             // treat all dates as UTC
             UtcDateTimeModelBuilder.Apply(modelBuilder);
         }
+
+        /*protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<decimal>().HaveConversion<DecimalToDoubleConverter>();
+        }*/
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

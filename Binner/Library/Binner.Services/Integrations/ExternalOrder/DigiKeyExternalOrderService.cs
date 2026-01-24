@@ -341,8 +341,8 @@ namespace Binner.Services.Integrations.ExternalOrder
             BasePartNumber = basePart,
             MountingTypeId = mountingTypeId,
             PackageType = packageType,
-            Cost = lineItem.UnitPrice,  // cost should be from the order
-            TotalCost = lineItem.TotalPrice,
+            Cost = (decimal)lineItem.UnitPrice,  // cost should be from the order
+            TotalCost = (decimal)lineItem.TotalPrice,
             QuantityAvailable = part.QuantityAvailable, // qty should be from the order
             Quantity = lineItem.QuantityOrdered,  // qty should be from the order
             Reference = lineItem.CustomerReference,
@@ -364,8 +364,8 @@ namespace Binner.Services.Integrations.ExternalOrder
             BasePartNumber = basePart,
             MountingTypeId = mountingTypeId,
             PackageType = packageType,
-            Cost = lineItem.UnitPrice,  // cost should be from the order
-            TotalCost = lineItem.TotalPrice,
+            Cost = (decimal)lineItem.UnitPrice,  // cost should be from the order
+            TotalCost = (decimal)lineItem.TotalPrice,
             QuantityAvailable = part.QuantityAvailable,  // qty available is vendor stock
             Quantity = lineItem.Quantity,  // qty should be from the order
             Reference = lineItem.CustomerReference,
@@ -379,8 +379,8 @@ namespace Binner.Services.Integrations.ExternalOrder
             Manufacturer = string.Empty,
             Description = lineItem.Description,
             Currency = currency,
-            Cost = lineItem.UnitPrice,
-            TotalCost = lineItem.TotalPrice,
+            Cost = (decimal)lineItem.UnitPrice,
+            TotalCost = (decimal)lineItem.TotalPrice,
             QuantityAvailable = lineItem.QuantityOrdered,
             Quantity = lineItem.QuantityOrdered,  // quantity ordered
             Reference = lineItem.CustomerReference,
@@ -393,8 +393,8 @@ namespace Binner.Services.Integrations.ExternalOrder
             ManufacturerPartNumber = string.Empty,
             Manufacturer = string.Empty,
             Description = lineItem.ProductDescription,
-            Cost = lineItem.UnitPrice,
-            TotalCost = lineItem.TotalPrice,
+            Cost = (decimal)lineItem.UnitPrice,
+            TotalCost = (decimal)lineItem.TotalPrice,
             QuantityAvailable = lineItem.Quantity,
             Quantity = lineItem.Quantity, // quantity ordered
             Reference = lineItem.CustomerReference,

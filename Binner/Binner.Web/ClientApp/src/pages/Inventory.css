@@ -25,6 +25,10 @@
   }
 }
 
+.inventory .partTypeSelector {
+  height: 54px;
+}
+
 .inventory .render-disabled {
 	background-color: var(--theme-bg) !important;
 	background-image: linear-gradient(var(--theme-bg), #bbb);
@@ -266,14 +270,18 @@
 
 .inventory .part-metadata-buttons {
 	display: flex;
+  	width: 100%;
 	align-items: end;
 	justify-content: end;
 }
 
 .inventory .part-metadata-buttons .ui.button {
-	height: 43px;
-	line-height: 1.21428571em;
-	padding: 0.68em 1.5em 0.68em 1.5em;
+	height: 40px;
+}
+
+.inventory .part-metadata-buttons .ui.button span {
+  position: relative;
+  top: -5px;
 }
 
 .inventory .part-metadata-buttons .MuiSvgIcon-root {

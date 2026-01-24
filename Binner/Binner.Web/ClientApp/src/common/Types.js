@@ -22,6 +22,36 @@ export const MountingTypes = {
   SurfaceMount: { value: 2, name: 'Surface Mount', icon: 'microchip', description: 'Part is soldered to the surface of the PCB' },
 };
 
+export const PackageTypes = {
+  // package types are freeform, no value id required
+  None: { name: 'None', description: '' },
+  SMD201: { name: '201', description: '0.6mm x 0.3mm' },
+  SMD402: { name: '402', description: '1.0mm x 0.5mm' },
+  SMD603: { name: '603', description: '1.6mm x 0.8mm' },
+  SMD805: { name: '805', description: '2.0mm x 1.25mm' },
+  SMD1206: { name: '1206', description: '3.2mm x 1.6mm' },
+  SMD1210: { name: '1210', description: '3.2mm x 2.5mm' },
+  SMD1812: { name: '1812', description: '4.5mm x 3.2mm' },
+  SMD2010: { name: '2010', description: '5.0mm x 2.5mm' },
+  SMD2512: { name: '2512', description: '6.3mm x 3.2mm' },
+  SMD102: { name: '102', description: '2.2mm x 1.1mm' },
+  SMD204: { name: '204', description: '3.6mm x 1.4mm' },
+  SMD207: { name: '207', description: '5.8mm x 2.2mm' },
+  SMD1008: { name: '1008', description: '2.5mm x 2.0mm' },
+  SMD1806: { name: '1806', description: '4.5mm x 1.6mm' },
+  SMD1825: { name: '1825', description: '4.5mm x 6.4mm' },
+  SMD2920: { name: '2920', description: '7.4mm x 5.1mm' },
+  DIP4: { name: 'DIP4', description: '4.6mm x 7.62mm' },
+  DIP8: { name: 'DIP8', description: '9.66mm x 7.62mm' },
+  DIP14: { name: 'DIP14', description: '19.75mm x 7.62mm' },
+  DIP16: { name: 'DIP16', description: '19.75mm x 7.62mm' },
+  DIP20: { name: 'DIP20', description: '25.1mm x 7.62mm' },
+  DIP24: { name: 'DIP24', description: '32.0mm x 15.24mm' },
+  DIP28: { name: 'DIP28', description: '39.75mm x 15.24mm' },
+  DIP40: { name: 'DIP40', description: '52.07mm x 15.24mm' },
+  DIP64: { name: 'DIP64', description: '82.5mm x 22.86mm' },
+};
+
 export const BarcodeProfiles = {
   Default: 0
 };
@@ -74,8 +104,7 @@ export const BooleanTypes = {
   
   switch(typeof valueType){
     case "object":
-      const matchingType = _.findWhere(typeValues, { value: value });
-      return matchingType?.name;
+      return _.findWhere(typeValues, { value: value })?.name;
     default:
       return typeKeys[value];
   }
@@ -182,11 +211,11 @@ export const GetTypeDropdown = (type, includeEmptyOption = false, keyIndex = 1, 
 export const GetAdvancedTypeDropdown = (type, showDescription = false, keyIndex = 1, extraFields = {}) => {
   const typeKeys = Object.keys(type);
 
-  return typeKeys.map(t => {
+  return typeKeys.map((t, tkey) => {
     return {
       ...extraFields,
-      key: type[t].value + keyIndex,
-      value: type[t].value,
+      key: (type[t].value || type[t].text || type[t].name || tkey) + keyIndex,
+      value: (type[t].value || type[t].text || type[t].name),
       icon: type[t].icon,
       text: type[t].text || type[t].name,
       description: showDescription ? type[t].description : null,

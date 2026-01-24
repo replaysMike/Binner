@@ -177,7 +177,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     BasePartNumber = basePart,
                     Manufacturer = part?.brandName ?? string.Empty,
                     ManufacturerPartNumber = part?.translatedManufacturerPartNumber ?? string.Empty,
-                    Cost = (double)(part?.prices?.OrderBy(x => x?.from).FirstOrDefault()?.cost ?? 0m),
+                    Cost = (decimal)(part?.prices?.OrderBy(x => x?.from).FirstOrDefault()?.cost ?? 0m),
                     Currency = part?.currency ?? "USD",
                     DatasheetUrls = datasheetUrls,
                     Description = part?.productOverview?.description ?? (part?.displayName ?? string.Empty),

@@ -260,7 +260,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                                 BasePartNumber = part.Name,
                                 Manufacturer = manufacturerPart.ManufacturerName,
                                 ManufacturerPartNumber = manufacturerPart.Name,
-                                Cost = supplierPart.Cost ?? 0,
+                                Cost = (decimal?)supplierPart.Cost ?? 0m,
                                 Currency = supplierPart.Currency,
                                 Description = !string.IsNullOrEmpty(manufacturerPart.Description)
                                     ? manufacturerPart.Description

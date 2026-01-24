@@ -5,21 +5,34 @@
 /*.partTypeSelector-container div.icon:has(+ .partTypeSelector) { (no support in firefox yet) */
 .partTypeSelector-container div.icon {
   position: absolute;
-  top: 8px;
+  top: 30%;
   left: 10px;
   z-index: 999;
+}
+
+.partTypeSelector-container .ui.selection.dropdown>.dropdown.icon {
+  top: 33%;
 }
 
 .ui.selection.dropdown.partTypeSelector {
   padding-top: 0 !important;
 }
 
-.ui.selection.dropdown.partTypeSelector input.search {
-  padding-left: 3.5em;
+.partTypeSelector-container input.search {
+  padding-left: 3.5em !important;
+  height: 100%;
+}
+
+.partTypeSelector-container .default.text {
+  height: 100%;
+  top: 50% !important;
+}
+
+.partTypeSelector-container .icon {
+  height: 100%;
 }
 
 .ui.selection.dropdown.partTypeSelector .text {
-  top: 0.75em;
   left: 2.5em;
 }
 
@@ -97,8 +110,8 @@
 
 .partTypeSelector-container .clearIconContainer {
   position: absolute;
-  right: 10px;
-  top: 6px;
+  right: 2.5em;
+  top: 25%;
   z-index: 2;
   padding: 2px;
   cursor: pointer;

@@ -32,7 +32,7 @@ namespace Binner.Model
         /// <summary>
         /// The part cost
         /// </summary>
-        public double Cost { get; set; }
+        public decimal Cost { get; set; }
 
         /// <summary>
         /// Currency of part cost

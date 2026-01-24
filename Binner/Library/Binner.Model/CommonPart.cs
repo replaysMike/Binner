@@ -58,12 +58,12 @@
         /// <summary>
         /// Cost for part from this supplier
         /// </summary>
-        public double Cost { get; set; }
+        public decimal Cost { get; set; }
 
         /// <summary>
         /// Total Cost for part (order line item total cost)
         /// </summary>
-        public double TotalCost { get; set; }
+        public decimal TotalCost { get; set; }
 
         /// <summary>
         /// Cost currency

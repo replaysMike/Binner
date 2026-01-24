@@ -22,7 +22,7 @@ namespace Binner.Data.Model
 
         public string? Supplier { get; set; }
 
-        public double Cost { get; set; }
+        public decimal Cost { get; set; }
 
         public long? PartId { get; set; }
 

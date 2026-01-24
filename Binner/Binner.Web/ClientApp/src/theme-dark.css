@@ -31,8 +31,8 @@ html[data-color-mode="dark"] {
   --theme-page-banner-color: rgb(220, 220, 230);
   --theme-page-error-border: 1px dotted rgb(206, 39, 39);
   --theme-page-error-color: rgb(255, 255, 255);
-  --theme-print-bg: rgb(178, 191, 209);
-  --theme-print-border: 2px solid rgb(94, 142, 196);
+  --theme-print-bg: rgb(48, 58, 77);
+  --theme-print-border: 2px solid rgb(50, 77, 107);
   --theme-svg-color: rgba(220, 220, 220, 1);
   --theme-edited: rgb(3, 102, 214);
   --theme-edited-bg: rgb(46, 64, 83);
@@ -47,7 +47,7 @@ html[data-color-mode="dark"] {
   --theme-form-control-color-focus: rgb(255, 255, 255);
   --theme-form-control-bg-highlight: rgb(37, 49, 65);
   --theme-form-control-bg-autocomplete: rgb(61, 94, 138);
-  --theme-form-control-border-autocomplete: rgb(243, 178, 58);
+  --theme-form-control-border-autocomplete: rgb(58, 138, 243);
   --theme-input-color: rgba(220, 220, 220, .87);
   --theme-input-color-highlight: rgb(4, 112, 235);
   --theme-form-menu-bg: rgb(21, 28, 36);

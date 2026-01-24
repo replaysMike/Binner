@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link, useBlocker } from "react-router-dom";
 import { useTranslation, Trans } from 'react-i18next';
 import PropTypes from "prop-types";
@@ -35,10 +35,11 @@ import { getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
 import { CustomFieldTypes } from "../common/customFieldTypes";
 import { CustomFieldValues } from "../components/CustomFieldValues";
-import { MountingTypes, GetAdvancedTypeDropdown } from "../common/Types";
+import { MountingTypes, PackageTypes, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
 import { getSystemSettings } from "../common/applicationSettings";
+import { formatResistorValue, formatCapacitorValue, resistorTerminators, capacitorTerminators } from "../common/formatting";
 // overrides BarcodeScannerInput audio support
 const enableSound = true;
 const soundSuccess = new Audio('/audio/scan-success.mp3');
@@ -83,7 +84,8 @@ export function Inventory({ partNumber = "", ...rest }) {
       lastBinNumber: "",
       lastBinNumber2: "",
       lowStockThreshold: DefaultLowStockThreshold,
-      rememberLast: true
+      rememberLast: true,
+      autoSearchEnabled: true,
     };
     // validate the values
     if (typeof typeof savedViewPreferences.lastPartTypeId !== 'number') savedViewPreferences.lastPartTypeId = parseInt(savedViewPreferences.lastPartTypeId);
@@ -184,6 +186,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const disableRendering = useRef(false);
   const currencyOptions = GetAdvancedTypeDropdown(Currencies, true);
   const mountingTypeOptions = GetAdvancedTypeDropdown(MountingTypes, true);
+  const [packageTypeOptions, setPackageTypeOptions] = useState(GetAdvancedTypeDropdown(PackageTypes, true));
   const [systemSettings, setSystemSettings] = useState({ currency: "USD", customFields: [] });
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
   const [authorizationApiName, setAuthorizationApiName] = useState('');
@@ -382,6 +385,14 @@ export function Inventory({ partNumber = "", ...rest }) {
     return existingValue[property] || "";
   };
 
+  const setPackageType = (entity, packageTypeName) => {
+    const existingPackageType = packageTypeOptions.find(i => i.name === packageTypeName);
+    if (!existingPackageType) {
+      setPackageTypeOptions(prevOptions => [...prevOptions, { value: packageTypeName, text: packageTypeName }]);
+    }
+    entity.packageType = packageTypeName;
+  };
+
   const setPartFromMetadata = useCallback((metadataParts, suggestedPart, allowOverwrite = true) => {
     if (partTypesRef.current.length === 0)
       console.error("There are no partTypes! This shouldn't happen and is a bug.");
@@ -406,7 +417,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     entity.supplierPartNumber = mapIfValid("supplierPartNumber", entity, mappedPart, allowOverwrite);
     entity.partTypeId = mapIfValid("partTypeId", entity, mappedPart, allowOverwrite);
     entity.mountingTypeId = mapIfValid("mountingTypeId", entity, mappedPart, allowOverwrite);
-    entity.packageType = mapIfValid("packageType", entity, mappedPart, allowOverwrite);
+    //entity.packageType = mapIfValid("packageType", entity, mappedPart, allowOverwrite);
+    setPackageType(entity, mapIfValid("packageType", entity, mappedPart, allowOverwrite));
     entity.cost = mapIfValid("cost", entity, mappedPart, allowOverwrite);
     entity.keywords = mapIfValid("keywords", entity, mappedPart, allowOverwrite);
     entity.description = mapIfValid("description", entity, mappedPart, allowOverwrite);
@@ -940,6 +952,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       if (response.responseObject.ok) {
         const { data } = response;
         setPart(data);
+        setPackageType(data, data.packageType);
         setLoadingPart(false);
         return data;
       }
@@ -1270,16 +1283,76 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPartMetadataIsSubscribed(false);
     setPartMetadataErrors([]);
     let searchPartNumber = control.value || '';
-    if (searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
+    if (viewPreferences.autoSearchEnabled && searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
       searchPartNumber = control.value.replace("\t", "");
       await searchDebounced(searchPartNumber, part);
       setIsDirty(true);
     }
 
     setInputPartNumber(searchPartNumber);
+    trySetPartValue(searchPartNumber);
+    trySetPackageType(searchPartNumber);
 
     // wont work unless we update render
     //setRenderIsDirty(!renderIsDirty);
+  };
+
+  const trySetPackageType = (partNumber) => {
+    let newValue = null;
+    if (partNumber.length === 0) setPart(prev => ({ ...prev, packageType: '' }));
+    // don't overwrite existing values
+    if (part.packageType && part.packageType.length > 0) return;
+
+    const detectedPackageTypes = ['201', '0201', '402', '0402', '603', '0603', '805', '0805', '1206', '1210', '1812', '2010', '2512'];
+    if (partNumber.includes('res') || partNumber.includes('cap')) {
+      const strParts = partNumber.split(' ');
+      for (let i = 0; i < strParts.length; i++) {
+        if (detectedPackageTypes.includes(strParts[i])) {
+          newValue = parseInt(strParts[i]).toString();
+          console.log('setting package type', newValue);
+        }
+      }
+    }
+    if (newValue !== null) setPart(prev => ({ ...prev, packageType: newValue }));
+  }
+
+  const trySetPartValue = (partNumber) => {
+    let newValue = null;
+    if (partNumber.length === 0) setPart(prev => ({ ...prev, value: '' }));
+    // don't overwrite existing values
+    if (part.value && part.value.length > 0) return;
+
+    if (partNumber.includes('res')) {
+      const strParts = partNumber.split(' ');
+      const terminators = resistorTerminators;
+      for(let i = 0; i < strParts.length; i++) {
+        for(let t = 0; t < terminators.length; t++) {
+          const terminator = terminators[t];
+          if (strParts[i].endsWith(terminator) && !isNaN(strParts[i].substr(0, strParts[i].length - terminator.length))) {
+            newValue = strParts[i];
+            newValue = formatResistorValue(newValue);
+          }
+        }
+        if (newValue === null && !isNaN(strParts[i]))
+          newValue = formatResistorValue(strParts[i]);
+      }
+    } else if (partNumber.includes('cap')) {
+      const parts = partNumber.split(' ');
+      const terminators = capacitorTerminators;
+      for (let i = 0; i < parts.length; i++) {
+        for (let t = 0; t < terminators.length; t++) {
+          const terminator = terminators[t];
+          if (parts[i].endsWith(terminator) && !isNaN(parts[i].substr(0, parts[i].length - terminator.length))) {
+            newValue = parts[i];
+            newValue = formatCapacitorValue(newValue);
+          }
+        }
+        if (newValue === null && !isNaN(parts[i]))
+          newValue = formatCapacitorValue(parts[i]);
+      }
+    }
+
+    if (newValue !== null) setPart(prev => ({...prev, value: newValue}));
   };
 
   const doManualSearch = async (e, control) => {
@@ -1542,6 +1615,14 @@ export function Inventory({ partNumber = "", ...rest }) {
     clearForm(e, true);
   };
 
+  const handleAutoSearchToggle =  (e, control, value) => {
+    updateViewPreferences({ autoSearchEnabled: value });
+  };
+
+  const handleAddPackageType = (e, control) => {
+    setPackageTypeOptions(prevOptions => [...prevOptions, { value: control.value, text: control.value }]);
+  };
+
   /* RENDER */
   const title = isEditing
     ? t('page.inventory.edittitle', "Edit Inventory")
@@ -1588,9 +1669,10 @@ export function Inventory({ partNumber = "", ...rest }) {
                 <div style={{ minHeight: '325px' }}>
                   <div style={{ minHeight: '280px' }}>
                     <Form.Group style={{ marginBottom: '0' }}>
-                      <Form.Field>
+                      <Form.Field width={8}>
                         <ProtectedInput
                           label={t('label.part', "Part")}
+                          style={{fontSize: '1.25em'}}
                           required
                           placeholder="LM358"
                           focus
@@ -1602,6 +1684,12 @@ export function Inventory({ partNumber = "", ...rest }) {
                           id="inputPartNumber"
                           hideIcon
                           clearOnScan={false}
+                          toggle
+                          toggleDisabled={!(!isEditing && systemSettings.enableAutoPartSearch)}
+                          toggleIcon="microchip"
+                          toggleText={t('label.toggleAutosearch', "Toggle autosearch on/off")}
+                          toggled={viewPreferences.autoSearchEnabled}
+                          onToggle={handleAutoSearchToggle}
                           onChange={handleInputPartNumberChange}
                           onIconClick={doManualSearch}
                           onClear={handleInputPartNumberClear}
@@ -1634,6 +1722,11 @@ export function Inventory({ partNumber = "", ...rest }) {
                             loadingPartTypes={loadingPartTypes}
                           />
                         </Form.Field>
+                      </>}
+                    </Form.Group>
+                    
+                    {!disableRendering.current && <>
+                      <Form.Group style={{ alignItems: 'start', flexDirection: 'row', marginLeft: '0px' }}>
                         <Form.Dropdown
                           label={t('label.mountingType', "Mounting Type")}
                           placeholder={t('label.mountingType', "Mounting Type")}
@@ -1644,8 +1737,36 @@ export function Inventory({ partNumber = "", ...rest }) {
                           onChange={handleChange}
                           name="mountingTypeId"
                         />
-                      </>}
-                    </Form.Group>
+                        <Form.Dropdown
+                          label={t('label.packageType', "Package Type")}
+                          placeholder={t('label.packageType', "Package Type")}
+                          search
+                          selection
+                          allowAdditions
+                          additionLabel={t('label.customPackage', "Custom Package: ")}
+                          onAddItem={handleAddPackageType}
+                          value={(part.packageType || "")}
+                          options={packageTypeOptions}
+                          onChange={handleChange}
+                          name="packageType"
+                        />
+
+                        <ClearableInput
+                          label={t('label.value', "Value")}
+                          placeholder="4.7k"
+                          width={4}
+                          value={part.value || ""}
+                          onChange={handleChange}
+                          name="value"
+                          autoComplete="off"
+                          help={t('page.inventory.popup.value', "The parametric value of the part. Example: a resistor may have a value of '4.7k'")}
+                          helpWide
+                          helpDisabled={viewPreferences.helpDisabled}
+                          helpOnOpen={disableHelp}
+                          //disabled={part?.partTypeId === 14 /** IC */}
+                        />
+                      </Form.Group>
+                    </>}
 
                     {!disableRendering.current && <>
                       <Form.Group style={{alignItems: 'start', flexDirection: 'row', marginLeft: '0px'}}>
@@ -1682,19 +1803,6 @@ export function Inventory({ partNumber = "", ...rest }) {
                             className="numberpicker"
                           />
                         </div>
-                          <ClearableInput
-                            label={t('label.value', "Value")}
-                            placeholder="4.7k"
-                            width={4}
-                            value={part.value || ""}
-                            onChange={handleChange}
-                            name="value"
-                            autoComplete="off"
-                            help={t('page.inventory.popup.value', "The parametric value of the part. Example: a resistor may have a value of '4.7k'")}
-                            helpWide
-                            helpDisabled={viewPreferences.helpDisabled}
-                            helpOnOpen={disableHelp}
-                          />
                       </Form.Group>
                     </>}
 
@@ -1842,7 +1950,7 @@ export function Inventory({ partNumber = "", ...rest }) {
                                 {t('page.inventory.refresh', "Refresh")}
                             </Button>
                           }
-                        />                        
+                        />
                         {metadataParts && metadataParts.length > 1 && (
                           <ChooseAlternatePartModal
                             trigger={
@@ -1868,6 +1976,22 @@ export function Inventory({ partNumber = "", ...rest }) {
                     </div>
                   </div>
 
+                  <Form.Group>
+                    <Form.Field className="part-metadata-buttons">
+                      <Popup
+                        content={<p>{t('page.inventory.popup.technicalSpecs', "View technical specs")}</p>}
+                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartParametricsModalIsOpen(true)}><TextSnippet className="technical-specs" /><span>{t('button.specs', "Specs")} ({part?.parametrics?.length ?? 0})</span></Button>}
+                      />
+                      <Popup
+                        content={<p>{t('page.inventory.popup.compliance', "View compliance information")}</p>}
+                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartComplianceModalIsOpen(true)}><BeenhereIcon className="compliance" /><span>{t('button.compliance', "Compliance")}</span></Button>}
+                      />
+                      <Popup
+                        content={<p>{t('page.inventory.popup.cadModels', "View CAD Models available for this part")}</p>}
+                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartModelsModalIsOpen(true)}><ViewInArIcon className="cadModels" /><span>{t('button.cadModels', "CAD Models")} ({part?.models?.length ?? 0})</span></Button>}
+                      />
+                    </Form.Field>
+                  </Form.Group>
                   <Form.Group>
                     <Form.Field width={4}>
                       <label>{t('label.cost', "Cost")}</label>
@@ -1934,31 +2058,6 @@ export function Inventory({ partNumber = "", ...rest }) {
                       name="keywords"
                     />
                   </Form.Field>
-                  <Form.Group>
-                    <ClearableInput
-                      label={t('label.packageType', "Package Type")}
-                      placeholder="DIP8"
-                      value={part.packageType || ""}
-                      onChange={handleChange}
-                      name="packageType"
-                      width={6}
-                    />
-                    <Form.Field width={10} className="part-metadata-buttons">
-                      <label>&nbsp;</label>
-                      <Popup
-                        content={<p>{t('page.inventory.popup.technicalSpecs', "View technical specs")}</p>}
-                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartParametricsModalIsOpen(true)}><TextSnippet className="technical-specs" /> {t('button.specs', "Specs")} ({part?.parametrics?.length ?? 0})</Button>}
-                      />
-                      <Popup
-                        content={<p>{t('page.inventory.popup.compliance', "View compliance information")}</p>}
-                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartComplianceModalIsOpen(true)}><BeenhereIcon className="compliance" /> {t('button.compliance', "Compliance")}</Button>}
-                      />
-                      <Popup
-                        content={<p>{t('page.inventory.popup.cadModels', "View CAD Models available for this part")}</p>}
-                        trigger={<Button type="button" secondary size="mini" onClick={() => setPartModelsModalIsOpen(true)}><ViewInArIcon className="cadModels" /> {t('button.cadModels', "CAD Models")} ({part?.models?.length ?? 0})</Button>}
-                      />
-                    </Form.Field>
-                  </Form.Group>
                   <Form.Field>
                     <label>{t('label.primaryDatasheetUrl', "Primary Datasheet Url")}</label>
                     <ClearableInput type="Input" action className='labeled' placeholder='ti.com/lit/ds/symlink/lm2904-n.pdf' value={(part.datasheetUrl || '').replace('http://', '').replace('https://', '')} onChange={handleChange} name='datasheetUrl'>

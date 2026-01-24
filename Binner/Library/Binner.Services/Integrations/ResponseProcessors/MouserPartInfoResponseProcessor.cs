@@ -122,7 +122,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         BasePartNumber = basePart,
                         Manufacturer = part.Manufacturer,
                         ManufacturerPartNumber = part.ManufacturerPartNumber,
-                        Cost = (part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Cost) ?? 0d,
+                        Cost = (decimal?)part.PriceBreaks?.OrderBy(x => x.Quantity).FirstOrDefault()?.Cost ?? 0m,
                         Currency = currency,
                         DatasheetUrls = new List<string> { part.DataSheetUrl ?? string.Empty },
                         Description = part.Description,

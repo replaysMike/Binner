@@ -58,6 +58,10 @@ body {
   color: var(--theme-selection-color) !important;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  color: var(--theme-secondary-color);
+}
+
 /**************************
  *    SEMANTIC STYLING    *
  **************************/
@@ -217,6 +221,37 @@ body {
   background-color: var(--theme-form-control-bg) !important;
 }
 
+.ui.input.labeled .ui.label {
+  border: 1px solid rgba(34, 36, 38, 0.15) !important;
+  border-right: 1px solid rgba(34, 36, 38, 0.05) !important;
+}
+
+.ui[class*="right labeled"].input>.ui.label>button.ui.button {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  padding-right: 10px;
+  padding-left: 10px;
+  height: 100%;
+}
+
+.ui[class*="right labeled"].input>.ui.label>button.ui.button>i.icon {
+  margin: 0;
+}
+
+.ui[class*="right labeled"].input>input {
+  border-right-color: rgba(34, 36, 38, 0.15) !important;
+  border-top-right-radius: .28571429rem !important;
+  border-bottom-right-radius: .28571429rem !important;
+}
+
+.ui.input.labeled .ui.label:has(.ui.button) {
+  padding: 0;
+}
+
+.ui.input.labeled .ui.label .ui.button {
+  margin: 0;
+}
+
 .ui.selection.dropdown, .ui.menu, .ui.menu .item {
   background-color: var(--theme-form-control-bg);
   color: var(--theme-input-color);
@@ -357,6 +392,10 @@ i.circular.icon {
 .ui.buttons>.or {
   position: relative;
   left: -0.5em;
+}
+
+.ui.buttons>.or[data-text]:before {
+  padding-top: 2px;
 }
 
 .ui.button.svg {
