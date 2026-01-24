@@ -197,6 +197,7 @@ namespace Binner.Common.IO
                     { typeof(long?), () => Map<long?>(property, rowData, header, ref values, ref errors) },
                     { typeof(string), () => Map<string>(property, rowData, header, ref values, ref errors) },
                     { typeof(double), () => Map<double>(property, rowData, header, ref values, ref errors) },
+                    { typeof(decimal), () => Map<decimal>(property, rowData, header, ref values, ref errors) },
                     { typeof(bool), () => Map<bool>(property, rowData, header, ref values, ref errors) },
                     { typeof(int), () => Map<int>(property, rowData, header, ref values, ref errors) },
                     { typeof(DateTime), () => Map<DateTime>(property, rowData, header, ref values, ref errors, DateTime.UtcNow) },

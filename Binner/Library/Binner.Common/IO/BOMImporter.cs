@@ -181,6 +181,12 @@ namespace Binner.Common.IO
                 value = (T)(object)doubleValue;
                 return isDoubleValid;
             }
+            if (type == typeof(decimal) || type == typeof(decimal?))
+            {
+                var isDecimalValid = decimal.TryParse(unquotedValue, out var decimalValue);
+                value = (T)(object)decimalValue;
+                return isDecimalValid;
+            }
             return false;
         }
 
