@@ -52,7 +52,7 @@
     "lg-video.js": "^1.3.0",
     "lg-zoom.js": "^1.3.0",
     "lightgallery.js": "^1.4.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "lodash.debounce": "^4.0.8",
     "material-react-table": "^3.2.1",
     "merge": "^2.1.1",
