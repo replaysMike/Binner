@@ -101,6 +101,19 @@ namespace Binner.Web.WebHost
                     policy.RequireAuthenticatedUser();
                     policy.RequireClaim(JwtClaimTypes.CanLogin, true.ToString());
                 });
+                // add subscription access policies, a pro can access all Maker authorizations, as well as pro
+                // note: these just limit access to the controllers, but the underlying security comes from LicensedProvider.
+                //       removing the restrictions will not give access to functionality.
+                options.AddPolicy(AuthorizationPolicies.MakerSubscription, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim(JwtClaimTypes.SubscriptionLevel, SubscriptionLevel.Maker.ToString(), SubscriptionLevel.Professional.ToString(), SubscriptionLevel.Enterprise.ToString());
+                });
+                options.AddPolicy(AuthorizationPolicies.ProfessionalSubscription, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim(JwtClaimTypes.SubscriptionLevel, SubscriptionLevel.Professional.ToString(), SubscriptionLevel.Enterprise.ToString());
+                });
             });
 
             services.AddLogging(logging =>
