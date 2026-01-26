@@ -385,11 +385,15 @@ export function Inventory({ partNumber = "", ...rest }) {
     return existingValue[property] || "";
   };
 
-  const setPackageType = (entity, packageTypeName) => {
-    const existingPackageType = packageTypeOptions.find(i => i.name === packageTypeName);
+  const addPackageTypeIfNotExists = (packageTypeName) => {
+    const existingPackageType = packageTypeOptions.find(i => i.value === packageTypeName);
     if (!existingPackageType) {
       setPackageTypeOptions(prevOptions => [...prevOptions, { value: packageTypeName, text: packageTypeName }]);
     }
+  };
+
+  const setPackageTypeFromEntity = (entity, packageTypeName) => {
+    addPackageTypeIfNotExists(packageTypeName);
     entity.packageType = packageTypeName;
   };
 
@@ -418,7 +422,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     entity.partTypeId = mapIfValid("partTypeId", entity, mappedPart, allowOverwrite);
     entity.mountingTypeId = mapIfValid("mountingTypeId", entity, mappedPart, allowOverwrite);
     //entity.packageType = mapIfValid("packageType", entity, mappedPart, allowOverwrite);
-    setPackageType(entity, mapIfValid("packageType", entity, mappedPart, allowOverwrite));
+    setPackageTypeFromEntity(entity, mapIfValid("packageType", entity, mappedPart, allowOverwrite));
     entity.cost = mapIfValid("cost", entity, mappedPart, allowOverwrite);
     entity.keywords = mapIfValid("keywords", entity, mappedPart, allowOverwrite);
     entity.description = mapIfValid("description", entity, mappedPart, allowOverwrite);
@@ -476,7 +480,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
     setPart(entity);
     return entity;
-  }, []);
+  }, [packageTypeOptions]);
 
   const processPartMetadataResponse = useCallback((data, storedFiles, allowSetFromMetadata, allowOverwrite) => {
     // cancelled or auth required
@@ -639,7 +643,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (!isEditing && systemSettings.enableAutoPartSearch) fetchPartMetadataAndInventory(input, localPart);
   };
 
-  const searchDebounced = useMemo(() => debounce(doSearchDebounced, SearchDebounceTimeMs), [pageHasParameters, isEditing, systemSettings]);
+  const searchDebounced = useMemo(() => debounce(doSearchDebounced, SearchDebounceTimeMs), [pageHasParameters, isEditing, systemSettings, packageTypeOptions]);
 
   const validateExistingBarcodeScan = async (input) => {
     Inventory.validateExistingBarcodeScanController?.abort();
@@ -952,7 +956,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       if (response.responseObject.ok) {
         const { data } = response;
         setPart(data);
-        setPackageType(data, data.packageType);
+        setPackageTypeFromEntity(data, data.packageType);
         setLoadingPart(false);
         return data;
       }
@@ -1277,26 +1281,6 @@ export function Inventory({ partNumber = "", ...rest }) {
     updateViewPreferences({ rememberLast: control.checked });
   };
 
-  const handleInputPartNumberChange = async (e, control) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPartMetadataIsSubscribed(false);
-    setPartMetadataErrors([]);
-    let searchPartNumber = control.value || '';
-    if (viewPreferences.autoSearchEnabled && searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
-      searchPartNumber = control.value.replace("\t", "");
-      searchDebounced(searchPartNumber, part); // don't await this or it will mess with cursor input
-      setIsDirty(true);
-    }
-
-    setInputPartNumber(searchPartNumber);
-    trySetPartValue(searchPartNumber);
-    trySetPackageType(searchPartNumber);
-
-    // wont work unless we update render
-    //setRenderIsDirty(!renderIsDirty);
-  };
-
   const trySetPackageType = (partNumber) => {
     let newValue = null;
     if (partNumber.length === 0) setPart(prev => ({ ...prev, packageType: '' }));
@@ -1325,8 +1309,8 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (partNumber.includes('res')) {
       const strParts = partNumber.split(' ');
       const terminators = resistorTerminators;
-      for(let i = 0; i < strParts.length; i++) {
-        for(let t = 0; t < terminators.length; t++) {
+      for (let i = 0; i < strParts.length; i++) {
+        for (let t = 0; t < terminators.length; t++) {
           const terminator = terminators[t];
           if (strParts[i].endsWith(terminator) && !isNaN(strParts[i].substr(0, strParts[i].length - terminator.length))) {
             newValue = strParts[i];
@@ -1352,8 +1336,28 @@ export function Inventory({ partNumber = "", ...rest }) {
       }
     }
 
-    if (newValue !== null) setPart(prev => ({...prev, value: newValue}));
+    if (newValue !== null) setPart(prev => ({ ...prev, value: newValue }));
   };
+
+  const handleInputPartNumberChange = useCallback(async (e, control) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPartMetadataIsSubscribed(false);
+    setPartMetadataErrors([]);
+    let searchPartNumber = control.value || '';
+    if (viewPreferences.autoSearchEnabled && searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
+      searchPartNumber = control.value.replace("\t", "");
+      searchDebounced(searchPartNumber, part); // don't await this or it will mess with cursor input
+      setIsDirty(true);
+    }
+
+    setInputPartNumber(searchPartNumber);
+    trySetPartValue(searchPartNumber);
+    trySetPackageType(searchPartNumber);
+
+    // wont work unless we update render
+    //setRenderIsDirty(!renderIsDirty);
+  }, [packageTypeOptions, part, viewPreferences.autoSearchEnabled, trySetPackageType, trySetPartValue]);
 
   const doManualSearch = async (e, control) => {
     // perform a manual search via a user interaction
@@ -1620,7 +1624,8 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const handleAddPackageType = (e, control) => {
-    setPackageTypeOptions(prevOptions => [...prevOptions, { value: control.value, text: control.value }]);
+    const packageTypeName = control.value;
+    addPackageTypeIfNotExists(packageTypeName);
   };
 
   /* RENDER */
@@ -2245,7 +2250,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         </Dimmer.Dimmable>
 
       </>);
-  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPart, loadingPartMetadata, partMetadataErrors, isEditing, allPartTypes, isDirty, handlePartTypeChange, systemSettings]);
+  }, [inputPartNumber, part, viewPreferences.rememberLast, loadingPart, loadingPartMetadata, partMetadataErrors, isEditing, allPartTypes, isDirty, handlePartTypeChange, systemSettings, packageTypeOptions]);
 
   const handleCancelDiscard = (e) => {
     setConfirmDiscardAction(null);

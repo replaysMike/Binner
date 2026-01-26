@@ -148,7 +148,7 @@ export const PackageTypes = {
   MCM: { name: 'MCM', description: 'Multi-chip module' },
   LCC: { name: 'LCC', description: 'Leadless chip carrier' },
   PLCC: { name: 'PLCC', description: 'Plastic leaded chip carrier' },
-  DLCC: { name: 'PLCC', description: 'Dual leadless chip carrier' },
+  DLCC: { name: 'DLCC', description: 'Dual leadless chip carrier' },
   CLCC: { name: 'CLCC', description: 'Ceramic leadless chip carrier' },
   CBGA: { name: 'CBGA', description: '' },
   CFP: { name: 'CFP', description: 'Ceramic flat-pack' },
