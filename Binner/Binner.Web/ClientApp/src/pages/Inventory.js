@@ -195,6 +195,7 @@ export function Inventory({ partNumber = "", ...rest }) {
   const [confirmDiscardAction, setConfirmDiscardAction] = useState(null);
   const [confirmReImport, setConfirmReImport] = useState(false);
   const [confirmReImportAction, setConfirmReImportAction] = useState(null);
+  const [isValueCustom, setIsValueCustom] = useState(false);
 
   let blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -1149,6 +1150,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     setPartMetadataIsSubscribed(false);
     setInputPartNumber("");
     setQuantityAdded(0);
+    setIsValueCustom(false);
     const clearedPart = {
       partId: 0,
       partNumber: "",
@@ -1293,7 +1295,6 @@ export function Inventory({ partNumber = "", ...rest }) {
       for (let i = 0; i < strParts.length; i++) {
         if (detectedPackageTypes.includes(strParts[i])) {
           newValue = parseInt(strParts[i]).toString();
-          console.log('setting package type', newValue);
         }
       }
     }
@@ -1302,12 +1303,14 @@ export function Inventory({ partNumber = "", ...rest }) {
 
   const trySetPartValue = (partNumber) => {
     let newValue = null;
-    if (partNumber.length === 0) setPart(prev => ({ ...prev, value: '' }));
-    // don't overwrite existing values
-    if (part.value && part.value.length > 0) return;
+    if (partNumber.length === 0) {
+      setIsValueCustom(false);
+      setPart(prev => ({ ...prev, value: '' }));
+    }
+    if (isValueCustom) return; // don't autoset the value if someone has manually edited it
 
-    if (partNumber.includes('res')) {
-      const strParts = partNumber.split(' ');
+    const strParts = partNumber.split(' ');
+    if (strParts.includes('res') || strParts.includes('resistor')) {
       const terminators = resistorTerminators;
       for (let i = 0; i < strParts.length; i++) {
         for (let t = 0; t < terminators.length; t++) {
@@ -1320,8 +1323,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         if (newValue === null && !isNaN(strParts[i]))
           newValue = formatResistorValue(strParts[i]);
       }
-    } else if (partNumber.includes('cap')) {
-      const parts = partNumber.split(' ');
+    } else if (strParts.includes('cap') || strParts.includes('capacitor')) {
       const terminators = capacitorTerminators;
       for (let i = 0; i < parts.length; i++) {
         for (let t = 0; t < terminators.length; t++) {
@@ -1416,6 +1418,13 @@ export function Inventory({ partNumber = "", ...rest }) {
       case "binNumber2":
         part[control.name] = control.value.replace("\t", "");
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastBinNumber2: part[control.name] });
+        break;
+      case "value":
+        if (control.value.length === 0)
+          setIsValueCustom(false);
+        else {
+          setIsValueCustom(true);
+        }
         break;
       default:
         break;
