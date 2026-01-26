@@ -39,7 +39,7 @@ import { MountingTypes, PackageTypes, GetAdvancedTypeDropdown } from "../common/
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
 import { getSystemSettings } from "../common/applicationSettings";
-import { formatResistorValue, formatCapacitorValue, resistorTerminators, capacitorTerminators } from "../common/formatting";
+import { formatResistorValue, formatCapacitorValue, resistorTerminators, capacitorTerminators, inductorTerminators, formatInductorValue } from "../common/formatting";
 // overrides BarcodeScannerInput audio support
 const enableSound = true;
 const soundSuccess = new Audio('/audio/scan-success.mp3');
@@ -1283,22 +1283,69 @@ export function Inventory({ partNumber = "", ...rest }) {
     updateViewPreferences({ rememberLast: control.checked });
   };
 
+  const trySetPartType = (partNumber) => {
+    let newValue = null;
+    if (partNumber.length === 0) setPart(prev => ({ ...prev, partTypeId: 14 }));
+    const strParts = partNumber.toLowerCase().split(' ');
+    if (strParts.includes('res') || strParts.includes('resistor')) newValue = 1; /* Resistor=1 */
+    if ((strParts.includes('res') || strParts.includes('resistor')) && (strParts.includes('arr') || strParts.includes('array'))) newValue = 53; /* ResistorArray=53 */
+    if (strParts.includes('cap') || strParts.includes('capacitor')) newValue = 2; /* Capacitor=2 */
+    if ((strParts.includes('cap') || strParts.includes('capacitor')) && (strParts.includes('arr') || strParts.includes('array'))) newValue = 205; /* CapacitorArray=205 */
+    if (strParts.includes('diode')) newValue = 4; /* Diode=5 */
+    if ((strParts.includes('diode')) && (strParts.includes('arr') || strParts.includes('array'))) newValue = 206; /* DiodeArray=206 */
+    if (strParts.includes('ind') || strParts.includes('inductor')) newValue = 3; /* Inductor=3 */
+    if (strParts.includes('led')) newValue = 5; /* LED=5 */
+    if ((strParts.includes('led')) && (strParts.includes('arr') || strParts.includes('array'))) newValue = 207; /* LEDArray=207 */
+    if (strParts.includes('ic')) newValue = 14; /* IC=14 */
+    if (strParts.includes('tran') || strParts.includes('trans') || strParts.includes('transistor')) newValue = 6; /* Transistor=6 */
+    if ((strParts.includes('tran') || strParts.includes('trans') || strParts.includes('transistor')) && (strParts.includes('arr') || strParts.includes('array'))) newValue = 208; /* TransistorArray=208 */
+    if (strParts.includes('mos') || strParts.includes('mosfet')) newValue = 75; /* MOSFET=75 */
+    if (strParts.includes('igbt')) newValue = 76; /* TRIAC=76 */
+    if (strParts.includes('jfet')) newValue = 77; /* JFET=77 */
+    if (strParts.includes('scr')) newValue = 78; /* SCR=78 */
+    if (strParts.includes('triac')) newValue = 80; /* TRIAC=80 */
+    if (strParts.includes('bjt')) newValue = 178; /* BJT=178 */
+    if (strParts.includes('con') || strParts.includes('conn') || strParts.includes('connector')) newValue = 13; /* Connector=13 */
+    if (newValue !== null) setPart(prev => ({ ...prev, partTypeId: newValue }));
+  };
+
+  const trySetMountingType = (partNumber) => {
+    let newValue = null;
+    if (partNumber.length === 0) setPart(prev => ({ ...prev, mountingTypeId: 0 }));
+    const strParts = partNumber.split(' ');
+    if (strParts.includes('smd')) {
+      newValue = MountingTypes.SurfaceMount.value;
+    }
+    if (newValue !== null) setPart(prev => ({ ...prev, mountingTypeId: newValue }));
+  }
+
   const trySetPackageType = (partNumber) => {
     let newValue = null;
     if (partNumber.length === 0) setPart(prev => ({ ...prev, packageType: '' }));
     // don't overwrite existing values
     if (part.packageType && part.packageType.length > 0) return;
 
-    const detectedPackageTypes = ['201', '0201', '402', '0402', '603', '0603', '805', '0805', '1206', '1210', '1812', '2010', '2512'];
-    if (partNumber.includes('res') || partNumber.includes('cap')) {
-      const strParts = partNumber.split(' ');
+    const basicPackageTypes = Object.entries(PackageTypes).filter(i => i[1].type === 'common' || i[1].type === 'basic').map(i => i[1].name);
+    const ledPackageTypes = Object.entries(PackageTypes).filter(i => i[1].type === 'led' || i[1].type === 'common').map(i => i[1].name);
+    const strParts = partNumber.toLowerCase().split(' ');
+    const isBasicType = strParts.includes('res') || strParts.includes('resistor') || strParts.includes('cap') || strParts.includes('capacitor') || strParts.includes('diode') || strParts.includes('ind') || strParts.includes('inductor');
+    const isLedType = strParts.includes('led');
+    if (isBasicType || isLedType) {
       for (let i = 0; i < strParts.length; i++) {
-        if (detectedPackageTypes.includes(strParts[i])) {
+        if (isBasicType && basicPackageTypes.includes(strParts[i])) {
+          newValue = parseInt(strParts[i]).toString();
+        } else if (isLedType && ledPackageTypes.includes(strParts[i])) {
           newValue = parseInt(strParts[i]).toString();
         }
       }
     }
-    if (newValue !== null) setPart(prev => ({ ...prev, packageType: newValue }));
+    if (newValue !== null) {
+      // if mounting type hasn't been set, we know it's smd so just set it
+      if (part.mountingTypeId === 0) {
+        setPart(prev => ({ ...prev, mountingTypeId: MountingTypes.SurfaceMount.value }));
+      }
+      setPart(prev => ({ ...prev, packageType: newValue }));
+    }
   }
 
   const trySetPartValue = (partNumber) => {
@@ -1309,8 +1356,9 @@ export function Inventory({ partNumber = "", ...rest }) {
     }
     if (isValueCustom) return; // don't autoset the value if someone has manually edited it
 
-    const strParts = partNumber.split(' ');
-    if (strParts.includes('res') || strParts.includes('resistor')) {
+    const ciParts = partNumber.toLowerCase().split(' ');
+    const strParts = partNumber.split(' '); // units are case sensitive
+    if (ciParts.includes('res') || ciParts.includes('resistor')) {
       const terminators = resistorTerminators;
       for (let i = 0; i < strParts.length; i++) {
         for (let t = 0; t < terminators.length; t++) {
@@ -1323,19 +1371,43 @@ export function Inventory({ partNumber = "", ...rest }) {
         if (newValue === null && !isNaN(strParts[i]))
           newValue = formatResistorValue(strParts[i]);
       }
-    } else if (strParts.includes('cap') || strParts.includes('capacitor')) {
+    } else if (ciParts.includes('cap') || ciParts.includes('capacitor')) {
       const terminators = capacitorTerminators;
-      for (let i = 0; i < parts.length; i++) {
+      for (let i = 0; i < strParts.length; i++) {
         for (let t = 0; t < terminators.length; t++) {
           const terminator = terminators[t];
-          if (parts[i].endsWith(terminator) && !isNaN(parts[i].substr(0, parts[i].length - terminator.length))) {
-            newValue = parts[i];
+          if (strParts[i].endsWith(terminator) && !isNaN(strParts[i].substr(0, strParts[i].length - terminator.length))) {
+            newValue = strParts[i];
             newValue = formatCapacitorValue(newValue);
           }
         }
-        if (newValue === null && !isNaN(parts[i]))
-          newValue = formatCapacitorValue(parts[i]);
+        if (newValue === null && !isNaN(strParts[i]))
+          newValue = formatCapacitorValue(strParts[i]);
       }
+    } else if (ciParts.includes('ind') || ciParts.includes('inductor')) {
+      const terminators = inductorTerminators;
+      for (let i = 0; i < strParts.length; i++) {
+        for (let t = 0; t < terminators.length; t++) {
+          const terminator = terminators[t];
+          if (strParts[i].endsWith(terminator) && !isNaN(strParts[i].substr(0, strParts[i].length - terminator.length))) {
+            newValue = strParts[i];
+            newValue = formatInductorValue(newValue);
+          }
+        }
+        if (newValue === null && !isNaN(strParts[i]))
+          newValue = formatInductorValue(strParts[i]);
+      }
+    } else if (ciParts.includes('led')) {
+      const ledColors = ['red', 'green', 'blue', 'yellow', 'amber', 'orange', 'pink', 'purple', 'iceblue', 'violet', 'cyan', 'magenta', 'turquoise', 'verde', '', 'warm', 'cool', 'white', 'wht', 'warmwhite', 'warm-white', 'white-warm', 'coolwhite', 'cool-white', 'white-cool', 'daylight', 'yellow-green', 'yellow-orange', 'yellow-yellow-green', 'white-yellow', 'white-neutral', 'red-orange', 'red-green', 'red-green-blue', 'red-white', 'red-yellow', 'red-yellow-green', 'orange-red', 'orange-white', 'orange-yellow-green', 'orange-green', 'infrared-red', 'green-yellow', 'green-orange', 'green-red', 'green-red-white', 'green-red-yellow', 'blue-green', 'blue-orange', 'blue-red', 'blue-red-yellow', 'blue-green-orange', 'blue-green-yellow', 'blue-yellow', 'amber-yellow', 'amber-blue', 'amber-green', 'amber-red', 'amber-yellow', 'uv', 'ultraviolet', 'ir', 'infrared', 'rgb', 'tricolor', 'tri-color', 'tricolour', 'tri-colour', 'tri'];
+      for(let i = 0; i < ledColors.length; i++) {
+        let translatedColor = ledColors[i].replace(',', '-').replace(' ', '');
+        if (ciParts.includes(ledColors[i])) {
+          if (newValue === null) newValue = '';
+          if (translatedColor === 'wht') translatedColor = 'white';
+          newValue += translatedColor + ' ';
+        }
+      }
+      newValue = newValue.trim();
     }
 
     if (newValue !== null) setPart(prev => ({ ...prev, value: newValue }));
@@ -1355,11 +1427,13 @@ export function Inventory({ partNumber = "", ...rest }) {
 
     setInputPartNumber(searchPartNumber);
     trySetPartValue(searchPartNumber);
+    trySetPartType(searchPartNumber);
     trySetPackageType(searchPartNumber);
+    trySetMountingType(searchPartNumber);
 
     // wont work unless we update render
     //setRenderIsDirty(!renderIsDirty);
-  }, [packageTypeOptions, part, viewPreferences.autoSearchEnabled, trySetPackageType, trySetPartValue]);
+  }, [packageTypeOptions, part, viewPreferences.autoSearchEnabled, trySetPackageType, trySetPartValue, trySetMountingType, trySetPartType]);
 
   const doManualSearch = async (e, control) => {
     // perform a manual search via a user interaction

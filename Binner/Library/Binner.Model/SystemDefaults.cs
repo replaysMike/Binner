@@ -572,6 +572,18 @@
             DiodeKit,
             [ParentPartType(DefaultPartTypes.Inductor)]
             InductorKit,
+            [PartTypeInfo("A capacitor array, also known as a capacitor network, is a single electronic component that contains two or more capacitors in a specific configuration, typically arranged in a single package.", "C", "Device:C")]
+            [ParentPartType(DefaultPartTypes.Capacitor)]
+            CapacitorArray,
+            [PartTypeInfo("A diode array, also known as a diode network, is a single electronic component that contains two or more diodes in a specific configuration, typically arranged in a single package.", "D", "Device:D")]
+            [ParentPartType(DefaultPartTypes.Diode)]
+            DiodeArray,
+            [PartTypeInfo("An led array, also known as a led network, is a single electronic component that contains two or more LEDs in a specific configuration, typically arranged in a single package.", "D", "Device:D")]
+            [ParentPartType(DefaultPartTypes.LED)]
+            LEDArray,
+            [PartTypeInfo("A transistor array, also known as a transistor network, is a single electronic component that contains two or more transistors in a specific configuration, typically arranged in a single package.", "Q", "Device:Q")]
+            [ParentPartType(DefaultPartTypes.Transistor)]
+            TransistorArray,
         }
     }
 }
