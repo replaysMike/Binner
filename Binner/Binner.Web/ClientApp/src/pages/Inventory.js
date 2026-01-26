@@ -1278,14 +1278,14 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const handleInputPartNumberChange = async (e, control) => {
-    //e.preventDefault();
-    //e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     setPartMetadataIsSubscribed(false);
     setPartMetadataErrors([]);
     let searchPartNumber = control.value || '';
     if (viewPreferences.autoSearchEnabled && searchPartNumber && searchPartNumber.length >= MinSearchKeywordLength) {
       searchPartNumber = control.value.replace("\t", "");
-      await searchDebounced(searchPartNumber, part);
+      searchDebounced(searchPartNumber, part); // don't await this or it will mess with cursor input
       setIsDirty(true);
     }
 
