@@ -32,8 +32,9 @@ export const formatResistorValue = (value) => {
     }
   }
   // no terminator provided, if it's a number append the ohms symbol
-  if (!isNaN(value))
+  if (!isNaN(value)) {
     return value + 'Ω';
+  }
   // not a number, return original value
   return value;
 };
