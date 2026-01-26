@@ -414,14 +414,14 @@ export default function PartsGrid2Memoized({
   const table = useMaterialReactTable({
     columns: tableColumns,
     data: _parts,
-    enableRowSelection: (row) => {
+    enableRowSelection: enableMultiSelect ? (row) => {
       // disable selection of parts that are in the disabled list
-      const canSelect = enableMultiSelect && !_disabledPartIds.includes(row.original.partId);
+      const canSelect = !_disabledPartIds.includes(row.original.partId);
       return canSelect;
-    },
+    } : false,
     enableBatchRowSelection: enableMultiSelect,
     enableMultiRowSelection: enableMultiSelect,
-    //rowPinningDisplayMode: "select-top",
+    rowPinningDisplayMode: "select-top",
     enableGlobalFilter: false,
     enableFilters: false,
     enablePagination: false,
