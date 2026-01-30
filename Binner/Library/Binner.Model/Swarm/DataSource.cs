@@ -14,5 +14,13 @@
         /// Uri submitted by the public api
         /// </summary>
         SwarmApi,
+        /// <summary>
+        /// Generated via ChatGpt
+        /// </summary>
+        ChatGptGenerated,
+        /// <summary>
+        /// Generated via Document AI
+        /// </summary>
+        DocumentAi
     }
 }

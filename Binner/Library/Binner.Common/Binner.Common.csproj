@@ -59,8 +59,8 @@
     <PackageReference Include="NPOI" Version="2.7.0" />
     <PackageReference Include="Octokit" Version="5.0.2" />
     <PackageReference Include="QRCoder-ImageSharp" Version="0.10.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.6" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.4" />
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
