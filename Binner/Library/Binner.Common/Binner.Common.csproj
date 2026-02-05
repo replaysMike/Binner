@@ -54,7 +54,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Nexar.Client.Token" Version="0.1.1" />
+    <PackageReference Include="Nexar.Client.Token" Version="0.2.0" />
     <PackageReference Include="NLog" Version="5.2.8" />
     <PackageReference Include="NPOI" Version="2.7.0" />
     <PackageReference Include="Octokit" Version="5.0.2" />
