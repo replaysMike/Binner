@@ -96,7 +96,7 @@ namespace Binner.Services
             }
             if (apiType == typeof(Element14Api))
             {
-                var result = CreateGlobalElement14Api();
+                var result = CreateGlobalElement14Api(integrationConfiguration);
                 var resultTyped = result as T;
                 if (resultTyped != null)
                     return resultTyped;
@@ -151,6 +151,13 @@ namespace Binner.Services
             if (apiType == typeof(TmeApi))
             {
                 var result = CreateGlobalTmeApi(integrationConfiguration);
+                var resultTyped = result;
+                if (resultTyped != null)
+                    return resultTyped;
+            }
+            if (apiType == typeof(Element14Api))
+            {
+                var result = CreateGlobalElement14Api(integrationConfiguration);
                 var resultTyped = result;
                 if (resultTyped != null)
                     return resultTyped;
@@ -237,14 +244,14 @@ namespace Binner.Services
                 };
                 credentials.Add(new ApiCredential(userId, tmeConfiguration, nameof(TmeApi)));
 
-                var Element14Configuration = new Dictionary<string, object>
+                var element14Configuration = new Dictionary<string, object>
                 {
                     { "Enabled", integrationConfiguration.Element14Enabled },
                     { "Country", integrationConfiguration.Element14Country ?? string.Empty },
                     { "ApiKey", integrationConfiguration.Element14ApiKey ?? string.Empty },
                     { "ApiUrl", integrationConfiguration.Element14ApiUrl },
                 };
-                credentials.Add(new ApiCredential(userId, Element14Configuration, nameof(Element14Api)));
+                credentials.Add(new ApiCredential(userId, element14Configuration, nameof(Element14Api)));
 
                 return new ApiCredentialConfiguration(userId, credentials);
             };
@@ -329,14 +336,14 @@ namespace Binner.Services
                 };
                 credentials.Add(new ApiCredential(userId, tmeConfiguration, nameof(TmeApi)));
 
-                var Element14Configuration = new Dictionary<string, object>
+                var element14Configuration = new Dictionary<string, object>
                 {
                     { "Enabled", integrationConfiguration.Element14Enabled },
                     { "Country", integrationConfiguration.Element14Country ?? string.Empty },
                     { "ApiKey", integrationConfiguration.Element14ApiKey ?? string.Empty },
                     { "ApiUrl", integrationConfiguration.Element14ApiUrl },
                 };
-                credentials.Add(new ApiCredential(userId, Element14Configuration, nameof(Element14Api)));
+                credentials.Add(new ApiCredential(userId, element14Configuration, nameof(Element14Api)));
 
                 return new ApiCredentialConfiguration(userId, credentials);
             };
@@ -698,16 +705,15 @@ namespace Binner.Services
             return api;
         }
 
-        private Element14Api CreateGlobalElement14Api()
+        private Element14Api CreateGlobalElement14Api(IntegrationConfiguration integrationConfig)
         {
-            var integrationConfiguration = _mapper.Map<IntegrationConfiguration>(_userConfigurationService.GetCachedOrganizationIntegrationConfiguration());
             var configuration = new Element14Configuration
             {
                 // system settings
-                Enabled = integrationConfiguration.Element14.Enabled,
-                Country = integrationConfiguration.Element14.Country,
-                ApiKey = integrationConfiguration.Element14.ApiKey,
-                ApiUrl = integrationConfiguration.Element14.ApiUrl,
+                Enabled = integrationConfig.Element14.Enabled,
+                Country = integrationConfig.Element14.Country,
+                ApiKey = integrationConfig.Element14.ApiKey,
+                ApiUrl = integrationConfig.Element14.ApiUrl,
             };
             var logger = _loggerFactory.CreateLogger<Element14Api>();
             var userConfiguration = _userConfigurationService.GetCachedUserConfiguration();
