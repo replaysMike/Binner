@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Binner.Common.Extensions;
 using Binner.Global.Common;
+using Binner.Global.Common.Extensions;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Integrations.DigiKey;
@@ -226,6 +227,84 @@ namespace Binner.Services
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
             return await _externalOrderService.GetExternalOrderAsync(request);
+        }
+
+        public virtual async Task<IServiceResult<Part?>> UpdatePartMetadataAsync(UpdatePartRequest request)
+        {
+            var inventoryPart = await GetPartAsync(new GetPartRequest { PartId = request.PartId, PartNumber = request.PartNumber });
+            if (inventoryPart == null) return ServiceResult<Part?>.Create("No part number requested!", "Multiple");
+
+            var partType = await GetPartTypeAsync(inventoryPart.PartTypeId);
+
+            // fetch part information
+            var serviceResult = await _externalPartInfoService.GetPartInformationAsync(inventoryPart, request.PartNumber, null, null, null);
+
+            // update part information
+            if (serviceResult.Response?.Parts.SafeAny() == true)
+            {
+                var chosenParts = serviceResult.Response.Parts
+                    .Where(x => x.ManufacturerPartNumber == inventoryPart.PartNumber && x.PartTypeId == inventoryPart.PartTypeId)
+                    .ToList();
+
+                if (!chosenParts.Any())
+                    chosenParts = serviceResult.Response.Parts
+                        .Where(x => x.ManufacturerPartNumber == inventoryPart.PartNumber)
+                        .ToList();
+
+                if (!chosenParts.Any())
+                    chosenParts = serviceResult.Response.Parts
+                        .Where(x => x.BasePartNumber == inventoryPart.PartNumber)
+                        .ToList();
+
+                if (!chosenParts.Any())
+                    chosenParts = serviceResult.Response.Parts
+                        .Where(x => x.BasePartNumber == inventoryPart.BaseProductNumber)
+                        .ToList();
+
+                if (!chosenParts.Any())
+                    chosenParts = serviceResult.Response.Parts
+                        .Where(x => x.PartTypeId == inventoryPart.PartTypeId || (partType != null && x.PartTypeId == partType.ParentPartTypeId))
+                        .ToList();
+
+                if (!chosenParts.Any())
+                    chosenParts = serviceResult.Response.Parts
+                        .ToList();
+
+                if (chosenParts.Any() == true)
+                {
+                    // narrow down to the best result
+                    var filteredResults = chosenParts.ToList();
+                    if (filteredResults.Count(x => x.PartTypeId == inventoryPart.PartTypeId || (partType != null && (x.ParentPartTypeId == partType.PartTypeId || x.ParentPartTypeId == partType.ParentPartTypeId))) > 0) filteredResults = filteredResults.Where(x => x.PartTypeId == inventoryPart.PartTypeId || (partType != null && (x.ParentPartTypeId == partType.PartTypeId || x.ParentPartTypeId == partType.ParentPartTypeId))).ToList();
+
+                    if (filteredResults.Count(x => !string.IsNullOrEmpty(x.Description)) > 0) filteredResults = filteredResults.Where(x => !string.IsNullOrEmpty(x.Description)).ToList();
+                    if (filteredResults.Count(x => x.Parametrics?.Any() == true) > 0) filteredResults = filteredResults.Where(x => x.Parametrics?.Any() == true).ToList();
+                    if (inventoryPart.MountingTypeId > 0 && filteredResults.Count(x => x.MountingTypeId == inventoryPart.MountingTypeId) > 0) filteredResults = filteredResults.Where(x => x.MountingTypeId == inventoryPart.MountingTypeId).ToList();
+                    if (inventoryPart.PackageType != null && filteredResults.Count(x => x.PackageType?.Equals(inventoryPart.PackageType, StringComparison.InvariantCultureIgnoreCase) == true) > 0) filteredResults = filteredResults.Where(x => x.PackageType?.Equals(inventoryPart.PackageType, StringComparison.InvariantCultureIgnoreCase) == true).ToList();
+
+                    // take the part with the highest inventory
+                    var chosenPart = filteredResults
+                        .OrderByDescending(x => x.Status == "Active")
+                        .ThenByDescending(x => inventoryPart.PartNumber?.Length >= 4 ? x.ManufacturerPartNumber?.StartsWith(inventoryPart.PartNumber.Substring(0, 4)) : true)
+                        .ThenByDescending(x => x.QuantityAvailable)
+                        .ThenByDescending(x => x.PartTypeId == inventoryPart.PartTypeId)
+                        .ThenByDescending(x => x.ParentPartTypeId == inventoryPart.PartTypeId)
+                        .First();
+
+                    // don't allow overwriting of these fields
+                    chosenPart.PartId = inventoryPart.PartId;
+                    chosenPart.Quantity = inventoryPart.Quantity;
+                    chosenPart.PartTypeId = inventoryPart.PartTypeId;
+
+                    // update the part
+                    var updatedPart = _mapper.Map(chosenPart, inventoryPart);
+                    updatedPart = await UpdatePartAsync(updatedPart);
+
+                    return new ServiceResult<Part?>(updatedPart);
+                }
+            }
+
+            return new ServiceResult<Part?>(inventoryPart);
+
         }
 
         public virtual async Task<IServiceResult<PartResults?>> GetPartInformationAsync(string partNumber, string partType = "", string mountingType = "", string supplierPartNumbers = "")

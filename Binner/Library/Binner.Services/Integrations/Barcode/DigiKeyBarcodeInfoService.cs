@@ -90,6 +90,7 @@ namespace Binner.Services.Integrations.Barcode
                     var partType = await DeterminePartTypeAsync(part);
                     part.PartType = partType?.Name ?? string.Empty;
                     part.PartTypeId = partType?.PartTypeId ?? 0;
+                    part.ParentPartTypeId = partType?.ParentPartTypeId;
                     part.Keywords = DetermineKeywordsFromPart(part, partTypes);
                 }
                 response.Parts = await MapCommonPartIdsAsync(response.Parts);
@@ -152,6 +153,7 @@ namespace Binner.Services.Integrations.Barcode
             var partType = await DeterminePartTypeAsync(result);
             result.PartType = partType?.Name ?? string.Empty;
             result.PartTypeId = partType?.PartTypeId ?? 0;
+            result.ParentPartTypeId = partType?.ParentPartTypeId;
             return result;
         }
 

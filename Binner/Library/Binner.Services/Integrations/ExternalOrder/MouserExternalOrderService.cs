@@ -131,6 +131,7 @@ namespace Binner.Services.Integrations.ExternalOrder
                     var partType = await DeterminePartTypeAsync(part);
                     part.PartType = partType?.Name ?? string.Empty;
                     part.PartTypeId = partType?.PartTypeId ?? 0;
+                    part.ParentPartTypeId = partType?.ParentPartTypeId;
                     part.Keywords = DetermineKeywordsFromPart(part, partTypes);
                 }
                 commonParts = await MapCommonPartIdsAsync(commonParts);
