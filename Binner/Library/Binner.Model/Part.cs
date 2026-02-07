@@ -278,6 +278,11 @@ namespace Binner.Model
         /// </summary>
         public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// The date the record was last modified
+        /// </summary>
+        public DateTime DateModifiedUtc { get; set; } = DateTime.UtcNow;
+
         public override bool Equals(object? obj)
         {
             if (obj == null) return false;

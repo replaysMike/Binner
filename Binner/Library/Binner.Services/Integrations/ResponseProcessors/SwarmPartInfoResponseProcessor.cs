@@ -274,6 +274,8 @@ namespace Binner.Services.Integrations.ResponseProcessors
                                     .FirstOrDefault() ?? string.Empty,
                                 PartTypeId = context.PartTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.PartTypeId)
                                     .FirstOrDefault(),
+                                ParentPartTypeId = context.PartTypes.Where(x => x.PartTypeId == part.PartTypeId).Select(x => x.ParentPartTypeId)
+                                    .FirstOrDefault(),
                                 ProductUrl = supplierPart.ProductUrl,
                                 Status = manufacturerPart.IsObsolete ? "Inactive" : "Active",
                                 QuantityAvailable = supplierPart.QuantityAvailable ?? 0,

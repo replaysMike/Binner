@@ -91,6 +91,11 @@
         public long PartTypeId { get; set; }
 
         /// <summary>
+        /// Type id of part
+        /// </summary>
+        public long? ParentPartTypeId { get; set; }
+
+        /// <summary>
         /// Mounting type of part
         /// </summary>
         public int MountingTypeId { get; set; }
@@ -204,5 +209,10 @@
         /// List of categories associated with the part
         /// </summary>
         public ICollection<CommonCategory> Categories { get; set; } = new List<CommonCategory>();
+
+        /// <summary>
+        /// Date the part was last modified
+        /// </summary>
+        public DateTime DateModifiedUtc { get; set; }
     }
 }

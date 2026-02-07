@@ -209,6 +209,7 @@ namespace Binner.Services.Integrations.PartInformation
                 {
                     part.PartType = partType.Name ?? string.Empty;
                     part.PartTypeId = partType.PartTypeId;
+                    part.ParentPartTypeId = partType.ParentPartTypeId;
                 }
                 part.Keywords = DetermineKeywordsFromPart(part, partTypes);
             }

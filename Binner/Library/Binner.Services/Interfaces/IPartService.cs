@@ -107,6 +107,13 @@ namespace Binner.Services
         Task<IServiceResult<PartResults?>> GetBarcodeInfoAsync(string barcode, ScannedLabelType barcodeType);
 
         /// <summary>
+        /// Update the part metadata for a single part
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<IServiceResult<Part?>> UpdatePartMetadataAsync(UpdatePartRequest request);
+
+        /// <summary>
         /// Get metadata about a part number
         /// </summary>
         /// <param name="partNumber">Part number</param>
