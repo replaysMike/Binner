@@ -1,8 +1,8 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
-import { Breadcrumb } from "semantic-ui-react";
+import { Breadcrumb, Segment } from "semantic-ui-react";
 import { FormHeader } from "../../components/FormHeader";
+import { BulkPrintComponent } from "@binner/binner-licensed";
 
 export function BulkPrint(props) {
   const { t } = useTranslation();
@@ -22,6 +22,13 @@ export function BulkPrint(props) {
         Print labels for multiple parts at once.
         </Trans>
 			</FormHeader>
+
+      <h3>Instructions</h3>
+      <p>Choose the parts from your inventory you want to print and add them to the print queue. Once you are ready to print click the Start Printing button and follow the instructions in the dialog.</p>
+
+      <Segment raised>
+        <BulkPrintComponent />
+      </Segment>
 		</div>
 	);
 };

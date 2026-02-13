@@ -80,4 +80,16 @@
         public double WidthPerc { get; set; }
         public double HeightPerc { get; set; }
     }
+
+    public class RectBoundsF
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Width { get; set; }
+        public float Height { get; set; }
+        public double XPerc { get; set; }
+        public double YPerc { get; set; }
+        public double WidthPerc { get; set; }
+        public double HeightPerc { get; set; }
+    }
 }

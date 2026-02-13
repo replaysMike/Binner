@@ -46,8 +46,8 @@ export const Admin = () => {
               requiredSubscriptionLevel={SubscriptionLevels.Maker}
               title="Update Part Metadata"
               description="Refresh information from external APIs and choose which fields you would like to update."
-              url="/admin/updateparts"
-             />
+              url="/admin/updatemetadata"
+              />
           </ul>
         </div>
       </Segment>

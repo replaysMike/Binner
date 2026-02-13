@@ -102,7 +102,7 @@ export function PartParametricsModal({ part, isOpen, onClose, onAdd, onDelete, o
                     {parametric.edit 
                       ? <Dropdown name="units" selection fluid options={unitOptions} value={parametric.units} onChange={(e, control) => handleChange(e, control, parametric)} /> 
                       : parametric.valueNumber !== 0 
-                        ? <Popup content={GetTypeName(ParametricUnits, parametric.units)} trigger={<span>{GetTypeMeta(ParametricUnits, parametric.units, "value").units}</span>} />
+                        ? <Popup content={GetTypeName(ParametricUnits, parametric.units)} trigger={<span>{GetTypeMeta(ParametricUnits, parametric.units, "value")?.units}</span>} />
                         : <></>
                     }
                   </Table.Cell>
