@@ -1677,10 +1677,11 @@ export const Settings = () => {
             trigger={
               <Dropdown
                 name="element14Enabled"
-                placeholder="Disabled"
                 type="bool-dropdown"
+                placeholder="Disabled"
                 selection
                 value={integrationSettings.element14.enabled ? 1 : 0}
+                className={!integrationSettings.element14.enabled ? "bool-disabled" : ""}
                 options={enabledSources}
                 onChange={(e, control) => handleChange(e, control, 'integration')}
               />

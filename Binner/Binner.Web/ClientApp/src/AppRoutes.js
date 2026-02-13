@@ -44,10 +44,10 @@ import { Users } from "./pages/admin/users/Users";
 import { User } from "./pages/admin/users/User";
 import { Admin } from "./pages/admin/Home";
 import { Backup } from "./pages/admin/Backup";
-import { UpdateParts } from "./pages/admin/UpdateParts";
 import { ActivateLicense } from "./pages/admin/ActivateLicense";
 import { SystemInformation } from "./pages/admin/SystemInformation";
 import { SystemLogs } from "./pages/admin/SystemLogs";
+import { UpdatePartMetadata } from "./pages/admin/UpdatePartMetadata";
 
 const AppRoutes = [
   {
@@ -221,8 +221,8 @@ const AppRoutes = [
     element: <AdminWrapper><SystemLogs /></AdminWrapper>
   },
   {
-    path: 'admin/updateParts',
-    element: <AdminWrapper><UpdateParts /></AdminWrapper>
+    path: 'admin/updateMetadata',
+    element: <AdminWrapper><UpdatePartMetadata /></AdminWrapper>
   },
   {
     path: 'admin/activateLicense',

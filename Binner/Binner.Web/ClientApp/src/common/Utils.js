@@ -1,6 +1,14 @@
 ﻿import { MD5 as encryptMD5 } from "crypto-js";
 
 /**
+ * Decode url safe base64 encoded string
+ */
+export const decodeBase64 = (base64Url) => {
+  var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  return decodeURIComponent(atob(base64));
+};
+
+/**
  * Copy/clone a string
  * @param {string} str input string
  * @returns copied string

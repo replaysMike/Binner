@@ -7,12 +7,11 @@ import { SubscriptionFeatureLink } from "../../components/SubscriptionFeatureLin
 
 export const Printing = () => {
   const { t } = useTranslation();
-	const navigate = useNavigate();
-
+  const navigate = useNavigate();
   return (
     <div className="help">
       <Breadcrumb>
-				<Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
         <Breadcrumb.Divider />
         <Breadcrumb.Section active>{t('bc.printing', "Printing")}</Breadcrumb.Section>
       </Breadcrumb>
@@ -20,7 +19,7 @@ export const Printing = () => {
         <Trans i18nKey="page.printing.description">
         Printing of labels and label templates.
         </Trans>
-			</FormHeader>
+      </FormHeader>
 
       <Segment raised>
         <h3>{t('page.printing.header', "Choose a printing task")}</h3>
