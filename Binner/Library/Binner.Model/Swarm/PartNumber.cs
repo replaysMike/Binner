@@ -83,6 +83,8 @@
         /// </summary>
         public int? CreatedFromSupplierId { get; set; }
 
+        public Guid GlobalId { get; set; }
+
         /// <summary>
         /// Part numbers by manufacturer related to this part
         /// </summary>

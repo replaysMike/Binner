@@ -53,5 +53,7 @@
         /// Depth in millimeters
         /// </summary>
         public double SizeDepthMm { get; set; }
+
+        public Guid GlobalId { get; set; }
     }
 }
